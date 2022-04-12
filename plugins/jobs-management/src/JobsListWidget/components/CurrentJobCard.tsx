@@ -1,9 +1,5 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getParent } from 'mobx-state-tree'
-
-// import { SnapshotIn } from 'mobx-state-tree'
-// import { JobsEntry } from './JobsListWidget'
 import {
   Box,
   Button,
@@ -13,11 +9,9 @@ import {
   LinearProgress,
   Typography,
 } from '@material-ui/core'
-import { JobsListModel, NewJob } from '../model'
+import { NewJob } from '../model'
 
-function CurrentJobCard({ job, model }: { job: NewJob; model: JobsListModel }) {
-  const rootModel = getParent(model, 3)
-  const { jobsManager } = rootModel
+function CurrentJobCard({ job }: { job: NewJob }) {
   return (
     <Card variant="outlined">
       <CardContent>
@@ -56,36 +50,19 @@ function CurrentJobCard({ job, model }: { job: NewJob; model: JobsListModel }) {
           )}
         </Box>
       </CardContent>
-      <CardActions>
-        <Button
-          variant="contained"
-          color="inherit"
-          onClick={() => {
-            console.log('Hello?')
-            jobsManager.abortJob()
-            // job.cancelCallback && job.cancelCallback()
-            // model.removeJob(job.name)
-          }}
-        >
-          Cancel
-        </Button>
-      </CardActions>
-      {/* {job.cancelCallback() ? (
+      {job.cancelCallback ? (
         <CardActions>
           <Button
             variant="contained"
             color="inherit"
             onClick={() => {
-              console.log("Hello?")
-              jobsManager.abortJob()
-              // job.cancelCallback && job.cancelCallback()
-              // model.removeJob(job.name)
+              job.cancelCallback && job.cancelCallback()
             }}
           >
             Cancel
           </Button>
         </CardActions>
-      ) : null} */}
+      ) : null}
     </Card>
   )
 }

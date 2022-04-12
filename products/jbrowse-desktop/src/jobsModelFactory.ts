@@ -103,7 +103,6 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       },
       setWidgetStatus() {
         const jobStatusWidget = self.getJobStatusWidget()
-        // console.log(self.jobName)
         jobStatusWidget.updateJobStatusMessage(self.jobName, self.statusMessage)
         jobStatusWidget.updateJobProgressPct(self.jobName, self.progressPct)
       },
@@ -111,16 +110,9 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         self.statusMessage = arg
       },
       abortJob() {
-        console.log('hello....aborting')
         self.controller.abort()
-        console.log('signal', self.controller.signal)
       },
       addFinishedJob(entry: TextJobsEntry) {
-        // const { session } = self
-        // if (isSessionModelWithWidgets(session)) {
-        //   const jobStatusWidget = self.getJobStatusWidget()
-        //   jobStatusWidget.addFinishedJob(self.jobName)
-        // }
         self.finishedJobs.push(entry)
       },
       queueJob(props: TextJobsEntry) {
@@ -247,18 +239,10 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         this.clear()
         return
       },
-      // async runJob3() {
-      //   if (self.jobsQueue.length) {
-      //     const firstIndexingJob = self.jobsQueue[0] as TextJobsEntry
-      //     await this.runIndexingJob(firstIndexingJob)
-      //   }
-      //   return
-      // },
       async runJob() {
         const { session } = self
         if (self.jobsQueue.length) {
           const firstIndexingJob = self.jobsQueue[0] as TextJobsEntry
-          console.log(firstIndexingJob)
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)
