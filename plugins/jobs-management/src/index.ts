@@ -8,6 +8,8 @@ import {
   stateModelFactory as JobsListStateModelFactory,
   configSchema as JobsListConfigSchema,
 } from '../../jobs-management/src/JobsListWidget'
+import { isSessionModelWithWidgets } from '@jbrowse/core/util'
+
 export default class extends Plugin {
   name = 'JobsManagementPlugin'
 
@@ -33,8 +35,15 @@ export default class extends Plugin {
         label: 'Jobs list',
         icon: Indexing, // TODO: pick a better icon
         onClick: (session: SessionWithWidgets) => {
-          const widget = session.addWidget('JobsListWidget', 'jobsListWidget')
-          session.showWidget(widget)
+          if (isSessionModelWithWidgets(session)) {
+            const { widgets } = session
+            let jobStatusWidget = widgets.get('JobsList')
+            if (!jobStatusWidget) {
+              jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
+            } else {
+              session.showWidget(jobStatusWidget)
+            }
+          }
         },
       })
     }
