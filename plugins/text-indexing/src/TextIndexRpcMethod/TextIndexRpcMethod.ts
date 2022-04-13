@@ -1,5 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
+import { checkAbortSignal } from '@jbrowse/core/util'
 import { indexTracks, indexType, Track } from '@jbrowse/text-indexing'
 
 export class TextIndexRpcMethod extends RpcMethodType {
@@ -34,6 +35,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       statusCallback,
     } = deserializedArgs
 
+    checkAbortSignal(signal)
     const indexingParams = {
       outLocation,
       tracks,
