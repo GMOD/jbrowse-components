@@ -64,10 +64,37 @@ export const DownloadCard = ({ os, icon, link }) => {
   )
 }
 
+export const DownloadWeb = ({ link }) => {
+  const downloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-web-${config.customFields.currentVersion}.zip`
+  return (
+    <div style={{ display: 'flex', margin: 20 }}>
+      <div style={{ flexGrow: 1 }}></div>
+      <Card style={{ background: '#F0F0F0' }}>
+        <CardContent>
+          <h3>JBrowse Web</h3>
+          <Button
+            variant="contained"
+            color="primary"
+            href={downloadLink}
+            style={{
+              backgroundColor: '#3f51b5',
+              color: 'white',
+              margin: '10px',
+            }}
+          >
+            download
+          </Button>
+        </CardContent>
+      </Card>
+      <div style={{ flexGrow: 1 }}></div>
+    </div>
+  )
+}
+
 export const DownloadCardContainer = () => {
   const downloadLink = `https://github.com/GMOD/jbrowse-components/releases/tag/${config.customFields.currentVersion}`
   return (
-    <div>
+    <div style={{ margin: '10px' }}>
       <Box sx={{ display: { xs: 'flex', sm: 'flex', md: 'none' } }}>
         <Typography variant="body1">
           Checkout our downloads available for MacOS, Windows, and Linux{' '}
@@ -78,9 +105,7 @@ export const DownloadCardContainer = () => {
         sx={{ display: { xs: 'none', sm: 'none', md: 'flex' } }}
         style={{ flexDirection: 'column', gap: '15px' }}
       >
-        <Typography variant="body1">
-          Download JBrowse 2 desktop on the platform of your choice:
-        </Typography>
+        <Typography variant="body1"></Typography>
         <div
           style={{
             display: 'flex',
@@ -135,53 +160,49 @@ JBrowse 2 is a new browser for today's increasingly complex data. We
 make several different products for use in different scenarios, choose
 the one below that best fits your needs.
 
-## JBrowse 2 desktop
+## JBrowse Desktop
 
-A standalone app that runs on your own computer that can view data from many sources.
+A standalone app that runs on your own computer that can view data from many
+sources. Download JBrowse Desktop on the platform of your choice:
 
 <DownloadCardContainer />
 
-<br />
+## JBrowse Web
 
-<p align="center">
-  <img
-    width="100%"
-    alt="JBrowse desktop session"
-    src={`${config.baseUrl}img/desktop-session.png`}
-  />
-</p>
-<br />
+Run a full-featured genome browser with many types of built-in views on your
+own website.
 
-## JBrowse 2 web
+<DownloadWeb />
 
-Run a full-featured genome browser with many types of built-in views on your own website.
-To get started with JBrowse Web, we recommend using the jbrowse CLI tools.
-You can also use the jbrowse CLI for things like adding tracks too.
+It is recommended to get the JBrowse CLI tools to work with JBrowse Web
 
 ## JBrowse CLI tools
 
-Use the command line to install and configure JBrowse 2 for the web. Requires [Node.js](https://nodejs.org/).
+The JBrowse CLI helps administrators add genome assemblies, tracks, and more to their config files
+
+To install:
 
 ```shell
-# Install the command line tools from npm
 npm install -g @jbrowse/cli
-
-# Download the latest release of jbrowse from github releases
-jbrowse create jbrowse_folder
 ```
 
-After that, check out our [super-quick start
+After installing the CLI tools, check out our [super-quick start
 guide](/docs/superquickstart_web) or the slightly longer [quick-start
 guide](/docs/quickstart_web).
 
 ## Static image generator
 
-- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - Generate images of JBrowse 2 statically on the command line
+- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - Generate images
+  of JBrowse 2 statically on the command line
 
 ## Embedded components
 
-- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view) linear genome browser view React component on <tt>NPM</tt>. Also see our <StorybookLGVLink/>
-- [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view) circular genome browser view React component on <tt>NPM</tt>. Also see our <StorybookCGVLink/>
+- [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+  linear genome browser view React component on <tt>NPM</tt>. Also see our <StorybookLGVLink/>
+- [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view)
+  circular genome browser view React component on <tt>NPM</tt>. Also see our <StorybookCGVLink/>
+
+More info here [embedded docs](../docs/embedded_components)
 
 ## Jupyter Notebooks Extension
 
