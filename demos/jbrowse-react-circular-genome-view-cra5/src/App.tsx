@@ -42,7 +42,7 @@ function View() {
       assembly,
       tracks,
       onChange: (patch: any) => {
-        setPatches((previous) => previous + JSON.stringify(patch) + '\n')
+        setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,
     })
@@ -55,7 +55,9 @@ function View() {
 
   return (
     <>
-      <h1>JBrowse 2 React Circular Genome View Demo (with create-react-app v5)</h1>
+      <h1>
+        JBrowse 2 React Circular Genome View Demo (with create-react-app v5)
+      </h1>
       <JBrowseCircularGenomeView viewState={viewState} />
       <h3>Code</h3>
       <p>

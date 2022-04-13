@@ -79,7 +79,7 @@ function View() {
       tracks,
       location: '10:29,838,655..29,838,737',
       onChange: (patch: any) => {
-        setPatches((previous) => previous + JSON.stringify(patch) + '\n')
+        setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,
     })
@@ -92,7 +92,9 @@ function View() {
 
   return (
     <>
-      <h1>JBrowse 2 React Linear Genome View Demo (with create-react-app v5)</h1>
+      <h1>
+        JBrowse 2 React Linear Genome View Demo (with create-react-app v5)
+      </h1>
       <JBrowseLinearGenomeView viewState={viewState} />
       <h3>Code</h3>
       <p>
