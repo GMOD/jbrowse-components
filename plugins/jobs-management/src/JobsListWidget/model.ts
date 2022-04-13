@@ -34,6 +34,7 @@ export default function f(pluginManager: PluginManager) {
       type: types.literal('JobsListWidget'),
       jobs: types.array(Job),
       finished: types.array(Job),
+      queued: types.array(Job),
     })
     .actions(self => ({
       addJob(job: NewJob) {
@@ -52,6 +53,16 @@ export default function f(pluginManager: PluginManager) {
       addFinishedJob(job: NewJob) {
         self.finished.push(job)
         return self.finished
+      },
+      addQueuedJob(job: NewJob) {
+        self.queued.push(job)
+        return self.finished
+      },
+      removeQueuedJob(jobName: string) {
+        const indx = self.queued.findIndex(job => job.name === jobName)
+        const removed = self.queued[indx]
+        self.queued.splice(indx, 1)
+        return removed
       },
       updateJobStatusMessage(jobName: string, message?: string) {
         const job = self.jobs.find(job => job.name === jobName)

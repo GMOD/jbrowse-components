@@ -41,7 +41,7 @@ const useStyles = makeStyles(theme => ({
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const classes = useStyles()
-  const { jobs, finished } = model
+  const { jobs, finished, queued } = model
   return (
     <div className={classes.root}>
       <Accordion defaultExpanded>
@@ -58,6 +58,24 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
           <Card variant="outlined">
             <CardContent>
               <Typography variant="body1">No jobs</Typography>
+            </CardContent>
+          </Card>
+        )}
+      </Accordion>
+      <Accordion defaultExpanded>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        >
+          <Typography variant="h5">Queued jobs</Typography>
+        </AccordionSummary>
+        {queued.length ? (
+          queued.map((job: NewJob, index: number) => (
+            <JobCard job={job} key={`${JSON.stringify(job)}-${index}`} />
+          ))
+        ) : (
+          <Card variant="outlined">
+            <CardContent>
+              <Typography variant="body1">No queued jobs</Typography>
             </CardContent>
           </Card>
         )}

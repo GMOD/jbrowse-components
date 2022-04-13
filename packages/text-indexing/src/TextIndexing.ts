@@ -6,6 +6,7 @@ import { indexVcf } from './types/vcfAdapter'
 import { generateMeta } from './types/common'
 import { ixIxxStream } from 'ixixx'
 import { Track, indexType, supportedIndexingAdapters } from './util'
+import { checkAbortSignal } from '@jbrowse/core/util'
 
 export async function indexTracks(args: {
   tracks: Track[]
@@ -28,6 +29,7 @@ export async function indexTracks(args: {
     signal,
   } = args
   const idxType = indexType || 'perTrack'
+  checkAbortSignal(signal)
   if (idxType === 'perTrack') {
     await perTrackIndex(
       tracks,
@@ -48,7 +50,7 @@ export async function indexTracks(args: {
       signal,
     )
   }
-
+  checkAbortSignal(signal)
   return []
 }
 
@@ -173,16 +175,22 @@ async function indexDriver(
     ),
   )
   statusCallback('Indexing files.')
-  const ixIxxStream = await runIxIxx(readable, idxLocation, name)
-  await generateMeta({
-    configs: tracks,
-    attributes,
-    outDir: idxLocation,
-    name,
-    exclude,
-    assemblyNames,
-  })
-  return ixIxxStream
+  try {
+    const ixIxxStream = await runIxIxx(readable, idxLocation, name)
+    checkAbortSignal(signal)
+    await generateMeta({
+      configs: tracks,
+      attributes,
+      outDir: idxLocation,
+      name,
+      exclude,
+      assemblyNames,
+    })
+    checkAbortSignal(signal)
+    return ixIxxStream
+  } catch (e) {
+    throw e
+  }
 }
 
 async function* indexFiles(

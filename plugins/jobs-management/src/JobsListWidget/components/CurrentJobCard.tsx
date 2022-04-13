@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Box,
@@ -12,6 +12,7 @@ import {
 import { NewJob } from '../model'
 
 function CurrentJobCard({ job }: { job: NewJob }) {
+  const [clicked, setClicked] = useState(false)
   return (
     <Card variant="outlined">
       <CardContent>
@@ -55,8 +56,10 @@ function CurrentJobCard({ job }: { job: NewJob }) {
           <Button
             variant="contained"
             color="inherit"
+            disabled={clicked || job.progressPct === 0}
             onClick={() => {
               job.cancelCallback && job.cancelCallback()
+              setClicked(true)
             }}
           >
             Cancel
