@@ -29,7 +29,7 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
-import jobsModelFactory from './jobsModelFactory'
+import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 // @ts-ignore

@@ -34,7 +34,7 @@ import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
-import { TextJobsEntry } from './jobsModelFactory'
+import { TextJobsEntry } from './indexJobsModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 

@@ -117,6 +117,18 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
         self.finishedJobs.push(entry)
       },
       queueJob(props: TextJobsEntry) {
+        const { session } = self
+        if (isSessionModelWithWidgets(session)) {
+          const jobStatusWidget = self.getJobStatusWidget()
+          session.showWidget(jobStatusWidget)
+          const { name, statusMessage, progressPct, cancelCallback } = props
+          jobStatusWidget.addQueuedJob({
+            name,
+            statusMessage: statusMessage || '',
+            progressPct: progressPct || 0,
+            cancelCallback,
+          })
+        }
         self.jobsQueue.push(props)
       },
       dequeueJob() {
@@ -251,6 +263,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
               progressPct: progressPct || 0,
               cancelCallback,
             })
+            jobStatusWidget.removeQueuedJob(name)
           }
           await this.runIndexingJob(firstIndexingJob)
         }
