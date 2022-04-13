@@ -42,7 +42,7 @@ function View() {
       assembly,
       tracks,
       onChange: (patch: any) => {
-        setPatches((previous) => previous + JSON.stringify(patch) + '\n')
+        setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,
     })
@@ -56,18 +56,18 @@ function View() {
   return (
     <>
       <h1>
-        JBrowse 2 React Circular Genome View Demo (with create-react-app v4)
+        JBrowse 2 React Circular Genome View Demo (with create-react-app v5)
       </h1>
       <JBrowseCircularGenomeView viewState={viewState} />
       <h3>Code</h3>
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-cra5"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view
+          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-cra5
         </a>
         .
       </p>

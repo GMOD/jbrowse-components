@@ -79,7 +79,7 @@ function View() {
       tracks,
       location: '10:29,838,655..29,838,737',
       onChange: (patch: any) => {
-        setPatches((previous) => previous + JSON.stringify(patch) + '\n')
+        setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,
     })
@@ -93,18 +93,18 @@ function View() {
   return (
     <>
       <h1>
-        JBrowse 2 React Linear Genome View Demo (with create-react-app v4)
+        JBrowse 2 React Linear Genome View Demo (with create-react-app v5)
       </h1>
       <JBrowseLinearGenomeView viewState={viewState} />
       <h3>Code</h3>
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-cra5"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view
+          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-cra5
         </a>
         .
       </p>
