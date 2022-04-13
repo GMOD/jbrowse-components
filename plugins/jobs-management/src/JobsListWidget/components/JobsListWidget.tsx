@@ -51,8 +51,8 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
           <Typography variant="h5">Jobs</Typography>
         </AccordionSummary>
         {jobs.length ? (
-          jobs.map((job: NewJob) => (
-            <CurrentJobCard job={job} key={JSON.stringify(job)} />
+          jobs.map((job: NewJob, index: number) => (
+            <CurrentJobCard job={job} key={`${JSON.stringify(job)}-${index}`} />
           ))
         ) : (
           <Card variant="outlined">
@@ -69,8 +69,8 @@ function JobsListWidget({ model }: { model: JobsListModel }) {
           <Typography variant="h5">Jobs completed</Typography>
         </AccordionSummary>
         {finished.length ? (
-          finished.map((job: NewJob) => (
-            <JobCard key={JSON.stringify(job)} job={job} />
+          finished.map((job: NewJob, index: number) => (
+            <JobCard key={`${JSON.stringify(job)}-${index}`} job={job} />
           ))
         ) : (
           <Card variant="outlined">
