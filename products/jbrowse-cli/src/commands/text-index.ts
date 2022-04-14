@@ -87,6 +87,11 @@ export default class TextIndex extends JBrowseCommand {
       description: 'Adds gene type to list of excluded types',
       default: 'CDS,exon',
     }),
+    prefixSize: flags.integer({
+      description:
+        'Specify the prefix size for the ixx index, increase size if many of your gene IDs have same prefix e.g. Z000000001, Z000000002',
+      default: 6,
+    }),
     file: flags.string({
       description:
         'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
@@ -124,6 +129,7 @@ export default class TextIndex extends JBrowseCommand {
       force,
       exclude,
       dryrun,
+      prefixSize,
     } = flags
     const outFlag = target || out || '.'
 
@@ -180,6 +186,7 @@ export default class TextIndex extends JBrowseCommand {
           attributes: attributes.split(','),
           exclude: exclude.split(','),
           assemblyNames: [asm],
+          prefixSize,
         })
 
         const trixConf = {
@@ -231,6 +238,7 @@ export default class TextIndex extends JBrowseCommand {
       quiet,
       force,
       exclude,
+      prefixSize,
     } = flags
     const outFlag = target || out || '.'
 
@@ -273,6 +281,7 @@ export default class TextIndex extends JBrowseCommand {
         name: trackId,
         exclude: exclude.split(','),
         assemblyNames,
+        prefixSize,
       })
       if (!textSearching || !textSearching?.textSearchAdapter) {
         const newTrackConfig = {
@@ -311,7 +320,7 @@ export default class TextIndex extends JBrowseCommand {
 
   async indexFileList() {
     const { flags } = this.parse(TextIndex)
-    const { out, target, file, attributes, quiet, exclude } = flags
+    const { out, target, file, attributes, quiet, exclude, prefixSize } = flags
     const outFlag = target || out || '.'
     const trixDir = path.join(outFlag, 'trix')
     if (!fs.existsSync(trixDir)) {
@@ -330,6 +339,7 @@ export default class TextIndex extends JBrowseCommand {
       attributes: attributes.split(','),
       exclude: exclude.split(','),
       assemblyNames: [],
+      prefixSize,
     })
 
     this.log(
@@ -345,6 +355,7 @@ export default class TextIndex extends JBrowseCommand {
     quiet,
     exclude,
     assemblyNames,
+    prefixSize,
   }: {
     configs: Track[]
     attributes: string[]
@@ -353,12 +364,13 @@ export default class TextIndex extends JBrowseCommand {
     quiet: boolean
     exclude: string[]
     assemblyNames: string[]
+    prefixSize: number
   }) {
     const readable = Readable.from(
       this.indexFiles(configs, attributes, outDir, quiet, exclude),
     )
 
-    const ixIxxStream = await this.runIxIxx(readable, outDir, name)
+    const ixIxxStream = await this.runIxIxx(readable, outDir, name, prefixSize)
 
     await generateMeta({
       configs,
@@ -434,11 +446,16 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  runIxIxx(readStream: Readable, outLocation: string, name: string) {
+  runIxIxx(
+    readStream: Readable,
+    outLocation: string,
+    name: string,
+    prefixSize: number,
+  ) {
     const ixFilename = path.join(outLocation, 'trix', `${name}.ix`)
     const ixxFilename = path.join(outLocation, 'trix', `${name}.ixx`)
 
-    return ixIxxStream(readStream, ixFilename, ixxFilename)
+    return ixIxxStream(readStream, ixFilename, ixxFilename, prefixSize)
   }
 
   async getTrackConfigs(

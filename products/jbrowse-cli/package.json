@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/cli",
-  "version": "1.6.9",
+  "version": "1.7.0",
   "description": "A command line tool for working with JBrowse 2",
   "keywords": [
     "jbrowse",
@@ -55,7 +55,7 @@
     "cors": "^2.8.5",
     "del": "^6.0.0",
     "express": "^4.17.1",
-    "ixixx": "^1.0.19",
+    "ixixx": "^1.0.20",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
     "object.fromentries": "^2.0.5",
