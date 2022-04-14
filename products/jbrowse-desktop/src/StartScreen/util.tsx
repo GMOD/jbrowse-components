@@ -1,13 +1,9 @@
 import { useState, useEffect } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'
 import deepmerge from 'deepmerge'
 import sanitize from 'sanitize-filename'
-
-export interface LoadedPlugin {
-  default: PluginConstructor
-}
 
 import {
   writeAWSAnalytics,
@@ -63,10 +59,10 @@ export async function createPluginManager(
   const pluginLoader = new PluginLoader(configSnapshot.plugins, {
     fetchESM: url => import(/* webpackIgnore:true */ url),
     fetchCJS: async url => {
-      const fs: typeof import('fs') = require('fs')
-      const path: typeof import('path') = require('path')
-      const os: typeof import('os') = require('os')
-      const http: typeof import('http') = require('http')
+      const fs: typeof import('fs') = window.require('fs')
+      const path: typeof import('path') = window.require('path')
+      const os: typeof import('os') = window.require('os')
+      const http: typeof import('http') = window.require('http')
       const fsPromises = fs.promises
       // On macOS `os.tmpdir()` returns the path to a symlink, see:
       // https://github.com/nodejs/node/issues/11422
@@ -92,7 +88,7 @@ export async function createPluginManager(
               reject(err)
             })
         })
-        plugin = __non_webpack_require__(pluginLocationRelative) as
+        plugin = window.require(pluginLocationRelative) as
           | LoadedPlugin
           | undefined
       } finally {

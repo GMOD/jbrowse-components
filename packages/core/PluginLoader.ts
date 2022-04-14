@@ -1,4 +1,3 @@
-/* global __non_webpack_require__ */
 import domLoadScript from 'load-script2'
 
 import { PluginConstructor } from './Plugin'
@@ -135,25 +134,24 @@ export default class PluginLoader {
     )
   }
 
-  async loadCJSPlugin(
-    pluginDefinition: CJSPluginDefinition,
-  ): Promise<LoadedPlugin | undefined> {
+  async loadCJSPlugin({ cjsUrl }: CJSPluginDefinition): Promise<LoadedPlugin> {
     let parsedUrl: URL
     try {
-      parsedUrl = new URL(
-        pluginDefinition.cjsUrl,
-        getGlobalObject().location.href,
-      )
+      parsedUrl = new URL(cjsUrl, getGlobalObject().location.href)
     } catch (error) {
       console.error(error)
-      throw new Error(`Error parsing URL: ${pluginDefinition.cjsUrl}`)
+      throw new Error(`Error parsing URL: ${cjsUrl}`)
     }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
-        `cannot load plugins using protocol "${parsedUrl.protocol}"`,
+        `Cannot load plugins using protocol "${parsedUrl.protocol}"`,
       )
     }
-    return this.fetchCJS?.(parsedUrl.href)
+    if (!this.fetchCJS) {
+      throw new Error('No fetchCJS callback provided')
+    }
+
+    return this.fetchCJS(parsedUrl.href)
   }
 
   async loadESMPlugin(pluginDefinition: ESMPluginDefinition) {
