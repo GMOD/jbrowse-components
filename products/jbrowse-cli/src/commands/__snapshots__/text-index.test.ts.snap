@@ -34,7 +34,8 @@ au9.g999.t1 [\\"Group1.36%3A165558..166984\\"|\\"au9_scaffold\\"|\\"au9.g999.t1\
 exports[`text-index Indexes a local non-gz gff3 file 3`] = `113448`;
 
 exports[`text-index Indexes a local non-gz gff3 file 4`] = `
-"au9.g0000000000
+"au9.g10000000000
+au9.g8000000BE82
 "
 `;
 
@@ -57,7 +58,7 @@ seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3
 exports[`text-index tracks Indexes a local gz gff3 file 3`] = `12254`;
 
 exports[`text-index tracks Indexes a local gz gff3 file 4`] = `
-"agt220000000000
+"agt2210000000000
 "
 `;
 
@@ -80,9 +81,9 @@ seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3
 exports[`text-index tracks Indexes a remote and a local file 3`] = `134774`;
 
 exports[`text-index tracks Indexes a remote and a local file 4`] = `
-"agt220000000000
-au9.g000000044E
-seg090000020139
+"agt2210000000000
+au9.g8000000D243
+seg09 0000020139
 "
 `;
 
@@ -103,7 +104,7 @@ exports[`text-index tracks Indexes a remote gz gff3 file 2`] = `
 exports[`text-index tracks Indexes a remote gz gff3 file 3`] = `13815`;
 
 exports[`text-index tracks Indexes a remote gz gff3 file 4`] = `
-"agt220000000000
+"agt2210000000000
 "
 `;
 
@@ -139,7 +140,8 @@ au9.g999.t1 [\\"Group1.36%3A165558..166984\\"|\\"online_au9_scaffold\\"|\\"au9.g
 exports[`text-index tracks Indexes a remote non-gz gff3 file 3`] = `122520`;
 
 exports[`text-index tracks Indexes a remote non-gz gff3 file 4`] = `
-"au9.g0000000000
+"au9.g10000000000
+au9.g8000000CDF5
 "
 `;
 
@@ -182,7 +184,7 @@ rna-apple3 [\\"ctgA%3A17400..23000\\"|\\"noAttributes\\"|\\"rna-Apple3\\"],1
 exports[`text-index tracks Indexes a track using only the attributes tag 3`] = `791`;
 
 exports[`text-index tracks Indexes a track using only the attributes tag 4`] = `
-"b101.0000000000
+"b101.20000000000
 "
 `;
 
@@ -206,7 +208,7 @@ seg15 [\\"ctgA%3A39265..39361\\"|\\"noAttributes\\"|\\"seg15\\"],1 [\\"ctgA%3A39
 exports[`text-index tracks Indexes a track with no attributes in the config 3`] = `11585`;
 
 exports[`text-index tracks Indexes a track with no attributes in the config 4`] = `
-"agt220000000000
+"agt2210000000000
 "
 `;
 
@@ -229,8 +231,8 @@ seg15 [\\"ctgA%3A39265..39361\\"|\\"gff3tabix_genes\\"|\\"seg15\\"],1 [\\"ctgA%3
 exports[`text-index tracks Indexes multiple local gff3 files 3`] = `125702`;
 
 exports[`text-index tracks Indexes multiple local gff3 files 4`] = `
-"agt220000000000
-au9.g000000044E
+"agt2210000000000
+au9.g8000000C2D0
 "
 `;
 
@@ -251,9 +253,9 @@ exports[`text-index tracks Indexes multiple remote gff3 file 2`] = `
 exports[`text-index tracks Indexes multiple remote gff3 file 3`] = `136335`;
 
 exports[`text-index tracks Indexes multiple remote gff3 file 4`] = `
-"agt220000000000
-au9.g00000004CC
-seg080000020289
+"agt2210000000000
+au9.g8000000D2C1
+seg08 0000020289
 "
 `;
 
@@ -275,7 +277,7 @@ seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ct
 exports[`text-index with multiple per-files Indexes with multiple per-file args 3`] = `13146`;
 
 exports[`text-index with multiple per-files Indexes with multiple per-file args 4`] = `
-"agt220000000000
+"agt2210000000000
 "
 `;
 
@@ -297,6 +299,6 @@ seg15 [\\"ctgA%3A39265..39361\\"|\\"volvox.sort.gff3.gz\\"|\\"seg15\\"],1 [\\"ct
 exports[`text-index with single per-file Indexes with  single per-file arg 3`] = `13146`;
 
 exports[`text-index with single per-file Indexes with  single per-file arg 4`] = `
-"agt220000000000
+"agt2210000000000
 "
 `;
