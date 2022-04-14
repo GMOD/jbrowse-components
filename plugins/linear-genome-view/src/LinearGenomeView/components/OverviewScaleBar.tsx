@@ -138,7 +138,7 @@ type LGV = LinearGenomeViewModel
 
 // rounded rect from https://stackoverflow.com/a/45889603/2129219
 // prettier-ignore
-function rightRoundedRect(x:number, y:number, width:number, height:number, radius:number) {
+function rightRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
   return "M" + x + "," + y
        + "h" + (width - radius)
        + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
@@ -149,7 +149,7 @@ function rightRoundedRect(x:number, y:number, width:number, height:number, radiu
 }
 
 // prettier-ignore
-function leftRoundedRect(x:number, y:number, width:number, height:number, radius:number ) {
+function leftRoundedRect(x: number, y: number, width: number, height: number, radius: number ) {
   return "M" + (x + radius) + "," + y
        + "h" + (width - radius)
        + "v" + height

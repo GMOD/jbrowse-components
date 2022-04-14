@@ -26,7 +26,7 @@ function getGlobalObject(): Window {
   // Based on window-or-global
   // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
   return (
-    /* eslint-disable-next-line no-restricted-globals */
+    // eslint-disable-next-line no-restricted-globals
     (typeof self === 'object' && self.self === self && self) ||
     (typeof global === 'object' && global.global === global && global) ||
     // @ts-ignore
@@ -275,8 +275,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
           const eventName = `JBrowseAuthWindow-${self.internetAccountId}`
           if (isElectron) {
-            const electron = require('electron')
-            const { ipcRenderer } = electron
+            const { ipcRenderer } = window.require('electron')
             const redirectUri = await ipcRenderer.invoke('openAuthWindow', {
               internetAccountId: self.internetAccountId,
               data,

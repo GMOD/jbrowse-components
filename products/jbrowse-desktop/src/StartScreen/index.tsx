@@ -8,7 +8,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import LauncherPanel from './LauncherPanel'
 import RecentSessionPanel from './RecentSessionsPanel'
 
-import { version } from '../../package.json'
+import packageJSON from '../../package.json'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -41,7 +41,7 @@ function LogoWithVersion() {
     <div className={classes.logo}>
       <LogoFull />
       <Typography variant="h6" style={{ float: 'right' }}>
-        v{version}
+        v{packageJSON.version}
       </Typography>
     </div>
   )

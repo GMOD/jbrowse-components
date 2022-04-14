@@ -125,24 +125,29 @@ const ConfigurationEditor = observer(({ model }) => {
   const key = model.target && readConfObject(model.target, 'trackId')
   const name = model.target && readConfObject(model.target, 'name')
   return (
-    <Accordion
-      key={key}
-      defaultExpanded
-      className={classes.accordion}
-      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
-    >
-      <AccordionSummary
-        expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+    <>
+      <Accordion
+        key={key}
+        defaultExpanded
+        className={classes.accordion}
+        TransitionProps={{ unmountOnExit: true, timeout: 150 }}
       >
-        <Typography>{name ? name : 'Configuration'}</Typography>
-      </AccordionSummary>
-      <AccordionDetails
-        className={classes.expansionPanelDetails}
-        data-testid="configEditor"
-      >
-        {!model.target ? 'no target set' : <Schema schema={model.target} />}
-      </AccordionDetails>
-    </Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
+        >
+          <Typography>{name ? name : 'Configuration'}</Typography>
+        </AccordionSummary>
+        <AccordionDetails
+          className={classes.expansionPanelDetails}
+          data-testid="configEditor"
+        >
+          {!model.target ? 'no target set' : <Schema schema={model.target} />}
+        </AccordionDetails>
+      </Accordion>
+
+      {/* blank space at the bottom of screen allows scroll */}
+      <div style={{ height: 300 }} />
+    </>
   )
 })
 

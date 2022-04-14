@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals, react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals,react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
 import RpcServer from 'librpc-web-mod'
@@ -42,7 +42,9 @@ async function getPluginManager() {
   }
   // Load runtime plugins
   const config = await receiveConfiguration()
-  const pluginLoader = new PluginLoader(config.plugins)
+  const pluginLoader = new PluginLoader(config.plugins, {
+    fetchESM: url => import(/* webpackIgnore:true */ url),
+  })
   pluginLoader.installGlobalReExports(self)
   const runtimePlugins = await pluginLoader.load()
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
@@ -102,3 +104,7 @@ getPluginManager()
       },
     })
   })
+
+export default () => {
+  /* do nothing */
+}

@@ -21,7 +21,7 @@ import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
-import { version } from '../package.json'
+import packageJSON from '../package.json'
 import factoryReset from './factoryReset'
 import SessionLoader, {
   SessionLoaderModel,
@@ -279,16 +279,14 @@ const Renderer = observer(
             })),
           ])
           pluginManager.createPluggableElements()
-          const isAdmin = !!adminKey
-
-          const RootModel = JBrowseRootModelFactory(pluginManager, isAdmin)
+          const RootModel = JBrowseRootModelFactory(pluginManager, !!adminKey)
 
           if (configSnapshot) {
             const rootModel = RootModel.create(
               {
                 jbrowse: configSnapshot,
                 assemblyManager: {},
-                version,
+                version: packageJSON.version,
                 configPath,
               },
               { pluginManager },

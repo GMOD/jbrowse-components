@@ -213,7 +213,7 @@ function SequenceDialog({
           data-testid="rubberband-sequence"
           variant="outlined"
           multiline
-          rows={5}
+          minRows={5}
           disabled={sequenceTooLarge}
           className={classes.dialogContent}
           fullWidth

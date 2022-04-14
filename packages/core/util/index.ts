@@ -1124,6 +1124,18 @@ export function viewBpToPx({
   return undefined
 }
 
+
+// supported adapter types by text indexer
+//  ensure that this matches the method found in @jbrowse/text-indexing/util
+export function supportedIndexingAdapters(type: string) {
+  return [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(type)
+}
+
 export function getBpDisplayStr(totalBp: number) {
   let str
   if (Math.floor(totalBp / 1000000) > 0) {
@@ -1136,13 +1148,16 @@ export function getBpDisplayStr(totalBp: number) {
   return str
 }
 
-// supported adapter types by text indexer
-//  ensure that this matches the method found in @jbrowse/text-indexing/util
-export function supportedIndexingAdapters(type: string) {
-  return [
-    'Gff3TabixAdapter',
-    'VcfTabixAdapter',
-    'Gff3Adapter',
-    'VcfAdapter',
-  ].includes(type)
+export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
+  // @ts-ignore
+  const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
+  const block = dynamicBlocks?.contentBlocks[0] || {}
+  const staticblock = staticBlocks?.contentBlocks[0] || {}
+  const staticblock1 = staticBlocks?.contentBlocks[1] || {}
+  return {
+    offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
+    offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
+    start: block.start,
+    end: block.end,
+  }
 }

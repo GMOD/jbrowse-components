@@ -3,6 +3,7 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import ScaleBar from './ScaleBar'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 describe('ScaleBar genome view component', () => {
   it('renders two regions', () => {

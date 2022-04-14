@@ -12,7 +12,7 @@ import {
 
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { withSize } from 'react-sizeme'
+import useMeasure from 'react-use-measure'
 
 // icons
 import CloseIcon from '@material-ui/icons/Close'
@@ -111,91 +111,91 @@ const ViewMenu = observer(
     ) : null
   },
 )
+const ViewContainer = observer(
+  ({
+    view,
+    onClose,
+    style,
+    children,
+  }: {
+    view: IBaseViewModel
+    onClose: () => void
+    style?: React.CSSProperties
+    children: React.ReactNode
+  }) => {
+    const classes = useStyles()
+    const theme = useTheme()
+    const padWidth = theme.spacing(1)
 
-export default withSize()(
-  observer(
-    ({
-      view,
-      onClose,
-      style,
-      children,
-      size: { width },
-    }: {
-      view: IBaseViewModel
-      onClose: () => void
-      style: React.CSSProperties
-      children: React.ReactNode
-      size: { width: number }
-    }) => {
-      const classes = useStyles()
-      const theme = useTheme()
-      const padWidth = theme.spacing(1)
+    const [ref, { width }] = useMeasure()
 
-      useEffect(() => {
-        if (width && isAlive(view)) {
-          view.setWidth(width - padWidth * 2)
-        }
-      }, [padWidth, view, width])
+    useEffect(() => {
+      if (width && isAlive(view)) {
+        view.setWidth(width - padWidth * 2)
+      }
+    }, [padWidth, view, width])
 
-      const scrollRef = useRef<HTMLDivElement>(null)
-      // scroll the view into view when first mounted
-      // note that this effect will run only once, because of
-      // the empty array second param
-      useEffect(() => {
-        scrollRef.current?.scrollIntoView?.({ block: 'center' })
-      }, [])
+    const scrollRef = useRef<HTMLDivElement>(null)
+    // scroll the view into view when first mounted
+    // note that this effect will run only once, because of
+    // the empty array second param
+    useEffect(() => {
+      scrollRef.current?.scrollIntoView?.({ block: 'center' })
+    }, [])
 
-      return (
-        <Paper
-          elevation={12}
-          className={classes.viewContainer}
-          style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
-        >
-          <div ref={scrollRef} style={{ display: 'flex' }}>
-            <ViewMenu
-              model={view}
-              IconButtonProps={{
-                classes: { root: classes.iconRoot },
-                edge: 'start',
+    return (
+      <Paper
+        ref={ref}
+        elevation={12}
+        className={classes.viewContainer}
+        style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
+      >
+        <div ref={scrollRef} style={{ display: 'flex' }}>
+          <ViewMenu
+            model={view}
+            IconButtonProps={{
+              classes: { root: classes.iconRoot },
+              edge: 'start',
+            }}
+            IconProps={{ className: classes.icon }}
+          />
+          <div className={classes.grow} />
+          <Tooltip title="Rename view" arrow>
+            <EditableTypography
+              value={
+                view.displayName ||
+                // @ts-ignore
+                (view.assemblyNames
+                  ? // @ts-ignore
+                    view.assemblyNames.join(',')
+                  : 'Untitled view')
+              }
+              setValue={val => {
+                view.setDisplayName(val)
               }}
-              IconProps={{ className: classes.icon }}
+              variant="body2"
+              classes={{
+                input: classes.input,
+                inputBase: classes.inputBase,
+                inputRoot: classes.inputRoot,
+                inputFocused: classes.inputFocused,
+              }}
             />
-            <div className={classes.grow} />
-            <Tooltip title="Rename view" arrow>
-              <EditableTypography
-                value={
-                  view.displayName ||
-                  // @ts-ignore
-                  (view.assemblyNames
-                    ? // @ts-ignore
-                      view.assemblyNames.join(',')
-                    : 'Untitled view')
-                }
-                setValue={val => {
-                  view.setDisplayName(val)
-                }}
-                variant="body2"
-                classes={{
-                  input: classes.input,
-                  inputBase: classes.inputBase,
-                  inputRoot: classes.inputRoot,
-                  inputFocused: classes.inputFocused,
-                }}
-              />
-            </Tooltip>
-            <div className={classes.grow} />
-            <IconButton
-              data-testid="close_view"
-              classes={{ root: classes.iconRoot }}
-              edge="end"
-              onClick={onClose}
-            >
-              <CloseIcon className={classes.icon} />
-            </IconButton>
-          </div>
-          <Paper>{children}</Paper>
-        </Paper>
-      )
-    },
-  ),
+          </Tooltip>
+          <div className={classes.grow} />
+          <IconButton
+            data-testid="close_view"
+            classes={{ root: classes.iconRoot }}
+            edge="end"
+            onClick={onClose}
+          >
+            <CloseIcon className={classes.icon} />
+          </IconButton>
+        </div>
+        <Paper>{children}</Paper>
+      </Paper>
+    )
+  },
 )
+
+export default ViewContainer

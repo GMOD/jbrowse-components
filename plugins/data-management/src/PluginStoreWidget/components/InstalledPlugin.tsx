@@ -19,8 +19,10 @@ import LockIcon from '@material-ui/icons/Lock'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
-import { BasePlugin } from '@jbrowse/core/util/types'
-import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
+import {
+  BasePlugin,
+  isSessionWithSessionPlugins,
+} from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles(() => ({

@@ -53,13 +53,13 @@ describe('theme utils', () => {
     expect(Object.keys(theme.overrides || {}).length).toBe(9)
   })
   it('allows adding a custom prop', () => {
-    const muiPaperProps = { variant: 'outlined' as 'outlined' }
+    const muiPaperProps = { variant: 'outlined' as const }
     const theme = createJBrowseTheme({ props: { MuiPaper: muiPaperProps } })
     expect(theme.props?.MuiPaper).toEqual(muiPaperProps)
     expect(Object.keys(theme.props || {}).length).toBe(18)
   })
   it('allows modifying a prop override', () => {
-    const muiButtonProps = { size: 'medium' as 'medium' }
+    const muiButtonProps = { size: 'medium' as const }
     const theme = createJBrowseTheme({ props: { MuiButton: muiButtonProps } })
     expect(theme.props?.MuiButton).toEqual(muiButtonProps)
     expect(Object.keys(theme.props || {}).length).toBe(17)

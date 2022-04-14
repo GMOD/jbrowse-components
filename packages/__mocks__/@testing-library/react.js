@@ -1,4 +1,5 @@
 import { StylesProvider } from '@material-ui/core/styles'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import React from 'react'
 
 const react = jest.requireActual('@testing-library/react')

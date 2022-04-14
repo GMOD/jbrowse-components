@@ -38,7 +38,7 @@ import { TextJobsEntry } from './indexJobsModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
-declare interface ReferringNode {
+export declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }

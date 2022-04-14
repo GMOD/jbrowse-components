@@ -25,5 +25,5 @@ const BaseViewModel = types
   }))
 
 export default BaseViewModel
-// eslint-disable-next-line @typescript-eslint/no-empty-interface,@typescript-eslint/interface-name-prefix
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IBaseViewModel extends Instance<typeof BaseViewModel> {}

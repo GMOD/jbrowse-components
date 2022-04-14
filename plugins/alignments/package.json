@@ -18,15 +18,12 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-alignments.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/alignments",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -43,8 +40,7 @@
     "copy-to-clipboard": "^3.3.1",
     "fast-deep-equal": "^3.1.3",
     "generic-filehandle": "^2.2.2",
-    "json-stable-stringify": "^1.0.1",
-    "react-d3-axis-mod": "^0.1.3"
+    "json-stable-stringify": "^1.0.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

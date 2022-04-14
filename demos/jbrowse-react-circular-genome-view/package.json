@@ -5,7 +5,7 @@
   "dependencies": {
     "@fontsource/roboto": "^4.5.3",
     "@jbrowse/react-circular-genome-view": "^1.6.7",
-    "@jbrowse/react-linear-genome-view": "^1.6.7",
+    "@jbrowse/plugin-linear-genome-view": "^1.6.7",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",

@@ -9,9 +9,7 @@ import {
   Input,
   Typography,
 } from '@material-ui/core'
-import electron from 'electron'
-
-const { ipcRenderer } = electron
+const { ipcRenderer } = window.require('electron')
 
 const RenameQuickstartDialog = ({
   quickstartNames,

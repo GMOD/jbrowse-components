@@ -1,5 +1,6 @@
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import { getEnv } from 'mobx-state-tree'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { pluginManager } = getEnv(createTestSession() as any)

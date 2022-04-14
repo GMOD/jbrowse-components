@@ -15,7 +15,8 @@ import {
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { ipcRenderer } from 'electron'
+
+const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles(theme => ({
   message: {

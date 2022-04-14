@@ -2,6 +2,7 @@ import React, { Suspense } from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import BreakpointSplitView from './BreakpointSplitView'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 const assemblyConf = {
   name: 'volMyt1',

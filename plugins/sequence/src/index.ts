@@ -1,13 +1,17 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import { Region } from '@jbrowse/core/util/types'
+import { Region, FileLocation } from '@jbrowse/core/util/types'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
-import { FileLocation } from '@jbrowse/core/util/types'
-import { makeIndex } from '@jbrowse/core/util/tracks'
+import {
+  makeIndex,
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
 import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
 import { configSchema as chromSizesAdapterConfigSchema } from './ChromSizesAdapter'
 import {
@@ -22,11 +26,6 @@ import {
 import { configSchema as twoBitAdapterConfigSchema } from './TwoBitAdapter'
 import GCContentAdapterF from './GCContentAdapter'
 import { createReferenceSeqTrackConfig } from './referenceSeqTrackConfig'
-import {
-  AdapterGuesser,
-  getFileName,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 
 /* adjust in both directions */
 class DivSequenceRenderer extends FeatureRendererType {

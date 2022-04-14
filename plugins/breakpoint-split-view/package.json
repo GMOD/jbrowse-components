@@ -18,15 +18,12 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-breakpoint-split-view.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/breakpoint-split-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -39,7 +36,6 @@
     "@material-ui/icons": "^4.9.1",
     "clsx": "^1.0.4",
     "is-object": "^1.0.1",
-    "react-sizeme": "^3.0.2",
     "svg-path-generator": "^1.1.0"
   },
   "peerDependencies": {

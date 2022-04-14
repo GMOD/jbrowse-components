@@ -55,10 +55,7 @@ class PhasedScheduler<PhaseName extends string> {
 
   run() {
     this.phaseOrder.forEach(phaseName => {
-      const phaseCallbacks = this.phaseCallbacks.get(phaseName)
-      if (phaseCallbacks) {
-        phaseCallbacks.forEach(callback => callback())
-      }
+      this.phaseCallbacks.get(phaseName)?.forEach(callback => callback())
     })
   }
 }

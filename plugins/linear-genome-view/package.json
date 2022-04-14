@@ -18,15 +18,12 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-linear-genome-view.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/linear-genome-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -44,8 +41,7 @@
     "is-object": "^1.0.1",
     "json-stable-stringify": "^1.0.1",
     "normalize-wheel": "^1.0.1",
-    "react-popper": "^2.0.0",
-    "react-sizeme": "^3.0.2"
+    "react-popper": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

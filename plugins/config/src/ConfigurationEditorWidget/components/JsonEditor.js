@@ -31,8 +31,7 @@ function JsonEditor({ slot }) {
     } catch (e) {
       setError(e.message)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedJson])
+  }, [debouncedJson, slot])
 
   return (
     <>

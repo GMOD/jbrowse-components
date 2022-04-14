@@ -336,7 +336,7 @@ export async function renderRegion(opts = {}) {
       // force track to render even if maxbpperpx limit hit...
       else if (opt.startsWith('force:')) {
         const [, force] = opt.split(':')
-        if (Boolean(force)) {
+        if (force) {
           display.setUserFeatureScreenDensity(Number.MAX_VALUE)
         }
       }
