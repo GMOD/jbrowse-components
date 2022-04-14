@@ -1,8 +1,11 @@
+// import electron first, important, because the electron mock creates
+// window.require
+// eslint-disable-next-line @typescript-eslint/no-unused-vars,no-unused-vars
+import electron from 'electron'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot } from 'mobx-state-tree'
 import corePlugins from './corePlugins'
 import rootModelFactory from './rootModel'
-
 jest.mock('./makeWorkerInstance', () => () => {})
 
 describe('Root MST model', () => {

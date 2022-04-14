@@ -12292,7 +12292,7 @@ iterate-value@^1.0.2:
     es-get-iterator "^1.0.2"
     iterate-iterator "^1.0.1"
 
-ixixx@^1.0.20:
+ixixx@^1.0.19, ixixx@^1.0.20:
   version "1.0.20"
   resolved "https://registry.yarnpkg.com/ixixx/-/ixixx-1.0.20.tgz#d519024dc2bcc1e3d90ba9d47eead2d8073c3592"
   integrity sha512-wifutPrNn+gPXIYWetwvaIvQZAzsstfH/Ysz4hfBKoGp7l/N0w2LbNWZPavi0GmHYG2Y+fSqDKteL0lxcHlM/w==
