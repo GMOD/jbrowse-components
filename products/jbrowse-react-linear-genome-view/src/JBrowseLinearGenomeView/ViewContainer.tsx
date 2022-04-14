@@ -7,12 +7,12 @@ import {
   Typography,
   makeStyles,
   useTheme,
+  alpha,
 } from '@material-ui/core'
-import { alpha } from '@material-ui/core/styles'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import useDimensions from 'react-use-dimensions'
+import { withContentRect } from 'react-measure'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -94,11 +94,21 @@ const ViewMenu = observer(
 )
 
 const ViewContainer = observer(
-  ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
+  ({
+    view,
+    children,
+    contentRect,
+    measureRef,
+  }: {
+    view: IBaseViewModel
+    children: React.ReactNode
+    contentRect: { bounds: { width: number } }
+    measureRef: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  }) => {
     const classes = useStyles()
     const theme = useTheme()
     const session = getSession(view)
-    const [measureRef, { width }] = useDimensions()
+    const width = contentRect.bounds.width
 
     const padWidth = theme.spacing(1)
 
@@ -148,4 +158,4 @@ const ViewContainer = observer(
   },
 )
 
-export default ViewContainer
+export default withContentRect('bounds')(ViewContainer)
