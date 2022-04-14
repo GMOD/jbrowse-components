@@ -130,9 +130,7 @@ const ViewContainer = observer(
     const [ref, { width }] = useMeasure()
 
     useEffect(() => {
-      if (typeof jest !== 'undefined') {
-        view.setWidth(800)
-      } else if (width && isAlive(view)) {
+      if (width && isAlive(view)) {
         view.setWidth(width - padWidth * 2)
       }
     }, [padWidth, view, width])
