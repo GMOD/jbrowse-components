@@ -1,6 +1,4 @@
-/* global __non_webpack_require__ */
 import domLoadScript from 'load-script2'
-import sanitize from 'sanitize-filename'
 
 import { PluginConstructor } from './Plugin'
 import { ConfigurationSchema } from './configuration'
@@ -98,12 +96,17 @@ export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
   fetchESM?: (url: string) => Promise<unknown>
+  fetchCJS?: (url: string) => Promise<LoadedPlugin>
 
   constructor(
     pluginDefinitions: PluginDefinition[] = [],
-    args?: { fetchESM: (url: string) => Promise<unknown> },
+    args?: {
+      fetchESM?: (url: string) => Promise<unknown>
+      fetchCJS?: (url: string) => Promise<LoadedPlugin>
+    },
   ) {
     this.fetchESM = args?.fetchESM
+    this.fetchCJS = args?.fetchCJS
     this.definitions = JSON.parse(JSON.stringify(pluginDefinitions))
   }
 
@@ -131,66 +134,24 @@ export default class PluginLoader {
     )
   }
 
-  async loadCJSPlugin(
-    pluginDefinition: CJSPluginDefinition,
-  ): Promise<LoadedPlugin> {
+  async loadCJSPlugin({ cjsUrl }: CJSPluginDefinition): Promise<LoadedPlugin> {
     let parsedUrl: URL
     try {
-      parsedUrl = new URL(
-        pluginDefinition.cjsUrl,
-        getGlobalObject().location.href,
-      )
+      parsedUrl = new URL(cjsUrl, getGlobalObject().location.href)
     } catch (error) {
       console.error(error)
-      throw new Error(`Error parsing URL: ${pluginDefinition.cjsUrl}`)
+      throw new Error(`Error parsing URL: ${cjsUrl}`)
     }
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
-        `cannot load plugins using protocol "${parsedUrl.protocol}"`,
+        `Cannot load plugins using protocol "${parsedUrl.protocol}"`,
       )
     }
-    const fs: typeof import('fs') = require('fs')
-    const path: typeof import('path') = require('path')
-    const os: typeof import('os') = require('os')
-    const http: typeof import('http') = require('http')
-    const fsPromises = fs.promises
-    // On macOS `os.tmpdir()` returns the path to a symlink, see:
-    // https://github.com/nodejs/node/issues/11422
-    const systemTmp = await fsPromises.realpath(os.tmpdir())
-    const tmpDir = await fsPromises.mkdtemp(
-      path.join(systemTmp, 'jbrowse-plugin-'),
-    )
-    let plugin: LoadedPlugin | undefined = undefined
-    try {
-      const pluginLocation = path.join(tmpDir, sanitize(parsedUrl.href))
-      const pluginLocationRelative = path.relative('.', pluginLocation)
-
-      const pluginDownload = new Promise<void>((resolve, reject) => {
-        const file = fs.createWriteStream(pluginLocation)
-        http
-          .get(parsedUrl.href, response => {
-            response.pipe(file)
-            file.on('finish', () => {
-              resolve()
-            })
-          })
-          .on('error', err => {
-            fs.unlinkSync(pluginLocation)
-            reject(err)
-          })
-      })
-      await pluginDownload
-      plugin = __non_webpack_require__(pluginLocationRelative) as
-        | LoadedPlugin
-        | undefined
-    } finally {
-      fsPromises.rmdir(tmpDir, { recursive: true })
+    if (!this.fetchCJS) {
+      throw new Error('No fetchCJS callback provided')
     }
 
-    if (!plugin) {
-      throw new Error(`Could not load CJS plugin: ${parsedUrl}`)
-    }
-    return plugin
+    return this.fetchCJS(parsedUrl.href)
   }
 
   async loadESMPlugin(pluginDefinition: ESMPluginDefinition) {
