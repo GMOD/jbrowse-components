@@ -1124,7 +1124,6 @@ export function viewBpToPx({
   return undefined
 }
 
-
 // supported adapter types by text indexer
 //  ensure that this matches the method found in @jbrowse/text-indexing/util
 export function supportedIndexingAdapters(type: string) {
