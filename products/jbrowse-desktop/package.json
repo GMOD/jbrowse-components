@@ -96,6 +96,7 @@
     "react-dom": "^17.0.0",
     "react-error-boundary": "^3.0.0",
     "rxjs": "^6.5.2",
+    "sanitize-filename": "^1.6.3",
     "split2": "^4.1.0",
     "timeago.js": "^4.0.2",
     "use-query-params": "1.2.3",
