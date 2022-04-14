@@ -24,6 +24,14 @@ console.error = (...args) => {
   }
 }
 
+console.warn = (...args) => {
+  if (`${args[0]}`.match('estimation reached timeout')) {
+    return null
+  } else {
+    err(args)
+  }
+}
+
 // eslint-disable-next-line no-unused-expressions
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
