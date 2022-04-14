@@ -44,7 +44,5 @@
     "@jbrowse/text-indexing": "^1.6.9",
     "@material-ui/icons": "^4.9.1"
   },
-  "publishConfig": {
-    "access": "public"
-  }
+  "private": true
 }
