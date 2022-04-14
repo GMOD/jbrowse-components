@@ -37,8 +37,7 @@
     "clone": "^2.1.2",
     "clsx": "^1.1.0",
     "generic-filehandle": "^2.2.2",
-    "json-stable-stringify": "^1.0.1",
-    "react-sizeme": "^3.0.2"
+    "json-stable-stringify": "^1.0.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

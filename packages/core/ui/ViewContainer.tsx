@@ -12,7 +12,7 @@ import {
 
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { withContentRect } from 'react-measure'
+import useMeasure from 'react-use-measure'
 
 // icons
 import CloseIcon from '@material-ui/icons/Close'
@@ -117,25 +117,20 @@ const ViewContainer = observer(
     onClose,
     style,
     children,
-    contentRect,
-    measureRef,
   }: {
     view: IBaseViewModel
     onClose: () => void
-    style: React.CSSProperties
+    style?: React.CSSProperties
     children: React.ReactNode
-    contentRect: { bounds: { width: number } }
-    measureRef: any // eslint-disable-line @typescript-eslint/no-explicit-any
   }) => {
-    const width = contentRect.bounds.width
     const classes = useStyles()
     const theme = useTheme()
     const padWidth = theme.spacing(1)
 
+    const [ref, { width }] = useMeasure()
+
     useEffect(() => {
-      if (typeof jest !== 'undefined') {
-        view.setWidth(800)
-      } else if (width && isAlive(view)) {
+      if (width && isAlive(view)) {
         view.setWidth(width - padWidth * 2)
       }
     }, [padWidth, view, width])
@@ -150,7 +145,7 @@ const ViewContainer = observer(
 
     return (
       <Paper
-        ref={measureRef}
+        ref={ref}
         elevation={12}
         className={classes.viewContainer}
         style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
@@ -203,4 +198,4 @@ const ViewContainer = observer(
   },
 )
 
-export default withContentRect('bounds')(ViewContainer)
+export default ViewContainer

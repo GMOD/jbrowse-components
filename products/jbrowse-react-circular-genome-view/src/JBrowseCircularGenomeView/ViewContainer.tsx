@@ -7,12 +7,12 @@ import {
   Typography,
   makeStyles,
   useTheme,
+  alpha,
 } from '@material-ui/core'
-import { alpha } from '@material-ui/core/styles'
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import useDimensions from 'react-use-dimensions'
+import useMeasure from 'react-use-measure'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -98,8 +98,7 @@ const ViewContainer = observer(
     const classes = useStyles()
     const theme = useTheme()
     const session = getSession(view)
-    const [measureRef, { width }] = useDimensions()
-
+    const [ref, { width }] = useMeasure()
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
@@ -113,7 +112,7 @@ const ViewContainer = observer(
     return (
       <Paper
         elevation={12}
-        ref={measureRef}
+        ref={ref}
         className={classes.viewContainer}
         style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
       >
