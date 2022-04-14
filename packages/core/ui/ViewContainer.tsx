@@ -120,7 +120,7 @@ const ViewContainer = observer(
   }: {
     view: IBaseViewModel
     onClose: () => void
-    style: React.CSSProperties
+    style?: React.CSSProperties
     children: React.ReactNode
   }) => {
     const classes = useStyles()

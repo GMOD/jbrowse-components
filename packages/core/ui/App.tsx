@@ -230,7 +230,6 @@ const App = observer(
                 }
                 const { ReactComponent } = viewType
                 return (
-                  // @ts-ignore
                   <ViewContainer
                     key={`view-${view.id}`}
                     view={view}
