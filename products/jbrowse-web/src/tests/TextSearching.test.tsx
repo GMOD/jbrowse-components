@@ -52,8 +52,6 @@ test('test trix from lgv header', async () => {
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  // now there are more options, so it will open a dialog instead
-
   await waitFor(
     () => expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
     { timeout: 10000 },
