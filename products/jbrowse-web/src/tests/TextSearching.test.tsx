@@ -55,7 +55,7 @@ test('test trix from lgv header', async () => {
   // now there are more options, so it will open a dialog instead
 
   await waitFor(
-    () => expect((input as HTMLInputElement).value).toBe('ctgA:101..140'),
+    () => expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
     { timeout: 10000 },
   )
 }, 30000)
@@ -85,16 +85,15 @@ test('test trix on import form', async () => {
   // should work to just have enter and no click on open in UI, but this is
   // needed in test currently. may be worth investigating
   fireEvent.click(await findByText('Open'))
-  // better plain text support adds additional entries to the index, so
   // this will instead open a dialog of options vs a single item at
   // location 'ctgA:1,055..9,005'
-  // await waitFor(
-  //   async () => {
-  //     const newInput = await findByPlaceholderText('Search for location')
-  //     expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-  //   },
-  //   { timeout: 10000 },
-  // )
+  await waitFor(
+    async () => {
+      const newInput = await findByPlaceholderText('Search for location')
+      expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
+    },
+    { timeout: 10000 },
+  )
 }, 30000)
 
 test('opens a dialog with multiple results', async () => {

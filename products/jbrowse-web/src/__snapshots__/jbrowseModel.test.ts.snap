@@ -1868,36 +1868,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "type": "VcfAdapter",
-        "vcfLocation": Object {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox.filtered.vcf",
-        },
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "VCF",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_filtered_vcf_plaintext-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
-          "displayId": "volvox_filtered_vcf_plaintext-LinearVariantDisplay",
-          "type": "LinearVariantDisplay",
-        },
-      ],
-      "name": "volvox filtered vcf (plaintext)",
-      "trackId": "volvox_filtered_vcf_plaintext",
-      "type": "VariantTrack",
-    },
-    Object {
-      "adapter": Object {
         "index": Object {
           "location": Object {
             "internetAccountId": undefined,
@@ -2747,36 +2717,6 @@ Object {
       "name": "MM-orient-volvox",
       "trackId": "MM-orient-volvox",
       "type": "AlignmentsTrack",
-    },
-    Object {
-      "adapter": Object {
-        "gffLocation": Object {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox.sort.gff3",
-        },
-        "type": "Gff3Adapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Miscellaneous",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "gff3_genes-LinearBasicDisplay",
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "gff3_genes-LinearArcDisplay",
-          "type": "LinearArcDisplay",
-        },
-      ],
-      "name": "GFF3 genes",
-      "trackId": "gff3_genes",
-      "type": "FeatureTrack",
     },
     Object {
       "adapter": Object {
