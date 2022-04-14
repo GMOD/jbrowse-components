@@ -12,7 +12,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { withContentRect } from 'react-measure'
+import useMeasure from 'react-use-measure'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -94,22 +94,11 @@ const ViewMenu = observer(
 )
 
 const ViewContainer = observer(
-  ({
-    view,
-    children,
-    contentRect,
-    measureRef,
-  }: {
-    view: IBaseViewModel
-    children: React.ReactNode
-    contentRect: { bounds: { width: number } }
-    measureRef: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  }) => {
+  ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
+    const [ref, { width }] = useMeasure()
     const classes = useStyles()
     const theme = useTheme()
     const session = getSession(view)
-    const width = contentRect.bounds.width
-
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
@@ -123,7 +112,7 @@ const ViewContainer = observer(
     return (
       <Paper
         elevation={12}
-        ref={measureRef}
+        ref={ref}
         className={classes.viewContainer}
         style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
       >
@@ -158,4 +147,4 @@ const ViewContainer = observer(
   },
 )
 
-export default withContentRect('bounds')(ViewContainer)
+export default ViewContainer
