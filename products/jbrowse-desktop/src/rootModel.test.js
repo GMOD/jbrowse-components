@@ -3,6 +3,8 @@ import { getSnapshot } from 'mobx-state-tree'
 import corePlugins from './corePlugins'
 import rootModelFactory from './rootModel'
 
+jest.mock('./makeWorkerInstance', () => () => {})
+
 describe('Root MST model', () => {
   let rootModel
 
