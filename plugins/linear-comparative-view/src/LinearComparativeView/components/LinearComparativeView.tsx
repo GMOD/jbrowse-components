@@ -28,6 +28,13 @@ const useStyles = makeStyles(() => ({
   relative: {
     position: 'relative',
   },
+
+  // this helps keep the vertical guide inside the parent view container,
+  // similar style exists in the single LGV's trackscontainer
+  rubberbandContainer: {
+    position: 'relative',
+    overflow: 'hidden',
+  },
 }))
 
 type LCV = LinearComparativeViewModel
@@ -66,7 +73,7 @@ const MiddleComparativeView = observer(
     const { ReactComponent } = pluginManager.getViewType(views[0].type)
 
     return (
-      <div>
+      <div className={classes.rubberbandContainer}>
         <Header ExtraButtons={ExtraButtons} model={model} />
         <RubberBand
           model={model}
@@ -100,7 +107,7 @@ const OverlayComparativeView = observer(
     const { views } = model
     const { pluginManager } = getEnv(model)
     return (
-      <div>
+      <div className={classes.rubberbandContainer}>
         <Header model={model} ExtraButtons={ExtraButtons} />
         <RubberBand
           model={model}
