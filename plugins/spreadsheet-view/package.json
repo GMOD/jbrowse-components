@@ -37,7 +37,6 @@
     "@gmod/vcf": "^5.0.5",
     "@jbrowse/plugin-variants": "^1.7.3",
     "@material-ui/icons": "^4.9.1",
-    "classnames": "^2.2.6",
     "csvtojson": "^2.0.10"
   },
   "peerDependencies": {

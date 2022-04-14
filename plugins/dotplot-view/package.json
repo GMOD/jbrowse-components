@@ -33,7 +33,6 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.3",
     "@material-ui/icons": "^4.9.1",
     "clone": "^2.1.2",
     "normalize-wheel": "^1.0.1"
