@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from 'react'
+// note: AboutDialog is imported statically instead of as a lazy component
+// due to vite failing to load it xref #2896
 import {
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import {
   getMembers,
   getParent,
@@ -23,11 +26,10 @@ import {
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import InfoIcon from '@material-ui/icons/Info'
 import { ReferringNode } from '../types'
-
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
