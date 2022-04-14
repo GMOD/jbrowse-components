@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession, isElectron } from '@jbrowse/core/util'
+import {
+  supportedIndexingAdapters,
+  getSession,
+  isElectron,
+} from '@jbrowse/core/util'
 import {
   Link,
   MenuItem,
@@ -29,7 +33,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
-import { supportedIndexingAdapters } from '@jbrowse/core/util/'
 
 // locals
 import { AddTrackModel } from '../model'

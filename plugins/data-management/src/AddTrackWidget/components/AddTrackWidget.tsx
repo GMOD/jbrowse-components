@@ -63,7 +63,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     textIndexTrack,
     textIndexingConf,
   } = model
-  const [trackErrorMessage, setTrackErrorMessage] = useState<String>()
+  const [trackErrorMessage, setTrackErrorMessage] = useState<string>()
 
   function getStepContent(step: number) {
     switch (step) {

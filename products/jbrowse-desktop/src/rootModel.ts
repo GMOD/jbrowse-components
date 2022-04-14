@@ -97,9 +97,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       setError(error: unknown) {
         self.error = error
       },
-      // setRunning(running: boolean) {
-      //   self.running = running
-      // },
       setDefaultSession() {
         this.setSession(self.jbrowse.defaultSession)
       },
@@ -214,7 +211,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       afterCreate() {
         addDisposer(
           self,
-          autorun(async () => {
+          autorun(() => {
             self.jbrowse.internetAccounts.forEach(account => {
               this.initializeInternetAccount(account.internetAccountId)
             })
