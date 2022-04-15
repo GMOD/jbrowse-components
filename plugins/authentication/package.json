@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -33,7 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
-    "@jbrowse/plugin-variants": "^1.7.2",
+    "@jbrowse/plugin-variants": "^1.7.3",
     "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {
