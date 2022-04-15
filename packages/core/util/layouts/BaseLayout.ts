@@ -12,7 +12,7 @@ export interface Rectangle<T> {
   top: number | null
   h: number
   originalHeight: number
-  data?: Record<string, T>
+  data?: unknown
 }
 
 export interface BaseLayout<T> {
@@ -21,7 +21,7 @@ export interface BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: Record<string, T>,
+    data?: unknown,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
   addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void

@@ -191,7 +191,6 @@ export default class PileupRenderer extends BoxRendererType {
       feature.get('start') - expansionBefore,
       feature.get('end') + expansionAfter,
       heightPx,
-      // @ts-ignore
       feature,
     )
     if (topPx === null) {
