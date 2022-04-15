@@ -28,7 +28,6 @@ module.exports = api => {
       '@babel/plugin-proposal-class-properties',
       '@babel/plugin-proposal-export-default-from',
       ['@babel/transform-runtime', { useESModules: false }],
-      'inline-import-data-uri',
     ],
   }
 }

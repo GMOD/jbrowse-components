@@ -35,8 +35,6 @@
   "dependencies": {
     "@gmod/vcf": "^5.0.5",
     "@material-ui/icons": "^4.9.1",
-    "clsx": "^1.0.4",
-    "is-object": "^1.0.1",
     "svg-path-generator": "^1.1.0"
   },
   "peerDependencies": {

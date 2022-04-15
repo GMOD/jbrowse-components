@@ -4,6 +4,9 @@ import {
   LocalFile,
   Fetcher,
 } from 'generic-filehandle'
+import isNode from 'detect-node'
+
+// locals
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import {
   FileLocation,
@@ -17,8 +20,7 @@ import {
 import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
 import PluginManager from '../../PluginManager'
-import isNode from 'detect-node'
-import { isElectron } from '@jbrowse/core/util'
+import { isElectron } from '../'
 
 export { RemoteFileWithRangeCache }
 
