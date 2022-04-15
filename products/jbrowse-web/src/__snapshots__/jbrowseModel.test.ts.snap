@@ -626,54 +626,6 @@ Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,
           "locationType": "UriLocation",
-          "uri": "volvox-sorted.bam",
-        },
-        "index": Object {
-          "location": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "volvox-sorted.bam.bai",
-          },
-        },
-        "type": "BamAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-        "volvox2",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": Object {
-            "defaultRendering": "svg",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "type": "LinearPileupDisplay",
-          },
-          "type": "LinearAlignmentsDisplay",
-        },
-        Object {
-          "displayId": "volvox_alignments-LinearPileupDisplay",
-          "type": "LinearPileupDisplay",
-        },
-        Object {
-          "displayId": "volvox_alignments-LinearSNPCoverageDisplay",
-          "type": "LinearSNPCoverageDisplay",
-        },
-      ],
-      "name": "volvox-sorted.bam (ctgA, svg)",
-      "trackId": "volvox_alignments",
-      "type": "AlignmentsTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bamLocation": Object {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
         },
         "index": Object {
@@ -792,53 +744,6 @@ Object {
       ],
       "name": "volvox-sorted.bam (ctgA, canvas)",
       "trackId": "volvox_alignments_pileup_coverage",
-      "type": "AlignmentsTrack",
-    },
-    Object {
-      "adapter": Object {
-        "bamLocation": Object {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox-sorted-altname.bam",
-        },
-        "index": Object {
-          "location": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "volvox-sorted-altname.bam.bai",
-          },
-        },
-        "type": "BamAdapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Integration test",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_bam_altname_alignments",
-          "pileupDisplay": Object {
-            "defaultRendering": "svg",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "type": "LinearPileupDisplay",
-          },
-          "type": "LinearAlignmentsDisplay",
-        },
-        Object {
-          "displayId": "volvox_bam_altname-LinearPileupDisplay",
-          "type": "LinearPileupDisplay",
-        },
-        Object {
-          "displayId": "volvox_bam_altname-LinearSNPCoverageDisplay",
-          "type": "LinearSNPCoverageDisplay",
-        },
-      ],
-      "name": "volvox-sorted.bam (contigA, svg)",
-      "trackId": "volvox_bam_altname",
       "type": "AlignmentsTrack",
     },
     Object {
