@@ -93,6 +93,7 @@ export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
 
 export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   bpPerPx: number
+  layoutId: string
 }
 
 export interface RenderResults extends FeatureRenderResults {

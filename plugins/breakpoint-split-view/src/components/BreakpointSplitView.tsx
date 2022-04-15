@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core'
 
-//locals
+// locals
 import { BreakpointViewModel } from '../model'
 import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'

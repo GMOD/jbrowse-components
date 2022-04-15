@@ -364,7 +364,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: unknown,
+    data?: T,
   ): number | null {
     // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
