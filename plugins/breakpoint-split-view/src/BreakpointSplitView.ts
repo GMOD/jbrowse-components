@@ -29,9 +29,7 @@ class BreakpointSplitViewType extends ViewType {
     }
     const { getCanonicalRefName } = assembly as Assembly
     const featureRefName = getCanonicalRefName(feature.get('refName'))
-    const topRegion = assembly.regions.find(
-      f => f.refName === String(featureRefName),
-    )
+    const topRegion = assembly.regions.find(f => f.refName === featureRefName)
 
     let mateRefName: string | undefined
     let startMod = 0
@@ -66,9 +64,7 @@ class BreakpointSplitViewType extends ViewType {
       return {}
     }
 
-    const bottomRegion = assembly.regions.find(
-      f => f.refName === String(mateRefName),
-    )
+    const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)
 
     if (!topRegion || !bottomRegion) {
       console.warn(

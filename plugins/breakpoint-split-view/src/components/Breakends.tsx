@@ -13,14 +13,16 @@ import { BreakpointViewModel } from '../model'
 const [LEFT] = [0, 1, 2, 3]
 
 function findMatchingAlt(feat1: Feature, feat2: Feature) {
-  const candidates: Record<string, Breakend> = {}
   const alts = feat1.get('ALT') as string[] | undefined
-  alts
-    ?.map(alt => parseBreakend(alt))
-    .filter((f): f is Breakend => !!f)
-    .forEach(bnd => (candidates[bnd.MatePosition] = bnd))
-
-  return candidates[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
+  if (alts) {
+    return Object.fromEntries(
+      alts
+        ?.map(alt => parseBreakend(alt))
+        .filter((f): f is Breakend => !!f)
+        .map(bnd => [bnd.MatePosition, bnd]),
+    )[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
+  }
+  return undefined
 }
 
 // Returns paired BND features across multiple views by inspecting

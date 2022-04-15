@@ -19,13 +19,9 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
 // simple is better
-function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[]): T[] {
+function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[][]): T[] {
   const a12 = a1.filter(value => a2.includes(value))
-  if (rest.length === 0) {
-    return a12
-  }
-  // @ts-ignore
-  return intersect(a12, ...rest)
+  return rest.length === 0 ? a12 : intersect(a12, ...rest)
 }
 
 export const VIEW_DIVIDER_HEIGHT = 3
@@ -80,16 +76,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       get matchedTrackFeatures() {
         return Object.fromEntries(
-          this.matchedTracks.map(trackId => {
-            return [
-              trackId,
-              new CompositeMap<string, Feature>(
-                this.getMatchedTracks(trackId)?.map(
-                  t => t.displays[0].features,
-                ) || [],
-              ),
-            ]
-          }),
+          this.matchedTracks.map(id => [
+            id,
+            new CompositeMap<string, Feature>(
+              this.getMatchedTracks(id)?.map(t => t.displays[0].features) || [],
+            ),
+          ]),
         )
       },
 
