@@ -24,6 +24,7 @@
   "scripts": {
     "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "prebuild": "npm run clean",
+    "postbuild": "tsc -b tsconfig.build.json",
     "build": "npm-run-all build:*",
     "build:babel": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "build:webpack": "npm-run-all build:webpack:*",
@@ -38,7 +39,6 @@
     "@jbrowse/core": "^1.7.0",
     "@jbrowse/plugin-alignments": "^1.7.0",
     "@jbrowse/plugin-bed": "^1.7.0",
-    "@jbrowse/plugin-circular-view": "^1.7.0",
     "@jbrowse/plugin-config": "^1.7.0",
     "@jbrowse/plugin-data-management": "^1.7.0",
     "@jbrowse/plugin-gff3": "^1.7.0",

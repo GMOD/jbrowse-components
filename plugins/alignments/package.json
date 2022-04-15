@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
+    "postbuild": "tsc --build tsconfig.build.json",
     "test": "cd ../..; jest plugins/alignments",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
