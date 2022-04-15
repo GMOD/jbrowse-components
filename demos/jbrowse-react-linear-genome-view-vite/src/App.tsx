@@ -91,17 +91,17 @@ function View() {
 
   return (
     <>
-      <h1>JBrowse 2 React Linear Genome View Demo</h1>
+      <h1>JBrowse 2 React Linear Genome View Demo w/ vite</h1>
       <JBrowseLinearGenomeView viewState={viewState} />
       <h3>Code</h3>
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/garrettjstevens/jbrowse-react-linear-genome-view-demo"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vite"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/garrettjstevens/jbrowse-react-linear-genome-view-demo
+          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vite
         </a>
         .
       </p>
