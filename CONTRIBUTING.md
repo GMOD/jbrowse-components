@@ -265,7 +265,6 @@ jbrowse text-index -a hg19 --tracks ncbi_gff_hg19 --out config_demo.json --force
 
 ```
 
-
 ## Notes about monorepo setup
 
 Our setup for the monorepo takes notes from the material-ui repository. Some particular notes include

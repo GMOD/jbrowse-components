@@ -3,7 +3,6 @@
   // Actual .ts source files are transpiled via babel. This file is based on examples from the MUI github repo
   "extends": "./tsconfig",
   "compilerOptions": {
-    
     "declaration": true,
     "noEmit": false,
     "emitDeclarationOnly": true,

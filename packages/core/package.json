@@ -22,7 +22,7 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
     "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/",
