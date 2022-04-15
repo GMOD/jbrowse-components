@@ -1,3 +1,14 @@
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                           | Download                                                        |
+| --------------------------------- | --------------------------------------------------------------- |
+| @jbrowse/img                      | https://www.npmjs.com/package/@jbrowse/img                      |
+| @jbrowse/react-linear-genome-view | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view |
+
+</p>
+</details>
+
 ## 1.7.1 (2022-04-15)
 
 <details><summary>Packages in this release</summary>
