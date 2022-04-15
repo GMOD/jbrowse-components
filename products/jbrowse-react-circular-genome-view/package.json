@@ -26,6 +26,7 @@
     "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",
+    "postbuild": "tsc -b tsconfig.build.json",
     "build:babel": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "build:webpack": "npm-run-all build:webpack:*",
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
