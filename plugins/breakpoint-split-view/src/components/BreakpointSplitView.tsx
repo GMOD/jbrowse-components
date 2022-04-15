@@ -1,8 +1,10 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from '@material-ui/core/styles'
-import { BreakpointViewModel, VIEW_DIVIDER_HEIGHT } from '../model'
+import { makeStyles } from '@material-ui/core'
+
+//locals
+import { BreakpointViewModel } from '../model'
 import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'
 import Header from './Header'
@@ -19,12 +21,12 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       top: 0,
       height: '100%',
-      width: '3px',
+      width: 3,
       background: 'magenta',
     },
     viewDivider: {
       background: theme.palette.secondary.main,
-      height: VIEW_DIVIDER_HEIGHT,
+      height: 3,
     },
     container: {
       display: 'grid',

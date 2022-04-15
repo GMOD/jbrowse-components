@@ -24,8 +24,6 @@ function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[][]): T[] {
   return rest.length === 0 ? a12 : intersect(a12, ...rest)
 }
 
-export const VIEW_DIVIDER_HEIGHT = 3
-
 export interface Breakend {
   MateDirection: string
   Join: string
@@ -90,10 +88,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .map((view, idx) => [idx, view.menuItems?.()])
           .filter(f => !!f[1])
           .map(f => ({ label: `View ${f[0]} Menu`, subMenu: f[1] }))
-      },
-
-      get viewDividerHeight() {
-        return VIEW_DIVIDER_HEIGHT
       },
 
       // Get tracks with a given trackId across multiple views
