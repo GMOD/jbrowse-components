@@ -88,7 +88,7 @@ export function setup() {
   Storage.prototype.clear = jest.fn()
 }
 
-// eslint-disable-next-line no-native-reassign,no-global-assign
+// eslint-disable-next-line no-global-assign
 window = Object.assign(window, { innerWidth: 800 })
 
 export function canvasToBuffer(canvas) {
