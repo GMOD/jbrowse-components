@@ -5,7 +5,7 @@ export interface SerializedLayout {
   containsNoTransferables: true
   maxHeightReached: boolean
 }
-export interface Rectangle<T> {
+export interface Rectangle {
   id: string
   l: number
   r: number
@@ -15,7 +15,7 @@ export interface Rectangle<T> {
   data?: unknown
 }
 
-export interface BaseLayout<T> {
+export interface BaseLayout {
   addRect(
     id: string,
     left: number,
@@ -23,8 +23,8 @@ export interface BaseLayout<T> {
     height: number,
     data?: unknown,
   ): number | null
-  collides(rect: Rectangle<T>, top: number): boolean
-  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void
+  collides(rect: Rectangle, top: number): boolean
+  addRectToBitmap(rect: Rectangle, data: unknown): void
   getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout

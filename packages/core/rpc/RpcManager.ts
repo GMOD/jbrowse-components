@@ -86,7 +86,6 @@ export default class RpcManager {
   }
 
   async call(sessionId: string, functionName: string, args: {}, opts = {}) {
-    // console.log(sessionId, functionName)
     if (!sessionId) {
       throw new Error('sessionId is required')
     }

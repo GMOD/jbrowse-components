@@ -1,5 +1,4 @@
 import deepEqual from 'fast-deep-equal'
-import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
@@ -11,10 +10,9 @@ import FeatureRendererType, {
   ResultsSerialized as FeatureResultsSerialized,
   ResultsDeserialized as FeatureResultsDeserialized,
 } from './FeatureRendererType'
-import { Region } from '../../util/types'
-import { Feature } from '../../util/simpleFeature'
+import { getLayoutId, Region, Feature } from '../../util'
 import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
-import { readConfObject, isConfigurationModel } from '../../configuration'
+import { readConfObject, AnyConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
 import RpcManager from '../../rpc/RpcManager'
 
@@ -40,9 +38,6 @@ export class LayoutSession implements LayoutSessionProps {
 
   constructor(args: LayoutSessionProps) {
     this.config = args.config
-    if (!isConfigurationModel(this.config)) {
-      throw new Error('configuration required')
-    }
     this.bpPerPx = args.bpPerPx
     this.filters = args.filters
     this.update(args)
@@ -89,6 +84,7 @@ export class LayoutSession implements LayoutSessionProps {
 }
 export interface RenderArgs extends FeatureRenderArgs {
   bpPerPx: number
+  layoutId: string
 }
 
 export interface RenderArgsSerialized extends FeatureRenderArgsSerialized {
@@ -114,14 +110,16 @@ export interface ResultsDeserialized extends FeatureResultsDeserialized {
 }
 
 export default class BoxRendererType extends FeatureRendererType {
-  sessions: { [sessionId: string]: LayoutSession } = {}
+  sessions: { [key: string]: LayoutSession } = {}
 
-  getWorkerSession(props: LayoutSessionProps & { sessionId: string }) {
-    const { sessionId } = props
-    if (!this.sessions[sessionId]) {
-      this.sessions[sessionId] = this.createSession(props)
+  getWorkerSession(
+    props: LayoutSessionProps & { sessionId: string; layoutId: string },
+  ) {
+    const key = getLayoutId(props)
+    if (!this.sessions[key]) {
+      this.sessions[key] = this.createSession(props)
     }
-    const session = this.sessions[sessionId]
+    const session = this.sessions[key]
     session.update(props)
     return session
   }
@@ -152,11 +150,12 @@ export default class BoxRendererType extends FeatureRendererType {
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {
-    const { sessionId, regions } = args
+    const { regions } = args
+    const key = getLayoutId(args)
     let freed = 0
-    const session = this.sessions[sessionId]
+    const session = this.sessions[key]
     if (!regions && session) {
-      delete this.sessions[sessionId]
+      delete this.sessions[key]
       freed = 1
     }
     if (session && regions) {

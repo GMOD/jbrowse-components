@@ -15,8 +15,12 @@ import {
   BaseFeatureDataAdapter,
   isFeatureAdapter,
 } from '../data_adapters/BaseAdapter'
-import { Region } from '../util/types'
-import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
+import {
+  checkAbortSignal,
+  renameRegionsIfNeeded,
+  getLayoutId,
+  Region,
+} from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
 
 export class CoreGetRefNames extends RpcMethodType {
@@ -368,20 +372,14 @@ export class CoreGetFeatureDetails extends RpcMethodType {
         rpcDriverClassName,
       )
     }
-    const { sessionId, rendererType, signal, featureId } = deserializedArgs
-    if (!sessionId) {
-      throw new Error('must pass a unique session id')
-    }
-
-    checkAbortSignal(signal)
-
+    const { rendererType, featureId } = deserializedArgs
     const RendererType = validateRendererType(
       rendererType,
       this.pluginManager.getRendererType(rendererType),
     )
 
     // @ts-ignore
-    const sess = RendererType.sessions[sessionId]
+    const sess = RendererType.sessions[getLayoutId(args)]
     const { layout } = sess.cachedLayout
     const xref = layout.getDataByID(featureId)
 
