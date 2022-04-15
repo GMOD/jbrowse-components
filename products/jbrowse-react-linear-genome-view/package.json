@@ -39,6 +39,7 @@
     "@jbrowse/core": "^1.7.1",
     "@jbrowse/plugin-alignments": "^1.7.1",
     "@jbrowse/plugin-bed": "^1.7.1",
+    "@jbrowse/plugin-circular-view": "^1.7.1",
     "@jbrowse/plugin-config": "^1.7.1",
     "@jbrowse/plugin-data-management": "^1.7.1",
     "@jbrowse/plugin-gff3": "^1.7.1",
