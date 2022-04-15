@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig",
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "declaration": true
   }
 }

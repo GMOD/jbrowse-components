@@ -8,8 +8,7 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "outDir": "dist",
-    "rootDir": "./src",
-    "composite": true
+    "rootDir": "./src"
   },
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
