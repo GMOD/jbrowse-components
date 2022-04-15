@@ -264,3 +264,12 @@ jbrowse text-index --tracks ncbi_refseq_109_hg38_latest  --out config_demo.json 
 jbrowse text-index -a hg19 --tracks ncbi_gff_hg19 --out config_demo.json --force --attributes Name,ID,Note,description,gene_synonym
 
 ```
+
+
+## Notes about monorepo setup
+
+Our setup for the monorepo takes notes from the material-ui repository. Some particular notes include
+
+1. The use of the "flat" packages/core package, where you can import from nested subpaths like '@jbrowse/core/util'
+2. The use of tsconfig.build.json to generate types in the final release
+3. The use of referring to the src directory at development time
