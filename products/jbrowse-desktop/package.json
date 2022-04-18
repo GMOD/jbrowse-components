@@ -95,7 +95,7 @@
     "sanitize-filename": "^1.6.3",
     "timeago.js": "^4.0.2",
     "use-query-params": "1.2.3",
-    "webpack": "5.70.0"
+    "webpack": "^5.72.0"
   },
   "devDependencies": {
     "electron": "17.1.2"

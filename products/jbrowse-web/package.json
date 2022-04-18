@@ -72,7 +72,7 @@
     "rxjs": "^6.5.2",
     "shortid": "^2.2.15",
     "use-query-params": "1.2.3",
-    "webpack": "5.70.0"
+    "webpack": "^5.72.0"
   },
   "browserslist": {
     "production": [

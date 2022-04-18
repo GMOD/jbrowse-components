@@ -38,14 +38,13 @@
     "@jbrowse/plugin-trix": "file:./packed/jbrowse-plugin-trix.tgz",
     "@jbrowse/plugin-variants": "file:./packed/jbrowse-plugin-variants.tgz",
     "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",
-    "@jbrowse/react-linear-geg nome-view": "file:./packed/jbrowse-react-linear-genome-view.tgz"
+    "@jbrowse/react-linear-genome-view": "file:./packed/jbrowse-react-linear-genome-view.tgz"
   },
   "scripts": {
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "craco eject",
-    "predeploy": "npm run build",
     "test:e2e": "start-test 'serve --listen 5000 build/' 5000 'cypress run --headless --browser chrome'"
   },
   "eslintConfig": {
