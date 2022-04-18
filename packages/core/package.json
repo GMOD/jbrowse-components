@@ -29,6 +29,7 @@
     "postbuild": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@material-ui/icons": "^4.0.1",
     "abortable-promise-cache": "^1.5.0",
     "canvas": "^2.8.0",

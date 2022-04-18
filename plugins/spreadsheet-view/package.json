@@ -33,6 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.5",
     "@jbrowse/plugin-variants": "^1.7.3",

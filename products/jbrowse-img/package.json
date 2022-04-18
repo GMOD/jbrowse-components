@@ -28,6 +28,7 @@
     "postversion": "git push --follow-tags"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@jbrowse/plugin-linear-genome-view": "^1.7.3",
     "@jbrowse/react-linear-genome-view": "^1.7.3",
     "abortcontroller-polyfill": "^1.7.3",

@@ -33,6 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@material-ui/icons": "^4.9.1",
     "clone": "^2.1.2",
     "normalize-wheel": "^1.0.1"

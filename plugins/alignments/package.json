@@ -33,6 +33,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/bam": "^1.1.15",
     "@gmod/cram": "^1.6.1",
     "@material-ui/icons": "^4.9.1",
