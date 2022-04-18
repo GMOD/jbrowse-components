@@ -6,8 +6,8 @@ import {
   StepLabel,
   Stepper,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import {
   getSession,
   isElectron,

@@ -22,8 +22,8 @@ import {
   IconButton,
   InputLabel,
   InputAdornment,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'

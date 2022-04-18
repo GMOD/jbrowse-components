@@ -9,8 +9,8 @@ import {
   Checkbox,
   IconButton,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'

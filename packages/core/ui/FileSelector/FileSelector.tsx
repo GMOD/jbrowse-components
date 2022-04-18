@@ -1,29 +1,30 @@
 import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import {
   Box,
   FormHelperText,
   InputLabel,
+  Menu,
   MenuItem,
   Tooltip,
-  Menu,
-} from '@mui/material'
-
-import {
   ToggleButtonGroup,
   ToggleButton,
   ToggleButtonProps,
-} from '@mui/lab'
-import { observer } from 'mobx-react'
+} from '@mui/material'
+
+// locals
 import {
   FileLocation,
   UriLocation,
-  isUriLocation,
   AbstractRootModel,
+  isUriLocation,
   isAppRootModel,
 } from '../../util/types'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
+
+// icons
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { title, children, ...other } = props

@@ -5,9 +5,9 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-  makeStyles,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
+import { makeStyles } from '@mui/styles'
 import { readConfObject } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
@@ -91,7 +91,8 @@ export default function AboutDialog({
         <IconButton
           className={classes.closeButton}
           onClick={() => handleClose()}
-          size="large">
+          size="large"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -115,5 +116,5 @@ export default function AboutDialog({
         ) : null}
       </DialogContent>
     </Dialog>
-  );
+  )
 }

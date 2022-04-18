@@ -25,7 +25,6 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
     setValue(-Math.log2(bpPerPx) * 100)
   }, [setValue, bpPerPx])
 
-  console.log({ value, maxBpPerPx })
   return (
     <div className={classes.container}>
       <IconButton
