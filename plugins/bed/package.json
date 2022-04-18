@@ -33,6 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/bbi": "^1.0.32",
     "@gmod/bed": "^2.0.6",
     "@gmod/tabix": "^1.5.2"

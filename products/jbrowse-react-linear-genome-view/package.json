@@ -36,6 +36,7 @@
     "storybook:build": "build-storybook --quiet --static-dir public"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@jbrowse/core": "^1.7.3",
     "@jbrowse/plugin-alignments": "^1.7.3",
     "@jbrowse/plugin-bed": "^1.7.3",

@@ -12,6 +12,9 @@ module.exports = api => {
             node: 8,
             browsers: ['> 0.5%', 'last 2 versions'],
           },
+          // need this to be able to use spread operator on Set and Map
+          // see https://github.com/formium/tsdx/issues/376#issuecomment-566750042
+          loose: false,
         },
       ],
       '@babel/preset-typescript',

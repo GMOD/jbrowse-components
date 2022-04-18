@@ -33,6 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@material-ui/icons": "^4.9.1",
     "pluralize": "^8.0.0",
     "react-dropzone": "^10.1.0"

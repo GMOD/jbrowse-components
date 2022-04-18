@@ -33,6 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/ucsc-hub": "^0.1.3",
     "@material-ui/icons": "^4.9.1"
   },

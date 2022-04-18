@@ -33,6 +33,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "react-svg-tooltip": "^0.0.11"
   },
   "peerDependencies": {

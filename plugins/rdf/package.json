@@ -33,6 +33,7 @@
     "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "string-template": "^1.0.0"
   },
   "peerDependencies": {

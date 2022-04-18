@@ -32,6 +32,9 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "postbuild": "tsc --build tsconfig.build.json"
   },
+  "dependencies": {
+    "@babel/runtime": "^7.17.9"
+  },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "mobx-react": "^6.0.0",
