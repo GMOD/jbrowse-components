@@ -5,6 +5,7 @@ import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import PropTypes from 'prop-types'
+import { makeStyles } from '@mui/styles'
 
 import * as MUIStyles from '@mui/material/styles'
 
@@ -91,9 +92,11 @@ const libs = {
   'prop-types': PropTypes,
   // material-ui 1st-level components
   '@mui/material': MUICore,
+  '@material-ui/core': { ...MUICore, makeStyles },
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/SvgIcon': MUISvgIcon,
   '@mui/material/utils': MUIUtils,
+  '@material-ui/core/utils': MUIUtils,
   // end special case
   '@mui/lab': MUILab,
   '@mui/x-data-grid': MUIDataGrid,
