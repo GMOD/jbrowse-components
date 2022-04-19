@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals,react-hooks/rules-of-hooks */
 import './workerPolyfill'
 
+//@ts-ignore
 import RpcServer from 'librpc-web-mod'
 import { useStaticRendering } from 'mobx-react'
 

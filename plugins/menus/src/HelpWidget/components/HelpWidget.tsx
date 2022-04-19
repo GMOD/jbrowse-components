@@ -1,10 +1,9 @@
-import Typography from '@mui/material/Typography'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import React from 'react'
-import { makeStyles } from '@mui/material'
-import Link from '@mui/material/Link'
+import { makeStyles } from '@mui/styles'
+import { Link, Typography } from '@mui/material'
 
 const useStyles = makeStyles(theme => ({
   root: {

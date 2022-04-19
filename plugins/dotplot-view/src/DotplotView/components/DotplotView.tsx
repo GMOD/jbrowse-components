@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
-import { makeStyles, LinearProgress } from '@mui/material'
+import { LinearProgress } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
+
+// locals
 import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
 import Header from './Header'

@@ -1,5 +1,6 @@
 import React from 'react'
-import { IconButton, Typography, makeStyles } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 

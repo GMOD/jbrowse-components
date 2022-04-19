@@ -6,8 +6,8 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import copy from 'copy-to-clipboard'

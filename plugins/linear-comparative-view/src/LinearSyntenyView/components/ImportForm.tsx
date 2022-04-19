@@ -12,8 +12,8 @@ import {
   Grid,
   Paper,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'

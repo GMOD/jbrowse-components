@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getBlockLabelKeysToHide } from './util'

@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { makeStyles } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { getEnv } from 'mobx-state-tree'
 import { ResizeHandle } from '@jbrowse/core/ui'
 

@@ -1,16 +1,16 @@
-import IconButton from '@mui/material/IconButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import { makeStyles } from '@mui/material/styles'
-import Tooltip from '@mui/material/Tooltip'
-import Typography from '@mui/material/Typography'
+import React, { useState } from 'react'
+import {
+  IconButton,
+  ListItem,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import { ListItem } from '@mui/material'
-
-import PropTypes from 'prop-types'
-import React, { useState } from 'react'
 
 const useStyles = makeStyles({
   menu: {
@@ -70,12 +70,6 @@ function RecentSessionCard({ sessionName, onClick, onDelete }) {
       </Menu>
     </>
   )
-}
-
-RecentSessionCard.propTypes = {
-  sessionName: PropTypes.string.isRequired,
-  onClick: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
 }
 
 export default RecentSessionCard

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
-import { IconButton, Typography, makeStyles } from '@mui/material'
+import { IconButton, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 

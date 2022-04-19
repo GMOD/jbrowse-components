@@ -2,16 +2,19 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
-import { IconButton, makeStyles } from '@mui/material'
+import { IconButton } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { grey } from '@mui/material/colors'
 
 // icons
-import ZoomOut from '@mui/icons-material/ZoomOut'
-import ZoomIn from '@mui/icons-material/ZoomIn'
-import RotateLeft from '@mui/icons-material/RotateLeft'
-import RotateRight from '@mui/icons-material/RotateRight'
-import LockOutline from '@mui/icons-material/LockOutlined'
-import LockOpen from '@mui/icons-material/LockOpen'
+import {
+  ZoomOut,
+  ZoomIn,
+  RotateLeft,
+  RotateRight,
+  Lock,
+  LockOpen,
+} from '@mui/icons-material'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -139,7 +142,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={model.tooSmallToLock}
         color="secondary"
       >
-        {model.lockedFitToWindow ? <LockOutline /> : <LockOpen />}
+        {model.lockedFitToWindow ? <Lock /> : <LockOpen />}
       </IconButton>
 
       {model.hideTrackSelectorButton ? null : (

@@ -1,16 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Popover,
-  Tooltip,
-  Typography,
-  makeStyles,
-  alpha,
-} from '@mui/material'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearComparativeViewModel } from '../model'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearComparativeViewModel } from '../model'
 
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel

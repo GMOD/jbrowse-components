@@ -1,15 +1,18 @@
 import React from 'react'
 
-import { IconButton, makeStyles } from '@mui/material'
+import { IconButton } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
-import ZoomOut from '@mui/icons-material/ZoomOut'
-import ZoomIn from '@mui/icons-material/ZoomIn'
-import ArrowUp from '@mui/icons-material/KeyboardArrowUp'
-import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
-import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
-import ArrowRight from '@mui/icons-material/KeyboardArrowRight'
-import CropFreeIcon from '@mui/icons-material/CropFree'
+import {
+  ZoomOut,
+  ZoomIn,
+  ArrowUpward,
+  ArrowDownward,
+  ArrowLeft,
+  ArrowRight,
+  CropFree,
+} from '@mui/icons-material'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
@@ -63,7 +66,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowDown />
+        <ArrowDownward />
       </IconButton>
       <IconButton
         onClick={() => {
@@ -73,7 +76,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowUp />
+        <ArrowUpward />
       </IconButton>
       <IconButton
         onClick={model.zoomOutButton}
@@ -108,7 +111,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="Square view"
         color="secondary"
       >
-        <CropFreeIcon />
+        <CropFree />
       </IconButton>
     </div>
   )
