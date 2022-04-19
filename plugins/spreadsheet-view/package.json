@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "1.7.0",
+  "version": "1.7.3",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
     "jbrowse",
@@ -29,14 +29,15 @@
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.5",
-    "@jbrowse/plugin-variants": "^1.7.0",
+    "@jbrowse/plugin-variants": "^1.7.3",
     "@material-ui/icons": "^4.9.1",
-    "classnames": "^2.2.6",
     "csvtojson": "^2.0.10"
   },
   "peerDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-protein",
-  "version": "1.7.0",
+  "version": "1.7.3",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "keywords": [
     "jbrowse",
@@ -29,7 +29,11 @@
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "postbuild": "tsc --build tsconfig.build.json"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.17.9"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

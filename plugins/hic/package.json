@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-hic",
-  "version": "1.7.0",
+  "version": "1.7.3",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -29,10 +29,11 @@
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
-    "abortable-promise-cache": "^1.5.0",
+    "@babel/runtime": "^7.17.9",
     "color": "^3.1.3",
     "hic-straw": "^2.0.3"
   },

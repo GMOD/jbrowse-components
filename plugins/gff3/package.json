@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "1.7.0",
+  "version": "1.7.3",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
+    "postbuild": "tsc --build tsconfig.build.json",
     "test": "cd ../..; jest plugins/gff3 --passWithNoTests",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -32,11 +33,11 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/gff": "^1.2.0",
-    "@gmod/tabix": "^1.5.2",
-    "generic-filehandle": "^2.2.2"
+    "@gmod/tabix": "^1.5.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

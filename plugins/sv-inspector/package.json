@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sv-inspector",
-  "version": "1.7.0",
+  "version": "1.7.3",
   "description": "JBrowse 2 SV inspector view",
   "keywords": [
     "jbrowse",
@@ -29,11 +29,12 @@
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
-    "@material-ui/icons": "^4.9.1",
-    "classnames": "^2.2.6"
+    "@babel/runtime": "^7.17.9",
+    "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
