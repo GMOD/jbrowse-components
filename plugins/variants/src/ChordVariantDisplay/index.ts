@@ -1,10 +1,10 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseChordDisplayComponent } from '@jbrowse/plugin-circular-view'
 import ChordVariantDisplay from './models/ChordVariantDisplay'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 export default (pluginManager: PluginManager) => {
-  const { lib, load } = pluginManager
-  const DisplayType = lib['@jbrowse/core/pluggableElementTypes/DisplayType']
+  const { load } = pluginManager
 
   const { stateModel, configSchema } = load(ChordVariantDisplay)
 

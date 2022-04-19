@@ -83,100 +83,95 @@ import * as mstTypes from '../util/types/mst'
 import ReExportsList from './list'
 
 const libs = {
-  mobx,
-  'mobx-state-tree': mst,
-  react: React,
-  'react-dom': ReactDom,
-  'mobx-react': mxreact,
-  'prop-types': PropTypes,
-
+  // mobx,
+  // 'mobx-state-tree': mst,
+  // react: React,
+  // 'react-dom': ReactDom,
+  // 'mobx-react': mxreact,
+  // 'prop-types': PropTypes,
   // material-ui 1st-level components
-  '@mui/material': MUICore,
-  // special case so plugins can easily use @mui/icons-material; don't remove
-  '@mui/material/SvgIcon': MUISvgIcon,
-  '@mui/material/utils': MUIUtils,
-  // end special case
-  '@mui/lab': MUILab,
-  '@mui/x-data-grid': MUIDataGrid,
-  '@material-ui/data-grid': MUIDataGrid,
-
-  // material-ui subcomponents, should get rid of these
-  '@mui/material/colors': MUIColors,
-  '@mui/material/styles': MUIStyles,
-  '@mui/material/Box': MUIBox,
-  '@mui/material/Button': MUIButton,
-  '@mui/material/ButtonGroup': MUIButtonGroup,
-  '@mui/material/Card': MUICard,
-  '@mui/material/CardContent': MUICardContent,
-  '@mui/material/Container': MUIContainer,
-  '@mui/material/Checkbox': MUICheckbox,
-  '@mui/material/Dialog': MUIDialog,
-  '@mui/material/FormGroup': MUIFormGroup,
-  '@mui/material/FormLabel': MUIFormLabel,
-  '@mui/material/FormControl': MUIFormControl,
-  '@mui/material/FormControlLabel': MUIFormControlLabel,
-  '@mui/material/Grid': MUIGrid,
-  '@mui/material/Icon': MUIIcon,
-  '@mui/material/IconButton': MUIIconButton,
-  '@mui/material/InputAdornment': MUIInputAdornment,
-  '@mui/material/LinearProgress': MUILinearProgress,
-  '@mui/material/ListItemIcon': MUIListItemIcon,
-  '@mui/material/ListItemText': MUIListItemText,
-  '@mui/material/Menu': MUIMenu,
-  '@mui/material/MenuItem': MUIMenuItem,
-  '@mui/material/RadioGroup': MUIRadioGroup,
-  '@mui/material/Radio': MUIRadio,
-  '@mui/material/Select': MUISelect,
-  '@mui/material/Snackbar': MUISnackbar,
-  '@mui/material/SnackbarContent': MUISnackbarContent,
-  '@mui/material/TextField': MUITextField,
-  '@mui/material/Tooltip': MUITooltip,
-  '@mui/material/Typography': MUITypography,
-
-  // @material-ui lab
-  '@mui/lab/ToggleButton': ToggleButton,
-  '@mui/lab/ToggleButtonGroup': ToggleButtonGroup,
-
-  '@jbrowse/core/Plugin': Plugin,
-  '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
-  '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
-  '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
-  '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
-  '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
-  '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
-
-  '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
-    ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
-    CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
-    BoxRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
-    FeatureRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
-  '@jbrowse/core/configuration': Configuration,
-  '@jbrowse/core/util/types/mst': mstTypes,
-  '@jbrowse/core/ui': coreUi,
-  '@jbrowse/core/util': coreUtil,
-  '@jbrowse/core/util/color': coreColor,
-  '@jbrowse/core/util/layouts': coreLayouts,
-  '@jbrowse/core/util/tracks': trackUtils,
-  '@jbrowse/core/util/Base1DViewModel': Base1DView,
-  '@jbrowse/core/util/io': coreIo,
-  '@jbrowse/core/util/mst-reflection': coreMstReflection,
-  '@jbrowse/core/util/rxjs': rxjs,
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
-
-  '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
+  // '@mui/material': MUICore,
+  // // special case so plugins can easily use @mui/icons-material; don't remove
+  // '@mui/material/SvgIcon': MUISvgIcon,
+  // '@mui/material/utils': MUIUtils,
+  // // end special case
+  // '@mui/lab': MUILab,
+  // '@mui/x-data-grid': MUIDataGrid,
+  // // legacy
+  // '@material-ui/data-grid': MUIDataGrid,
+  // // material-ui subcomponents, should get rid of these
+  // '@mui/material/colors': MUIColors,
+  // '@mui/material/styles': MUIStyles,
+  // '@mui/material/Box': MUIBox,
+  // '@mui/material/Button': MUIButton,
+  // '@mui/material/ButtonGroup': MUIButtonGroup,
+  // '@mui/material/Card': MUICard,
+  // '@mui/material/CardContent': MUICardContent,
+  // '@mui/material/Container': MUIContainer,
+  // '@mui/material/Checkbox': MUICheckbox,
+  // '@mui/material/Dialog': MUIDialog,
+  // '@mui/material/FormGroup': MUIFormGroup,
+  // '@mui/material/FormLabel': MUIFormLabel,
+  // '@mui/material/FormControl': MUIFormControl,
+  // '@mui/material/FormControlLabel': MUIFormControlLabel,
+  // '@mui/material/Grid': MUIGrid,
+  // '@mui/material/Icon': MUIIcon,
+  // '@mui/material/IconButton': MUIIconButton,
+  // '@mui/material/InputAdornment': MUIInputAdornment,
+  // '@mui/material/LinearProgress': MUILinearProgress,
+  // '@mui/material/ListItemIcon': MUIListItemIcon,
+  // '@mui/material/ListItemText': MUIListItemText,
+  // '@mui/material/Menu': MUIMenu,
+  // '@mui/material/MenuItem': MUIMenuItem,
+  // '@mui/material/RadioGroup': MUIRadioGroup,
+  // '@mui/material/Radio': MUIRadio,
+  // '@mui/material/Select': MUISelect,
+  // '@mui/material/Snackbar': MUISnackbar,
+  // '@mui/material/SnackbarContent': MUISnackbarContent,
+  // '@mui/material/TextField': MUITextField,
+  // '@mui/material/Tooltip': MUITooltip,
+  // '@mui/material/Typography': MUITypography,
+  // // @material-ui lab
+  // '@mui/lab/ToggleButton': ToggleButton,
+  // '@mui/lab/ToggleButtonGroup': ToggleButtonGroup,
+  // '@jbrowse/core/Plugin': Plugin,
+  // '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
+  // '@jbrowse/core/pluggableElementTypes/ViewType': ViewType,
+  // '@jbrowse/core/pluggableElementTypes/AdapterType': AdapterType,
+  // '@jbrowse/core/pluggableElementTypes/DisplayType': DisplayType,
+  // '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
+  // '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
+  // '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
+  // '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
+  //   ServerSideRendererType,
+  // '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
+  //   CircularChordRendererType,
+  // '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
+  //   BoxRendererType,
+  // '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
+  //   FeatureRendererType,
+  // '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
+  // '@jbrowse/core/configuration': Configuration,
+  // '@jbrowse/core/util/types/mst': mstTypes,
+  // '@jbrowse/core/ui': coreUi,
+  // '@jbrowse/core/util': coreUtil,
+  // '@jbrowse/core/util/color': coreColor,
+  // '@jbrowse/core/util/layouts': coreLayouts,
+  // '@jbrowse/core/util/tracks': trackUtils,
+  // '@jbrowse/core/util/Base1DViewModel': Base1DView,
+  // '@jbrowse/core/util/io': coreIo,
+  // '@jbrowse/core/util/mst-reflection': coreMstReflection,
+  // '@jbrowse/core/util/rxjs': rxjs,
+  // '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
+  // '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
 // make sure that all the items in the ReExports/list array (used by build systems and such)
 // are included here. it's OK if there are some additional ones that are not in the list
-ReExportsList.forEach(name => {
-  if (!(name in libs)) {
-    throw new Error(`ReExports/modules is missing ${name}`)
-  }
-})
+// ReExportsList.forEach(name => {
+//   if (!(name in libs)) {
+//     throw new Error(`ReExports/modules is missing ${name}`)
+//   }
+// })
 
 export default libs
