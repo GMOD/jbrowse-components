@@ -28,6 +28,7 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
+import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -49,10 +50,12 @@ interface Menu {
 export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const JobsManager = jobsModelFactory(pluginManager)
   return types
     .model('Root', {
       jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
+      jobsManager: types.maybe(JobsManager),
       assemblyManager: assemblyManagerFactory(
         assemblyConfigSchema,
         pluginManager,

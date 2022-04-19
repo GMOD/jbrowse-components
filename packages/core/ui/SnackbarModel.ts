@@ -1,6 +1,6 @@
 import { IModelType, ModelProperties } from 'mobx-state-tree'
 import { IObservableArray, observable } from 'mobx'
-import { NotificationLevel } from '../util/types'
+import { NotificationLevel, SnackAction } from '../util/types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function makeExtension(snackbarMessages: IObservableArray<any>) {
@@ -11,8 +11,8 @@ function makeExtension(snackbarMessages: IObservableArray<any>) {
       },
     },
     actions: {
-      notify(message: string, level?: NotificationLevel) {
-        this.pushSnackbarMessage(message, level)
+      notify(message: string, level?: NotificationLevel, action?: SnackAction) {
+        this.pushSnackbarMessage(message, level, action)
         if (level === 'info' || level === 'success') {
           setTimeout(() => {
             this.removeSnackbarMessage(message)
@@ -20,8 +20,12 @@ function makeExtension(snackbarMessages: IObservableArray<any>) {
         }
       },
 
-      pushSnackbarMessage(message: string, level?: NotificationLevel) {
-        return snackbarMessages.push([message, level])
+      pushSnackbarMessage(
+        message: string,
+        level?: NotificationLevel,
+        action?: SnackAction,
+      ) {
+        return snackbarMessages.push([message, level, action])
       },
 
       popSnackbarMessage() {

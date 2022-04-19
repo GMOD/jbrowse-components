@@ -1124,6 +1124,17 @@ export function viewBpToPx({
   return undefined
 }
 
+// supported adapter types by text indexer
+//  ensure that this matches the method found in @jbrowse/text-indexing/util
+export function supportedIndexingAdapters(type: string) {
+  return [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(type)
+}
+
 export function getBpDisplayStr(totalBp: number) {
   let str
   if (Math.floor(totalBp / 1000000) > 0) {

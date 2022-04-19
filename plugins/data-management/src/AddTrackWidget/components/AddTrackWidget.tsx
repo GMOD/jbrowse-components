@@ -8,9 +8,14 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
-import { getSession } from '@jbrowse/core/util'
+import {
+  getSession,
+  isElectron,
+  supportedIndexingAdapters,
+} from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import { Alert } from '@material-ui/lab'
 
 // locals
@@ -46,7 +51,18 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const classes = useStyles()
   const session = getSession(model)
-  const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const { pluginManager } = getEnv(session)
+  const { rootModel } = pluginManager
+  const { jobsManager } = rootModel
+  const {
+    assembly,
+    trackAdapter,
+    trackData,
+    trackName,
+    trackType,
+    textIndexTrack,
+    textIndexingConf,
+  } = model
   const [trackErrorMessage, setTrackErrorMessage] = useState<string>()
 
   function getStepContent(step: number) {
@@ -86,8 +102,34 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
           sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
         },
       })
+      const textSearchingDefault = {
+        attributes: ['Name', 'ID'],
+        exclude: ['CDS', 'exon'],
+      }
       if (model.view) {
         model.view.showTrack(trackId)
+        if (isElectron) {
+          if (textIndexTrack && supportedIndexingAdapters(trackAdapter.type)) {
+            const attr = textIndexingConf || textSearchingDefault
+            const indexName = trackName + '-index'
+            const indexingParams = {
+              ...attr,
+              assemblies: [assembly],
+              tracks: [trackId],
+              indexType: 'perTrack',
+              name: indexName,
+              timestamp: new Date().toISOString(),
+            }
+            const newEntry = {
+              indexingParams: indexingParams,
+              name: indexName,
+              cancelCallback: () => {
+                jobsManager.abortJob()
+              },
+            }
+            jobsManager.queueJob(newEntry)
+          }
+        }
       } else {
         session.notify(
           'Open a new view, or use the track selector in an existing view, to view this track',

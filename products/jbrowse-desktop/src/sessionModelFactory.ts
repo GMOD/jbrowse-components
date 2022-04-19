@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
+import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -28,11 +29,12 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-
 import SettingsIcon from '@material-ui/icons/Settings'
 import CopyIcon from '@material-ui/icons/FileCopy'
 import DeleteIcon from '@material-ui/icons/Delete'
 import InfoIcon from '@material-ui/icons/Info'
+import { Indexing } from '@jbrowse/core/ui/Icons'
+import { TextJobsEntry } from './indexJobsModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -549,6 +551,7 @@ export default function sessionModelFactory(
     .views(self => ({
       getTrackActionMenuItems(config: any) {
         const session = self
+        const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(config)))
         return [
           {
             label: 'About track',
@@ -577,9 +580,6 @@ export default function sessionModelFactory(
           {
             label: 'Copy track',
             onClick: () => {
-              const trackSnapshot = JSON.parse(
-                JSON.stringify(getSnapshot(config)),
-              )
               const now = Date.now()
               trackSnapshot.trackId += `-${now}`
               trackSnapshot.displays.forEach(
@@ -592,6 +592,43 @@ export default function sessionModelFactory(
               session.addTrackConf(trackSnapshot)
             },
             icon: CopyIcon,
+          },
+          {
+            label: trackSnapshot.textSearching
+              ? 'Re-index track'
+              : 'Index track',
+            disabled: !supportedIndexingAdapters(trackSnapshot.adapter.type),
+            onClick: () => {
+              const rootModel = getParent(self)
+              const { jobsManager } = rootModel
+              const { trackId, assemblyNames, textSearching, name } =
+                trackSnapshot
+              // create text indexing parameters
+              const indexName = name + '-index'
+              const indexingParams = {
+                attributes: textSearching?.indexingAttributes || ['Name', 'ID'],
+                exclude: textSearching?.indexingFeatureTypesToExclude || [
+                  'CDS',
+                  'exon',
+                ],
+                assemblies: assemblyNames,
+                tracks: [trackId],
+                indexType: 'perTrack',
+                timestamp: new Date().toISOString(),
+                name: indexName, // trackName
+              }
+              // create job entry for queue of long running jobs
+              const newEntry = {
+                indexingParams,
+                name: indexName,
+                cancelCallback: () => {
+                  jobsManager.abortJob()
+                },
+              } as TextJobsEntry
+              jobsManager.queueJob(newEntry)
+              // TODO: open jobs list widget
+            },
+            icon: Indexing,
           },
         ]
       },

@@ -143,6 +143,7 @@ export async function createPluginManager(
   const rootModel = JBrowseRootModel.create(
     {
       jbrowse,
+      jobsManager: {},
       assemblyManager: {},
       version: packageJSON.version,
     },

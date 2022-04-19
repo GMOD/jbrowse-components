@@ -1,4 +1,4 @@
-import { Track, VcfTabixAdapter } from '../base'
+import { Track } from '../base'
 import { getLocalOrRemoteStream } from '../util'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
@@ -7,14 +7,12 @@ import readline from 'readline'
 export async function* indexVcf(
   config: Track,
   attributesToIndex: string[],
+  inLocation: string,
   outLocation: string,
   typesToExclude: string[],
   quiet: boolean,
 ) {
-  const { adapter, trackId } = config
-  const {
-    vcfGzLocation: { uri },
-  } = adapter as VcfTabixAdapter
+  const { trackId } = config
 
   // progress bar code was aided by blog post at
   // https://webomnizz.com/download-a-file-with-progressbar-using-node-js/
@@ -27,7 +25,10 @@ export async function* indexVcf(
   )
 
   let receivedBytes = 0
-  const { totalBytes, stream } = await getLocalOrRemoteStream(uri, outLocation)
+  const { totalBytes, stream } = await getLocalOrRemoteStream(
+    inLocation,
+    outLocation,
+  )
 
   if (!quiet) {
     progressBar.start(totalBytes, 0)
@@ -38,7 +39,9 @@ export async function* indexVcf(
     progressBar.update(receivedBytes)
   })
 
-  const gzStream = uri.match(/.b?gz$/) ? stream.pipe(createGunzip()) : stream
+  const gzStream = inLocation.match(/.b?gz$/)
+    ? stream.pipe(createGunzip())
+    : stream
 
   const rl = readline.createInterface({
     input: gzStream,

@@ -31,7 +31,6 @@ test('adapter can fetch output files', async () => {
   const results = await adapter.searchIndex({
     queryString: 'apple',
   })
-
   // check results are of type BaseResult for prefix search
   expect(results[0] instanceof BaseResult).toBeTruthy()
   expect(results[0].getLabel()).toEqual('Apple2')

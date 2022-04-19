@@ -10,8 +10,8 @@
   "scripts": {
     "build": "yarn useDist && node scripts/build.js && yarn useSrc",
     "changelog": "lerna-changelog",
-    "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\"",
-    "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\"",
+    "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
+    "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "lerna-publish": "lerna publish",
     "lint": "eslint --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .",
     "format": "prettier --write .",

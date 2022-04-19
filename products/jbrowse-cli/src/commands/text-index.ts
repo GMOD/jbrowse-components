@@ -5,7 +5,13 @@ import { ixIxxStream } from 'ixixx'
 import { flags } from '@oclif/command'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
-import JBrowseCommand, { Track, Config, TrixTextSearchAdapter } from '../base'
+import JBrowseCommand, {
+  Track,
+  Config,
+  TrixTextSearchAdapter,
+  UriLocation,
+  LocalPathLocation,
+} from '../base'
 import {
   generateMeta,
   supported,
@@ -377,6 +383,12 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream
   }
 
+  getLoc(elt: UriLocation | LocalPathLocation) {
+    if (elt.locationType === 'LocalPathLocation') {
+      return elt.localPath
+    }
+    return elt.uri
+  }
   async *indexFiles(
     trackConfigs: Track[],
     attributes: string[],
@@ -393,9 +405,41 @@ export default class TextIndex extends JBrowseCommand {
       } = textSearching || {}
 
       if (type === 'Gff3TabixAdapter') {
-        yield* indexGff3(config, attrs, outLocation, types, quiet)
+        yield* indexGff3(
+          config,
+          attrs,
+          this.getLoc(adapter.gffGzLocation),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'Gff3Adapter') {
+        yield* indexGff3(
+          config,
+          attrs,
+          this.getLoc(adapter.gffLocation),
+          outLocation,
+          types,
+          quiet,
+        )
       } else if (type === 'VcfTabixAdapter') {
-        yield* indexVcf(config, attrs, outLocation, types, quiet)
+        yield* indexVcf(
+          config,
+          attrs,
+          this.getLoc(adapter.vcfGzLocation),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'VcfAdapter') {
+        yield* indexVcf(
+          config,
+          attrs,
+          this.getLoc(adapter.vcfLocation),
+          outLocation,
+          types,
+          quiet,
+        )
       }
 
       // gtf unused currently
