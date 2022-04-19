@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 
 // locals
 import { BreakpointViewModel } from '../model'
