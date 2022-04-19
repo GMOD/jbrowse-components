@@ -2,17 +2,16 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { grey, indigo } from '@mui/material/colors'
-import {
-  Checkbox,
-  IconButton,
-  Tooltip,
-  FormControlLabel,
-  makeStyles,
-} from '@mui/material'
+import { Checkbox, IconButton, Tooltip, FormControlLabel } from '@mui/material'
+import { makeStyles } from '@mui/styles'
+
+// icons
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
+
+// locals
 import ColumnMenu from './ColumnMenu'
 import RowMenu from './RowMenu'
 

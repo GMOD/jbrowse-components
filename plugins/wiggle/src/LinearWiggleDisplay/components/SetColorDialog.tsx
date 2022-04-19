@@ -9,8 +9,8 @@ import {
   Typography,
   FormControlLabel,
   Radio,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 

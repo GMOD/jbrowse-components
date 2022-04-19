@@ -11,12 +11,11 @@ import {
   IconButton,
   FormControlLabel,
   Checkbox,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import { getSnapshot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { getSession, Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(theme => ({
   closeButton: {

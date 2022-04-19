@@ -9,8 +9,8 @@ import {
   IconButton,
   Typography,
   TextField,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import CloseIcon from '@mui/icons-material/Close'
 
@@ -54,7 +54,8 @@ function SetMaxHeightDlg(props: {
           aria-label="close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
@@ -93,7 +94,7 @@ function SetMaxHeightDlg(props: {
         </DialogActions>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 export default observer(SetMaxHeightDlg)

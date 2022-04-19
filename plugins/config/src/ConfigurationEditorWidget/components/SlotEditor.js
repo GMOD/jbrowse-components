@@ -24,8 +24,8 @@ import {
   Paper,
   SvgIcon,
   TextField,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'

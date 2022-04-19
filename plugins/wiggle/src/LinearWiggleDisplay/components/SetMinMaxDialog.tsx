@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/material/styles'
-import Button from '@mui/material/Button'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import IconButton from '@mui/material/IconButton'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles(theme => ({

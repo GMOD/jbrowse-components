@@ -11,8 +11,8 @@ import {
   AccordionDetails,
   AccordionSummary,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'

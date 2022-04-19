@@ -2,14 +2,8 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
-import {
-  Button,
-  Grid,
-  MenuItem,
-  Paper,
-  TextField,
-  makeStyles,
-} from '@mui/material'
+import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import AddIcon from '@mui/icons-material/Add'
 
 const useStyles = makeStyles(theme => ({

@@ -1,14 +1,18 @@
+import React, { useState } from 'react'
 import { getSession } from '@jbrowse/core/util'
-import Button from '@mui/material/Button'
-import Step from '@mui/material/Step'
-import StepContent from '@mui/material/StepContent'
-import StepLabel from '@mui/material/StepLabel'
-import Stepper from '@mui/material/Stepper'
-import { makeStyles } from '@mui/material/styles'
-import Typography from '@mui/material/Typography'
+import {
+  Button,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React, { useState } from 'react'
+
+// locals
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
 

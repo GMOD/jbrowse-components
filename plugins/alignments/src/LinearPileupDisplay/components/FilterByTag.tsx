@@ -11,8 +11,8 @@ import {
   Paper,
   TextField,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import CloseIcon from '@mui/icons-material/Close'
 

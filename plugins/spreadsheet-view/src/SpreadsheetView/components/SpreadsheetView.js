@@ -1,11 +1,6 @@
 import React from 'react'
-import {
-  FormGroup,
-  Grid,
-  IconButton,
-  TablePagination,
-  makeStyles,
-} from '@mui/material'
+import { FormGroup, Grid, IconButton, TablePagination } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'

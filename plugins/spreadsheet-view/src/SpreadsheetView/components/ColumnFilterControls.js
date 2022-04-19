@@ -1,10 +1,11 @@
+/* eslint-disable react/prop-types */
+import React from 'react'
 import FilterIcon from '@mui/icons-material/FilterList'
 import CloseIcon from '@mui/icons-material/Close'
-/* eslint-disable react/prop-types */
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import React from 'react'
-import { Grid, IconButton, Typography, makeStyles } from '@mui/material'
+import { Grid, IconButton, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 const useStyles = makeStyles(theme => {
   return {

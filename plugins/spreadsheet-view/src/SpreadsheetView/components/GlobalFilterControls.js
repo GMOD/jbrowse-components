@@ -5,7 +5,7 @@ import ClearIcon from '@mui/icons-material/Clear'
 import FilterIcon from '@mui/icons-material/FilterList'
 
 import { observer } from 'mobx-react'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from '@mui/styles'
 import { useDebounce } from '@jbrowse/core/util'
 
 const useStyles = makeStyles((/* theme */) => {

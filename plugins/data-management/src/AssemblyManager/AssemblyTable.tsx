@@ -10,15 +10,15 @@ import {
   TableRow,
   Paper,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 import CreateIcon from '@mui/icons-material/Create'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-
-// local
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles(() => ({
   table: {

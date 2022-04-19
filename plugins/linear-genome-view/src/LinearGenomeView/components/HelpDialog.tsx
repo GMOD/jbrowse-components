@@ -7,8 +7,8 @@ import {
   DialogTitle,
   Divider,
   IconButton,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 
 export const useStyles = makeStyles(theme => ({
@@ -37,7 +37,8 @@ export default function HelpDialog({
             onClick={() => {
               handleClose()
             }}
-            size="large">
+            size="large"
+          >
             <CloseIcon />
           </IconButton>
         ) : null}
@@ -90,5 +91,5 @@ export default function HelpDialog({
         </Button>
       </DialogActions>
     </Dialog>
-  );
+  )
 }

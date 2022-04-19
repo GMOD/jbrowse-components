@@ -4,7 +4,8 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
 import a11yDark from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-dark'
 import a11yLight from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-light'
-import { useTheme, makeStyles } from '@mui/material'
+import { useTheme } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // fontSize and fontFamily have to match between Editor and SyntaxHighlighter
 const fontSize = '12px'
