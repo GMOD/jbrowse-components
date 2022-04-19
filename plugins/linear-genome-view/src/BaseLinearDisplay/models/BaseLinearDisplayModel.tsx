@@ -247,6 +247,11 @@ export const BaseLinearDisplay = types
 
       const { rpcManager } = getSession(self)
       const { adapterConfig } = self
+      if (!adapterConfig) {
+        // A track extending the base track might not have an adapter config
+        // e.g. Apollo tracks don't use adapters
+        return Promise.resolve({})
+      }
       const sessionId = getRpcSessionId(self)
 
       const params = {
