@@ -22,7 +22,6 @@ import {
   HEADER_BAR_HEIGHT,
 } from '..'
 import OverviewScaleBar from './OverviewScaleBar'
-// import OverviewScaleBar from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 
 type LGV = LinearGenomeViewModel
@@ -124,13 +123,15 @@ const Controls = ({ model }: { model: LGV }) => {
 }
 
 const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
-  return model.hideHeaderOverview ? (
-    <Controls model={model} />
-  ) : (
-    <OverviewScaleBar model={model}>
+  return !model.hasCustomHeader ? (
+    model.hideHeaderOverview ? (
       <Controls model={model} />
-    </OverviewScaleBar>
-  )
+    ) : (
+      <OverviewScaleBar model={model}>
+        <Controls model={model} />
+      </OverviewScaleBar>
+    )
+  ) : null
 })
 
 export default LinearGenomeViewHeader

@@ -8,6 +8,8 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import { MultilevelLinearComparativeViewModel } from '../model'
 import Header from './Header'
 import MiniControls from './MiniControls'
+import Subheader from './Subheader'
+import AreaOfInterest from './AreaOfInterest'
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -97,22 +99,26 @@ const OverlayComparativeView = observer(
     const { pluginManager } = getEnv(model)
     return (
       <div>
-        <Header model={model} ExtraButtons={ExtraButtons} />
+        {!model.views[0].hideHeader ? (
+          <Header model={model} ExtraButtons={ExtraButtons} />
+        ) : null}
         <div className={classes.container}>
           <div className={classes.content}>
             <div className={classes.relative}>
               {views.map(view => {
                 const { ReactComponent } = pluginManager.getViewType(view.type)
-                const viewName =
-                  view.id === model.views[0].id
-                    ? 'Overview'
-                    : view.id === model.views[1].id
-                    ? 'Region'
-                    : undefined
                 return (
-                  <div>
+                  <div key={view.id}>
+                    {model.views[model.anchorViewIndex].id !== view.id ? (
+                      <div>
+                        {!view.hideHeader ? (
+                          <Subheader view={view} model={model} />
+                        ) : null}
+                        <AreaOfInterest view={view} model={model} />
+                      </div>
+                    ) : null}
                     {view.hasCustomMiniControls ? (
-                      <MiniControls model={view} viewName={viewName} />
+                      <MiniControls model={view} />
                     ) : null}
                     <ReactComponent key={view.id} model={view} />
                   </div>

@@ -40,6 +40,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         showIntraviewLinks: true,
         linkViews: false,
         interactToggled: false,
+        anchorViewIndex: 0,
         middleComparativeHeight: 100,
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -48,7 +49,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         ),
-
         // this represents tracks specific to this view specifically used for
         // read vs ref dotplots where this track would not really apply
         // elsewhere
@@ -127,6 +127,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.width = newWidth
         self.views.forEach(v => v.setWidth(newWidth))
       },
+
+      setAnchorViewIndex(index: number) {
+        self.anchorViewIndex = index
+      },
+
       setHeight(newHeight: number) {
         self.height = newHeight
       },
@@ -232,14 +237,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       menuItems() {
         const menuItems: MenuItem[] = []
-        self.views.forEach((view, idx) => {
-          if (view.menuItems?.()) {
-            menuItems.push({
-              label: `View ${idx + 1} Menu`,
-              subMenu: view.menuItems(),
-            })
-          }
-        })
         menuItems.push({
           label: 'Return to import form',
           onClick: () => {

@@ -178,7 +178,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 className={classes.button}
                 onClick={() => {
                   model.setError(undefined)
-                  console.log(selectedRegion)
                   if (selectedRegion) {
                     handleSelectedRegion(selectedRegion)
                   }

@@ -11,16 +11,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       baseModel(pluginManager),
-      types
-        .model('MultilevelLinearView', {
-          type: types.literal('MultilevelLinearView'),
-          drawCurves: false,
-        })
-        .actions(self => ({
-          toggleCurves() {
-            self.drawCurves = !self.drawCurves
-          },
-        })),
+      types.model('MultilevelLinearView', {
+        type: types.literal('MultilevelLinearView'),
+      }),
     )
     .views(self => {
       const superMenuItems = self.menuItems
@@ -40,13 +33,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: self.linkViews ? 'Unlink views' : 'Link views',
               onClick: self.toggleLinkViews,
               icon: self.linkViews ? LinkOffIcon : LinkIcon,
-            },
-            {
-              label: self.drawCurves
-                ? 'Use straight lines'
-                : 'Use curved lines',
-              onClick: self.toggleCurves,
-              icon: self.drawCurves ? StraightLines : Curves,
             },
           ]
         },
