@@ -1,4 +1,3 @@
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
@@ -13,15 +12,22 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getSession, Feature } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { autorun } from 'mobx'
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
 // simple is better
-function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[][]): T[] {
-  const a12 = a1.filter(value => a2.includes(value))
-  return rest.length === 0 ? a12 : intersect(a12, ...rest)
+function intersect<T>(
+  cb: (l: T) => string,
+  a1: T[] = [],
+  a2: T[] = [],
+  ...rest: T[][]
+): T[] {
+  const ids = a2.map(elt => cb(elt))
+  const a12 = a1.filter(value => ids.includes(cb(value)))
+  return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }
 
 export interface Breakend {
@@ -32,6 +38,37 @@ export interface Breakend {
 }
 
 export type LayoutRecord = [number, number, number, number]
+
+async function getBlockFeatures(model: BreakpointViewModel, track: any) {
+  const { views } = model
+  const { rpcManager, assemblyManager } = getSession(model)
+  const assemblyName = model.views[0].assemblyNames[0]
+  console.log({ assemblyName })
+  const assembly = await assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    throw new Error('assembly not found')
+  }
+  const sessionId = track.configuration.trackId
+  console.log({ sessionId, track })
+  return Promise.all(
+    views.map(view =>
+      Promise.all(
+        view.staticBlocks.contentBlocks.map(block => {
+          const { refName, start, end } = block
+          return rpcManager.call(sessionId, 'CoreGetFeatures', {
+            adapterConfig: getConf(track, ['adapter']),
+            sessionId,
+            region: {
+              start,
+              end,
+              refName, //assembly.getCanonicalRefName(refName),
+            },
+          })
+        }),
+      ),
+    ),
+  )
+}
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
@@ -63,24 +100,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // Find all track ids that match across multiple views
       get matchedTracks(): string[] {
         return intersect(
-          ...self.views.map(view =>
-            view.tracks.map(
-              (t: { configuration: AnyConfigurationModel }) =>
-                t.configuration.trackId as string,
-            ),
-          ),
+          elt => elt.configuration.trackId as string,
+          ...self.views.map(view => view.tracks),
         )
       },
 
       get matchedTrackFeatures() {
-        return Object.fromEntries(
-          this.matchedTracks.map(id => [
-            id,
-            new CompositeMap<string, Feature>(
-              this.getMatchedTracks(id)?.map(t => t.displays[0].features) || [],
-            ),
-          ]),
-        )
+        return {}
       },
 
       menuItems() {
@@ -206,6 +232,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleLinkViews() {
         self.linkViews = !self.linkViews
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(async () => {
+            console.log(self.matchedTracks)
+            const res = await Promise.all(
+              self.matchedTracks.map(track =>
+                getBlockFeatures(self as any, track),
+              ),
+            )
+            console.log({ res: JSON.stringify(res) })
+          }),
+        )
       },
     }))
 

@@ -339,6 +339,8 @@ export class CoreGetFeatureDetails extends RpcMethodType {
   async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
+
+    console.log({ assemblyManager })
     const renamedArgs = assemblyManager
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args
