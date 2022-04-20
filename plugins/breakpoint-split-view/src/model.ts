@@ -45,7 +45,7 @@ async function getBlockFeatures(model: BreakpointViewModel, track: any) {
   const assemblyName = model.views[0].assemblyNames[0]
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
-    throw new Error('assembly not found')
+    return undefined //throw new Error(`assembly not found: "${assemblyName}"`)
   }
   const sessionId = track.configuration.trackId
   return Promise.all(
