@@ -815,7 +815,10 @@ export default class PileupRenderer extends BoxRendererType {
         ctx.fillStyle = 'purple'
         const pos = leftPx + extraHorizontallyFlippedOffset
         const len = +mismatch.base || mismatch.length
-        const insW = Math.max(minSubfeatureWidth, Math.min(1.2, 1 / bpPerPx))
+        const insW = Math.max(
+          minSubfeatureWidth / 2,
+          Math.min(1.2, 1 / bpPerPx),
+        )
         if (len < 10) {
           ctx.fillRect(pos, topPx, insW, heightPx)
           if (1 / bpPerPx >= charWidth && heightPx >= heightLim) {
