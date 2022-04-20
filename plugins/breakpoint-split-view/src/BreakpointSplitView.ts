@@ -1,12 +1,13 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { parseBreakend } from '@gmod/vcf'
+
+// locals
 import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
-import { parseBreakend } from '@gmod/vcf'
 
 class BreakpointSplitViewType extends ViewType {
   snapshotFromBreakendFeature(feature: Feature, view: LinearGenomeViewModel) {

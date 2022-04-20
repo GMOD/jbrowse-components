@@ -121,10 +121,26 @@ export class CoreGetFeatures extends RpcMethodType {
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
+
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
+
+    return superArgs
+  }
+
   async execute(
     args: {
       sessionId: string
-      region: Region
+      regions: Region[]
       adapterConfig: {}
       signal?: RemoteAbortSignal
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -136,7 +152,7 @@ export class CoreGetFeatures extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { signal, sessionId, adapterConfig, region, opts } = deserializedArgs
+    const { signal, sessionId, adapterConfig, regions, opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -145,7 +161,10 @@ export class CoreGetFeatures extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       return []
     }
-    const ret = dataAdapter.getFeatures(region, { ...opts, signal })
+    const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
+      ...opts,
+      signal,
+    })
     const r = await ret.pipe(toArray()).toPromise()
     return r.map(f => f.toJSON())
   }
@@ -340,7 +359,6 @@ export class CoreGetFeatureDetails extends RpcMethodType {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
-    console.log({ assemblyManager })
     const renamedArgs = assemblyManager
       ? await renameRegionsIfNeeded(assemblyManager, args)
       : args

@@ -43,29 +43,20 @@ async function getBlockFeatures(model: BreakpointViewModel, track: any) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
   const assemblyName = model.views[0].assemblyNames[0]
-  console.log({ assemblyName })
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     throw new Error('assembly not found')
   }
   const sessionId = track.configuration.trackId
-  console.log({ sessionId, track })
   return Promise.all(
-    views.map(view =>
-      Promise.all(
-        view.staticBlocks.contentBlocks.map(block => {
-          const { refName, start, end } = block
-          return rpcManager.call(sessionId, 'CoreGetFeatures', {
-            adapterConfig: getConf(track, ['adapter']),
-            sessionId,
-            region: {
-              start,
-              end,
-              refName, //assembly.getCanonicalRefName(refName),
-            },
-          })
-        }),
-      ),
+    views.map(async view =>
+      (
+        (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          adapterConfig: getConf(track, ['adapter']),
+          sessionId,
+          regions: view.staticBlocks.contentBlocks,
+        })) as Feature[][]
+      ).flat(),
     ),
   )
 }
@@ -95,18 +86,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       width: 800,
+      matchedTrackFeatures: {} as { [key: string]: Feature[][] },
     }))
     .views(self => ({
       // Find all track ids that match across multiple views
-      get matchedTracks(): string[] {
+      get matchedTracks() {
         return intersect(
           elt => elt.configuration.trackId as string,
           ...self.views.map(view => view.tracks),
         )
-      },
-
-      get matchedTrackFeatures() {
-        return {}
       },
 
       menuItems() {
@@ -123,17 +111,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .filter(f => !!f)
       },
 
-      // Paired reads are handled slightly differently than split reads
-      hasPairedReads(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(
-          f => f.get('flags') & 64,
-        )
-      },
-
       // Translocation features are handled differently
       // since they do not have a mate e.g. they are one sided
       hasTranslocations(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(
+        return [...this.getTrackFeatures(trackConfigId).values()].find(
           f => f.get('type') === 'translocation',
         )
       },
@@ -141,7 +122,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // Get a composite map of featureId->feature map for a track across
       // multiple views
       getTrackFeatures(trackConfigId: string) {
-        return this.matchedTrackFeatures[trackConfigId]
+        return new Map(
+          self.matchedTrackFeatures[trackConfigId]
+            ?.flat()
+            .map(f => [f.id(), f]),
+        )
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
@@ -154,15 +139,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         return features.map(c =>
-          c.map(feature => {
-            const level = tracks.findIndex(track => calc(track, feature))
-            const layout = calc(tracks[level], feature)
-            return {
-              feature,
-              layout,
-              level,
-            }
-          }),
+          c
+            .map(feature => {
+              const level = tracks.findIndex(track => calc(track, feature))
+              if (level !== -1) {
+                const layout = calc(tracks[level], feature)
+                return {
+                  feature,
+                  layout,
+                  level,
+                }
+              }
+              return undefined
+            })
+            .filter(
+              (f): f is { feature: Feature; layout: any; level: number } => !!f,
+            ),
         )
       },
     }))
@@ -233,19 +225,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
+      setMatchedTrackFeatures(obj: any) {
+        self.matchedTrackFeatures = obj
+      },
     }))
     .actions(self => ({
       afterAttach() {
         addDisposer(
           self,
           autorun(async () => {
-            console.log(self.matchedTracks)
-            const res = await Promise.all(
-              self.matchedTracks.map(track =>
-                getBlockFeatures(self as any, track),
+            const res = Object.fromEntries(
+              await Promise.all(
+                self.matchedTracks.map(async track => [
+                  track.configuration.trackId,
+                  await getBlockFeatures(self as any, track),
+                ]),
               ),
             )
-            console.log({ res: JSON.stringify(res) })
+            self.setMatchedTrackFeatures(res)
           }),
         )
       },

@@ -3,7 +3,6 @@ import Path from 'svg-path-generator'
 import { getSession, Feature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import { parseBreakend, Breakend } from '@gmod/vcf'
 
 // locals
@@ -27,7 +26,7 @@ function findMatchingAlt(feat1: Feature, feat2: Feature) {
 
 // Returns paired BND features across multiple views by inspecting
 // the ALT field to get exact coordinate matches
-function getMatchedBreakendFeatures(features: CompositeMap<string, Feature>) {
+function getMatchedBreakendFeatures(features: Map<string, Feature>) {
   const candidates: Record<string, Feature[]> = {}
   const alreadySeen = new Set<string>()
 
@@ -57,24 +56,24 @@ function getMatchedBreakendFeatures(features: CompositeMap<string, Feature>) {
 const Breakends = observer(
   ({
     model,
-    trackConfigId,
+    trackId,
     parentRef: ref,
   }: {
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views } = model
     const session = getSession(model)
     const { assemblyManager } = session
-    const totalFeatures = model.getTrackFeatures(trackConfigId)
+    const totalFeatures = model.getTrackFeatures(trackId)
     const layoutMatches = useMemo(
       () =>
         model.getMatchedFeaturesInLayout(
-          trackConfigId,
+          trackId,
           getMatchedBreakendFeatures(totalFeatures),
         ),
-      [totalFeatures, trackConfigId, model],
+      [totalFeatures, trackId, model],
     )
 
     const [mouseoverElt, setMouseoverElt] = useState<string>()
@@ -97,9 +96,7 @@ const Breakends = observer(
         stroke="green"
         strokeWidth={5}
         fill="none"
-        data-testid={
-          layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
-        }
+        data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
       >
         {layoutMatches.map(chunk => {
           const ret = []
@@ -126,9 +123,9 @@ const Breakends = observer(
             const reversed1 = views[level1].pxToBp(x1).reversed
             const reversed2 = views[level2].pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackConfigId))
-            const y1 = yPos(trackConfigId, level1, views, tracks, c1) - yoff
-            const y2 = yPos(trackConfigId, level2, views, tracks, c2) - yoff
+            const tracks = views.map(v => v.getTrack(trackId))
+            const y1 = yPos(trackId, level1, views, tracks, c1) - yoff
+            const y2 = yPos(trackId, level2, views, tracks, c2) - yoff
             if (!relevantAlt) {
               console.warn(
                 'the relevant ALT allele was not found, cannot render',
