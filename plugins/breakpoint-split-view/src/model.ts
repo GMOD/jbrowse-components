@@ -13,7 +13,7 @@ import {
 } from 'mobx-state-tree'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, Feature } from '@jbrowse/core/util'
-import { getConf } from '@jbrowse/core/configuration'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { autorun } from 'mobx'
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
@@ -39,13 +39,16 @@ export interface Breakend {
 
 export type LayoutRecord = [number, number, number, number]
 
-async function getBlockFeatures(model: BreakpointViewModel, track: any) {
+async function getBlockFeatures(
+  model: BreakpointViewModel,
+  track: { configuration: AnyConfigurationModel },
+) {
   const { views } = model
   const { rpcManager, assemblyManager } = getSession(model)
   const assemblyName = model.views[0].assemblyNames[0]
   const assembly = await assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
-    return undefined //throw new Error(`assembly not found: "${assemblyName}"`)
+    return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
   }
   const sessionId = track.configuration.trackId
   return Promise.all(
@@ -153,6 +156,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               return undefined
             })
             .filter(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (f): f is { feature: Feature; layout: any; level: number } => !!f,
             ),
         )
@@ -225,7 +229,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
-      setMatchedTrackFeatures(obj: any) {
+      setMatchedTrackFeatures(obj: { [key: string]: Feature[][] }) {
         self.matchedTrackFeatures = obj
       },
     }))
@@ -238,6 +242,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               await Promise.all(
                 self.matchedTracks.map(async track => [
                   track.configuration.trackId,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   await getBlockFeatures(self as any, track),
                 ]),
               ),
