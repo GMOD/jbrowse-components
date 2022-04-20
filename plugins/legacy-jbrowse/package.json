@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "1.6.9",
+  "version": "1.7.4",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
@@ -18,23 +18,22 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-legacy-jbrowse.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/legacy-jbrowse",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/nclist": "^0.2.1",
     "buffer-crc32": "^0.2.13",
     "generic-filehandle": "^2.2.2",

@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import 'requestidlecallback-polyfill'
 import LinearGenomeView from './LinearGenomeView'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 const assemblyConf = {
   name: 'volMyt1',

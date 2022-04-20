@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "1.6.9",
+  "version": "1.7.4",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -18,27 +18,25 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-data-management.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/data-management",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/ucsc-hub": "^0.1.3",
     "@material-ui/icons": "^4.9.1",
     "clsx": "^1.1.0",
-    "pluralize": "^8.0.0",
     "react-virtualized-auto-sizer": "^1.0.2",
     "react-vtree": "^3.0.0-beta.1",
     "react-window": "^1.8.6"

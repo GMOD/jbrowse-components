@@ -5,7 +5,13 @@ import { ixIxxStream } from 'ixixx'
 import { flags } from '@oclif/command'
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
-import JBrowseCommand, { Track, Config, TrixTextSearchAdapter } from '../base'
+import JBrowseCommand, {
+  Track,
+  Config,
+  TrixTextSearchAdapter,
+  UriLocation,
+  LocalPathLocation,
+} from '../base'
 import {
   generateMeta,
   supported,
@@ -81,6 +87,11 @@ export default class TextIndex extends JBrowseCommand {
       description: 'Adds gene type to list of excluded types',
       default: 'CDS,exon',
     }),
+    prefixSize: flags.integer({
+      description:
+        'Specify the prefix size for the ixx index, increase size if many of your gene IDs have same prefix e.g. Z000000001, Z000000002',
+      default: 6,
+    }),
     file: flags.string({
       description:
         'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
@@ -118,6 +129,7 @@ export default class TextIndex extends JBrowseCommand {
       force,
       exclude,
       dryrun,
+      prefixSize,
     } = flags
     const outFlag = target || out || '.'
 
@@ -174,6 +186,7 @@ export default class TextIndex extends JBrowseCommand {
           attributes: attributes.split(','),
           exclude: exclude.split(','),
           assemblyNames: [asm],
+          prefixSize,
         })
 
         const trixConf = {
@@ -225,6 +238,7 @@ export default class TextIndex extends JBrowseCommand {
       quiet,
       force,
       exclude,
+      prefixSize,
     } = flags
     const outFlag = target || out || '.'
 
@@ -267,6 +281,7 @@ export default class TextIndex extends JBrowseCommand {
         name: trackId,
         exclude: exclude.split(','),
         assemblyNames,
+        prefixSize,
       })
       if (!textSearching || !textSearching?.textSearchAdapter) {
         const newTrackConfig = {
@@ -305,7 +320,7 @@ export default class TextIndex extends JBrowseCommand {
 
   async indexFileList() {
     const { flags } = this.parse(TextIndex)
-    const { out, target, file, attributes, quiet, exclude } = flags
+    const { out, target, file, attributes, quiet, exclude, prefixSize } = flags
     const outFlag = target || out || '.'
     const trixDir = path.join(outFlag, 'trix')
     if (!fs.existsSync(trixDir)) {
@@ -324,6 +339,7 @@ export default class TextIndex extends JBrowseCommand {
       attributes: attributes.split(','),
       exclude: exclude.split(','),
       assemblyNames: [],
+      prefixSize,
     })
 
     this.log(
@@ -339,6 +355,7 @@ export default class TextIndex extends JBrowseCommand {
     quiet,
     exclude,
     assemblyNames,
+    prefixSize,
   }: {
     configs: Track[]
     attributes: string[]
@@ -347,12 +364,13 @@ export default class TextIndex extends JBrowseCommand {
     quiet: boolean
     exclude: string[]
     assemblyNames: string[]
+    prefixSize: number
   }) {
     const readable = Readable.from(
       this.indexFiles(configs, attributes, outDir, quiet, exclude),
     )
 
-    const ixIxxStream = await this.runIxIxx(readable, outDir, name)
+    const ixIxxStream = await this.runIxIxx(readable, outDir, name, prefixSize)
 
     await generateMeta({
       configs,
@@ -365,6 +383,12 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream
   }
 
+  getLoc(elt: UriLocation | LocalPathLocation) {
+    if (elt.locationType === 'LocalPathLocation') {
+      return elt.localPath
+    }
+    return elt.uri
+  }
   async *indexFiles(
     trackConfigs: Track[],
     attributes: string[],
@@ -381,20 +405,57 @@ export default class TextIndex extends JBrowseCommand {
       } = textSearching || {}
 
       if (type === 'Gff3TabixAdapter') {
-        yield* indexGff3(config, attrs, outLocation, types, quiet)
+        yield* indexGff3(
+          config,
+          attrs,
+          this.getLoc(adapter.gffGzLocation),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'Gff3Adapter') {
+        yield* indexGff3(
+          config,
+          attrs,
+          this.getLoc(adapter.gffLocation),
+          outLocation,
+          types,
+          quiet,
+        )
       } else if (type === 'VcfTabixAdapter') {
-        yield* indexVcf(config, attrs, outLocation, types, quiet)
+        yield* indexVcf(
+          config,
+          attrs,
+          this.getLoc(adapter.vcfGzLocation),
+          outLocation,
+          types,
+          quiet,
+        )
+      } else if (type === 'VcfAdapter') {
+        yield* indexVcf(
+          config,
+          attrs,
+          this.getLoc(adapter.vcfLocation),
+          outLocation,
+          types,
+          quiet,
+        )
       }
 
       // gtf unused currently
     }
   }
 
-  runIxIxx(readStream: Readable, outLocation: string, name: string) {
+  runIxIxx(
+    readStream: Readable,
+    outLocation: string,
+    name: string,
+    prefixSize: number,
+  ) {
     const ixFilename = path.join(outLocation, 'trix', `${name}.ix`)
     const ixxFilename = path.join(outLocation, 'trix', `${name}.ixx`)
 
-    return ixIxxStream(readStream, ixFilename, ixxFilename)
+    return ixIxxStream(readStream, ixFilename, ixxFilename, prefixSize)
   }
 
   async getTrackConfigs(

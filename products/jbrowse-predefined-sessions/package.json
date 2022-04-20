@@ -1,11 +1,12 @@
 {
   "name": "jbrowse-predefined-sessions",
-  "version": "1.6.9",
+  "version": "1.7.4",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "MIT",
   "scripts": {
-    "publish": "aws s3 cp sessions.json s3://jbrowse.org/genomes/sessions.json"
+    "publish": "aws s3 cp sessions.json s3://jbrowse.org/genomes/sessions.json",
+    "build": "echo nothing"
   },
   "private": true
 }

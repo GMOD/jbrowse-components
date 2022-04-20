@@ -20,6 +20,7 @@ const SvInspectorComponentF = pluginManager => {
     boxSizing: 'border-box',
     borderTop: '1px solid #fafafa',
   }
+
   const useStyles = makeStyles(theme => {
     return {
       root: {

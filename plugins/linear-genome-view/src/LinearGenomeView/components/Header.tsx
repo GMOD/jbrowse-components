@@ -17,8 +17,8 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 // locals
 import {
   LinearGenomeViewModel,
-  SPACING,
   WIDGET_HEIGHT,
+  SPACING,
   HEADER_BAR_HEIGHT,
 } from '..'
 import OverviewScaleBar from './OverviewScaleBar'

@@ -1,11 +1,13 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getConf } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { makeStyles } from '@material-ui/core/styles'
+import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { makeStyles } from '@material-ui/core'
 import { getEnv } from 'mobx-state-tree'
 import { ResizeHandle } from '@jbrowse/core/ui'
+
+// locals
 import { LinearComparativeViewModel } from '../model'
+import RubberBand from './RubberBand'
 import Header from './Header'
 
 const useStyles = makeStyles(() => ({
@@ -25,6 +27,13 @@ const useStyles = makeStyles(() => ({
   },
   relative: {
     position: 'relative',
+  },
+
+  // this helps keep the vertical guide inside the parent view container,
+  // similar style exists in the single LGV's trackscontainer
+  rubberbandContainer: {
+    position: 'relative',
+    overflow: 'hidden',
   },
 }))
 
@@ -60,13 +69,16 @@ const MiddleComparativeView = observer(
   ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
     const classes = useStyles()
     const { views } = model
-    const { ReactComponent } = getEnv(model).pluginManager.getViewType(
-      views[0].type,
-    )
+    const { pluginManager } = getEnv(model)
+    const { ReactComponent } = pluginManager.getViewType(views[0].type)
 
     return (
-      <div>
+      <div className={classes.rubberbandContainer}>
         <Header ExtraButtons={ExtraButtons} model={model} />
+        <RubberBand
+          model={model}
+          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
+        />
         <div className={classes.container}>
           <ReactComponent model={views[0]} />
           <div className={classes.grid}>
@@ -95,8 +107,13 @@ const OverlayComparativeView = observer(
     const { views } = model
     const { pluginManager } = getEnv(model)
     return (
-      <div>
+      <div className={classes.rubberbandContainer}>
         <Header model={model} ExtraButtons={ExtraButtons} />
+        <RubberBand
+          model={model}
+          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
+        />
+
         <div className={classes.container}>
           <div className={classes.content}>
             <div className={classes.relative}>

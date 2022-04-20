@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-arc",
-  "version": "1.6.9",
+  "version": "1.7.4",
   "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -18,15 +18,13 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-arc.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
+    "postbuild": "tsc --build tsconfig.build.json",
     "test": "cd ../..; jest plugins/arc",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -35,6 +33,7 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "react-svg-tooltip": "^0.0.11"
   },
   "peerDependencies": {

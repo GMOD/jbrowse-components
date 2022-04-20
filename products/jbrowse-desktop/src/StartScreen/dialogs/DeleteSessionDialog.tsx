@@ -7,7 +7,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@material-ui/core'
-import { ipcRenderer } from 'electron'
+const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({
   sessionsToDelete,

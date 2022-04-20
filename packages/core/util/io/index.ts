@@ -1,9 +1,12 @@
 import {
   BlobFile,
-  LocalFile,
   GenericFilehandle,
+  LocalFile,
   Fetcher,
 } from 'generic-filehandle'
+import isNode from 'detect-node'
+
+// locals
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache'
 import {
   FileLocation,
@@ -17,7 +20,7 @@ import {
 import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 import { getBlob } from '../tracks'
 import PluginManager from '../../PluginManager'
-import isNode from 'detect-node'
+import { isElectron } from '../'
 
 export { RemoteFileWithRangeCache }
 
@@ -43,7 +46,7 @@ export function openLocation(
       throw new Error('No local path provided')
     }
 
-    if (isNode) {
+    if (isNode || isElectron) {
       return new LocalFile(location.localPath)
     } else {
       throw new Error("can't use local files in the browser")

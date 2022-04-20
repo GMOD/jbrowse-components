@@ -558,7 +558,7 @@ const stateModelFactory = (
           try {
             stats = await getStats({
               signal: aborter.signal,
-              filters: self.filters,
+              ...self.renderProps(),
             })
             if (isAlive(self)) {
               self.updateStats(stats)
@@ -591,7 +591,7 @@ const stateModelFactory = (
 
                   const wiggleStats = await getStats({
                     signal: aborter.signal,
-                    filters: self.filters,
+                    ...self.renderProps(),
                   })
 
                   if (isAlive(self)) {

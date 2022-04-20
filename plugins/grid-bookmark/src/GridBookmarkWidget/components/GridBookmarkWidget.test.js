@@ -5,6 +5,7 @@ import { render, cleanup, fireEvent, within } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import GridBookmarkWidget from './GridBookmarkWidget'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 jest.mock('file-saver', () => {
   return {

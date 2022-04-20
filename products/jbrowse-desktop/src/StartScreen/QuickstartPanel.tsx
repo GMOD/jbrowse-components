@@ -14,15 +14,14 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@material-ui/icons/Search'
 import MoreIcon from '@material-ui/icons/MoreHoriz'
-
-import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
-import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
-
-import { ipcRenderer } from 'electron'
 import deepmerge from 'deepmerge'
 
 // locals
+import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
+import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
 import { loadPluginManager } from './util'
+
+const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles(theme => ({
   button: {

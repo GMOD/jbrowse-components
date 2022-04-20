@@ -52,7 +52,6 @@ test('test trix from lgv header', async () => {
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-
   await waitFor(
     () => expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
     { timeout: 10000 },
@@ -84,7 +83,8 @@ test('test trix on import form', async () => {
   // should work to just have enter and no click on open in UI, but this is
   // needed in test currently. may be worth investigating
   fireEvent.click(await findByText('Open'))
-
+  // this will instead open a dialog of options vs a single item at
+  // location 'ctgA:1,055..9,005'
   await waitFor(
     async () => {
       const newInput = await findByPlaceholderText('Search for location')

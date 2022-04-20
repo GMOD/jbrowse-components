@@ -2,6 +2,7 @@ import React from 'react'
 import { render, cleanup, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddTrackWidget from './AddTrackWidget'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 describe('<AddTrackWidget />', () => {
   let session

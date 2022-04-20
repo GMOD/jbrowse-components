@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "1.6.9",
+  "version": "1.7.4",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -18,15 +18,13 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-wiggle.esm.js",
-  "module": "",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
+    "postbuild": "tsc --build tsconfig.build.json",
     "test": "cd ../..; jest plugins/wiggle",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -35,13 +33,12 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@babel/runtime": "^7.17.9",
     "@gmod/bbi": "^1.0.32",
     "@material-ui/icons": "^4.11.2",
     "@popperjs/core": "^2.11.0",
-    "abortable-promise-cache": "^1.5.0",
     "color": "^3.1.1",
     "d3-scale": "^3.2.3",
-    "json-stable-stringify": "^1.0.1",
     "react-color": "^2.19.3",
     "react-d3-axis-mod": "^0.1.3",
     "react-popper": "^2.0.0"

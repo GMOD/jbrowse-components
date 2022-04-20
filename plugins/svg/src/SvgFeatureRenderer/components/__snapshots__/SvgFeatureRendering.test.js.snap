@@ -2,7 +2,6 @@
 
 exports[`no features 1`] = `
 <svg
-  class="SvgFeatureRendering"
   data-testid="svgfeatures"
   height="120"
   width="100"
@@ -11,7 +10,6 @@ exports[`no features 1`] = `
 
 exports[`one feature (compact mode) 1`] = `
 <svg
-  class="SvgFeatureRendering"
   data-testid="svgfeatures"
   height="105"
   width="333.3333333333333"
@@ -168,7 +166,6 @@ exports[`one feature (compact mode) 1`] = `
 
 exports[`one feature 1`] = `
 <svg
-  class="SvgFeatureRendering"
   data-testid="svgfeatures"
   height="110"
   width="333.3333333333333"
@@ -179,7 +176,7 @@ exports[`one feature 1`] = `
       fill="goldenrod"
       height="10"
       stroke=""
-      width="1"
+      width="2"
       x="0.3"
       y="0"
     />
@@ -189,7 +186,6 @@ exports[`one feature 1`] = `
 
 exports[`processed transcript (exons + impliedUTR) 1`] = `
 <svg
-  class="SvgFeatureRendering"
   data-testid="svgfeatures"
   height="140"
   width="333.3333333333333"
@@ -359,14 +355,16 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
       stroke="black"
     />
     <text
-      style="font-size: 13px; fill: black; cursor: default;"
+      fill="black"
+      font-size="13"
       x="7759845"
       y="25"
     >
       LACTBL1
     </text>
     <text
-      style="font-size: 13px; fill: blue; cursor: default;"
+      fill="blue"
+      font-size="13"
       x="7759845"
       y="40"
     >
@@ -378,7 +376,6 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 
 exports[`processed transcript (reducedRepresentation mode) 1`] = `
 <svg
-  class="SvgFeatureRendering"
   data-testid="svgfeatures"
   height="110"
   width="333.3333333333333"
@@ -389,7 +386,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
       fill="goldenrod"
       height="10"
       stroke=""
-      width="1"
+      width="2"
       x="0.3"
       y="0"
     />
@@ -399,7 +396,6 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 
 exports[`processed transcript 1`] = `
 <svg
-  class="SvgFeatureRendering"
   data-testid="svgfeatures"
   height="125"
   width="333.3333333333333"
@@ -551,7 +547,8 @@ exports[`processed transcript 1`] = `
       stroke="black"
     />
     <text
-      style="font-size: 13px; fill: black; cursor: default;"
+      fill="black"
+      font-size="13"
       x="1991.7"
       y="25"
     >

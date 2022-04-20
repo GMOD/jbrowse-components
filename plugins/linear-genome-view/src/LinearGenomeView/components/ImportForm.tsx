@@ -16,7 +16,7 @@ import CloseIcon from '@material-ui/icons/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { LinearGenomeViewModel } from '..'
+import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles(theme => ({
@@ -25,6 +25,9 @@ const useStyles = makeStyles(theme => ({
   },
   button: {
     margin: theme.spacing(2),
+  },
+  container: {
+    padding: theme.spacing(4),
   },
 }))
 
@@ -118,10 +121,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
+  const height = WIDGET_HEIGHT + 5
+
   // implementation notes:
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
-    <div>
+    <div className={classes.container}>
       {err ? <ErrorMessage error={err} /> : null}
       <Container className={classes.importFormContainer}>
         <form onSubmit={event => event.preventDefault()}>
@@ -139,6 +144,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 }}
                 session={session}
                 selected={selectedAsm}
+                InputProps={{ style: { height } }}
               />
             </Grid>
             <Grid item>
@@ -155,10 +161,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     minWidth={270}
                     onSelect={option => setOption(option)}
                     TextFieldProps={{
-                      margin: 'normal',
                       variant: 'outlined',
                       helperText:
                         'Enter sequence name, feature name, or location',
+                      style: { minWidth: '175px' },
+                      InputProps: { style: { height } },
                     }}
                   />
                 ) : (
@@ -170,7 +177,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 )
               ) : null}
             </Grid>
-            <Grid item></Grid>
             <Grid item>
               <Button
                 type="submit"

@@ -177,6 +177,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                     : 'Query'}
                 </Typography>
                 <AssemblySelector
+                  extra={0}
                   selected={queryAssembly}
                   onChange={val => setQueryAssembly(val)}
                   session={session}
@@ -189,6 +190,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                     : 'Target'}
                 </Typography>
                 <AssemblySelector
+                  extra={1}
                   selected={targetAssembly}
                   onChange={val => setTargetAssembly(val)}
                   session={session}

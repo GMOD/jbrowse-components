@@ -6,10 +6,26 @@ import { renderRegion } from './renderRegion'
 import tmp from 'tmp'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { spawnSync } from 'child_process'
+import fetch, { Headers, Response, Request } from 'node-fetch'
+
+if (!global.fetch) {
+  global.fetch = fetch
+  global.Headers = Headers
+  global.Response = Response
+  global.Request = Request
+}
 
 const err = console.error
 console.error = (...args) => {
   if (`${args[0]}`.match('useLayoutEffect')) {
+    return null
+  } else {
+    err(args)
+  }
+}
+
+console.warn = (...args) => {
+  if (`${args[0]}`.match('estimation reached timeout')) {
     return null
   } else {
     err(args)

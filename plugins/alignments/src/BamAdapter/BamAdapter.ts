@@ -4,11 +4,7 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import {
-  checkAbortSignal,
-  bytesForRegions,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -170,17 +166,29 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts?: BaseOptions,
+    opts?: BaseOptions & {
+      filterBy: {
+        flagInclude: number
+        flagExclude: number
+        tagFilter: { tag: string; value: unknown }
+        name: string
+      }
+    },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { signal, statusCallback = () => {} } = opts || {}
+    const { signal, filterBy, statusCallback = () => {} } = opts || {}
     return ObservableCreate<Feature>(async observer => {
       const { bam } = await this.configure()
       await this.setup(opts)
       statusCallback('Downloading alignments')
       const records = await bam.getRecordsForRange(refName, start, end, opts)
 
-      checkAbortSignal(signal)
+      const {
+        flagInclude = 0,
+        flagExclude = 0,
+        tagFilter,
+        name,
+      } = filterBy || {}
 
       for (const record of records) {
         let ref: string | undefined
@@ -191,6 +199,25 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
             record.get('end'),
           )
         }
+
+        const flags = record.flags
+        if (
+          !((flags & flagInclude) === flagInclude && !(flags & flagExclude))
+        ) {
+          continue
+        }
+
+        if (tagFilter) {
+          const val = record.get(tagFilter.tag)
+          if (!(val === '*' ? val !== undefined : val === tagFilter.value)) {
+            continue
+          }
+        }
+
+        if (name && record.get('name') !== name) {
+          continue
+        }
+
         observer.next(new BamSlightlyLazyFeature(record, this, ref))
       }
       statusCallback('')

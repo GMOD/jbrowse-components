@@ -47,7 +47,6 @@ export class CoreGetRefNames extends RpcMethodType {
     return []
   }
 }
-
 export class CoreGetFileInfo extends RpcMethodType {
   name = 'CoreGetInfo'
 

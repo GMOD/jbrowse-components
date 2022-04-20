@@ -72,7 +72,7 @@ For running like jbrowse-react-linear-genome-view you can use
 storybook
 
 ```sh
-cd products/jbrowse-react-linaer-genome-view
+cd products/jbrowse-react-linear-genome-view
 yarn storybook
 ```
 

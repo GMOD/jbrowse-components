@@ -15,7 +15,7 @@ jobs:
       - name: Install deps and build (with cache)
         uses: bahmutov/npm-install@v1
       - name: Lint codebase
-        run: yarn eslint --config .eslintrc.base.json --no-eslintrc --report-unused-disable-directives --max-warnings 0 --ext .js,.ts,.jsx,.tsx .
+        run: yarn lint
 
   format:
     name: Format on node 14 and ubuntu-latest

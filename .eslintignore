@@ -13,3 +13,6 @@ products/jbrowse-web/scripts/**
 products/jbrowse-desktop/public/electron.js
 products/jbrowse-desktop/public/generateFastaIndex.js
 /demos/
+webpack.config.js
+plugin-development-tools/
+craco.config.js

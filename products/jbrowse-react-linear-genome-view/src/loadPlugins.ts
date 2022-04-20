@@ -7,8 +7,9 @@ interface PluginDefinition {
 
 export default async function loadPlugins(
   pluginDefinitions: PluginDefinition[],
+  args?: { fetchESM: (url: string) => Promise<unknown> },
 ) {
-  const pluginLoader = new PluginLoader(pluginDefinitions)
+  const pluginLoader = new PluginLoader(pluginDefinitions, args)
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load()
   return runtimePlugins

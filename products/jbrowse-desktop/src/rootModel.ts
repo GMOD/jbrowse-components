@@ -8,15 +8,14 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-
+import makeWorkerInstance from './makeWorkerInstance'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { MenuItem } from '@jbrowse/core/ui'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { ipcRenderer } from 'electron'
 
 // icons
 import OpenIcon from '@material-ui/icons/FolderOpen'
@@ -29,10 +28,12 @@ import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
+import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
+const { ipcRenderer } = window.require('electron')
 
 function getSaveSession(model: RootModel) {
   return {
@@ -49,10 +50,12 @@ interface Menu {
 export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const JobsManager = jobsModelFactory(pluginManager)
   return types
     .model('Root', {
       jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
+      jobsManager: types.maybe(JobsManager),
       assemblyManager: assemblyManagerFactory(
         assemblyConfigSchema,
         pluginManager,
@@ -277,7 +280,20 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 if (self.session) {
                   self.session.queueDialog(doneCallback => [
                     OpenSequenceDialog,
-                    { model: self, onClose: doneCallback },
+                    {
+                      model: self,
+                      onClose: (confs: AnyConfigurationModel[]) => {
+                        try {
+                          confs?.forEach(conf => {
+                            self.jbrowse.addAssemblyConf(conf)
+                          })
+                        } catch (e) {
+                          console.error(e)
+                          self.session?.notify(`${e}`)
+                        }
+                        doneCallback()
+                      },
+                    },
                   ])
                 }
               },
@@ -370,7 +386,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            makeWorkerInstance,
+          },
           MainThreadRpcDriver: {},
         },
       ),

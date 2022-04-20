@@ -12,12 +12,16 @@ This component consists of a single JBrowse 2 linear view.
   linear genome view React component on NPM
 - [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the reusable
   linear genome view React component
-- [Live demo](https://jbrowse.org/demos/lgv/) - live demo of the linear genome
-  view React component used with create react app ([source
+- [Live demo with create-react-app v4](https://jbrowse.org/demos/lgv/) -
+  ([source
   code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view),
-  [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-linear-genome-view)).
-  Note: uses create-react-app v4, v5 does not polyfill node modules like Buffer
-  by default so is harder to setup
+  [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-linear-genome-view))
+- [Live demo with create-react-app v5](https://jbrowse.org/demos/lgv-cra5) -
+  ([source
+  code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-cra5),
+  [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-linear-genome-view-cra5)).
+  Note: for create-react-app v5, we use craco to update the webpack config to
+  polyfill some node modules
 
 ## JBrowse React Circular Genome View
 
@@ -27,9 +31,13 @@ This component consists of a single JBrowse 2 circular view.
   circular genome view React component on NPM
 - [Storybook](https://jbrowse.org/storybook/cgv/main/) - docs for the reusable
   circular genome view React component
-- [Live demo](https://jbrowse.org/demos/cgv/) - live demo of the circular
-  genome view React component used with create react app ([source
+- [Live demo with create-react-app v4](https://jbrowse.org/demos/cgv/) -
+  ([source
   code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view),
   [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view))
-  Note: uses create-react-app v4, v5 does not polyfill node modules like Buffer
-  by default so is harder to setup
+- [Live demo with create-react-app v5](https://jbrowse.org/demos/cgv-cra5) -
+  ([source
+  code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-cra5),
+  [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view-cra5)).
+  Note: for create-react-app v5 we use craco to update the webpack config to
+  polyfill some node modules

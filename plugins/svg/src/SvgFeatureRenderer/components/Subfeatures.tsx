@@ -4,14 +4,14 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SceneGraph } from '@jbrowse/core/util/layouts'
 import {
   chooseGlyphComponent,
   ExtraGlyphValidator,
   layOut,
   layOutFeature,
 } from './util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { SceneGraph } from '@jbrowse/core/util/layouts'
 
 function Subfeatures(props: {
   feature: Feature

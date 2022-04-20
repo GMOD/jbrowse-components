@@ -12,7 +12,6 @@ import { RootModel } from './rootModel'
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
     const { rootModel } = pluginManager
-
     return rootModel ? (
       <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
     ) : null

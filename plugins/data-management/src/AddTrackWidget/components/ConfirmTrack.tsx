@@ -1,14 +1,34 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import {
+  supportedIndexingAdapters,
+  getSession,
+  isElectron,
+} from '@jbrowse/core/util'
 import {
   Link,
   MenuItem,
   TextField,
   ListSubheader,
   Typography,
+  FormControl,
+  FormControlLabel,
+  Checkbox,
+  Paper,
+  Card,
+  List,
+  ListItem,
+  CardContent,
+  IconButton,
+  InputLabel,
+  InputAdornment,
   makeStyles,
 } from '@material-ui/core'
+
+// icons
+import DeleteIcon from '@material-ui/icons/Delete'
+import AddIcon from '@material-ui/icons/Add'
+// other
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
@@ -21,6 +41,17 @@ import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType
 const useStyles = makeStyles(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
+  },
+  paper: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(1),
+  },
+  spacer: {
+    height: theme.spacing(8),
+  },
+  card: {
+    marginTop: theme.spacing(1),
   },
 }))
 
@@ -97,6 +128,105 @@ function getAdapterTypes(pluginManager: PluginManager) {
 function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
+
+const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
+  const classes = useStyles()
+  const [value1, setValue1] = useState('')
+  const [value2, setValue2] = useState('')
+  const [attributes, setAttributes] = useState(['Name', 'ID'])
+  const [exclude, setExclude] = useState(['CDS', 'exon'])
+  const sections = [
+    {
+      label: 'Indexing attributes',
+      values: attributes,
+    },
+    {
+      label: 'Feature types to exclude',
+      values: exclude,
+    },
+  ]
+  useEffect(() => {
+    model.setTextIndexingConf({ attributes, exclude })
+  }, [model, attributes, exclude])
+
+  return (
+    <Paper className={classes.paper}>
+      <InputLabel>Indexing configuration</InputLabel>
+      {sections.map((section, index) => (
+        <Card raised key={section.label} className={classes.card}>
+          <CardContent>
+            <InputLabel>{section.label}</InputLabel>
+            <List disablePadding>
+              {section.values.map((val: string, idx: number) => (
+                <ListItem key={idx} disableGutters>
+                  <TextField
+                    value={val}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            color="secondary"
+                            onClick={() => {
+                              const newAttr = section.values.filter((a, i) => {
+                                return i !== idx
+                              })
+                              index === 0
+                                ? setAttributes(newAttr)
+                                : setExclude(newAttr)
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </ListItem>
+              ))}
+              <ListItem disableGutters>
+                <TextField
+                  value={index === 0 ? value1 : value2}
+                  placeholder="add new"
+                  onChange={event => {
+                    index === 0
+                      ? setValue1(event.target.value)
+                      : setValue2(event.target.value)
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => {
+                            if (index === 0) {
+                              const newAttr: string[] = attributes
+                              newAttr.push(value1)
+                              setAttributes(newAttr)
+                              setValue1('')
+                            } else {
+                              const newFeat: string[] = exclude
+                              newFeat.push(value2)
+                              setExclude(newFeat)
+                              setValue2('')
+                            }
+                          }}
+                          disabled={index === 0 ? value1 === '' : value2 === ''}
+                          color="secondary"
+                          data-testid={`stringArrayAdd-Feat`}
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </ListItem>
+            </List>
+          </CardContent>
+        </Card>
+      ))}
+    </Paper>
+  )
+})
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const classes = useStyles()
@@ -233,6 +363,7 @@ const TrackAssemblySelector = observer(
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const classes = useStyles()
+  const [check, setCheck] = useState(true)
   const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
     model
 
@@ -273,6 +404,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <Typography>Could not recognize this data type.</Typography>
   }
 
+  const supportedForIndexing = supportedIndexingAdapters(trackAdapter?.type)
   return (
     <div>
       {trackAdapter ? (
@@ -293,6 +425,25 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
       <TrackAssemblySelector model={model} />
+      {isElectron && supportedForIndexing && (
+        <FormControl>
+          <FormControlLabel
+            label={'Index track for text searching?'}
+            control={
+              <Checkbox
+                checked={check}
+                onChange={e => {
+                  setCheck(e.target.checked)
+                  model.setTextIndexTrack(e.target.checked)
+                }}
+              />
+            }
+          />
+        </FormControl>
+      )}
+      {isElectron && check && supportedForIndexing ? (
+        <TextIndexingConfig model={model} />
+      ) : null}
     </div>
   )
 }

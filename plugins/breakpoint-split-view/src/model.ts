@@ -1,6 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   types,
   getParent,
@@ -10,11 +13,8 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { parseBreakend } from '@gmod/vcf'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-
-type LGV = Instance<LinearGenomeViewStateModel>
+import { Feature } from '@jbrowse/core/util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
@@ -39,7 +39,7 @@ export interface Breakend {
 
 export type LayoutRecord = [number, number, number, number]
 
-export default function stateModelFactory(pluginManager: any) {
+export default function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const defaultHeight = 400
   const model = types
@@ -67,7 +67,7 @@ export default function stateModelFactory(pluginManager: any) {
     }))
     .views(self => ({
       // Find all track ids that match across multiple views
-      get matchedTracks() {
+      get matchedTracks(): string[] {
         return intersect(
           ...self.views.map(view =>
             view.tracks.map(
@@ -75,6 +75,21 @@ export default function stateModelFactory(pluginManager: any) {
                 t.configuration.trackId as string,
             ),
           ),
+        )
+      },
+
+      get matchedTrackFeatures() {
+        return Object.fromEntries(
+          this.matchedTracks.map(trackId => {
+            return [
+              trackId,
+              new CompositeMap<string, Feature>(
+                this.getMatchedTracks(trackId)?.map(
+                  t => t.displays[0].features,
+                ) || [],
+              ),
+            ]
+          }),
         )
       },
 
@@ -114,116 +129,14 @@ export default function stateModelFactory(pluginManager: any) {
       // Get a composite map of featureId->feature map for a track across
       // multiple views
       getTrackFeatures(trackConfigId: string) {
-        return new CompositeMap<string, Feature>(
-          this.getMatchedTracks(trackConfigId)?.map(
-            t => t.displays[0].features,
-          ) || [],
-        )
-      },
-
-      // Getting "matched" TRA means just return all TRA
-      getMatchedTranslocationFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const feats: Feature[][] = []
-        const alreadySeen = new Set<string>()
-
-        for (const f of features.values()) {
-          if (!alreadySeen.has(f.id())) {
-            if (f.get('ALT')[0] === '<TRA>') {
-              feats.push([f])
-            }
-          }
-          alreadySeen.add(f.id())
-        }
-
-        return feats
-      },
-
-      // Returns paired BND features across multiple views by inspecting
-      // the ALT field to get exact coordinate matches
-      getMatchedBreakendFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
-        const alreadySeen = new Set<string>()
-
-        for (const f of features.values()) {
-          if (!alreadySeen.has(f.id())) {
-            if (f.get('type') === 'breakend') {
-              const alts = f.get('ALT') as string[] | undefined
-              alts?.forEach(a => {
-                const cur = `${f.get('refName')}:${f.get('start') + 1}`
-                const bnd = parseBreakend(a)
-                if (bnd) {
-                  if (!candidates[cur]) {
-                    candidates[bnd.MatePosition] = [f]
-                  } else {
-                    candidates[cur].push(f)
-                  }
-                }
-              })
-            }
-          }
-          alreadySeen.add(f.id())
-        }
-
-        return Object.values(candidates).filter(v => v.length > 1)
-      },
-
-      // this finds candidate alignment features, aimed at plotting split reads
-      // from BAM/CRAM files
-      getMatchedAlignmentFeatures(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
-        const alreadySeen = new Set<string>()
-
-        // this finds candidate features that share the same name
-        for (const feature of features.values()) {
-          const id = feature.id()
-          const unmapped = feature.get('flags') & 4
-          if (!alreadySeen.has(id) && !unmapped) {
-            const n = feature.get('name')
-            if (!candidates[n]) {
-              candidates[n] = []
-            }
-            candidates[n].push(feature)
-          }
-          alreadySeen.add(feature.id())
-        }
-
-        return Object.values(candidates).filter(v => v.length > 1)
-      },
-
-      // this finds candidate alignment features, aimed at plotting split reads
-      // from BAM/CRAM files
-      getBadlyPairedAlignments(trackId: string) {
-        const features = this.getTrackFeatures(trackId)
-        const candidates: Record<string, Feature[]> = {}
-        const alreadySeen = new Set<string>()
-
-        // this finds candidate features that share the same name
-        for (const feature of features.values()) {
-          const flags = feature.get('flags')
-          const id = feature.id()
-          const unmapped = flags & 4
-          const correctlyPaired = flags & 2
-
-          if (!alreadySeen.has(id) && !correctlyPaired && !unmapped) {
-            const n = feature.get('name')
-            if (!candidates[n]) {
-              candidates[n] = []
-            }
-            candidates[n].push(feature)
-          }
-          alreadySeen.add(feature.id())
-        }
-
-        return Object.values(candidates).filter(v => v.length > 1)
+        return this.matchedTrackFeatures[trackConfigId]
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const calc = (track: any, feat: Feature) => {
           return track.displays[0].searchFeatureByID(feat.id())
         }
@@ -254,7 +167,7 @@ export default function stateModelFactory(pluginManager: any) {
             }: {
               name: string
               path?: string
-              args?: any[]
+              args?: unknown[]
             }) => {
               if (self.linkViews) {
                 const actions = [
@@ -276,7 +189,7 @@ export default function stateModelFactory(pluginManager: any) {
         )
       },
 
-      onSubviewAction(actionName: string, path: string, args?: any[]) {
+      onSubviewAction(actionName: string, path: string, args?: unknown[]) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
@@ -291,7 +204,7 @@ export default function stateModelFactory(pluginManager: any) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
-      removeView(view: LGV) {
+      removeView(view: LinearGenomeViewModel) {
         self.views.remove(view)
       },
 

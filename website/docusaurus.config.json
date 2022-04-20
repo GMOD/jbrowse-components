@@ -9,8 +9,7 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentVersion": "v1.6.9",
-    "bannerBulletin": "Introducing JBrowse Desktop"
+    "currentVersion": "v1.7.4"
   },
   "themeConfig": {
     "colorMode": {

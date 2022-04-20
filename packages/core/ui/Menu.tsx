@@ -6,7 +6,7 @@ import {
   ListItemText,
   ListSubheader,
   MenuProps as MUIMenuProps,
-  MenuItem,
+  MenuItem as MUIMenuItem,
   MenuItemProps,
   MenuList,
   Paper,
@@ -312,7 +312,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
             const onClick =
               'onClick' in menuItem ? handleClick(menuItem.onClick) : undefined
             return (
-              <MenuItem
+              <MUIMenuItem
                 key={menuItem.label}
                 style={menuItemStyle}
                 selected={idx === selectedMenuItemIdx}
@@ -357,7 +357,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                   inset={hasIcon && !menuItem.icon}
                 />
                 {endDecoration}
-              </MenuItem>
+              </MUIMenuItem>
             )
           })}
       </MenuList>

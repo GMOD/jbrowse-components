@@ -127,7 +127,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
               throw new Error(`Assembly ${selection} failed to load`)
             }
             return {
-              type: 'LinearGenomeView' as 'LinearGenomeView',
+              type: 'LinearGenomeView' as const,
               bpPerPx: 1,
               offsetPx: 0,
               hideHeader: true,
@@ -180,6 +180,7 @@ const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
               <AssemblySelector
                 key={`row_${index}_${selected[index]}`}
                 selected={selected[index]}
+                extra={index}
                 onChange={val => {
                   // splice the value into the current array
                   const copy = selected.slice(0)

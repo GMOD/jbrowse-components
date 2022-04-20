@@ -54,11 +54,9 @@ jobs:
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
       - name: Test embedded
-        # CI=false since we have a warning that gets treated as an error under CI
-        # Warning is: "Critical dependency: the request of a dependency is an expression"
         run: |
           yarn
-          CI=false yarn build
+          yarn build
           yarn test:e2e
         working-directory: component_test
 

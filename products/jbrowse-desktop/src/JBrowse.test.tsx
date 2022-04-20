@@ -1,13 +1,19 @@
 import React from 'react'
+
+// must import first to create window.require as side effect
+import { ipcMain, ipcRenderer } from '../../../packages/__mocks__/electron'
+
 import PluginManager from '@jbrowse/core/PluginManager'
-import electron from 'electron'
 import { render, fireEvent } from '@testing-library/react'
 import { SnapshotIn } from 'mobx-state-tree'
+
+// locals
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
 import configSnapshot from '../test_data/volvox/config.json'
-import electronMock from '../../../packages/__mocks__/electron'
+
+jest.mock('./makeWorkerInstance', () => () => {})
 
 type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,9 +22,6 @@ type JBrowseRootModel = ReturnType<typeof JBrowseRootModelFactory>
     defaultDriver: 'MainThreadRpcDriver',
   },
 }
-
-const { ipcRenderer } = electron
-const { ipcMain } = electronMock
 
 function getPluginManager(initialState?: SnapshotIn<JBrowseRootModel>) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))

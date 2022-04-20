@@ -1,10 +1,12 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { Region } from '@jbrowse/core/util/types'
 import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
@@ -218,10 +220,10 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     })
     if (unableToDraw.length) {
       console.warn(
-        unableToDraw.length > 5
-          ? 'Many features fell outside the boundaries of the contigs...sample'
-          : unableToDraw,
-        unableToDraw.join('\n'),
+        (unableToDraw.length > 5
+          ? 'Many features fell outside the boundaries of the contigs.....sample of features: '
+          : 'Some features fell outside the boundaries of the contigs: ') +
+          unableToDraw.slice(0, 5).join('\n'),
       )
     }
     return createImageBitmap(canvas)
