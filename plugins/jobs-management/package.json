@@ -25,7 +25,7 @@
   "scripts": {
     "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "postbuild": "tsc --build tsconfig.build.json",
-    "test": "cd ../..; jest plugins/text-indexing",
+    "test": "cd ../..; jest plugins/jobs-management",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@material-ui/icons": "^4.9.1",
-    "@jbrowse/text-indexing": "^1.6.9"
+    "@jbrowse/text-indexing": "^1.7.4"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
