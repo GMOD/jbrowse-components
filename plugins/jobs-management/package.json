@@ -24,12 +24,18 @@
   ],
   "scripts": {
     "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
-    "test": "cd ../..; jest plugins/text-indexing",
+    "postbuild": "tsc --build tsconfig.build.json",
+    "test": "cd ../..; jest plugins/jobs-management",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.17.9",
+    "@material-ui/icons": "^4.9.1",
+    "@jbrowse/text-indexing": "^1.7.4"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
@@ -39,10 +45,6 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0"
-  },
-  "dependencies": {
-    "@material-ui/icons": "^4.9.1",
-    "@jbrowse/text-indexing": "^1.6.9"
   },
   "private": true
 }
