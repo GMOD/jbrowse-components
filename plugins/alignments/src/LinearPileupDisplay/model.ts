@@ -159,8 +159,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, colorBy } = self
                 const view = getContainingView(self) as LGV
+                const {
+                  sortedBy,
+                  colorBy,
+                  parentTrack,
+                  adapterConfig,
+                  rendererType,
+                } = self
+                const { staticBlocks, bpPerPx } = view
 
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
@@ -168,44 +175,46 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                   const uniqueTagSet = await getUniqueTagValues(
                     self,
                     colorBy,
-                    view.staticBlocks,
+                    staticBlocks,
                   )
                   self.updateColorTagMap(uniqueTagSet)
                 }
 
                 if (colorBy?.type === 'modifications') {
-                  const uniqueModificationsSet =
+                  const adapter = getConf(parentTrack, ['adapter'])
+                  self.updateModificationColorMap(
                     await getUniqueModificationValues(
                       self,
-                      getConf(self.parentTrack, ['adapter']),
+                      adapter,
                       colorBy,
-                      view.staticBlocks,
-                    )
-                  self.updateModificationColorMap(uniqueModificationsSet)
+                      staticBlocks,
+                    ),
+                  )
                 }
 
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
 
-                  const region = {
-                    start: pos,
-                    end: pos + 1,
-                    refName,
-                    assemblyName,
-                  }
-
                   // render just the sorted region first
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
-                    regions: [region],
-                    adapterConfig: self.adapterConfig,
-                    rendererType: self.rendererType.name,
+                    regions: [
+                      {
+                        start: pos,
+                        end: pos + 1,
+                        refName,
+                        assemblyName,
+                      },
+                    ],
+                    adapterConfig: adapterConfig,
+                    rendererType: rendererType.name,
                     sessionId: getRpcSessionId(self),
+                    layoutId: view.id,
                     timeout: 1000000,
                     ...self.renderProps(),
                   })
                   self.setReady(true)
-                  self.setCurrBpPerPx(view.bpPerPx)
+                  self.setCurrBpPerPx(bpPerPx)
                 } else {
                   self.setReady(true)
                 }
