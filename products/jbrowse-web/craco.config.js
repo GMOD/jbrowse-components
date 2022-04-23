@@ -11,13 +11,10 @@ module.exports = {
     return config
   },
   webpack: {
-    target: 'node',
-
     plugins: [
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
       }),
-      new webpack.ContextReplacementPlugin(/any-promise/),
       new webpack.DefinePlugin({
         // Global mobx-state-tree configuration.
         // Force type checking in production for easier debugging:
