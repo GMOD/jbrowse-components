@@ -32,7 +32,7 @@ export default ConfigurationSchema(
       type: 'number',
       description:
         'the minimum width in px for a pileup mismatch feature. use for increasing mismatch marker widths when zoomed out to e.g. 1px or 0.5px',
-      defaultValue: 0.8,
+      defaultValue: 0,
     },
     maxHeight: {
       type: 'integer',
