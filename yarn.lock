@@ -1570,10 +1570,10 @@
     long "^4.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/trix@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.3.tgz#2384ee86a1884f750629c5c0cd1f9a699a568199"
-  integrity sha512-lIVe36K9eXWFW1E1af+u5P+QfovFIobCJmNYZ/AzRYRuqVosz1/CSuluUdwUf5mZG37adceYLazUAqTSkRAzgQ==
+"@gmod/trix@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.4.tgz#0f26cc8e71088c35ce10b94156001b9930250c94"
+  integrity sha512-GEGR3eCcx+M8inaBjDt68/G+4UahdMwCPxAWycPEIxTZGTnVzxuWLoVwA57gc2xL5BE+x8vkQqjIxqxjB612Jg==
 
 "@gmod/twobit@^1.1.12":
   version "1.1.13"
