@@ -6,7 +6,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "aws s3 sync --delete build s3://jbrowse.org/demos/lgv-vite/",
+    "deploy": "aws s3 sync --delete dist s3://jbrowse.org/demos/lgv-vite/",
     "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/lgv-vite/*\""
   },
   "dependencies": {
