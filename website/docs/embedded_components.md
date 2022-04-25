@@ -24,7 +24,11 @@ This component consists of a single JBrowse 2 linear view.
   [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-linear-genome-view-cra5)).
   Note: for create-react-app v5, we use craco to update the webpack config to
   polyfill some node modules
-
+- [Live demo with vite](https://jbrowse.org/demos/lgv-vite) - ([source
+  code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vite),
+  [download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-linear-genome-view-vite)).
+  Note: for vite, we use rollup to polyfill some node polyfills similar to
+  craco in creat-react-app v5
 - [Live demo with vanilla JS](https://jbrowse.org/demos/lgv-vanillajs) -
   ([source
   code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vanillajs),
