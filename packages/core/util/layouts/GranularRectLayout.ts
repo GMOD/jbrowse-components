@@ -136,11 +136,9 @@ class LayoutRow<T> {
     }
 
     // or check if we need to expand to the left and/or to the right
-
     let oLeft = left - this.rowState.offset
     let oRight = right - this.rowState.offset
     const currLength = this.rowState.bits.length
-    // console.log(oRight, this.rowState.bits.length)
 
     // expand rightward if necessary
     if (oRight >= this.rowState.bits.length) {
@@ -179,24 +177,17 @@ class LayoutRow<T> {
     }
     oRight = right - this.rowState.offset
     oLeft = left - this.rowState.offset
+    const w = oRight - oLeft
 
-    // set the bits in the bitmask
-    // if (oLeft < 0) debugger
-    // if (oRight < 0) debugger
-    // if (oRight <= oLeft) debugger
-    // if (oRight > this.rowState.bits.length) debugger
-    if (oRight - oLeft > maxFeaturePitchWidth) {
+    if (w > maxFeaturePitchWidth) {
       console.warn(
-        `Layout X pitch set too low, feature spans ${
-          oRight - oLeft
-        } bits in a single row.`,
+        `Layout X pitch set too low, feature spans ${w} bits in a single row.`,
         rect,
         data,
       )
     }
 
     for (let x = oLeft; x < oRight; x += 1) {
-      // if (this.rowState.bits[x] && this.rowState.bits[x].get('name') !== data.get('name')) debugger
       this.rowState.bits[x] = data
     }
 
@@ -206,7 +197,6 @@ class LayoutRow<T> {
     if (right > this.rowState.max) {
       this.rowState.max = right
     }
-    // // this.log(`added ${leftX} - ${rightX}`)
   }
 
   /**
@@ -374,7 +364,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: Record<string, T>,
+    data?: T,
   ): number | null {
     // if we have already laid it out, return its layout
     const storedRec = this.rectangles.get(id)
@@ -464,8 +454,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       return
     }
 
-    const data = rect.data || rect.id
-    const { bitmap } = this
+    const data = rect.id
     const yEnd = rect.top + rect.h
     if (rect.r - rect.l > maxFeaturePitchWidth) {
       // the rect is very big in relation to the view size, just pretend, for
@@ -474,11 +463,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
       // along the genome at the same zoom level.  but most users will not do
       // that.  hopefully.
       for (let y = rect.top; y < yEnd; y += 1) {
-        this.autovivifyRow(bitmap, y).setAllFilled(data)
+        this.autovivifyRow(this.bitmap, y).setAllFilled(data)
       }
     } else {
       for (let y = rect.top; y < yEnd; y += 1) {
-        this.autovivifyRow(bitmap, y).addRect(rect, data)
+        this.autovivifyRow(this.bitmap, y).addRect(rect, data)
       }
     }
   }
@@ -522,6 +511,10 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
 
     return undefined
+  }
+
+  getDataByID(id: string): unknown {
+    return this.rectangles.get(id)?.data
   }
 
   cleanup(): void {}

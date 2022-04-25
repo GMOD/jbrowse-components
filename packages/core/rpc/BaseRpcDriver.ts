@@ -76,23 +76,29 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      this.workerP = this.driver.makeWorker().then(worker => {
-        watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
-          error => {
-            if (worker) {
-              console.error(
-                'worker did not respond, killing and generating new one',
-              )
-              console.error(error)
-              worker.destroy()
-              worker.status = 'killed'
-              worker.error = error
-              this.workerP = undefined
-            }
-          },
-        )
-        return worker
-      })
+      this.workerP = this.driver
+        .makeWorker()
+        .then(worker => {
+          watchWorker(worker, this.driver.maxPingTime, this.driver.name).catch(
+            error => {
+              if (worker) {
+                console.error(
+                  'worker did not respond, killing and generating new one',
+                )
+                console.error(error)
+                worker.destroy()
+                worker.status = 'killed'
+                worker.error = error
+                this.workerP = undefined
+              }
+            },
+          )
+          return worker
+        })
+        .catch(e => {
+          this.workerP = undefined
+          throw e
+        })
     }
     return this.workerP
   }

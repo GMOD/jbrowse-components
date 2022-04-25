@@ -291,11 +291,13 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig: getConf(assembly, ['sequence', 'adapter']),
         sessionId,
-        region: {
-          start,
-          end,
-          refName: assembly.getCanonicalRefName(refName),
-        },
+        regions: [
+          {
+            start,
+            end,
+            refName: assembly.getCanonicalRefName(refName),
+          },
+        ],
       })
 
       const [feat] = feats as Feature[]

@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { transaction } from 'mobx'
 import {
+  getEnv,
   getRoot,
-  Instance,
   resolveIdentifier,
   types,
-  getEnv,
+  Instance,
 } from 'mobx-state-tree'
-import { getConf } from '../../configuration'
 import {
+  getConf,
+  AnyConfigurationModel,
   AnyConfigurationSchemaType,
   ConfigurationReference,
-} from '../../configuration/configurationSchema'
+} from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
 import { getContainingView, getSession } from '../../util'
@@ -181,7 +181,7 @@ export function createBaseTrackModel(
           displayType => displayType.name,
         )
         const compatibleDisplays = self.configuration.displays.filter(
-          (displayConf: any) =>
+          (displayConf: AnyConfigurationModel) =>
             compatibleDisplayTypes.includes(displayConf.type),
         )
         const shownId = self.displays[0].configuration.displayId
@@ -190,14 +190,13 @@ export function createBaseTrackModel(
             { type: 'divider' },
             { type: 'subHeader', label: 'Display types' },
           )
-          compatibleDisplays.forEach((displayConf: any) => {
+          compatibleDisplays.forEach((displayConf: AnyConfigurationModel) => {
             displayChoices.push({
               type: 'radio',
-              label: `${displayConf.type}`,
-              onClick: () => {
-                self.replaceDisplay(shownId, displayConf.displayId)
-              },
+              label: displayConf.type,
               checked: displayConf.displayId === shownId,
+              onClick: () =>
+                self.replaceDisplay(shownId, displayConf.displayId),
             })
           })
         }

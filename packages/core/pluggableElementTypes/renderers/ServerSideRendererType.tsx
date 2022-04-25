@@ -171,10 +171,8 @@ export default class ServerSideRenderer extends RendererType {
    */
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { signal, statusCallback = () => {} } = args
-    checkAbortSignal(signal)
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
-    checkAbortSignal(signal)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
       this.render(deserializedArgs),
     )
@@ -183,12 +181,9 @@ export default class ServerSideRenderer extends RendererType {
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    const serialized = await updateStatus(
-      'Serializing results',
-      statusCallback,
-      () => this.serializeResultsInWorker(results, deserializedArgs),
+    return updateStatus('Serializing results', statusCallback, () =>
+      this.serializeResultsInWorker(results, deserializedArgs),
     )
-    return serialized
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {

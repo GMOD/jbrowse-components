@@ -15,8 +15,12 @@ import {
   BaseFeatureDataAdapter,
   isFeatureAdapter,
 } from '../data_adapters/BaseAdapter'
-import { Region } from '../util/types'
-import { checkAbortSignal, renameRegionsIfNeeded } from '../util'
+import {
+  checkAbortSignal,
+  renameRegionsIfNeeded,
+  getLayoutId,
+  Region,
+} from '../util'
 import SimpleFeature, { SimpleFeatureSerialized } from '../util/simpleFeature'
 
 export class CoreGetRefNames extends RpcMethodType {
@@ -117,10 +121,26 @@ export class CoreGetFeatures extends RpcMethodType {
     return superDeserialized.map(feat => new SimpleFeature(feat))
   }
 
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
+
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
+
+    return superArgs
+  }
+
   async execute(
     args: {
       sessionId: string
-      region: Region
+      regions: Region[]
       adapterConfig: {}
       signal?: RemoteAbortSignal
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,7 +152,7 @@ export class CoreGetFeatures extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
-    const { signal, sessionId, adapterConfig, region, opts } = deserializedArgs
+    const { signal, sessionId, adapterConfig, regions, opts } = deserializedArgs
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -141,7 +161,10 @@ export class CoreGetFeatures extends RpcMethodType {
     if (!isFeatureAdapter(dataAdapter)) {
       return []
     }
-    const ret = dataAdapter.getFeatures(region, { ...opts, signal })
+    const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
+      ...opts,
+      signal,
+    })
     const r = await ret.pipe(toArray()).toPromise()
     return r.map(f => f.toJSON())
   }
@@ -323,6 +346,64 @@ export class CoreRender extends RpcMethodType {
       superDeserialized as ResultsSerialized,
       args,
     )
+  }
+}
+
+/**
+ * fetches features from an adapter and call a renderer with them
+ */
+export class CoreGetFeatureDetails extends RpcMethodType {
+  name = 'CoreGetFeatureDetails'
+
+  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+
+    const renamedArgs = assemblyManager
+      ? await renameRegionsIfNeeded(assemblyManager, args)
+      : args
+
+    const superArgs = (await super.serializeArguments(
+      renamedArgs,
+      rpcDriverClassName,
+    )) as RenderArgs
+    if (rpcDriverClassName === 'MainThreadRpcDriver') {
+      return superArgs
+    }
+
+    const { rendererType } = args
+
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+
+    return RendererType.serializeArgsInClient(superArgs)
+  }
+
+  async execute(
+    args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
+    rpcDriverClassName: string,
+  ) {
+    let deserializedArgs = args
+    if (rpcDriverClassName !== 'MainThreadRpcDriver') {
+      deserializedArgs = await this.deserializeArguments(
+        args,
+        rpcDriverClassName,
+      )
+    }
+    const { rendererType, featureId } = deserializedArgs
+    const RendererType = validateRendererType(
+      rendererType,
+      this.pluginManager.getRendererType(rendererType),
+    )
+
+    // @ts-ignore
+    const sess = RendererType.sessions[getLayoutId(args)]
+    const { layout } = sess.cachedLayout
+    const xref = layout.getDataByID(featureId)
+
+    return { feature: xref.toJSON() }
   }
 }
 

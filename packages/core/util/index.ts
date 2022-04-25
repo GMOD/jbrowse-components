@@ -1160,3 +1160,13 @@ export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
     end: b.end,
   }
 }
+
+export function getLayoutId({
+  sessionId,
+  layoutId,
+}: {
+  sessionId: string
+  layoutId: string
+}) {
+  return sessionId + '-' + layoutId
+}

@@ -9,6 +9,8 @@ import {
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
+  SimpleFeature,
+  Feature,
 } from '@jbrowse/core/util'
 
 import VisibilityIcon from '@material-ui/icons/Visibility'
@@ -19,7 +21,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
@@ -158,8 +159,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, colorBy } = self
                 const view = getContainingView(self) as LGV
+                const {
+                  sortedBy,
+                  colorBy,
+                  parentTrack,
+                  adapterConfig,
+                  rendererType,
+                } = self
+                const { staticBlocks, bpPerPx } = view
 
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
@@ -167,44 +175,46 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                   const uniqueTagSet = await getUniqueTagValues(
                     self,
                     colorBy,
-                    view.staticBlocks,
+                    staticBlocks,
                   )
                   self.updateColorTagMap(uniqueTagSet)
                 }
 
                 if (colorBy?.type === 'modifications') {
-                  const uniqueModificationsSet =
+                  const adapter = getConf(parentTrack, ['adapter'])
+                  self.updateModificationColorMap(
                     await getUniqueModificationValues(
                       self,
-                      getConf(self.parentTrack, ['adapter']),
+                      adapter,
                       colorBy,
-                      view.staticBlocks,
-                    )
-                  self.updateModificationColorMap(uniqueModificationsSet)
+                      staticBlocks,
+                    ),
+                  )
                 }
 
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
 
-                  const region = {
-                    start: pos,
-                    end: pos + 1,
-                    refName,
-                    assemblyName,
-                  }
-
                   // render just the sorted region first
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
-                    regions: [region],
-                    adapterConfig: self.adapterConfig,
-                    rendererType: self.rendererType.name,
+                    regions: [
+                      {
+                        start: pos,
+                        end: pos + 1,
+                        refName,
+                        assemblyName,
+                      },
+                    ],
+                    adapterConfig: adapterConfig,
+                    rendererType: rendererType.name,
                     sessionId: getRpcSessionId(self),
+                    layoutId: view.id,
                     timeout: 1000000,
                     ...self.renderProps(),
                   })
                   self.setReady(true)
-                  self.setCurrBpPerPx(view.bpPerPx)
+                  self.setCurrBpPerPx(bpPerPx)
                 } else {
                   self.setReady(true)
                 }
@@ -404,6 +414,72 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
+            async onFeatureClick(_: unknown, featureId: string | undefined) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: getContainingView(self).id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  if (feature) {
+                    // @ts-ignore
+                    self.selectFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
+            onClick() {
+              self.clearFeatureSelection()
+            },
+            // similar to click but opens a menu with further options
+            async onFeatureContextMenu(
+              _: unknown,
+              featureId: string | undefined,
+            ) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  if (feature) {
+                    // @ts-ignore
+                    self.setContextMenuFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
           }
         },
 

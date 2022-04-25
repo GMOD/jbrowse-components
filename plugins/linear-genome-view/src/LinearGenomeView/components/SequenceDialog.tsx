@@ -78,19 +78,12 @@ async function fetchSequence(
   const adapterConfig = getConf(assembly, ['sequence', 'adapter'])
 
   const sessionId = 'getSequence'
-  const chunks = (await Promise.all(
-    regions.map(region =>
-      rpcManager.call(sessionId, 'CoreGetFeatures', {
-        adapterConfig,
-        region,
-        sessionId,
-        signal,
-      }),
-    ),
-  )) as Feature[][]
-
-  // assumes that we get whole sequence in a single getFeatures call
-  return chunks.map(chunk => chunk[0])
+  return rpcManager.call(sessionId, 'CoreGetFeatures', {
+    adapterConfig,
+    regions,
+    sessionId,
+    signal,
+  }) as Promise<Feature[]>
 }
 
 function SequenceDialog({

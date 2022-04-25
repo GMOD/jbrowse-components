@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react'
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import Path from 'svg-path-generator'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
@@ -13,7 +12,7 @@ const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 // this finds candidate alignment features, aimed at plotting split reads
 // from BAM/CRAM files
-function getBadlyPairedAlignments(features: CompositeMap<string, Feature>) {
+function getBadlyPairedAlignments(features: Map<string, Feature>) {
   const candidates: Record<string, Feature[]> = {}
   const alreadySeen = new Set<string>()
 
@@ -39,7 +38,7 @@ function getBadlyPairedAlignments(features: CompositeMap<string, Feature>) {
 
 // this finds candidate alignment features, aimed at plotting split reads
 // from BAM/CRAM files
-function getMatchedAlignmentFeatures(features: CompositeMap<string, Feature>) {
+function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
   const candidates: Record<string, Feature[]> = {}
   const alreadySeen = new Set<string>()
 
@@ -60,18 +59,18 @@ function getMatchedAlignmentFeatures(features: CompositeMap<string, Feature>) {
   return Object.values(candidates).filter(v => v.length > 1)
 }
 
-function hasPairedReads(features: CompositeMap<string, Feature>) {
-  return features.find(f => f.get('flags') & 64)
+function hasPairedReads(features: Map<string, Feature>) {
+  return [...features.values()].find(f => f.get('flags') & 64)
 }
 
 const AlignmentConnections = observer(
   ({
     model,
-    trackConfigId,
+    trackId,
     parentRef,
   }: {
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views, showIntraviewLinks } = model
@@ -81,7 +80,7 @@ const AlignmentConnections = observer(
     const { assemblyManager } = session
     const assembly = assemblyManager.get(views[0].assemblyNames[0])
     useNextFrame(snap)
-    const totalFeatures = model.getTrackFeatures(trackConfigId)
+    const totalFeatures = model.getTrackFeatures(trackId)
     const hasPaired = useMemo(
       () => hasPairedReads(totalFeatures),
       [totalFeatures],
@@ -91,17 +90,14 @@ const AlignmentConnections = observer(
       const features = hasPaired
         ? getBadlyPairedAlignments(totalFeatures)
         : getMatchedAlignmentFeatures(totalFeatures)
-      const layoutMatches = model.getMatchedFeaturesInLayout(
-        trackConfigId,
-        features,
-      )
+      const layoutMatches = model.getMatchedFeaturesInLayout(trackId, features)
       if (!hasPaired) {
         layoutMatches.forEach(m => {
           m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
         })
       }
       return layoutMatches
-    }, [totalFeatures, trackConfigId, hasPaired, model])
+    }, [totalFeatures, trackId, hasPaired, model])
 
     const [mouseoverElt, setMouseoverElt] = useState<string>()
 
@@ -120,9 +116,7 @@ const AlignmentConnections = observer(
       <g
         stroke="#333"
         fill="none"
-        data-testid={
-          layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
-        }
+        data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
       >
         {layoutMatches.map(chunk => {
           const ret = []
@@ -163,10 +157,10 @@ const AlignmentConnections = observer(
             const reversed1 = views[level1].pxToBp(x1).reversed
             const reversed2 = views[level2].pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackConfigId))
+            const tracks = views.map(v => v.getTrack(trackId))
 
-            const y1 = yPos(trackConfigId, level1, views, tracks, c1) - yOffset
-            const y2 = yPos(trackConfigId, level2, views, tracks, c2) - yOffset
+            const y1 = yPos(trackId, level1, views, tracks, c1) - yOffset
+            const y2 = yPos(trackId, level2, views, tracks, c2) - yOffset
 
             // possible todo: use totalCurveHeight to possibly make alternative
             // squiggle if the S is too small

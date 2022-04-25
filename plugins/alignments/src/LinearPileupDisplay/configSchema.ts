@@ -6,8 +6,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 function PileupConfigFactory(pluginManager: PluginManager) {
   const PileupRendererConfigSchema =
     pluginManager.getRendererType('PileupRenderer').configSchema
-  const SvgFeatureRendererConfigSchema =
-    pluginManager.getRendererType('SvgFeatureRenderer').configSchema
 
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
@@ -15,12 +13,11 @@ function PileupConfigFactory(pluginManager: PluginManager) {
     {
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration('Rendering', ['pileup', 'svg']),
+        model: types.enumeration('Rendering', ['pileup']),
         defaultValue: 'pileup',
       },
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer: PileupRendererConfigSchema,
-        SvgFeatureRenderer: SvgFeatureRendererConfigSchema,
       }),
       renderer: '',
       maxFeatureScreenDensity: {

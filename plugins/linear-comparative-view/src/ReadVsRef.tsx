@@ -199,7 +199,7 @@ export function WindowSizeDlg(props: {
           const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
             sessionId,
-            region: { refName: saRef, start: +saStart - 1, end: +saStart },
+            regions: [{ refName: saRef, start: +saStart - 1, end: +saStart }],
           })) as Feature[]
           const result = feats.find(
             f =>

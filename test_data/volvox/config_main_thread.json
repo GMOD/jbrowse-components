@@ -64,37 +64,6 @@
           "displayId": "volvox_bam_pileup_pileup"
         }
       ]
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA, svg)",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox", "volvox2"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "volvox-sorted.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox-sorted.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "defaultRendering": "svg"
-          }
-        }
-      ]
     }
   ]
 }
