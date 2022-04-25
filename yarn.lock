@@ -1468,10 +1468,10 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^1.0.32":
-  version "1.0.34"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.34.tgz#2e0a2a09fe6b13fba1e0b092c915df9baf6891f2"
-  integrity sha512-sL8LpFqiSY87RF3OImNMyX1xjgpGsTUZfV7yurBgydcoX16km5sqikqfQDgjIF0nO9INBQMv6/LLgRJul4mNbg==
+"@gmod/bbi@^1.0.35":
+  version "1.0.35"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-1.0.35.tgz#c2c7785a1b2de9810da03c874963b659c0e1af8d"
+  integrity sha512-F8DETtrpzisFkcwblBe6HO1TNTclgrQ3UQ/OOFtmvoRbDBL5wcwPGlExYyGVJ5vog2/SjZZYiQjRLilUMxNPXg==
   dependencies:
     "@gmod/binary-parser" "^1.4.0"
     abortable-promise-cache "^1.4.1"
@@ -1570,10 +1570,10 @@
     long "^4.0.0"
     quick-lru "^4.0.0"
 
-"@gmod/trix@^2.0.1":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.2.tgz#08697ad68799cc94e3325729bf75dc685f667d19"
-  integrity sha512-c4Nvp5BqO2aUxRm0xLhn+qe/vzKZ0P0WXVMcxnSzIEC2az3FyRF9wTLPta3RBYTBpmQp2kdyXfJxWeeKQkl1Ig==
+"@gmod/trix@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@gmod/trix/-/trix-2.0.4.tgz#0f26cc8e71088c35ce10b94156001b9930250c94"
+  integrity sha512-GEGR3eCcx+M8inaBjDt68/G+4UahdMwCPxAWycPEIxTZGTnVzxuWLoVwA57gc2xL5BE+x8vkQqjIxqxjB612Jg==
 
 "@gmod/twobit@^1.1.12":
   version "1.1.13"
