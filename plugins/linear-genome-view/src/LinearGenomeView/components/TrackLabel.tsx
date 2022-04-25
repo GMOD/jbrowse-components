@@ -89,12 +89,12 @@ const TrackLabel = React.forwardRef(
 
     let trackName = getConf(track, 'name')
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
-      trackName = 'Reference Sequence'
-      session.assemblies.forEach(assembly => {
-        if (assembly.sequence === trackConf) {
-          trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
-        }
-      })
+      const r = session.assemblies.find(a => a.sequence === trackConf)
+      trackName =
+        readConfObject(trackConf, 'name') ||
+        (r
+          ? `Reference Sequence (${readConfObject(r, 'name')})`
+          : 'Reference Sequence')
     }
 
     function handleMenuItemClick(_: unknown, callback: Function) {

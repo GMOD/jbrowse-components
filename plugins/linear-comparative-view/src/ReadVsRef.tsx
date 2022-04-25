@@ -341,6 +341,7 @@ export function WindowSizeDlg(props: {
         name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',
+          name: `Read sequence`,
           trackId: seqTrackId,
           assemblyNames: [readAssembly],
           adapter: {
