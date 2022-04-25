@@ -819,12 +819,7 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_bam_altname_alignments",
-          "pileupDisplay": Object {
-            "defaultRendering": "svg",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "type": "LinearPileupDisplay",
-          },
+          "displayId": "volvox_bam_altname-LinearAlignmentsDisplay",
           "type": "LinearAlignmentsDisplay",
         },
         Object {
@@ -836,7 +831,7 @@ Object {
           "type": "LinearSNPCoverageDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (contigA, svg)",
+      "name": "volvox-sorted.bam (contigA)",
       "trackId": "volvox_bam_altname",
       "type": "AlignmentsTrack",
     },
