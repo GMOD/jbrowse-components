@@ -466,6 +466,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                     {
                       featureId: f,
                       sessionId,
+                      layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
                   )) as { feature: unknown }
