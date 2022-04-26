@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-text-indexing",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "description": "JBrowse 2 text indexing rpc method",
   "keywords": [
     "jbrowse",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/text-indexing": "^1.6.9",
+    "@jbrowse/text-indexing": "^1.7.5",
     "@material-ui/icons": "^4.9.1"
   },
   "peerDependencies": {
