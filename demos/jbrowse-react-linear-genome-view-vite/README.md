@@ -2,9 +2,11 @@
 
 Based on https://codesandbox.io/s/ylt4t?file=/vite.config.ts:478-540 by @garrettjstevens
 
-This is a demo of using the linear genome view with vite
+This is a demo of using the linear genome view with vite (see https://vitejs.dev/)
 
-It uses several polyfills for node components such as Buffer
+Vite is a build system that is very fast and becoming more popular, using esbuild and rollup instead of webpack
+
+This particular demo includes several polyfills that are needed for JBrowse including the Buffer polyfill
 
 # Demo of `@jbrowse/react-linear-genome-view` with vite
 
