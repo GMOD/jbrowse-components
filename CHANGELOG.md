@@ -1,3 +1,23 @@
+## 1.7.6 (2022-04-26)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package          | Download |
+| ---------------- | -------- |
+| @jbrowse/desktop |          |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- [#2939](https://github.com/GMOD/jbrowse-components/pull/2939) Fix loading CRAM, TwoBit, and other modules that use @gmod/binary-parser on jbrowse desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 1.7.5 (2022-04-26)
 
 <details><summary>Packages in this release</summary>
