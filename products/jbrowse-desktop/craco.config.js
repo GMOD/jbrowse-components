@@ -15,6 +15,13 @@ module.exports = {
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
       }),
+
+      // this is needed to properly polyfill buffer in desktop, after the CRA5
+      // conversion it was observed cram, twobit, etc that use
+      // @gmod/binary-parser complained of buffers not being real buffers
+      new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+      }),
       new webpack.ContextReplacementPlugin(/any-promise/),
       new webpack.DefinePlugin({
         // Global mobx-state-tree configuration.
@@ -36,9 +43,10 @@ module.exports = {
         match.loader.include = include.concat(getYarnWorkspaces())
       }
 
-      // similar to our webpack 4 rescript, helps load 'fs' module for local
-      // file access and avoid browser:{} field from package.json being used
-      // (which sometimes kicks out fs access e.g. in generic-filehandle)
+      // similar to our webpack 4 rescript, setting target to
+      // 'electron-renderer' helps load 'fs' module for local file access and
+      // avoid browser:{} field from package.json being used (which sometimes
+      // kicks out fs access e.g. in generic-filehandle)
       config.target = 'electron-renderer'
       config.resolve.aliasFields = []
       config.resolve.mainFields = ['module', 'main']
@@ -46,6 +54,7 @@ module.exports = {
       // worker chunks xref
       // https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
       config.output.publicPath = 'auto'
+      config.cache = false
       return config
     },
   },
