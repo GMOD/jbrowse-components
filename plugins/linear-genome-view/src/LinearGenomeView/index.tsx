@@ -127,6 +127,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         hideHeader: false,
         hasCustomMiniControls: false,
         hasCustomHeader: false,
+        isVisible: true,
         hideHeaderOverview: false,
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
@@ -465,6 +466,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleHeader() {
         self.hideHeader = !self.hideHeader
+      },
+      toggleVisible() {
+        self.isVisible = !self.isVisible
       },
 
       toggleHeaderOverview() {

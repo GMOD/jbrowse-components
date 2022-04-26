@@ -110,17 +110,23 @@ const OverlayComparativeView = observer(
                 return (
                   <div key={view.id}>
                     {model.views[model.anchorViewIndex].id !== view.id ? (
-                      <div>
+                      <>
                         {!view.hideHeader ? (
                           <Subheader view={view} model={model} />
                         ) : null}
-                        <AreaOfInterest view={view} model={model} />
-                      </div>
+                        {view.isVisible ? (
+                          <AreaOfInterest view={view} model={model} />
+                        ) : null}
+                      </>
                     ) : null}
-                    {view.hasCustomMiniControls ? (
-                      <MiniControls model={view} />
+                    {view.isVisible ? (
+                      <>
+                        {view.hasCustomMiniControls && view.hideHeader ? (
+                          <MiniControls model={view} />
+                        ) : null}
+                        <ReactComponent key={view.id} model={view} />
+                      </>
                     ) : null}
-                    <ReactComponent key={view.id} model={view} />
                   </div>
                 )
               })}

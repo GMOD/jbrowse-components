@@ -7,33 +7,12 @@ import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
 import Paper from '@material-ui/core/Paper'
 import Menu from '@jbrowse/core/ui/Menu'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
-import { styled, TextField, Typography } from '@material-ui/core'
-import { measureText } from '@jbrowse/core/util'
-
-const MAX_WIDTH = 450
-const MIN_WIDTH = 50
+import LabelField from './LabelField'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   const { model } = props
   const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor } = model
   const [anchorEl, setAnchorEl] = useState<HTMLElement>()
-
-  const determineWidth = () => {
-    const width =
-      measureText(model.displayName, 15) < MAX_WIDTH
-        ? measureText(model.displayName, 15) > MIN_WIDTH
-          ? measureText(model.displayName, 15)
-          : MIN_WIDTH
-        : MAX_WIDTH
-    return width
-  }
-
-  const [inputWidth, setInputWidth] = useState<number>(determineWidth())
-
-  const setViewLabelX = (label: any) => {
-    model.setDisplayName(label)
-    setInputWidth(determineWidth())
-  }
 
   return (
     <div style={{ position: 'absolute', right: '0px', zIndex: '1001' }}>
@@ -48,16 +27,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
         >
           <ArrowDown />
         </IconButton>
-        <TextField
-          variant="standard"
-          value={model.displayName}
-          size="small"
-          style={{ margin: '0px', paddingRight: '5px' }}
-          onChange={(event: any) => setViewLabelX(event?.target.value)}
-          InputProps={{
-            style: { width: `${inputWidth}px` },
-          }}
-        />
+        <LabelField model={model} />
         {model.hideHeader ? (
           <div>
             <IconButton

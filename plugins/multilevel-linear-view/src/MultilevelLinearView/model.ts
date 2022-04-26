@@ -23,10 +23,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...superMenuItems(),
 
             {
-              label: 'Square view',
-              onClick: self.squareView,
-              description:
-                'Makes both views use the same zoom level, adjusting to the average of each',
+              label: 'Align view',
+              onClick: self.alignViews,
+              description: 'Align views (realign sub views to the anchor view)',
               icon: CropFreeIcon,
             },
             {

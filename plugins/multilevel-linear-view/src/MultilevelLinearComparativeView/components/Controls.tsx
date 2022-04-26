@@ -10,10 +10,9 @@ import {
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-// icons
 import LinkIcon from '@material-ui/icons/Link'
 import LinkOffIcon from '@material-ui/icons/LinkOff'
-import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter' // TODO: align icon that makes more sense
+import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 
@@ -21,6 +20,7 @@ import { MultilevelLinearComparativeViewModel } from '../model'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 import ZoomControls from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ZoomControls'
+import LabelField from './LabelField'
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeViewModel
@@ -32,7 +32,6 @@ const useStyles = makeStyles(theme => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
-    // justifyContent: 'space-between',
     alignItems: 'center',
   },
   spacer: {
@@ -86,8 +85,8 @@ const LinkViews = observer(({ model }: { model: LCV }) => {
 const AlignViews = observer(({ model }: { model: LCV }) => {
   return (
     <IconButton
-      onClick={model.squareView} // TODO: align views
-      title="Align views (realign overview and region to the details view)"
+      onClick={model.alignViews}
+      title="Align views (realign sub views to the anchor view)"
     >
       <FormatAlignCenterIcon color="secondary" />
     </IconButton>
@@ -127,12 +126,21 @@ const RegionWidth = observer(({ model }: { model: LGV }) => {
 })
 
 const HeaderButtons = observer(
-  ({ model, ExtraButtons }: { model: LCV; ExtraButtons?: React.ReactNode }) => {
+  ({
+    model,
+    view,
+    ExtraButtons,
+  }: {
+    model: LCV
+    view: LGV
+    ExtraButtons?: React.ReactNode
+  }) => {
     return (
       <div>
         <LinkViews model={model} />
         <AlignViews model={model} />
         {ExtraButtons}
+        <LabelField model={view} />
       </div>
     )
   },
@@ -154,8 +162,15 @@ const Controls = observer(
     return (
       <div className={classes.headerBar}>
         {model ? (
-          <HeaderButtons model={model} ExtraButtons={ExtraButtons} />
+          <>
+            <HeaderButtons
+              model={model}
+              view={view}
+              ExtraButtons={ExtraButtons}
+            />
+          </>
         ) : null}
+        {ExtraButtons}
         <div className={classes.spacer} />
         <FormGroup row className={classes.headerForm}>
           <PanControls model={view} />

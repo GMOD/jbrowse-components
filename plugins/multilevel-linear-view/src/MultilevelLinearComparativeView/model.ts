@@ -221,12 +221,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
-      squareView() {
-        const bpPerPxs = self.views.map(v => v.bpPerPx)
-        const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
+      alignViews() {
         self.views.forEach(view => {
-          const center = view.pxToBp(view.width / 2)
-          view.setNewView(avg, view.offsetPx)
+          const center = self.views[0].pxToBp(view.width / 2)
           view.centerAt(center.coord, center.refName, center.index)
         })
       },

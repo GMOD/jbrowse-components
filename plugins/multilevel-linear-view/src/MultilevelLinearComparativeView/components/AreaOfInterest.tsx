@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import { MultilevelLinearComparativeViewModel } from '../model'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 import { bpToPx } from '@jbrowse/core/util'
+import { Typography } from '@material-ui/core'
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeViewModel
@@ -12,10 +13,8 @@ const useStyles = makeStyles(theme => {
   return {
     guide: {
       pointerEvents: 'none',
-      backgroundColor: 'red',
       position: 'absolute',
       zIndex: 10,
-      opacity: 0.2,
     },
   }
 })
@@ -53,14 +52,24 @@ const AreaOfInterest = observer(
       view.height + view.tracks.length * 25 + (view.tracks.length - 1) * 5
 
     return (
-      <div
-        className={classes.guide}
-        style={{
-          left,
-          width,
-          height,
-        }}
-      />
+      <>
+        <div
+          className={classes.guide}
+          style={{
+            left,
+            width,
+            height,
+            background: 'rgba(255, 0, 0, 0.2)',
+          }}
+        />
+        <Typography
+          className={classes.guide}
+          variant="caption"
+          style={{ paddingLeft: '1px', left, height, width, color: 'red' }}
+        >
+          {model.views[0].displayName}
+        </Typography>
+      </>
     )
   },
 )
