@@ -550,7 +550,12 @@ export function WindowSizeDlg(props: {
         <Button variant="contained" color="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button variant="contained" color="primary" onClick={onSubmit}>
+        <Button
+          disabled={!primaryFeature}
+          variant="contained"
+          color="primary"
+          onClick={onSubmit}
+        >
           Submit
         </Button>
       </DialogActions>

@@ -1,12 +1,18 @@
 import React from 'react'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
+import {
+  JBrowse,
+  setup,
+  expectCanvasMatch,
+  generateReadBuffer,
+  getPluginManager,
+} from './util'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -43,6 +49,12 @@ test('launch read vs ref panel', async () => {
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Linear read vs ref'))
-  fireEvent.click(await findByText('Submit'))
+  const elt = await findByText('Submit')
+
+  // https://stackoverflow.com/a/62443937/2129219
+  await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
+  fireEvent.click(elt)
+
   expect(state.session.views[1].type).toBe('LinearSyntenyView')
+  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
 }, 20000)
