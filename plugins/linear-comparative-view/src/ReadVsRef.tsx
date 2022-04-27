@@ -196,10 +196,18 @@ export function WindowSizeDlg(props: {
           const { rpcManager } = getSession(track)
           const adapterConfig = getConf(track, 'adapter')
           const sessionId = getRpcSessionId(track)
+          const assemblyNames = getConf(track, 'assemblyNames')
           const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
             sessionId,
-            regions: [{ refName: saRef, start: +saStart - 1, end: +saStart }],
+            regions: [
+              {
+                refName: saRef,
+                start: +saStart - 1,
+                end: +saStart,
+                assemblyName: assemblyNames[0],
+              },
+            ],
           })) as Feature[]
           const result = feats.find(
             f =>
@@ -542,7 +550,12 @@ export function WindowSizeDlg(props: {
         <Button variant="contained" color="secondary" onClick={handleClose}>
           Cancel
         </Button>
-        <Button variant="contained" color="primary" onClick={onSubmit}>
+        <Button
+          disabled={!primaryFeature}
+          variant="contained"
+          color="primary"
+          onClick={onSubmit}
+        >
           Submit
         </Button>
       </DialogActions>
