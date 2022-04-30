@@ -152,31 +152,23 @@ const OverlayComparativeView = observer(
               {views.map(view => {
                 const { ReactComponent } = pluginManager.getViewType(view.type)
 
+                if (!model.initialized || !view.initialized) {
+                  return null
+                }
+
                 const left = getLeft(model, view)
                 const right = getRight(model, view)
 
+                var index = model.views.findIndex(
+                  target => target.id === view.id,
+                )
+                if (index > 0) index--
+                var targetView = model.views[index]
+
                 const prevLeft =
-                  model.views[0].id != view.id
-                    ? getLeft(
-                        model,
-                        model.views[
-                          model.views.findIndex(
-                            target => target.id === view.id,
-                          ) - 1
-                        ],
-                      )
-                    : 0
+                  model.views[0].id != view.id ? getLeft(model, targetView) : 0
                 const prevRight =
-                  model.views[0].id != view.id
-                    ? getRight(
-                        model,
-                        model.views[
-                          model.views.findIndex(
-                            target => target.id === view.id,
-                          ) - 1
-                        ],
-                      )
-                    : 0
+                  model.views[0].id != view.id ? getRight(model, targetView) : 0
 
                 const polygonPoints = {
                   left,

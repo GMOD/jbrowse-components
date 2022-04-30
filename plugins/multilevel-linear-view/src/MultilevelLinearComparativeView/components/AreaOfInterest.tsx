@@ -35,7 +35,9 @@ const AreaOfInterest = observer(
 
     const height =
       view.tracks.length === 0
-        ? view.height - 14
+        ? view.hideHeader
+          ? view.height + 55
+          : view.height - 13
         : view.height - 70 + 30 * view.tracks.length - view.tracks.length - 1
 
     return (

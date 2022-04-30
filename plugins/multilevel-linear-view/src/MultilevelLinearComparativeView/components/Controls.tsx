@@ -208,14 +208,14 @@ const Controls = observer(
   }: {
     view: LGV
     model: LCV
-    polygonPoints: any
+    polygonPoints?: any
     ExtraButtons?: React.ReactNode
     ExtraControls?: React.ReactNode
   }) => {
     const classes = useStyles()
     return (
       <div className={classes.headerBar}>
-        {model.views[0].id !== view.id ? (
+        {model.views[0].id !== view.id && view.isVisible ? (
           <svg
             height={HEADER_BAR_HEIGHT}
             style={{ width: '100%', position: 'absolute' }}
