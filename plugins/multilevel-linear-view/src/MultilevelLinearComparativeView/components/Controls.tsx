@@ -7,6 +7,7 @@ import {
   makeStyles,
   alpha,
 } from '@material-ui/core'
+
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -27,6 +28,7 @@ type LGV = LinearGenomeViewModel
 
 const WIDGET_HEIGHT = 32
 const SPACING = 7
+const HEADER_BAR_HEIGHT = 48
 
 const useStyles = makeStyles(theme => ({
   headerBar: {
@@ -66,6 +68,56 @@ const useStyles = makeStyles(theme => ({
     margin: SPACING,
   },
 }))
+
+const Polygon = observer(
+  ({
+    view,
+    model,
+    polygonPoints,
+  }: {
+    view: LGV
+    model: LCV
+    polygonPoints: any
+  }) => {
+    const { interRegionPaddingWidth, offsetPx, dynamicBlocks } = view
+    const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+    const { left, right, prevLeft, prevRight } = polygonPoints
+    if (!contentBlocks.length) {
+      return null
+    }
+
+    const index = model.views.findIndex(target => target.id === view.id)
+    const startPx = Math.max(0, -offsetPx)
+    const length =
+      startPx +
+      totalWidthPxWithoutBorders +
+      (contentBlocks.length * interRegionPaddingWidth) / 2
+    var points
+
+    if (index - 1 > 0) {
+      points = [
+        [left, HEADER_BAR_HEIGHT],
+        [right, HEADER_BAR_HEIGHT],
+        [prevRight, 0],
+        [prevLeft, 0],
+      ]
+    } else {
+      points = [
+        [left, HEADER_BAR_HEIGHT],
+        [right, HEADER_BAR_HEIGHT],
+        [length, 0],
+        [0, 0],
+      ]
+    }
+    return (
+      <polygon
+        points={points.toString()}
+        fill={alpha('rgb(255, 0, 0)', 0.3)}
+        stroke={alpha('rgb(255, 0, 0)', 0.8)}
+      />
+    )
+  },
+)
 
 const LinkViews = observer(({ model }: { model: LCV }) => {
   return (
@@ -150,18 +202,28 @@ const Controls = observer(
   ({
     view,
     model,
+    polygonPoints,
     ExtraButtons,
     ExtraControls,
   }: {
     view: LGV
-    model?: LCV
+    model: LCV
+    polygonPoints: any
     ExtraButtons?: React.ReactNode
     ExtraControls?: React.ReactNode
   }) => {
     const classes = useStyles()
     return (
       <div className={classes.headerBar}>
-        {model ? (
+        {model.views[0].id !== view.id ? (
+          <svg
+            height={HEADER_BAR_HEIGHT}
+            style={{ width: '100%', position: 'absolute' }}
+          >
+            <Polygon model={model} view={view} polygonPoints={polygonPoints} />
+          </svg>
+        ) : null}
+        {model.views[0].id === view.id ? (
           <>
             <HeaderButtons
               model={model}

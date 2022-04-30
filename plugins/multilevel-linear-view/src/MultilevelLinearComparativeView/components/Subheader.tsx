@@ -58,8 +58,25 @@ const ExtraButtons = observer(({ view }: { view: LGV }) => {
   )
 })
 
-const Subheader = observer(({ model, view }: { model: LCV; view: LGV }) => {
-  return <Controls view={view} ExtraButtons={<ExtraButtons view={view} />} />
-})
+const Subheader = observer(
+  ({
+    model,
+    view,
+    polygonPoints,
+  }: {
+    model: LCV
+    view: LGV
+    polygonPoints: any
+  }) => {
+    return (
+      <Controls
+        model={model}
+        view={view}
+        polygonPoints={polygonPoints}
+        ExtraButtons={<ExtraButtons view={view} />}
+      />
+    )
+  },
+)
 
 export default Subheader

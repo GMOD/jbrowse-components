@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import { makeStyles } from '@material-ui/core/styles'
 import { MultilevelLinearComparativeViewModel } from '../model'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
-import { bpToPx } from '@jbrowse/core/util'
 import { Typography } from '@material-ui/core'
 
 type LCV = MultilevelLinearComparativeViewModel
@@ -20,36 +19,24 @@ const useStyles = makeStyles(theme => {
 })
 
 const AreaOfInterest = observer(
-  ({ model, view }: { model: LCV; view: LGV }) => {
+  ({
+    model,
+    view,
+    polygonPoints,
+  }: {
+    model: LCV
+    view: LGV
+    polygonPoints: any
+  }) => {
     const classes = useStyles()
+    const { left, right } = polygonPoints
 
-    const coordA = bpToPx(
-      model.views[0].coarseDynamicBlocks[0]?.start,
-      {
-        start: view.coarseDynamicBlocks[0]?.start,
-        end: view.coarseDynamicBlocks[0]?.end,
-        reversed: view.coarseDynamicBlocks[0]?.reversed,
-      },
-      view.bpPerPx,
-    )
-    const coordB = bpToPx(
-      model.views[0].coarseDynamicBlocks[0]?.end,
-      {
-        start: view.coarseDynamicBlocks[0]?.start,
-        end: view.coarseDynamicBlocks[0]?.end,
-        reversed: view.coarseDynamicBlocks[0]?.reversed,
-      },
-      view.bpPerPx,
-    )
+    const width = !isNaN(right) ? right - left : 0
 
-    const left = !isNaN(coordA)
-      ? view.offsetPx < 0
-        ? coordA + view.offsetPx * -1
-        : coordA
-      : 0
-    const width = !isNaN(coordB) ? coordB - coordA : 0
     const height =
-      view.height + view.tracks.length * 25 + (view.tracks.length - 1) * 5
+      view.tracks.length === 0
+        ? view.height - 14
+        : view.height - 70 + 30 * view.tracks.length - view.tracks.length - 1
 
     return (
       <>

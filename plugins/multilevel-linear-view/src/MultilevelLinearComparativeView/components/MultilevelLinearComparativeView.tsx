@@ -10,6 +10,8 @@ import Header from './Header'
 import MiniControls from './MiniControls'
 import Subheader from './Subheader'
 import AreaOfInterest from './AreaOfInterest'
+import { bpToPx } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -32,6 +34,7 @@ const useStyles = makeStyles(() => ({
 }))
 
 type LCV = MultilevelLinearComparativeViewModel
+type LGV = LinearGenomeViewModel
 
 const Overlays = observer(({ model }: { model: LCV }) => {
   const classes = useStyles()
@@ -92,11 +95,52 @@ const MiddleComparativeView = observer(
     )
   },
 )
+
+const getLeft = (model: LCV, view: LGV) => {
+  const coordA = bpToPx(
+    model.views[0].coarseDynamicBlocks[0]?.start,
+    {
+      start: view.coarseDynamicBlocks[0]?.start,
+      end: view.coarseDynamicBlocks[0]?.end,
+      reversed: view.coarseDynamicBlocks[0]?.reversed,
+    },
+    view.bpPerPx,
+  )
+
+  const left = !isNaN(coordA)
+    ? view.offsetPx < 0
+      ? coordA + view.offsetPx * -1
+      : coordA
+    : 0
+
+  return left
+}
+
+const getRight = (model: LCV, view: LGV) => {
+  const coordB = bpToPx(
+    model.views[0].coarseDynamicBlocks[0]?.end,
+    {
+      start: view.coarseDynamicBlocks[0]?.start,
+      end: view.coarseDynamicBlocks[0]?.end,
+      reversed: view.coarseDynamicBlocks[0]?.reversed,
+    },
+    view.bpPerPx,
+  )
+  const right = !isNaN(coordB)
+    ? view.offsetPx < 0
+      ? coordB + view.offsetPx * -1
+      : coordB
+    : 0
+
+  return right
+}
+
 const OverlayComparativeView = observer(
   ({ model, ExtraButtons }: { model: LCV; ExtraButtons?: React.ReactNode }) => {
     const classes = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
+
     return (
       <div>
         {!model.views[0].hideHeader ? (
@@ -107,15 +151,57 @@ const OverlayComparativeView = observer(
             <div className={classes.relative}>
               {views.map(view => {
                 const { ReactComponent } = pluginManager.getViewType(view.type)
+
+                const left = getLeft(model, view)
+                const right = getRight(model, view)
+
+                const prevLeft =
+                  model.views[0].id != view.id
+                    ? getLeft(
+                        model,
+                        model.views[
+                          model.views.findIndex(
+                            target => target.id === view.id,
+                          ) - 1
+                        ],
+                      )
+                    : 0
+                const prevRight =
+                  model.views[0].id != view.id
+                    ? getRight(
+                        model,
+                        model.views[
+                          model.views.findIndex(
+                            target => target.id === view.id,
+                          ) - 1
+                        ],
+                      )
+                    : 0
+
+                const polygonPoints = {
+                  left,
+                  right,
+                  prevLeft,
+                  prevRight,
+                }
+
                 return (
                   <div key={view.id}>
                     {model.views[model.anchorViewIndex].id !== view.id ? (
                       <>
                         {!view.hideHeader ? (
-                          <Subheader view={view} model={model} />
+                          <Subheader
+                            view={view}
+                            model={model}
+                            polygonPoints={polygonPoints}
+                          />
                         ) : null}
                         {view.isVisible ? (
-                          <AreaOfInterest view={view} model={model} />
+                          <AreaOfInterest
+                            view={view}
+                            model={model}
+                            polygonPoints={polygonPoints}
+                          />
                         ) : null}
                       </>
                     ) : null}
