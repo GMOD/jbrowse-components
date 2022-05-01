@@ -95,6 +95,7 @@
     "@types/tmp": "^0.2.1",
     "@types/unzipper": "^0.10.3",
     "@typescript-eslint/parser": "^5.8.0",
+    "babel-loader": "^8.2.5",
     "chai": "^4.3.4",
     "concurrently": "^6.4.0",
     "core-js": "^3.19.3",
