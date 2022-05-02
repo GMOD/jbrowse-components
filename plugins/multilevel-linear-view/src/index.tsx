@@ -35,52 +35,6 @@ export default class extends Plugin {
     MultilevelLinearComparativeDisplayF(pluginManager)
     MultilevelLinearDisplayF(pluginManager)
     MultilevelTrackF(pluginManager)
-
-    pluginManager.addToExtensionPoint(
-      'Core-extendPluggableElement',
-      (pluggableElement: PluggableElementType) => {
-        if (pluggableElement.name === 'LinearPileupDisplay') {
-          const { stateModel } = pluggableElement as ViewType
-          const newStateModel = stateModel.extend(
-            (self: LinearPileupDisplayModel) => {
-              const superContextMenuItems = self.contextMenuItems
-              return {
-                views: {
-                  contextMenuItems() {
-                    const feature = self.contextMenuFeature
-                    if (!feature) {
-                      return superContextMenuItems()
-                    }
-                    const newMenuItems = [
-                      ...superContextMenuItems(),
-                      {
-                        label: 'Linear read vs ref',
-                        icon: AddIcon,
-                        onClick: () => {
-                          getSession(self).queueDialog(doneCallback => [
-                            WindowSizeDlg,
-                            {
-                              track: getContainingTrack(self),
-                              feature,
-                              handleClose: doneCallback,
-                            },
-                          ])
-                        },
-                      },
-                    ]
-
-                    return newMenuItems
-                  },
-                },
-              }
-            },
-          )
-
-          ;(pluggableElement as DisplayType).stateModel = newStateModel
-        }
-        return pluggableElement
-      },
-    )
   }
 
   configure(pluginManager: PluginManager) {
