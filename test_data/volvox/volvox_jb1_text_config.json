@@ -170,37 +170,7 @@
         }
       ]
     },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA, svg)",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox", "volvox2"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "volvox-sorted.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox-sorted.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "defaultRendering": "svg"
-          }
-        }
-      ]
-    },
+
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_snpcoverage",
@@ -272,37 +242,7 @@
         }
       }
     },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox_bam_altname",
-      "name": "volvox-sorted.bam (contigA, svg)",
-      "assemblyNames": ["volvox"],
-      "category": ["Integration test"],
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "volvox-sorted-altname.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox-sorted-altname.bam.bai",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_bam_altname_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "defaultRendering": "svg"
-          }
-        }
-      ]
-    },
+
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_small_max_height",

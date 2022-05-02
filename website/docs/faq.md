@@ -338,7 +338,7 @@ Note 2: You can copy and paste your URL bar and put it in another tab on your
 own computer, and JBrowse will restore the session using BroadcastChannel
 (supported on Firefox and Chrome)
 
-#### How does the session sharing with shortened URLs work in JBrowse Web
+#### How does the session sharing work with shortened URLs work in JBrowse Web
 
 We have a central database hosted as a AWS dynamoDB that stores encrypted
 session snapshots that users create when they use the "Share" button. The

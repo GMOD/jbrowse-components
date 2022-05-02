@@ -2,6 +2,9 @@
 cd jbrowse-react-linear-genome-view
 yarn upgrade
 cd -
+cd jbrowse-react-linear-genome-view-vite
+yarn upgrade
+cd -
 cd jbrowse-react-circular-genome-view
 yarn upgrade
 cd -

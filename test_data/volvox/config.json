@@ -306,7 +306,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA, svg)",
+      "name": "volvox-sorted.bam (ctgA)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
@@ -328,8 +328,7 @@
           "displayId": "volvox_alignments_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "defaultRendering": "svg"
+            "displayId": "volvox_bam_altname_alignments_pileup"
           }
         }
       ]
@@ -409,7 +408,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_bam_altname",
-      "name": "volvox-sorted.bam (contigA, svg)",
+      "name": "volvox-sorted.bam (contigA)",
       "assemblyNames": ["volvox"],
       "category": ["Integration test"],
       "adapter": {
@@ -424,18 +423,7 @@
             "locationType": "UriLocation"
           }
         }
-      },
-      "displays": [
-        {
-          "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_bam_altname_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "defaultRendering": "svg"
-          }
-        }
-      ]
+      }
     },
     {
       "type": "AlignmentsTrack",

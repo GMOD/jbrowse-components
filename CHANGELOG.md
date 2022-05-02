@@ -1,3 +1,78 @@
+## 1.7.6 (2022-04-26)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package          | Download |
+| ---------------- | -------- |
+| @jbrowse/desktop |          |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- [#2939](https://github.com/GMOD/jbrowse-components/pull/2939) Fix loading CRAM, TwoBit, and other modules that use @gmod/binary-parser on jbrowse desktop ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
+## 1.7.5 (2022-04-26)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/text-indexing                  |                                                                   |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-jobs-management         |                                                                   |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-text-indexing           |                                                                   |
+| @jbrowse/plugin-trix                    | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#2885](https://github.com/GMOD/jbrowse-components/pull/2885) Reduce serialization overhead on alignments tracks and access feature details asynchronously ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#2935](https://github.com/GMOD/jbrowse-components/pull/2935) Use the name "Read Sequence" for the read vs ref view ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2916](https://github.com/GMOD/jbrowse-components/pull/2916) Add vite setup to our embedded component demos ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2927](https://github.com/GMOD/jbrowse-components/pull/2927) Optimize gtf by only parsing lazily per-refName ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2928](https://github.com/GMOD/jbrowse-components/pull/2928) Add vanillajs/script tag loading embedded components demos ([@cmdcolin](https://github.com/cmdcolin))
+- `core`, `text-indexing`
+  - [#2684](https://github.com/GMOD/jbrowse-components/pull/2684) Text-indexing in desktop ([@teresam856](https://github.com/teresam856))
+
+#### :bug: Bug Fix
+
+- [#2863](https://github.com/GMOD/jbrowse-components/pull/2863) Render gene with CDS subfeatures properly ([@cmdcolin](https://github.com/cmdcolin))
+- [#2934](https://github.com/GMOD/jbrowse-components/pull/2934) Bump @gmod/trix to fix prefix size calculation and searching first word in index ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+
 ## 1.7.4 (2022-04-19)
 
 <details><summary>Packages in this release</summary>

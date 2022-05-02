@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-comparative-adapters",
-  "version": "1.7.4",
+  "version": "1.7.6",
   "description": "JBrowse 2 comparative adapters",
   "keywords": [
     "jbrowse",

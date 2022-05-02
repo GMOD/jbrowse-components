@@ -14,6 +14,11 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
     {
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
+      name: {
+        type: 'string',
+        description: 'optional track name',
+        defaultValue: '',
+      },
       metadata: {
         type: 'frozen',
         description: 'anything to add about this track',

@@ -94,11 +94,9 @@ export default function assemblyManagerFactory(
           name: 'when assembly ready',
         })
 
-        const assembly = self.get(assemblyName)
-        if (assembly) {
-          return assembly.getRefNameMapForAdapter(adapterConf, opts)
-        }
-        return undefined
+        return self
+          .get(assemblyName)
+          ?.getRefNameMapForAdapter(adapterConf, opts)
       },
       async getReverseRefNameMapForAdapter(
         adapterConf: unknown,
@@ -109,11 +107,9 @@ export default function assemblyManagerFactory(
           signal: opts.signal,
           name: 'when assembly ready',
         })
-        const assembly = self.get(assemblyName)
-        if (assembly) {
-          return assembly.getReverseRefNameMapForAdapter(adapterConf, opts)
-        }
-        return undefined
+        return self
+          .get(assemblyName)
+          ?.getReverseRefNameMapForAdapter(adapterConf, opts)
       },
       isValidRefName(refName: string, assemblyName?: string) {
         if (assemblyName) {

@@ -1,8 +1,10 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from '@material-ui/core/styles'
-import { BreakpointViewModel, VIEW_DIVIDER_HEIGHT } from '../model'
+import { makeStyles } from '@material-ui/core'
+
+// locals
+import { BreakpointViewModel } from '../model'
 import AlignmentConnections from './AlignmentConnections'
 import Breakends from './Breakends'
 import Header from './Header'
@@ -19,12 +21,12 @@ const useStyles = makeStyles(theme => {
       position: 'absolute',
       top: 0,
       height: '100%',
-      width: '3px',
+      width: 3,
       background: 'magenta',
     },
     viewDivider: {
       background: theme.palette.secondary.main,
-      height: VIEW_DIVIDER_HEIGHT,
+      height: 3,
     },
     container: {
       display: 'grid',
@@ -48,18 +50,18 @@ const Overlay = observer(
   (props: {
     parentRef: React.RefObject<SVGSVGElement>
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
   }) => {
-    const { model, trackConfigId } = props
-    const tracks = model.getMatchedTracks(trackConfigId)
+    const { model, trackId } = props
+    const tracks = model.getMatchedTracks(trackId)
     if (
-      tracks[0].type === 'PileupTrack' ||
-      tracks[0].type === 'AlignmentsTrack'
+      tracks[0]?.type === 'PileupTrack' ||
+      tracks[0]?.type === 'AlignmentsTrack'
     ) {
       return <AlignmentConnections {...props} />
     }
-    if (tracks[0].type === 'VariantTrack') {
-      return model.hasTranslocations(trackConfigId) ? (
+    if (tracks[0]?.type === 'VariantTrack') {
+      return model.hasTranslocations(trackId) ? (
         <Translocations {...props} />
       ) : (
         <Breakends {...props} />
@@ -109,7 +111,7 @@ const BreakpointSplitView = observer(
                 pointerEvents: model.interactToggled ? undefined : 'none',
               }}
             >
-              {model.matchedTracks.map(id => {
+              {model.matchedTracks.map(track => {
                 // note: we must pass ref down, because the child component
                 // needs to getBoundingClientRect on the this components SVG,
                 // and we cannot rely on using getBoundingClientRect in this
@@ -119,9 +121,9 @@ const BreakpointSplitView = observer(
                 return (
                   <Overlay
                     parentRef={ref}
-                    key={id}
+                    key={track.configuration.trackId}
                     model={model}
-                    trackConfigId={id}
+                    trackId={track.configuration.trackId}
                   />
                 )
               })}

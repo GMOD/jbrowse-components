@@ -1,4 +1,3 @@
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
@@ -13,22 +12,23 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getSession, Feature } from '@jbrowse/core/util'
+import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
+import { autorun } from 'mobx'
 
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
 // simple is better
-function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[]): T[] {
-  const a12 = a1.filter(value => a2.includes(value))
-  if (rest.length === 0) {
-    return a12
-  }
-  // @ts-ignore
-  return intersect(a12, ...rest)
+function intersect<T>(
+  cb: (l: T) => string,
+  a1: T[] = [],
+  a2: T[] = [],
+  ...rest: T[][]
+): T[] {
+  const ids = a2.map(elt => cb(elt))
+  const a12 = a1.filter(value => ids.includes(cb(value)))
+  return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }
-
-export const VIEW_DIVIDER_HEIGHT = 3
 
 export interface Breakend {
   MateDirection: string
@@ -38,6 +38,31 @@ export interface Breakend {
 }
 
 export type LayoutRecord = [number, number, number, number]
+
+async function getBlockFeatures(
+  model: BreakpointViewModel,
+  track: { configuration: AnyConfigurationModel },
+) {
+  const { views } = model
+  const { rpcManager, assemblyManager } = getSession(model)
+  const assemblyName = model.views[0].assemblyNames[0]
+  const assembly = await assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    return undefined // throw new Error(`assembly not found: "${assemblyName}"`)
+  }
+  const sessionId = track.configuration.trackId
+  return Promise.all(
+    views.map(async view =>
+      (
+        (await rpcManager.call(sessionId, 'CoreGetFeatures', {
+          adapterConfig: getConf(track, ['adapter']),
+          sessionId,
+          regions: view.staticBlocks.contentBlocks,
+        })) as Feature[][]
+      ).flat(),
+    ),
+  )
+}
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
@@ -64,32 +89,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .volatile(() => ({
       width: 800,
+      matchedTrackFeatures: {} as { [key: string]: Feature[][] },
     }))
     .views(self => ({
       // Find all track ids that match across multiple views
-      get matchedTracks(): string[] {
+      get matchedTracks() {
         return intersect(
-          ...self.views.map(view =>
-            view.tracks.map(
-              (t: { configuration: AnyConfigurationModel }) =>
-                t.configuration.trackId as string,
-            ),
-          ),
-        )
-      },
-
-      get matchedTrackFeatures() {
-        return Object.fromEntries(
-          this.matchedTracks.map(trackId => {
-            return [
-              trackId,
-              new CompositeMap<string, Feature>(
-                this.getMatchedTracks(trackId)?.map(
-                  t => t.displays[0].features,
-                ) || [],
-              ),
-            ]
-          }),
+          elt => elt.configuration.trackId as string,
+          ...self.views.map(view => view.tracks),
         )
       },
 
@@ -100,10 +107,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .map(f => ({ label: `View ${f[0]} Menu`, subMenu: f[1] }))
       },
 
-      get viewDividerHeight() {
-        return VIEW_DIVIDER_HEIGHT
-      },
-
       // Get tracks with a given trackId across multiple views
       getMatchedTracks(trackConfigId: string) {
         return self.views
@@ -111,17 +114,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           .filter(f => !!f)
       },
 
-      // Paired reads are handled slightly differently than split reads
-      hasPairedReads(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(
-          f => f.get('flags') & 64,
-        )
-      },
-
       // Translocation features are handled differently
       // since they do not have a mate e.g. they are one sided
       hasTranslocations(trackConfigId: string) {
-        return this.getTrackFeatures(trackConfigId).find(
+        return [...this.getTrackFeatures(trackConfigId).values()].find(
           f => f.get('type') === 'translocation',
         )
       },
@@ -129,7 +125,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // Get a composite map of featureId->feature map for a track across
       // multiple views
       getTrackFeatures(trackConfigId: string) {
-        return this.matchedTrackFeatures[trackConfigId]
+        return new Map(
+          self.matchedTrackFeatures[trackConfigId]
+            ?.flat()
+            .map(f => [f.id(), f]),
+        )
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
@@ -142,15 +142,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         return features.map(c =>
-          c.map(feature => {
-            const level = tracks.findIndex(track => calc(track, feature))
-            const layout = calc(tracks[level], feature)
-            return {
-              feature,
-              layout,
-              level,
-            }
-          }),
+          c
+            .map(feature => {
+              const level = tracks.findIndex(track => calc(track, feature))
+              if (level !== -1) {
+                const layout = calc(tracks[level], feature)
+                return {
+                  feature,
+                  layout,
+                  level,
+                }
+              }
+              return undefined
+            })
+            .filter(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (f): f is { feature: Feature; layout: any; level: number } => !!f,
+            ),
         )
       },
     }))
@@ -220,6 +228,28 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleLinkViews() {
         self.linkViews = !self.linkViews
+      },
+      setMatchedTrackFeatures(obj: { [key: string]: Feature[][] }) {
+        self.matchedTrackFeatures = obj
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(async () => {
+            const res = Object.fromEntries(
+              await Promise.all(
+                self.matchedTracks.map(async track => [
+                  track.configuration.trackId,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  await getBlockFeatures(self as any, track),
+                ]),
+              ),
+            )
+            self.setMatchedTrackFeatures(res)
+          }),
+        )
       },
     }))
 

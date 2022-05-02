@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react'
 import { getSession, Feature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import CompositeMap from '@jbrowse/core/util/compositeMap'
 import Path from 'svg-path-generator'
 
 // locals
@@ -12,9 +11,7 @@ import { BreakpointViewModel, LayoutRecord } from '../model'
 const [LEFT] = [0, 1, 2, 3]
 
 // Getting "matched" TRA means just return all TRA
-function getMatchedTranslocationFeatures(
-  features: CompositeMap<string, Feature>,
-) {
+function getMatchedTranslocationFeatures(features: Map<string, Feature>) {
   const feats: Feature[][] = []
   const alreadySeen = new Set<string>()
 
@@ -33,25 +30,25 @@ function getMatchedTranslocationFeatures(
 const Translocations = observer(
   ({
     model,
-    trackConfigId,
+    trackId,
     parentRef: ref,
   }: {
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views } = model
     const session = getSession(model)
     const { assemblyManager } = session
-    const totalFeatures = model.getTrackFeatures(trackConfigId)
+    const totalFeatures = model.getTrackFeatures(trackId)
     const layoutMatches = useMemo(
       () =>
         model.getMatchedFeaturesInLayout(
-          trackConfigId,
+          trackId,
           getMatchedTranslocationFeatures(totalFeatures),
         ),
 
-      [totalFeatures, trackConfigId, model],
+      [totalFeatures, trackId, model],
     )
 
     const [mouseoverElt, setMouseoverElt] = useState<string>()
@@ -82,9 +79,7 @@ const Translocations = observer(
         fill="none"
         stroke="green"
         strokeWidth={5}
-        data-testid={
-          layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
-        }
+        data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
       >
         {layoutMatches.map(chunk => {
           // we follow a path in the list of chunks, not from top to bottom,
@@ -116,11 +111,9 @@ const Translocations = observer(
               const reversed1 = views[level1].pxToBp(x1).reversed
               const reversed2 = views[level2].pxToBp(x2).reversed
 
-              const tracks = views.map(v => v.getTrack(trackConfigId))
-              const y1 =
-                yPos(trackConfigId, level1, views, tracks, c1) - yOffset
-              const y2 =
-                yPos(trackConfigId, level2, views, tracks, c2) - yOffset
+              const tracks = views.map(v => v.getTrack(trackId))
+              const y1 = yPos(trackId, level1, views, tracks, c1) - yOffset
+              const y2 = yPos(trackId, level2, views, tracks, c2) - yOffset
 
               const path = Path()
                 .moveTo(

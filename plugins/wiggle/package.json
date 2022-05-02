@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "1.7.4",
+  "version": "1.7.6",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@gmod/bbi": "^1.0.32",
+    "@gmod/bbi": "^1.0.35",
     "@material-ui/icons": "^4.11.2",
     "@popperjs/core": "^2.11.0",
     "color": "^3.1.1",

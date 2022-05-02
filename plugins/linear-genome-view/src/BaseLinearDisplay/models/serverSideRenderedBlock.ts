@@ -6,6 +6,7 @@ import {
   assembleLocString,
   getSession,
   getContainingDisplay,
+  getContainingView,
   getViewParams,
   makeAbortableReaction,
   Feature,
@@ -221,6 +222,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
+    const layoutId = getContainingView(display).id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -240,6 +242,7 @@ export function renderBlockData(
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
+        layoutId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
         timeout: 1000000, // 10000,
