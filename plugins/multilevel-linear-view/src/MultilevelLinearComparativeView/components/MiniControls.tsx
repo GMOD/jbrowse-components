@@ -19,16 +19,20 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
       <Paper
         style={{ background: '#aaa7', display: 'flex', alignItems: 'center' }}
       >
-        <IconButton
-          color="secondary"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
-        >
-          <ArrowDown />
-        </IconButton>
-        <LabelField model={model} />
         {model.hideHeader ? (
+          <div>
+            <IconButton
+              color="secondary"
+              onClick={event => {
+                setAnchorEl(event.currentTarget)
+              }}
+            >
+              <ArrowDown />
+            </IconButton>
+            <LabelField model={model} />
+          </div>
+        ) : null}
+        {model.hideHeader || model.hideControls ? (
           <div>
             <IconButton
               data-testid="zoom_out"

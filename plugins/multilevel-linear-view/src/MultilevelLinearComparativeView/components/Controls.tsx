@@ -35,6 +35,7 @@ const useStyles = makeStyles(theme => ({
     gridArea: '1/1/auto/span 2',
     display: 'flex',
     alignItems: 'center',
+    height: 48,
   },
   spacer: {
     flexGrow: 1,
@@ -234,13 +235,17 @@ const Controls = observer(
         ) : null}
         {ExtraButtons}
         <div className={classes.spacer} />
-        <FormGroup row className={classes.headerForm}>
-          <PanControls model={view} />
-          <SearchBox model={view} />
-        </FormGroup>
-        <RegionWidth model={view} />
-        {view.initialized ? <ZoomControls model={view} /> : null}
-        {ExtraControls}
+        {!view.hideControls ? (
+          <>
+            <FormGroup row className={classes.headerForm}>
+              <PanControls model={view} />
+              <SearchBox model={view} />
+            </FormGroup>
+            <RegionWidth model={view} />
+            {view.initialized ? <ZoomControls model={view} /> : null}
+            {ExtraControls}
+          </>
+        ) : null}
         <div className={classes.spacer} />
       </div>
     )

@@ -125,6 +125,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         hideHeader: false,
+        hideControls: false,
         hasCustomMiniControls: false,
         hasCustomHeader: false,
         isVisible: true,
@@ -466,6 +467,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleHeader() {
         self.hideHeader = !self.hideHeader
+      },
+      toggleControls() {
+        self.hideControls = !self.hideControls
       },
       toggleVisible() {
         self.isVisible = !self.isVisible
@@ -1208,6 +1212,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             type: 'checkbox',
             checked: !self.hideHeader,
             onClick: self.toggleHeader,
+          },
+          {
+            label: 'Show controls',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideControls,
+            onClick: self.toggleControls,
           },
           {
             label: 'Show header overview',
