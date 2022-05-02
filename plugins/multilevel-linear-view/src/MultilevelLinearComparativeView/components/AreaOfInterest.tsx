@@ -26,6 +26,7 @@ const AreaOfInterest = observer(
   }: {
     model: LCV
     view: LGV
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints: any
   }) => {
     const classes = useStyles()

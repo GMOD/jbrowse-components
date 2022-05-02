@@ -3,7 +3,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import CropFreeIcon from '@material-ui/icons/CropFree'
 import LinkIcon from '@material-ui/icons/Link'
 import LinkOffIcon from '@material-ui/icons/LinkOff'
-import { Curves, StraightLines } from './components/Icons'
 
 import baseModel from '../MultilevelLinearComparativeView/model'
 

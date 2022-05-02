@@ -21,6 +21,7 @@ const LabelField = observer(({ model }: { model: LGV }) => {
   }
   const [inputWidth, setInputWidth] = useState<number>(determineWidth())
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setViewLabel = (label: any) => {
     model.setDisplayName(label)
     setInputWidth(determineWidth())
@@ -33,6 +34,7 @@ const LabelField = observer(({ model }: { model: LGV }) => {
         size="small"
         margin="none"
         style={{ margin: '0px', paddingRight: '5px' }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onChange={(event: any) => setViewLabel(event?.target.value)}
         InputProps={{
           style: {

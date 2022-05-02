@@ -66,6 +66,7 @@ const Subheader = observer(
   }: {
     model: LCV
     view: LGV
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints: any
   }) => {
     return (

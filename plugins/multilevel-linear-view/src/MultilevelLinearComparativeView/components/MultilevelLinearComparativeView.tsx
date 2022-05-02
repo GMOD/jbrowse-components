@@ -159,16 +159,20 @@ const OverlayComparativeView = observer(
                 const left = getLeft(model, view)
                 const right = getRight(model, view)
 
-                var index = model.views.findIndex(
+                let index = model.views.findIndex(
                   target => target.id === view.id,
                 )
-                if (index > 0) index--
-                var targetView = model.views[index]
+                if (index > 0) {
+                  index--
+                }
+                let targetView = model.views[index]
 
                 const prevLeft =
-                  model.views[0].id != view.id ? getLeft(model, targetView) : 0
+                  model.views[0].id !== view.id ? getLeft(model, targetView) : 0
                 const prevRight =
-                  model.views[0].id != view.id ? getRight(model, targetView) : 0
+                  model.views[0].id !== view.id
+                    ? getRight(model, targetView)
+                    : 0
 
                 const polygonPoints = {
                   left,

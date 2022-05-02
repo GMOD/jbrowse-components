@@ -78,6 +78,7 @@ const Polygon = observer(
   }: {
     view: LGV
     model: LCV
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints: any
   }) => {
     const { interRegionPaddingWidth, offsetPx, dynamicBlocks } = view
@@ -93,7 +94,7 @@ const Polygon = observer(
       startPx +
       totalWidthPxWithoutBorders +
       (contentBlocks.length * interRegionPaddingWidth) / 2
-    var points
+    let points
 
     if (index - 1 > 0) {
       points = [
@@ -209,6 +210,7 @@ const Controls = observer(
   }: {
     view: LGV
     model: LCV
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints?: any
     ExtraButtons?: React.ReactNode
     ExtraControls?: React.ReactNode
