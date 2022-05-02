@@ -126,13 +126,18 @@ const ImportForm = observer(
           ),
         )
 
+        let zoomVal = 1
+        let num = 2
         model.views.forEach(view => {
           view.setWidth(model.width)
           view.setCustomMiniControls(true)
-
           if (selectedRegion) {
             handleSelectedRegion(selectedRegion, view)
           }
+
+          view.zoomTo(zoomVal)
+          zoomVal *= num
+          num++
         })
       } catch (e) {
         console.error(e)
