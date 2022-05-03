@@ -128,7 +128,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
       <Controls model={model} />
     ) : (
       <OverviewScaleBar model={model}>
-        <Controls model={model} />
+        {!model.hideControls ? <Controls model={model} /> : null}
       </OverviewScaleBar>
     )
   ) : null

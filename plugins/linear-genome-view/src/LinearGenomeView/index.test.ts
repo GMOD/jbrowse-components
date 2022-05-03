@@ -994,3 +994,39 @@ test('multi region', () => {
   //   { refName: 'ctgB', start: 0, end: 6079 },
   // ])
 })
+
+test('can toggle optional controls', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({
+    configuration: {},
+  })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test5',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(width)
+  model.setDisplayedRegions([
+    {
+      assemblyName: 'volvox',
+      start: 1000,
+      end: 2000,
+      refName: 'ctgA',
+      reversed: true,
+    },
+  ])
+
+  model.setCustomMiniControls(true)
+  expect(model.hasCustomMiniControls).toEqual(true)
+  model.setHasCustomHeader(true)
+  expect(model.hasCustomHeader).toEqual(true)
+  model.toggleControls()
+  expect(model.hideControls).toEqual(true)
+  model.toggleControls()
+  model.toggleVisible()
+  expect(model.isVisible).toEqual(false)
+  model.toggleVisible()
+})

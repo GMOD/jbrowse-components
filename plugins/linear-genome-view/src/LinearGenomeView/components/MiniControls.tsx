@@ -13,6 +13,8 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor } = model
   const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
+  console.log('gets here')
+
   return (
     <>
       <Paper style={{ background: '#aaa7' }}>

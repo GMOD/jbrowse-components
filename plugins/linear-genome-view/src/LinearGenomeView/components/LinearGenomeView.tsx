@@ -30,6 +30,11 @@ const useStyles = makeStyles(theme => ({
       textAlign: 'left',
     },
   },
+  miniControls: {
+    position: 'absolute',
+    right: 0,
+    zIndex: 1001,
+  },
   '@keyframes ellipsis': {
     '0%': {
       content: '"."',
@@ -51,6 +56,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     initialized,
     hasDisplayedRegions,
     hasCustomMiniControls,
+    hideControls,
   } = model
   const classes = useStyles()
 
@@ -86,16 +92,15 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       {!hideHeader ? (
         <Header model={model} />
       ) : (
-        <div
-          style={{
-            position: 'absolute',
-            right: 0,
-            zIndex: 1001,
-          }}
-        >
+        <div className={classes.miniControls}>
           {!hasCustomMiniControls ? <MiniControls model={model} /> : null}
         </div>
       )}
+      {hideControls ? (
+        <div className={classes.miniControls}>
+          <MiniControls model={model} />
+        </div>
+      ) : null}
       <TracksContainer model={model}>
         {!tracks.length ? (
           <Paper variant="outlined" className={classes.note}>
