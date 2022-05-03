@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, getByTitle, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import 'requestidlecallback-polyfill'
