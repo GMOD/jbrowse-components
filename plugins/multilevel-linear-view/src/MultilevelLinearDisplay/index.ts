@@ -36,10 +36,7 @@ export function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringArray',
         defaultValue: [],
       },
-      renderer: types.optional(
-        pluginManager.pluggableConfigSchemaType('renderer'),
-        { type: 'MultilevelLinearRenderer' },
-      ),
+      renderer: 'SvgFeatureRenderer',
       middle: { type: 'boolean', defaultValue: true },
     },
     {

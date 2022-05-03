@@ -5,7 +5,6 @@ import CalendarIcon from '@material-ui/icons/CalendarViewDay'
 import MultilevelLinearComparativeDisplayF from './MultilevelLinearComparativeDisplay'
 import MultilevelLinearComparativeViewF from './MultilevelLinearComparativeView'
 import MultilevelLinearDisplayF from './MultilevelLinearDisplay'
-import MultilevelLinearRendererF from './MultilevelLinearRenderer'
 import MultilevelLinearViewF from './MultilevelLinearView'
 import MultilevelTrackF from './MultilevelTrack'
 
@@ -19,7 +18,6 @@ export default class extends Plugin {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(MultilevelLinearViewF),
     )
-    MultilevelLinearRendererF(pluginManager)
     MultilevelLinearComparativeDisplayF(pluginManager)
     MultilevelLinearDisplayF(pluginManager)
     MultilevelTrackF(pluginManager)
