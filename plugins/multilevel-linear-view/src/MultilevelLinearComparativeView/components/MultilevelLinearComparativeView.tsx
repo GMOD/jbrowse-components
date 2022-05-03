@@ -165,7 +165,7 @@ const OverlayComparativeView = observer(
                 if (index > 0) {
                   index--
                 }
-                let targetView = model.views[index]
+                const targetView = model.views[index]
 
                 const prevLeft =
                   model.views[0].id !== view.id ? getLeft(model, targetView) : 0

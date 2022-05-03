@@ -16,6 +16,7 @@ import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import Lollipop from '@jbrowse/plugin-lollipop'
 import Arc from '@jbrowse/plugin-arc'
 import Menus from '@jbrowse/plugin-menus'
+import MultilevelLinearView from '@jbrowse/plugin-multilevel-linear-view'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
 import SVG from '@jbrowse/plugin-svg'
@@ -47,6 +48,7 @@ const corePlugins = [
   Lollipop,
   Arc,
   Menus,
+  MultilevelLinearView,
   RDF,
   Sequence,
   TrackHubRegistry,
