@@ -120,7 +120,7 @@ const Polygon = observer(
     return (
       <polygon
         points={points.toString()}
-        fill={alpha(polygonColor, 0.3)} //'rgb(255, 0, 0)'
+        fill={alpha(polygonColor, 0.3)}
         stroke={alpha(polygonColor, 0.8)}
       />
     )
