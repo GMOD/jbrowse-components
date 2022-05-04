@@ -1,3 +1,34 @@
+## 1.7.7 (2022-05-04)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- [#2941](https://github.com/GMOD/jbrowse-components/pull/2941) Fix linear read vs ref hanging in v1.7.5 ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#2944](https://github.com/GMOD/jbrowse-components/pull/2944) Avoid stalling on undefined assemblyName during ref name renaming ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 1.7.6 (2022-04-26)
 
 <details><summary>Packages in this release</summary>
