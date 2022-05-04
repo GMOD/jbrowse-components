@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles, useTheme, alpha } from '@material-ui/core/styles'
 import { MultilevelLinearComparativeViewModel } from '../model'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 import { Typography } from '@material-ui/core'
@@ -32,6 +32,10 @@ const AreaOfInterest = observer(
     const classes = useStyles()
     const { left, right } = polygonPoints
 
+    const theme = useTheme()
+    const { tertiary, primary } = theme.palette
+    const polygonColor = tertiary ? tertiary.light : primary.light
+
     const width = !isNaN(right) ? right - left : 0
 
     const height =
@@ -49,13 +53,19 @@ const AreaOfInterest = observer(
             left,
             width,
             height,
-            background: 'rgba(255, 0, 0, 0.2)',
+            background: alpha(polygonColor, 0.3), // 'rgba(255, 0, 0, 0.2)'
           }}
         />
         <Typography
           className={classes.guide}
           variant="caption"
-          style={{ paddingLeft: '1px', left, height, width, color: 'red' }}
+          style={{
+            paddingLeft: '1px',
+            left,
+            height,
+            width,
+            color: polygonColor,
+          }}
         >
           {model.views[0].displayName}
         </Typography>

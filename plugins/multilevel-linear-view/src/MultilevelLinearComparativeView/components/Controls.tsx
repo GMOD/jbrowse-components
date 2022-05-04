@@ -5,6 +5,7 @@ import {
   Button,
   FormGroup,
   makeStyles,
+  useTheme,
   alpha,
 } from '@material-ui/core'
 
@@ -84,6 +85,11 @@ const Polygon = observer(
     const { interRegionPaddingWidth, offsetPx, dynamicBlocks } = view
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
     const { left, right, prevLeft, prevRight } = polygonPoints
+
+    const theme = useTheme()
+    const { tertiary, primary } = theme.palette
+    const polygonColor = tertiary ? tertiary.light : primary.light
+
     if (!contentBlocks.length) {
       return null
     }
@@ -114,8 +120,8 @@ const Polygon = observer(
     return (
       <polygon
         points={points.toString()}
-        fill={alpha('rgb(255, 0, 0)', 0.3)}
-        stroke={alpha('rgb(255, 0, 0)', 0.8)}
+        fill={alpha(polygonColor, 0.3)} //'rgb(255, 0, 0)'
+        stroke={alpha(polygonColor, 0.8)}
       />
     )
   },
@@ -218,7 +224,7 @@ const Controls = observer(
     const classes = useStyles()
     return (
       <div className={classes.headerBar}>
-        {model.views[0].id !== view.id && view.isVisible ? (
+        {model.views[0].id !== view.id ? (
           <svg
             height={HEADER_BAR_HEIGHT}
             style={{ width: '100%', position: 'absolute' }}
