@@ -67,7 +67,7 @@ const AreaOfInterest = observer(
             color: polygonColor,
           }}
         >
-          {model.views[0].displayName}
+          {model.views[model.anchorViewIndex].displayName}
         </Typography>
       </>
     )

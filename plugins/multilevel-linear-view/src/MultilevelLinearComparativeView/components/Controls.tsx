@@ -224,7 +224,7 @@ const Controls = observer(
     const classes = useStyles()
     return (
       <div className={classes.headerBar}>
-        {model.views[0].id !== view.id ? (
+        {model.views[model.anchorViewIndex].id !== view.id ? (
           <svg
             height={HEADER_BAR_HEIGHT}
             style={{ width: '100%', position: 'absolute' }}
@@ -232,7 +232,7 @@ const Controls = observer(
             <Polygon model={model} view={view} polygonPoints={polygonPoints} />
           </svg>
         ) : null}
-        {model.views[0].id === view.id ? (
+        {model.views[model.anchorViewIndex].id === view.id ? (
           <>
             <HeaderButtons
               model={model}
@@ -243,7 +243,7 @@ const Controls = observer(
         ) : null}
         {ExtraButtons}
         <div className={classes.spacer} />
-        {!view.hideControls ? (
+        {view.isVisible && !view.hideControls ? (
           <>
             <FormGroup row className={classes.headerForm}>
               <PanControls model={view} />

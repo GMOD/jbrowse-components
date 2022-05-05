@@ -1220,6 +1220,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             type: 'checkbox',
             checked: !self.hideControls,
             onClick: self.toggleControls,
+            disabled: !self.isVisible,
           },
           {
             label: 'Show header overview',

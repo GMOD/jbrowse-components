@@ -1,6 +1,6 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import CropFreeIcon from '@material-ui/icons/CropFree'
+import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter'
 import LinkIcon from '@material-ui/icons/Link'
 import LinkOffIcon from '@material-ui/icons/LinkOff'
 
@@ -22,10 +22,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...superMenuItems(),
 
             {
-              label: 'Align view',
+              label: 'Align views',
               onClick: self.alignViews,
               description: 'Align views (realign sub views to the anchor view)',
-              icon: CropFreeIcon,
+              icon: FormatAlignCenterIcon,
             },
             {
               label: self.linkViews ? 'Unlink views' : 'Link views',

@@ -10,10 +10,10 @@ const Header = observer(
   ({ model, ExtraButtons }: { model: LCV; ExtraButtons?: React.ReactNode }) => {
     return (
       <div>
-        {model.views[0].initialized ? (
-          <OverviewScaleBar model={model.views[0]}>
+        {model.views[model.anchorViewIndex].initialized ? (
+          <OverviewScaleBar model={model.views[model.anchorViewIndex]}>
             <Controls
-              view={model.views[0]}
+              view={model.views[model.anchorViewIndex]}
               model={model}
               ExtraButtons={ExtraButtons}
             />

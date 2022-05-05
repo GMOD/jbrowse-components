@@ -157,8 +157,8 @@ const ImportForm = observer(
           queryString: query,
           searchType,
         },
-        model.views[0].searchScope(selected[0]),
-        model.views[0].rankSearchResults,
+        model.views[model.anchorViewIndex].searchScope(selected[0]),
+        model.views[model.anchorViewIndex].rankSearchResults,
       )
 
       const refNameResults = assembly?.allRefNames

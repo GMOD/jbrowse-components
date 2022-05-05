@@ -89,14 +89,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           }}
         />
       ) : null}
-      {!hideHeader ? (
-        <Header model={model} />
-      ) : (
-        <div className={classes.miniControls}>
-          {!hasCustomMiniControls ? <MiniControls model={model} /> : null}
-        </div>
-      )}
-      {hideControls ? (
+
+      {!hideHeader ? <Header model={model} /> : null}
+      {(hideHeader || hideControls) && !hasCustomMiniControls ? (
         <div className={classes.miniControls}>
           <MiniControls model={model} />
         </div>

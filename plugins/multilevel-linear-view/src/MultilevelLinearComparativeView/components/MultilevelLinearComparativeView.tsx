@@ -98,7 +98,7 @@ const MiddleComparativeView = observer(
 
 const getLeft = (model: LCV, view: LGV) => {
   const coordA = bpToPx(
-    model.views[0].coarseDynamicBlocks[0]?.start,
+    model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.start,
     {
       start: view.coarseDynamicBlocks[0]?.start,
       end: view.coarseDynamicBlocks[0]?.end,
@@ -118,7 +118,7 @@ const getLeft = (model: LCV, view: LGV) => {
 
 const getRight = (model: LCV, view: LGV) => {
   const coordB = bpToPx(
-    model.views[0].coarseDynamicBlocks[0]?.end,
+    model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.end,
     {
       start: view.coarseDynamicBlocks[0]?.start,
       end: view.coarseDynamicBlocks[0]?.end,
@@ -143,7 +143,7 @@ const OverlayComparativeView = observer(
 
     return (
       <div>
-        {!model.views[0].hideHeader ? (
+        {!model.views[model.anchorViewIndex].hideHeader ? (
           <Header model={model} ExtraButtons={ExtraButtons} />
         ) : null}
         <div className={classes.container}>
@@ -168,9 +168,11 @@ const OverlayComparativeView = observer(
                 const targetView = model.views[index]
 
                 const prevLeft =
-                  model.views[0].id !== view.id ? getLeft(model, targetView) : 0
+                  model.views[model.anchorViewIndex].id !== view.id
+                    ? getLeft(model, targetView)
+                    : 0
                 const prevRight =
-                  model.views[0].id !== view.id
+                  model.views[model.anchorViewIndex].id !== view.id
                     ? getRight(model, targetView)
                     : 0
 

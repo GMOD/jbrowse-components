@@ -223,7 +223,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       alignViews() {
         self.views.forEach(view => {
-          const center = self.views[0].pxToBp(view.width / 2)
+          const center = self.views[self.anchorViewIndex].pxToBp(view.width / 2)
+          const targetBp = view.bpPerPx
+          view.navToLocString(center.refName)
+          view.zoomTo(targetBp)
           view.centerAt(center.coord, center.refName, center.index)
         })
       },
