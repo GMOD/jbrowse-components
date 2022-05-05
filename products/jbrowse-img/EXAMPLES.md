@@ -1,6 +1,6 @@
 # More examples
 
-![](img/skbr3_cov.png)
+![](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_cov.png)
 
 SKBR3 breast cancer cell line using
 

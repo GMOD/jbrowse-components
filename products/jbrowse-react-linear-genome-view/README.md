@@ -31,6 +31,13 @@ function View() {
 
 For a full working example, see [this example](docs/example.md).
 
+For a download-ready examples:
+
+- create-react-app v4 - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view
+- create-react-app v5 - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-cra5
+- vite - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vite
+- vanillajs - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vanillajs
+
 ## Install
 
 With [yarn](https://yarnpkg.com/):
@@ -58,22 +65,8 @@ https://jbrowse.org/storybook/lgv/main
 [Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for
 JBrowse, and this component will use that font if it is available. The easiest
 way to add it is to add the
-[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) package
-to your project and import it in your root `index.js`.
-
-### Note on webpack 5
-
-There is a breaking change with webpack 5 where there is no longer
-auto-polyfilling for node core modules. To use this package most effectively,
-it is recommended to use webpack 4.
-
-### Example app
-
-[Here](https://jbrowse.org/demos/lgv) is a working example of
-[@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
-running with create-react-app 4. The source code is located at
-https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view
-which you can copy and use for your own projects
+[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto)
+package to your project and import it in your root `index.js`.
 
 ## Academic Use
 

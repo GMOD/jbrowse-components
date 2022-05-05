@@ -10,7 +10,7 @@ You don't need to have JBrowse 2 installed to use this tool. The tool can genera
 
 ## Screenshot
 
-![](img/1.png)
+![](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
 
 More examples [EXAMPLES.md](EXAMPLES.md)
 
