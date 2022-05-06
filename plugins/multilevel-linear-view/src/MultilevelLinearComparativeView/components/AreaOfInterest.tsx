@@ -38,12 +38,19 @@ const AreaOfInterest = observer(
 
     const width = !isNaN(right) ? right - left : 0
 
+    const labelOffset = view.trackLabels === 'offset' ? 0 : -25
+
     const height =
       view.tracks.length === 0
         ? view.hideHeader
-          ? view.height + 55
+          ? view.height + 55 + labelOffset
           : view.height - 13
-        : view.height - 70 + 30 * view.tracks.length - view.tracks.length - 1
+        : view.height -
+          70 +
+          30 * view.tracks.length -
+          view.tracks.length -
+          1 +
+          labelOffset
 
     return (
       <>
