@@ -86,30 +86,36 @@ export default function assemblyManagerFactory(
 
       async getRefNameMapForAdapter(
         adapterConf: unknown,
-        assemblyName: string,
+        assemblyName: string | undefined,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        await when(() => Boolean(self.get(assemblyName)), {
-          signal: opts.signal,
-          name: 'when assembly ready',
-        })
+        if (assemblyName) {
+          await when(() => Boolean(self.get(assemblyName)), {
+            signal: opts.signal,
+            name: 'when assembly ready',
+          })
 
-        return self
-          .get(assemblyName)
-          ?.getRefNameMapForAdapter(adapterConf, opts)
+          return self
+            .get(assemblyName)
+            ?.getRefNameMapForAdapter(adapterConf, opts)
+        }
+        return {}
       },
       async getReverseRefNameMapForAdapter(
         adapterConf: unknown,
-        assemblyName: string,
+        assemblyName: string | undefined,
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
-        await when(() => Boolean(self.get(assemblyName)), {
-          signal: opts.signal,
-          name: 'when assembly ready',
-        })
-        return self
-          .get(assemblyName)
-          ?.getReverseRefNameMapForAdapter(adapterConf, opts)
+        if (assemblyName) {
+          await when(() => Boolean(self.get(assemblyName)), {
+            signal: opts.signal,
+            name: 'when assembly ready',
+          })
+          return self
+            .get(assemblyName)
+            ?.getReverseRefNameMapForAdapter(adapterConf, opts)
+        }
+        return {}
       },
       isValidRefName(refName: string, assemblyName?: string) {
         if (assemblyName) {
