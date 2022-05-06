@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter'
 import LinkIcon from '@material-ui/icons/Link'
 import LinkOffIcon from '@material-ui/icons/LinkOff'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 import baseModel from '../MultilevelLinearComparativeView/model'
 
@@ -33,6 +34,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: self.linkViews ? LinkOffIcon : LinkIcon,
             },
           ]
+        },
+        searchScope(assemblyName: string) {
+          return {
+            assemblyName,
+            includeAggregateIndexes: true,
+            tracks: self.tracks,
+          }
+        },
+        rankSearchResults(results: BaseResult[]) {
+          // order of rank
+          const openTrackIds = self.tracks.map(
+            track => track.configuration.trackId,
+          )
+          results.forEach(result => {
+            if (openTrackIds !== []) {
+              if (openTrackIds.includes(result.trackId)) {
+                result.updateScore(result.getScore() + 1)
+              }
+            }
+          })
+          return results
         },
       }
     })
