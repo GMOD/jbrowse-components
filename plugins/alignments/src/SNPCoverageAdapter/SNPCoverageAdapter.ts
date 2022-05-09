@@ -30,22 +30,25 @@ function isInterbase(type: string) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function inc(bin: any, strand: number, type: string, field: string) {
   let thisBin = bin[type][field]
-  if (!thisBin) {
+  if (thisBin === undefined) {
     thisBin = bin[type][field] = {
       total: 0,
-      strands: { '-1': 0, '0': 0, '1': 0 },
+      '-1': 0,
+      '0': 0,
+      '1': 0,
     }
   }
   thisBin.total++
-  thisBin.strands[strand]++
+  thisBin[strand]++
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dec(bin: any, strand: number, type: string, field: string) {
-  if (!bin[type][field]) {
-    bin[type][field] = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+  let thisBin = bin[type][field]
+  if (thisBin == undefined) {
+    thisBin = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
   }
-  bin[type][field].total--
-  bin[type][field].strands[strand]--
+  thisBin.total--
+  thisBin[strand]--
 }
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
@@ -173,6 +176,9 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     const bins = [] as {
       total: number
+      '-1': 0
+      '0': 0
+      '1': 0
       lowqual: BinType
       cov: BinType
       delskips: BinType
@@ -185,24 +191,28 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       const ops = parseCigar(feature.get('CIGAR'))
       const fstart = feature.get('start')
       const fend = feature.get('end')
-      const fstrand = feature.get('strand')
+      const fstrand = feature.get('strand') as -1 | 0 | 1
 
       for (let j = fstart; j < fend; j++) {
         const i = j - region.start
         if (i >= 0 && i < binMax) {
-          const bin = bins[i] || {
-            total: 0,
-            lowqual: {} as BinType,
-            cov: {} as BinType,
-            delskips: {} as BinType,
-            noncov: {} as BinType,
-            ref: {} as BinType,
+          if (bins[i] === undefined) {
+            bins[i] = {
+              total: 0,
+              '-1': 0,
+              '0': 0,
+              '1': 0,
+              lowqual: {} as BinType,
+              cov: {} as BinType,
+              delskips: {} as BinType,
+              noncov: {} as BinType,
+              ref: {} as BinType,
+            }
           }
           if (j !== fend) {
-            bin.total++
-            inc(bin, fstrand, 'ref', 'ref')
+            bins[i].total++
+            bins[i][fstrand]++
           }
-          bins[i] = bin
         }
       }
 
@@ -263,13 +273,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               if (methBins[i] || methBins[i + 1]) {
                 inc(bin, fstrand, 'cov', 'meth')
                 inc(bin1, fstrand, 'cov', 'meth')
-                dec(bin, fstrand, 'ref', 'ref')
-                dec(bin1, fstrand, 'ref', 'ref')
+                // decRef(bin, fstrand)
+                // decRef(bin1, fstrand)
               } else {
                 inc(bin, fstrand, 'cov', 'unmeth')
                 inc(bin1, fstrand, 'cov', 'unmeth')
-                dec(bin, fstrand, 'ref', 'ref')
-                dec(bin1, fstrand, 'ref', 'ref')
+                // decRef(bin, fstrand)
+                // decRef(bin1, fstrand)
               }
             }
           }
@@ -291,7 +301,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 const { base, type } = mismatch
                 const interbase = isInterbase(type)
                 if (!interbase) {
-                  dec(bin, fstrand, 'ref', 'ref')
+                  // decRef(bin, fstrand)
                 } else {
                   inc(bin, fstrand, 'noncov', type)
                 }
