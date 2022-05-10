@@ -13,7 +13,6 @@ module.exports = {
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
       }),
-      new webpack.ContextReplacementPlugin(/any-promise/),
     ],
     configure: {
       resolve: {
