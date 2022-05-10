@@ -44,7 +44,7 @@ function inc(bin: any, strand: number, type: string, field: string) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dec(bin: any, strand: number, type: string, field: string) {
   let thisBin = bin[type][field]
-  if (thisBin == undefined) {
+  if (thisBin === undefined) {
     thisBin = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
   }
   thisBin.total--
@@ -273,13 +273,17 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               if (methBins[i] || methBins[i + 1]) {
                 inc(bin, fstrand, 'cov', 'meth')
                 inc(bin1, fstrand, 'cov', 'meth')
-                // decRef(bin, fstrand)
-                // decRef(bin1, fstrand)
+                bins[i].total--
+                bins[i][fstrand]--
+                bins[i + 1].total--
+                bins[i + 1][fstrand]--
               } else {
                 inc(bin, fstrand, 'cov', 'unmeth')
                 inc(bin1, fstrand, 'cov', 'unmeth')
-                // decRef(bin, fstrand)
-                // decRef(bin1, fstrand)
+                bins[i].total--
+                bins[i][fstrand]--
+                bins[i + 1].total--
+                bins[i + 1][fstrand]--
               }
             }
           }
@@ -301,7 +305,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 const { base, type } = mismatch
                 const interbase = isInterbase(type)
                 if (!interbase) {
-                  // decRef(bin, fstrand)
+                  bins[i + 1].total--
+                  bins[i + 1][fstrand]--
                 } else {
                   inc(bin, fstrand, 'noncov', type)
                 }
