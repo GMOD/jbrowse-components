@@ -31,14 +31,7 @@ function View() {
 
 ![](docs/img/exampleView.png)
 
-For a full working example, see [this example](docs/example.md).
-
-For a download-ready examples:
-
-- create-react-app v4 - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view
-- create-react-app v5 - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-cra5
-- vite - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-vite
-- vanillajs - https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-vanillajs
+For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
 
 ## Install
 
