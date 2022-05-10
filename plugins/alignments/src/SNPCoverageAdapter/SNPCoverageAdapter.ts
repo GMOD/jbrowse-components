@@ -165,21 +165,38 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         ? await this.fetchSequence(region)
         : undefined
 
-    const bins = [] as {
-      total: number
-      ref: number
-      '-1': 0
-      '0': 0
-      '1': 0
-      lowqual: BinType
-      cov: BinType
-      delskips: BinType
-      noncov: BinType
-    }[]
+    const rlen = region.end - region.start
+    // pre-allocate array if region not too large
+    const bins =
+      rlen < 50_000
+        ? Array.from({ length: rlen }, () => ({
+            total: 0,
+            ref: 0,
+            '-1': 0,
+            '0': 0,
+            '1': 0,
+            lowqual: {} as BinType,
+            cov: {} as BinType,
+            delskips: {} as BinType,
+            noncov: {} as BinType,
+          }))
+        : ([] as {
+            total: number
+            ref: number
+            '-1': 0
+            '0': 0
+            '1': 0
+            lowqual: BinType
+            cov: BinType
+            delskips: BinType
+            noncov: BinType
+          }[])
+
+    let min = Infinity
+    let max = -Infinity
 
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]
-      const ops = parseCigar(feature.get('CIGAR'))
       const fstart = feature.get('start')
       const fend = feature.get('end')
       const fstrand = feature.get('strand') as -1 | 0 | 1
@@ -211,6 +228,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       if (colorBy?.type === 'modifications') {
         const seq = feature.get('seq') as string
         const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
+        const ops = parseCigar(feature.get('CIGAR'))
 
         getModificationPositions(mm, seq, fstrand).forEach(
           ({ type, positions }) => {
@@ -237,6 +255,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         const seq = feature.get('seq')
         const mm = getTagAlt(feature, 'MM', 'Mm') || ''
         const methBins = new Array(region.end - region.start).fill(0)
+        const ops = parseCigar(feature.get('CIGAR'))
 
         getModificationPositions(mm, seq, fstrand).forEach(
           ({ type, positions }) => {
