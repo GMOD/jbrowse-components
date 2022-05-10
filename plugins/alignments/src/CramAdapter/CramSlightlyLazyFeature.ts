@@ -385,6 +385,6 @@ export default class CramSlightlyLazyFeature implements Feature {
         // single quality value
       }
     }
-    return mismatches
+    return mismatches.slice(0, j)
   }
 }
