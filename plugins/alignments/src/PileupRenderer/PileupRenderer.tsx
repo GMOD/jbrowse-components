@@ -872,17 +872,17 @@ export default class PileupRenderer extends BoxRendererType {
             ctx.fillStyle = 'purple'
             ctx.fillRect(leftPx - 1, topPx, 2, heightPx)
           } else if (heightPx > charHeight) {
-            const rect = measureText(txt)
+            const rwidth = measureText(txt)
             const padding = 5
             ctx.fillStyle = 'purple'
             ctx.fillRect(
-              leftPx - rect.width / 2 - padding,
+              leftPx - rwidth / 2 - padding,
               topPx,
-              rect.width + 2 * padding,
+              rwidth + 2 * padding,
               heightPx,
             )
             ctx.fillStyle = 'white'
-            ctx.fillText(txt, leftPx - rect.width / 2, topPx + heightPx)
+            ctx.fillText(txt, leftPx - rwidth / 2, topPx + heightPx)
           } else {
             const padding = 2
             ctx.fillStyle = 'purple'
