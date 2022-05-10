@@ -494,6 +494,10 @@ export function clamp(num: number, min: number, max: number): number {
   return num
 }
 
+function roundToNearestPointOne(num: number): number {
+  return Math.round(num * 10) / 10
+}
+
 /**
  * @param bp -
  * @param region -
@@ -508,7 +512,7 @@ export function bpToPx(
   }: { start?: number; end?: number; reversed?: boolean },
   bpPerPx: number,
 ) {
-  return (reversed ? end - bp : bp - start) / bpPerPx
+  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
 const oneEightyOverPi = 180.0 / Math.PI

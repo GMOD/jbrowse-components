@@ -165,35 +165,17 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         ? await this.fetchSequence(region)
         : undefined
 
-    const rlen = region.end - region.start
-    // pre-allocate array if region not too large
-    const bins =
-      rlen < 50_000
-        ? Array.from({ length: rlen }, () => ({
-            total: 0,
-            ref: 0,
-            '-1': 0,
-            '0': 0,
-            '1': 0,
-            lowqual: {} as BinType,
-            cov: {} as BinType,
-            delskips: {} as BinType,
-            noncov: {} as BinType,
-          }))
-        : ([] as {
-            total: number
-            ref: number
-            '-1': 0
-            '0': 0
-            '1': 0
-            lowqual: BinType
-            cov: BinType
-            delskips: BinType
-            noncov: BinType
-          }[])
-
-    let min = Infinity
-    let max = -Infinity
+    const bins = [] as {
+      total: number
+      ref: number
+      '-1': 0
+      '0': 0
+      '1': 0
+      lowqual: BinType
+      cov: BinType
+      delskips: BinType
+      noncov: BinType
+    }[]
 
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]
