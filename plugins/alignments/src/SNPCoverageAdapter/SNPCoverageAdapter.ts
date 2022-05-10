@@ -41,15 +41,6 @@ function inc(bin: any, strand: number, type: string, field: string) {
   thisBin.total++
   thisBin[strand]++
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function dec(bin: any, strand: number, type: string, field: string) {
-  let thisBin = bin[type][field]
-  if (thisBin === undefined) {
-    thisBin = bin[type][field] = { total: 0, '-1': 0, '0': 0, '1': 0 }
-  }
-  thisBin.total--
-  thisBin[strand]--
-}
 
 export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
   protected async configure() {
@@ -184,7 +175,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       cov: BinType
       delskips: BinType
       noncov: BinType
-      ref: BinType
     }[]
 
     for (let i = 0; i < features.length; i++) {
