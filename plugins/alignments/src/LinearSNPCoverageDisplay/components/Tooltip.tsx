@@ -53,6 +53,10 @@ const TooltipContents = React.forwardRef(
             <tr>
               <td>Total</td>
               <td>{info.total}</td>
+            </tr>
+            <tr>
+              <td>REF</td>
+              <td>{info.ref}</td>
               <td>
                 {info['-1'] ? `${info['-1']}(-)` : ''}
                 {info['1'] ? `${info['1']}(+)` : ''}

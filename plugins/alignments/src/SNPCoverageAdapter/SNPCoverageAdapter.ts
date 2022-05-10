@@ -45,7 +45,7 @@ function inc(bin: any, strand: number, type: string, field: string) {
 function dec(bin: any, strand: number, type: string, field: string) {
   let thisBin = bin[type][field]
   if (thisBin === undefined) {
-    thisBin = { total: 0, strands: { '-1': 0, '0': 0, '1': 0 } }
+    thisBin = bin[type][field] = { total: 0, '-1': 0, '0': 0, '1': 0 }
   }
   thisBin.total--
   thisBin[strand]--
@@ -176,6 +176,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
 
     const bins = [] as {
       total: number
+      ref: number
       '-1': 0
       '0': 0
       '1': 0
@@ -199,6 +200,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           if (bins[i] === undefined) {
             bins[i] = {
               total: 0,
+              ref: 0,
               '-1': 0,
               '0': 0,
               '1': 0,
@@ -206,11 +208,11 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               cov: {} as BinType,
               delskips: {} as BinType,
               noncov: {} as BinType,
-              ref: {} as BinType,
             }
           }
           if (j !== fend) {
             bins[i].total++
+            bins[i].ref++
             bins[i][fstrand]++
           }
         }
@@ -273,16 +275,16 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               if (methBins[i] || methBins[i + 1]) {
                 inc(bin, fstrand, 'cov', 'meth')
                 inc(bin1, fstrand, 'cov', 'meth')
-                bins[i].total--
+                bins[i].ref--
                 bins[i][fstrand]--
-                bins[i + 1].total--
+                bins[i + 1].ref--
                 bins[i + 1][fstrand]--
               } else {
                 inc(bin, fstrand, 'cov', 'unmeth')
                 inc(bin1, fstrand, 'cov', 'unmeth')
-                bins[i].total--
+                bins[i].ref--
                 bins[i][fstrand]--
-                bins[i + 1].total--
+                bins[i + 1].ref--
                 bins[i + 1][fstrand]--
               }
             }
@@ -305,8 +307,8 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
                 const { base, type } = mismatch
                 const interbase = isInterbase(type)
                 if (!interbase) {
-                  bins[i + 1].total--
-                  bins[i + 1][fstrand]--
+                  bin.ref--
+                  bin[fstrand]--
                 } else {
                   inc(bin, fstrand, 'noncov', type)
                 }
