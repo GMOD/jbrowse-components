@@ -7,11 +7,11 @@ import {
   Card,
   CardContent,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 // icons
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'

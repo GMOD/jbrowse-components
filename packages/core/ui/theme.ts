@@ -1,34 +1,34 @@
 import { blue, green, red, amber } from '@mui/material/colors'
 import { Theme, createTheme } from '@mui/material/styles'
-import { PaletteOptions } from '@mui/material/styles/createPalette'
+// import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
 declare module '@mui/styles/defaultTheme' {
   type DefaultTheme = Theme
 }
 
-declare module '@mui/material/styles/createPalette' {
-  interface Palette {
-    tertiary: Palette['primary']
-    quaternary: Palette['primary']
-    bases: {
-      A: Palette['primary']
-      C: Palette['primary']
-      G: Palette['primary']
-      T: Palette['primary']
-    }
-  }
-  interface PaletteOptions {
-    tertiary?: PaletteOptions['primary']
-    quaternary?: PaletteOptions['primary']
-    bases?: {
-      A?: PaletteOptions['primary']
-      C?: PaletteOptions['primary']
-      G?: PaletteOptions['primary']
-      T?: PaletteOptions['primary']
-    }
-  }
-}
+// declare module '@mui/material/styles/createPalette' {
+//   interface Palette {
+//     tertiary: Palette['primary']
+//     quaternary: Palette['primary']
+//     bases: {
+//       A: Palette['primary']
+//       C: Palette['primary']
+//       G: Palette['primary']
+//       T: Palette['primary']
+//     }
+//   }
+//   interface PaletteOptions {
+//     tertiary?: PaletteOptions['primary']
+//     quaternary?: PaletteOptions['primary']
+//     bases?: {
+//       A?: PaletteOptions['primary']
+//       C?: PaletteOptions['primary']
+//       G?: PaletteOptions['primary']
+//       T?: PaletteOptions['primary']
+//     }
+//   }
+// }
 
 const midnight = '#0D233F'
 const grape = '#721E63'

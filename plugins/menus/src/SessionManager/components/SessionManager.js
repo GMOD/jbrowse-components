@@ -15,8 +15,8 @@ import {
   ListSubheader,
   Paper,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ViewListIcon from '@mui/icons-material/ViewList'
 
