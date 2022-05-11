@@ -10,10 +10,9 @@ import {
   Paper,
   TextField,
   Typography,
-  makeStyles,
 } from '@mui/material'
-import FileSelector from '@jbrowse/core/ui/FileSelector'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { makeStyles } from '@mui/styles'
+import { FileSelector, ErrorMessage } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')

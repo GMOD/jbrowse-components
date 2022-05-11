@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Button, IconButton, Snackbar } from '@mui/material'
+import { Alert, Button, IconButton, Snackbar } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import Alert from '@mui/lab/Alert'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { AbstractSessionModel, NotificationLevel, SnackAction } from '../util'

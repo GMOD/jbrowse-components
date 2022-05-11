@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@mui/material/styles'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { makeStyles } from '@mui/styles'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   Button,
   Dialog,

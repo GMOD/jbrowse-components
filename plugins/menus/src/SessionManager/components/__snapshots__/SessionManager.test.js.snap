@@ -2,18 +2,18 @@
 
 exports[`<SessionManager /> renders 1`] = `
 <div
-  class="MuiPaper-root makeStyles-root MuiPaper-elevation1 MuiPaper-rounded"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-root css-1ps6pg7-MuiPaper-root"
 >
   <ul
-    class="MuiList-root MuiList-padding MuiList-subheader"
+    class="MuiList-root MuiList-padding MuiList-subheader css-p64g7a-MuiList-root"
   >
     <li
-      class="MuiListSubheader-root MuiListSubheader-sticky MuiListSubheader-gutters"
+      class="MuiListSubheader-root MuiListSubheader-gutters MuiListSubheader-sticky css-uob957-MuiListSubheader-root"
     >
       Saved sessions
     </li>
     <p
-      class="MuiTypography-root makeStyles-message MuiTypography-body1"
+      class="MuiTypography-root MuiTypography-body1 makeStyles-message css-ahj2mt-MuiTypography-root"
     >
       No saved sessions found
     </p>

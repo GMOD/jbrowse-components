@@ -5,12 +5,12 @@ import {
   Paper,
   Toolbar,
   Typography,
-  makeStyles,
+  ScopedCssBaseline,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionModel } from '../createModel/createSessionModel'
-import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 
 const useStyles = makeStyles({
   paper: {

@@ -156,7 +156,6 @@ const ImportForm = observer(({ model }) => {
           {model.canCancel ? (
             <Button
               variant="contained"
-              color="default"
               onClick={model.cancelButton}
               disabled={!model.canCancel}
             >

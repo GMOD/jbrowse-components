@@ -9,8 +9,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@mui/icons-material/Search'
 import MoreIcon from '@mui/icons-material/MoreHoriz'

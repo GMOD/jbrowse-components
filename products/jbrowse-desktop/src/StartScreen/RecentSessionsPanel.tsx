@@ -9,8 +9,8 @@ import {
   Link,
   Tooltip,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { ToggleButtonGroup, ToggleButton, ToggleButtonProps } from '@mui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'

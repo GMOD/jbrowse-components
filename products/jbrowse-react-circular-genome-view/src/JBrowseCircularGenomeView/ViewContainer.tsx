@@ -5,9 +5,9 @@ import {
   Paper,
   SvgIconProps,
   Typography,
-  makeStyles,
   useTheme,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import { alpha } from '@mui/material/styles'
 import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'

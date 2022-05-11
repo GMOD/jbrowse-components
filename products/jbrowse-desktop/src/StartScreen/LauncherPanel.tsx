@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Button, Typography, makeStyles } from '@mui/material'
+import { Button, Typography } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals

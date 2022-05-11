@@ -38,9 +38,7 @@ export const HTTPBasicLoginForm = ({
               label="Username"
               variant="outlined"
               inputProps={{ 'data-testid': 'login-httpbasic-username' }}
-              onChange={event => {
-                setUsername(event.target.value)
-              }}
+              onChange={event => setUsername(event.target.value)}
               margin="dense"
             />
             <TextField
@@ -50,9 +48,7 @@ export const HTTPBasicLoginForm = ({
               autoComplete="current-password"
               variant="outlined"
               inputProps={{ 'data-testid': 'login-httpbasic-password' }}
-              onChange={event => {
-                setPassword(event.target.value)
-              }}
+              onChange={event => setPassword(event.target.value)}
               margin="dense"
             />
           </DialogContent>
@@ -62,11 +58,8 @@ export const HTTPBasicLoginForm = ({
             </Button>
             <Button
               variant="contained"
-              color="default"
               type="submit"
-              onClick={() => {
-                handleClose()
-              }}
+              onClick={() => handleClose()}
             >
               Cancel
             </Button>

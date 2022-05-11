@@ -1,6 +1,8 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
+
+// locals
 import { ConfigurationSchema } from '../configuration'
 import PluginManager from '../PluginManager'
 import { stateModelFactory } from '.'
