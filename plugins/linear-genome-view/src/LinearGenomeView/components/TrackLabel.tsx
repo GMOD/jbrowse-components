@@ -103,46 +103,42 @@ const TrackLabel = React.forwardRef(
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
     return (
-      <>
-        <Paper ref={ref} className={clsx(className, classes.root)}>
-          <span
-            draggable
-            className={classes.dragHandle}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-            data-testid={`dragHandle-${view.id}-${trackId}`}
-          >
-            <DragIcon className={classes.dragHandleIcon} />
-          </span>
-          <IconButton
-            onClick={() => view.hideTrack(trackId)}
-            className={classes.iconButton}
-            title="close this track"
-            color="secondary"
-            size="large"
-          >
-            <CloseIcon />
-          </IconButton>
-          <Typography
-            variant="body1"
-            component="span"
-            className={classes.trackName}
-          >
-            {trackName}
-          </Typography>
-          <IconButton
-            aria-controls="simple-menu"
-            aria-haspopup="true"
-            onClick={handleClick}
-            className={classes.iconButton}
-            color="secondary"
-            data-testid="track_menu_icon"
-            disabled={!items.length}
-            size="large"
-          >
-            <MoreVertIcon />
-          </IconButton>
-        </Paper>
+      <Paper ref={ref} className={clsx(className, classes.root)}>
+        <span
+          draggable
+          className={classes.dragHandle}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+          data-testid={`dragHandle-${view.id}-${trackId}`}
+        >
+          <DragIcon className={classes.dragHandleIcon} fontSize="small" />
+        </span>
+        <IconButton
+          onClick={() => view.hideTrack(trackId)}
+          className={classes.iconButton}
+          title="close this track"
+          color="secondary"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+        <Typography
+          variant="body1"
+          component="span"
+          className={classes.trackName}
+        >
+          {trackName}
+        </Typography>
+        <IconButton
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          onClick={handleClick}
+          className={classes.iconButton}
+          color="secondary"
+          data-testid="track_menu_icon"
+          disabled={!items.length}
+        >
+          <MoreVertIcon fontSize="small" />
+        </IconButton>
         <Menu
           anchorEl={anchorEl}
           onMenuItemClick={handleMenuItemClick}
@@ -150,7 +146,7 @@ const TrackLabel = React.forwardRef(
           onClose={handleClose}
           menuItems={items}
         />
-      </>
+      </Paper>
     )
   },
 )
