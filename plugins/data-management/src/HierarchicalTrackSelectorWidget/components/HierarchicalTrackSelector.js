@@ -1,4 +1,3 @@
- 
 import React, {
   Suspense,
   lazy,
@@ -98,6 +97,7 @@ const useStyles = makeStyles(theme => ({
   // margin:auto 0 to center text vertically
   accordionText: {
     margin: 'auto 0',
+    display: 'flex',
   },
 }))
 
@@ -149,10 +149,8 @@ const Node = props => {
         <div className={!isLeaf ? classes.accordionColor : undefined}>
           {!isLeaf ? (
             <div className={classes.accordionText}>
-              <Typography>
-                {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-                {name}
-              </Typography>
+              {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+              <Typography>{name}</Typography>
             </div>
           ) : (
             <>
@@ -321,9 +319,7 @@ const HierarchicalTrackSelectorContainer = observer(
             <Fab
               color="secondary"
               className={classes.fab}
-              onClick={event => {
-                setAnchorEl(event.currentTarget)
-              }}
+              onClick={event => setAnchorEl(event.currentTarget)}
             >
               <AddIcon />
             </Fab>
@@ -464,27 +460,23 @@ const HierarchicalTrackSelectorHeader = observer(
         data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
-          {session.addTrackConf && (
+          {session.addTrackConf ? (
             <IconButton
               className={classes.menuIcon}
-              onClick={event => {
-                setMenuAnchorEl(event.currentTarget)
-              }}
+              onClick={event => setMenuAnchorEl(event.currentTarget)}
             >
               <MenuIcon />
             </IconButton>
-          )}
+          ) : null}
 
-          {session.makeConnection && (
+          {session.makeConnection ? (
             <IconButton
               className={classes.menuIcon}
-              onClick={event => {
-                setConnectionAnchorEl(event.currentTarget)
-              }}
+              onClick={event => setConnectionAnchorEl(event.currentTarget)}
             >
               <Cable />
             </IconButton>
-          )}
+          ) : null}
 
           <TextField
             className={classes.searchBox}

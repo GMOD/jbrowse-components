@@ -29,9 +29,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
     <div className={classes.container}>
       <IconButton
         data-testid="zoom_out"
-        onClick={() => {
-          model.zoom(bpPerPx * 2)
-        }}
+        onClick={() => model.zoom(bpPerPx * 2)}
         disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         color="secondary"
         size="large"
@@ -40,6 +38,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
       </IconButton>
 
       <Slider
+        size="small"
         className={classes.slider}
         value={value}
         min={-Math.log2(maxBpPerPx) * 100}
@@ -50,9 +49,7 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
       />
       <IconButton
         data-testid="zoom_in"
-        onClick={() => {
-          model.zoom(model.bpPerPx / 2)
-        }}
+        onClick={() => model.zoom(model.bpPerPx / 2)}
         disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         color="secondary"
         size="large"
