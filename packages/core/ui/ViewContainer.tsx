@@ -166,10 +166,8 @@ const ViewContainer = observer(
               value={
                 view.displayName ||
                 // @ts-ignore
-                (view.assemblyNames
-                  ? // @ts-ignore
-                    view.assemblyNames.join(',')
-                  : 'Untitled view')
+                view.assemblyNames?.join(',') ||
+                'Untitled view'
               }
               setValue={val => {
                 view.setDisplayName(val)
