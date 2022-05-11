@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => {
 })
 
 const ViewControls = observer(({ model }) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   const classes = useStyles()
   return (
     <Grid
@@ -74,7 +74,7 @@ const ViewControls = observer(({ model }) => {
 })
 
 const CircularViewOptions = observer(({ svInspector }) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+   
   const classes = useStyles()
 
   return (

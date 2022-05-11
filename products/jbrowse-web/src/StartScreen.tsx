@@ -33,11 +33,11 @@ import RecentSessionCard from './RecentSessionCard'
 const useStyles = makeStyles(theme => ({
   newSession: {
     backgroundColor: theme.palette?.grey['300'],
-    padding: 8, //theme.spacing(2),
-    marginTop: 8, //theme.spacing(6),
+    padding: 8, // theme.spacing(2),
+    marginTop: 8, // theme.spacing(6),
   },
   header: {
-    margin: 8, //theme.spacing(2),
+    margin: 8, // theme.spacing(2),
   },
   settings: {
     float: 'right',
