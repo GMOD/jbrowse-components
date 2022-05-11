@@ -85,14 +85,8 @@ const ViewMenu = observer(
       <>
         <IconButton
           {...IconButtonProps}
-          aria-label="more"
-          aria-controls="view-menu"
-          aria-haspopup="true"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
+          onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
-          size="large"
         >
           <MenuIcon {...IconProps} />
         </IconButton>
@@ -103,9 +97,7 @@ const ViewMenu = observer(
             callback()
             setAnchorEl(undefined)
           }}
-          onClose={() => {
-            setAnchorEl(undefined)
-          }}
+          onClose={() => setAnchorEl(undefined)}
           menuItems={model.menuItems()}
         />
       </>
@@ -187,7 +179,6 @@ const ViewContainer = observer(
             classes={{ root: classes.iconRoot }}
             edge="end"
             onClick={onClose}
-            size="large"
           >
             <CloseIcon className={classes.icon} />
           </IconButton>

@@ -1,10 +1,5 @@
 import { blue, green, red, amber } from '@mui/material/colors'
-import {
-  Theme,
-  DeprecatedThemeOptions,
-  createTheme,
-  adaptV4Theme,
-} from '@mui/material/styles'
+import { Theme, createTheme } from '@mui/material/styles'
 import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
@@ -12,19 +7,6 @@ declare module '@mui/styles/defaultTheme' {
   type DefaultTheme = Theme
 }
 
-// use this if we ever want to add some top-level thing to the theme
-// declare module '@mui/material/styles/createMuiTheme' {
-//   interface Theme {
-//     status: {
-//       topLevelThing: string
-//     }
-//   }
-//   interface DeprecatedThemeOptions {
-//     status?: {
-//       topLevelThing?: string
-//     }
-//   }
-// }
 declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
@@ -79,6 +61,11 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           size: 'small',
         },
       },
+      MuiAccordion: {
+        defaultProps: {
+          disableGutters: true,
+        },
+      },
       MuiFilledInput: {
         defaultProps: {
           margin: 'dense',
@@ -94,6 +81,7 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           margin: 'dense',
         },
       },
+
       MuiIconButton: {
         defaultProps: {
           size: 'small',
@@ -134,11 +122,6 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           margin: 'dense',
         },
       },
-      MuiToolbar: {
-        defaultProps: {
-          variant: 'dense',
-        },
-      },
     },
   }
 }
@@ -175,66 +158,18 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
           },
         },
       },
-      MuiAccordion: {
-        styleOverrides: {
-          root: {
-            // avoid extra padding around accordion element
-            margin: 0,
-            '&$expanded': {
-              margin: 0,
-            },
-          },
-        },
-      },
+
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
-            // !important needed to combat the MuiButton being applied to
+            // REMOVEME: testing out not having !important
+            // OLDCOMMENT: !important needed to combat the MuiButton being applied to
             // accordions in mui5.0.0 having a background:'transparent' that
             // otherwise overrides this other
-            backgroundColor: generatedPalette.tertiary.main + ' !important',
-
-            // width:100% added in 5.0.0 also
-            width: '100%',
-            '&$expanded': {
-              // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312
-              minHeight: 0,
-              color: generatedPalette.tertiary.contrastText,
-              backgroundColor: generatedPalette.tertiary.main,
-            },
-            minHeight: 0,
+            backgroundColor: generatedPalette.tertiary.main,
           },
           content: {
-            '&$expanded': {
-              margin: '8px 8px',
-            },
-            margin: '8px 8px',
             color: generatedPalette.tertiary.contrastText,
-          },
-        },
-      },
-      // makes menus more compact
-      MuiMenuItem: {
-        styleOverrides: {
-          root: {
-            paddingTop: 3,
-            paddingBottom: 3,
-          },
-        },
-      },
-
-      // the below two are linked to make menus more compact
-      MuiListItemIcon: {
-        styleOverrides: {
-          root: {
-            minWidth: 32,
-          },
-        },
-      },
-      MuiListItemText: {
-        styleOverrides: {
-          inset: {
-            paddingLeft: 32,
           },
         },
       },
@@ -242,15 +177,16 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
   }
 }
 
-export const jbrowseBaseTheme: DeprecatedThemeOptions = {
+export const jbrowseBaseTheme = {
   palette: jbrowseDefaultPalette,
   typography: { fontSize: 12 },
   spacing: 4,
   ...deepmerge(createJBrowseDefaultProps(), createJBrowseDefaultOverrides()),
 }
 
-export function createJBrowseTheme(theme?: DeprecatedThemeOptions) {
+export function createJBrowseTheme(theme?: any) {
   if (!theme) {
+    //@ts-ignore
     return createTheme(jbrowseBaseTheme)
   }
   if (theme.palette?.tertiary) {
