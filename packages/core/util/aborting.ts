@@ -67,15 +67,17 @@ export function observeAbortSignal(signal?: AbortSignal): Observable<Event> {
  * @param exception -
  */
 export function isAbortException(exception: unknown): boolean {
-  return exception instanceof Error &&
-  // DOMException
-  (exception.name === 'AbortError' ||
-    // standard-ish non-DOM abort exception
-    (exception as AbortError).code === 'ERR_ABORTED' ||
-    // message contains aborted for bubbling through RPC
-    // things we have seen that we want to catch here
-    // Error: aborted
-    // AbortError: aborted
-    // AbortError: The user aborted a request.
-    !!exception.message.match(/\b(aborted|AbortError)\b/i));
+  return (
+    exception instanceof Error &&
+    // DOMException
+    (exception.name === 'AbortError' ||
+      // standard-ish non-DOM abort exception
+      (exception as AbortError).code === 'ERR_ABORTED' ||
+      // message contains aborted for bubbling through RPC
+      // things we have seen that we want to catch here
+      // Error: aborted
+      // AbortError: aborted
+      // AbortError: The user aborted a request.
+      !!exception.message.match(/\b(aborted|AbortError)\b/i))
+  )
 }

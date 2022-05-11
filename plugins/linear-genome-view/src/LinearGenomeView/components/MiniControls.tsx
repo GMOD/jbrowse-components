@@ -13,51 +13,56 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor } = model
   const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-  return <>
-    <Paper style={{ background: '#aaa7' }}>
-      <IconButton
-        color="secondary"
-        onClick={event => {
-          setAnchorEl(event.currentTarget)
-        }}
-        size="large">
-        <ArrowDown />
-      </IconButton>
+  return (
+    <>
+      <Paper style={{ background: '#aaa7' }}>
+        <IconButton
+          color="secondary"
+          onClick={event => {
+            setAnchorEl(event.currentTarget)
+          }}
+          size="large"
+        >
+          <ArrowDown />
+        </IconButton>
 
-      <IconButton
-        data-testid="zoom_out"
-        onClick={() => {
-          model.zoom(bpPerPx * 2)
+        <IconButton
+          data-testid="zoom_out"
+          onClick={() => {
+            model.zoom(bpPerPx * 2)
+          }}
+          disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
+          color="secondary"
+          size="large"
+        >
+          <ZoomOut />
+        </IconButton>
+        <IconButton
+          data-testid="zoom_in"
+          onClick={() => {
+            model.zoom(model.bpPerPx / 2)
+          }}
+          disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
+          color="secondary"
+          size="large"
+        >
+          <ZoomIn />
+        </IconButton>
+      </Paper>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onMenuItemClick={(_, callback) => {
+          callback()
+          setAnchorEl(undefined)
         }}
-        disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
-        color="secondary"
-        size="large">
-        <ZoomOut />
-      </IconButton>
-      <IconButton
-        data-testid="zoom_in"
-        onClick={() => {
-          model.zoom(model.bpPerPx / 2)
+        onClose={() => {
+          setAnchorEl(undefined)
         }}
-        disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
-        color="secondary"
-        size="large">
-        <ZoomIn />
-      </IconButton>
-    </Paper>
-    <Menu
-      anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
-      onMenuItemClick={(_, callback) => {
-        callback()
-        setAnchorEl(undefined)
-      }}
-      onClose={() => {
-        setAnchorEl(undefined)
-      }}
-      menuItems={model.menuItems()}
-    />
-  </>;
+        menuItems={model.menuItems()}
+      />
+    </>
+  )
 })
 
 export default MiniControls

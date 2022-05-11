@@ -12,11 +12,7 @@ import {
   makeStyles,
 } from '@mui/material'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
-import {
-  ToggleButtonGroup,
-  ToggleButton,
-  ToggleButtonProps,
-} from '@mui/lab'
+import { ToggleButtonGroup, ToggleButton, ToggleButtonProps } from '@mui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { format } from 'timeago.js'
 

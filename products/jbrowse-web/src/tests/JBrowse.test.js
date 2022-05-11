@@ -228,7 +228,6 @@ describe('test configuration editor', () => {
   }, 20000)
 })
 
- 
 function FallbackComponent({ error }) {
   return <div>there was an error: {String(error)}</div>
 }

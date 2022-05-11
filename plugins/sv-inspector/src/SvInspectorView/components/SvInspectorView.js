@@ -48,7 +48,6 @@ const useStyles = makeStyles(theme => {
 })
 
 const ViewControls = observer(({ model }) => {
-   
   const classes = useStyles()
   return (
     <Grid
@@ -74,7 +73,6 @@ const ViewControls = observer(({ model }) => {
 })
 
 const CircularViewOptions = observer(({ svInspector }) => {
-   
   const classes = useStyles()
 
   return (

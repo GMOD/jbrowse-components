@@ -28,7 +28,6 @@ const useStyles = makeStyles({
   },
 })
 
- 
 export default function CodeEditor({ contents, setContents }) {
   const classes = useStyles()
   const theme = useTheme()
