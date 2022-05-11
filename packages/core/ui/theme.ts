@@ -97,6 +97,11 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           margin: 'dense',
         },
       },
+      MuiToolbar: {
+        defaultProps: {
+          variant: 'dense',
+        },
+      },
       MuiListItem: {
         defaultProps: {
           dense: true,
