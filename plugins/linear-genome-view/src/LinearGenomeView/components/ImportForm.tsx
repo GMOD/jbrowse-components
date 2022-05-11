@@ -4,9 +4,8 @@ import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { Button, CircularProgress, Container, Grid } from '@mui/material'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import CloseIcon from '@mui/icons-material/Close'
 
 // locals

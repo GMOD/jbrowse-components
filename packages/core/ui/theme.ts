@@ -92,6 +92,11 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           margin: 'dense',
         },
       },
+      MuiAutocomplete: {
+        defaultProps: {
+          size: 'small',
+        },
+      },
       MuiInputLabel: {
         defaultProps: {
           margin: 'dense',
@@ -195,9 +200,10 @@ export const jbrowseBaseTheme = {
   ...deepmerge(createJBrowseDefaultProps(), createJBrowseDefaultOverrides()),
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createJBrowseTheme(theme?: any) {
   if (!theme) {
-    //@ts-ignore
+    // @ts-ignore
     return createTheme(jbrowseBaseTheme)
   }
   if (theme.palette?.tertiary) {
