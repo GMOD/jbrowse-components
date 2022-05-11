@@ -15,7 +15,7 @@ import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import ColumnMenu from './ColumnMenu'
 import RowMenu from './RowMenu'
 
-/* eslint-disable react/prop-types */
+ 
 export function numToColName(num) {
   function letterFor(n) {
     return String.fromCharCode(n + 65)

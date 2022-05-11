@@ -28,7 +28,7 @@ const useStyles = makeStyles({
   },
 })
 
-// eslint-disable-next-line react/prop-types
+ 
 export default function CodeEditor({ contents, setContents }) {
   const classes = useStyles()
   const theme = useTheme()

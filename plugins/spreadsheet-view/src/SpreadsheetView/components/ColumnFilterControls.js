@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+ 
 import React from 'react'
 import FilterIcon from '@mui/icons-material/FilterList'
 import CloseIcon from '@mui/icons-material/Close'

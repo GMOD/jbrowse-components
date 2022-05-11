@@ -228,7 +228,7 @@ describe('test configuration editor', () => {
   }, 20000)
 })
 
-// eslint-disable-next-line react/prop-types
+ 
 function FallbackComponent({ error }) {
   return <div>there was an error: {String(error)}</div>
 }
