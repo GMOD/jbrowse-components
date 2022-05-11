@@ -138,6 +138,7 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
       MuiTextField: {
         defaultProps: {
           margin: 'dense',
+          variant: 'standard',
         },
       },
     },

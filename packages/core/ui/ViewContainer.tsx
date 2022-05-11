@@ -87,8 +87,9 @@ const ViewMenu = observer(
           {...IconButtonProps}
           onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
+          size="small"
         >
-          <MenuIcon {...IconProps} />
+          <MenuIcon {...IconProps} fontSize="small" />
         </IconButton>
         <Menu
           anchorEl={anchorEl}
@@ -161,9 +162,7 @@ const ViewContainer = observer(
                 view.assemblyNames?.join(',') ||
                 'Untitled view'
               }
-              setValue={val => {
-                view.setDisplayName(val)
-              }}
+              setValue={val => view.setDisplayName(val)}
               variant="body2"
               classes={{
                 input: classes.input,
@@ -178,9 +177,10 @@ const ViewContainer = observer(
             data-testid="close_view"
             classes={{ root: classes.iconRoot }}
             edge="end"
+            size="small"
             onClick={onClose}
           >
-            <CloseIcon className={classes.icon} />
+            <CloseIcon className={classes.icon} fontSize="small" />
           </IconButton>
         </div>
         <Paper>{children}</Paper>
