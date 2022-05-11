@@ -271,7 +271,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
 
   const ListContents = (
     <>
-      <MenuList autoFocusItem={open && !isSubMenuOpen}>
+      <MenuList autoFocusItem={open && !isSubMenuOpen} dense>
         {menuItems
           .sort((a, b) => (b.priority || 0) - (a.priority || 0))
           .map((menuItem, idx) => {

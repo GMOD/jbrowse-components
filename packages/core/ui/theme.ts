@@ -122,6 +122,12 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           size: 'small',
         },
       },
+      MuiMenuList: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+
       MuiTextField: {
         defaultProps: {
           margin: 'dense',

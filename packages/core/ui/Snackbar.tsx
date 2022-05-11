@@ -59,7 +59,11 @@ function MessageSnackbar({
   }
   const [message, level, action] = snackbarMessage || []
   return (
-    <Snackbar open={open && !!message} onClose={handleClose}>
+    <Snackbar
+      open={open && !!message}
+      onClose={handleClose}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    >
       <Alert
         onClose={handleClose}
         action={
