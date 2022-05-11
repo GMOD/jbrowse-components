@@ -216,13 +216,13 @@ function RefNameAutocomplete({
                       <CircularProgress color="inherit" size={20} />
                     ) : (
                       <InputAdornment position="end" style={{ marginRight: 7 }}>
-                        <SearchIcon />
+                        <SearchIcon fontSize="small" />
                         {showHelp ? (
                           <IconButton
                             onClick={() => setHelpDialogDisplayed(true)}
-                            size="large"
+                            size="small"
                           >
-                            <HelpIcon />
+                            <HelpIcon fontSize="small" />
                           </IconButton>
                         ) : null}
                       </InputAdornment>
