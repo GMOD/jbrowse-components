@@ -29,10 +29,8 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
   const determineCurrentValue = (selectedAssembly: string) => {
     if (selectedAssembly === 'all') {
       return 'all'
-    } else {
-      if (assemblies.includes(selectedAssembly)) {
-        return selectedAssembly
-      }
+    } else if (assemblies.includes(selectedAssembly)) {
+      return selectedAssembly
     }
 
     return 'none'
@@ -44,14 +42,10 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
       <FormControl className={classes.flexItem} disabled={noAssemblies}>
         <Select
           value={determineCurrentValue(selectedAssembly)}
-          onChange={event => setSelectedAssembly(event.target.value as string)}
+          onChange={event => setSelectedAssembly(event.target.value)}
         >
-          <MenuItem value="none" key="no-assembly">
-            none
-          </MenuItem>
-          <MenuItem value="all" key="all-assemblies">
-            all
-          </MenuItem>
+          <MenuItem value="none">none</MenuItem>
+          <MenuItem value="all">all</MenuItem>
           {assemblies.map(assembly => (
             <MenuItem value={assembly} key={assembly}>
               {assembly}

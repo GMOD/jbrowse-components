@@ -1,5 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { Button, Select, MenuItem, Typography, Tooltip } from '@mui/material'
+import {
+  Button,
+  FormControl,
+  Select,
+  MenuItem,
+  Typography,
+  Tooltip,
+} from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
@@ -325,24 +332,26 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   return (
     <div ref={ref}>
-      <Select
-        value={mode}
-        onChange={event => setMode(event.target.value as string)}
-      >
-        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
-        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-        <MenuItem value="gene">Gene w/ introns</MenuItem>
-        <MenuItem value="gene_collapsed_intron">
-          Gene w/ 10bp of intron
-        </MenuItem>
-        <MenuItem value="gene_updownstream">
-          Gene w/ 500bp up+down stream
-        </MenuItem>
-        <MenuItem value="gene_updownstream_collapsed_intron">
-          Gene w/ 500bp up+down stream w/ 10bp intron
-        </MenuItem>
-        <MenuItem value="cdna">cDNA</MenuItem>
-      </Select>
+      <FormControl>
+        <Select
+          value={mode}
+          onChange={event => setMode(event.target.value as string)}
+        >
+          {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+          {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+          <MenuItem value="gene">Gene w/ introns</MenuItem>
+          <MenuItem value="gene_collapsed_intron">
+            Gene w/ 10bp of intron
+          </MenuItem>
+          <MenuItem value="gene_updownstream">
+            Gene w/ 500bp up+down stream
+          </MenuItem>
+          <MenuItem value="gene_updownstream_collapsed_intron">
+            Gene w/ 500bp up+down stream w/ 10bp intron
+          </MenuItem>
+          <MenuItem value="cdna">cDNA</MenuItem>
+        </Select>
+      </FormControl>
       <Button
         className={classes.button}
         type="button"

@@ -64,8 +64,8 @@ const DrawerHeader = observer(
         className={classes.header}
         ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
       >
-        <Toolbar>
-          <FormControl size="small" className={classes.formControl}>
+        <Toolbar disableGutters>
+          <FormControl className={classes.formControl}>
             <Select
               value={visibleWidget?.id}
               data-testid="widget-drawer-selects"
@@ -137,7 +137,6 @@ const DrawerHeader = observer(
               data-testid="drawer-close"
               color="inherit"
               onClick={event => setAnchorEl(event.currentTarget)}
-              size="large"
             >
               <MoreVertIcon />
             </IconButton>
@@ -152,7 +151,6 @@ const DrawerHeader = observer(
                   )
                   session.minimizeWidgetDrawer()
                 }}
-                size="large"
               >
                 <MinimizeIcon />
               </IconButton>
@@ -161,10 +159,7 @@ const DrawerHeader = observer(
               <IconButton
                 data-testid="drawer-close"
                 color="inherit"
-                onClick={() => {
-                  session.hideWidget(visibleWidget)
-                }}
-                size="large"
+                onClick={() => session.hideWidget(visibleWidget)}
               >
                 <CloseIcon />
               </IconButton>

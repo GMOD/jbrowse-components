@@ -7,8 +7,8 @@ import {
   InputLabel,
   Tooltip,
   IconButton,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from '@mui/styles'
 import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'

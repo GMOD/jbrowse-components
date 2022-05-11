@@ -64,6 +64,7 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
       MuiAccordion: {
         defaultProps: {
           disableGutters: true,
+          TransitionProps: { timeout: 150 },
         },
       },
       MuiFilledInput: {
@@ -74,6 +75,7 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
       MuiFormControl: {
         defaultProps: {
           margin: 'dense',
+          size: 'small',
         },
       },
       MuiFormHelperText: {

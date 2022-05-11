@@ -72,6 +72,7 @@ export const useStyles = makeStyles(theme => ({
     wordBreak: 'break-all',
     minWidth: '90px',
     borderBottom: '1px solid #0003',
+    fontSize: 12,
     background: theme.palette.grey[200],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
@@ -79,6 +80,7 @@ export const useStyles = makeStyles(theme => ({
   fieldValue: {
     wordBreak: 'break-word',
     maxHeight: 300,
+    fontSize: 12,
     padding: theme.spacing(0.5),
     overflow: 'auto',
   },
@@ -351,11 +353,9 @@ const DataGridDetails = ({
         >
           <DataGrid
             disableSelectionOnClick
-            rowHeight={20}
-            headerHeight={25}
+            density="compact"
             rows={rows}
             rowsPerPageOptions={[]}
-            hideFooterRowCount
             hideFooterSelectedRowCount
             columns={columns}
             hideFooter={rows.length < 100}
