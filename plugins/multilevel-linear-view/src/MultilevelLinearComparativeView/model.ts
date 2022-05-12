@@ -89,6 +89,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const actions = [
                 'horizontalScroll',
                 'zoomTo',
+                'navToLocString',
                 'setScaleFactor',
                 'showTrack',
                 'hideTrack',
@@ -114,13 +115,69 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args: any[] = []) {
-        self.views.forEach(view => {
-          const ret = getPath(view)
-          if (ret.lastIndexOf(path) !== ret.length - path.length) {
-            // @ts-ignore
-            view[actionName](args[0])
-          }
-        })
+        if (actionName === 'horizontalScroll') {
+          self.views.forEach(view => {
+            if (view.initialized) {
+              // scroll is proportionate to the view's relation to the anchor view
+              const movement =
+                view.bpPerPx !== 0
+                  ? args[0] *
+                    (self.views[self.anchorViewIndex].bpPerPx / view.bpPerPx)
+                  : 0
+              // @ts-ignore
+              view[actionName](movement)
+
+              const ret = getPath(view)
+              // reverse action for the view you're scrolling on
+              if (ret.lastIndexOf(path) == ret.length - path.length) {
+                // @ts-ignore
+                view[actionName](args[0] * -1)
+              }
+            }
+          })
+        }
+
+        if (actionName === 'zoomTo') {
+          self.views.forEach(view => {
+            if (view.id !== self.views[self.anchorViewIndex].id) {
+              if (view.initialized) {
+                const rev = view.bpPerPx
+                const factor =
+                  view.bpPerPx !== 0
+                    ? args[0] /
+                      (self.views[self.anchorViewIndex].bpPerPx / view.bpPerPx)
+                    : 0
+                // @ts-ignore
+                view[actionName](factor)
+                const ret = getPath(view)
+                // reverse action for the view you're zooming on
+                if (ret.lastIndexOf(path) == ret.length - path.length) {
+                  // @ts-ignore
+                  view[actionName](rev)
+                }
+              }
+            }
+          })
+        }
+
+        if (actionName === 'navToLocString') {
+          self.views.forEach(view => {
+            if (view.initialized) {
+              const ret = getPath(view)
+              if (ret.lastIndexOf(path) == ret.length - path.length) {
+                // @ts-ignore
+                view[actionName](args[0])
+              }
+              const center = self.views[self.anchorViewIndex].pxToBp(
+                view.width / 2,
+              )
+              const targetBp = view.bpPerPx
+              view.navToLocString(center.refName)
+              view.zoomTo(targetBp)
+              view.centerAt(center.coord, center.refName, center.index)
+            }
+          })
+        }
       },
 
       setWidth(newWidth: number) {
@@ -228,6 +285,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           view.navToLocString(center.refName)
           view.zoomTo(targetBp)
           view.centerAt(center.coord, center.refName, center.index)
+          console.log(
+            'nav to',
+            center.refName,
+            'zoom to',
+            targetBp,
+            'center at',
+            center.coord,
+          )
         })
       },
       clearView() {

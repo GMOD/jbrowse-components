@@ -121,6 +121,8 @@ const ImportForm = observer(
                 bpPerPx: 1,
                 offsetPx: 0,
                 hasCustomHeader: true,
+                hideControls: true,
+                hasCustomMiniControls: true,
                 displayedRegions: assembly.regions,
               }
             }),
@@ -131,7 +133,6 @@ const ImportForm = observer(
         let num = 2
         model.views.forEach(view => {
           view.setWidth(model.width)
-          view.setCustomMiniControls(true)
           if (selectedRegion) {
             handleSelectedRegion(selectedRegion, view)
           }
@@ -140,6 +141,8 @@ const ImportForm = observer(
           zoomVal *= num
           num++
         })
+
+        model.toggleLinkViews()
       } catch (e) {
         console.error(e)
         setError(e)

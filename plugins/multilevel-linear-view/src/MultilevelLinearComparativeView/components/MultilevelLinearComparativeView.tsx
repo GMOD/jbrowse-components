@@ -143,9 +143,7 @@ const OverlayComparativeView = observer(
 
     return (
       <div>
-        {!model.views[model.anchorViewIndex].hideHeader ? (
-          <Header model={model} ExtraButtons={ExtraButtons} />
-        ) : null}
+        <Header model={model} ExtraButtons={ExtraButtons} />
         <div className={classes.container}>
           <div className={classes.content}>
             <div className={classes.relative}>
@@ -167,14 +165,8 @@ const OverlayComparativeView = observer(
                 }
                 const targetView = model.views[index]
 
-                const prevLeft =
-                  model.views[model.anchorViewIndex].id !== view.id
-                    ? getLeft(model, targetView)
-                    : 0
-                const prevRight =
-                  model.views[model.anchorViewIndex].id !== view.id
-                    ? getRight(model, targetView)
-                    : 0
+                const prevLeft = getLeft(model, targetView)
+                const prevRight = getRight(model, targetView)
 
                 const polygonPoints = {
                   left,
@@ -185,24 +177,23 @@ const OverlayComparativeView = observer(
 
                 return (
                   <div key={view.id}>
-                    {model.views[model.anchorViewIndex].id !== view.id ? (
-                      <>
-                        {!view.hideHeader ? (
-                          <Subheader
-                            view={view}
-                            model={model}
-                            polygonPoints={polygonPoints}
-                          />
-                        ) : null}
-                        {view.isVisible ? (
-                          <AreaOfInterest
-                            view={view}
-                            model={model}
-                            polygonPoints={polygonPoints}
-                          />
-                        ) : null}
-                      </>
-                    ) : null}
+                    <>
+                      {!view.hideHeader ? (
+                        <Subheader
+                          view={view}
+                          model={model}
+                          polygonPoints={polygonPoints}
+                        />
+                      ) : null}
+                      {model.views[model.anchorViewIndex].id !== view.id &&
+                      view.isVisible ? (
+                        <AreaOfInterest
+                          view={view}
+                          model={model}
+                          polygonPoints={polygonPoints}
+                        />
+                      ) : null}
+                    </>
                     {view.isVisible ? (
                       <>
                         {view.hasCustomMiniControls &&

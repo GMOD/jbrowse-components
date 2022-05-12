@@ -82,8 +82,8 @@ const Polygon = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints: any
   }) => {
-    const { interRegionPaddingWidth, offsetPx, dynamicBlocks } = view
-    const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+    const { dynamicBlocks } = view
+    const { contentBlocks } = dynamicBlocks
     const { left, right, prevLeft, prevRight } = polygonPoints
 
     const theme = useTheme()
@@ -94,29 +94,14 @@ const Polygon = observer(
       return null
     }
 
-    const index = model.views.findIndex(target => target.id === view.id)
-    const startPx = Math.max(0, -offsetPx)
-    const length =
-      startPx +
-      totalWidthPxWithoutBorders +
-      (contentBlocks.length * interRegionPaddingWidth) / 2
     let points
 
-    if (index - 1 > 0) {
-      points = [
-        [left, HEADER_BAR_HEIGHT],
-        [right, HEADER_BAR_HEIGHT],
-        [prevRight, 0],
-        [prevLeft, 0],
-      ]
-    } else {
-      points = [
-        [left, HEADER_BAR_HEIGHT],
-        [right, HEADER_BAR_HEIGHT],
-        [length, 0],
-        [0, 0],
-      ]
-    }
+    points = [
+      [left, HEADER_BAR_HEIGHT],
+      [right, HEADER_BAR_HEIGHT],
+      [prevRight, 0],
+      [prevLeft, 0],
+    ]
     return (
       <polygon
         points={points.toString()}
@@ -127,33 +112,7 @@ const Polygon = observer(
   },
 )
 
-const LinkViews = observer(({ model }: { model: LCV }) => {
-  return (
-    <IconButton
-      onClick={model.toggleLinkViews}
-      title="Toggle linked scrolls and behavior across views"
-    >
-      {model.linkViews ? (
-        <LinkIcon color="secondary" />
-      ) : (
-        <LinkOffIcon color="secondary" />
-      )}
-    </IconButton>
-  )
-})
-
-const AlignViews = observer(({ model }: { model: LCV }) => {
-  return (
-    <IconButton
-      onClick={model.alignViews}
-      title="Align views (realign sub views to the anchor view)"
-    >
-      <FormatAlignCenterIcon color="secondary" />
-    </IconButton>
-  )
-})
-
-function PanControls({ model }: { model: LGV }) {
+export function PanControls({ model }: { model: LGV }) {
   const classes = useStyles()
   return (
     <>
@@ -175,7 +134,7 @@ function PanControls({ model }: { model: LGV }) {
   )
 }
 
-const RegionWidth = observer(({ model }: { model: LGV }) => {
+export const RegionWidth = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const { coarseTotalBp } = model
   return (
@@ -184,27 +143,6 @@ const RegionWidth = observer(({ model }: { model: LGV }) => {
     </Typography>
   )
 })
-
-const HeaderButtons = observer(
-  ({
-    model,
-    view,
-    ExtraButtons,
-  }: {
-    model: LCV
-    view: LGV
-    ExtraButtons?: React.ReactNode
-  }) => {
-    return (
-      <div>
-        <LinkViews model={model} />
-        <AlignViews model={model} />
-        {ExtraButtons}
-        <LabelField model={view} />
-      </div>
-    )
-  },
-)
 
 const Controls = observer(
   ({
@@ -232,18 +170,12 @@ const Controls = observer(
             <Polygon model={model} view={view} polygonPoints={polygonPoints} />
           </svg>
         ) : null}
-        {model.views[model.anchorViewIndex].id === view.id ? (
-          <>
-            <HeaderButtons
-              model={model}
-              view={view}
-              ExtraButtons={ExtraButtons}
-            />
-          </>
-        ) : null}
         {ExtraButtons}
+        {view.hideControls ? <RegionWidth model={view} /> : null}
         <div className={classes.spacer} />
-        {view.isVisible && !view.hideControls ? (
+        {view.isVisible &&
+        !view.hideControls &&
+        model.views[model.anchorViewIndex].id !== view.id ? (
           <>
             <FormGroup row className={classes.headerForm}>
               <PanControls model={view} />
