@@ -205,31 +205,32 @@ export const jbrowseBaseTheme = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createJBrowseTheme(theme?: any) {
-  if (!theme) {
-    // @ts-ignore
-    return createTheme(jbrowseBaseTheme)
-  }
-  if (theme.palette?.tertiary) {
-    theme = deepmerge(theme, {
-      palette: {
-        tertiary: refTheme.palette.augmentColor(theme.palette.tertiary),
-      },
-    })
-  }
-  if (theme.palette?.quaternary) {
-    theme = deepmerge(theme, {
-      palette: {
-        quaternary: refTheme.palette.augmentColor(theme.palette.quaternary),
-      },
-    })
-  }
-  theme = {
-    ...theme,
-    props: deepmerge(createJBrowseDefaultProps(), theme.props || {}),
-    overrides: deepmerge(
-      createJBrowseDefaultOverrides(theme.palette),
-      theme.overrides || {},
-    ),
-  }
+  // if (!theme) {
+  //   // @ts-ignore
+  //   return createTheme(jbrowseBaseTheme)
+  // }
+  // if (theme.palette?.tertiary) {
+  //   theme = deepmerge(theme, {
+  //     palette: {
+  //       tertiary: refTheme.palette.augmentColor(theme.palette.tertiary),
+  //     },
+  //   })
+  // }
+  // if (theme.palette?.quaternary) {
+  //   theme = deepmerge(theme, {
+  //     palette: {
+  //       quaternary: refTheme.palette.augmentColor(theme.palette.quaternary),
+  //     },
+  //   })
+  // }
+  // theme = {
+  //   ...theme,
+  //   props: deepmerge(createJBrowseDefaultProps(), theme.props || {}),
+  //   overrides: deepmerge(
+  //     createJBrowseDefaultOverrides(theme.palette),
+  //     theme.overrides || {},
+  //   ),
+  // }
+  //@ts-ignore
   return createTheme(deepmerge(jbrowseBaseTheme, theme))
 }

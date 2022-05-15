@@ -37,6 +37,7 @@ export function ColorPicker(props: {
             className={classes.cover}
             onClick={handleClose}
           />
+          {/* @ts-ignore */}
           <ChromePicker color={color} onChange={onChange} />
         </div>
       ) : null}

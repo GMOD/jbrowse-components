@@ -79,6 +79,8 @@ export default function SetColorDialog({
         {posneg ? (
           <>
             <Typography>Positive color</Typography>
+
+            {/* @ts-ignore */}
             <CompactPicker
               onChange={event => {
                 model.setPosColor(serialize(event.rgb))
@@ -86,6 +88,8 @@ export default function SetColorDialog({
               }}
             />
             <Typography>Negative color</Typography>
+
+            {/* @ts-ignore */}
             <CompactPicker
               onChange={event => {
                 model.setNegColor(serialize(event.rgb))
@@ -96,6 +100,7 @@ export default function SetColorDialog({
         ) : (
           <>
             <Typography>Overall color</Typography>
+            {/* @ts-ignore */}
             <CompactPicker
               onChange={event => {
                 model.setColor(serialize(event.rgb))

@@ -3,10 +3,12 @@ import { createJBrowseTheme } from './theme'
 describe('theme utils', () => {
   it('can create a default theme', () => {
     const theme = createJBrowseTheme()
-    expect(theme.palette.primary.main).toEqual('#0D233F')
-    expect(theme.palette.secondary.main).toEqual('#721E63')
-    expect(theme.palette.tertiary.main).toEqual('#135560')
-    expect(theme.palette.quaternary.main).toEqual('#FFB11D')
+    //@ts-ignore
+    const { primary, secondary, tertiary, quaternary } = theme.palette
+    expect(primary.main).toEqual('#0D233F')
+    expect(secondary.main).toEqual('#721E63')
+    expect(tertiary.main).toEqual('#135560')
+    expect(quaternary.main).toEqual('#FFB11D')
   })
   it('allows overriding primary and secondary colors', () => {
     const theme = createJBrowseTheme({
@@ -25,10 +27,12 @@ describe('theme utils', () => {
         quaternary: { color: { main: 'hsl(0,0,54)' } },
       },
     })
-    expect(theme.palette.tertiary.main).toEqual('#888')
-    expect(theme.palette.tertiary.light).toBeTruthy()
-    expect(theme.palette.quaternary.main).toEqual('hsl(0,0,54)')
-    expect(theme.palette.quaternary.dark).toBeTruthy()
+    //@ts-ignore
+    const { tertiary, quaternary } = theme.palette
+    expect(tertiary.main).toEqual('#888')
+    expect(tertiary.light).toBeTruthy()
+    expect(quaternary.main).toEqual('hsl(0,0,54)')
+    expect(quaternary.dark).toBeTruthy()
   })
   it('allows customizing spacing', () => {
     const defaultTheme = createJBrowseTheme()
