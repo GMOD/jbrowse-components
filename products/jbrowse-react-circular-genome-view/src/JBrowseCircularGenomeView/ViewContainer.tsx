@@ -21,8 +21,8 @@ import { getSession } from '@jbrowse/core/util'
 const useStyles = makeStyles((theme: Theme) => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.main,
-    margin: theme.spacing(1),
+    background: theme.palette.secondary.main + ' !important',
+    margin: theme.spacing(0.5),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
