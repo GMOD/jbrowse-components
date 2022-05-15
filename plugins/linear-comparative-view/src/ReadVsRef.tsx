@@ -196,7 +196,7 @@ export function WindowSizeDlg(props: {
           const { rpcManager } = getSession(track)
           const adapterConfig = getConf(track, 'adapter')
           const sessionId = getRpcSessionId(track)
-          const assemblyNames = getConf(track, 'assemblyNames')
+
           const feats = (await rpcManager.call(sessionId, 'CoreGetFeatures', {
             adapterConfig,
             sessionId,
@@ -204,8 +204,7 @@ export function WindowSizeDlg(props: {
               {
                 refName: saRef,
                 start: +saStart - 1,
-                end: +saStart,
-                assemblyName: assemblyNames[0],
+                end: +saStart + 1,
               },
             ],
           })) as Feature[]
@@ -496,13 +495,8 @@ export function WindowSizeDlg(props: {
   }
 
   return (
-    <Dialog
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog open onClose={handleClose}>
+      <DialogTitle>
         Set window size
         <IconButton
           aria-label="close"
@@ -513,7 +507,9 @@ export function WindowSizeDlg(props: {
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {!primaryFeature ? (
+        {error ? (
+          <Typography color="error">{`${error}`}</Typography>
+        ) : !primaryFeature ? (
           <div>
             <Typography>
               To accurately perform comparison we are fetching the primary
@@ -527,7 +523,6 @@ export function WindowSizeDlg(props: {
               Show an extra window size around each part of the split alignment.
               Using a larger value can allow you to see more genomic context.
             </Typography>
-            {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
             <TextField
               value={windowSize}
