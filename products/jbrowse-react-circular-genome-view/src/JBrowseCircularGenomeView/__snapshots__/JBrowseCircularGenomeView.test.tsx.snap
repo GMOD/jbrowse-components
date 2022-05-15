@@ -54,11 +54,11 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
         <div
           class="makeStyles-root"
           data-testid="test_view"
-          style="height: 400px;"
+          style="width: 800px; height: 400px;"
         >
           <div
             class="makeStyles-scroller"
-            style="height: 400px;"
+            style="width: 800px; height: 400px;"
           >
             <div
               style="transform: rotate(-1.5707963267948966rad); transition: transform 0.5s; transform-origin: 108.1830988618379px 108.1830988618379px;"
