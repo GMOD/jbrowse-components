@@ -9,7 +9,7 @@ import { LinearGenomeViewModel } from '..'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles((theme: Theme) => {
-  //@ts-ignore
+  // @ts-ignore
   const { primary, tertiary } = theme.palette
   const background = tertiary
     ? alpha(tertiary.main, 0.7)

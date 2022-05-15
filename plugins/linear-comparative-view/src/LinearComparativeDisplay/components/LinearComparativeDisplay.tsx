@@ -10,7 +10,7 @@ const LinearComparativeDisplay: React.FC<{
   const { model, children } = props
   return (
     <div>
-      {/*@ts-ignore */}
+      {/* @ts-ignore */}
       <model.ReactComponent2 {...props} />
       {children}
     </div>

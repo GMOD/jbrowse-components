@@ -45,6 +45,7 @@
     "@jbrowse/plugin-sequence": "^1.7.7",
     "@jbrowse/plugin-variants": "^1.7.7",
     "@jbrowse/plugin-wiggle": "^1.7.7",
+    "@mui/styles": "^5.0.0",
     "@mui/material": "^5.0.0",
     "@mui/icons-material": "^5.0.0",
     "@mui/lab": "^5.0.0-alpha.45",

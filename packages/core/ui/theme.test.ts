@@ -3,7 +3,7 @@ import { createJBrowseTheme } from './theme'
 describe('theme utils', () => {
   it('can create a default theme', () => {
     const theme = createJBrowseTheme()
-    //@ts-ignore
+    // @ts-ignore
     const { primary, secondary, tertiary, quaternary } = theme.palette
     expect(primary.main).toEqual('#0D233F')
     expect(secondary.main).toEqual('#721E63')
@@ -27,7 +27,7 @@ describe('theme utils', () => {
         quaternary: { color: { main: 'hsl(0,0,54)' } },
       },
     })
-    //@ts-ignore
+    // @ts-ignore
     const { tertiary, quaternary } = theme.palette
     expect(tertiary.main).toEqual('#888')
     expect(tertiary.light).toBeTruthy()

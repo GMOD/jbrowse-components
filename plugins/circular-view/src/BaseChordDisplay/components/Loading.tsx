@@ -7,7 +7,7 @@ const useStyles = makeStyles((theme: Theme) => {
   const offset = 2
   const duration = 1.4
 
-  //@ts-ignore
+  // @ts-ignore
   const { primary, secondary, tertiary, quaternary } = theme.palette
   return {
     path: {

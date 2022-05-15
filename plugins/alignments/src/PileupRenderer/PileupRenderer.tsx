@@ -45,7 +45,7 @@ import {
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function getColorBaseMap(theme: Theme) {
-  //@ts-ignore
+  // @ts-ignore
   const { bases } = theme.palette
   return {
     A: bases.A.main,
@@ -909,7 +909,7 @@ export default class PileupRenderer extends BoxRendererType {
     const mismatches: Mismatch[] = feature.get('mismatches')
     const seq = feature.get('seq')
     const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
-    //@ts-ignore
+    // @ts-ignore
     const { bases } = theme.palette
     const colorForBase: { [key: string]: string } = {
       A: bases.A.main,

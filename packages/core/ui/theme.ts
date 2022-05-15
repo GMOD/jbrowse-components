@@ -1,5 +1,5 @@
 import { blue, green, red, amber } from '@mui/material/colors'
-import { Theme, createTheme } from '@mui/material/styles'
+import { createTheme } from '@mui/material/styles'
 import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
@@ -231,6 +231,6 @@ export function createJBrowseTheme(theme?: any) {
   //     theme.overrides || {},
   //   ),
   // }
-  //@ts-ignore
+  // @ts-ignore
   return createTheme(deepmerge(jbrowseBaseTheme, theme || {}))
 }

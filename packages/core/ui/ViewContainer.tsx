@@ -119,13 +119,13 @@ const ViewContainer = observer(
   }) => {
     const classes = useStyles()
     const theme = useTheme()
-    const padWidth = parseInt(theme.spacing(1), 10)
+    const padWidth = theme.spacing(1)
 
     const [ref, { width }] = useMeasure()
 
     useEffect(() => {
       if (width && isAlive(view)) {
-        view.setWidth(width - padWidth * 2)
+        view.setWidth(width - parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 
@@ -142,7 +142,7 @@ const ViewContainer = observer(
         ref={ref}
         elevation={12}
         className={classes.viewContainer}
-        style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
+        style={{ ...style, padding: `0px ${padWidth} ${padWidth}` }}
       >
         <div ref={scrollRef} style={{ display: 'flex' }}>
           <ViewMenu

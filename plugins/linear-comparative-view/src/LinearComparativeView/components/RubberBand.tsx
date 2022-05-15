@@ -11,7 +11,7 @@ type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles((theme: Theme) => {
-  //@ts-ignore
+  // @ts-ignore
   const { tertiary, primary } = theme.palette
   const background = tertiary
     ? alpha(tertiary.main, 0.7)

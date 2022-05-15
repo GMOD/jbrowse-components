@@ -113,7 +113,7 @@ const ViewContainer = observer(
         elevation={12}
         ref={ref}
         className={classes.viewContainer}
-        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+        style={{ padding: `0px ${padWidth} ${padWidth}` }}
       >
         {session.DialogComponent ? (
           <Suspense fallback={<div />}>

@@ -103,7 +103,7 @@ const TrackLabel = React.forwardRef(
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
     return (
-      //@ts-ignore
+      // @ts-ignore
       <Paper ref={ref} className={clsx(className, classes.root)}>
         <span
           draggable

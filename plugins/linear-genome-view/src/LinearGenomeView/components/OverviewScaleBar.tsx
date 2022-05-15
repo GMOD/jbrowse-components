@@ -391,7 +391,7 @@ const ScaleBar = observer(
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
 
-    //@ts-ignore
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const scaleBarColor = tertiary ? tertiary.light : primary.light
 

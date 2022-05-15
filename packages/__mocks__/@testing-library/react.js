@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { StylesProvider } from '@mui/styles'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 // eslint-disable-next-line import/no-extraneous-dependencies

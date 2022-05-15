@@ -4,11 +4,7 @@ import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import normalizeWheel from 'normalize-wheel'
 
-import {
-  LinearGenomeViewStateModel,
-  RESIZE_HANDLE_HEIGHT,
-  SCALE_BAR_HEIGHT,
-} from '..'
+import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
