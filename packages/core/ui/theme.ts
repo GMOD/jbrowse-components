@@ -232,5 +232,5 @@ export function createJBrowseTheme(theme?: any) {
   //   ),
   // }
   //@ts-ignore
-  return createTheme(deepmerge(jbrowseBaseTheme, theme))
+  return createTheme(deepmerge(jbrowseBaseTheme, theme || {}))
 }
