@@ -9,12 +9,13 @@ import {
   IconButton,
   Typography,
   TextField,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: 500,
   },
@@ -29,14 +30,16 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function SetMaxHeightDlg(props: {
+function SetMaxHeightDlg({
+  model,
+  handleClose,
+}: {
   model: {
     maxHeight?: number
     setMaxHeight: Function
   }
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
   const classes = useStyles()
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)

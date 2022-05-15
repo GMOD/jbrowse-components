@@ -1,14 +1,15 @@
 import React from 'react'
 import {
+  Button,
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   FormControlLabel,
-  Checkbox,
   IconButton,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
@@ -16,7 +17,7 @@ import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

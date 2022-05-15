@@ -1,14 +1,17 @@
 import React from 'react'
-import Button from '@mui/material/Button'
 import { makeStyles } from '@mui/styles'
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogTitle from '@mui/material/DialogTitle'
-import Divider from '@mui/material/Divider'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+} from '@mui/material'
 import WarningIcon from '@mui/icons-material/Warning'
+import { Theme } from '@mui/material/styles'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   main: {
     textAlign: 'center',
     margin: 8, // theme.spacing(2),

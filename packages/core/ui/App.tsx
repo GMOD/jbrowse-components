@@ -30,7 +30,7 @@ import {
 } from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   '@global': {
     html: {
       'font-family': 'Roboto',

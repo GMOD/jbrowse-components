@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { getSession, stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
@@ -9,7 +9,8 @@ import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles((theme: Theme) => {
+  //@ts-ignore
   const { tertiary, primary } = theme.palette
   const background = tertiary
     ? alpha(tertiary.main, 0.7)

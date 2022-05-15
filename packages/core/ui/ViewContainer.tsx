@@ -5,11 +5,11 @@ import {
   IconButtonProps as IconButtonPropsType,
   Paper,
   Tooltip,
+  Theme,
   useTheme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { alpha } from '@mui/material/styles'
-
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
@@ -23,7 +23,7 @@ import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,

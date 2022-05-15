@@ -4,14 +4,15 @@ import {
   Button,
   CircularProgress,
   Checkbox,
-  FormControlLabel,
-  TextField,
-  Typography,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
+  TextField,
+  Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
@@ -87,7 +88,7 @@ interface ReducedFeature {
   }
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     width: 300,
   },

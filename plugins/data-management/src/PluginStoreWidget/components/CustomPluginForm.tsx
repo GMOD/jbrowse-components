@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogContentText,
   TextField,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
@@ -25,7 +26,7 @@ import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 // locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

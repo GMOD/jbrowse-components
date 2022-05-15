@@ -149,6 +149,7 @@ const FileSelector = observer(
                 </ToggleButtonWithTooltip>
               ))}
               {hiddenAccts.length ? (
+                //@ts-ignore
                 <ToggleButton
                   onClick={event => setAnchorEl(event.target as HTMLElement)}
                   selected={false}

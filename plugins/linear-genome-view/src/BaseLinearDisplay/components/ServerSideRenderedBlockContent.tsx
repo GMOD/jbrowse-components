@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Typography, Button } from '@mui/material'
+import { Typography, Button, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   loading: {
     paddingLeft: '0.6em',
     backgroundColor: theme.palette.action.disabledBackground,

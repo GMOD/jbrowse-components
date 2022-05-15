@@ -19,7 +19,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import { alpha } from '@mui/material/styles'
+import { alpha, Theme } from '@mui/material/styles'
 import { makeStyles } from '@mui/styles'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -34,7 +34,7 @@ import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { toUrlSafeB64 } from './util'
 import { shareSessionToDynamo } from './sessionSharing'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   shareDiv: {
     textAlign: 'center',
     paddingLeft: '2px',

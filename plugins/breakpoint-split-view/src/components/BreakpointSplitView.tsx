@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from '@mui/styles'
+import { Theme } from '@mui/material'
 
 // locals
 import { BreakpointViewModel } from '../model'
@@ -10,41 +11,39 @@ import Breakends from './Breakends'
 import Header from './Header'
 import Translocations from './Translocations'
 
-const useStyles = makeStyles(theme => {
-  return {
-    root: {
-      position: 'relative',
-      marginBottom: theme.spacing(1),
-      overflow: 'hidden',
+const useStyles = makeStyles((theme: Theme) => ({
+  root: {
+    position: 'relative',
+    marginBottom: theme.spacing(1),
+    overflow: 'hidden',
+  },
+  breakpointMarker: {
+    position: 'absolute',
+    top: 0,
+    height: '100%',
+    width: 3,
+    background: 'magenta',
+  },
+  viewDivider: {
+    background: theme.palette.secondary.main,
+    height: 3,
+  },
+  container: {
+    display: 'grid',
+  },
+  overlay: {
+    display: 'flex',
+    width: '100%',
+    gridArea: '1/1',
+    '& path': {
+      cursor: 'crosshair',
+      fill: 'none',
     },
-    breakpointMarker: {
-      position: 'absolute',
-      top: 0,
-      height: '100%',
-      width: 3,
-      background: 'magenta',
-    },
-    viewDivider: {
-      background: theme.palette.secondary.main,
-      height: 3,
-    },
-    container: {
-      display: 'grid',
-    },
-    overlay: {
-      display: 'flex',
-      width: '100%',
-      gridArea: '1/1',
-      '& path': {
-        cursor: 'crosshair',
-        fill: 'none',
-      },
-    },
-    content: {
-      gridArea: '1/1',
-    },
-  }
-})
+  },
+  content: {
+    gridArea: '1/1',
+  },
+}))
 
 const Overlay = observer(
   (props: {

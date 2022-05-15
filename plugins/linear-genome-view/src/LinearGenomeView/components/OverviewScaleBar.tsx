@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, useTheme, alpha } from '@mui/material'
+import { Typography, Theme, useTheme, alpha } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -21,60 +21,58 @@ import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
 
-const useStyles = makeStyles(theme => {
-  return {
-    scaleBar: {
-      height: HEADER_OVERVIEW_HEIGHT,
-    },
-    scaleBarBorder: {
-      border: '1px solid',
-    },
-    scaleBarContig: {
-      backgroundColor: theme.palette.background.default,
-      position: 'absolute',
-      top: 0,
-      height: HEADER_OVERVIEW_HEIGHT,
-    },
-    scaleBarContigForward: {
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
-      backgroundRepeat: 'repeat',
-    },
-    scaleBarContigReverse: {
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
-      backgroundRepeat: 'repeat',
-    },
+const useStyles = makeStyles((theme: Theme) => ({
+  scaleBar: {
+    height: HEADER_OVERVIEW_HEIGHT,
+  },
+  scaleBarBorder: {
+    border: '1px solid',
+  },
+  scaleBarContig: {
+    backgroundColor: theme.palette.background.default,
+    position: 'absolute',
+    top: 0,
+    height: HEADER_OVERVIEW_HEIGHT,
+  },
+  scaleBarContigForward: {
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'repeat',
+  },
+  scaleBarContigReverse: {
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'repeat',
+  },
 
-    scaleBarRefName: {
-      position: 'absolute',
-      fontWeight: 'bold',
-      pointerEvents: 'none',
-      zIndex: 100,
-    },
-    scaleBarLabel: {
-      height: HEADER_OVERVIEW_HEIGHT,
-      width: 1,
-      position: 'absolute',
-      display: 'flex',
-      justifyContent: 'center',
-      pointerEvents: 'none',
-    },
-    scaleBarVisibleRegion: {
-      position: 'absolute',
-      height: HEADER_OVERVIEW_HEIGHT,
-      pointerEvents: 'none',
-      zIndex: 100,
-      border: '1px solid',
-    },
-    overview: {
-      height: HEADER_BAR_HEIGHT,
-      position: 'relative',
-    },
-    overviewSvg: {
-      width: '100%',
-      position: 'absolute',
-    },
-  }
-})
+  scaleBarRefName: {
+    position: 'absolute',
+    fontWeight: 'bold',
+    pointerEvents: 'none',
+    zIndex: 100,
+  },
+  scaleBarLabel: {
+    height: HEADER_OVERVIEW_HEIGHT,
+    width: 1,
+    position: 'absolute',
+    display: 'flex',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  scaleBarVisibleRegion: {
+    position: 'absolute',
+    height: HEADER_OVERVIEW_HEIGHT,
+    pointerEvents: 'none',
+    zIndex: 100,
+    border: '1px solid',
+  },
+  overview: {
+    height: HEADER_BAR_HEIGHT,
+    position: 'relative',
+  },
+  overviewSvg: {
+    width: '100%',
+    position: 'absolute',
+  },
+}))
 
 const Polygon = observer(
   ({
@@ -91,6 +89,8 @@ const Polygon = observer(
     const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
       model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 
@@ -390,6 +390,8 @@ const ScaleBar = observer(
     const { dynamicBlocks, showCytobands, cytobandOffset } = model
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
+
+    //@ts-ignore
     const { tertiary, primary } = theme.palette
     const scaleBarColor = tertiary ? tertiary.light : primary.light
 

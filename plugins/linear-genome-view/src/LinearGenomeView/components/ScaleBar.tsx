@@ -1,4 +1,4 @@
-import { Paper, Typography } from '@mui/material'
+import { Paper, Typography, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import {
   ContentBlock,
@@ -18,7 +18,7 @@ import { makeTicks } from '../util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   scaleBarContainer: {
     overflow: 'hidden',
     position: 'relative',
@@ -156,16 +156,14 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-const ScaleBar = React.forwardRef(
-  (
-    {
-      model,
-      style,
-      className,
-      ...other
-    }: { model: LGV; style?: React.CSSProperties; className?: string },
-    ref,
-  ) => {
+interface ScaleBarProps {
+  model: LGV
+  style?: React.CSSProperties
+  className?: string
+}
+
+const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
+  ({ model, style, className, ...other }, ref) => {
     const classes = useStyles()
 
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx

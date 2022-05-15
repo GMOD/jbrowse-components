@@ -9,11 +9,12 @@ import {
   Divider,
   IconButton,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

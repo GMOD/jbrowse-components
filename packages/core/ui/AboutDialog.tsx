@@ -5,6 +5,7 @@ import {
   DialogTitle,
   IconButton,
   Typography,
+  Theme,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { makeStyles } from '@mui/styles'
@@ -15,7 +16,7 @@ import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 type FileInfo = Record<string, unknown> | string
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

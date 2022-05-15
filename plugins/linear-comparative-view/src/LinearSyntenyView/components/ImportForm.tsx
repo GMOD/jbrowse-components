@@ -12,13 +12,14 @@ import {
   Grid,
   Paper,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },

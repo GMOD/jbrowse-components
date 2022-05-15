@@ -1,6 +1,6 @@
 import React from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
-import { Paper } from '@mui/material'
+import { Paper, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { getRoot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
@@ -8,7 +8,7 @@ import { observer } from 'mobx-react'
 // locals
 import { AddTrackModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   paper: {
     display: 'flex',
     flexDirection: 'column',

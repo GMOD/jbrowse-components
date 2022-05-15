@@ -147,9 +147,5 @@
     "webpack-dev-server": "^4.7.3"
   },
   "version": "0.0.0",
-  "dependencies": {},
-  "resolutions": {
-    "@types/react": "^17.0.0",
-    "webpack": "5.70.0"
-  }
+  "dependencies": {}
 }

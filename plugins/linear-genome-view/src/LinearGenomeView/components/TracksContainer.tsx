@@ -1,7 +1,7 @@
+import React, { useEffect, useRef, useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import React, { useEffect, useRef, useState } from 'react'
 import normalizeWheel from 'normalize-wheel'
 
 import {
@@ -14,17 +14,16 @@ import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
 import CenterLine from './CenterLine'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
   tracksContainer: {
     position: 'relative',
-    borderRadius: theme.shape.borderRadius,
     overflow: 'hidden',
   },
   spacer: {
     position: 'relative',
-    height: RESIZE_HANDLE_HEIGHT,
+    height: 3,
   },
-}))
+})
 
 type LGV = Instance<LinearGenomeViewStateModel>
 type Timer = ReturnType<typeof setTimeout>

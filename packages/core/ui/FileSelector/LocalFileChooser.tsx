@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Button, Typography, FormControl } from '@mui/material'
+import { Box, Button, Typography, FormControl, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
@@ -15,7 +15,7 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   filename: {
     marginLeft: theme.spacing(1),
   },

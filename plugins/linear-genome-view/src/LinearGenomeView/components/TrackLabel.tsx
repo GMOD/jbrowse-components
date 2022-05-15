@@ -1,9 +1,12 @@
 import React from 'react'
+import clsx from 'clsx'
+import { observer } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import { IconButton, Paper, Typography, Theme, alpha } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
 // icons
@@ -11,12 +14,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DragIcon from '@mui/icons-material/DragIndicator'
 import CloseIcon from '@mui/icons-material/Close'
 
-import clsx from 'clsx'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '..'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
@@ -103,6 +103,7 @@ const TrackLabel = React.forwardRef(
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
     return (
+      //@ts-ignore
       <Paper ref={ref} className={clsx(className, classes.root)}>
         <span
           draggable

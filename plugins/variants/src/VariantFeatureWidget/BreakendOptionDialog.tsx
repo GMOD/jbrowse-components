@@ -3,21 +3,22 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  IconButton,
   FormControlLabel,
-  Checkbox,
+  IconButton,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession, Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

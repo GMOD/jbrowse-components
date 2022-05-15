@@ -3,15 +3,16 @@ import { makeStyles } from '@mui/styles'
 import {
   Button,
   CircularProgress,
+  Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Container,
-  Typography,
   Divider,
   IconButton,
   TextField,
+  Typography,
+  Theme,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
@@ -30,7 +31,7 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 // locals
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   loadingMessage: {
     padding: theme.spacing(5),
   },

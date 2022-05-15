@@ -2,20 +2,21 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  TextField,
-  Typography,
-  IconButton,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Checkbox,
   FormControlLabel,
+  IconButton,
+  TextField,
+  Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

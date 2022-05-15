@@ -5,16 +5,17 @@ import {
   DialogContent,
   DialogActions,
   DialogTitle,
-  IconButton,
-  Typography,
   FormControlLabel,
+  IconButton,
   Radio,
+  Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

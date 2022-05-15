@@ -10,6 +10,7 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -17,12 +18,12 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Paper,
+  Theme,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel } from '../..'
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles((theme: Theme) => ({
   dialogContent: {
     width: '80em',
   },

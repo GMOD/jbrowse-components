@@ -5,11 +5,12 @@ import { getEnv } from 'mobx-state-tree'
 import {
   Accordion,
   AccordionSummary,
-  TextField,
-  InputAdornment,
   Button,
   IconButton,
+  InputAdornment,
+  TextField,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
@@ -27,7 +28,7 @@ import PluginCard from './PluginCard'
 import CustomPluginForm from './CustomPluginForm'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     margin: theme.spacing(1),
   },

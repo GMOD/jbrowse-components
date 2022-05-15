@@ -6,6 +6,7 @@ import {
   StepLabel,
   Stepper,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import {
@@ -23,7 +24,7 @@ import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     marginTop: theme.spacing(1),
   },

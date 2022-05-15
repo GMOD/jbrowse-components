@@ -1,8 +1,12 @@
-import InputBase from '@mui/material/InputBase'
-import Typography, { TypographyProps } from '@mui/material/Typography'
-import { useTheme } from '@mui/material/styles'
-import { makeStyles } from '@mui/styles'
 import React, { useEffect, useState } from 'react'
+import {
+  InputBase,
+  Typography,
+  TypographyProps,
+  Theme,
+  useTheme,
+} from '@mui/material'
+import { makeStyles } from '@mui/styles'
 
 type Variant = TypographyProps['variant']
 
@@ -12,7 +16,7 @@ type EditableTypographyClassKey =
   | 'inputRoot'
   | 'inputFocused'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   input: {},
   inputBase: {},
   typography: {
@@ -27,7 +31,6 @@ const useStyles = makeStyles(theme => ({
   },
   inputFocused: {
     borderStyle: 'solid',
-    borderRadius: theme.shape.borderRadius,
     borderWidth: 2,
   },
 }))

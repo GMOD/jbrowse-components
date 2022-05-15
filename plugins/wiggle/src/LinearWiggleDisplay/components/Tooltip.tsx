@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
-import { alpha, Portal } from '@mui/material'
+import { alpha, Portal, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
@@ -19,7 +19,7 @@ function round(value: number) {
 
 const en = (n: number) => n.toLocaleString('en-US')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {

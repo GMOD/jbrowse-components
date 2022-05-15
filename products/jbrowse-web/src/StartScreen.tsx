@@ -29,8 +29,9 @@ import {
   NewSVInspectorSession,
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
+import { Theme } from '@mui/material/styles'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   newSession: {
     backgroundColor: theme.palette?.grey['300'],
     padding: 8, // theme.spacing(2),

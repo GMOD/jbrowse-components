@@ -6,22 +6,23 @@ import {
   isElectron,
 } from '@jbrowse/core/util'
 import {
-  Link,
-  MenuItem,
-  TextField,
-  ListSubheader,
-  Typography,
+  Card,
+  CardContent,
+  Checkbox,
   FormControl,
   FormControlLabel,
-  Checkbox,
-  Paper,
-  Card,
-  List,
-  ListItem,
-  CardContent,
   IconButton,
   InputLabel,
   InputAdornment,
+  ListSubheader,
+  Link,
+  List,
+  ListItem,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
@@ -38,7 +39,7 @@ import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '../model'
 import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },

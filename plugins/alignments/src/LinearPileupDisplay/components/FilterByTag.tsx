@@ -11,12 +11,13 @@ import {
   Paper,
   TextField,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   paper: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),

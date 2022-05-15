@@ -11,11 +11,12 @@ import {
   FormControlLabel,
   CircularProgress,
   Typography,
+  Theme,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel as LGV } from '..'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

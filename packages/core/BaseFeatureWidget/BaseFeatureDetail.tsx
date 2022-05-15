@@ -5,9 +5,10 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Typography,
   Divider,
   Tooltip,
+  Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -51,7 +52,7 @@ const coreDetails = [
   'type',
 ]
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles((theme: Theme) => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),

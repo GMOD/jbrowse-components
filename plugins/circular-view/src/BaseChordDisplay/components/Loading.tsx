@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@mui/styles'
+import { Theme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles((theme: Theme) => {
   const offset = 2
   const duration = 1.4
+
+  //@ts-ignore
+  const { primary, secondary, tertiary, quaternary } = theme.palette
   return {
     path: {
       strokeDasharray: 187,
@@ -15,19 +19,19 @@ const useStyles = makeStyles(theme => {
     },
     '@keyframes colors': {
       '0%': {
-        stroke: theme.palette.primary.light,
+        stroke: primary.light,
       },
       '25%': {
-        stroke: theme.palette.secondary.light,
+        stroke: secondary.light,
       },
       '50%': {
-        stroke: theme.palette.tertiary.light,
+        stroke: tertiary.light,
       },
       '75%': {
-        stroke: theme.palette.quaternary.light,
+        stroke: quaternary.light,
       },
       '100%': {
-        stroke: theme.palette.primary.light,
+        stroke: primary.light,
       },
     },
     '@keyframes dash': {

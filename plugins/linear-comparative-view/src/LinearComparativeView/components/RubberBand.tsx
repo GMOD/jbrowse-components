@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
@@ -10,10 +10,12 @@ import { LinearComparativeViewModel } from '../model'
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => {
-  const background = theme.palette.tertiary
-    ? alpha(theme.palette.tertiary.main, 0.7)
-    : alpha(theme.palette.primary.main, 0.7)
+const useStyles = makeStyles((theme: Theme) => {
+  //@ts-ignore
+  const { tertiary, primary } = theme.palette
+  const background = tertiary
+    ? alpha(tertiary.main, 0.7)
+    : alpha(primary.main, 0.7)
   return {
     rubberBand: {
       height: '100%',
@@ -29,9 +31,7 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      color: theme.palette.tertiary
-        ? theme.palette.tertiary.contrastText
-        : theme.palette.primary.contrastText,
+      color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
     popover: {
       mouseEvents: 'none',

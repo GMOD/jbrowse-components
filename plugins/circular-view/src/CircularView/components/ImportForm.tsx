@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
-import { Button, Container, Grid } from '@mui/material'
+import { Button, Container, Grid, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },

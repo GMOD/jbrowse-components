@@ -1,13 +1,12 @@
 import React, { useRef, useState } from 'react'
-import { Button } from '@mui/material'
-import { alpha } from '@mui/material/styles'
+import { Button, Theme, alpha } from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { observer } from 'mobx-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
+
 import Menu, { MenuItem } from './Menu'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     display: 'flex',
   },
@@ -73,12 +72,6 @@ function DropDownMenu({
       />
     </div>
   )
-}
-
-DropDownMenu.propTypes = {
-  menuTitle: PropTypes.string.isRequired,
-  menuItems: MobxPropTypes.arrayOrObservableArray.isRequired,
-  session: MobxPropTypes.objectOrObservableObject.isRequired,
 }
 
 export default observer(DropDownMenu)

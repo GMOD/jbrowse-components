@@ -1,9 +1,10 @@
 import React from 'react'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
+import { Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   contentBlock: {
     position: 'relative',
     minHeight: '100%',
