@@ -209,20 +209,20 @@ export function createJBrowseTheme(theme?: any) {
   //   // @ts-ignore
   //   return createTheme(jbrowseBaseTheme)
   // }
-  // if (theme.palette?.tertiary) {
-  //   theme = deepmerge(theme, {
-  //     palette: {
-  //       tertiary: refTheme.palette.augmentColor(theme.palette.tertiary),
-  //     },
-  //   })
-  // }
-  // if (theme.palette?.quaternary) {
-  //   theme = deepmerge(theme, {
-  //     palette: {
-  //       quaternary: refTheme.palette.augmentColor(theme.palette.quaternary),
-  //     },
-  //   })
-  // }
+  if (theme?.palette?.tertiary) {
+    theme = deepmerge(theme, {
+      palette: {
+        tertiary: refTheme.palette.augmentColor(theme.palette.tertiary),
+      },
+    })
+  }
+  if (theme?.palette?.quaternary) {
+    theme = deepmerge(theme, {
+      palette: {
+        quaternary: refTheme.palette.augmentColor(theme.palette.quaternary),
+      },
+    })
+  }
   // theme = {
   //   ...theme,
   //   props: deepmerge(createJBrowseDefaultProps(), theme.props || {}),
