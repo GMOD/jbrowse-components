@@ -84,7 +84,7 @@
     "@types/pluralize": "^0.0.29",
     "@types/range-parser": "^1.2.3",
     "@types/rbush": "^3.0.0",
-    "@types/react": "^17.0.0",
+    "@types/react": "^18.0.0",
     "@types/react-color": "^3.0.4",
     "@types/react-dom": "^17.0.0",
     "@types/react-virtualized-auto-sizer": "^1.0.0",

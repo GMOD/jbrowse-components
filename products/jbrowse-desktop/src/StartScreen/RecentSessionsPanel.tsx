@@ -9,6 +9,7 @@ import {
   Link,
   Tooltip,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
@@ -31,7 +32,7 @@ import SessionCard from './SessionCard'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   pointer: {
     cursor: 'pointer',
   },

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Grid, Paper, Typography } from '@mui/material'
+import { Grid, Paper, Typography, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 
 import { LogoFull } from '@jbrowse/core/ui/Logo'
@@ -11,7 +11,7 @@ import RecentSessionPanel from './RecentSessionsPanel'
 
 import packageJSON from '../../package.json'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     marginLeft: 100,
     marginRight: 100,

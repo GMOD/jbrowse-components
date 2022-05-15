@@ -11,12 +11,12 @@ type Count = {
 }
 
 type SNPInfo = {
-  ref: Count
   cov: Count
   lowqual: Count
   noncov: Count
   delskips: Count
   total: number
+  ref: number
   '-1': number
   '0': number
   '1': number

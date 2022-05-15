@@ -6,6 +6,7 @@ import {
   MenuItem,
   Typography,
   Tooltip,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { useInView } from 'react-intersection-observer'
@@ -35,7 +36,7 @@ interface CoordFeat extends SimpleFeatureSerialized {
   end: number
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   button: {
     margin: theme.spacing(1),
   },

@@ -113,7 +113,7 @@ const EditableTypography = React.forwardRef(
           inputProps={{
             style: {
               width,
-              ...(variant && variant !== 'inherit' && variant !== 'srOnly'
+              ...(variant && variant !== 'inherit'
                 ? theme.typography[variant]
                 : {}),
             },

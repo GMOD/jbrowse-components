@@ -5,10 +5,11 @@ import {
   Paper,
   SvgIconProps,
   Typography,
+  Theme,
   useTheme,
+  alpha,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
-import { alpha } from '@mui/material/styles'
 import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
@@ -17,7 +18,7 @@ import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseV
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
@@ -102,10 +103,8 @@ const ViewContainer = observer(
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
-      if (width) {
-        if (isAlive(view)) {
-          view.setWidth(width - padWidth * 2)
-        }
+      if (width && isAlive(view)) {
+        view.setWidth(width - parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 

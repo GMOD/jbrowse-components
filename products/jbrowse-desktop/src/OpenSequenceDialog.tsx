@@ -10,6 +10,7 @@ import {
   Paper,
   TextField,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import { FileSelector, ErrorMessage } from '@jbrowse/core/ui'
@@ -17,7 +18,7 @@ import { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   message: {
     background: '#ddd',
     margin: theme.spacing(2),

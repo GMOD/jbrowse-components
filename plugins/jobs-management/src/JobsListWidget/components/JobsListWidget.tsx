@@ -1,14 +1,14 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-
 import {
   Accordion,
   AccordionSummary,
   Card,
   CardContent,
   Typography,
+  Theme,
 } from '@mui/material'
 import { makeStyles } from '@mui/styles'
+import { observer } from 'mobx-react'
 
 // icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
@@ -17,7 +17,7 @@ import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel, NewJob } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   root: {
     margin: theme.spacing(1),
   },

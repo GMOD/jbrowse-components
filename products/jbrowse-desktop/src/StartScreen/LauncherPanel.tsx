@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Typography } from '@mui/material'
+import { Button, Typography, Theme } from '@mui/material'
 import { makeStyles } from '@mui/styles'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -10,7 +10,7 @@ import { loadPluginManager } from './util'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
   form: {
     marginTop: theme.spacing(4),
   },
