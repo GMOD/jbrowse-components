@@ -23,9 +23,9 @@ beforeEach(() => {
 
 test('breakpoint split view', async () => {
   console.warn = jest.fn()
-  const pluginManager = getPluginManager(breakpointConfig)
+  const pm = getPluginManager(breakpointConfig)
   const { findByTestId, queryAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
+    <JBrowse pluginManager={pm} />,
   )
   // the breakpoint could be partially loaded so explicitly wait for two items
   await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), {
