@@ -204,10 +204,11 @@ export function WindowSizeDlg(props: {
               {
                 refName: saRef,
                 start: +saStart - 1,
-                end: +saStart + 1,
+                end: +saStart,
               },
             ],
           })) as Feature[]
+
           const result = feats.find(
             f =>
               f.get('name') === preFeature.get('name') &&
