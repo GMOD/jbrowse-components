@@ -1,5 +1,5 @@
 import React from 'react'
-import { cleanup, fireEvent, render, within } from '@testing-library/react'
+import { fireEvent, render, within } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -16,7 +16,6 @@ import {
 
 expect.extend({ toMatchImageSnapshot })
 setup()
-afterEach(cleanup)
 
 beforeEach(() => {
   clearCache()

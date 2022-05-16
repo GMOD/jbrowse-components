@@ -1,6 +1,6 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -10,16 +10,14 @@ import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
 
 setup()
 
-afterEach(cleanup)
-
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
 

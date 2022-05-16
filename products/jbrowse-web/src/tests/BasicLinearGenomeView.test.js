@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  cleanup,
   createEvent,
   fireEvent,
   render,
@@ -14,7 +13,6 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 setup()
-afterEach(cleanup)
 
 beforeEach(() => {
   clearCache()
@@ -186,38 +184,6 @@ describe('valid file tests', () => {
     expect(state.session.views[0].tracks.length).toBe(0)
     fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
     expect(state.session.views[0].tracks.length).toBe(1)
-  })
-
-  it('test navigation with the search input box', async () => {
-    const pluginManager = getPluginManager()
-    const state = pluginManager.rootModel
-    const { findByText, findByTestId, findByPlaceholderText } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    fireEvent.click(await findByText('Help'))
-    // need this to complete before we can try to search
-    fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-
-    const autocomplete = await findByTestId('autocomplete')
-    const inputBox = await findByPlaceholderText('Search for location')
-
-    autocomplete.focus()
-    inputBox.focus()
-    fireEvent.mouseDown(inputBox)
-    fireEvent.change(inputBox, {
-      target: { value: '{volvox2}ctgB:1..200' },
-    })
-    fireEvent.keyDown(inputBox, { key: 'Enter', code: 'Enter' })
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    await waitFor(
-      () =>
-        expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
-          'volvox2',
-        ),
-      {
-        timeout: 25000,
-      },
-    )
   })
 
   it('opens reference sequence track and expects zoom in message', async () => {

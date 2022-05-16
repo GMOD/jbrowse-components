@@ -2,7 +2,6 @@ import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
 
 import { fireEvent, render } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import { TextEncoder } from 'web-encoding'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
@@ -19,13 +18,6 @@ import TestPlugin from './TestPlugin'
 jest.mock('../makeWorkerInstance', () => () => {})
 
 window.TextEncoder = TextEncoder
-
-// mock from https://stackoverflow.com/questions/44686077
-jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
-global.Blob = (content, options) => ({ content, options })
-
-expect.extend({ toMatchImageSnapshot })
-
 setup()
 
 const waitForOptions = { timeout: 15000 }
