@@ -48,7 +48,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     : 'No configured assemblies'
   const regions = assembly?.regions || []
   const err = assemblyError || importError
-  const [myVal, setValue] = useState()
+  const [myVal, setValue] = useState('')
   const value = myVal || regions[0]?.refName
 
   // use this instead of useState initializer because the useState initializer
