@@ -37,13 +37,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
-  const {
-    rankSearchResults,
-    isSearchDialogDisplayed,
-    error: modelError,
-  } = model
+  const { rankSearchResults, isSearchDialogDisplayed, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
-  const [error, setError] = useState<typeof modelError | undefined>(modelError)
+  const [importError, setImportError] = useState(error)
   const searchScope = model.searchScope(selectedAsm)
 
   const assembly = assemblyManager.get(selectedAsm)
@@ -51,19 +47,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     ? assembly?.error
     : 'No configured assemblies'
   const regions = assembly?.regions || []
-  const err = assemblyError || error
-
-  const [myOption, setOption] = useState<BaseResult>()
+  const err = assemblyError || importError
+  const [myVal, setValue] = useState()
+  const value = myVal || regions[0]?.refName
 
   // use this instead of useState initializer because the useState initializer
   // won't update in response to an observable
-  const option =
-    myOption ||
-    new BaseResult({
-      label: regions[0]?.refName,
-    })
-
-  const selectedRegion = option?.getLocation()
+  const option = new BaseResult({
+    label: value,
+  })
 
   async function fetchResults(query: string, searchType?: SearchType) {
     if (!textSearchManager) {
@@ -130,7 +122,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     <div className={classes.container}>
       {err ? <ErrorMessage error={err} /> : null}
       <Container className={classes.importFormContainer}>
-        <form onSubmit={event => event.preventDefault()}>
+        <form
+          onSubmit={event => {
+            event.preventDefault()
+            model.setError(undefined)
+            if (value) {
+              handleSelectedRegion(value)
+            }
+          }}
+        >
           <Grid
             container
             spacing={1}
@@ -140,7 +140,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Grid item>
               <AssemblySelector
                 onChange={val => {
-                  setError(undefined)
+                  setImportError('')
                   setSelectedAsm(val)
                 }}
                 session={session}
@@ -152,15 +152,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               {selectedAsm ? (
                 err ? (
                   <CloseIcon style={{ color: 'red' }} />
-                ) : selectedRegion ? (
+                ) : value ? (
                   <RefNameAutocomplete
                     fetchResults={fetchResults}
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
-                    value={selectedRegion}
+                    value={value}
                     // note: minWidth 270 accomodates full width of helperText
                     minWidth={270}
-                    onSelect={option => setOption(option)}
+                    onChange={str => setValue(str)}
                     TextFieldProps={{
                       variant: 'outlined',
                       helperText:
@@ -181,21 +181,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Grid item>
               <Button
                 type="submit"
-                disabled={!selectedRegion}
+                disabled={!value}
                 className={classes.button}
-                onClick={() => {
-                  model.setError(undefined)
-                  if (selectedRegion) {
-                    handleSelectedRegion(selectedRegion)
-                  }
-                }}
                 variant="contained"
                 color="primary"
               >
                 Open
               </Button>
               <Button
-                disabled={!selectedRegion}
+                disabled={!value}
                 className={classes.button}
                 onClick={() => {
                   model.setError(undefined)
