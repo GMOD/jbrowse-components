@@ -78,7 +78,7 @@ function RefNameAutocomplete({
 }: {
   model: LinearGenomeViewModel
   onSelect?: (region: BaseResult) => void
-  onChange: (val: string) => void
+  onChange?: (val: string) => void
   assemblyName?: string
   value?: string
   fetchResults: (query: string) => Promise<BaseResult[]>

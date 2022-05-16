@@ -52,42 +52,6 @@ test('test trix from lgv header', async () => {
   )
 }, 30000)
 
-test('test trix on import form', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
-
-  // @ts-ignore
-  pm.rootModel.session.views[0].clearView()
-
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
-  const input = await findByPlaceholderText('Search for location')
-  await waitFor(() => {
-    // @ts-ignore
-    expect(state.assemblyManager.get('volvox').initialized)
-  })
-
-  auto.focus()
-  fireEvent.mouseDown(input)
-  fireEvent.change(input, { target: { value: 'eden.1' } })
-  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-
-  // should work to just have enter and no click on open in UI, but this is
-  // needed in test currently. may be worth investigating
-  fireEvent.click(await findByText('Open'))
-  // this will instead open a dialog of options vs a single item at
-  // location 'ctgA:1,055..9,005'
-  await waitFor(
-    async () => {
-      const newInput = await findByPlaceholderText('Search for location')
-      expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-    },
-    { timeout: 10000 },
-  )
-}, 30000)
-
 test('opens a dialog with multiple results', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
