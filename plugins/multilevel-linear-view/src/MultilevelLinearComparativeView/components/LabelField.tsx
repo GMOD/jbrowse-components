@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 import { Tooltip, TextField } from '@material-ui/core'
@@ -10,6 +10,9 @@ const MAX_WIDTH = 100
 const MIN_WIDTH = 100
 
 const LabelField = observer(({ model }: { model: LGV }) => {
+  const [displayName, setDisplayName] = useState(
+    model.displayName ? model.displayName : '',
+  )
   const determineWidth = () => {
     const width =
       measureText(model.displayName, 15) < MAX_WIDTH
@@ -23,14 +26,20 @@ const LabelField = observer(({ model }: { model: LGV }) => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setViewLabel = (label: any) => {
+    setDisplayName(label)
     model.setDisplayName(label)
     setInputWidth(determineWidth())
   }
+
+  useEffect(() => {
+    setDisplayName(model.displayName ? model.displayName : '')
+  }, [model.displayName])
+
   return (
     <Tooltip title="Rename view" arrow>
       <TextField
         variant="standard"
-        value={model.displayName}
+        value={displayName}
         size="small"
         margin="none"
         style={{ margin: '0px', paddingRight: '5px' }}

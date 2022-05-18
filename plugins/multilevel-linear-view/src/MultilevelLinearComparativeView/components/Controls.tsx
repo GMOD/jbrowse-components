@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  IconButton,
   Typography,
   Button,
   FormGroup,
@@ -12,17 +11,12 @@ import {
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
-import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 
 import { MultilevelLinearComparativeViewModel } from '../model'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
-import ZoomControls from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ZoomControls'
-import LabelField from './LabelField'
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeViewModel
@@ -36,7 +30,7 @@ const useStyles = makeStyles(theme => ({
     gridArea: '1/1/auto/span 2',
     display: 'flex',
     alignItems: 'center',
-    height: 48,
+    height: HEADER_BAR_HEIGHT,
   },
   spacer: {
     flexGrow: 1,
