@@ -8,6 +8,7 @@ import Paper from '@material-ui/core/Paper'
 import Menu from '@jbrowse/core/ui/Menu'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 import LabelField from './LabelField'
+import { Tooltip } from '@material-ui/core'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   const { model } = props
@@ -32,8 +33,20 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
             <LabelField model={model} />
           </div>
         ) : null}
-        {model.hideHeader || model.hideControls ? (
-          <div>
+        <div>
+          {model.limitBpPerPx.limited &&
+          bpPerPx * 2 > model.limitBpPerPx.upperLimit ? (
+            <Tooltip
+              title="The view is at its max zoom level relative to its neighbouring views"
+              arrow
+            >
+              <span>
+                <IconButton disabled>
+                  <ZoomOut />
+                </IconButton>
+              </span>
+            </Tooltip>
+          ) : (
             <IconButton
               data-testid="zoom_out"
               onClick={() => {
@@ -44,6 +57,20 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
             >
               <ZoomOut />
             </IconButton>
+          )}
+          {model.limitBpPerPx.limited &&
+          bpPerPx / 2 < model.limitBpPerPx.lowerLimit ? (
+            <Tooltip
+              title="The view is at its min zoom level relative to its neighbouring views"
+              arrow
+            >
+              <span>
+                <IconButton disabled>
+                  <ZoomOut />
+                </IconButton>
+              </span>
+            </Tooltip>
+          ) : (
             <IconButton
               data-testid="zoom_in"
               onClick={() => {
@@ -54,8 +81,8 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
             >
               <ZoomIn />
             </IconButton>
-          </div>
-        ) : null}
+          )}
+        </div>
       </Paper>
       <Menu
         anchorEl={anchorEl}

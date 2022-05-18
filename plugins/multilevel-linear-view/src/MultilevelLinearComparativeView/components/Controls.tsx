@@ -162,7 +162,7 @@ const Controls = observer(
     const classes = useStyles()
     return (
       <div className={classes.headerBar}>
-        {model.views[model.anchorViewIndex].id !== view.id ? (
+        {model.views[0].id !== view.id ? (
           <svg
             height={HEADER_BAR_HEIGHT}
             style={{ width: '100%', position: 'absolute' }}
@@ -182,7 +182,6 @@ const Controls = observer(
               <SearchBox model={view} />
             </FormGroup>
             <RegionWidth model={view} />
-            {view.initialized ? <ZoomControls model={view} /> : null}
             {ExtraControls}
           </>
         ) : null}

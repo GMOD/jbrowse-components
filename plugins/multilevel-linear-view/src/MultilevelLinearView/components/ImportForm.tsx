@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Grid,
   TextField,
+  MenuItem,
   makeStyles,
 } from '@material-ui/core'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
@@ -36,6 +37,7 @@ const ImportForm = observer(
     const { assemblyNames, assemblyManager } = session
     const [selected, setSelected] = useState([assemblyNames[0]])
     const [numViews, setNumViews] = useState('2')
+    const [order, setOrder] = useState('Descending')
     const [error, setError] = useState<unknown>()
 
     const assemblyError = assemblyNames.length
@@ -68,6 +70,10 @@ const ImportForm = observer(
         }
       }
     }, [numViews, assemblyNames])
+
+    useEffect(() => {
+      model.setIsDescending(order === 'Descending' ? true : false)
+    }, [order])
 
     // gets a string as input, or use stored option results from previous query,
     // then re-query and
@@ -129,18 +135,57 @@ const ImportForm = observer(
           ),
         )
 
-        let zoomVal = 1
-        let num = 2
-        model.views.forEach(view => {
-          view.setWidth(model.width)
-          if (selectedRegion) {
-            handleSelectedRegion(selectedRegion, view)
-          }
+        if (model.isDescending) {
+          model.setAnchorViewIndex(model.views.length - 1)
+          model.setOverviewIndex(0)
 
-          view.zoomTo(zoomVal)
-          zoomVal *= num
-          num++
-        })
+          let zoomVal = 0
+          let num = model.views.length - 1
+          let index = 0
+          model.views.forEach(view => {
+            view.setWidth(model.width)
+            if (selectedRegion) {
+              handleSelectedRegion(selectedRegion, view)
+            }
+
+            if (view.id === model.views[model.overviewIndex].id) {
+              zoomVal = view.maxBpPerPx
+            } else if (view.id === model.views[model.anchorViewIndex].id) {
+              zoomVal = 1
+            } else {
+              zoomVal = (model.views.length - index) * num
+            }
+
+            view.zoomTo(zoomVal)
+            zoomVal *= num
+            num--
+            index++
+          })
+        } else {
+          // ascending
+          model.setAnchorViewIndex(0)
+          model.setOverviewIndex(model.views.length - 1)
+
+          let zoomVal = 1
+          let num = 2
+          model.views.forEach(view => {
+            view.setWidth(model.width)
+            if (selectedRegion) {
+              handleSelectedRegion(selectedRegion, view)
+            }
+
+            if (view.id === model.views[model.overviewIndex].id) {
+              zoomVal = view.maxBpPerPx
+            }
+
+            view.zoomTo(zoomVal)
+            zoomVal *= num
+            num++
+          })
+        }
+        model.setInitialDisplayNames()
+
+        model.setLimitBpPerPx()
 
         model.toggleLinkViews()
       } catch (e) {
@@ -224,6 +269,27 @@ const ImportForm = observer(
               style={{ width: '8rem', verticalAlign: 'baseline' }}
               helperText="Number of views"
             />
+          </Grid>
+          <Grid item>
+            <TextField
+              select
+              value={order}
+              variant="outlined"
+              margin="normal"
+              label="Order"
+              onChange={event => setOrder(event.target.value)}
+              style={{ width: '17rem', verticalAlign: 'baseline' }}
+              helperText={`${order} order has the overview at the ${
+                order === 'Descending' ? 'top' : 'bottom'
+              }`}
+            >
+              <MenuItem key={'Ascending'} value={'Ascending'}>
+                Ascending
+              </MenuItem>
+              <MenuItem key={'Descending'} value={'Descending'}>
+                Descending
+              </MenuItem>
+            </TextField>
           </Grid>
           <Grid item>
             <Button

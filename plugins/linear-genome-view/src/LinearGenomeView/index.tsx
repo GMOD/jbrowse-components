@@ -130,6 +130,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         hasCustomHeader: false,
         isVisible: true,
         hideHeaderOverview: false,
+        limitBpPerPx: types.optional(types.frozen(), {
+          limited: false,
+          upperLimit: 1,
+          lowerLimit: 0,
+        }),
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
           'hierarchical',
@@ -465,6 +470,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setHasCustomHeader(flag: boolean) {
         self.hasCustomHeader = flag
       },
+      setLimitBpPerPx(
+        limited: boolean,
+        upperLimit?: number,
+        lowerLimit?: number,
+      ) {
+        self.limitBpPerPx = {
+          limited: limited,
+          upperLimit: upperLimit ? upperLimit : self.limitBpPerPx.upperLimit,
+          lowerLimit: lowerLimit ? lowerLimit : self.limitBpPerPx.lowerLimit,
+        }
+      },
       toggleHeader() {
         self.hideHeader = !self.hideHeader
       },
@@ -486,27 +502,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       zoomTo(bpPerPx: number) {
-        const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
-        if (newBpPerPx === self.bpPerPx) {
+        if (
+          !self.limitBpPerPx.limited ||
+          (bpPerPx <= self.limitBpPerPx.upperLimit &&
+            bpPerPx >= self.limitBpPerPx.lowerLimit)
+        ) {
+          const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
+          if (newBpPerPx === self.bpPerPx) {
+            return newBpPerPx
+          }
+          const oldBpPerPx = self.bpPerPx
+          self.bpPerPx = newBpPerPx
+
+          if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+            console.warn('zoomTo bpPerPx rounding error')
+            return oldBpPerPx
+          }
+
+          // tweak the offset so that the center of the view remains at the same coordinate
+          const viewWidth = self.width
+          this.scrollTo(
+            Math.round(
+              ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
+                viewWidth / 2,
+            ),
+          )
           return newBpPerPx
         }
-        const oldBpPerPx = self.bpPerPx
-        self.bpPerPx = newBpPerPx
-
-        if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-          console.warn('zoomTo bpPerPx rounding error')
-          return oldBpPerPx
-        }
-
-        // tweak the offset so that the center of the view remains at the same coordinate
-        const viewWidth = self.width
-        this.scrollTo(
-          Math.round(
-            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
-              viewWidth / 2,
-          ),
-        )
-        return newBpPerPx
+        return self.bpPerPx
       },
 
       setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {

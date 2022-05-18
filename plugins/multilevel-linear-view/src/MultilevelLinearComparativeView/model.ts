@@ -41,7 +41,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         linkViews: false,
         interactToggled: false,
         anchorViewIndex: 0,
+        overviewIndex: 1,
         middleComparativeHeight: 100,
+        isDescending: true,
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
@@ -77,6 +79,27 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       get assemblyNames() {
         return [...new Set(self.views.map(v => v.assemblyNames).flat())]
+      },
+    }))
+    .actions(self => ({
+      setLimitBpPerPx() {
+        let prev = -1
+        let next = 1
+        self.views.forEach(view => {
+          if (prev === -1) {
+            view.setLimitBpPerPx(true, view.bpPerPx, view.bpPerPx)
+          }
+          if (prev !== -1 && next !== self.views.length) {
+            view.setLimitBpPerPx(
+              true,
+              self.views[prev].bpPerPx,
+              self.views[next].bpPerPx,
+            )
+          }
+
+          prev++
+          next++
+        })
       },
     }))
     .actions(self => ({
@@ -138,26 +161,39 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         if (actionName === 'zoomTo') {
-          self.views.forEach(view => {
-            if (view.id !== self.views[self.anchorViewIndex].id) {
-              if (view.initialized) {
-                const rev = view.bpPerPx
-                const factor =
-                  view.bpPerPx !== 0
-                    ? args[0] /
-                      (self.views[self.anchorViewIndex].bpPerPx / view.bpPerPx)
-                    : 0
-                // @ts-ignore
-                view[actionName](factor)
-                const ret = getPath(view)
-                // reverse action for the view you're zooming on
-                if (ret.lastIndexOf(path) == ret.length - path.length) {
+          if (path.endsWith(self.anchorViewIndex.toString())) {
+            self.views.forEach(view => {
+              if (
+                view.id !== self.views[self.anchorViewIndex].id &&
+                view.id !== self.views[self.overviewIndex].id
+              ) {
+                if (view.initialized) {
+                  view.setLimitBpPerPx(false)
+                  const rev = view.bpPerPx
+                  const factor =
+                    view.bpPerPx !== 0
+                      ? args[0] /
+                        (self.views[self.anchorViewIndex].bpPerPx /
+                          view.bpPerPx)
+                      : 0
                   // @ts-ignore
-                  view[actionName](rev)
+                  view[actionName](factor)
+                  const ret = getPath(view)
+                  // reverse action for the view you're zooming on
+                  if (ret.lastIndexOf(path) == ret.length - path.length) {
+                    // @ts-ignore
+                    view[actionName](rev)
+                  }
+
+                  const center = self.views[self.anchorViewIndex].pxToBp(
+                    view.width / 2,
+                  )
+                  view.centerAt(center.coord, center.refName, center.index)
                 }
               }
-            }
-          })
+            })
+            self.setLimitBpPerPx()
+          }
         }
 
         if (actionName === 'navToLocString') {
@@ -185,8 +221,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
+      setInitialDisplayNames() {
+        self.views[self.anchorViewIndex].setDisplayName('Details')
+        self.views[self.overviewIndex].setDisplayName('Overview')
+      },
+
       setAnchorViewIndex(index: number) {
         self.anchorViewIndex = index
+      },
+
+      setOverviewIndex(index: number) {
+        self.overviewIndex = index
       },
 
       setHeight(newHeight: number) {
@@ -207,6 +252,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       setHeaderHeight(height: number) {
         self.headerHeight = height
+      },
+
+      setIsDescending(toggle: boolean) {
+        self.isDescending = toggle
       },
 
       setMiddleComparativeHeight(n: number) {

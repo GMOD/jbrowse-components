@@ -196,8 +196,7 @@ const OverlayComparativeView = observer(
                     </>
                     {view.isVisible ? (
                       <>
-                        {view.hasCustomMiniControls &&
-                        (view.hideHeader || view.hideControls) ? (
+                        {view.hasCustomMiniControls ? (
                           <MiniControls model={view} />
                         ) : null}
                         <ReactComponent key={view.id} model={view} />
