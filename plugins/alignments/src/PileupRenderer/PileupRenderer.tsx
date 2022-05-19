@@ -417,7 +417,6 @@ export default class PileupRenderer extends BoxRendererType {
 
     const cigar = feature.get('CIGAR')
     const start = feature.get('start')
-    const end = feature.get('end')
     const seq = feature.get('seq')
     const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
@@ -431,22 +430,20 @@ export default class PileupRenderer extends BoxRendererType {
       const col = modificationTagMap[type] || 'black'
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
-        if (readPos >= 0 && start + readPos < end) {
-          const [leftPx, rightPx] = bpSpanPx(
-            start + readPos,
-            start + readPos + 1,
-            region,
-            bpPerPx,
-          )
+        const r = start + readPos
+        const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
 
-          // give it a little boost of 0.1 to not make them fully
-          // invisible to avoid confusion
-          ctx.fillStyle = base
-            .alpha(probabilities[probIndex] + 0.1)
-            .hsl()
-            .string()
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
-        }
+        // give it a little boost of 0.1 to not make them fully
+        // invisible to avoid confusion
+        const prob = probabilities[probIndex]
+        ctx.fillStyle =
+          prob && prob !== 1
+            ? base
+                .alpha(prob + 0.1)
+                .hsl()
+                .string()
+            : col
+        ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
         probIndex++
       }
     }
