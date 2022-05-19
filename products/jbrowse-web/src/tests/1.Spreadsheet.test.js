@@ -1,6 +1,6 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
@@ -15,8 +15,6 @@ window.TextDecoder = TextDecoder
 expect.extend({ toMatchImageSnapshot })
 
 setup()
-
-afterEach(cleanup)
 
 beforeEach(() => {
   clearCache()

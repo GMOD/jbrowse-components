@@ -66,17 +66,19 @@ const MyPopper = function (
 
 function RefNameAutocomplete({
   model,
-  showHelp = true,
   onSelect,
   assemblyName,
   style,
   fetchResults,
+  onChange,
   value,
+  showHelp = true,
   minWidth = 200,
   TextFieldProps = {},
 }: {
   model: LinearGenomeViewModel
-  onSelect: (region: BaseResult) => void
+  onSelect?: (region: BaseResult) => void
+  onChange?: (val: string) => void
   assemblyName?: string
   value?: string
   fetchResults: (query: string) => Promise<BaseResult[]>
@@ -171,7 +173,10 @@ function RefNameAutocomplete({
         value={inputBoxVal}
         loading={!loaded}
         inputValue={inputValue}
-        onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+        onInputChange={(event, newInputValue) => {
+          setInputValue(newInputValue)
+          onChange?.(newInputValue)
+        }}
         loadingText="loading results"
         open={open}
         onOpen={() => setOpen(true)}
@@ -190,9 +195,9 @@ function RefNameAutocomplete({
 
           if (typeof selectedOption === 'string') {
             // handles string inputs on keyPress enter
-            onSelect(new BaseResult({ label: selectedOption }))
+            onSelect?.(new BaseResult({ label: selectedOption }))
           } else {
-            onSelect(selectedOption.result)
+            onSelect?.(selectedOption.result)
           }
           setInputValue(inputBoxVal)
         }}
