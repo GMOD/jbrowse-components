@@ -171,7 +171,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         flagInclude: number
         flagExclude: number
         tagFilter: { tag: string; value: unknown }
-        name: string
+        readName: string
       }
     },
   ) {
@@ -187,7 +187,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
         flagInclude = 0,
         flagExclude = 0,
         tagFilter,
-        name,
+        readName,
       } = filterBy || {}
 
       for (const record of records) {
@@ -214,7 +214,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
           }
         }
 
-        if (name && record.get('name') !== name) {
+        if (readName && record.get('name') !== readName) {
           continue
         }
 

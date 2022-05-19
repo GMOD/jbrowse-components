@@ -10,6 +10,7 @@ export interface PileupLayoutSessionProps {
   config: AnyConfigurationModel
   bpPerPx: number
   filters: SerializableFilterChain
+  filterBy: unknown
   sortedBy: unknown
   showSoftClip: unknown
 }
@@ -19,6 +20,7 @@ interface CachedPileupLayout {
   layout: MyMultiLayout
   config: AnyConfigurationModel
   filters: SerializableFilterChain
+  filterBy: unknown
   sortedBy: unknown
   showSoftClip: boolean
 }
@@ -26,6 +28,7 @@ interface CachedPileupLayout {
 // Adds extra conditions to see if cached layout is valid
 export class PileupLayoutSession extends LayoutSession {
   sortedBy: unknown
+  filterBy: unknown
 
   showSoftClip = false
 
@@ -50,6 +53,7 @@ export class PileupLayoutSession extends LayoutSession {
         layout: this.makeLayout(),
         config: readConfObject(this.config),
         filters: this.filters,
+        filterBy: this.filterBy,
         sortedBy: this.sortedBy,
         showSoftClip: this.showSoftClip,
       }

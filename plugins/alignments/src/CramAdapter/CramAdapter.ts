@@ -20,6 +20,13 @@ interface Header {
   readGroups?: number[]
 }
 
+interface FilterBy {
+  flagInclude: number
+  flagExclude: number
+  tagFilter: { tag: string; value: unknown }
+  readName: string
+}
+
 export default class CramAdapter extends BaseFeatureDataAdapter {
   samHeader: Header = {}
 
@@ -206,12 +213,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   getFeatures(
     region: Region & { originalRefName?: string },
     opts?: BaseOptions & {
-      filterBy: {
-        flagInclude: number
-        flagExclude: number
-        tagFilter: { tag: string; value: unknown }
-        name: string
-      }
+      filterBy: FilterBy
     },
   ) {
     const { signal, filterBy, statusCallback = () => {} } = opts || {}
@@ -234,7 +236,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           flagInclude = 0,
           flagExclude = 0,
           tagFilter,
-          name,
+          readName,
         } = filterBy || {}
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -251,9 +253,11 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
           })
         }
 
-        if (name) {
+        if (readName) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          filtered = filtered.filter((record: any) => record.name === name)
+          filtered = filtered.filter(
+            (record: any) => record.readName === readName,
+          )
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

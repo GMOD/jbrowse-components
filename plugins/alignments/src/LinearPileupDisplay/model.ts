@@ -409,7 +409,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             displayModel: self,
             sortedBy,
             colorBy,
-            filterBy,
+            filterBy: JSON.parse(JSON.stringify(filterBy)),
             colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
             modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
             showSoftClip: self.showSoftClipping,
