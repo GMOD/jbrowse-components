@@ -400,7 +400,8 @@ export default class PileupRenderer extends BoxRendererType {
     props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
     const { feature, topPx, heightPx } = layoutFeature
-    const { modificationTagMap = {} } = props
+    const { regionSequence, modificationTagMap = {} } = props
+    console.log({ regionSequence })
 
     const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
 
@@ -423,6 +424,7 @@ export default class PileupRenderer extends BoxRendererType {
     const cigarOps = parseCigar(cigar)
 
     const modifications = getModificationPositions(mm, seq, strand)
+    console.log({ modifications })
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
@@ -431,20 +433,20 @@ export default class PileupRenderer extends BoxRendererType {
       const col = modificationTagMap[type] || 'black'
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
-        if (readPos >= 0 && start + readPos < end) {
-          const [leftPx, rightPx] = bpSpanPx(
-            start + readPos,
-            start + readPos + 1,
-            region,
-            bpPerPx,
-          )
+        const r = start + readPos
+        if (readPos >= 0 && r < end) {
+          const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
 
           // give it a little boost of 0.1 to not make them fully
           // invisible to avoid confusion
-          ctx.fillStyle = base
-            .alpha(probabilities[probIndex] + 0.1)
-            .hsl()
-            .string()
+          const prob = probabilities[probIndex]
+          ctx.fillStyle =
+            prob && prob !== 1
+              ? base
+                  .alpha(prob + 0.1)
+                  .hsl()
+                  .string()
+              : col
           ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
         }
         probIndex++

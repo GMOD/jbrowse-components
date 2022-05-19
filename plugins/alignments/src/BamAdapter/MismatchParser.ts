@@ -235,6 +235,7 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
   let cigarIdx = 0
   let readPos = 0
   let refPos = 0
+  console.log({ cigarOps, positions })
 
   for (let i = 0; i < positions.length; i++) {
     const pos = positions[i]
@@ -251,7 +252,7 @@ export function* getNextRefPos(cigarOps: string[], positions: number[]) {
       }
     }
 
-    yield positions[i] - readPos + refPos
+    yield pos - readPos + refPos
   }
 }
 export function getModificationPositions(
@@ -260,54 +261,59 @@ export function getModificationPositions(
   fstrand: number,
 ) {
   const seq = fstrand === -1 ? revcom(fseq) : fseq
-  return mm
-    .split(';')
-    .filter(mod => !!mod)
-    .map(mod => {
-      const [basemod, ...skips] = mod.split(',')
+  const mods = mm.split(';').filter(mod => !!mod)
+  const result = []
+  for (let i = 0; i < mods.length; i++) {
+    const mod = mods[i]
+    const [basemod, ...skips] = mod.split(',')
 
-      // regexes based on parse_mm.pl from hts-specs
-      const matches = basemod.match(/([A-Z])([-+])([^,.?]+)([.?])?/)
-      if (!matches) {
-        throw new Error('bad format for MM tag')
+    // regexes based on parse_mm.pl from hts-specs
+    const matches = basemod.match(/([A-Z])([-+])([^,.?]+)([.?])?/)
+    if (!matches) {
+      throw new Error('bad format for MM tag')
+    }
+    const [, base, strand, typestr] = matches
+
+    // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
+    // split, and they can also be chemical codes (ChEBI) e.g. C+16061
+    const types = typestr.split(/(\d+|.)/).filter(f => !!f)
+
+    if (strand === '-') {
+      console.warn('unsupported negative strand modifications')
+      // make sure to return a somewhat matching type even in this case
+      return { type: 'unsupported', positions: [] }
+    }
+
+    // this logic also based on parse_mm.pl from hts-specs is that in the
+    // sequence of the read, if we have a modification type e.g. C+m;2 and a
+    // sequence ACGTACGTAC we skip the two instances of C and go to the last
+    // C
+    for (let j = 0; j < types.length; j++) {
+      const type = types[j]
+      let i = 0
+      let positions = []
+      for (let k = 0; k < skips.length; k++) {
+        let delta = +skips[k]
+        do {
+          if (base === 'N' || base === seq[i]) {
+            delta--
+          }
+          i++
+        } while (delta >= 0 && i < seq.length)
+        if (i >= seq.length) console.log('ran out of sequence')
+        const temp = i - 1
+        positions.push(fstrand === -1 ? seq.length - 1 - temp : temp)
       }
-      const [, base, strand, typestr] = matches
-
-      // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so
-      // split, and they can also be chemical codes (ChEBI) e.g. C+16061
-      const types = typestr.split(/(\d+|.)/).filter(f => !!f)
-
-      if (strand === '-') {
-        console.warn('unsupported negative strand modifications')
-        // make sure to return a somewhat matching type even in this case
-        return { type: 'unsupported', positions: [] }
+      if (fstrand === -1) {
+        positions.sort((a, b) => a - b)
       }
-
-      // this logic also based on parse_mm.pl from hts-specs is that in the
-      // sequence of the read, if we have a modification type e.g. C+m;2 and a
-      // sequence ACGTACGTAC we skip the two instances of C and go to the last
-      // C
-      return types.map(type => {
-        let i = 0
-        return {
-          type,
-          positions: skips
-            .map(score => +score)
-            .map(delta => {
-              do {
-                if (base === 'N' || base === seq[i]) {
-                  delta--
-                }
-                i++
-              } while (delta >= 0 && i < seq.length)
-              const temp = i - 1
-              return fstrand === -1 ? seq.length - 1 - temp : temp
-            })
-            .sort((a, b) => a - b),
-        }
+      result.push({
+        type,
+        positions,
       })
-    })
-    .flat()
+    }
+  }
+  return result
 }
 
 export function getModificationTypes(mm: string) {
