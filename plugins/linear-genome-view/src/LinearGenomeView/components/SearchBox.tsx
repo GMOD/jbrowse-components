@@ -62,8 +62,13 @@ function SearchBox({
     let trackId = option.getTrackId()
     let location = option.getLocation()
     const label = option.getLabel()
+    const ref = location.split(':')[0]
+    const allRefs = assembly?.allRefNames || []
     try {
-      if (assembly?.allRefNames?.includes(location)) {
+      if (
+        assembly?.allRefNames?.includes(location) ||
+        (location.includes(':') && allRefs.find(f => ref.startsWith(f)))
+      ) {
         model.navToLocString(location)
       } else {
         const results = await fetchResults(label, 'exact')
