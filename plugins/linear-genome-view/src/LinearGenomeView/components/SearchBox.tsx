@@ -65,17 +65,14 @@ function SearchBox({
     const ref = location.split(':')[0]
     const allRefs = assembly?.allRefNames || []
     try {
-      if (
-        assembly?.allRefNames?.includes(location) ||
-        (location.includes(':') && allRefs.find(f => ref.startsWith(f)))
-      ) {
+      if (allRefs.includes(location) || allRefs.includes(ref)) {
         model.navToLocString(location)
       } else {
-        const results = await fetchResults(label, 'exact')
-        if (results && results.length > 1) {
+        const results = (await fetchResults(label, 'exact')) || []
+        if (results.length > 1) {
           model.setSearchResults(results, label.toLowerCase())
           return
-        } else if (results?.length === 1) {
+        } else if (results.length === 1) {
           location = results[0].getLocation()
           trackId = results[0].getTrackId()
         }
