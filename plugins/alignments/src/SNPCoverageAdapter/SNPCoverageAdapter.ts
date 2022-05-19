@@ -211,15 +211,25 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         const seq = feature.get('seq') as string
         const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
         const ops = parseCigar(feature.get('CIGAR'))
+        const fend = feature.get('end')
 
         getModificationPositions(mm, seq, fstrand).forEach(
           ({ type, positions }) => {
             const mod = `mod_${type}`
             for (const pos of getNextRefPos(ops, positions)) {
+              if (pos < 0 || pos > fend) {
+                continue
+              }
               const epos = pos + fstart - region.start
               if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
                 const bin = bins[epos]
-                inc(bin, fstrand, 'cov', mod)
+                if (bin) {
+                  inc(bin, fstrand, 'cov', mod)
+                } else {
+                  console.warn(
+                    'Undefined position in modifications snpcoverage encountered',
+                  )
+                }
               }
             }
           },
