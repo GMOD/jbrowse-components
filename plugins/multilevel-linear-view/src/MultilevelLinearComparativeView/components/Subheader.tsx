@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
-import Controls from './Controls'
-import { MultilevelLinearComparativeViewModel } from '../model'
 import { IconButton } from '@material-ui/core'
 import UnfoldLessIcon from '@material-ui/icons/UnfoldLess'
 import UnfoldMoreIcon from '@material-ui/icons/UnfoldMore'
 import MenuIcon from '@material-ui/icons/Menu'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 import Menu from '@jbrowse/core/ui/Menu'
+
+import { MultilevelLinearComparativeViewModel } from '../model'
 import LabelField from './LabelField'
+import Controls from './Controls'
 
 type LGV = LinearGenomeViewModel
 type LCV = MultilevelLinearComparativeViewModel

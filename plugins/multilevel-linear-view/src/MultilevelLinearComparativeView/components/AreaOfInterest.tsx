@@ -1,14 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles, useTheme, alpha } from '@material-ui/core/styles'
-import { MultilevelLinearComparativeViewModel } from '../model'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 import { Typography } from '@material-ui/core'
+import { makeStyles, useTheme, alpha } from '@material-ui/core/styles'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
+
+import { MultilevelLinearComparativeViewModel } from '../model'
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles(() => {
   return {
     guide: {
       pointerEvents: 'none',

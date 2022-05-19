@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 import { Tooltip, TextField } from '@material-ui/core'
 import { measureText } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 
 type LGV = LinearGenomeViewModel
 

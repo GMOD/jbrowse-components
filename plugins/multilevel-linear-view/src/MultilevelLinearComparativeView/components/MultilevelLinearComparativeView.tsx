@@ -1,17 +1,15 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { getConf } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { makeStyles } from '@material-ui/core/styles'
 import { getEnv } from 'mobx-state-tree'
-import { ResizeHandle } from '@jbrowse/core/ui'
-import { MultilevelLinearComparativeViewModel } from '../model'
-import Header from './Header'
-import MiniControls from './MiniControls'
-import Subheader from './Subheader'
-import AreaOfInterest from './AreaOfInterest'
+import { makeStyles } from '@material-ui/core/styles'
 import { bpToPx } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
+
+import { MultilevelLinearComparativeViewModel } from '../model'
+import AreaOfInterest from './AreaOfInterest'
+import Subheader from './Subheader'
+import MiniControls from './MiniControls'
+import Header from './Header'
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -35,66 +33,6 @@ const useStyles = makeStyles(() => ({
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeViewModel
-
-const Overlays = observer(({ model }: { model: LCV }) => {
-  const classes = useStyles()
-  return (
-    <>
-      {model.tracks.map(track => {
-        const [display] = track.displays
-        const { RenderingComponent } = display
-        const trackId = getConf(track, 'trackId')
-        return RenderingComponent ? (
-          <div
-            className={classes.overlay}
-            key={trackId}
-            style={{
-              height: model.middleComparativeHeight,
-              overflow: 'hidden',
-            }}
-          >
-            <RenderingComponent model={display} />
-          </div>
-        ) : null
-      })}
-    </>
-  )
-})
-
-// The comparative is in the middle of the views
-const MiddleComparativeView = observer(
-  ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
-    const classes = useStyles()
-    const { views } = model
-    const { ReactComponent } = getEnv(model).pluginManager.getViewType(
-      views[0].type,
-    )
-
-    return (
-      <div>
-        <Header ExtraButtons={ExtraButtons} model={model} />
-        <div className={classes.container}>
-          <ReactComponent model={views[0]} />
-          <div className={classes.grid}>
-            <Overlays model={model} />
-          </div>
-          <ResizeHandle
-            onDrag={n =>
-              model.setMiddleComparativeHeight(
-                model.middleComparativeHeight + n,
-              )
-            }
-            style={{
-              height: 4,
-              background: '#ccc',
-            }}
-          />
-          <ReactComponent model={views[1]} />
-        </div>
-      </div>
-    )
-  },
-)
 
 const getLeft = (model: LCV, view: LGV) => {
   const coordA = bpToPx(
@@ -206,7 +144,6 @@ const OverlayComparativeView = observer(
                 )
               })}
             </div>
-            <Overlays model={model} />
           </div>
         </div>
       </div>
@@ -216,15 +153,7 @@ const OverlayComparativeView = observer(
 
 const MultilevelLinearComparativeView = observer(
   (props: { model: LCV; ExtraButtons?: React.ReactNode }) => {
-    const { model } = props
-    const middle = model.tracks.some(({ displays }) =>
-      displays.some((d: AnyConfigurationModel) => getConf(d, 'middle')),
-    )
-    return middle ? (
-      <MiddleComparativeView {...props} />
-    ) : (
-      <OverlayComparativeView {...props} />
-    )
+    return <OverlayComparativeView {...props} />
   },
 )
 

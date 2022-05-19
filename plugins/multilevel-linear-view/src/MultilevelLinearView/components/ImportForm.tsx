@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import {
   Button,
   Container,
@@ -10,13 +9,14 @@ import {
   MenuItem,
   makeStyles,
 } from '@material-ui/core'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
-import { MultilevelLinearViewModel } from '../model'
 import CloseIcon from '@material-ui/icons/Close'
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-
 import RefNameAutocomplete from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/RefNameAutocomplete'
+
+import { MultilevelLinearViewModel } from '../model'
 
 const useStyles = makeStyles(theme => ({
   importFormContainer: {
@@ -73,7 +73,7 @@ const ImportForm = observer(
 
     useEffect(() => {
       model.setIsDescending(order === 'Descending' ? true : false)
-    }, [order])
+    }, [order, model])
 
     // gets a string as input, or use stored option results from previous query,
     // then re-query and

@@ -37,7 +37,6 @@ export function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: [],
       },
       renderer: 'SvgFeatureRenderer',
-      middle: { type: 'boolean', defaultValue: true },
     },
     {
       baseConfiguration: baseConfigFactory(pluginManager),
@@ -67,7 +66,6 @@ export function stateModelFactory(
           displayModel: self,
           config: getConf(self, 'renderer'),
           width: parentView.width,
-          height: parentView.middleComparativeHeight,
         }
       },
       get rendererTypeName() {

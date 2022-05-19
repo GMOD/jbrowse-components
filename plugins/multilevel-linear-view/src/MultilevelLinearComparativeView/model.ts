@@ -42,7 +42,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         interactToggled: false,
         anchorViewIndex: 0,
         overviewIndex: 1,
-        middleComparativeHeight: 100,
         isDescending: true,
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -152,7 +151,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
               const ret = getPath(view)
               // reverse action for the view you're scrolling on
-              if (ret.lastIndexOf(path) == ret.length - path.length) {
+              if (ret.lastIndexOf(path) === ret.length - path.length) {
                 // @ts-ignore
                 view[actionName](args[0] * -1)
               }
@@ -180,7 +179,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   view[actionName](factor)
                   const ret = getPath(view)
                   // reverse action for the view you're zooming on
-                  if (ret.lastIndexOf(path) == ret.length - path.length) {
+                  if (ret.lastIndexOf(path) === ret.length - path.length) {
                     // @ts-ignore
                     view[actionName](rev)
                   }
@@ -200,7 +199,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.views.forEach(view => {
             if (view.initialized) {
               const ret = getPath(view)
-              if (ret.lastIndexOf(path) == ret.length - path.length) {
+              if (ret.lastIndexOf(path) === ret.length - path.length) {
                 // @ts-ignore
                 view[actionName](args[0])
               }
@@ -256,11 +255,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       setIsDescending(toggle: boolean) {
         self.isDescending = toggle
-      },
-
-      setMiddleComparativeHeight(n: number) {
-        self.middleComparativeHeight = n
-        return self.middleComparativeHeight
       },
 
       toggleLinkViews() {
@@ -334,14 +328,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           view.navToLocString(center.refName)
           view.zoomTo(targetBp)
           view.centerAt(center.coord, center.refName, center.index)
-          console.log(
-            'nav to',
-            center.refName,
-            'zoom to',
-            targetBp,
-            'center at',
-            center.coord,
-          )
         })
       },
       clearView() {

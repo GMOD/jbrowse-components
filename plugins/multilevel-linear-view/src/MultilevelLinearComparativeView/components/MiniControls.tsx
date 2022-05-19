@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
+import { Tooltip } from '@material-ui/core'
 import IconButton from '@material-ui/core/IconButton'
+import Paper from '@material-ui/core/Paper'
 import ZoomIn from '@material-ui/icons/ZoomIn'
 import ZoomOut from '@material-ui/icons/ZoomOut'
 import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
-import Paper from '@material-ui/core/Paper'
 import Menu from '@jbrowse/core/ui/Menu'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
+
 import LabelField from './LabelField'
-import { Tooltip } from '@material-ui/core'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   const { model } = props

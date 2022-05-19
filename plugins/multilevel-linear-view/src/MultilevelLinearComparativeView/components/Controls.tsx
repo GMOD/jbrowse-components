@@ -1,4 +1,5 @@
 import React from 'react'
+import { observer } from 'mobx-react'
 import {
   Typography,
   Button,
@@ -7,16 +8,12 @@ import {
   useTheme,
   alpha,
 } from '@material-ui/core'
-
-import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
-import { observer } from 'mobx-react'
-
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 
 import { MultilevelLinearComparativeViewModel } from '../model'
-
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeViewModel
@@ -68,11 +65,9 @@ const useStyles = makeStyles(theme => ({
 const Polygon = observer(
   ({
     view,
-    model,
     polygonPoints,
   }: {
     view: LGV
-    model: LCV
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints: any
   }) => {
@@ -88,9 +83,7 @@ const Polygon = observer(
       return null
     }
 
-    let points
-
-    points = [
+    const points = [
       [left, HEADER_BAR_HEIGHT],
       [right, HEADER_BAR_HEIGHT],
       [prevRight, 0],
@@ -161,7 +154,7 @@ const Controls = observer(
             height={HEADER_BAR_HEIGHT}
             style={{ width: '100%', position: 'absolute' }}
           >
-            <Polygon model={model} view={view} polygonPoints={polygonPoints} />
+            <Polygon view={view} polygonPoints={polygonPoints} />
           </svg>
         ) : null}
         {ExtraButtons}
