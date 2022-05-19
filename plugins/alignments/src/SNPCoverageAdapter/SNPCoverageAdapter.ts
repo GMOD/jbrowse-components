@@ -217,9 +217,6 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           ({ type, positions }) => {
             const mod = `mod_${type}`
             for (const pos of getNextRefPos(ops, positions)) {
-              if (pos < 0 || pos > fend) {
-                continue
-              }
               const epos = pos + fstart - region.start
               if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
                 const bin = bins[epos]

@@ -401,7 +401,6 @@ export default class PileupRenderer extends BoxRendererType {
   ) {
     const { feature, topPx, heightPx } = layoutFeature
     const { regionSequence, modificationTagMap = {} } = props
-    console.log({ regionSequence })
 
     const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
 
@@ -418,13 +417,11 @@ export default class PileupRenderer extends BoxRendererType {
 
     const cigar = feature.get('CIGAR')
     const start = feature.get('start')
-    const end = feature.get('end')
     const seq = feature.get('seq')
     const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
 
     const modifications = getModificationPositions(mm, seq, strand)
-    console.log({ modifications })
 
     // probIndex applies across multiple modifications e.g.
     let probIndex = 0
@@ -434,21 +431,19 @@ export default class PileupRenderer extends BoxRendererType {
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const r = start + readPos
-        if (readPos >= 0 && r < end) {
-          const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
+        const [leftPx, rightPx] = bpSpanPx(r, r + 1, region, bpPerPx)
 
-          // give it a little boost of 0.1 to not make them fully
-          // invisible to avoid confusion
-          const prob = probabilities[probIndex]
-          ctx.fillStyle =
-            prob && prob !== 1
-              ? base
-                  .alpha(prob + 0.1)
-                  .hsl()
-                  .string()
-              : col
-          ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
-        }
+        // give it a little boost of 0.1 to not make them fully
+        // invisible to avoid confusion
+        const prob = probabilities[probIndex]
+        ctx.fillStyle =
+          prob && prob !== 1
+            ? base
+                .alpha(prob + 0.1)
+                .hsl()
+                .string()
+            : col
+        ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
         probIndex++
       }
     }

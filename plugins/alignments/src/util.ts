@@ -99,5 +99,5 @@ export async function fetchSequence(
 
 // has to check underlying C-G (aka CpG) on the reference sequence
 export function shouldFetchReferenceSequence(type?: string) {
-  return type === 'methylation' || type === 'modifications'
+  return type === 'methylation'
 }
