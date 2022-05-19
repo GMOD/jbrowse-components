@@ -235,13 +235,11 @@ test('clipping', () => {
 
 test('getNextRefPos test 1', () => {
   const cigar = parseCigar('10S10M1I4M1D15M')
-  console.log({ cigar })
   const iter = getNextRefPos(cigar, [5, 10, 15, 20, 25, 30, 35])
   expect([...iter]).toEqual([0, 5, 15, 20, 25])
 })
 test('getNextRefPos test 2', () => {
   const cigar = parseCigar('10S15M')
-  console.log({ cigar })
   const iter = getNextRefPos(cigar, [5, 10, 15])
   expect([...iter]).toEqual([0, 5])
 })

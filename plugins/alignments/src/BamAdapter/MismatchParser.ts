@@ -296,7 +296,7 @@ export function getModificationPositions(
     for (let j = 0; j < types.length; j++) {
       const type = types[j]
       let i = 0
-      let positions = []
+      const positions = []
       for (let k = 0; k < skips.length; k++) {
         let delta = +skips[k]
         do {
@@ -305,7 +305,7 @@ export function getModificationPositions(
           }
           i++
         } while (delta >= 0 && i < seq.length)
-        if (i >= seq.length) console.log('ran out of sequence')
+
         const temp = i - 1
         positions.push(fstrand === -1 ? seq.length - 1 - temp : temp)
       }

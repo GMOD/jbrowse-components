@@ -400,7 +400,7 @@ export default class PileupRenderer extends BoxRendererType {
     props: RenderArgsDeserializedWithFeaturesAndLayout,
   ) {
     const { feature, topPx, heightPx } = layoutFeature
-    const { regionSequence, modificationTagMap = {} } = props
+    const { modificationTagMap = {} } = props
 
     const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
 
