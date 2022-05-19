@@ -93,6 +93,10 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     const [ref, rest] = location.split(':')
     const allRefs = assembly?.allRefNames || []
     try {
+      // instead of querying text-index, first:
+      // - check if input matches a refname directly
+      // - or looks like locstring
+      // then just navigate as if it were a locstring
       if (
         allRefs.includes(location) ||
         (allRefs.includes(ref) &&
