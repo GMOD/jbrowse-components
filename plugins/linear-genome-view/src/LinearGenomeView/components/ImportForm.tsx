@@ -90,13 +90,18 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
     let trackId = option.getTrackId()
     let location = input || option.getLocation() || ''
-    const ref = location.split(':')[0]
+    const [ref, rest] = location.split(':')
     const allRefs = assembly?.allRefNames || []
     try {
-      if (allRefs.includes(location) || allRefs.includes(ref)) {
+      if (
+        allRefs.includes(location) ||
+        (allRefs.includes(ref) &&
+          rest !== undefined &&
+          !Number.isNaN(parseInt(rest, 10)))
+      ) {
         model.navToLocString(location, selectedAsm)
       } else {
-        const results = (await fetchResults(input, 'exact')) || []
+        const results = await fetchResults(input, 'exact')
         if (results.length > 1) {
           model.setSearchResults(results, input.toLowerCase())
           return

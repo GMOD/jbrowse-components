@@ -62,13 +62,18 @@ function SearchBox({
     let trackId = option.getTrackId()
     let location = option.getLocation()
     const label = option.getLabel()
-    const ref = location.split(':')[0]
+    const [ref, rest] = location.split(':')
     const allRefs = assembly?.allRefNames || []
     try {
-      if (allRefs.includes(location) || allRefs.includes(ref)) {
+      if (
+        allRefs.includes(location) ||
+        (allRefs.includes(ref) &&
+          rest !== undefined &&
+          !Number.isNaN(parseInt(rest, 10)))
+      ) {
         model.navToLocString(location)
       } else {
-        const results = (await fetchResults(label, 'exact')) || []
+        const results = await fetchResults(label, 'exact')
         if (results.length > 1) {
           model.setSearchResults(results, label.toLowerCase())
           return
