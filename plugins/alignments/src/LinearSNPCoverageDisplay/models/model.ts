@@ -143,7 +143,7 @@ const stateModelFactory = (
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
             colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
-            filterBy: self.filterBy,
+            filterBy: self.filterBy ? getSnapshot(self.filterBy) : undefined,
           }
         },
       }

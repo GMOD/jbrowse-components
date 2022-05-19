@@ -41,7 +41,8 @@ export class PileupLayoutSession extends LayoutSession {
     return (
       super.cachedLayoutIsValid(cachedLayout) &&
       this.showSoftClip === cachedLayout.showSoftClip &&
-      deepEqual(this.sortedBy, cachedLayout.sortedBy)
+      deepEqual(this.sortedBy, cachedLayout.sortedBy) &&
+      deepEqual(this.filterBy, cachedLayout.filterBy)
     )
   }
 

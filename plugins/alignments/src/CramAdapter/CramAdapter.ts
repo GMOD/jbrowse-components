@@ -254,8 +254,8 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         }
 
         if (readName) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           filtered = filtered.filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (record: any) => record.readName === readName,
           )
         }
