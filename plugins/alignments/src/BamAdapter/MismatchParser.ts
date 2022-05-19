@@ -232,27 +232,32 @@ export function getMismatches(
 // get relative reference sequence positions for positions given relative to
 // the read sequence
 export function* getNextRefPos(cigarOps: string[], positions: number[]) {
-  let cigarIdx = 0
   let readPos = 0
   let refPos = 0
-  console.log({ cigarOps, positions })
+  let currPos = 0
 
-  for (let i = 0; i < positions.length; i++) {
-    const pos = positions[i]
-    for (; cigarIdx < cigarOps.length && readPos < pos; cigarIdx += 2) {
-      const len = +cigarOps[cigarIdx]
-      const op = cigarOps[cigarIdx + 1]
-      if (op === 'S' || op === 'I') {
-        readPos += len
-      } else if (op === 'D' || op === 'N') {
-        refPos += len
-      } else if (op === 'M' || op === 'X' || op === '=') {
-        readPos += len
-        refPos += len
+  for (let i = 0; i < cigarOps.length && currPos < positions.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op === 'S' || op === 'I') {
+      for (let i = 0; i < len && currPos < positions.length; i++) {
+        if (positions[currPos] === readPos + i) {
+          currPos++
+        }
       }
+      readPos += len
+    } else if (op === 'D' || op === 'N') {
+      refPos += len
+    } else if (op === 'M' || op === 'X' || op === '=') {
+      for (let i = 0; i < len && currPos < positions.length; i++) {
+        if (positions[currPos] === readPos + i) {
+          yield refPos + i
+          currPos++
+        }
+      }
+      readPos += len
+      refPos += len
     }
-
-    yield pos - readPos + refPos
   }
 }
 export function getModificationPositions(
@@ -281,7 +286,7 @@ export function getModificationPositions(
     if (strand === '-') {
       console.warn('unsupported negative strand modifications')
       // make sure to return a somewhat matching type even in this case
-      return { type: 'unsupported', positions: [] }
+      result.push({ type: 'unsupported', positions: [] as number[] })
     }
 
     // this logic also based on parse_mm.pl from hts-specs is that in the

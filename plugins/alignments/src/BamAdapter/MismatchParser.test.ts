@@ -233,17 +233,17 @@ test('clipping', () => {
   ])
 })
 
-test('getNextRefPos basic', () => {
+test('getNextRefPos test 1', () => {
   const cigar = parseCigar('10S10M1I4M1D15M')
+  console.log({ cigar })
   const iter = getNextRefPos(cigar, [5, 10, 15, 20, 25, 30, 35])
-  const [...vals] = iter
-  expect(vals).toEqual([-5, 0, 5, 10, 14, 20, 25])
+  expect([...iter]).toEqual([0, 5, 15, 20, 25])
 })
-test('getNextRefPos with many indels', () => {
-  const cigar = parseCigar('10S4M1D1IM10')
+test('getNextRefPos test 2', () => {
+  const cigar = parseCigar('10S15M')
+  console.log({ cigar })
   const iter = getNextRefPos(cigar, [5, 10, 15])
-  const [...vals] = iter
-  expect(vals).toEqual([-5, 0, 5])
+  expect([...iter]).toEqual([0, 5])
 })
 
 test('getModificationPositions', () => {
