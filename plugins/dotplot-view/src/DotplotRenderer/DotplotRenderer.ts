@@ -200,8 +200,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               } else if (op === 'I') {
                 currY += val / vBpPerPx
               }
+              ctx.lineTo(currX, height - currY)
             }
-            ctx.lineTo(currX, height - currY)
             ctx.stroke()
           } else {
             ctx.beginPath()
