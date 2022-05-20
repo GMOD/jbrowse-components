@@ -330,6 +330,17 @@ These are loaded into a IndexedFastaAdapter as follows
 }
 ```
 
+#### FASTA Header Location
+
+Meta-information on the assembly can be specified by adding the following section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
+
+```json
+  "headerLocation": {
+    "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml",
+    "locationType": "UriLocation"
+  }
+```
+
 ### TwoBitAdapter
 
 The UCSC twoBit adapter is also supported. Note however that the 2bit format
