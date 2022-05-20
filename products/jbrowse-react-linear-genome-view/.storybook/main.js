@@ -6,7 +6,6 @@ module.exports = {
     '@storybook/addon-actions',
     '@storybook/addon-links',
     '@storybook/addon-docs',
-    '@storybook/preset-create-react-app',
   ],
 
   webpackFinal: async config => {

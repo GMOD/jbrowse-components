@@ -7,7 +7,6 @@ import { Tooltip } from '@jbrowse/plugin-wiggle'
 type Count = {
   [key: string]: {
     total: number
-    strands: { [key: string]: number }
   }
 }
 
@@ -18,6 +17,9 @@ type SNPInfo = {
   noncov: Count
   delskips: Count
   total: number
+  '-1': number
+  '0': number
+  '1': number
 }
 
 const en = (n: number) => n.toLocaleString('en-US')
@@ -50,33 +52,38 @@ const TooltipContents = React.forwardRef(
           <tbody>
             <tr>
               <td>Total</td>
-              <td>{total}</td>
+              <td>{info.total}</td>
+            </tr>
+            <tr>
+              <td>REF</td>
+              <td>{info.ref}</td>
+              <td>
+                {info['-1'] ? `${info['-1']}(-)` : ''}
+                {info['1'] ? `${info['1']}(+)` : ''}
+              </td>
               <td />
             </tr>
 
-            {Object.entries(info).map(([key, entry]) => {
-              return Object.entries(entry).map(([base, score]) => {
-                const { strands } = score
-                return (
-                  <tr key={base}>
-                    <td>{base.toUpperCase()}</td>
-                    <td>{score.total}</td>
-                    <td>
-                      {base === 'total' || base === 'skip'
-                        ? '---'
-                        : `${Math.floor(
-                            (score.total / (total || score.total || 1)) * 100,
-                          )}%`}
-                    </td>
-                    <td>
-                      {strands['-1'] ? `${strands['-1']}(-)` : ''}
-                      {strands['1'] ? `${strands['1']}(+)` : ''}
-                    </td>
-                    <td>{key}</td>
-                  </tr>
-                )
-              })
-            })}
+            {Object.entries(info).map(([key, entry]) =>
+              Object.entries(entry).map(([base, score]) => (
+                <tr key={base}>
+                  <td>{base.toUpperCase()}</td>
+                  <td>{score.total}</td>
+                  <td>
+                    {base === 'total' || base === 'skip'
+                      ? '---'
+                      : `${Math.floor(
+                          (score.total / (total || score.total || 1)) * 100,
+                        )}%`}
+                  </td>
+                  <td>
+                    {score['-1'] ? `${score['-1']}(-)` : ''}
+                    {score['1'] ? `${score['1']}(+)` : ''}
+                  </td>
+                  <td>{key}</td>
+                </tr>
+              )),
+            )}
           </tbody>
         </table>
       </div>

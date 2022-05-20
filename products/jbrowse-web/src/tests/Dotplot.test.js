@@ -1,6 +1,5 @@
 import React from 'react'
-import { cleanup, render, fireEvent } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
+import { render, fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -32,16 +31,15 @@ const delay = { timeout: 25000 }
 
 expect.extend({ toMatchImageSnapshot })
 setup()
-afterEach(cleanup)
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/${url}`))
-    }),
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/${url}`)),
+    ),
   )
 })
 

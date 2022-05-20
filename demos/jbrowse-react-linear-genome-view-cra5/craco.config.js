@@ -1,5 +1,4 @@
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
-const webpack = require('webpack')
 
 module.exports = {
   devServer: config => {
@@ -7,13 +6,10 @@ module.exports = {
     return config
   },
   webpack: {
-    target: 'node',
-
     plugins: [
       new NodePolyfillPlugin({
         excludeAliases: ['console'],
       }),
-      new webpack.ContextReplacementPlugin(/any-promise/),
     ],
     configure: {
       resolve: {

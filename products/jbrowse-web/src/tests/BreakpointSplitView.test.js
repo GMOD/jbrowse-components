@@ -1,7 +1,6 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { cleanup, render, waitFor } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -9,11 +8,7 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import breakpointConfig from '../../test_data/breakpoint/config.json'
 import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
 
-expect.extend({ toMatchImageSnapshot })
-
 setup()
-
-afterEach(cleanup)
 
 beforeEach(() => {
   clearCache()
@@ -26,24 +21,20 @@ beforeEach(() => {
   )
 })
 
-describe('breakpoint split view', () => {
-  it('open a split view', async () => {
-    console.warn = jest.fn()
-    const pluginManager = getPluginManager(breakpointConfig)
-    const { findByTestId, queryAllByTestId } = render(
-      <JBrowse pluginManager={pluginManager} />,
-    )
-    await waitFor(
-      () => {
-        const r = queryAllByTestId('r1')
-        expect(r.length).toBe(2)
-      },
-      { timeout: 10000 },
-    ) // the breakpoint could be partially loaded so explicitly wait for two items
-    expect(
-      await findByTestId('pacbio_hg002_breakpoints-loaded'),
-    ).toMatchSnapshot()
+test('breakpoint split view', async () => {
+  console.warn = jest.fn()
+  const pm = getPluginManager(breakpointConfig)
+  const { findByTestId, queryAllByTestId } = render(
+    <JBrowse pluginManager={pm} />,
+  )
+  // the breakpoint could be partially loaded so explicitly wait for two items
+  await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), {
+    timeout: 10000,
+  })
 
-    expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
-  }, 10000)
-})
+  expect(
+    await findByTestId('pacbio_hg002_breakpoints-loaded'),
+  ).toMatchSnapshot()
+
+  expect(await findByTestId('pacbio_vcf-loaded')).toMatchSnapshot()
+}, 10000)
