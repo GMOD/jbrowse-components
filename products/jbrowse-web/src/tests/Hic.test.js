@@ -1,5 +1,5 @@
 import React from 'react'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -14,7 +14,6 @@ import hicConfig from '../../../../extra_test_data/hic_integration_test.json'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
-afterEach(cleanup)
 
 hicConfig.configuration = {
   rpc: {

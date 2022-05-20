@@ -49,7 +49,7 @@
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.chains.paf.gz",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.cigar.paf.gz",
           "locationType": "UriLocation"
         },
         "assemblyNames": ["YJM1447", "R64"]

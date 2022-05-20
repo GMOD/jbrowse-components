@@ -1595,7 +1595,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                                     id="mui-21"
                                     type="number"
-                                    value="0"
+                                    value="0.7"
                                   />
                                   <fieldset
                                     aria-hidden="true"
@@ -1614,7 +1614,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-21-helper-text"
                                 >
-                                  the minimum width in px for a pileup mismatch feature. use for increasing mismatch marker widths when zoomed out to e.g. 1px or 0.5px
+                                  the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
                                 </p>
                               </div>
                             </div>

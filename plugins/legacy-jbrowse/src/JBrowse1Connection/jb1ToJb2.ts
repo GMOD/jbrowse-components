@@ -33,7 +33,9 @@ interface Jb2Adapter {
   bigWigLocation?: Jb2Location
   bigBedLocation?: Jb2Location
   vcfGzLocation?: Jb2Location
+  gffLocation?: Jb2Location
   gffGzLocation?: Jb2Location
+  gtfLocation?: Jb2Location
   bedGzLocation?: Jb2Location
   index?: { location: Jb2Location; indexType?: string }
   rootUrlTemplate?: Jb2Location
@@ -224,11 +226,14 @@ export function convertTrackConfig(
       )
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/GFF3') {
-      return generateUnsupportedTrackConf(
-        jb2TrackConfig.name,
-        `GFF3 (${urlTemplate})`,
-        jb2TrackConfig.category,
-      )
+      return {
+        ...jb2TrackConfig,
+        type: 'FeatureTrack',
+        adapter: {
+          type: 'Gff3Adapter',
+          gffLocation: { uri: urlTemplate, locationType: 'UriLocation' },
+        },
+      }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/BigBed') {
       return {
@@ -310,11 +315,14 @@ export function convertTrackConfig(
       }
     }
     if (storeClass === 'JBrowse/Store/SeqFeature/GTF') {
-      return generateUnsupportedTrackConf(
-        jb2TrackConfig.name,
-        `GTF (${urlTemplate})`,
-        jb2TrackConfig.category,
-      )
+      return {
+        ...jb2TrackConfig,
+        type: 'FeatureTrack',
+        adapter: {
+          type: 'GtfAdapter',
+          gtfLocation: { uri: urlTemplate, locationType: 'UriLocation' },
+        },
+      }
     }
     if (
       storeClass === 'JBrowse/Store/SeqFeature/StaticChunked' ||

@@ -183,7 +183,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       const fend = feature.get('end')
       const fstrand = feature.get('strand') as -1 | 0 | 1
 
-      for (let j = fstart; j < fend; j++) {
+      for (let j = fstart; j < fend + 1; j++) {
         const i = j - region.start
         if (i >= 0 && i < binMax) {
           if (bins[i] === undefined) {
@@ -211,6 +211,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
         const seq = feature.get('seq') as string
         const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
         const ops = parseCigar(feature.get('CIGAR'))
+        const fend = feature.get('end')
 
         getModificationPositions(mm, seq, fstrand).forEach(
           ({ type, positions }) => {
@@ -219,7 +220,13 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
               const epos = pos + fstart - region.start
               if (epos >= 0 && epos < bins.length && pos + fstart < fend) {
                 const bin = bins[epos]
-                inc(bin, fstrand, 'cov', mod)
+                if (bin) {
+                  inc(bin, fstrand, 'cov', mod)
+                } else {
+                  console.warn(
+                    'Undefined position in modifications snpcoverage encountered',
+                  )
+                }
               }
             }
           },
@@ -284,57 +291,50 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
       }
 
       // normal SNP based coloring
-      else {
-        const mismatches = feature.get('mismatches') as Mismatch[] | undefined
+      const mismatches = (feature.get('mismatches') as Mismatch[]) || []
+      const colorSNPs =
+        colorBy?.type !== 'modifications' && colorBy?.type !== 'methylation'
 
-        if (mismatches) {
-          for (let i = 0; i < mismatches.length; i++) {
-            const mismatch = mismatches[i]
-            const mstart = fstart + mismatch.start
-            for (let j = mstart; j < mstart + mismatchLen(mismatch); j++) {
-              const epos = j - region.start
-              if (epos >= 0 && epos < bins.length) {
-                const bin = bins[epos]
-                const { base, type } = mismatch
-                const interbase = isInterbase(type)
-                if (!interbase) {
-                  bin.ref--
-                  bin[fstrand]--
-                } else {
-                  inc(bin, fstrand, 'noncov', type)
-                }
+      for (let i = 0; i < mismatches.length; i++) {
+        const mismatch = mismatches[i]
+        const mstart = fstart + mismatch.start
+        const mlen = mismatchLen(mismatch)
+        const mend = mstart + mlen
+        for (let j = mstart; j < mstart + mlen; j++) {
+          const epos = j - region.start
+          if (epos >= 0 && epos < bins.length) {
+            const bin = bins[epos]
+            const { base, type } = mismatch
+            const interbase = isInterbase(type)
+            if (!interbase) {
+              bin.ref--
+              bin[fstrand]--
+            } else {
+              inc(bin, fstrand, 'noncov', type)
+            }
 
-                if (type === 'deletion' || type === 'skip') {
-                  inc(bin, fstrand, 'delskips', type)
-                  bin.total--
-                } else if (!interbase) {
-                  inc(bin, fstrand, 'cov', base)
-                }
-              }
+            if (type === 'deletion' || type === 'skip') {
+              inc(bin, fstrand, 'delskips', type)
+              bin.total--
+            } else if (!interbase && colorSNPs) {
+              inc(bin, fstrand, 'cov', base)
             }
           }
+        }
 
-          mismatches
-            .filter(mismatch => mismatch.type === 'skip')
-            .forEach(mismatch => {
-              const mstart = feature.get('start') + mismatch.start
-              const start = mstart
-              const end = mstart + mismatch.length
-              const strand = feature.get('strand')
-              const hash = `${start}_${end}_${strand}`
-              if (!skipmap[hash]) {
-                skipmap[hash] = {
-                  feature: feature,
-                  start,
-                  end,
-                  strand,
-                  xs: getTag(feature, 'XS') || getTag(feature, 'TS'),
-                  score: 1,
-                }
-              } else {
-                skipmap[hash].score++
-              }
-            })
+        if (mismatch.type === 'skip') {
+          const hash = `${mstart}_${mend}_${fstrand}`
+          if (skipmap[hash] === undefined) {
+            skipmap[hash] = {
+              feature: feature,
+              start: mstart,
+              end: mend,
+              strand: fstrand,
+              xs: getTag(feature, 'XS') || getTag(feature, 'TS'),
+              score: 0,
+            }
+          }
+          skipmap[hash].score++
         }
       }
     }

@@ -1,6 +1,6 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { cleanup, fireEvent, render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import StartScreen from '../StartScreen'
@@ -10,8 +10,6 @@ import { setup, getPluginManager } from './util'
 expect.extend({ toMatchImageSnapshot })
 
 setup()
-
-afterEach(cleanup)
 
 describe('<StartScreen />', () => {
   it('renders with an empty views config', async () => {

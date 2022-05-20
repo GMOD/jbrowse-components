@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-alignments",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -35,7 +35,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@gmod/bam": "^1.1.15",
-    "@gmod/cram": "^1.6.3",
+    "@gmod/cram": "^1.6.4",
     "@mui/icons-material": "^5.0.1",
     "color": "^3.1.2",
     "copy-to-clipboard": "^3.3.1",
