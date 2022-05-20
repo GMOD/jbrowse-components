@@ -28,12 +28,23 @@ export default class extends BaseSequenceAdapter {
     },
   })
 
+  private readHeader(headerLocation: FileLocation) {
+     if (headerLocation['uri'] == "/path/to/fa.header.yaml") {
+       return null
+     }
+
+     return fetch(headerLocation['uri'])
+      .then(response => response.text())
+      .then(data => { return data })
+  }
+
   public constructor(
     config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
+    const headerLocation = readConfObject(config, 'headerLocation')
     const fastaLocation = readConfObject(config, 'fastaLocation')
     const faiLocation = readConfObject(config, 'faiLocation')
     const fastaOpts = {
@@ -41,6 +52,7 @@ export default class extends BaseSequenceAdapter {
       fai: openLocation(faiLocation as FileLocation, this.pluginManager),
     }
 
+    this.header = this.readHeader(headerLocation as FileLocation)
     this.fasta = new IndexedFasta(fastaOpts)
   }
 
@@ -55,6 +67,10 @@ export default class extends BaseSequenceAdapter {
       start: 0,
       end: seqSizes[refName],
     }))
+  }
+
+  public getHeader(opts?: BaseOptions) {
+    return this.header
   }
 
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {

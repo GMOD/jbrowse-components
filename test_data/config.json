@@ -13,6 +13,10 @@
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz",
             "locationType": "UriLocation"
           },
+          "headerLocation": {
+            "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml",
+            "locationType": "UriLocation"
+          },
           "faiLocation": {
             "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai",
             "locationType": "UriLocation"
