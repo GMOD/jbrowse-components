@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import CalendarIcon from '@material-ui/icons/CalendarViewDay'
+import DynamicFeedIcon from '@material-ui/icons/DynamicFeed'
 import MultilevelLinearComparativeDisplayF from './MultilevelLinearComparativeDisplay'
 import MultilevelLinearComparativeViewF from './MultilevelLinearComparativeView'
 import MultilevelLinearDisplayF from './MultilevelLinearDisplay'
@@ -27,7 +27,7 @@ export default class extends Plugin {
     if (isAbstractMenuManager(pluginManager.rootModel)) {
       pluginManager.rootModel.appendToSubMenu(['Add'], {
         label: 'Linear multilevel view',
-        icon: CalendarIcon,
+        icon: DynamicFeedIcon,
         onClick: (session: AbstractSessionModel) => {
           session.addView('MultilevelLinearView', {})
         },

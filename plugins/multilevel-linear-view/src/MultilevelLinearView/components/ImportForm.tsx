@@ -128,6 +128,7 @@ const ImportForm = observer(
                 offsetPx: 0,
                 hasCustomHeader: true,
                 hideControls: true,
+                isImportFormDisabled: true,
                 hasCustomMiniControls: true,
                 displayedRegions: assembly.regions,
               }

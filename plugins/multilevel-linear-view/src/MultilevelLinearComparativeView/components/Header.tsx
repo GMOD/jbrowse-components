@@ -19,9 +19,9 @@ const LinkViews = observer(({ model }: { model: LCV }) => {
       title="Toggle linked scrolls and behavior across views"
     >
       {model.linkViews ? (
-        <LinkIcon color="secondary" />
-      ) : (
         <LinkOffIcon color="secondary" />
+      ) : (
+        <LinkIcon color="secondary" />
       )}
     </IconButton>
   )
@@ -46,7 +46,8 @@ const Header = observer(
 
     return (
       <div>
-        {model.initialized && model.views[model.anchorViewIndex].initialized ? (
+        {model?.initialized &&
+        model?.views[model.anchorViewIndex]?.initialized ? (
           <div
             style={{
               gridArea: '1/1/auto/span 2',

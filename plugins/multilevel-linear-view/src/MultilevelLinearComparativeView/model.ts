@@ -1,15 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
 import { transaction } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import {
   addDisposer,
   cast,
@@ -22,9 +11,21 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import MenuIcon from '@material-ui/icons/Menu'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { MenuItem } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
+
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
@@ -49,12 +50,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         views: types.array(
           pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
-        ),
-        // this represents tracks specific to this view specifically used for
-        // read vs ref dotplots where this track would not really apply
-        // elsewhere
-        viewTrackConfigs: types.array(
-          pluginManager.pluggableConfigSchemaType('track'),
         ),
       }),
     )
@@ -261,23 +256,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.linkViews = !self.linkViews
       },
 
-      activateTrackSelector() {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-            session.showWidget(selector)
-            return selector
-          }
-          return undefined
-        }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
-      },
-
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
@@ -322,6 +300,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return shownTracks.length
       },
       alignViews() {
+        console.log(self.anchorViewIndex)
         self.views.forEach(view => {
           const center = self.views[self.anchorViewIndex].pxToBp(view.width / 2)
           const targetBp = view.bpPerPx
@@ -347,11 +326,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
           icon: FolderOpenIcon,
         })
-        menuItems.push({
-          label: 'Open track selector',
-          onClick: self.activateTrackSelector,
-          icon: TrackSelectorIcon,
+        const subMenuItems: MenuItem[] = []
+        self.views.forEach((view, idx) => {
+          if (view.menuItems?.()) {
+            const label = view.displayName
+              ? `${view.displayName} Menu`
+              : `View ${idx + 1} Menu`
+            subMenuItems.push({
+              label: label,
+              subMenu: view.menuItems(),
+            })
+          }
         })
+        if (subMenuItems.length > 0) {
+          menuItems.push({
+            label: 'View Menus',
+            subMenu: subMenuItems,
+            icon: MenuIcon,
+          })
+        }
         return menuItems
       },
     }))

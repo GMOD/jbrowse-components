@@ -135,6 +135,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           upperLimit: 1,
           lowerLimit: 0,
         }),
+        isImportFormDisabled: false,
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
           'hierarchical',
@@ -489,6 +490,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleVisible() {
         self.isVisible = !self.isVisible
+      },
+      toggleIsImportformDisabled() {
+        self.isImportFormDisabled = !self.isImportFormDisabled
       },
 
       toggleHeaderOverview() {
@@ -1195,6 +1199,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               ])
             },
             icon: FolderOpenIcon,
+            disabled: self.isImportFormDisabled,
           },
           {
             label: 'Export SVG',
