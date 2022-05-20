@@ -118,8 +118,12 @@ interface LayoutFeature {
   feature: Feature
 }
 
-function shouldDrawMismatches(type?: string) {
+function shouldDrawSNPs(type?: string) {
   return !['methylation', 'modifications'].includes(type || '')
+}
+
+function shouldDrawIndels(type?: string) {
+  return true
 }
 
 export default class PileupRenderer extends BoxRendererType {
@@ -475,15 +479,14 @@ export default class PileupRenderer extends BoxRendererType {
     const seq = feature.get('seq')
     const strand = feature.get('strand')
     const cigarOps = parseCigar(cigar)
-    const { start: rstart, end: rend } = region
 
-    const methBins = new Array(rend - rstart).fill(0)
+    const methBins = new Array(region.end - region.start).fill(0)
     const modifications = getModificationPositions(mm, seq, strand)
     for (let i = 0; i < modifications.length; i++) {
       const { type, positions } = modifications[i]
       if (type === 'm' && positions) {
         for (const pos of getNextRefPos(cigarOps, positions)) {
-          const epos = pos + fstart - rstart
+          const epos = pos + fstart - region.start
           if (epos >= 0 && epos < methBins.length) {
             methBins[epos] = 1
           }
@@ -492,7 +495,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
 
     for (let j = fstart; j < fend; j++) {
-      const i = j - rstart
+      const i = j - region.start
       if (i >= 0 && i < methBins.length) {
         const l1 = regionSequence[i].toLowerCase()
         const l2 = regionSequence[i + 1].toLowerCase()
@@ -500,13 +503,9 @@ export default class PileupRenderer extends BoxRendererType {
         // if we are zoomed out, display just a block over the cpg
         if (bpPerPx > 2) {
           if (l1 === 'c' && l2 === 'g') {
-            const s = rstart + i
+            const s = region.start + i
             const [leftPx, rightPx] = bpSpanPx(s, s + 2, region, bpPerPx)
-            if (methBins[i] || methBins[i + 1]) {
-              ctx.fillStyle = 'red'
-            } else {
-              ctx.fillStyle = 'blue'
-            }
+            ctx.fillStyle = methBins[i] || methBins[i + 1] ? 'red' : 'blue'
             ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
           }
         }
@@ -514,21 +513,13 @@ export default class PileupRenderer extends BoxRendererType {
         else {
           // color
           if (l1 === 'c' && l2 === 'g') {
-            const s = rstart + i
+            const s = region.start + i
             const [leftPx, rightPx] = bpSpanPx(s, s + 1, region, bpPerPx)
-            if (methBins[i]) {
-              ctx.fillStyle = 'red'
-            } else {
-              ctx.fillStyle = 'blue'
-            }
+            ctx.fillStyle = methBins[i] ? 'red' : 'blue'
             ctx.fillRect(leftPx, topPx, rightPx - leftPx + 0.5, heightPx)
 
             const [leftPx2, rightPx2] = bpSpanPx(s + 1, s + 2, region, bpPerPx)
-            if (methBins[i + 1]) {
-              ctx.fillStyle = 'red'
-            } else {
-              ctx.fillStyle = 'blue'
-            }
+            ctx.fillStyle = methBins[i + 1] ? 'red' : 'blue'
             ctx.fillRect(leftPx2, topPx, rightPx2 - leftPx2 + 0.5, heightPx)
           }
         }
@@ -969,7 +960,10 @@ export default class PileupRenderer extends BoxRendererType {
     const { layout, config, showSoftClip, colorBy, theme: configTheme } = props
     const mismatchAlpha = readConfObject(config, 'mismatchAlpha')
     const minSubfeatureWidth = readConfObject(config, 'minSubfeatureWidth')
-    const insertScale = readConfObject(config, 'largeInsertionIndicatorScale')
+    const largeInsertionIndicatorScale = readConfObject(
+      config,
+      'largeInsertionIndicatorScale',
+    )
     const defaultColor = readConfObject(config, 'color') === '#f0f'
 
     const theme = createJBrowseTheme(configTheme)
@@ -984,7 +978,8 @@ export default class PileupRenderer extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
 
     const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
-    const drawMismatches = shouldDrawMismatches(colorBy?.type)
+    const drawSNPs = shouldDrawSNPs(colorBy?.type)
+    const drawIndels = shouldDrawIndels(colorBy?.type)
     for (let i = 0; i < layoutRecords.length; i++) {
       const feat = layoutRecords[i]
       if (feat === null) {
@@ -1001,9 +996,9 @@ export default class PileupRenderer extends BoxRendererType {
       })
       this.drawMismatches(ctx, feat, props, {
         mismatchAlpha,
-        drawSNPs: drawMismatches,
-        drawIndels: drawMismatches,
-        largeInsertionIndicatorScale: insertScale,
+        drawSNPs,
+        drawIndels,
+        largeInsertionIndicatorScale,
         minSubfeatureWidth,
         charWidth,
         charHeight,
