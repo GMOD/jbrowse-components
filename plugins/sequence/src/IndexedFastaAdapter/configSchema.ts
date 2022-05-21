@@ -14,8 +14,11 @@ export default ConfigurationSchema(
     headerLocation: {
       description: 'Optional header file',
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/fa.header.yaml', locationType: 'UriLocation'}
-    }
+      defaultValue: {
+        uri: '/path/to/fa.header.yaml',
+        locationType: 'UriLocation',
+      },
+    },
   },
   { explicitlyTyped: true },
 )
