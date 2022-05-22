@@ -137,4 +137,4 @@ test('looks at about this track dialog', async () => {
   fireEvent.click(await findByTestId('track_menu_icon', {}, waitForOptions))
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, waitForOptions)
-}, 15000)f
+}, 15000)
