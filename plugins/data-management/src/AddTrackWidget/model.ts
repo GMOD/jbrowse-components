@@ -82,7 +82,7 @@ export default function f(pluginManager: PluginManager) {
         self.indexTrackData = undefined
         self.trackData = undefined
         self.textIndexingConf = undefined
-        self.textIndexTrack = false
+        self.textIndexTrack = true
       },
     }))
     .views(self => ({
