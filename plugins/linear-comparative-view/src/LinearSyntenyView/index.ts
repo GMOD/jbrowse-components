@@ -5,9 +5,13 @@ import modelFactory from './model'
 export default (pluginManager: PluginManager) => {
   const { jbrequire } = pluginManager
   const ViewType = jbrequire('@jbrowse/core/pluggableElementTypes/ViewType')
-  return new ViewType({
-    name: 'LinearSyntenyView',
-    stateModel: jbrequire(modelFactory),
-    ReactComponent: lazy(() => import('./components/LinearSyntenyView')),
-  })
+
+  pluginManager.addViewType(
+    () =>
+      new ViewType({
+        name: 'LinearSyntenyView',
+        stateModel: jbrequire(modelFactory),
+        ReactComponent: lazy(() => import('./components/LinearSyntenyView')),
+      }),
+  )
 }

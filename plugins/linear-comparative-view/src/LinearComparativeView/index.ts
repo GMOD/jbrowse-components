@@ -1,12 +1,18 @@
 import { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
-import modelFactory from './model'
+import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+import stateModelFactory from './model'
 
-export default ({ jbrequire }: PluginManager) => {
-  const ViewType = jbrequire('@jbrowse/core/pluggableElementTypes/ViewType')
-  return new ViewType({
-    name: 'LinearComparativeView',
-    stateModel: jbrequire(modelFactory),
-    ReactComponent: lazy(() => import('./components/LinearComparativeView')),
-  })
+export default (pluginManager: PluginManager) => {
+  const stateModel = stateModelFactory(pluginManager)
+  pluginManager.addViewType(
+    () =>
+      new ViewType({
+        name: 'LinearComparativeView',
+        stateModel,
+        ReactComponent: lazy(
+          () => import('./components/LinearComparativeView'),
+        ),
+      }),
+  )
 }

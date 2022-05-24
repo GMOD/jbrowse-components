@@ -7,9 +7,7 @@ import {
   getContainingTrack,
   isAbstractMenuManager,
 } from '@jbrowse/core/util'
-import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 import AddIcon from '@material-ui/icons/Add'
 import CalendarIcon from '@material-ui/icons/CalendarViewDay'
@@ -18,64 +16,63 @@ import LinearComparativeViewF from './LinearComparativeView'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay'
 import LinearSyntenyRendererF from './LinearSyntenyRenderer'
 import LinearSyntenyViewF from './LinearSyntenyView'
+import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import SyntenyTrackF from './SyntenyTrack'
 import { WindowSizeDlg } from './ReadVsRef'
+
+function isDisplay(elt: { name: string }): elt is DisplayType {
+  return elt.name === 'LinearPileupDisplay'
+}
 
 export default class extends Plugin {
   name = 'LinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addViewType(() =>
-      pluginManager.jbrequire(LinearComparativeViewF),
-    )
-    pluginManager.addViewType(() => pluginManager.jbrequire(LinearSyntenyViewF))
+    LinearSyntenyViewF(pluginManager)
+    LinearComparativeViewF(pluginManager)
     LinearSyntenyRendererF(pluginManager)
     LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)
+    LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',
       (pluggableElement: PluggableElementType) => {
-        if (pluggableElement.name === 'LinearPileupDisplay') {
-          const { stateModel } = pluggableElement as ViewType
-          const newStateModel = stateModel.extend(
-            (self: LinearPileupDisplayModel) => {
-              const superContextMenuItems = self.contextMenuItems
-              return {
-                views: {
-                  contextMenuItems() {
-                    const feature = self.contextMenuFeature
-                    if (!feature) {
-                      return superContextMenuItems()
-                    }
-                    const newMenuItems = [
-                      ...superContextMenuItems(),
-                      {
-                        label: 'Linear read vs ref',
-                        icon: AddIcon,
-                        onClick: () => {
-                          getSession(self).queueDialog(doneCallback => [
-                            WindowSizeDlg,
-                            {
-                              track: getContainingTrack(self),
-                              feature,
-                              handleClose: doneCallback,
-                            },
-                          ])
-                        },
-                      },
-                    ]
-
-                    return newMenuItems
-                  },
-                },
-              }
-            },
-          )
-
-          ;(pluggableElement as DisplayType).stateModel = newStateModel
+        if (!isDisplay(pluggableElement)) {
+          return pluggableElement
         }
+        pluggableElement.stateModel = pluggableElement.stateModel.extend(
+          self => {
+            const superContextMenuItems = self.contextMenuItems
+            return {
+              views: {
+                contextMenuItems() {
+                  const feature = self.contextMenuFeature
+                  return feature
+                    ? [
+                        ...superContextMenuItems(),
+                        {
+                          label: 'Linear read vs ref',
+                          icon: AddIcon,
+                          onClick: () => {
+                            getSession(self).queueDialog(handleClose => [
+                              WindowSizeDlg,
+                              {
+                                track: getContainingTrack(self),
+                                feature,
+                                handleClose,
+                              },
+                            ])
+                          },
+                        },
+                      ]
+                    : superContextMenuItems()
+                },
+              },
+            }
+          },
+        )
         return pluggableElement
       },
     )
