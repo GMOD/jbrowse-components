@@ -42,6 +42,8 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         ),
       )
 
+      await Promise.all(model.views.map(view => when(() => view.initialized)))
+
       const idsNotFound = [] as string[]
       for (let i = 0; i < views.length; i++) {
         const view = model.views[i]

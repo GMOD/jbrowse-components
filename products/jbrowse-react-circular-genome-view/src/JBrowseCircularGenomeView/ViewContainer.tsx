@@ -98,7 +98,6 @@ const ViewContainer = observer(
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
-      console.log(width, isAlive(view), padWidth)
       if (width && isAlive(view)) {
         view.setWidth(width - padWidth * 2)
       }
