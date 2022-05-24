@@ -28,8 +28,11 @@ export default class extends Plugin {
   name = 'LinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
-    LinearSyntenyViewF(pluginManager)
-    LinearComparativeViewF(pluginManager)
+    pluginManager.addViewType(() =>
+      pluginManager.jbrequire(LinearComparativeViewF),
+    )
+    pluginManager.addViewType(() => pluginManager.jbrequire(LinearSyntenyViewF))
+
     LinearSyntenyRendererF(pluginManager)
     LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)

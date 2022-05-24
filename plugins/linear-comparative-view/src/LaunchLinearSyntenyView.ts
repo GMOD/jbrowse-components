@@ -1,57 +1,58 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 import { when } from 'mobx'
 
 type LGV = LinearGenomeViewModel
+type LSV = LinearSyntenyViewModel
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearSyntenyView',
     // @ts-ignore
-    async ({
-      session,
-      assembly,
-      loc,
-      tracks = [],
-    }: {
+    async (props: {
       session: AbstractSessionModel
-      assembly?: string
-      loc: string
+      views: { loc: string; assembly: string; tracks?: string[] }[]
       tracks?: string[]
     }) => {
+      const { session, views, tracks = [] } = props
       const { assemblyManager } = session
-      const view = session.addView('LinearGenomeView', {}) as LGV
+      const model = session.addView('LinearSyntenyView', {}) as LSV
 
-      await when(() => !!view.volatileWidth)
+      await when(() => !!model.width)
 
-      if (!assembly) {
-        throw new Error(
-          'No assembly provided when launching linear genome view',
-        )
-      }
-
-      const asm = await assemblyManager.waitForAssembly(assembly)
-      if (!asm) {
-        throw new Error(
-          `Assembly "${assembly}" not found when launching linear genome view`,
-        )
-      }
-
-      view.navToLocString(loc, assembly)
+      model.setViews(
+        await Promise.all(
+          views.map(async view => {
+            const assembly = await assemblyManager.waitForAssembly(
+              view.assembly,
+            )
+            if (!assembly) {
+              throw new Error(`Assembly ${view.assembly} failed to load`)
+            }
+            return {
+              type: 'LinearGenomeView' as const,
+              bpPerPx: 1,
+              offsetPx: 0,
+              hideHeader: true,
+              displayedRegions: assembly.regions,
+            }
+          }),
+        ),
+      )
 
       const idsNotFound = [] as string[]
-      tracks.forEach(track => {
-        try {
-          view.showTrack(track)
-        } catch (e) {
-          if (`${e}`.match('Could not resolve identifier')) {
-            idsNotFound.push(track)
-          } else {
-            throw e
-          }
-        }
-      })
+      for (let i = 0; i < views.length; i++) {
+        const view = model.views[i]
+        const { loc, tracks = [] } = views[i]
+
+        view.navToLocString(loc)
+        tracks.forEach(track => tryTrack(view, track, idsNotFound))
+      }
+
+      tracks.forEach(track => tryTrack(model, track, idsNotFound))
+
       if (idsNotFound.length) {
         throw new Error(
           `Could not resolve identifiers: ${idsNotFound.join(',')}`,
@@ -59,4 +60,16 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
       }
     },
   )
+}
+
+function tryTrack(model: LSV | LGV, trackId: string, idsNotFound: string[]) {
+  try {
+    model.showTrack(trackId)
+  } catch (e) {
+    if (`${e}`.match('Could not resolve identifier')) {
+      idsNotFound.push(trackId)
+    } else {
+      throw e
+    }
+  }
 }
