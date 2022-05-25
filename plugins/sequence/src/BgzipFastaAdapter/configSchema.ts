@@ -15,7 +15,7 @@ export default ConfigurationSchema(
       },
     },
     headerLocation: {
-      description: 'Optional header file',
+      description: 'Optional header metadata file. Specification can be found here: https://github.com/FFRGS/FFRGS-Specification',
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/fa.header.yaml',
