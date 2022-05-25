@@ -57,7 +57,7 @@ export default class extends BaseSequenceAdapter {
     }))
   }
 
-  public getHeader(opts?: BaseOptions) {
+  public async getHeader(opts?: BaseOptions) {
     if (this.header != null) {
       return this.header
     }
