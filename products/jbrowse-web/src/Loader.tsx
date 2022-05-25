@@ -2,7 +2,7 @@ import React, { lazy, useEffect, useState, Suspense } from 'react'
 import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { inDevelopment } from '@jbrowse/core/util'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import {
   StringParam,
   QueryParamProvider,
@@ -406,7 +406,7 @@ const Renderer = observer(
   },
 )
 
-const PlatformSpecificFatalErrorDialog = (props: unknown) => {
+const PlatformSpecificFatalErrorDialog = (props: FallbackProps) => {
   return (
     <FatalErrorDialog
       resetButtonText="Reset Session"
