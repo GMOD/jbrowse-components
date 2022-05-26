@@ -9,14 +9,32 @@ import { checkAbortSignal } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { getFetcher, resolveUriLocation } from '@jbrowse/core/util/io'
 
-export default class NCListAdapter extends BaseFeatureDataAdapter {
-  // constructor(
-  //   config: Instance<typeof MyConfigSchema>,
-  //   getSubAdapter?: getSubAdapterType,
-  //   pluginManager?: PluginManager,
-  // ) {
-  //   super(config, getSubAdapter, pluginManager)
-  // }
+import type { Instance } from 'mobx-state-tree'
+import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import type MyConfigSchema from './configSchema'
+import type PluginManager from '@jbrowse/core/PluginManager'
+export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
+
+  pluginManager: PluginManager
+  configuration: Instance<typeof MyConfigSchema>
+
+  constructor(
+    config: Instance<typeof MyConfigSchema>,
+    getSubAdapter?: getSubAdapterType,
+    pluginManager?: PluginManager,
+  ) {
+    if(!pluginManager) {
+      throw new Error('no pluginmanager provided')
+    }
+
+    if(!config) {
+      throw new Error('no config provided')
+    }
+
+    super(config, getSubAdapter, pluginManager) 
+    this.configuration = config
+    this.pluginManager = pluginManager
+  }
 
   /**
    * Fetch features for a certain region. Use getFeaturesInRegion() if you also
@@ -29,21 +47,10 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { signal } = opts
-      
-      if(!this.pluginManager) {throw new Error('no pluginmanager provided')}
-      const fetch = getFetcher(getConf(this.config, 'location'), this.pluginManager)
-
-      let baseLocation = getConf(this.config, 'location') as FileLocation
-      if (!isUriLocation(baseLocation)) {throw new Error('invalid location'+baseLocation)}
-      baseLocation = resolveUriLocation(baseLocation)
-
     
-      const result = await fetch(new URL('features/'+region.refName, baseLocation.uri).toString())
-      if(!result.ok) {throw new Error(await result.text())}
+      const result = await this.fetchJsonFromRestApi('features/'+region.refName+'?start='+region.start+'&end='+region.end, signal)
 
-      const parsed = (await result.json()) as { features: Record<string, unknown>[] }
-
-      for(const feature of parsed.features) {
+      for(const feature of result.features) {
         checkAbortSignal(signal)
         // regularize uniqueID -> uniqueId
         if(feature.uniqueID) {
@@ -60,11 +67,44 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     })
   }
 
+  private async fetchFromRestApi(relativeUrl: string, signal?: AbortSignal) {
+    const fetcher = getFetcher(getConf(this, 'location'), this.pluginManager)
+
+    let baseLocation = getConf(this, 'location') as FileLocation
+    if (!isUriLocation(baseLocation)) {
+      throw new Error('invalid location '+baseLocation)
+    }
+    baseLocation = resolveUriLocation(baseLocation)
+
+    const url = baseLocation.uri + '/' + relativeUrl
+    return this.fetch(fetcher, url, signal)
+  }
+
+  private async fetchJsonFromRestApi(relativeUrl: string, signal?: AbortSignal)  {
+    const result = await this.fetchFromRestApi(relativeUrl, signal)
+    try {
+      return await result.json()
+    } catch(e) {
+      throw new Error(`invalid response from REST API call ${relativeUrl}: ${e}`)
+    }
+  }
+
+  private async fetch(fetcher: ReturnType<typeof getFetcher>, url: RequestInfo, signal?: AbortSignal) {
+    const result = await fetcher(url, { signal })
+    if(!result.ok) {throw new Error(await result.text())}
+    return result
+  }
+  
   /*
    * @return Promise<string[]> of empty list
    */
-  getRefNames() {
-    return Promise.resolve([])
+  async getRefNames(opts?: BaseOptions) {
+    const result = await this.fetchFromRestApi('reference_sequences', opts?.signal)
+    const json = await result.json()
+    if (!Array.isArray(json)) {
+      throw new Error('invalid reference_sequences API response, the response must be a JSON array of string reference sequence names')
+    }
+    return json
   }
 
   /**

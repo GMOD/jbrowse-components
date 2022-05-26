@@ -12,7 +12,13 @@ export default ConfigurationSchema(
     },
     query: {
       description: 'additional URL query values to pass to the REST endpoint',
-      type: 'frozen'
+      type: 'frozen',
+      defaultValue: {}
+    },
+    unimplemented: {
+      description: 'list of REST methods that are not implemented by this REST endpoint',
+      type: 'stringArray',
+      defaultValue: []
     }
   },
   { explicitlyTyped: true },

@@ -1,6 +1,4 @@
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
-import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'

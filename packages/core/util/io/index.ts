@@ -35,7 +35,7 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
 }
 
 
-/** resolve a possibly relative URI location to an absolute one */
+/** if a UriLocation has a baseUri, resolves its uri with respect to that base */
 export function resolveUriLocation(location: UriLocation) {
   return location.baseUri
   ? { ...location, uri: new URL(location.uri, location.baseUri).href }
