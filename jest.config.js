@@ -25,7 +25,7 @@ module.exports = {
     // most packages have their src in src/, except for jbrowse-core
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
-  coveragePathIgnorePatterns: ['!*.d.ts'],
+  coveragePathIgnorePatterns: ['!*.d.ts', 'makeWorkerInstance.ts'],
   setupFiles: [
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
