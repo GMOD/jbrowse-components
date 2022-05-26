@@ -48,6 +48,13 @@ export function isHTML(str: string) {
 export default function SanitizedHTML({ html }: { html: string }) {
   const value = isHTML(html) ? html : escapeHTML(html)
 
-  // eslint-disable-next-line react/no-danger
-  return <div dangerouslySetInnerHTML={{ __html: dompurify.sanitize(value) }} />
+  return (
+    <div
+      // eslint-disable-next-line react/no-danger
+      dangerouslySetInnerHTML={{
+        // see https://github.com/cure53/DOMPurify/issues/317
+        __html: dompurify.sanitize(value, { ADD_ATTR: ['target'] }),
+      }}
+    />
+  )
 }
