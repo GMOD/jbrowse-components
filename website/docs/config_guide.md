@@ -335,7 +335,7 @@ These are loaded into a IndexedFastaAdapter as follows
 Meta-information on the assembly can be specified by adding the following section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration. The FFRGS (Fair Formatted Reference Genome Standard) header specification for FASTA files can be found [here](https://github.com/FFRGS/FFRGS-Specification).
 
 ```json
-  "headerLocation": {
+  "metadataLocation": {
     "uri": "https://raw.githubusercontent.com/FFRGS/FFRGS-Specification/main/examples/example.yaml",
     "locationType": "UriLocation"
   }

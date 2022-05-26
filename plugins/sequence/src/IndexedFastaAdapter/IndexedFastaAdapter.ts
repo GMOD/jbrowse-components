@@ -63,13 +63,13 @@ export default class extends BaseSequenceAdapter {
     }
 
     if (
-      !('headerLocation' in opts.adapterConfig) ||
-      opts.adapterConfig.headerLocation['uri'] === '/path/to/fa.header.yaml'
+      !('metadataLocation' in opts.adapterConfig) ||
+      opts.adapterConfig.metadataLocation['uri'] === '/path/to/fa.header.yaml'
     ) {
       return null
     }
 
-    this.header = openLocation(opts.adapterConfig.headerLocation).readFile(
+    this.header = openLocation(opts.adapterConfig.metadataLocation).readFile(
       'utf8',
     )
 

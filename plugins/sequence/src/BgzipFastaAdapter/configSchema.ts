@@ -14,7 +14,7 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-    headerLocation: {
+    metadataLocation: {
       description:
         'Optional header metadata file. Specification can be found here: https://github.com/FFRGS/FFRGS-Specification',
       type: 'fileLocation',
