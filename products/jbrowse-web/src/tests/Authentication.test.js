@@ -108,7 +108,7 @@ test('opens a bigwig track that needs external token authentication', async () =
     await findByTestId('htsTrackEntry-volvox_microarray_externaltoken'),
   )
   const { findByText: findByTextWithin } = within(
-    await findByTestId('externalToken-form'),
+    await findByTestId('externalToken-form', {}, delay),
   )
   fireEvent.change(await findByTestId('entry-externalToken'), {
     target: { value: 'testentry' },
