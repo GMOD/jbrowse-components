@@ -3,6 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 import PAFAdapterF from './PAFAdapter'
+import MAFAdapterF from './MAFAdapter'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter'
 import MashMapAdapterF from './MashMapAdapter'
@@ -20,6 +21,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     PAFAdapterF(pluginManager)
+    MAFAdapterF(pluginManager)
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)

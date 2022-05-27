@@ -1,0 +1,104 @@
+{
+  "assemblies": [
+    {
+      "name": "VC2010",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "VC2010-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_elegans.PRJEB28388.WS284.genomic.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_elegans.PRJEB28388.WS284.genomic.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_elegans.PRJEB28388.WS284.genomic.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "N2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "N2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_elegans.PRJNA13758.WS278.genomic.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_elegans.PRJNA13758.WS278.genomic.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_elegans.PRJNA13758.WS278.genomic.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "N2_to_VC2010.maf",
+      "name": "N2_to_VC2010.maf",
+      "assemblyNames": ["VC2010", "N2"],
+      "adapter": {
+        "type": "MAFAdapter",
+        "assemblyNames": ["VC2010", "N2"],
+        "mafLocation": {
+          "uri": "N2_to_VC2010.maf.gz"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "VC2010_vs_N2.paf",
+      "name": "VC2010_vs_N2.paf",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "VC2010_vs_N2.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "queryAssembly": "VC2010",
+        "targetAssembly": "N2"
+      },
+      "assemblyNames": ["VC2010", "N2"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "N2_genes",
+      "name": "N2_genes",
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://s3.amazonaws.com/agrjbrowse/MOD-jbrowses/WormBase/WS284/c_elegans_PRJNA13758/tracks/Curated Genes (protein coding)/{refseq}/trackData.jsonz",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["N2"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "VC2010_genes",
+      "name": "VC2010_genes",
+      "adapter": {
+        "type": "NCListAdapter",
+        "rootUrlTemplate": {
+          "uri": "https://s3.amazonaws.com/agrjbrowse/MOD-jbrowses/WormBase/WS284/c_elegans_PRJEB28388/tracks/Curated Genes (protein coding)/{refseq}/trackData.jsonz",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["VC2010"]
+    }
+  ]
+}
