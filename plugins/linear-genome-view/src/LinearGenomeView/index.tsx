@@ -125,17 +125,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         hideHeader: false,
-        hideControls: false,
-        hasCustomMiniControls: false,
-        hasCustomHeader: false,
-        isVisible: true,
         hideHeaderOverview: false,
-        limitBpPerPx: types.optional(types.frozen(), {
-          limited: false,
-          upperLimit: 1,
-          lowerLimit: 0,
-        }),
-        isImportFormDisabled: false,
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
           'hierarchical',
@@ -465,36 +455,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setError(error: Error | undefined) {
         self.volatileError = error
       },
-      setCustomMiniControls(flag: boolean) {
-        self.hasCustomMiniControls = flag
-      },
-      setHasCustomHeader(flag: boolean) {
-        self.hasCustomHeader = flag
-      },
-      setLimitBpPerPx(
-        limited: boolean,
-        upperLimit?: number,
-        lowerLimit?: number,
-      ) {
-        self.limitBpPerPx = {
-          limited: limited,
-          upperLimit: upperLimit ? upperLimit : self.limitBpPerPx.upperLimit,
-          lowerLimit: lowerLimit ? lowerLimit : self.limitBpPerPx.lowerLimit,
-        }
-      },
       toggleHeader() {
         self.hideHeader = !self.hideHeader
       },
-      toggleControls() {
-        self.hideControls = !self.hideControls
-      },
-      toggleVisible() {
-        self.isVisible = !self.isVisible
-      },
-      toggleIsImportformDisabled() {
-        self.isImportFormDisabled = !self.isImportFormDisabled
-      },
-
       toggleHeaderOverview() {
         self.hideHeaderOverview = !self.hideHeaderOverview
       },
@@ -506,34 +469,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       zoomTo(bpPerPx: number) {
-        if (
-          !self.limitBpPerPx.limited ||
-          (bpPerPx <= self.limitBpPerPx.upperLimit &&
-            bpPerPx >= self.limitBpPerPx.lowerLimit)
-        ) {
-          const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
-          if (newBpPerPx === self.bpPerPx) {
-            return newBpPerPx
-          }
-          const oldBpPerPx = self.bpPerPx
-          self.bpPerPx = newBpPerPx
-
-          if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-            console.warn('zoomTo bpPerPx rounding error')
-            return oldBpPerPx
-          }
-
-          // tweak the offset so that the center of the view remains at the same coordinate
-          const viewWidth = self.width
-          this.scrollTo(
-            Math.round(
-              ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
-                viewWidth / 2,
-            ),
-          )
+        const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
+        if (newBpPerPx === self.bpPerPx) {
           return newBpPerPx
         }
-        return self.bpPerPx
+        const oldBpPerPx = self.bpPerPx
+        self.bpPerPx = newBpPerPx
+
+        if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+          console.warn('zoomTo bpPerPx rounding error')
+          return oldBpPerPx
+        }
+
+        // tweak the offset so that the center of the view remains at the same coordinate
+        const viewWidth = self.width
+        this.scrollTo(
+          Math.round(
+            ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
+              viewWidth / 2,
+          ),
+        )
+        return newBpPerPx
       },
 
       setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
@@ -1199,7 +1155,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               ])
             },
             icon: FolderOpenIcon,
-            disabled: self.isImportFormDisabled,
           },
           {
             label: 'Export SVG',
@@ -1240,15 +1195,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
             type: 'checkbox',
             checked: !self.hideHeader,
             onClick: self.toggleHeader,
-            disabled: !self.isVisible,
-          },
-          {
-            label: 'Show controls',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: !self.hideControls,
-            onClick: self.toggleControls,
-            disabled: !self.isVisible,
           },
           {
             label: 'Show header overview',

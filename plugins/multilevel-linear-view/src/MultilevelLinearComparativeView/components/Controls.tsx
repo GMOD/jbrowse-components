@@ -11,12 +11,12 @@ import {
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 
+import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
 import { MultilevelLinearComparativeViewModel } from '../model'
 
 type LCV = MultilevelLinearComparativeViewModel
-type LGV = LinearGenomeViewModel
+type LGV = LinearGenomeMultilevelViewModel
 
 const WIDGET_HEIGHT = 32
 const SPACING = 7

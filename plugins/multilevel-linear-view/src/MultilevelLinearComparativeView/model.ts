@@ -48,7 +48,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
+          pluginManager.getViewType('LinearGenomeMultilevelView')
             .stateModel as LinearGenomeViewStateModel,
         ),
       }),
@@ -81,9 +81,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         let next = 1
         self.views.forEach(view => {
           if (prev === -1) {
+            // @ts-ignore
             view.setLimitBpPerPx(true, view.bpPerPx, view.bpPerPx)
           }
           if (prev !== -1 && next !== self.views.length) {
+            // @ts-ignore
             view.setLimitBpPerPx(
               true,
               self.views[prev].bpPerPx,
@@ -155,13 +157,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         if (actionName === 'zoomTo') {
-          if (path.endsWith(self.anchorViewIndex.toString())) {
-            self.views.forEach(view => {
+          self.views.forEach(view => {
+            if (path.endsWith(self.anchorViewIndex.toString())) {
               if (
                 view.id !== self.views[self.anchorViewIndex].id &&
                 view.id !== self.views[self.overviewIndex].id
               ) {
                 if (view.initialized) {
+                  // @ts-ignore
                   view.setLimitBpPerPx(false)
                   const rev = view.bpPerPx
                   const factor =
@@ -185,12 +188,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   view.centerAt(center.coord, center.refName, center.index)
                 }
               }
-            })
-            self.setLimitBpPerPx()
-          }
+              self.setLimitBpPerPx()
+            }
+          })
         }
 
         if (actionName === 'navToLocString') {
+          self.views[self.anchorViewIndex][actionName](args[0])
           self.views.forEach(view => {
             if (view.initialized) {
               const ret = getPath(view)
@@ -300,7 +304,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return shownTracks.length
       },
       alignViews() {
-        console.log(self.anchorViewIndex)
         self.views.forEach(view => {
           const center = self.views[self.anchorViewIndex].pxToBp(view.width / 2)
           const targetBp = view.bpPerPx

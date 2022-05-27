@@ -7,17 +7,22 @@ import MultilevelLinearComparativeViewF from './MultilevelLinearComparativeView'
 import MultilevelLinearDisplayF from './MultilevelLinearDisplay'
 import MultilevelLinearViewF from './MultilevelLinearView'
 import MultilevelTrackF from './MultilevelTrack'
+import LinearGenomeMultilevelViewF from './LinearGenomeMultilevelView'
 
 export default class extends Plugin {
   name = 'MultilevelLinearComparativeViewPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
+      pluginManager.jbrequire(LinearGenomeMultilevelViewF),
+    )
+    pluginManager.addViewType(() =>
       pluginManager.jbrequire(MultilevelLinearComparativeViewF),
     )
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(MultilevelLinearViewF),
     )
+
     MultilevelLinearComparativeDisplayF(pluginManager)
     MultilevelLinearDisplayF(pluginManager)
     MultilevelTrackF(pluginManager)

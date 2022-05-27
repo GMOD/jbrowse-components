@@ -116,6 +116,7 @@ const ImportForm = observer(
           return
         }
         model.setViews(
+          // @ts-ignore
           await Promise.all(
             selected.map(async selection => {
               const assembly = await assemblyManager.waitForAssembly(selection)
@@ -123,13 +124,9 @@ const ImportForm = observer(
                 throw new Error(`Assembly ${selection} failed to load`)
               }
               return {
-                type: 'LinearGenomeView' as const,
+                type: 'LinearGenomeMultilevelView' as const,
                 bpPerPx: 1,
                 offsetPx: 0,
-                hasCustomHeader: true,
-                hideControls: true,
-                isImportFormDisabled: true,
-                hasCustomMiniControls: true,
                 displayedRegions: assembly.regions,
               }
             }),
@@ -156,7 +153,6 @@ const ImportForm = observer(
             } else {
               zoomVal = (model.views.length - index) * num
             }
-
             view.zoomTo(zoomVal)
             zoomVal *= num
             num--
@@ -184,6 +180,7 @@ const ImportForm = observer(
             num++
           })
         }
+
         model.setInitialDisplayNames()
 
         model.setLimitBpPerPx()

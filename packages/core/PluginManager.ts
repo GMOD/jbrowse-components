@@ -517,7 +517,8 @@ export default class PluginManager {
       ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
         display => {
           if (
-            display.viewType === newView.name &&
+            (display.viewType === newView.name ||
+              display.viewType === newView.extendedName) &&
             // view may have already added the displayType in its creationCallback
             !newView.displayTypes.includes(display)
           ) {

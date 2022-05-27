@@ -2,14 +2,13 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from '@material-ui/core/styles'
-import { bpToPx } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 
 import { MultilevelLinearComparativeViewModel } from '../model'
 import AreaOfInterest from './AreaOfInterest'
 import Subheader from './Subheader'
 import MiniControls from './MiniControls'
 import Header from './Header'
+import { bpToPx } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -32,45 +31,70 @@ const useStyles = makeStyles(() => ({
 }))
 
 type LCV = MultilevelLinearComparativeViewModel
-type LGV = LinearGenomeViewModel
 
-const getLeft = (model: LCV, view: LGV) => {
-  const coordA = bpToPx(
-    model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.start,
-    {
-      start: view.coarseDynamicBlocks[0]?.start,
-      end: view.coarseDynamicBlocks[0]?.end,
-      reversed: view.coarseDynamicBlocks[0]?.reversed,
-    },
-    view.bpPerPx,
-  )
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const setPolygonPoints = (model: any, view: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getLeft = (model: any, view: any) => {
+    const coordA = bpToPx(
+      model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.start,
+      {
+        start: view.coarseDynamicBlocks[0]?.start,
+        end: view.coarseDynamicBlocks[0]?.end,
+        reversed: view.coarseDynamicBlocks[0]?.reversed,
+      },
+      view.bpPerPx,
+    )
 
-  const left = !isNaN(coordA)
-    ? view.offsetPx < 0
-      ? coordA + view.offsetPx * -1
-      : coordA
-    : 0
+    const left = !isNaN(coordA)
+      ? view.offsetPx < 0
+        ? coordA + view.offsetPx * -1
+        : coordA
+      : 0
 
-  return left
-}
+    return left
+  }
 
-const getRight = (model: LCV, view: LGV) => {
-  const coordB = bpToPx(
-    model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.end,
-    {
-      start: view.coarseDynamicBlocks[0]?.start,
-      end: view.coarseDynamicBlocks[0]?.end,
-      reversed: view.coarseDynamicBlocks[0]?.reversed,
-    },
-    view.bpPerPx,
-  )
-  const right = !isNaN(coordB)
-    ? view.offsetPx < 0
-      ? coordB + view.offsetPx * -1
-      : coordB
-    : 0
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getRight = (model: any, view: any) => {
+    const coordB = bpToPx(
+      model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.end,
+      {
+        start: view.coarseDynamicBlocks[0]?.start,
+        end: view.coarseDynamicBlocks[0]?.end,
+        reversed: view.coarseDynamicBlocks[0]?.reversed,
+      },
+      view.bpPerPx,
+    )
+    const right = !isNaN(coordB)
+      ? view.offsetPx < 0
+        ? coordB + view.offsetPx * -1
+        : coordB
+      : 0
 
-  return right
+    return right
+  }
+
+  const left = getLeft(model, view)
+  const right = getRight(model, view)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let index = model.views.findIndex((target: any) => target.id === view.id)
+  if (index > 0) {
+    index--
+  }
+  const targetView = model.views[index]
+
+  const prevLeft = getLeft(model, targetView)
+  const prevRight = getRight(model, targetView)
+
+  const polygonPoints = {
+    left,
+    right,
+    prevLeft,
+    prevRight,
+  }
+  return polygonPoints
 }
 
 const OverlayComparativeView = observer(
@@ -92,54 +116,44 @@ const OverlayComparativeView = observer(
                   return null
                 }
 
-                const left = getLeft(model, view)
-                const right = getRight(model, view)
-
-                let index = model.views.findIndex(
-                  target => target.id === view.id,
-                )
-                if (index > 0) {
-                  index--
-                }
-                const targetView = model.views[index]
-
-                const prevLeft = getLeft(model, targetView)
-                const prevRight = getRight(model, targetView)
-
-                const polygonPoints = {
-                  left,
-                  right,
-                  prevLeft,
-                  prevRight,
-                }
+                const polygonPoints = setPolygonPoints(model, view)
 
                 return (
                   <div key={view.id}>
                     <>
                       {!view.hideHeader ? (
                         <Subheader
+                          // @ts-ignore
                           view={view}
                           model={model}
                           polygonPoints={polygonPoints}
                         />
                       ) : null}
                       {model.views[model.anchorViewIndex].id !== view.id &&
+                      // @ts-ignore
                       view.isVisible ? (
                         <AreaOfInterest
+                          // @ts-ignore
                           view={view}
                           model={model}
                           polygonPoints={polygonPoints}
                         />
                       ) : null}
                     </>
-                    {view.isVisible ? (
-                      <>
-                        {view.hasCustomMiniControls ? (
-                          <MiniControls model={view} />
-                        ) : null}
-                        <ReactComponent key={view.id} model={view} />
-                      </>
-                    ) : null}
+                    {
+                      //@ts-ignore
+                      view.isVisible ? (
+                        <>
+                          {
+                            // @ts-ignore
+                            view.hasCustomMiniControls ? (
+                              <MiniControls model={view} />
+                            ) : null
+                          }
+                          <ReactComponent key={view.id} model={view} />
+                        </>
+                      ) : null
+                    }
                   </div>
                 )
               })}

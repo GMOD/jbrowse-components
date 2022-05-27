@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Tooltip, TextField } from '@material-ui/core'
 import { measureText } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
 
-type LGV = LinearGenomeViewModel
+type LGV = LinearGenomeMultilevelViewModel
 
 const MAX_WIDTH = 100
 const MIN_WIDTH = 100
