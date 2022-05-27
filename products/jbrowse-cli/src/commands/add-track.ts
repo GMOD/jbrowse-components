@@ -547,7 +547,7 @@ export default class AddTrack extends JBrowseCommand {
         type: 'VcfTabixAdapter',
         vcfGzLocation: makeLocation(fileName),
         index: {
-          location: makeLocation(`${fileName}.tbi`),
+          location: makeLocation(index || `${fileName}.tbi`),
           indexType:
             index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },
@@ -571,7 +571,7 @@ export default class AddTrack extends JBrowseCommand {
         type: 'BedTabixAdapter',
         bedGzLocation: makeLocation(fileName),
         index: {
-          location: makeLocation(`${fileName}.tbi`),
+          location: makeLocation(index || `${fileName}.tbi`),
           indexType:
             index && index.toUpperCase().endsWith('CSI') ? 'CSI' : 'TBI',
         },

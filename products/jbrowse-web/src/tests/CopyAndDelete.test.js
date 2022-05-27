@@ -1,6 +1,6 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import { readConfObject } from '@jbrowse/core/configuration'
@@ -24,12 +24,11 @@ beforeEach(() => {
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
-afterEach(cleanup)
 
 test('copy and delete track in admin mode', async () => {
   const pluginManager = getPluginManager(undefined, true)

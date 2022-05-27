@@ -58,19 +58,35 @@ function SearchBox({
     )
   }
 
+  // gets a string as input, or use stored option results from previous query,
+  // then re-query and
+  // 1) if it has multiple results: pop a dialog
+  // 2) if it's a single result navigate to it
+  // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(option: BaseResult) {
     let trackId = option.getTrackId()
     let location = option.getLocation()
     const label = option.getLabel()
+    const [ref, rest] = location.split(':')
+    const allRefs = assembly?.allRefNames || []
     try {
-      if (assembly?.allRefNames?.includes(location)) {
-        model.navToLocString(location)
+      // instead of querying text-index, first:
+      // - check if input matches a refName directly
+      // - or looks like locString
+      // then just navigate as if it were a locString
+      if (
+        allRefs.includes(location) ||
+        (allRefs.includes(ref) &&
+          rest !== undefined &&
+          !Number.isNaN(parseInt(rest, 10)))
+      ) {
+        model.navToLocString(location, assemblyName)
       } else {
         const results = await fetchResults(label, 'exact')
-        if (results && results.length > 1) {
+        if (results.length > 1) {
           model.setSearchResults(results, label.toLowerCase())
           return
-        } else if (results?.length === 1) {
+        } else if (results.length === 1) {
           location = results[0].getLocation()
           trackId = results[0].getTrackId()
         }

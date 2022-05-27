@@ -10,7 +10,7 @@ You don't need to have JBrowse 2 installed to use this tool. The tool can genera
 
 ## Screenshot
 
-![](img/1.png)
+![](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
 
 More examples [EXAMPLES.md](EXAMPLES.md)
 
@@ -51,14 +51,21 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 
 If `--out` is not specified it writes to out.svg
 
-### Generate PDF of PNG instead of SVG
+### Generate PNG instead of SVG
 
-If a filename with a `pdf` or `png` extension is supplied to `--out` then the
-tool tries to convert from svg to pdf/png using rsvg-convert (you will need to
-install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`)
+Supply a file with the png extension to `--out`, uses rsvg-convert so you will
+need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
 
 ```
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.png
+```
+
+### Generate PDF instead of SVG
+
+Supply a file with the pdf extension to `--out`, uses rsvg-convert so you will
+need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
+
+```
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
 ```
 
@@ -66,7 +73,7 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 
 This example shows using remote files, e.g. with human hg19 and several tracks
 
-Note the use of --aliases to smooth over refname differences e.g. fasta
+Note the use of --aliases, which smoothes over refname differences e.g. fasta
 contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
 
 ```

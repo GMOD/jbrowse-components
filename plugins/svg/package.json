@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-svg",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "description": "JBrowse 2 plugin for svg features",
   "keywords": [
     "jbrowse",

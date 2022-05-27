@@ -8,7 +8,7 @@ import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-import { fireEvent, cleanup, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
 window.TextEncoder = TextEncoder
 
@@ -17,8 +17,6 @@ jest.mock('file-saver', () => ({ saveAs: jest.fn() }))
 global.Blob = (content, options) => ({ content, options })
 
 setup()
-
-afterEach(cleanup)
 
 beforeEach(() => {
   clearCache()
@@ -38,14 +36,14 @@ test('export svg', async () => {
   const { findByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
+  const view = state.session.views[0]
   await findByText('Help')
-  state.session.views[0].setNewView(0.1, 1)
+  view.setNewView(0.1, 1)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
   )
 
-  state.session.views[0].exportSvg()
-
+  view.exportSvg()
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
     timeout: 25000,
   })

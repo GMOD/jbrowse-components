@@ -76,7 +76,7 @@ describe('<JBrowseLinearGenomeView />', () => {
         <JBrowseLinearGenomeView viewState={state} />
       </Suspense>,
     )
-    await findByTestId('sequence_track')
+    await findByTestId('sequence_track', {}, { timeout: 10000 })
     expect(container.firstChild).toMatchSnapshot()
-  })
+  }, 10000)
 })

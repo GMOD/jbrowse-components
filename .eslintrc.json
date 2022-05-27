@@ -5,7 +5,7 @@
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "plugin:monorepo/recommended",
-    "prettier",
+    "plugin:prettier/recommended",
     "react-app"
   ],
   "parser": "@typescript-eslint/parser",
@@ -46,7 +46,7 @@
     "import/no-extraneous-dependencies": "error",
     "import/no-anonymous-default-export": "off",
     "monorepo/no-internal-import": "off",
-
+    "prettier/prettier": "warn",
     "react/no-danger": "warn",
     "react/destructuring-assignment": "error",
     "react/no-unused-prop-types": "error",

@@ -22,7 +22,6 @@ module.exports = {
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
       }),
-      new webpack.ContextReplacementPlugin(/any-promise/),
       new webpack.DefinePlugin({
         // Global mobx-state-tree configuration.
         // Force type checking in production for easier debugging:

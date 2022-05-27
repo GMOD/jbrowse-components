@@ -3,6 +3,7 @@ import BED from '@jbrowse/plugin-bed'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import GFF3 from '@jbrowse/plugin-gff3'
+import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import Sequence from '@jbrowse/plugin-sequence'
 import SVG from '@jbrowse/plugin-svg'
@@ -17,6 +18,7 @@ const corePlugins = [
   Config,
   DataManagement,
   GFF3,
+  LegacyJBrowse,
   LinearGenomeView,
   Sequence,
   Variants,

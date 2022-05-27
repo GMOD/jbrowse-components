@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`breakpoint split view open a split view 1`] = `
+exports[`breakpoint split view 1`] = `
 <g
   data-testid="pacbio_hg002_breakpoints-loaded"
   fill="none"
@@ -19,7 +19,7 @@ exports[`breakpoint split view open a split view 1`] = `
 </g>
 `;
 
-exports[`breakpoint split view open a split view 2`] = `
+exports[`breakpoint split view 2`] = `
 <g
   data-testid="pacbio_vcf-loaded"
   fill="none"

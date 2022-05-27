@@ -1,3 +1,55 @@
+## 1.7.8 (2022-05-20)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- [#2970](https://github.com/GMOD/jbrowse-components/pull/2970) Draw indels in modifications/methylation mode ([@cmdcolin](https://github.com/cmdcolin))
+- [#2961](https://github.com/GMOD/jbrowse-components/pull/2961) Add more visible pileup mismatches when zoomed out ([@cmdcolin](https://github.com/cmdcolin))
+- [#2960](https://github.com/GMOD/jbrowse-components/pull/2960) Avoid performing a text index search if input looks like a locstring ([@cmdcolin](https://github.com/cmdcolin))
+- [#2954](https://github.com/GMOD/jbrowse-components/pull/2954) Support in-memory GFF3 and GTF in JBrowse 1 connection ([@garrettjstevens](https://github.com/garrettjstevens))
+- [#2947](https://github.com/GMOD/jbrowse-components/pull/2947) Optimization for SNPCoverageAdapter and CRAM parsing ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#2969](https://github.com/GMOD/jbrowse-components/pull/2969) Fix link on yeast synteny demo and fix CIGAR rendering on dotplot ([@cmdcolin](https://github.com/cmdcolin))
+- [#2964](https://github.com/GMOD/jbrowse-components/pull/2964) Fix crash displaying modifications called on softclipped regions of reads ([@cmdcolin](https://github.com/cmdcolin))
+- [#2965](https://github.com/GMOD/jbrowse-components/pull/2965) Fix filter functionality on pileup tracks ([@cmdcolin](https://github.com/cmdcolin))
+- [#2953](https://github.com/GMOD/jbrowse-components/pull/2953) Fix "Open" button on LGV ImportForm ([@cmdcolin](https://github.com/cmdcolin))
+- [#2952](https://github.com/GMOD/jbrowse-components/pull/2952) Fix read vs ref not finding primary alignment on certain CRAM files ([@cmdcolin](https://github.com/cmdcolin))
+- [#2951](https://github.com/GMOD/jbrowse-components/pull/2951) Fix viewing soft/hardclip indicator in some regions ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#2946](https://github.com/GMOD/jbrowse-components/pull/2946) Small doc updates ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#2955](https://github.com/GMOD/jbrowse-components/pull/2955) Re-enable eslint autofix for prettier rules ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 1.7.7 (2022-05-04)
 
 <details><summary>Packages in this release</summary>
