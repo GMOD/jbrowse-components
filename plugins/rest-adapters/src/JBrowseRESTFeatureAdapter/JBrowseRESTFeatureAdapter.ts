@@ -3,7 +3,10 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import SimpleFeature, { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+import SimpleFeature, {
+  Feature,
+  SimpleFeatureSerialized,
+} from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkAbortSignal } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
@@ -13,8 +16,11 @@ import type { Instance } from 'mobx-state-tree'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type MyConfigSchema from './configSchema'
 import type PluginManager from '@jbrowse/core/PluginManager'
-export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
+import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
 
+const validOptional = ['region_stats', 'region_feature_densities']
+
+export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   pluginManager: PluginManager
   configuration: Instance<typeof MyConfigSchema>
 
@@ -23,17 +29,36 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
-    if(!pluginManager) {
+    if (!pluginManager) {
       throw new Error('no pluginmanager provided')
     }
 
-    if(!config) {
+    if (!config) {
       throw new Error('no config provided')
     }
 
-    super(config, getSubAdapter, pluginManager) 
+    super(config, getSubAdapter, pluginManager)
     this.configuration = config
     this.pluginManager = pluginManager
+
+    // validate the optional_resources configuration
+    for (const resourceName of getConf(
+      this,
+      'optional_resources',
+    ) as string[]) {
+      if (!validOptional.includes(resourceName)) {
+        throw new Error(
+          `invalid optional_resources "${resourceName}", must be one of ${JSON.stringify(
+            validOptional,
+          )}`,
+        )
+      }
+    }
+  }
+
+  private implementsOptionalResource(resourceName: string) {
+    const optionalResources = getConf(this, 'optional_resources') as string[]
+    return optionalResources.includes(resourceName)
   }
 
   /**
@@ -47,22 +72,30 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { signal } = opts
-    
-      const result = await this.fetchJsonFromRestApi('features/'+region.refName+'?start='+region.start+'&end='+region.end, signal)
 
-      for(const feature of result.features) {
+      const result = (await this.fetchJsonFromRestApi(
+        'features/' +
+          region.refName +
+          '?start=' +
+          region.start +
+          '&end=' +
+          region.end,
+        signal,
+      )) as { features: Record<string, unknown>[] }
+
+      for (const feature of result.features) {
         checkAbortSignal(signal)
         // regularize uniqueID -> uniqueId
-        if(feature.uniqueID) {
+        if (feature.uniqueID) {
           feature.uniqueId = feature.uniqueID
           delete feature.uniqueID
         }
-        if(!feature.uniqueId) {
+        if (!feature.uniqueId) {
           feature.uniqueId = `${region.refName}:${feature.start}-${feature.end}`
         }
         observer.next(new SimpleFeature(feature as SimpleFeatureSerialized))
       }
-      
+
       observer.complete()
     })
   }
@@ -72,7 +105,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
 
     let baseLocation = getConf(this, 'location') as FileLocation
     if (!isUriLocation(baseLocation)) {
-      throw new Error('invalid location '+baseLocation)
+      throw new Error('invalid location ' + baseLocation)
     }
     baseLocation = resolveUriLocation(baseLocation)
 
@@ -80,31 +113,68 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     return this.fetch(fetcher, url, signal)
   }
 
-  private async fetchJsonFromRestApi(relativeUrl: string, signal?: AbortSignal)  {
+  // this method is mostly here to improve error reporting for unparseable responses
+  private async fetchJsonFromRestApi(
+    relativeUrl: string,
+    signal?: AbortSignal,
+  ) {
     const result = await this.fetchFromRestApi(relativeUrl, signal)
     try {
-      return await result.json()
-    } catch(e) {
-      throw new Error(`invalid response from REST API call ${relativeUrl}: ${e}`)
+      return (await result.json()) as unknown
+    } catch (e) {
+      throw new Error(
+        `invalid response from REST API call ${relativeUrl}: ${e}`,
+      )
     }
   }
 
-  private async fetch(fetcher: ReturnType<typeof getFetcher>, url: RequestInfo, signal?: AbortSignal) {
+  // this method is here so that tests can mock fetching
+  private async fetch(
+    fetcher: ReturnType<typeof getFetcher>,
+    url: RequestInfo,
+    signal?: AbortSignal,
+  ) {
     const result = await fetcher(url, { signal })
-    if(!result.ok) {throw new Error(await result.text())}
+    if (!result.ok) {
+      throw new Error(await result.text())
+    }
     return result
   }
-  
+
   /*
    * @return Promise<string[]> of empty list
    */
   async getRefNames(opts?: BaseOptions) {
-    const result = await this.fetchFromRestApi('reference_sequences', opts?.signal)
+    const result = await this.fetchFromRestApi(
+      'reference_sequences',
+      opts?.signal,
+    )
     const json = await result.json()
     if (!Array.isArray(json)) {
-      throw new Error('invalid reference_sequences API response, the response must be a JSON array of string reference sequence names')
+      throw new Error(
+        'invalid reference_sequences API response, the response must be a JSON array of string reference sequence names',
+      )
     }
     return json
+  }
+
+  public async getRegionStats(region: Region, opts?: BaseOptions) {
+    if (!this.implementsOptionalResource('region_stats')) {
+      return super.getRegionStats(region, opts)
+    }
+
+    const url =
+      'stats/region/' +
+      region.refName +
+      '?start=' +
+      region.start +
+      '&end=' +
+      region.end
+    const stats = await this.fetchJsonFromRestApi(url, opts?.signal)
+    if (Array.isArray(stats)) {
+      throw new TypeError(`invalid REST response for ${url}, not a JSON object`)
+    }
+    return rectifyStats(stats as UnrectifiedFeatureStats)
   }
 
   /**
@@ -114,4 +184,3 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
    */
   freeResources() {}
 }
-

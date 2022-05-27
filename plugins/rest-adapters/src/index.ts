@@ -5,7 +5,6 @@ import { FileLocation } from '@jbrowse/core/util/types'
 import { configSchema as restFeatureAdapterConfigSchema } from './JBrowseRESTFeatureAdapter'
 import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
 
-
 export default class JBrowseRESTAdaptersPlugin extends Plugin {
   name = 'JBrowseRESTAdaptersPlugin'
 
@@ -16,7 +15,9 @@ export default class JBrowseRESTAdaptersPlugin extends Plugin {
           name: 'JBrowseRESTFeatureAdapter',
           configSchema: restFeatureAdapterConfigSchema,
           getAdapterClass: () =>
-            import('./JBrowseRESTFeatureAdapter/JBrowseRESTFeatureAdapter').then(r => r.default),
+            import(
+              './JBrowseRESTFeatureAdapter/JBrowseRESTFeatureAdapter'
+            ).then(r => r.default),
         }),
     )
     pluginManager.addToExtensionPoint(

@@ -45,7 +45,7 @@ export default class JBrowse1TextSearchAdapter
       throw new Error('must provide namesIndexLocation')
     }
     this.httpMap = new HttpMap({
-      url: resolveUriLocation(namesIndexLocation).uri
+      url: resolveUriLocation(namesIndexLocation).uri,
     })
   }
 

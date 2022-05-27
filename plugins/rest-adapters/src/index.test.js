@@ -14,6 +14,8 @@ test('plugin in a stock JBrowse', () => {
   )
 
   const adapter = pluginManager.getAdapterType('JBrowseRESTFeatureAdapter')
-  const config = adapter.configSchema.create({ type: 'JBrowseRESTFeatureAdapter' })
+  const config = adapter.configSchema.create({
+    type: 'JBrowseRESTFeatureAdapter',
+  })
   expect(getSnapshot(config)).toMatchSnapshot()
 })

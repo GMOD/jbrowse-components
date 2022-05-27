@@ -48,7 +48,7 @@ export interface AnyAdapter {
 }
 
 export type AnyDataAdapter =
-| BaseAdapter
+  | BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
   | BaseTextSearchAdapter
