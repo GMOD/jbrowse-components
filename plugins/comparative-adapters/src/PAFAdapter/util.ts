@@ -11,7 +11,7 @@ export interface PAFRecord {
   extra: {
     cg?: string
     blockLen?: number
-    mappingQual: number
+    mappingQual?: number
     numMatches?: number
     meanScore?: number
   }
@@ -64,7 +64,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
     if (!scoreMap[key]) {
       scoreMap[key] = { quals: [], len: [] }
     }
-    scoreMap[key].quals.push(entry.extra.mappingQual)
+    scoreMap[key].quals.push(entry.extra.mappingQual || 1)
     scoreMap[key].len.push(entry.extra.blockLen || 1)
   }
 

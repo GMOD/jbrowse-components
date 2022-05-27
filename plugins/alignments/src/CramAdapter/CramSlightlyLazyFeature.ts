@@ -4,8 +4,6 @@ import { CramRecord } from '@gmod/cram'
 // locals
 import CramAdapter from './CramAdapter'
 import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
-import { parseCigar } from '../MismatchParser'
-import { mdToMismatches } from '../MismatchParser/mdToMismatches'
 import { cacheGetter } from '../shared/util'
 
 export default class CramSlightlyLazyFeature implements Feature {

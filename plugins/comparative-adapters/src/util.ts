@@ -1,7 +1,6 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { GenericFilehandle } from 'generic-filehandle'
-import { unzip } from '@gmod/bgzf-filehandle'
-import { isGzip } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import type { Buffer } from 'buffer'
 
 import { PAFRecord } from './PAFAdapter/util'
@@ -29,18 +28,14 @@ export function parseBed(text: string) {
 }
 
 export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
-  const buffer = (await file.readFile(opts)) as Buffer
-  return new TextDecoder('utf8', { fatal: true }).decode(
-    isGzip(buffer) ? await unzip(buffer) : buffer,
-  )
+  const buf = await fetchAndMaybeUnzip(file, opts)
+  const decoder = new TextDecoder('utf8')
+  return decoder.decode(buf)
 }
 
 export function zip(a: number[], b: number[]) {
   return a.map((e, i) => [e, b[i]] as [number, number])
 }
-
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
 
 export function parseLineByLine<T>(
   buffer: Buffer,
@@ -48,13 +43,14 @@ export function parseLineByLine<T>(
 ): T[] {
   let blockStart = 0
   const entries: T[] = []
+  const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
       break
     }
     const b = buffer.subarray(blockStart, n)
-    const line = (decoder?.decode(b) || b.toString()).trim()
+    const line = decoder.decode(b).trim()
     if (line) {
       const entry = cb(line)
       if (entry) {

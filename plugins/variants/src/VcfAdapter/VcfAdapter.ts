@@ -2,13 +2,11 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region, Feature, updateStatus, isGzip } from '@jbrowse/core/util'
+import { Region, Feature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
-import { unzip } from '@gmod/bgzf-filehandle'
 import VCF from '@gmod/vcf'
-import type { Buffer } from 'buffer'
 
 // local
 import VcfFeature from '../VcfFeature'
@@ -38,27 +36,20 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   public async setupP(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const buf = (await openLocation(
-      this.getConf('vcfLocation'),
-      this.pluginManager,
-    ).readFile(opts)) as Buffer
-    const buffer = isGzip(buf)
-      ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
-      : buf
+    const loc = openLocation(this.getConf('vcfLocation'), this.pluginManager)
+    const buffer = await fetchAndMaybeUnzip(loc, opts)
     const headerLines = []
     const featureMap = {} as Record<string, string[]>
     let blockStart = 0
 
-    const decoder =
-      typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
-
+    const decoder = new TextDecoder('utf8')
     let i = 0
     while (blockStart < buffer.length) {
       const n = buffer.indexOf('\n', blockStart)
       // could be a non-newline ended file, so slice to end of file if n===-1
       const b =
         n === -1 ? buffer.subarray(blockStart) : buffer.subarray(blockStart, n)
-      const line = (decoder?.decode(b) || b.toString()).trim()
+      const line = decoder.decode(b).trim()
       if (line) {
         if (line.startsWith('#')) {
           headerLines.push(line)

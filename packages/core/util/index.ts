@@ -35,6 +35,9 @@ import useMeasure from '@jbrowse/core/util/useMeasure'
 import { colord } from './colord'
 // eslint-disable-next-line react/no-deprecated
 import { flushSync, render } from 'react-dom'
+import { GenericFilehandle } from 'generic-filehandle'
+import { unzip } from '@gmod/bgzf-filehandle'
+import { BaseOptions } from '../data_adapters/BaseAdapter'
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -1479,6 +1482,18 @@ export function renderToStaticMarkup(
 
 export function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
+}
+export async function fetchAndMaybeUnzip(
+  loc: GenericFilehandle,
+  opts?: BaseOptions,
+) {
+  const { statusCallback = () => {} } = opts || {}
+  const buf = (await updateStatus('Downloading file', statusCallback, () =>
+    loc.readFile(opts),
+  )) as Buffer
+  return isGzip(buf)
+    ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
+    : buf
 }
 
 export {

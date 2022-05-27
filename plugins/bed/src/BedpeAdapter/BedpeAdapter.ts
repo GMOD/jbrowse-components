@@ -4,9 +4,13 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Region, Feature, SimpleFeature, isGzip } from '@jbrowse/core/util'
+import {
+  Region,
+  Feature,
+  SimpleFeature,
+  fetchAndMaybeUnzip,
+} from '@jbrowse/core/util'
 import IntervalTree from '@flatten-js/interval-tree'
-import { unzip } from '@gmod/bgzf-filehandle'
 
 const svTypes = new Set(['DUP', 'TRA', 'INV', 'CNV', 'DEL'])
 
@@ -81,11 +85,11 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter {
 
   public static capabilities = ['getFeatures', 'getRefNames']
 
-  private async loadDataP(opts: BaseOptions = {}) {
+  private async loadDataP(opts?: BaseOptions) {
     const pm = this.pluginManager
     const bedLoc = this.getConf('bedpeLocation')
-    const buf = await openLocation(bedLoc, pm).readFile(opts)
-    const buffer = isGzip(buf) ? await unzip(buf) : buf
+    const loc = openLocation(bedLoc, pm)
+    const buffer = await fetchAndMaybeUnzip(loc, opts)
     // 512MB  max chrome string length is 512MB
     if (buffer.length > 536_870_888) {
       throw new Error('Data exceeds maximum string length (512MB)')

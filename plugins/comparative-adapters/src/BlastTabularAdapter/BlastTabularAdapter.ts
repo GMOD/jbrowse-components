@@ -1,11 +1,15 @@
-import { unzip } from '@gmod/bgzf-filehandle'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { doesIntersect2, Feature, isGzip, Region } from '@jbrowse/core/util'
+import {
+  doesIntersect2,
+  fetchAndMaybeUnzip,
+  Feature,
+  Region,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { parseLineByLine } from '../util'
@@ -212,15 +216,10 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
 
   async setup(opts?: BaseOptions): Promise<BlastRecord[]> {
     const pm = this.pluginManager
-    const blastTableLocation = openLocation(
-      readConfObject(this.config, 'blastTableLocation'),
-      pm,
+    const buf = await fetchAndMaybeUnzip(
+      openLocation(readConfObject(this.config, 'blastTableLocation'), pm),
+      opts,
     )
-    const buffer = await blastTableLocation.readFile({
-      ...opts,
-      encoding: undefined,
-    })
-    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     const columns: string = readConfObject(this.config, 'columns')
     return parseLineByLine(buf, createBlastLineParser(columns))
   }

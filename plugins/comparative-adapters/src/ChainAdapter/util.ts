@@ -1,6 +1,4 @@
 import type { Buffer } from 'buffer'
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
 
 /* adapted from chain2paf by Andrea Guarracino, license reproduced below
  *
@@ -69,13 +67,14 @@ export function paf_chain2paf(buffer: Buffer) {
   const records = []
 
   let blockStart = 0
+  const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
       break
     }
     const b = buffer.subarray(blockStart, n)
-    const l = (decoder?.decode(b) || b.toString()).trim()
+    const l = decoder.decode(b).trim()
     blockStart = n + 1
     const l_tab = l.replaceAll(' ', '\t') // There are CHAIN files with space-separated fields
     const l_vec = l_tab.split('\t')

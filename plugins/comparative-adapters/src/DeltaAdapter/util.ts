@@ -1,6 +1,4 @@
 import type { Buffer } from 'buffer'
-const decoder =
-  typeof TextDecoder !== 'undefined' ? new TextDecoder('utf8') : undefined
 
 /* paf2delta from paftools.js in the minimap2 repository, license reproduced below
  *
@@ -49,13 +47,14 @@ export function paf_delta2paf(buffer: Buffer) {
 
   let blockStart = 0
   let i = 0
+  const decoder = new TextDecoder('utf8')
   while (blockStart < buffer.length) {
     const n = buffer.indexOf('\n', blockStart)
     if (n === -1) {
       break
     }
     const b = buffer.subarray(blockStart, n)
-    const line = (decoder?.decode(b) || b.toString()).trim()
+    const line = decoder.decode(b).trim()
     blockStart = n + 1
     i++
     if (line) {
