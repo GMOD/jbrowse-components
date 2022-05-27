@@ -38,11 +38,11 @@ function maf2paf(lines: string[]) {
 
           entries.push({
             tname,
-            tstart: +tstart,
-            tend: +tend,
+            tstart: +qstart,
+            tend: +qend,
             qname,
-            qstart: +qstart,
-            qend: +qend,
+            qstart: +tstart,
+            qend: +tend,
             strand: qstrand === '-' ? -1 : 1,
             extra: {
               numMatches,
