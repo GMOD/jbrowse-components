@@ -34,6 +34,14 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
+
+/** resolve a possibly relative URI location to an absolute one */
+export function resolveUriLocation(location: UriLocation) {
+  return location.baseUri
+  ? { ...location, uri: new URL(location.uri, location.baseUri).href }
+  : location 
+}
+
 export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
@@ -67,10 +75,10 @@ export function openLocation(
     if (!location.uri) {
       throw new Error('No URI provided')
     }
+    
     // Resolve any relative URLs to absolute URLs
-    const absoluteLocation = location.baseUri
-      ? { ...location, uri: new URL(location.uri, location.baseUri).href }
-      : location
+    const absoluteLocation = resolveUriLocation(location)
+
     // If there is a plugin manager, we can try internet accounts
     if (pluginManager) {
       const internetAccount = getInternetAccount(location, pluginManager)

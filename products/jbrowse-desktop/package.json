@@ -66,6 +66,7 @@
     "@jbrowse/plugin-lollipop": "^2.3.3",
     "@jbrowse/plugin-menus": "^2.3.3",
     "@jbrowse/plugin-rdf": "^2.3.3",
+    "@jbrowse/plugin-rest-adapters": "^2.3.3",
     "@jbrowse/plugin-sequence": "^2.3.3",
     "@jbrowse/plugin-spreadsheet-view": "^2.3.3",
     "@jbrowse/plugin-sv-inspector": "^2.3.3",

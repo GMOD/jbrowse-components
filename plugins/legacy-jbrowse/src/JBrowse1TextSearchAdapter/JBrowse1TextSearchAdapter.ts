@@ -10,6 +10,7 @@ import MyConfigSchema from './configSchema'
 import HttpMap from './HttpMap'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { resolveUriLocation } from '@jbrowse/core/util/io'
 
 export interface TooManyHits {
   name: string
@@ -44,9 +45,7 @@ export default class JBrowse1TextSearchAdapter
       throw new Error('must provide namesIndexLocation')
     }
     this.httpMap = new HttpMap({
-      url: namesIndexLocation.baseUri
-        ? new URL(namesIndexLocation.uri, namesIndexLocation.baseUri).href
-        : namesIndexLocation.uri,
+      url: resolveUriLocation(namesIndexLocation).uri
     })
   }
 

@@ -28,6 +28,7 @@ import HicPlugin from '@jbrowse/plugin-hic'
 import TextIndex from '@jbrowse/plugin-text-indexing'
 import TrixPlugin from '@jbrowse/plugin-trix'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
+import RestAdaptersPlugin from '@jbrowse/plugin-rest-adapters'
 
 const corePlugins = [
   SVG,
@@ -60,6 +61,7 @@ const corePlugins = [
   TrixPlugin,
   GridBookmarkPlugin,
   ComparativeAdapters,
+  RestAdaptersPlugin,
 ]
 
 export default corePlugins
