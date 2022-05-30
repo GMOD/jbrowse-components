@@ -150,6 +150,8 @@ const ImportForm = observer(
               zoomVal = view.maxBpPerPx
             } else if (view.id === model.views[model.anchorViewIndex].id) {
               zoomVal = 1
+              // @ts-ignore
+              view.toggleIsAnchor()
             } else {
               zoomVal = (model.views.length - index) * num
             }
@@ -169,6 +171,11 @@ const ImportForm = observer(
             view.setWidth(model.width)
             if (selectedRegion) {
               handleSelectedRegion(selectedRegion, view)
+            }
+
+            if (view.id === model.views[model.anchorViewIndex].id) {
+              // @ts-ignore
+              view.toggleIsAnchor()
             }
 
             if (view.id === model.views[model.overviewIndex].id) {

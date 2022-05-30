@@ -84,6 +84,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             // @ts-ignore
             view.setLimitBpPerPx(true, view.bpPerPx, view.bpPerPx)
           }
+          if (next === self.views.length) {
+            // @ts-ignore
+            view.setLimitBpPerPx(false, view.bpPerPx, view.bpPerPx)
+          }
           if (prev !== -1 && next !== self.views.length) {
             // @ts-ignore
             view.setLimitBpPerPx(
@@ -113,6 +117,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 'showTrack',
                 'hideTrack',
                 'toggleTrack',
+                'moveIfAnchor',
               ]
               if (actions.includes(name) && path) {
                 this.onSubviewAction(name, path, args)
@@ -188,29 +193,88 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   view.centerAt(center.coord, center.refName, center.index)
                 }
               }
-              self.setLimitBpPerPx()
             }
           })
+          self.setLimitBpPerPx()
         }
 
         if (actionName === 'navToLocString') {
+          const anchorTargetBp = self.views[self.anchorViewIndex].bpPerPx
           self.views[self.anchorViewIndex][actionName](args[0])
+          self.views[self.anchorViewIndex].zoomTo(anchorTargetBp)
           self.views.forEach(view => {
             if (view.initialized) {
-              const ret = getPath(view)
-              if (ret.lastIndexOf(path) === ret.length - path.length) {
-                // @ts-ignore
-                view[actionName](args[0])
-              }
-              const center = self.views[self.anchorViewIndex].pxToBp(
-                view.width / 2,
-              )
-              const targetBp = view.bpPerPx
-              view.navToLocString(center.refName)
-              view.zoomTo(targetBp)
-              view.centerAt(center.coord, center.refName, center.index)
+              // @ts-ignore
+              view.setLimitBpPerPx(false)
             }
           })
+          self.views.forEach(view => {
+            if (view.initialized) {
+              if (self.views[self.anchorViewIndex].id !== view.id) {
+                const center = self.views[self.anchorViewIndex].pxToBp(
+                  view.width / 2,
+                )
+                const targetBp =
+                  view.bpPerPx !== 0
+                    ? self.views[self.anchorViewIndex].bpPerPx /
+                      // @ts-ignore
+                      (self.views[self.anchorViewIndex].limitBpPerPx
+                        .upperLimit /
+                        view.bpPerPx)
+                    : 0
+                view.navToLocString(center.refName)
+                view.zoomTo(targetBp)
+                view.centerAt(center.coord, center.refName, center.index)
+              }
+            }
+          })
+          self.setLimitBpPerPx()
+        }
+
+        if (actionName === 'moveIfAnchor') {
+          self.views.forEach(view => {
+            if (view.initialized) {
+              // @ts-ignore
+              view.moveIfAnchor(args[0], args[1])
+              // @ts-ignore
+              view.setLimitBpPerPx(false)
+            }
+          })
+          self.views.forEach(view => {
+            if (view.initialized) {
+              if (
+                self.views[self.anchorViewIndex].id !== view.id &&
+                self.views[self.overviewIndex].id !== view.id
+              ) {
+                const center = self.views[self.anchorViewIndex].pxToBp(
+                  view.width / 2,
+                )
+                const targetBp =
+                  view.bpPerPx !== 0
+                    ? self.views[self.anchorViewIndex].bpPerPx /
+                      // @ts-ignore
+                      (self.views[self.anchorViewIndex].limitBpPerPx
+                        .upperLimit /
+                        view.bpPerPx)
+                    : 0
+                view.navToLocString(center.refName)
+                view.zoomTo(targetBp)
+                view.centerAt(center.coord, center.refName, center.index)
+              }
+            }
+          })
+          self.setLimitBpPerPx()
+
+          // center the overview
+          const center = self.views[self.anchorViewIndex].pxToBp(
+            self.views[self.overviewIndex].width / 2,
+          )
+          self.views[self.overviewIndex].navToLocString(center.refName)
+          self.views[self.overviewIndex].centerAt(
+            center.coord,
+            center.refName,
+            center.index,
+          )
         }
       },
 

@@ -1,12 +1,25 @@
 import { types, Instance } from 'mobx-state-tree'
 
-import { clamp } from '@jbrowse/core/util'
+import { clamp, getSession, parseLocString } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import VisibilityIcon from '@material-ui/icons/Visibility'
+import ZoomInIcon from '@material-ui/icons/ZoomIn'
+
+export interface BpOffset {
+  refName?: string
+  index: number
+  offset: number
+  start?: number
+  end?: number
+  coord?: number
+  reversed?: boolean
+  assemblyName?: string
+  oob?: boolean
+}
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types.compose(
@@ -115,6 +128,85 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // @ts-ignore
           return self.bpPerPx
         },
+        navToLocString(locString: string, optAssemblyName?: string) {
+          // @ts-ignore
+          const { assemblyNames } = self
+          const { assemblyManager } = getSession(self)
+          const { isValidRefName } = assemblyManager
+          const assemblyName = optAssemblyName || assemblyNames[0]
+
+          const parsedLocStrings = locString
+            .split(' ')
+            .filter(f => !!f.trim())
+            .map(l =>
+              parseLocString(l, ref => isValidRefName(ref, assemblyName)),
+            )
+
+          const locations = parsedLocStrings.map(region => {
+            const asmName = region.assemblyName || assemblyName
+            const asm = assemblyManager.get(asmName)
+            const { refName } = region
+            if (!asm) {
+              throw new Error(`assembly ${asmName} not found`)
+            }
+            const { regions } = asm
+            if (!regions) {
+              throw new Error(`regions not loaded yet for ${asmName}`)
+            }
+            const canonicalRefName = asm.getCanonicalRefName(region.refName)
+            if (!canonicalRefName) {
+              throw new Error(
+                `Could not find refName ${refName} in ${asm.name}`,
+              )
+            }
+            const parentRegion = regions.find(
+              region => region.refName === canonicalRefName,
+            )
+            if (!parentRegion) {
+              throw new Error(`Could not find refName ${refName} in ${asmName}`)
+            }
+
+            return {
+              ...region,
+              assemblyName: asmName,
+              parentRegion,
+            }
+          })
+
+          if (locations.length === 1) {
+            const loc = locations[0]
+            // @ts-ignore
+            self.setDisplayedRegions([
+              { reversed: loc.reversed, ...loc.parentRegion },
+            ])
+            const { start, end, parentRegion } = loc
+            // @ts-ignore
+            self.navTo({
+              ...loc,
+              start: clamp(start ?? 0, 0, parentRegion.end),
+              end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
+            })
+          } else {
+            // @ts-ignore
+            self.setDisplayedRegions(
+              // @ts-ignore
+              locations.map(r => (r.start === undefined ? r.parentRegion : r)),
+            )
+            // @ts-ignore
+            self.showAllRegions()
+          }
+
+          if (self.isAnchor) {
+            // @ts-ignore
+            self.zoomTo(self.limitBpPerPx.upperLimit)
+          }
+        },
+        moveIfAnchor(leftOffset: number, rightOffset: number) {
+          if (self.isAnchor) {
+            // @ts-ignore
+            self.moveTo(leftOffset, rightOffset)
+          }
+        },
       }))
       .views(self => {
         // @ts-ignore
@@ -141,6 +233,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 onClick: self.toggleControls,
                 disabled: !self.isVisible || self.isAnchor,
               },
+            ]
+          },
+        }
+      })
+      .views(self => {
+        // @ts-ignore
+        const { rubberBandMenuItems: superMenuItems } = self
+
+        const superMenuItemsArray = superMenuItems()
+
+        const index = superMenuItemsArray.findIndex(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (item: any) => item.label === 'Zoom to region',
+        )
+        superMenuItemsArray.splice(index, 1)
+        return {
+          rubberBandMenuItems(): MenuItem[] {
+            return [
+              {
+                label: 'Zoom to region',
+                icon: ZoomInIcon,
+                onClick: () => {
+                  // @ts-ignore
+                  const { leftOffset, rightOffset } = self
+                  if (leftOffset && rightOffset) {
+                    self.moveIfAnchor(leftOffset, rightOffset)
+                  }
+                },
+              },
+              ...superMenuItemsArray,
             ]
           },
         }
