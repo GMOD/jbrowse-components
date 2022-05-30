@@ -50,6 +50,10 @@ const AreaOfInterest = observer(
         : view.hideHeader
         ? view.height + (view.tracks.length - 1) * 4 + labelOffset
         : view.height - 55 - 12 + (view.tracks.length - 1) * 4 + labelOffset
+
+    // @ts-ignore
+    const anchorView = model.views.find(view => view.isAnchor)
+
     return (
       <>
         <div
@@ -72,7 +76,7 @@ const AreaOfInterest = observer(
             color: polygonColor,
           }}
         >
-          {model.views[model.anchorViewIndex].displayName}
+          {anchorView?.displayName}
         </Typography>
       </>
     )

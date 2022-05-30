@@ -160,9 +160,7 @@ const Controls = observer(
         {ExtraButtons}
         {view.hideControls ? <RegionWidth model={view} /> : null}
         <div className={classes.spacer} />
-        {view.isVisible &&
-        !view.hideControls &&
-        model.views[model.anchorViewIndex].id !== view.id ? (
+        {view.isVisible && !view.hideControls && !view.isAnchor ? (
           <>
             <FormGroup row className={classes.headerForm}>
               <PanControls model={view} />

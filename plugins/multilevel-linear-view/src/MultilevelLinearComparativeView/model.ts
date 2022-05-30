@@ -41,8 +41,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         showIntraviewLinks: true,
         linkViews: false,
         interactToggled: false,
-        anchorViewIndex: 0,
-        overviewIndex: 1,
         isDescending: true,
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
@@ -139,6 +137,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       onSubviewAction(actionName: string, path: string, args: any[] = []) {
+        // @ts-ignore
+        const anchorViewIndex = self.views.findIndex(view => view.isAnchor)
+        // @ts-ignore
+        const overviewIndex = self.views.findIndex(view => view.isOverview)
         if (actionName === 'horizontalScroll') {
           self.views.forEach(view => {
             if (view.initialized) {
@@ -146,7 +148,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               const movement =
                 view.bpPerPx !== 0
                   ? args[0] *
-                    (self.views[self.anchorViewIndex].bpPerPx / view.bpPerPx)
+                    (self.views[anchorViewIndex].bpPerPx / view.bpPerPx)
                   : 0
               // @ts-ignore
               view[actionName](movement)
@@ -163,11 +165,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
         if (actionName === 'zoomTo') {
           self.views.forEach(view => {
-            if (path.endsWith(self.anchorViewIndex.toString())) {
-              if (
-                view.id !== self.views[self.anchorViewIndex].id &&
-                view.id !== self.views[self.overviewIndex].id
-              ) {
+            if (path.endsWith(anchorViewIndex.toString())) {
+              // @ts-ignore
+              if (!view.isAnchor && !view.isOverview) {
                 if (view.initialized) {
                   // @ts-ignore
                   view.setLimitBpPerPx(false)
@@ -175,8 +175,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   const factor =
                     view.bpPerPx !== 0
                       ? args[0] /
-                        (self.views[self.anchorViewIndex].bpPerPx /
-                          view.bpPerPx)
+                        (self.views[anchorViewIndex].bpPerPx / view.bpPerPx)
                       : 0
                   // @ts-ignore
                   view[actionName](factor)
@@ -187,7 +186,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     view[actionName](rev)
                   }
 
-                  const center = self.views[self.anchorViewIndex].pxToBp(
+                  const center = self.views[anchorViewIndex].pxToBp(
                     view.width / 2,
                   )
                   view.centerAt(center.coord, center.refName, center.index)
@@ -199,9 +198,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         if (actionName === 'navToLocString') {
-          const anchorTargetBp = self.views[self.anchorViewIndex].bpPerPx
-          self.views[self.anchorViewIndex][actionName](args[0])
-          self.views[self.anchorViewIndex].zoomTo(anchorTargetBp)
+          const anchorTargetBp = self.views[anchorViewIndex].bpPerPx
+          self.views[anchorViewIndex][actionName](args[0])
+          self.views[anchorViewIndex].zoomTo(anchorTargetBp)
           self.views.forEach(view => {
             if (view.initialized) {
               // @ts-ignore
@@ -210,16 +209,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           })
           self.views.forEach(view => {
             if (view.initialized) {
-              if (self.views[self.anchorViewIndex].id !== view.id) {
-                const center = self.views[self.anchorViewIndex].pxToBp(
+              // @ts-ignore
+              if (!view.isAnchor) {
+                const center = self.views[anchorViewIndex].pxToBp(
                   view.width / 2,
                 )
                 const targetBp =
                   view.bpPerPx !== 0
-                    ? self.views[self.anchorViewIndex].bpPerPx /
+                    ? self.views[anchorViewIndex].bpPerPx /
                       // @ts-ignore
-                      (self.views[self.anchorViewIndex].limitBpPerPx
-                        .upperLimit /
+                      (self.views[anchorViewIndex].limitBpPerPx.upperLimit /
                         view.bpPerPx)
                     : 0
                 view.navToLocString(center.refName)
@@ -242,19 +241,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           })
           self.views.forEach(view => {
             if (view.initialized) {
-              if (
-                self.views[self.anchorViewIndex].id !== view.id &&
-                self.views[self.overviewIndex].id !== view.id
-              ) {
-                const center = self.views[self.anchorViewIndex].pxToBp(
+              // @ts-ignore
+              if (!view.isAnchor && !view.isOverview) {
+                const center = self.views[anchorViewIndex].pxToBp(
                   view.width / 2,
                 )
                 const targetBp =
                   view.bpPerPx !== 0
-                    ? self.views[self.anchorViewIndex].bpPerPx /
+                    ? self.views[anchorViewIndex].bpPerPx /
                       // @ts-ignore
-                      (self.views[self.anchorViewIndex].limitBpPerPx
-                        .upperLimit /
+                      (self.views[anchorViewIndex].limitBpPerPx.upperLimit /
                         view.bpPerPx)
                     : 0
                 view.navToLocString(center.refName)
@@ -266,11 +262,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.setLimitBpPerPx()
 
           // center the overview
-          const center = self.views[self.anchorViewIndex].pxToBp(
-            self.views[self.overviewIndex].width / 2,
+          const center = self.views[anchorViewIndex].pxToBp(
+            self.views[overviewIndex].width / 2,
           )
-          self.views[self.overviewIndex].navToLocString(center.refName)
-          self.views[self.overviewIndex].centerAt(
+          self.views[overviewIndex].navToLocString(center.refName)
+          self.views[overviewIndex].centerAt(
             center.coord,
             center.refName,
             center.index,
@@ -281,19 +277,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       setWidth(newWidth: number) {
         self.width = newWidth
         self.views.forEach(v => v.setWidth(newWidth))
-      },
-
-      setInitialDisplayNames() {
-        self.views[self.anchorViewIndex].setDisplayName('Details')
-        self.views[self.overviewIndex].setDisplayName('Overview')
-      },
-
-      setAnchorViewIndex(index: number) {
-        self.anchorViewIndex = index
-      },
-
-      setOverviewIndex(index: number) {
-        self.overviewIndex = index
       },
 
       setHeight(newHeight: number) {
@@ -368,8 +351,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return shownTracks.length
       },
       alignViews() {
+        // @ts-ignore
+        const anchorViewIndex = self.views.findIndex(view => view.isAnchor)
         self.views.forEach(view => {
-          const center = self.views[self.anchorViewIndex].pxToBp(view.width / 2)
+          const center = self.views[anchorViewIndex].pxToBp(view.width / 2)
           const targetBp = view.bpPerPx
           view.navToLocString(center.refName)
           view.zoomTo(targetBp)

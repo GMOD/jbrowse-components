@@ -134,8 +134,8 @@ const ImportForm = observer(
         )
 
         if (model.isDescending) {
-          model.setAnchorViewIndex(model.views.length - 1)
-          model.setOverviewIndex(0)
+          const anchorViewIndex = model.views.length - 1
+          const overviewIndex = 0
 
           let zoomVal = 0
           let num = model.views.length - 1
@@ -146,12 +146,16 @@ const ImportForm = observer(
               handleSelectedRegion(selectedRegion, view)
             }
 
-            if (view.id === model.views[model.overviewIndex].id) {
+            if (view.id === model.views[overviewIndex].id) {
               zoomVal = view.maxBpPerPx
-            } else if (view.id === model.views[model.anchorViewIndex].id) {
+              // @ts-ignore
+              view.toggleIsOverview()
+              view.setDisplayName('Overview')
+            } else if (view.id === model.views[anchorViewIndex].id) {
               zoomVal = 1
               // @ts-ignore
               view.toggleIsAnchor()
+              view.setDisplayName('Details')
             } else {
               zoomVal = (model.views.length - index) * num
             }
@@ -162,8 +166,8 @@ const ImportForm = observer(
           })
         } else {
           // ascending
-          model.setAnchorViewIndex(0)
-          model.setOverviewIndex(model.views.length - 1)
+          const overviewIndex = model.views.length - 1
+          const anchorViewIndex = 0
 
           let zoomVal = 1
           let num = 2
@@ -173,13 +177,17 @@ const ImportForm = observer(
               handleSelectedRegion(selectedRegion, view)
             }
 
-            if (view.id === model.views[model.anchorViewIndex].id) {
+            if (view.id === model.views[anchorViewIndex].id) {
               // @ts-ignore
               view.toggleIsAnchor()
+              view.setDisplayName('Details')
             }
 
-            if (view.id === model.views[model.overviewIndex].id) {
+            if (view.id === model.views[overviewIndex].id) {
               zoomVal = view.maxBpPerPx
+              // @ts-ignore
+              view.toggleIsOverview()
+              view.setDisplayName('Overview')
             }
 
             view.zoomTo(zoomVal)
@@ -187,8 +195,6 @@ const ImportForm = observer(
             num++
           })
         }
-
-        model.setInitialDisplayNames()
 
         model.setLimitBpPerPx()
 

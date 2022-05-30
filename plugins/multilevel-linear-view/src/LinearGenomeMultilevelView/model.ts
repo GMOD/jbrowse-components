@@ -37,6 +37,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         hasCustomMiniControls: true,
         hasCustomHeader: true,
         isAnchor: false,
+        isOverview: false,
 
         limitBpPerPx: types.optional(types.frozen(), {
           limited: false,
@@ -60,6 +61,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
         toggleIsAnchor() {
           self.isAnchor = !self.isAnchor
+        },
+        toggleIsOverview() {
+          self.isOverview = !self.isOverview
         },
         setCustomMiniControls(flag: boolean) {
           self.hasCustomMiniControls = flag

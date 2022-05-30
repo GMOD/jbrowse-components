@@ -43,11 +43,12 @@ const Header = observer(
     const theme = useTheme()
     const { primary } = theme.palette
     const colour = primary.light
+    // @ts-ignore
+    const anchorView = model?.views.find(view => view.isAnchor)
 
     return (
       <div>
-        {model?.initialized &&
-        model?.views[model.anchorViewIndex]?.initialized ? (
+        {model?.initialized && anchorView?.initialized ? (
           <div
             style={{
               gridArea: '1/1/auto/span 2',
@@ -60,13 +61,14 @@ const Header = observer(
             <LinkViews model={model} />
             <AlignViews model={model} />
             <div style={{ flexGrow: '1' }} />
-
             <FormGroup row style={{ flexWrap: 'nowrap', marginRight: 7 }}>
-              <PanControls model={model.views[model.anchorViewIndex]} />
-              <SearchBox model={model.views[model.anchorViewIndex]} />
+              {/* @ts-ignore */}
+              <PanControls model={anchorView} />
+              <SearchBox model={anchorView} />
             </FormGroup>
-            <RegionWidth model={model.views[model.anchorViewIndex]} />
-            <ZoomControls model={model.views[model.anchorViewIndex]} />
+            {/* @ts-ignore */}
+            <RegionWidth model={anchorView} />
+            <ZoomControls model={anchorView} />
             <div style={{ flexGrow: '1' }} />
           </div>
         ) : null}

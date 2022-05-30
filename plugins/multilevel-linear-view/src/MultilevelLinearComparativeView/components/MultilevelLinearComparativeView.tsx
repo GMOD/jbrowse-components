@@ -34,10 +34,12 @@ type LCV = MultilevelLinearComparativeViewModel
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const setPolygonPoints = (model: any, view: any) => {
+  // @ts-ignore
+  const anchorView = model.views.find(view => view.isAnchor)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getLeft = (model: any, view: any) => {
+  const getLeft = (view: any) => {
     const coordA = bpToPx(
-      model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.start,
+      anchorView?.coarseDynamicBlocks[0]?.start,
       {
         start: view.coarseDynamicBlocks[0]?.start,
         end: view.coarseDynamicBlocks[0]?.end,
@@ -56,9 +58,9 @@ const setPolygonPoints = (model: any, view: any) => {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getRight = (model: any, view: any) => {
+  const getRight = (view: any) => {
     const coordB = bpToPx(
-      model.views[model.anchorViewIndex].coarseDynamicBlocks[0]?.end,
+      anchorView?.coarseDynamicBlocks[0]?.end,
       {
         start: view.coarseDynamicBlocks[0]?.start,
         end: view.coarseDynamicBlocks[0]?.end,
@@ -75,8 +77,8 @@ const setPolygonPoints = (model: any, view: any) => {
     return right
   }
 
-  const left = getLeft(model, view)
-  const right = getRight(model, view)
+  const left = getLeft(view)
+  const right = getRight(view)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let index = model.views.findIndex((target: any) => target.id === view.id)
@@ -85,8 +87,8 @@ const setPolygonPoints = (model: any, view: any) => {
   }
   const targetView = model.views[index]
 
-  const prevLeft = getLeft(model, targetView)
-  const prevRight = getRight(model, targetView)
+  const prevLeft = getLeft(targetView)
+  const prevRight = getRight(targetView)
 
   const polygonPoints = {
     left,
@@ -129,16 +131,19 @@ const OverlayComparativeView = observer(
                           polygonPoints={polygonPoints}
                         />
                       ) : null}
-                      {model.views[model.anchorViewIndex].id !== view.id &&
-                      // @ts-ignore
-                      view.isVisible ? (
-                        <AreaOfInterest
-                          // @ts-ignore
-                          view={view}
-                          model={model}
-                          polygonPoints={polygonPoints}
-                        />
-                      ) : null}
+                      {
+                        // @ts-ignore
+                        !view.isAnchor &&
+                        // @ts-ignore
+                        view.isVisible ? (
+                          <AreaOfInterest
+                            // @ts-ignore
+                            view={view}
+                            model={model}
+                            polygonPoints={polygonPoints}
+                          />
+                        ) : null
+                      }
                     </>
                     {
                       //@ts-ignore
