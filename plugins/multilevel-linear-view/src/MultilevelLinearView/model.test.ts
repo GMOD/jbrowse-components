@@ -13,12 +13,14 @@ test('creation', () => {
   const model = stateModelFactory(pluginManager)
   model.create({
     id: 'MiDMyyWpxp',
+    // @ts-ignore
     type: 'MultilevelLinearView',
     displayName: 'MLLV Default',
     linkViews: true,
     views: [
       {
         id: 'MoMeeVade',
+        // @ts-ignore
         type: 'LinearGenomeMultilevelView',
         displayName: 'Overview',
         bpPerPx: 100000,
@@ -35,6 +37,7 @@ test('creation', () => {
       },
       {
         id: 'MoMeeVasdfade',
+        // @ts-ignore
         type: 'LinearGenomeMultilevelView',
         displayName: 'Region',
         bpPerPx: 100,
@@ -50,6 +53,7 @@ test('creation', () => {
       },
       {
         id: 'MoasdfMeeVade',
+        // @ts-ignore
         type: 'LinearGenomeMultilevelView',
         displayName: 'Details',
         bpPerPx: 1,

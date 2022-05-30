@@ -31,58 +31,67 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
             >
               <ArrowDown />
             </IconButton>
+            {/* @ts-ignore */}
             <LabelField model={model} />
           </div>
         ) : null}
         <div>
-          {model.limitBpPerPx.limited &&
-          bpPerPx * 2 > model.limitBpPerPx.upperLimit ? (
-            <Tooltip
-              title="The view is at its max zoom level relative to its neighbouring views"
-              arrow
-            >
-              <span>
-                <IconButton disabled>
-                  <ZoomOut />
-                </IconButton>
-              </span>
-            </Tooltip>
-          ) : (
-            <IconButton
-              data-testid="zoom_out"
-              onClick={() => {
-                model.zoom(bpPerPx * 2)
-              }}
-              disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
-              color="secondary"
-            >
-              <ZoomOut />
-            </IconButton>
-          )}
-          {model.limitBpPerPx.limited &&
-          bpPerPx / 2 < model.limitBpPerPx.lowerLimit ? (
-            <Tooltip
-              title="The view is at its min zoom level relative to its neighbouring views"
-              arrow
-            >
-              <span>
-                <IconButton disabled>
-                  <ZoomOut />
-                </IconButton>
-              </span>
-            </Tooltip>
-          ) : (
-            <IconButton
-              data-testid="zoom_in"
-              onClick={() => {
-                model.zoom(model.bpPerPx / 2)
-              }}
-              disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
-              color="secondary"
-            >
-              <ZoomIn />
-            </IconButton>
-          )}
+          {
+            // @ts-ignore
+            model.limitBpPerPx.limited &&
+            // @ts-ignore
+            bpPerPx * 2 > model.limitBpPerPx.upperLimit ? (
+              <Tooltip
+                title="The view is at its max zoom level relative to its neighbouring views"
+                arrow
+              >
+                <span>
+                  <IconButton disabled>
+                    <ZoomOut />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <IconButton
+                data-testid="zoom_out"
+                onClick={() => {
+                  model.zoom(bpPerPx * 2)
+                }}
+                disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
+                color="secondary"
+              >
+                <ZoomOut />
+              </IconButton>
+            )
+          }
+          {
+            // @ts-ignore
+            model.limitBpPerPx.limited &&
+            // @ts-ignore
+            bpPerPx / 2 < model.limitBpPerPx.lowerLimit ? (
+              <Tooltip
+                title="The view is at its min zoom level relative to its neighbouring views"
+                arrow
+              >
+                <span>
+                  <IconButton disabled>
+                    <ZoomOut />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <IconButton
+                data-testid="zoom_in"
+                onClick={() => {
+                  model.zoom(model.bpPerPx / 2)
+                }}
+                disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
+                color="secondary"
+              >
+                <ZoomIn />
+              </IconButton>
+            )
+          }
         </div>
       </Paper>
       <Menu
