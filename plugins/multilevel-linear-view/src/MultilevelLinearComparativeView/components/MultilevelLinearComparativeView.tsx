@@ -146,7 +146,7 @@ const OverlayComparativeView = observer(
                       }
                     </>
                     {
-                      //@ts-ignore
+                      // @ts-ignore
                       view.isVisible ? (
                         <>
                           {
