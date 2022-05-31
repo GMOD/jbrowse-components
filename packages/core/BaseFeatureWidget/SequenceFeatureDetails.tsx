@@ -153,11 +153,8 @@ export const SequencePanel = React.forwardRef<
   HTMLDivElement,
   SequencePanelProps
 >((props, ref) => {
+  const { feature, mode, intronBp, codonTable: codonTablePre } = props
   let {
-    feature,
-    mode,
-    intronBp,
-    codonTable: codonTablePre,
     sequence: { seq, upstream = '', downstream = '' },
   } = props
   const { subfeatures } = feature
@@ -338,7 +335,6 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     }
     ;(async () => {
       try {
-        console.log(upDownStreamBp)
         const { start, end, refName } = feature as CoordFeat
         const seq = await fetchSeq(start, end, refName)
         const up = await fetchSeq(

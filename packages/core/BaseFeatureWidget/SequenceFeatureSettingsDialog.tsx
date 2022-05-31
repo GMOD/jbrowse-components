@@ -43,7 +43,11 @@ export default function SequenceFeatureSettingsDialog({
   intronBp: intronBpArg,
   upDownStreamBp: upDownStreamBpArg,
 }: {
-  handleClose: (arg?: any) => void
+  handleClose: (arg?: {
+    codonTable: string
+    intronBp: number
+    upDownStreamBp: number
+  }) => void
   codonTable: string
   intronBp: number
   upDownStreamBp: number
@@ -53,7 +57,7 @@ export default function SequenceFeatureSettingsDialog({
   const [intronBp, setIntronBp] = useState(`${intronBpArg}`)
   const [upDownStreamBp, setUpDownStreamBp] = useState(`${upDownStreamBpArg}`)
   return (
-    <Dialog maxWidth="xl" open onClose={handleClose}>
+    <Dialog maxWidth="xl" open onClose={() => handleClose()}>
       <DialogTitle>
         Feature sequence panel settings
         {handleClose ? (
@@ -111,14 +115,20 @@ export default function SequenceFeatureSettingsDialog({
 
       <DialogActions>
         <Button
-          onClick={() => handleClose({ codonTable, upDownStreamBp, intronBp })}
+          onClick={() =>
+            handleClose({
+              codonTable,
+              upDownStreamBp: +upDownStreamBp,
+              intronBp: +intronBp,
+            })
+          }
           color="primary"
           variant="contained"
         >
           Submit
         </Button>
         <Button
-          onClick={handleClose}
+          onClick={() => handleClose()}
           color="secondary"
           autoFocus
           variant="contained"
