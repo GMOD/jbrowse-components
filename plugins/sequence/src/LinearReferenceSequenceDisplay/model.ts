@@ -1,11 +1,19 @@
+import { lazy } from 'react'
 import { types } from 'mobx-state-tree'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  AnyConfigurationSchemaType,
+  ConfigurationReference,
+} from '@jbrowse/core/configuration'
+import {
+  getSession,
+  getContainingView,
+  defaultCodonTable,
+} from '@jbrowse/core/util'
+const SetCodonTableDlg = lazy(() => import('./SetCodonTableDialog'))
 
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -18,6 +26,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         showForward: types.optional(types.boolean, true),
         showReverse: types.optional(types.boolean, true),
         showTranslation: types.optional(types.boolean, true),
+        codonTable: types.optional(types.string, defaultCodonTable),
         height: 180,
       }),
     )
@@ -25,7 +34,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       const { renderProps: superRenderProps } = self
       return {
         renderProps() {
-          const { showForward, showReverse, showTranslation } = self
+          const { codonTable, showForward, showReverse, showTranslation } = self
           return {
             ...superRenderProps(),
             rpcDriverName: self.rpcDriverName,
@@ -33,6 +42,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             showForward,
             showReverse,
             showTranslation,
+            codonTable,
           }
         },
         regionCannotBeRendered(/* region */) {
@@ -57,6 +67,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
+      },
+      setCodonTable(arg: string) {
+        self.codonTable = arg
       },
     }))
     .views(self => ({
@@ -84,6 +97,23 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             checked: self.showTranslation,
             onClick: () => {
               self.toggleShowTranslation()
+            },
+          },
+          {
+            label: 'Set codon table',
+            onClick: () => {
+              getSession(self).queueDialog(doneCallback => [
+                SetCodonTableDlg,
+                {
+                  codonTable: self.codonTable,
+                  handleClose: (arg?: { codonTable: string }) => {
+                    if (arg) {
+                      self.setCodonTable(arg.codonTable)
+                    }
+                    doneCallback()
+                  },
+                },
+              ])
             },
           },
         ]

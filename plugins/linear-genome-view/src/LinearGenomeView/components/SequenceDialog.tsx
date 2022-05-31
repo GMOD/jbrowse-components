@@ -16,11 +16,9 @@ import {
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
-import { Region } from '@jbrowse/core/util/types'
 import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { getSession } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { getSession, Feature, Region } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
@@ -121,24 +119,27 @@ function SequenceDialog({
             controller.signal,
           )
           if (active) {
+            const toL = (n: number) => n.toLocaleString('en-US')
             setSequence(
               formatSeqFasta(
                 chunks
                   .filter(f => !!f)
                   .map(chunk => {
-                    const chunkSeq = chunk.get('seq')
-                    const chunkRefName = chunk.get('refName')
-                    const chunkStart = chunk.get('start') + 1
-                    const chunkEnd = chunk.get('end')
-                    const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-                    if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+                    const seq = chunk.get('seq')
+                    const refName = chunk.get('refName')
+                    const start = chunk.get('start')
+                    const end = chunk.get('end')
+                    const loc = `${refName}:${start + 1}-${end}`
+                    const slen = seq.length
+                    const flen = end - start
+                    if (slen !== flen) {
                       throw new Error(
-                        `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                          chunkEnd - chunkStart
-                        ).toLocaleString()}`,
+                        `${loc} returned ${toL(
+                          slen,
+                        )}bp, but should have returned ${toL(flen)}bp`,
                       )
                     }
-                    return { header: chunkLocstring, seq: chunkSeq }
+                    return { header: loc, seq }
                   }),
               ),
             )
@@ -163,19 +164,11 @@ function SequenceDialog({
   const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
 
   return (
-    <Dialog
-      data-testid="sequence-dialog"
-      maxWidth="xl"
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog maxWidth="xl" open onClose={handleClose}>
+      <DialogTitle>
         Reference sequence
         {handleClose ? (
           <IconButton
-            data-testid="close-seqDialog"
             className={classes.closeButton}
             onClick={() => {
               handleClose()
@@ -203,7 +196,6 @@ function SequenceDialog({
           </Container>
         ) : null}
         <TextField
-          data-testid="rubberband-sequence"
           variant="outlined"
           multiline
           minRows={5}

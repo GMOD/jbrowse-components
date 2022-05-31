@@ -1,17 +1,19 @@
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import { Region, FileLocation } from '@jbrowse/core/util/types'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import FeatureRendererType from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import {
   makeIndex,
-  AdapterGuesser,
   getFileName,
+  AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
+
+// locals
 import { configSchema as bgzipFastaAdapterConfigSchema } from './BgzipFastaAdapter'
 import { configSchema as chromSizesAdapterConfigSchema } from './ChromSizesAdapter'
 import {

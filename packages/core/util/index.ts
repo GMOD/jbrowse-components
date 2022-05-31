@@ -29,6 +29,7 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
+export * from './parseCodonTable'
 export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
@@ -901,74 +902,11 @@ export function measureText(str: unknown, fontSize = 10) {
   )
 }
 
-export const defaultStarts = ['ATG']
-export const defaultStops = ['TAA', 'TAG', 'TGA']
-export const defaultCodonTable = {
-  TCA: 'S',
-  TCC: 'S',
-  TCG: 'S',
-  TCT: 'S',
-  TTC: 'F',
-  TTT: 'F',
-  TTA: 'L',
-  TTG: 'L',
-  TAC: 'Y',
-  TAT: 'Y',
-  TAA: '*',
-  TAG: '*',
-  TGC: 'C',
-  TGT: 'C',
-  TGA: '*',
-  TGG: 'W',
-  CTA: 'L',
-  CTC: 'L',
-  CTG: 'L',
-  CTT: 'L',
-  CCA: 'P',
-  CCC: 'P',
-  CCG: 'P',
-  CCT: 'P',
-  CAC: 'H',
-  CAT: 'H',
-  CAA: 'Q',
-  CAG: 'Q',
-  CGA: 'R',
-  CGC: 'R',
-  CGG: 'R',
-  CGT: 'R',
-  ATA: 'I',
-  ATC: 'I',
-  ATT: 'I',
-  ATG: 'M',
-  ACA: 'T',
-  ACC: 'T',
-  ACG: 'T',
-  ACT: 'T',
-  AAC: 'N',
-  AAT: 'N',
-  AAA: 'K',
-  AAG: 'K',
-  AGC: 'S',
-  AGT: 'S',
-  AGA: 'R',
-  AGG: 'R',
-  GTA: 'V',
-  GTC: 'V',
-  GTG: 'V',
-  GTT: 'V',
-  GCA: 'A',
-  GCC: 'A',
-  GCG: 'A',
-  GCT: 'A',
-  GAC: 'D',
-  GAT: 'D',
-  GAA: 'E',
-  GAG: 'E',
-  GGA: 'G',
-  GGC: 'G',
-  GGG: 'G',
-  GGT: 'G',
-}
+export const defaultCodonTable = `  AAs  = FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG
+Starts = ---M------**--*----M---------------M----------------------------
+Base1  = TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG
+Base2  = TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG
+Base3  = TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG`
 
 /**
  *  take CodonTable above and generate larger codon table that includes
@@ -1193,4 +1131,33 @@ export function getLayoutId({
   layoutId: string
 }) {
   return sessionId + '-' + layoutId
+}
+
+// Hook from https://usehooks.com/useLocalStorage/
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') {
+      return initialValue
+    }
+    try {
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch (error) {
+      console.error(error)
+      return initialValue
+    }
+  })
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value
+      setStoredValue(valueToStore)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore))
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  return [storedValue, setValue] as const
 }

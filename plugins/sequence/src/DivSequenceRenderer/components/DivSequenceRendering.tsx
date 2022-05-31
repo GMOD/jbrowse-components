@@ -8,15 +8,14 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import {
   bpSpanPx,
-  revcom,
   complement,
-  defaultStarts,
-  defaultStops,
-  defaultCodonTable,
   generateCodonTable,
+  parseCodonTable,
+  revcom,
 } from '@jbrowse/core/util'
 
 interface MyProps {
+  codonTable: string
   exportSVG?: { rasterizeLayers: boolean }
   features: Map<string, Feature>
   regions: Region[]
@@ -30,7 +29,7 @@ interface MyProps {
 }
 
 function Translation(props: {
-  codonTable: any
+  codonTable: string
   seq: string
   frame: number
   bpPerPx: number
@@ -41,7 +40,6 @@ function Translation(props: {
   theme?: any
 }) {
   const {
-    codonTable,
     seq,
     frame,
     bpPerPx,
@@ -50,8 +48,11 @@ function Translation(props: {
     y,
     reverse = false,
     theme,
+    codonTable: codonTablePre,
   } = props
   const scale = bpPerPx
+  const table = parseCodonTable(codonTablePre)
+  const codonTable = generateCodonTable(table.codons)
 
   // the tilt variable normalizes the frame to where we are starting from,
   // which increases consistency across blocks
@@ -96,9 +97,9 @@ function Translation(props: {
               height={height}
               stroke={render ? '#555' : 'none'}
               fill={
-                defaultStarts.includes(codon)
+                table.starts[codon]
                   ? theme.palette.startCodon
-                  : defaultStops.includes(codon)
+                  : table.stops[codon]
                   ? theme.palette.stopCodon
                   : map[Math.abs(frame)]
               }
@@ -179,14 +180,23 @@ const SequenceSVG = ({
   regions,
   theme: configTheme,
   features = new Map(),
+  codonTable,
   showReverse,
   showForward,
   showTranslation,
   bpPerPx,
-}: any) => {
+}: {
+  regions: Region[]
+  theme: any
+  features?: Map<string, Feature>
+  codonTable: string
+  showReverse: boolean
+  showForward: boolean
+  showTranslation: boolean
+  bpPerPx: number
+}) => {
   const [region] = regions
   const theme = createJBrowseTheme(configTheme)
-  const codonTable = generateCodonTable(defaultCodonTable)
   const height = 20
   const [feature] = [...features.values()]
   if (!feature) {

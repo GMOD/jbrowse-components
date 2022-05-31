@@ -1,16 +1,21 @@
 import React, { useRef, useState, useEffect } from 'react'
 import {
   Button,
-  Select,
+  IconButton,
   MenuItem,
+  Select,
   Typography,
   Tooltip,
   makeStyles,
 } from '@material-ui/core'
+import SettingsDlg from './SequenceFeatureSettingsDialog'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
+
+// locals
 import {
   defaultCodonTable,
+  parseCodonTable,
   generateCodonTable,
   revcom,
   getSession,
@@ -18,6 +23,7 @@ import {
 import { BaseProps } from './types'
 import { getConf } from '../configuration'
 import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
+import { useLocalStorage } from '../util'
 import {
   Feat,
   ParentFeat,
@@ -27,6 +33,9 @@ import {
   dedupe,
   revlist,
 } from './util'
+
+// icons
+import SettingsIcon from '@material-ui/icons/Settings'
 
 interface CoordFeat extends SimpleFeatureSerialized {
   refName: string
@@ -80,6 +89,7 @@ function GenecDNA({
   downstream,
   includeIntrons,
   collapseIntron,
+  intronBp,
 }: {
   utr: Feat[]
   cds: Feat[]
@@ -89,6 +99,7 @@ function GenecDNA({
   downstream?: string
   includeIntrons?: boolean
   collapseIntron?: boolean
+  intronBp: number
 }) {
   const chunks = cds.length
     ? [...cds, ...utr].sort((a, b) => a.start - b.start)
@@ -114,8 +125,10 @@ function GenecDNA({
               </span>
               {includeIntrons && index < chunks.length - 1 ? (
                 <span style={{ background: intronColor }}>
-                  {collapseIntron && intron.length > 20
-                    ? `${intron.slice(0, 10)}...${intron.slice(-10)}`
+                  {collapseIntron && intron.length > intronBp * 2
+                    ? `${intron.slice(0, intronBp)}...${intron.slice(
+                        -intronBp,
+                      )}`
                     : intron}
                 </span>
               ) : null}
@@ -129,136 +142,141 @@ function GenecDNA({
     </>
   )
 }
-
+interface SequencePanelProps {
+  sequence: SeqState
+  feature: ParentFeat
+  mode: string
+  intronBp: number
+  codonTable: string
+}
 export const SequencePanel = React.forwardRef<
   HTMLDivElement,
-  {
-    sequence: SeqState
-    feature: ParentFeat
-    mode: string
+  SequencePanelProps
+>((props, ref) => {
+  let {
+    feature,
+    mode,
+    intronBp,
+    codonTable: codonTablePre,
+    sequence: { seq, upstream = '', downstream = '' },
+  } = props
+  const { subfeatures } = feature
+  const codonTable = generateCodonTable(parseCodonTable(codonTablePre))
+
+  if (!subfeatures) {
+    return null
   }
->(
-  (
-    {
-      feature,
-      mode,
-      sequence: { seq: sequence, upstream = '', downstream = '' },
-    },
-    ref,
-  ) => {
-    const { subfeatures } = feature
-    const codonTable = generateCodonTable(defaultCodonTable)
 
-    if (!subfeatures) {
-      return null
-    }
+  const children = subfeatures
+    .sort((a, b) => a.start - b.start)
+    .map(sub => ({
+      ...sub,
+      start: sub.start - feature.start,
+      end: sub.end - feature.start,
+    }))
 
-    const children = subfeatures
-      .sort((a, b) => a.start - b.start)
-      .map(sub => ({
-        ...sub,
-        start: sub.start - feature.start,
-        end: sub.end - feature.start,
-      }))
+  // we filter duplicate entries in cds and exon lists duplicate entries may be
+  // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
+  // probably worth ignoring here (produces broken protein translations if
+  // included)
+  //
+  // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
+  // transcript ENST00000445597.6
+  //
+  // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
 
-    // we filter duplicate entries in cds and exon lists duplicate entries may be
-    // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
-    // probably worth ignoring here (produces broken protein translations if
-    // included)
-    //
-    // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
-    // transcript ENST00000445597.6
-    //
-    // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
+  let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
+  let utr = dedupe(children.filter(sub => sub.type.match(/utr/i)))
+  let exons = dedupe(children.filter(sub => sub.type === 'exon'))
 
-    let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
-    let utr = dedupe(children.filter(sub => sub.type.match(/utr/i)))
-    let exons = dedupe(children.filter(sub => sub.type === 'exon'))
+  if (!utr.length && cds.length && exons.length) {
+    utr = calculateUTRs(cds, exons)
+  }
 
-    if (!utr.length && cds.length && exons.length) {
-      utr = calculateUTRs(cds, exons)
-    }
+  if (feature.strand === -1) {
+    // doing this in a single assignment is needed because downstream and
+    // upstream are swapped so this avoids a temp variable
+    ;[seq, upstream, downstream] = [
+      revcom(seq),
+      revcom(downstream),
+      revcom(upstream),
+    ]
+    cds = revlist(cds, seq.length)
+    exons = revlist(exons, seq.length)
+    utr = revlist(utr, seq.length)
+  }
 
-    if (feature.strand === -1) {
-      // doing this in a single assignment is needed because downstream and
-      // upstream are swapped so this avoids a temp variable
-      ;[sequence, upstream, downstream] = [
-        revcom(sequence),
-        revcom(downstream),
-        revcom(upstream),
-      ]
-      cds = revlist(cds, sequence.length)
-      exons = revlist(exons, sequence.length)
-      utr = revlist(utr, sequence.length)
-    }
-
-    return (
-      <div ref={ref} data-testid="sequence_panel">
-        <div
-          style={{
-            fontFamily: 'monospace',
-            wordWrap: 'break-word',
-            maxWidth: 600,
-          }}
-        >
-          {`>${feature.name || feature.id || 'unknown'}-${mode}\n`}
-          {mode === 'cds' ? (
-            <GeneCDS cds={cds} sequence={sequence} />
-          ) : mode === 'cdna' ? (
-            <GenecDNA exons={exons} cds={cds} utr={utr} sequence={sequence} />
-          ) : mode === 'protein' ? (
-            <GeneProtein
-              cds={cds}
-              codonTable={codonTable}
-              sequence={sequence}
-            />
-          ) : mode === 'gene' ? (
-            <GenecDNA
-              exons={exons}
-              cds={cds}
-              utr={utr}
-              sequence={sequence}
-              includeIntrons
-            />
-          ) : mode === 'gene_collapsed_intron' ? (
-            <GenecDNA
-              exons={exons}
-              cds={cds}
-              sequence={sequence}
-              utr={utr}
-              includeIntrons
-              collapseIntron
-            />
-          ) : mode === 'gene_updownstream' ? (
-            <GenecDNA
-              exons={exons}
-              cds={cds}
-              sequence={sequence}
-              utr={utr}
-              upstream={upstream}
-              downstream={downstream}
-              includeIntrons
-            />
-          ) : mode === 'gene_updownstream_collapsed_intron' ? (
-            <GenecDNA
-              exons={exons}
-              cds={cds}
-              sequence={sequence}
-              utr={utr}
-              upstream={upstream}
-              downstream={downstream}
-              includeIntrons
-              collapseIntron
-            />
-          ) : (
-            <div>Unknown type</div>
-          )}
-        </div>
+  return (
+    <div ref={ref} data-testid="sequence_panel">
+      <div
+        style={{
+          fontFamily: 'monospace',
+          wordWrap: 'break-word',
+          maxWidth: 600,
+        }}
+      >
+        {`>${feature.name || feature.id || 'unknown'}-${mode}\n`}
+        {mode === 'cds' ? (
+          <GeneCDS cds={cds} sequence={seq} />
+        ) : mode === 'cdna' ? (
+          <GenecDNA
+            exons={exons}
+            cds={cds}
+            utr={utr}
+            sequence={seq}
+            intronBp={intronBp}
+          />
+        ) : mode === 'protein' ? (
+          <GeneProtein cds={cds} codonTable={codonTable} sequence={seq} />
+        ) : mode === 'gene' ? (
+          <GenecDNA
+            exons={exons}
+            cds={cds}
+            utr={utr}
+            sequence={seq}
+            includeIntrons
+            intronBp={intronBp}
+          />
+        ) : mode === 'gene_collapsed_intron' ? (
+          <GenecDNA
+            exons={exons}
+            cds={cds}
+            sequence={seq}
+            utr={utr}
+            includeIntrons
+            collapseIntron
+            intronBp={intronBp}
+          />
+        ) : mode === 'gene_updownstream' ? (
+          <GenecDNA
+            exons={exons}
+            cds={cds}
+            sequence={seq}
+            utr={utr}
+            upstream={upstream}
+            downstream={downstream}
+            includeIntrons
+            intronBp={intronBp}
+          />
+        ) : mode === 'gene_updownstream_collapsed_intron' ? (
+          <GenecDNA
+            exons={exons}
+            cds={cds}
+            sequence={seq}
+            utr={utr}
+            upstream={upstream}
+            downstream={downstream}
+            includeIntrons
+            collapseIntron
+            intronBp={intronBp}
+          />
+        ) : (
+          <div>Unknown type</div>
+        )}
       </div>
-    )
-  },
-)
-
+    </div>
+  )
+})
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -267,6 +285,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const parentFeature = feature as unknown as ParentFeat
   const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
   const seqPanelRef = useRef<HTMLDivElement>(null)
+  const [settingsDlgOpen, setSettingsDlgOpen] = useState(false)
 
   const { ref, inView } = useInView()
   const [sequence, setSequence] = useState<SeqState>()
@@ -274,6 +293,15 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const [copied, setCopied] = useState(false)
   const [copiedHtml, setCopiedHtml] = useState(false)
+  const [intronBp, setIntronBp] = useLocalStorage('intronBp', 5)
+  const [upDownStreamBp, setUpDownStreamBp] = useLocalStorage(
+    'updownstreamBp',
+    500,
+  )
+  const [codonTable, setCodonTable] = useLocalStorage(
+    'codonTable',
+    defaultCodonTable,
+  )
 
   useEffect(() => {
     let finished = false
@@ -310,10 +338,15 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     }
     ;(async () => {
       try {
+        console.log(upDownStreamBp)
         const { start, end, refName } = feature as CoordFeat
         const seq = await fetchSeq(start, end, refName)
-        const up = await fetchSeq(Math.max(0, start - 500), start, refName)
-        const down = await fetchSeq(end, end + 500, refName)
+        const up = await fetchSeq(
+          Math.max(0, start - upDownStreamBp),
+          start,
+          refName,
+        )
+        const down = await fetchSeq(end, end + upDownStreamBp, refName)
         if (!finished) {
           setSequence({ seq, upstream: up, downstream: down })
         }
@@ -325,7 +358,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     return () => {
       finished = true
     }
-  }, [feature, inView, model])
+  }, [feature, inView, model, upDownStreamBp])
 
   const loading = !sequence
 
@@ -339,16 +372,19 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
         <MenuItem value="gene">Gene w/ introns</MenuItem>
         <MenuItem value="gene_collapsed_intron">
-          Gene w/ 10bp of intron
+          Gene w/ {intronBp}bp of intron
         </MenuItem>
         <MenuItem value="gene_updownstream">
-          Gene w/ 500bp up+down stream
+          Gene w/ {upDownStreamBp}bp up+down stream
         </MenuItem>
         <MenuItem value="gene_updownstream_collapsed_intron">
-          Gene w/ 500bp up+down stream w/ 10bp intron
+          Gene w/ {upDownStreamBp}bp up+down stream w/ 10bp intron
         </MenuItem>
         <MenuItem value="cdna">cDNA</MenuItem>
       </Select>
+      <IconButton onClick={() => setSettingsDlgOpen(true)}>
+        <SettingsIcon />
+      </IconButton>
       <Button
         className={classes.button}
         type="button"
@@ -381,22 +417,40 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
           {copiedHtml ? 'Copied to clipboard!' : 'Copy as HTML'}
         </Button>
       </Tooltip>
-      <div data-testid="feature_sequence">
+      <>
         {error ? (
           <Typography color="error">{`${error}`}</Typography>
         ) : loading ? (
-          <div>Loading gene sequence...</div>
+          <Typography>Loading gene sequence...</Typography>
         ) : sequence ? (
           <SequencePanel
             ref={seqPanelRef}
             feature={parentFeature}
             mode={mode}
             sequence={sequence}
+            intronBp={intronBp}
+            codonTable={codonTable}
           />
         ) : (
-          <div>No sequence found</div>
+          <Typography>No sequence found</Typography>
         )}
-      </div>
+      </>
+      {settingsDlgOpen ? (
+        <SettingsDlg
+          handleClose={arg => {
+            if (arg) {
+              const { codonTable, upDownStreamBp, intronBp } = arg
+              setCodonTable(codonTable)
+              setIntronBp(intronBp)
+              setUpDownStreamBp(upDownStreamBp)
+            }
+            setSettingsDlgOpen(false)
+          }}
+          upDownStreamBp={upDownStreamBp}
+          codonTable={codonTable}
+          intronBp={intronBp}
+        />
+      ) : null}
     </div>
   )
 }
