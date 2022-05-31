@@ -24,6 +24,7 @@ interface MyProps {
   highResolutionScaling: number
   theme: any
   showForward: boolean
+  showAltStarts: boolean
   showReverse: boolean
   showTranslation: boolean
 }
@@ -36,6 +37,7 @@ function Translation(props: {
   region: Region
   reverse?: boolean
   height: number
+  showAltStarts: boolean
   y: number
   theme?: any
 }) {
