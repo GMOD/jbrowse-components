@@ -26,6 +26,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         showForward: types.optional(types.boolean, true),
         showReverse: types.optional(types.boolean, true),
         showTranslation: types.optional(types.boolean, true),
+        showAltStarts: types.optional(types.boolean, false),
         codonTable: types.optional(types.string, defaultCodonTable),
         height: 180,
       }),
@@ -34,13 +35,20 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       const { renderProps: superRenderProps } = self
       return {
         renderProps() {
-          const { codonTable, showForward, showReverse, showTranslation } = self
+          const {
+            codonTable,
+            showForward,
+            showReverse,
+            showAltStarts,
+            showTranslation,
+          } = self
           return {
             ...superRenderProps(),
             rpcDriverName: self.rpcDriverName,
             config: self.configuration.renderer,
             showForward,
             showReverse,
+            showAltStarts,
             showTranslation,
             codonTable,
           }
@@ -68,6 +76,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
       },
+      toggleShowAltStarts() {
+        self.showAltStarts = !self.showAltStarts
+      },
       setCodonTable(arg: string) {
         self.codonTable = arg
       },
@@ -89,6 +100,14 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             checked: self.showReverse,
             onClick: () => {
               self.toggleShowReverse()
+            },
+          },
+          {
+            label: 'Show alternative start codons',
+            type: 'checkbox',
+            checked: self.showAltStarts,
+            onClick: () => {
+              self.toggleShowAltStarts()
             },
           },
           {

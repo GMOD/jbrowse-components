@@ -55,6 +55,7 @@ export const jbrowseDefaultPalette = {
   quaternary: refTheme.palette.augmentColor({ main: mandarin }),
   stopCodon: '#e22',
   startCodon: '#3e3',
+  altStartCodon: '#aca',
   bases: {
     A: refTheme.palette.augmentColor(green),
     C: refTheme.palette.augmentColor(blue),

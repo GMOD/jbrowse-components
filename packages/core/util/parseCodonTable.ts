@@ -6,6 +6,7 @@ export function parseCodonTable(str: string) {
 
   const codons = {} as Record<string, string>
   const starts = {} as Record<string, boolean>
+  const altstarts = {} as Record<string, boolean>
   const stops = {} as Record<string, boolean>
   for (let i = 0; i < lines[0].length; i++) {
     const codon = lines[2][i] + lines[3][i] + lines[4][i]
@@ -16,11 +17,15 @@ export function parseCodonTable(str: string) {
   for (let i = 0; i < lines[0].length; i++) {
     const codon = lines[2][i] + lines[3][i] + lines[4][i]
     if (lines[1][i] === 'M') {
-      starts[codon] = true
+      if (codons[codon] === 'M') {
+        starts[codon] = true
+      } else {
+        altstarts[codon] = true
+      }
     } else if (lines[1][i] === '*') {
       stops[codon] = true
     }
   }
 
-  return { codons, starts, stops }
+  return { codons, starts, altstarts, stops }
 }

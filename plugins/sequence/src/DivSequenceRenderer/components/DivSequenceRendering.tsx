@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { Region } from '@jbrowse/core/util/types'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import {
@@ -12,6 +10,8 @@ import {
   generateCodonTable,
   parseCodonTable,
   revcom,
+  Feature,
+  Region,
 } from '@jbrowse/core/util'
 
 interface MyProps {
@@ -48,6 +48,7 @@ function Translation(props: {
     y,
     reverse = false,
     theme,
+    showAltStarts,
     codonTable: codonTablePre,
   } = props
   const scale = bpPerPx
@@ -99,6 +100,8 @@ function Translation(props: {
               fill={
                 table.starts[codon]
                   ? theme.palette.startCodon
+                  : table.altstarts[codon] && showAltStarts
+                  ? theme.palette.altStartCodon
                   : table.stops[codon]
                   ? theme.palette.stopCodon
                   : map[Math.abs(frame)]
@@ -184,6 +187,7 @@ const SequenceSVG = ({
   showReverse,
   showForward,
   showTranslation,
+  showAltStarts,
   bpPerPx,
 }: {
   regions: Region[]
@@ -193,6 +197,7 @@ const SequenceSVG = ({
   showReverse: boolean
   showForward: boolean
   showTranslation: boolean
+  showAltStarts: boolean
   bpPerPx: number
 }) => {
   const [region] = regions
@@ -228,6 +233,7 @@ const SequenceSVG = ({
               theme={theme}
               height={height}
               reverse={region.reversed}
+              showAltStarts={showAltStarts}
             />
           ))
         : null}
@@ -271,6 +277,7 @@ const SequenceSVG = ({
               theme={theme}
               height={height}
               reverse={!region.reversed}
+              showAltStarts={showAltStarts}
             />
           ))
         : null}
