@@ -86,11 +86,13 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       value="string1"
                     />
                   </div>
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-filled"
                   >
-                    stringTest
-                  </p>
+                    <div>
+                      stringTest
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -636,7 +638,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 class="makeStyles-paperContent"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root"
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -645,7 +647,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     numberTest
                   </label>
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <input
                       aria-invalid="false"
@@ -654,11 +656,13 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       value="88.5"
                     />
                   </div>
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-filled"
                   >
-                    numberTest
-                  </p>
+                    <div>
+                      numberTest
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -672,7 +676,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 class="makeStyles-paperContent"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root"
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -681,7 +685,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     integerTest
                   </label>
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <input
                       aria-invalid="false"
@@ -690,11 +694,13 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       value="42"
                     />
                   </div>
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-filled"
                   >
-                    integerTest
-                  </p>
+                    <div>
+                      integerTest
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -872,7 +878,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 class="makeStyles-paperContent"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root"
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -881,7 +887,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     maxFeatureScreenDensity
                   </label>
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <input
                       aria-invalid="false"
@@ -890,11 +896,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       value="0.3"
                     />
                   </div>
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-filled"
                   >
-                    maximum features per pixel that is displayed in the view, used if byte size estimates not available
-                  </p>
+                    <div>
+                      maximum features per pixel that is displayed in the view, used if byte size estimates not available
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -908,7 +916,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 class="makeStyles-paperContent"
               >
                 <div
-                  class="MuiFormControl-root MuiTextField-root"
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                 >
                   <label
                     class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -917,7 +925,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     fetchSizeLimit
                   </label>
                   <div
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                   >
                     <input
                       aria-invalid="false"
@@ -926,11 +934,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       value="1000000"
                     />
                   </div>
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-filled"
                   >
-                    maximum data to attempt to download for a given track, used if adapter doesn't specify one
-                  </p>
+                    <div>
+                      maximum data to attempt to download for a given track, used if adapter doesn't specify one
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -1284,11 +1294,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     />
                                   </svg>
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
-                                </p>
+                                  <div>
+                                    read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1338,11 +1350,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     />
                                   </svg>
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  Alternative display modes
-                                </p>
+                                  <div>
+                                    Alternative display modes
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1356,7 +1370,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
-                                class="MuiFormControl-root MuiTextField-root"
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                               >
                                 <label
                                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -1365,7 +1379,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   minSubfeatureWidth
                                 </label>
                                 <div
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                                 >
                                   <input
                                     aria-invalid="false"
@@ -1374,11 +1388,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     value="0.7"
                                   />
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
-                                </p>
+                                  <div>
+                                    the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1392,7 +1408,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
-                                class="MuiFormControl-root MuiTextField-root"
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                               >
                                 <label
                                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -1401,7 +1417,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   maxHeight
                                 </label>
                                 <div
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                                 >
                                   <input
                                     aria-invalid="false"
@@ -1410,11 +1426,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     value="1200"
                                   />
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  the maximum height to be used in a pileup rendering
-                                </p>
+                                  <div>
+                                    the maximum height to be used in a pileup rendering
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1428,7 +1446,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
-                                class="MuiFormControl-root MuiTextField-root"
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                               >
                                 <label
                                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -1437,7 +1455,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   maxClippingSize
                                 </label>
                                 <div
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                                 >
                                   <input
                                     aria-invalid="false"
@@ -1446,11 +1464,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     value="10000"
                                   />
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  the max clip size to be used in a pileup rendering
-                                </p>
+                                  <div>
+                                    the max clip size to be used in a pileup rendering
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1464,7 +1484,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
-                                class="MuiFormControl-root MuiTextField-root"
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                               >
                                 <label
                                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -1473,7 +1493,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   height
                                 </label>
                                 <div
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                                 >
                                   <input
                                     aria-invalid="false"
@@ -1482,11 +1502,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     value="7"
                                   />
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  the height of each feature in a pileup alignment
-                                </p>
+                                  <div>
+                                    the height of each feature in a pileup alignment
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1582,7 +1604,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
-                                class="MuiFormControl-root MuiTextField-root"
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
                               >
                                 <label
                                   class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
@@ -1591,7 +1613,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   largeInsertionIndicatorScale
                                 </label>
                                 <div
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl"
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
                                 >
                                   <input
                                     aria-invalid="false"
@@ -1600,11 +1622,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     value="10"
                                   />
                                 </div>
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-filled"
                                 >
-                                  scale at which to draw the large insertion indicators (bp/pixel)
-                                </p>
+                                  <div>
+                                    scale at which to draw the large insertion indicators (bp/pixel)
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1769,7 +1793,11 @@ exports[`ConfigurationEditor widget renders with just the required model element
                       value="bar"
                     />
                   </div>
-                  
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+                  >
+                    <div />
+                  </div>
                 </div>
               </div>
               <div

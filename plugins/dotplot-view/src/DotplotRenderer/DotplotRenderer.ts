@@ -6,8 +6,7 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { viewBpToPx, renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
+import { viewBpToPx, renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
 import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
@@ -85,6 +84,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     )
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const color = readConfObject(config, 'color')
+    const isCallback = config.color.isCallback
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
@@ -116,7 +116,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-
       if (strand === -1) {
         ;[end, start] = [start, end]
       }
@@ -134,15 +133,16 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
             break
           }
         }
+      } else if (colorBy === 'meanQueryIdentity') {
+        const identity = feature.get('meanScore')
+        r = `hsl(${identity * 200},100%,40%)`
       } else if (colorBy === 'mappingQuality') {
         const mq = feature.get('mappingQual')
-        r = `hsl(${mq},50%,50%)`
+        r = `hsl(${mq},100%,40%)`
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
-        r = color
-      } else if (colorBy === 'callback') {
-        r = readConfObject(config, 'color', { feature })
+        r = isCallback ? readConfObject(config, 'color', { feature }) : color
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
