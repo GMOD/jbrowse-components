@@ -6,7 +6,11 @@ import { Region } from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, Feature } from '@jbrowse/core/util'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 
 export interface PAFRecord {
@@ -157,53 +161,51 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    return getWeightedMeans(
-      text
-        .split('\n')
-        .filter(line => !!line)
-        .map(line => {
-          const [
-            qname,
-            ,
-            qstart,
-            qend,
-            strand,
-            tname,
-            ,
-            tstart,
-            tend,
-            numMatches,
-            blockLen,
-            mappingQual,
-            ...fields
-          ] = line.split('\t')
+    return text
+      .split('\n')
+      .filter(line => !!line)
+      .map(line => {
+        const [
+          qname,
+          ,
+          qstart,
+          qend,
+          strand,
+          tname,
+          ,
+          tstart,
+          tend,
+          numMatches,
+          blockLen,
+          mappingQual,
+          ...fields
+        ] = line.split('\t')
 
-          const rest = Object.fromEntries(
-            fields.map(field => {
-              const r = field.indexOf(':')
-              const fieldName = field.slice(0, r)
-              const fieldValue = field.slice(r + 3)
-              return [fieldName, fieldValue]
-            }),
-          )
+        const rest = Object.fromEntries(
+          fields.map(field => {
+            const r = field.indexOf(':')
+            const fieldName = field.slice(0, r)
+            const fieldValue = field.slice(r + 3)
+            return [fieldName, fieldValue]
+          }),
+        )
 
-          return {
-            tname,
-            tstart: +tstart,
-            tend: +tend,
-            qname,
-            qstart: +qstart,
-            qend: +qend,
-            strand: strand === '-' ? -1 : 1,
-            extra: {
-              numMatches: +numMatches,
-              blockLen: +blockLen,
-              mappingQual: +mappingQual,
-              ...rest,
-            },
-          } as PAFRecord
-        }),
-    )
+        return {
+          tname,
+          tstart: +tstart,
+          tend: +tend,
+          qname,
+          qstart: +qstart,
+          qend: +qend,
+          strand: strand === '-' ? -1 : 1,
+          extra: {
+            numMatches: +numMatches,
+            blockLen: +blockLen,
+            mappingQual: +mappingQual,
+            ...rest,
+          },
+        } as PAFRecord
+      })
   }
 
   async hasDataForRefName() {
@@ -226,18 +228,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   async getRefNames(opts: BaseOptions = {}) {
     // @ts-ignore
     const r1 = opts.regions?.[0].assemblyName
-    const feats = await this.setup()
+    const feats = await this.setup(opts)
 
     const idx = this.getAssemblyNames().indexOf(r1)
     if (idx !== -1) {
       const set = new Set<string>()
       for (let i = 0; i < feats.length; i++) {
-        const f = feats[i]
-        if (idx === 0) {
-          set.add(f.qname)
-        } else {
-          set.add(f.tname)
-        }
+        set.add(idx === 0 ? feats[i].qname : feats[i].tname)
       }
       return Array.from(set)
     }
@@ -245,9 +242,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  getFeatures(region: Region, opts: BaseOptions = {}) {
+  getFeatures(
+    region: Region,
+    opts: BaseOptions & { config?: AnyConfigurationModel } = {},
+  ) {
     return ObservableCreate<Feature>(async observer => {
-      const pafRecords = await this.setup(opts)
+      let pafRecords = await this.setup(opts)
+      const { config } = opts
+      if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
+        pafRecords = getWeightedMeans(pafRecords)
+      }
       const assemblyNames = this.getAssemblyNames()
       const { assemblyName } = region
 
