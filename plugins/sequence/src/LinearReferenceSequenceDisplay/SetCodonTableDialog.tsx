@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   Button,
+  Chip,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -11,6 +12,8 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+
+import { defaultCodonTable } from '@jbrowse/core/util'
 
 // icons
 import CloseIcon from '@material-ui/icons/Close'
@@ -59,14 +62,26 @@ export default function SetCodonTableDialog({
       </DialogTitle>
       <DialogContent className={classes.dialogContent}>
         <Typography>
-          Settings for displaying the translation on the sequence track e.g.
-          protein translations. See{' '}
-          <Link href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi">
-            table of genetic codes{' '}
+          Settings for the calculating feature sequences e.g. protein
+          translations. See{' '}
+          <Link
+            href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"
+            target="_blank"
+          >
+            table of genetic codes
           </Link>{' '}
           for more information on translation tables. You can replace the table
-          below with one of choice from a different translation table.
-        </Typography>
+          below with one of choice from a different translation table. Note: The
+          codon table in the feature sequence details is separate from the
+          sequence track codon table.
+        </Typography>{' '}
+        {codonTable !== defaultCodonTable ? (
+          <Chip
+            color="primary"
+            label="Using alternative codon table"
+            size="small"
+          />
+        ) : null}
         <TextField
           variant="outlined"
           helperText="codon table"
@@ -81,6 +96,12 @@ export default function SetCodonTableDialog({
             },
           }}
         />
+        <Button
+          variant="contained"
+          onClick={() => setCodonTable(defaultCodonTable)}
+        >
+          Reset to standard table
+        </Button>
       </DialogContent>
       <DialogActions>
         <Button

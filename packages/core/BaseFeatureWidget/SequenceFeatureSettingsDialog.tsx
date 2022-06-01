@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   Button,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -12,6 +13,8 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core'
+
+import { defaultCodonTable } from '@jbrowse/core/util'
 
 // icons
 import CloseIcon from '@material-ui/icons/Close'
@@ -63,9 +66,7 @@ export default function SequenceFeatureSettingsDialog({
         {handleClose ? (
           <IconButton
             className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
+            onClick={() => handleClose()}
           >
             <CloseIcon />
           </IconButton>
@@ -77,12 +78,25 @@ export default function SequenceFeatureSettingsDialog({
         <Typography>
           Settings for the calculating feature sequences e.g. protein
           translations. See{' '}
-          <Link href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi">
+          <Link
+            href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"
+            target="_blank"
+          >
             table of genetic codes
           </Link>{' '}
           for more information on translation tables. You can replace the table
-          below with one of choice from a different translation table.
+          below with one of choice from a different translation table. Note:
+          changes here will remain the same until you change it back. The codon
+          table on the sequence track is also separate from here.
         </Typography>
+
+        {codonTable !== defaultCodonTable ? (
+          <Chip
+            color="primary"
+            label="Using alternative codon table"
+            size="small"
+          />
+        ) : null}
 
         <TextField
           variant="outlined"
@@ -98,6 +112,12 @@ export default function SequenceFeatureSettingsDialog({
             },
           }}
         />
+        <Button
+          variant="contained"
+          onClick={() => setCodonTable(defaultCodonTable)}
+        >
+          Reset to standard table
+        </Button>
 
         <TextField
           helperText="#bp surrounding splice site in intron to display"

@@ -98,25 +98,19 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             label: 'Show reverse',
             type: 'checkbox',
             checked: self.showReverse,
-            onClick: () => {
-              self.toggleShowReverse()
-            },
+            onClick: () => self.toggleShowReverse(),
           },
           {
             label: 'Show alternative start codons',
             type: 'checkbox',
             checked: self.showAltStarts,
-            onClick: () => {
-              self.toggleShowAltStarts()
-            },
+            onClick: () => self.toggleShowAltStarts(),
           },
           {
             label: 'Show translation',
             type: 'checkbox',
             checked: self.showTranslation,
-            onClick: () => {
-              self.toggleShowTranslation()
-            },
+            onClick: () => self.toggleShowTranslation(),
           },
           {
             label: 'Set codon table',

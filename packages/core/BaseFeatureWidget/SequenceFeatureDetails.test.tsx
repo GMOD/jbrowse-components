@@ -1,6 +1,7 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import fs from 'fs'
+import { defaultCodonTable } from '../util'
 import { SequencePanel } from './SequenceFeatureDetails'
 import DLGAP3 from './test_data/DLGAP3.json'
 import NCDN from './test_data/NCDN.json'
@@ -22,6 +23,8 @@ test('test using the sequence feature panel', () => {
       sequence={{ seq: dna }}
       mode="protein"
       feature={feature.subfeatures[0]}
+      codonTable={defaultCodonTable}
+      intronBp={10}
     />,
   )
 
@@ -32,7 +35,7 @@ test('test using the sequence feature panel', () => {
   expect(element.textContent).toEqual(`>NM_001080418.3-protein\n${pep}*`)
 })
 
-const readFasta = filename => {
+const readFasta = (filename: string) => {
   return fs
     .readFileSync(require.resolve(filename), 'utf8')
     .split('\n')
@@ -51,6 +54,8 @@ test('NCDN collapsed intron', () => {
       sequence={{ seq: dna }}
       mode="gene_collapsed_intron"
       feature={feature.subfeatures[0]}
+      codonTable={defaultCodonTable}
+      intronBp={10}
     />,
   )
 
@@ -77,6 +82,8 @@ test('NCDN updownstream', () => {
       sequence={{ seq, upstream }}
       mode="gene_updownstream"
       feature={feature.subfeatures[0]}
+      codonTable={defaultCodonTable}
+      intronBp={10}
     />,
   )
 
@@ -102,6 +109,8 @@ test('single exon cDNA should not have duplicate sequences', () => {
     <SequencePanel
       sequence={{ seq }}
       mode="cdna"
+      codonTable={defaultCodonTable}
+      intronBp={10}
       feature={{
         start: 1200,
         end: 1500,
