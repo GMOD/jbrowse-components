@@ -332,7 +332,12 @@ These are loaded into a IndexedFastaAdapter as follows
 
 #### FASTA Header Location
 
-Meta-information on the assembly can be specified by adding the following section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration. The FFRGS (Fair Formatted Reference Genome Standard) header specification for FASTA files can be found [here](https://github.com/FFRGS/FFRGS-Specification).
+Meta-information on the assembly can be specified by adding the following
+section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
+One option for the contents of this metadata is the FFRGS (Fair Formatted
+Reference Genome Standard) header specification for FASTA files can be found
+[here](https://github.com/FFRGS/FFRGS-Specification), however, just the raw
+plaintext is displayed for this file so the format is not strict.
 
 ```json
   "metadataLocation": {

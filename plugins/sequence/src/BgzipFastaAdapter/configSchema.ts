@@ -15,11 +15,10 @@ export default ConfigurationSchema(
       },
     },
     metadataLocation: {
-      description:
-        'Optional header metadata file. Specification can be found here: https://github.com/FFRGS/FFRGS-Specification',
+      description: 'Optional metadata file',
       type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/fa.header.yaml',
+        uri: '/path/to/fa.metadata.yaml',
         locationType: 'UriLocation',
       },
     },

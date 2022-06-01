@@ -6,9 +6,8 @@ import {
 import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { SimpleFeature, Feature } from '@jbrowse/core/util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import LRU from '@jbrowse/core/util/QuickLRU'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -16,6 +15,8 @@ import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class extends BaseSequenceAdapter {
   protected fasta: IndexedFasta
+
+  protected header?: Promise<string>
 
   private seqCache = new AbortablePromiseCache({
     cache: new LRU({ maxSize: 200 }),
@@ -34,8 +35,8 @@ export default class extends BaseSequenceAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const fastaLocation = readConfObject(config, 'fastaLocation')
-    const faiLocation = readConfObject(config, 'faiLocation')
+    const fastaLocation = this.getConf('fastaLocation')
+    const faiLocation = this.getConf('faiLocation')
     const fastaOpts = {
       fasta: openLocation(fastaLocation as FileLocation, this.pluginManager),
       fai: openLocation(faiLocation as FileLocation, this.pluginManager),
@@ -57,21 +58,22 @@ export default class extends BaseSequenceAdapter {
     }))
   }
 
-  public async getHeader(opts?: BaseOptions) {
-    if (this.header != null) {
+  public async getHeader() {
+    if (this.header) {
       return this.header
     }
+    const loc = this.getConf('metadataLocation')
 
-    if (
-      !('metadataLocation' in opts.adapterConfig) ||
-      opts.adapterConfig.metadataLocation['uri'] === '/path/to/fa.header.yaml'
-    ) {
+    if (loc.uri === '' || loc.uri === '/path/to/fa.metadata.yaml') {
       return null
     }
 
-    this.header = openLocation(opts.adapterConfig.metadataLocation).readFile(
-      'utf8',
-    )
+    this.header = openLocation(loc)
+      .readFile('utf8')
+      .catch(e => {
+        this.header = undefined
+        throw e
+      })
 
     return this.header
   }
