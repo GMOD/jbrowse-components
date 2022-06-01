@@ -57,6 +57,25 @@ export default class extends BaseSequenceAdapter {
     }))
   }
 
+  public async getHeader(opts?: BaseOptions) {
+    if (this.header != null) {
+      return this.header
+    }
+
+    if (
+      !('metadataLocation' in opts.adapterConfig) ||
+      opts.adapterConfig.metadataLocation['uri'] === '/path/to/fa.header.yaml'
+    ) {
+      return null
+    }
+
+    this.header = openLocation(opts.adapterConfig.metadataLocation).readFile(
+      'utf8',
+    )
+
+    return this.header
+  }
+
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
