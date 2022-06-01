@@ -287,7 +287,6 @@
         "track": "genomicSuperDups"
       }
     },
-
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
@@ -3864,6 +3863,37 @@
         }
       },
       "assemblyNames": ["chm13v2.0"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "bonito_calls",
+      "name": "Clive-ome 5mC",
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/cliveome_kit14_2022.05/cfdna/basecalling/bonito_mod/bonito_calls.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ont-open-data.s3.amazonaws.com/cliveome_kit14_2022.05/cfdna/basecalling/bonito_mod/bonito_calls.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],
