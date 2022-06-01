@@ -15,7 +15,7 @@ import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import { chooseGridPitch } from '../util'
+import { chooseGridPitch, tickToStringAndTruncate } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
@@ -354,7 +354,7 @@ const OverviewBox = observer(
                     color: refNameColor,
                   }}
                 >
-                  {tickLabel.toLocaleString('en-US')}
+                  {tickToStringAndTruncate(tickLabel)}
                 </Typography>
               ))
             : null}

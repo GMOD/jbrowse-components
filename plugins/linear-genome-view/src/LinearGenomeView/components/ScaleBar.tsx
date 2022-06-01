@@ -13,7 +13,7 @@ import {
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
-import { makeTicks } from '../util'
+import { makeTicks, tickToStringAndTruncate } from '../util'
 
 type LGV = LinearGenomeViewModel
 
@@ -116,7 +116,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     (block.reversed
                       ? block.end - tick.base
                       : tick.base - block.start) / model.bpPerPx
-                  const baseNumber = (tick.base + 1).toLocaleString('en-US')
+                  const baseNumber = tick.base + 1
                   return (
                     <div
                       key={tick.base}
@@ -125,7 +125,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     >
                       {baseNumber ? (
                         <Typography className={classes.majorTickLabel}>
-                          {baseNumber}
+                          {tickToStringAndTruncate(baseNumber)}
                         </Typography>
                       ) : null}
                     </div>
