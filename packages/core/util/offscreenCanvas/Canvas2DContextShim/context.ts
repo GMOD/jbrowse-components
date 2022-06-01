@@ -104,6 +104,10 @@ export default class OffscreenCanvasRenderingContext2DShim {
     this.pushMethodCall('arcTo', args)
   }
 
+  bezierCurveTo(...args: RealP<'bezierCurveTo'>): RealRet<'bezierCurveTo'> {
+    this.pushMethodCall('bezierCurveTo', args)
+  }
+
   beginPath(...args: RealP<'beginPath'>): RealRet<'beginPath'> {
     this.pushMethodCall('beginPath', args)
   }
@@ -112,9 +116,39 @@ export default class OffscreenCanvasRenderingContext2DShim {
     this.pushMethodCall('clearRect', args)
   }
 
+  // clip(...args: RealP<'clip'>): RealRet<'clip'> {
+  //   this.pushMethodCall('clip', args)
+  // }
+
   closePath(...args: RealP<'closePath'>): RealRet<'closePath'> {
     this.pushMethodCall('closePath', args)
   }
+
+  // createLinearGradient(
+  //   ...args: RealP<'createLinearGradient'>
+  // ): RealRet<'createLinearGradient'> {
+  //   this.pushMethodCall('createLinearGradient', args)
+  // }
+
+  // createPattern(...args: RealP<'createPattern'>): RealRet<'createPattern'> {
+  //   this.pushMethodCall('createPattern', args)
+  // }
+
+  // createRadialGradient(
+  //   ...args: RealP<'createRadialGradient'>
+  // ): RealRet<'createRadialGradient'> {
+  //   this.pushMethodCall('createRadialGradient', args)
+  // }
+
+  // drawFocusIfNeeded(
+  //   ...args: RealP<'drawFocusIfNeeded'>
+  // ): RealRet<'drawFocusIfNeeded'> {
+  //   this.pushMethodCall('drawFocusIfNeeded', args)
+  // }
+
+  // drawImage(...args: RealP<'drawImage'>): RealRet<'drawImage'> {
+  //   this.pushMethodCall('drawImage', args)
+  // }
 
   ellipse(...args: RealP<'ellipse'>): RealRet<'ellipse'> {
     this.pushMethodCall('ellipse', args)
@@ -179,6 +213,10 @@ export default class OffscreenCanvasRenderingContext2DShim {
   save(...args: RealP<'save'>): RealRet<'save'> {
     this.pushMethodCall('save', args)
   }
+
+  // setLineDash(...args: RealP<'setLineDash'>): RealRet<'setLineDash'> {
+  //   this.pushMethodCall('setLineDash', args)
+  // }
 
   setTransform(...args: RealP<'setTransform'>): RealRet<'setTransform'> {
     this.pushMethodCall('setTransform', args)
