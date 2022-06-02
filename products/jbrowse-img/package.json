@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
@@ -29,8 +29,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/plugin-linear-genome-view": "^1.7.8",
-    "@jbrowse/react-linear-genome-view": "^1.7.8",
+    "@jbrowse/plugin-linear-genome-view": "^1.7.9",
+    "@jbrowse/react-linear-genome-view": "^1.7.9",
     "abortcontroller-polyfill": "^1.7.3",
     "mobx": "^5.10.1",
     "node-fetch": "^2.6.7",
