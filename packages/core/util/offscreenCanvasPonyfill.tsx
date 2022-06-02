@@ -26,7 +26,6 @@ export function drawImageOntoCanvasContext(
     const seq = new CanvasSequence(imageData.serializedCommands)
     seq.execute(context)
   } else if (imageData instanceof ImageBitmapType) {
-    // console.log('hhere', imageData)
     context.drawImage(imageData as CanvasImageSource, 0, 0)
   } else if (imageData.dataURL) {
     throw new Error('dataURL deserialization no longer supported')

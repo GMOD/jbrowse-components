@@ -183,6 +183,8 @@ export default class ServerSideRenderer extends RendererType {
       const seq = new CanvasSequence(canvasRecordedData)
       seq.execute(ctx)
       const str = ctx.getSvg()
+      // innerHTML strips the outer <svg> element from returned data, we add
+      // our own <svg> element in the view's SVG export
       results.html = str.innerHTML
       delete results.reactElement
     }
