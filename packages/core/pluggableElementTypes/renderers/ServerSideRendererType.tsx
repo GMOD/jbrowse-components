@@ -1,7 +1,6 @@
 import React from 'react'
 import { ThemeOptions } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/core/styles'
-import C2S from 'canvas2svg'
 import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 
@@ -179,7 +178,9 @@ export default class ServerSideRenderer extends RendererType {
 
     if (isSvgExport(results)) {
       const { width, height, canvasRecordedData } = results
-      const ctx = new C2S(width, height)
+
+      const C2S = await import('canvas2svg')
+      const ctx = new C2S.default(width, height)
       const seq = new CanvasSequence(canvasRecordedData)
       seq.execute(ctx)
       const str = ctx.getSvg()
