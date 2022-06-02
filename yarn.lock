@@ -6666,6 +6666,16 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001332, can
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001342.tgz#87152b1e3b950d1fbf0093e23f00b6c8e8f1da96"
   integrity sha512-bn6sOCu7L7jcbBbyNhLg0qzXdJ/PMbybZTH/BA6Roet9wxYRm6Tr9D0s0uhLkOZ6MSG+QU6txUgdpr3MXIVqjA==
 
+canvas-sequencer@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/canvas-sequencer/-/canvas-sequencer-3.1.0.tgz#0c630a01f5d375c2f19d0f7b7effb312a653b37b"
+  integrity sha512-ldw68WYXpmtb6oklvdMakuYB0py+F2Jeq1slCp0I9/c1sTLM7kTAtSZGssLETpoI3OjbMPd4O039OM6XKUt8wA==
+
+canvas2svg@^1.0.16:
+  version "1.0.16"
+  resolved "https://registry.yarnpkg.com/canvas2svg/-/canvas2svg-1.0.16.tgz#0814c53bbab7c3406e7387279cdf257fe4f6f2bd"
+  integrity sha512-r3ryHprzDOtAsFuczw+/DKkLR3XexwIlJWnJ+71I9QF7V9scYaV5JZgYDoCUlYtT3ARnOpDcm/hDNZYbWMRHqA==
+
 canvas@^2.8.0:
   version "2.9.1"
   resolved "https://registry.yarnpkg.com/canvas/-/canvas-2.9.1.tgz#58ec841cba36cef0675bc7a74ebd1561f0b476b0"
