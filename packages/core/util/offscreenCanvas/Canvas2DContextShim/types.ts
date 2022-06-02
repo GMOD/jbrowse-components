@@ -40,6 +40,14 @@ export const methodSignatures = {
     CallSchemaField.FLOAT,
   ],
   beginPath: [],
+  bezierCurveTo: [
+    CallSchemaField.FLOAT,
+    CallSchemaField.FLOAT,
+    CallSchemaField.FLOAT,
+    CallSchemaField.FLOAT,
+    CallSchemaField.FLOAT,
+    CallSchemaField.FLOAT,
+  ],
   clearRect: [
     CallSchemaField.FLOAT,
     CallSchemaField.FLOAT,
