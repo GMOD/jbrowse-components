@@ -42,7 +42,6 @@ test('export svg', async () => {
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
   )
-
   view.exportSvg()
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
     timeout: 25000,

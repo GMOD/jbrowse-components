@@ -51,6 +51,19 @@ export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
   html: string
 }
 
+export interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+  reactElement: unknown
+}
+
+function isSvgExport(
+  elt: ResultsSerialized,
+): elt is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in elt
+}
+
 export type ResultsDeserialized = RenderResults
 
 export default class ServerSideRenderer extends RendererType {
@@ -87,16 +100,6 @@ export default class ServerSideRenderer extends RendererType {
 
     // if we are rendering svg, we skip hydration
     if (args.exportSVG) {
-      // @ts-ignore
-      if (results.canvasRecordedData) {
-        // @ts-ignore
-        const { width, height, canvasRecordedData } = results
-        const ctx = new C2S(width, height)
-        const seq = new CanvasSequence(canvasRecordedData)
-        seq.execute(ctx)
-        // @ts-ignore
-        results.html = ctx.getSerializedSvg()
-      }
       // only return the results if the renderer explicitly has
       // this.supportsSVG support to avoid garbage being rendered in SVG
       // document
@@ -168,11 +171,22 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - render args
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    return rpcManager.call(
+    const results = (await rpcManager.call(
       args.sessionId,
       'CoreRender',
       args,
-    ) as Promise<ResultsSerialized>
+    )) as ResultsSerialized
+
+    if (isSvgExport(results)) {
+      const { width, height, canvasRecordedData } = results
+      const ctx = new C2S(width, height)
+      const seq = new CanvasSequence(canvasRecordedData)
+      seq.execute(ctx)
+      const str = ctx.getSvg()
+      results.html = str.innerHTML
+      delete results.reactElement
+    }
+    return results
   }
 
   /**

@@ -642,6 +642,7 @@ export const BaseLinearDisplay = types
             const { offsetPx } = roundedDynamicBlocks[index]
             const offset = offsetPx - viewOffsetPx
             const clipid = getId(id, index)
+
             return (
               <React.Fragment key={`frag-${index}`}>
                 <defs>

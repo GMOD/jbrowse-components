@@ -2,11 +2,6 @@
 
 import isNode from 'detect-node'
 
-import type {
-  createCanvas as NodeCreateCanvas,
-  Canvas as NodeCanvas,
-} from 'canvas'
-
 import { CanvasSequence } from 'canvas-sequencer'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,8 +26,8 @@ export function drawImageOntoCanvasContext(
     const seq = new CanvasSequence(imageData.serializedCommands)
     seq.execute(context)
   } else if (imageData instanceof ImageBitmapType) {
+    // console.log('hhere', imageData)
     context.drawImage(imageData as CanvasImageSource, 0, 0)
-    // @ts-ignore
   } else if (imageData.dataURL) {
     throw new Error('dataURL deserialization no longer supported')
   }
@@ -42,9 +37,9 @@ const weHave = {
   realOffscreenCanvas: typeof OffscreenCanvas === 'function',
   node: isNode,
 }
+
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
-  // @ts-ignore
   // eslint-disable-next-line no-restricted-globals
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
   // eslint-disable-next-line no-restricted-globals
@@ -52,14 +47,14 @@ if (weHave.realOffscreenCanvas) {
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
   const { createCanvas: nodeCreateCanvas, Image } = require('canvas')
-  createCanvas = nodeCreateCanvas as typeof NodeCreateCanvas
+  createCanvas = nodeCreateCanvas
   createImageBitmap = async (canvas, ...otherargs) => {
     if (otherargs.length) {
       throw new Error(
         'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
       )
     }
-    const dataUri = (canvas as NodeCanvas).toDataURL()
+    const dataUri = canvas.toDataURL()
     const img = new Image()
     return new Promise((resolve, reject) => {
       img.onload = () => resolve(img)
