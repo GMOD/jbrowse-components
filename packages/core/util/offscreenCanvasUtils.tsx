@@ -22,7 +22,7 @@ export async function renderToAbstractCanvas(
         canvasRecordedData: fakeCtx.toJSON(),
       }
     } else {
-      const scale = 1
+      const scale = 4
       const canvas = createCanvas(Math.ceil(width * scale), height * scale)
       const ctx = canvas.getContext('2d')
       if (!ctx) {
