@@ -13,55 +13,55 @@ export async function renderToAbstractCanvas(
   cb: Function,
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
-  if (exportSVG && !exportSVG.rasterizeLayers) {
-    const fakeCanvas = new CanvasSequence()
-    const fakeCtx = fakeCanvas.getContext('2d')
-    await cb(fakeCtx)
-    return {
-      reactElement: fakeCanvas.getSerializedSvg(),
+  if (exportSVG) {
+    if (!exportSVG.rasterizeLayers) {
+      const fakeCtx = new CanvasSequence()
+      await cb(fakeCtx)
+      return {
+        canvasRecordedData: fakeCtx.toJSON(),
+      }
+    } else {
+      const scale = 4
+      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('2d canvas rendering not supported on this platform')
+      }
+      ctx.scale(scale, scale)
+      await cb(ctx)
+
+      // two methods needed for converting canvas to PNG, one for webworker
+      // offscreen canvas, one for main thread
+      return {
+        reactElement: (
+          <image
+            width={width}
+            height={height}
+            xlinkHref={
+              'convertToBlob' in canvas
+                ? await blobToDataURL(
+                    await canvas.convertToBlob({
+                      type: 'image/png',
+                    }),
+                  )
+                : canvas.toDataURL()
+            }
+          />
+        ),
+      }
     }
-  }
-  if (exportSVG && exportSVG.rasterizeLayers) {
-    const scale = 4
-    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+  } else {
+    const canvas = createCanvas(
+      Math.ceil(width * highResolutionScaling),
+      height * highResolutionScaling,
+    )
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('2d canvas rendering not supported on this platform')
     }
-    ctx.scale(scale, scale)
+    ctx.scale(highResolutionScaling, highResolutionScaling)
     await cb(ctx)
 
-    // two methods needed for converting canvas to PNG, one for webworker
-    // offscreen canvas, one for main thread
-    return {
-      reactElement: (
-        <image
-          width={width}
-          height={height}
-          xlinkHref={
-            'convertToBlob' in canvas
-              ? await blobToDataURL(
-                  await canvas.convertToBlob({
-                    type: 'image/png',
-                  }),
-                )
-              : canvas.toDataURL()
-          }
-        />
-      ),
-    }
+    return { imageData: await createImageBitmap(canvas) }
   }
-
-  const canvas = createCanvas(
-    Math.ceil(width * highResolutionScaling),
-    height * highResolutionScaling,
-  )
-  const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    throw new Error('2d canvas rendering not supported on this platform')
-  }
-  ctx.scale(highResolutionScaling, highResolutionScaling)
-  await cb(ctx)
-
-  return { imageData: await createImageBitmap(canvas) }
 }

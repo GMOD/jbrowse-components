@@ -1,6 +1,8 @@
 import React from 'react'
 import { ThemeOptions } from '@material-ui/core'
 import { ThemeProvider } from '@material-ui/core/styles'
+import C2S from 'canvas2svg'
+import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 
 import {
@@ -85,6 +87,16 @@ export default class ServerSideRenderer extends RendererType {
 
     // if we are rendering svg, we skip hydration
     if (args.exportSVG) {
+      // @ts-ignore
+      if (results.canvasRecordedData) {
+        // @ts-ignore
+        const { width, height, canvasRecordedData } = results
+        const ctx = new C2S(width, height)
+        const seq = new CanvasSequence(canvasRecordedData)
+        seq.execute(ctx)
+        // @ts-ignore
+        results.html = ctx.getSerializedSvg()
+      }
       // only return the results if the renderer explicitly has
       // this.supportsSVG support to avoid garbage being rendered in SVG
       // document
