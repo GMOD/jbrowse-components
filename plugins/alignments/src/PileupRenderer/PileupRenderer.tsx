@@ -132,8 +132,8 @@ export default class PileupRenderer extends BoxRendererType {
   // get width and height of chars the height is an approximation: width
   // letter M is approximately the height
   getCharWidthHeight(ctx: CanvasRenderingContext2D) {
-    const charWidth = ctx.measureText('A').width
-    const charHeight = ctx.measureText('M').width
+    const charWidth = measureText('A')
+    const charHeight = measureText('M')
     return { charWidth, charHeight }
   }
 
@@ -1097,7 +1097,6 @@ export default class PileupRenderer extends BoxRendererType {
 
     const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
-
     const res = await renderToAbstractCanvas(
       width,
       height,

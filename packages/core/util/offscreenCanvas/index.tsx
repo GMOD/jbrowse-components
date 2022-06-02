@@ -1,9 +1,7 @@
 import React from 'react'
 import { createCanvas, createImageBitmap } from './ponyfill'
-import OffscreenCanvasShim from './CanvasShim'
+import { CanvasSequence } from 'canvas-sequencer'
 import { blobToDataURL } from '..'
-
-export * from './CanvasShim'
 
 export async function renderToAbstractCanvas(
   width: number,
@@ -16,7 +14,7 @@ export async function renderToAbstractCanvas(
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
   if (exportSVG && !exportSVG.rasterizeLayers) {
-    const fakeCanvas = new OffscreenCanvasShim(width, height)
+    const fakeCanvas = new CanvasSequence()
     const fakeCtx = fakeCanvas.getContext('2d')
     await cb(fakeCtx)
     return {
