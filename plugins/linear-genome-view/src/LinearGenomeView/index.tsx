@@ -67,6 +67,7 @@ export interface BpOffset {
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
+  filename?: string
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -1330,7 +1331,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, 'image.svg')
+        saveAs(blob, opts.filename || 'image.svg')
       },
     }))
     .views(self => ({
