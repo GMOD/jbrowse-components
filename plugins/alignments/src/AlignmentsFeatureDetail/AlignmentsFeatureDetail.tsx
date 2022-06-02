@@ -134,7 +134,8 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             return (
               <li key={`${locString}-${index}`}>
                 <Link
-                  onClick={() => {
+                  onClick={event => {
+                    event.preventDefault()
                     const { view } = model
                     try {
                       if (view) {
