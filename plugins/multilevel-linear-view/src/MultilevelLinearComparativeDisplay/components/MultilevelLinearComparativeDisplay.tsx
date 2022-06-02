@@ -7,13 +7,8 @@ const MultilevelLinearComparativeDisplay: React.FC<{
   model: LCD
   children?: React.ReactNode
 }> = props => {
-  const { model, children } = props
-  return (
-    <div>
-      <model.ReactComponent2 {...props} />
-      {children}
-    </div>
-  )
+  const { children } = props
+  return <div>{children}</div>
 }
 MultilevelLinearComparativeDisplay.propTypes = {
   model: MobxPropTypes.objectOrObservableObject.isRequired,

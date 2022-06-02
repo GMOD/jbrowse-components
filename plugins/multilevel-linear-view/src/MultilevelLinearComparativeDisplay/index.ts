@@ -18,7 +18,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { MultilevelLinearComparativeViewModel } from '../MultilevelLinearComparativeView/model'
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import ReactComponent from './components/MultilevelLinearComparativeDisplay'
@@ -63,7 +62,6 @@ export function stateModelFactory(configSchema: any) {
       reactElement: undefined as React.ReactElement | undefined,
       message: undefined as string | undefined,
       renderingComponent: undefined as any,
-      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
       get rendererTypeName() {
