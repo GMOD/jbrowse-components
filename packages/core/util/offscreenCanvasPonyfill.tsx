@@ -9,6 +9,11 @@ import type {
 
 import { CanvasSequence } from 'canvas-sequencer'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AbstractCanvas = any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AbstractImageBitmap = any
+
 export let createCanvas: (width: number, height: number) => AbstractCanvas
 export let createImageBitmap: (
   canvas: AbstractCanvas,
@@ -18,6 +23,7 @@ export let createImageBitmap: (
 export let ImageBitmapType: Function
 
 export function drawImageOntoCanvasContext(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   imageData: any,
   context: CanvasRenderingContext2D,
 ) {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { createCanvas, createImageBitmap } from './ponyfill'
+import { createCanvas, createImageBitmap } from '../offscreenCanvasPonyfill'
 import { CanvasSequence } from 'canvas-sequencer'
 import { blobToDataURL } from '..'
 
