@@ -138,8 +138,8 @@ interface LayoutFeature {
   feature: Feature
 }
 
-function shouldDrawSNPs(type?: string) {
-  return !['methylation', 'modifications'].includes(type || '')
+function shouldDrawSNPsMuted(type?: string) {
+  return ['methylation', 'modifications'].includes(type || '')
 }
 
 function shouldDrawIndels(type?: string) {
@@ -830,7 +830,7 @@ export default class PileupRenderer extends BoxRendererType {
     colorForBase,
     contrastForBase,
     canvasWidth,
-    drawSNPs = true,
+    drawSNPsMuted,
     drawIndels = true,
   }: {
     ctx: CanvasRenderingContext2D
@@ -839,8 +839,8 @@ export default class PileupRenderer extends BoxRendererType {
     colorForBase: { [key: string]: string }
     contrastForBase: { [key: string]: string }
     mismatchAlpha?: boolean
-    drawSNPs?: boolean
     drawIndels?: boolean
+    drawSNPsMuted?: boolean
     minSubfeatureWidth: number
     largeInsertionIndicatorScale: number
     charWidth: number
@@ -872,30 +872,34 @@ export default class PileupRenderer extends BoxRendererType {
       const mbase = mismatch.base
       const [leftPx, rightPx] = bpSpanPx(mstart, mstart + mlen, region, bpPerPx)
       const widthPx = Math.max(minSubfeatureWidth, Math.abs(leftPx - rightPx))
-      if (mismatch.type === 'mismatch' && drawSNPs) {
-        const baseColor = colorForBase[mismatch.base] || '#888'
+      if (mismatch.type === 'mismatch') {
+        if (!drawSNPsMuted) {
+          const baseColor = colorForBase[mismatch.base] || '#888'
 
-        fillRect(
-          ctx,
-          leftPx,
-          topPx,
-          widthPx,
-          heightPx,
-          canvasWidth,
-          !mismatchAlpha
-            ? baseColor
-            : mismatch.qual !== undefined
-            ? // @ts-ignore
-              Color(baseColor)
-                .alpha(Math.min(1, mismatch.qual / 50))
-                .hsl()
-                .string()
-            : baseColor,
-        )
+          fillRect(
+            ctx,
+            leftPx,
+            topPx,
+            widthPx,
+            heightPx,
+            canvasWidth,
+            !mismatchAlpha
+              ? baseColor
+              : mismatch.qual !== undefined
+              ? // @ts-ignore
+                Color(baseColor)
+                  .alpha(Math.min(1, mismatch.qual / 50))
+                  .hsl()
+                  .string()
+              : baseColor,
+          )
+        }
 
         if (widthPx >= charWidth && heightPx >= heightLim) {
           // normal SNP coloring
-          const contrastColor = contrastForBase[mismatch.base] || 'black'
+          const contrastColor = drawSNPsMuted
+            ? 'black'
+            : contrastForBase[mismatch.base] || 'black'
           ctx.fillStyle = !mismatchAlpha
             ? contrastColor
             : mismatch.qual !== undefined
@@ -1160,7 +1164,7 @@ export default class PileupRenderer extends BoxRendererType {
     ctx.font = 'bold 10px Courier New,monospace'
 
     const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
-    const drawSNPs = shouldDrawSNPs(colorBy?.type)
+    const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
     const drawIndels = shouldDrawIndels(colorBy?.type)
     for (let i = 0; i < layoutRecords.length; i++) {
       const feat = layoutRecords[i]
@@ -1184,7 +1188,7 @@ export default class PileupRenderer extends BoxRendererType {
         feat,
         renderArgs,
         mismatchAlpha,
-        drawSNPs,
+        drawSNPsMuted,
         drawIndels,
         largeInsertionIndicatorScale,
         minSubfeatureWidth,
