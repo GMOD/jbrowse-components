@@ -26,6 +26,16 @@ import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
 import { ellipses } from './util'
 
+function isUriLocation(obj: unknown): obj is { uri: string; baseUri: string } {
+  return (
+    !!obj &&
+    typeof obj === 'object' &&
+    'uri' in obj &&
+    'baseUri' in obj &&
+    'locationType' in obj
+  )
+}
+
 const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
@@ -146,10 +156,13 @@ export const FieldName = ({
 
 export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
+  const isLink = `${value}`.match(/^https?:\/\//)
   return (
     <div className={classes.fieldValue}>
       {React.isValidElement(value) ? (
         value
+      ) : isLink ? (
+        <SanitizedHTML html={`<a href="${value}">${value}</a>`} />
       ) : (
         <SanitizedHTML
           html={isObject(value) ? JSON.stringify(value) : String(value)}
@@ -198,40 +211,42 @@ const ArrayValue = ({
   prefix?: string[]
 }) => {
   const classes = useStyles()
-  return (
-    <>
-      {value.length === 1 ? (
-        isObject(value[0]) ? (
-          <Attributes attributes={value[0]} prefix={[...prefix, name]} />
-        ) : (
-          <div className={classes.field}>
-            <FieldName prefix={prefix} description={description} name={name} />
-            <BasicValue value={value[0]} />
-          </div>
-        )
-      ) : value.every(val => isObject(val)) ? (
-        value.map((val, i) => (
+  if (value.length === 1) {
+    return isObject(value[0]) ? (
+      <Attributes attributes={value[0]} prefix={[...prefix, name]} />
+    ) : (
+      <div className={classes.field}>
+        <FieldName prefix={prefix} description={description} name={name} />
+        <BasicValue value={value[0]} />
+      </div>
+    )
+  } else if (value.every(val => isObject(val))) {
+    return (
+      <>
+        {value.map((val, i) => (
           <Attributes
             key={JSON.stringify(val) + '-' + i}
             attributes={val}
             prefix={[...prefix, name + '-' + i]}
           />
-        ))
-      ) : (
-        <div className={classes.field}>
-          <FieldName prefix={prefix} description={description} name={name} />
-          {value.map((val, i) => (
-            <div
-              key={JSON.stringify(val) + '-' + i}
-              className={classes.fieldSubvalue}
-            >
-              <BasicValue value={val} />
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  )
+        ))}
+      </>
+    )
+  } else {
+    return (
+      <div className={classes.field}>
+        <FieldName prefix={prefix} description={description} name={name} />
+        {value.map((val, i) => (
+          <div
+            key={JSON.stringify(val) + '-' + i}
+            className={classes.fieldSubvalue}
+          >
+            <BasicValue value={val} />
+          </div>
+        ))}
+      </div>
+    )
+  }
 }
 
 function CoreDetails(props: BaseProps) {
@@ -393,6 +408,25 @@ function generateMaxWidth(array: any, prefix: any) {
   return Math.ceil(Math.max(...arr)) + 10
 }
 
+function UriAttribute({
+  value,
+  prefix,
+  name,
+}: {
+  value: { uri: string; baseUri: string }
+  name: string
+  prefix: string[]
+}) {
+  const classes = useStyles()
+  const href = new URL(value.uri, value.baseUri).href
+  return (
+    <div className={classes.field}>
+      <FieldName prefix={prefix} name={name} />
+      <BasicValue value={href} />
+    </div>
+  )
+}
+
 export const Attributes: React.FunctionComponent<AttributeProps> = props => {
   const {
     attributes,
@@ -418,24 +452,18 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
       {Object.entries(attributes)
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
-          if (
-            Array.isArray(value) &&
-            value.length > 2 &&
-            value.every(val => isObject(val))
-          ) {
-            return (
-              <DataGridDetails
-                key={key}
-                prefix={prefix}
-                name={key}
-                value={value}
-              />
-            )
-          }
-
           const description = accessNested([...prefix, key], descriptions)
           if (Array.isArray(value)) {
-            return (
+            // check if it looks like an array of objects, which could be used
+            // in data grid
+            return value.length > 2 && value.every(val => isObject(val)) ? (
+              <DataGridDetails
+                key={key}
+                name={key}
+                prefix={prefix}
+                value={value}
+              />
+            ) : (
               <ArrayValue
                 key={key}
                 name={key}
@@ -444,10 +472,15 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                 prefix={prefix}
               />
             )
-          }
-
-          if (isObject(value)) {
-            return (
+          } else if (isObject(value)) {
+            return isUriLocation(value) ? (
+              <UriAttribute
+                key={key}
+                name={key}
+                prefix={prefix}
+                value={value}
+              />
+            ) : (
               <Attributes
                 omit={omits}
                 key={key}
@@ -456,18 +489,18 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                 prefix={[...prefix, key]}
               />
             )
+          } else {
+            return (
+              <SimpleValue
+                key={key}
+                name={key}
+                value={formatter(value, key)}
+                description={description}
+                prefix={prefix}
+                width={labelWidth}
+              />
+            )
           }
-
-          return (
-            <SimpleValue
-              key={key}
-              name={key}
-              value={formatter(value, key)}
-              description={description}
-              prefix={prefix}
-              width={labelWidth}
-            />
-          )
         })}
     </>
   )
