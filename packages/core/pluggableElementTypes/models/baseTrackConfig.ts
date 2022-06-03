@@ -50,22 +50,19 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         ),
       }),
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
-      // see corresponding entry in circular-view ChordTrack
-      // no config slot editor exists for this at the time being
-      // configRelationships: {
-      //   type: 'configRelationships',
-      //   model: types.array(
-      //     types.model('Relationship', {
-      //       type: types.string,
-      //       target: types.maybe(types.reference(base)),
-      //     }),
-      //   ),
-      //   defaultValue: [],
-      // },
-      extraFields: {
-        type: 'string',
-        description: 'modifies on the base feature details',
-        defaultValue: `jexl:{}`,
+
+      formatFields: {
+        type: 'frozen',
+        description: 'adds extra fields to the base feature details',
+        defaultValue: {},
+        contextVariable: ['feature'],
+      },
+
+      formatFieldsNested: {
+        type: 'frozen',
+        description:
+          'adds extra fields to the base feature details, applied across nested subfeatures',
+        defaultValue: {},
         contextVariable: ['feature'],
       },
     },

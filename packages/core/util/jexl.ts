@@ -102,9 +102,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
   )
   j.addFunction('toLowerCase', (str: string) => str.toLowerCase())
   j.addFunction('toUpperCase', (str: string) => str.toUpperCase())
-  j.addFunction('trim', (str: string) => {
-    str.trim()
-  })
+  j.addFunction('trim', (str: string) => str.trim())
   j.addFunction('trimEnd', (str: string) => str.trimEnd())
   j.addFunction('trimStart', (str: string) => str.trimStart())
 

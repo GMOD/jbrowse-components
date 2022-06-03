@@ -30,6 +30,9 @@ const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
 const globalOmit = [
+  'origId',
+  'origName',
+  'origType',
   'length',
   'position',
   'subfeatures',
@@ -121,8 +124,8 @@ export function BaseCard({
 export const FieldName = ({
   description,
   name,
-  prefix = [],
   width,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
@@ -333,10 +336,9 @@ const DataGridDetails = ({
     const columns = colNames.map(val => ({
       field: val,
       width: Math.max(
-        ...rows.map(row => {
-          const result = String(row[val])
-          return Math.min(Math.max(measureText(result, 14) + 50, 80), 1000)
-        }),
+        ...rows.map(row =>
+          Math.min(Math.max(measureText(String(row[val]), 14) + 50, 80), 1000),
+        ),
       ),
     }))
 
@@ -522,22 +524,30 @@ function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
+function generateTitle(name: string, id: string, type: string) {
+  return [ellipses(name || id), type].filter(f => !!f).join(' - ')
+}
+
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
-  feature: SimpleFeatureSerialized & { name?: string; id?: string }
+  feature: SimpleFeatureSerialized & {
+    origName?: string
+    origId?: string
+    origType?: string
+  }
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactElement
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
-  const { name = '', id = '', type = '', subfeatures } = feature
+  const { origName = '', origId = '', origType = '', subfeatures } = feature
   const session = getSession(model)
   const defaultSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
     getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard title={[ellipses(name || id), type].filter(f => !!f).join(' - ')}>
+    <BaseCard title={generateTitle(origName, origId, origType)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
@@ -581,8 +591,7 @@ export const FeatureDetails = (props: {
 
 const BaseFeatureDetails = observer((props: BaseInputProps) => {
   const { model } = props
-  const { featureData, track } = model
-  const session = getSession(model)
+  const { featureData } = model
 
   if (!featureData) {
     return null
@@ -592,24 +601,7 @@ const BaseFeatureDetails = observer((props: BaseInputProps) => {
     return null
   }
 
-  const sessionExtra = session
-    ? getConf(session, ['featureDetails', 'extraFields'], {
-        feature,
-      })
-    : {}
-  const trackExtra = track
-    ? getConf(track, ['extraFields'], {
-        feature,
-      })
-    : {}
-
-
-  return (
-    <FeatureDetails
-      model={model}
-      feature={{ ...feature, ...sessionExtra, ...trackExtra }}
-    />
-  )
+  return <FeatureDetails model={model} feature={feature} />
 })
 
 export default BaseFeatureDetails

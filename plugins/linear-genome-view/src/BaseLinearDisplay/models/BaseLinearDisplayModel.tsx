@@ -335,12 +335,14 @@ export const BaseLinearDisplay = types
           'BaseFeatureWidget',
           'baseFeature',
           {
-            featureData: feature.toJSON(),
             view: getContainingView(self),
             display: self,
             track: getContainingTrack(self),
           },
         )
+
+        // @ts-ignore
+        featureWidget.setFeatureData(feature.toJSON())
         session.showWidget(featureWidget)
       }
       if (isSelectionContainer(session)) {
