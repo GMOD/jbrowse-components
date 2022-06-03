@@ -294,4 +294,4 @@ test('test choose option from dropdown refName autocomplete', async () => {
   expect((await findByPlaceholderText('Search for location')).value).toEqual(
     expect.stringContaining('ctgB'),
   )
-})
+}, 15000)
