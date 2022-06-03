@@ -170,6 +170,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
     const bins = [] as {
       refbase?: string
       total: number
+      all: number
       ref: number
       '-1': 0
       '0': 0
@@ -192,6 +193,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           if (bins[i] === undefined) {
             bins[i] = {
               total: 0,
+              all: 0,
               ref: 0,
               '-1': 0,
               '0': 0,
@@ -204,6 +206,7 @@ export default class SNPCoverageAdapter extends BaseFeatureDataAdapter {
           }
           if (j !== fend) {
             bins[i].total++
+            bins[i].all++
             bins[i].ref++
             bins[i][fstrand]++
           }

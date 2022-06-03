@@ -11,18 +11,23 @@ type Count = {
 }
 
 type SNPInfo = {
-  ref: Count
   cov: Count
   lowqual: Count
   noncov: Count
   delskips: Count
+
   total: number
+  ref: number
+  all: number
   '-1': number
   '0': number
   '1': number
 }
 
 const en = (n: number) => n.toLocaleString('en-US')
+
+const pct = (n: number, total: number) =>
+  `${Math.round((n / (total || 1)) * 100)}%`
 
 const TooltipContents = React.forwardRef(
   ({ feature }: { feature: Feature }, ref: any) => {
@@ -31,11 +36,10 @@ const TooltipContents = React.forwardRef(
     const refbase = feature.get('refbase')
     const name = feature.get('refName')
     const info = feature.get('snpinfo') as SNPInfo
-    const loc =
-      [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
-        .filter(f => !!f)
-        .join(':') + (refbase ? ` (${refbase})` : '')
-    const total = info?.total
+    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
+      .filter(f => !!f)
+      .join(':')
+    const total = info?.all
 
     return (
       <div ref={ref}>
@@ -53,11 +57,12 @@ const TooltipContents = React.forwardRef(
           <tbody>
             <tr>
               <td>Total</td>
-              <td>{info.total}</td>
+              <td>{total}</td>
             </tr>
             <tr>
               <td>REF {refbase ? `(${refbase.toUpperCase()})` : ''}</td>
               <td>{info.ref}</td>
+              <td>{pct(info.ref, total)}</td>
               <td>
                 {info['-1'] ? `${info['-1']}(-)` : ''}
                 {info['1'] ? `${info['1']}(+)` : ''}
@@ -73,9 +78,7 @@ const TooltipContents = React.forwardRef(
                   <td>
                     {base === 'total' || base === 'skip'
                       ? '---'
-                      : `${Math.floor(
-                          (score.total / (total || score.total || 1)) * 100,
-                        )}%`}
+                      : pct(score.total, total)}
                   </td>
                   <td>
                     {score['-1'] ? `${score['-1']}(-)` : ''}
