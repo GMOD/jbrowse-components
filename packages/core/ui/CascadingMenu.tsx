@@ -7,7 +7,6 @@ import {
   Menu,
   MenuItem,
   PopoverOrigin,
-  makeStyles,
 } from '@material-ui/core'
 import { MenuItem as JBMenuItem, MenuItemEndDecoration } from './Menu'
 import {
@@ -20,38 +19,25 @@ import {
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
 import ChevronRight from '@material-ui/icons/ChevronRight'
 
-const useCascadingMenuStyles = makeStyles(theme => ({
-  submenu: {
-    // marginTop: theme.spacing(-1),
-  },
-  title: {
-    flexGrow: 1,
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5),
-  },
-  moreArrow: {
-    // marginRight: theme.spacing(-1),
-  },
-  menuItem: {
-    // paddingTop: theme.spacing(1.5),
-    // paddingBottom: theme.spacing(1.5),
-  },
-}))
-
 const CascadingContext = React.createContext({
   parentPopupState: null,
   rootPopupState: null,
-} as { parentPopupState: any; rootPopupState: any })
+} as { parentPopupState: PopupState | null; rootPopupState: PopupState | null })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CascadingMenuItem({ onClick, ...props }: any) {
-  const classes = useCascadingMenuStyles()
+function CascadingMenuItem({
+  onClick,
+  ...props
+}: {
+  onClick?: Function
+  children: React.ReactNode
+}) {
   const { rootPopupState } = useContext(CascadingContext)
   if (!rootPopupState) {
     throw new Error('must be used inside a CascadingMenu')
   }
   const handleClick = useCallback(
     event => {
+      // @ts-ignore
       rootPopupState.close(event)
       if (onClick) {
         onClick(event)
@@ -60,9 +46,7 @@ function CascadingMenuItem({ onClick, ...props }: any) {
     [rootPopupState, onClick],
   )
 
-  return (
-    <MenuItem className={classes.menuItem} {...props} onClick={handleClick} />
-  )
+  return <MenuItem {...props} onClick={handleClick} />
 }
 
 function CascadingSubmenu({
@@ -78,7 +62,6 @@ function CascadingSubmenu({
   inset: boolean
   popupId: string
 }) {
-  const classes = useCascadingMenuStyles()
   const { parentPopupState } = React.useContext(CascadingContext)
   const popupState = usePopupState({
     popupId,
@@ -89,11 +72,10 @@ function CascadingSubmenu({
     <>
       <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
         <ListItemText primary={title} inset={inset} />
-        <ChevronRight className={classes.moreArrow} />
+        <ChevronRight />
       </MenuItem>
       <CascadingSubmenuHover
         {...props}
-        classes={{ paper: classes.submenu }}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         popupState={popupState}
@@ -109,7 +91,7 @@ function CascadingSubmenuHover({
   classes,
   ...props
 }: {
-  classes: Record<string, string>
+  classes?: Record<string, string>
   popupState: PopupState
   anchorOrigin: PopoverOrigin
   transformOrigin: PopoverOrigin
@@ -137,7 +119,11 @@ function CascadingMenu({
   onMenuItemClick,
   menuItems,
   ...props
-}: any) {
+}: {
+  popupState: PopupState
+  onMenuItemClick: Function
+  menuItems: JBMenuItem[]
+}) {
   const { rootPopupState } = React.useContext(CascadingContext)
   const context = React.useMemo(
     () => ({
@@ -154,7 +140,7 @@ function CascadingMenu({
   )
 }
 
-function EndDecoration({ item }: any) {
+function EndDecoration({ item }: { item: JBMenuItem }) {
   if ('subMenu' in item) {
     return <MenuItemEndDecoration type="subMenu" />
   } else if (item.type === 'checkbox' || item.type === 'radio') {
