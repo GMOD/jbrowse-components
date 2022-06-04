@@ -1,5 +1,13 @@
 import React, { useContext, useCallback } from 'react'
-import { ListItemIcon, MenuItem, makeStyles } from '@material-ui/core'
+import {
+  Divider,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Menu,
+  MenuItem,
+  makeStyles,
+} from '@material-ui/core'
 import { MenuItemEndDecoration } from './Menu'
 import {
   bindHover,
@@ -16,13 +24,15 @@ const useCascadingMenuStyles = makeStyles(theme => ({
   },
   title: {
     flexGrow: 1,
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
   },
   moreArrow: {
     // marginRight: theme.spacing(-1),
   },
   menuItem: {
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5),
+    // paddingTop: theme.spacing(1.5),
+    // paddingBottom: theme.spacing(1.5),
   },
 }))
 
@@ -34,11 +44,15 @@ const CascadingContext = React.createContext({
 function CascadingMenuItem({ onClick, ...props }: any) {
   const classes = useCascadingMenuStyles()
   const { rootPopupState } = useContext(CascadingContext)
-  if (!rootPopupState) throw new Error('must be used inside a CascadingMenu')
+  if (!rootPopupState) {
+    throw new Error('must be used inside a CascadingMenu')
+  }
   const handleClick = useCallback(
     event => {
       rootPopupState.close(event)
-      if (onClick) onClick(event)
+      if (onClick) {
+        onClick(event)
+      }
     },
     [rootPopupState, onClick],
   )
@@ -48,7 +62,7 @@ function CascadingMenuItem({ onClick, ...props }: any) {
   )
 }
 
-function CascadingSubmenu({ title, popupId, ...props }: any) {
+function CascadingSubmenu({ title, inset, popupId, ...props }: any) {
   const classes = useCascadingMenuStyles()
   const { parentPopupState } = React.useContext(CascadingContext)
   const popupState = usePopupState({
@@ -57,23 +71,28 @@ function CascadingSubmenu({ title, popupId, ...props }: any) {
     parentPopupState,
   })
   return (
-    <React.Fragment>
+    <>
       <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
-        <span className={classes.title}>{title}</span>
+        <ListItemText primary={title} inset={inset} />
         <ChevronRight className={classes.moreArrow} />
       </MenuItem>
-      <CascadingMenu
+      <CascadingSubmenuHover
         {...props}
         classes={{ ...props.classes, paper: classes.submenu }}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         popupState={popupState}
       />
-    </React.Fragment>
+    </>
   )
 }
 
-function CascadingMenu({ popupState, ...props }: any) {
+function CascadingSubmenuHover({
+  popupState,
+  onMenuItemClick,
+  menuItems,
+  ...props
+}: any) {
   const { rootPopupState } = React.useContext(CascadingContext)
   const context = React.useMemo(
     () => ({
@@ -86,6 +105,28 @@ function CascadingMenu({ popupState, ...props }: any) {
   return (
     <CascadingContext.Provider value={context}>
       <HoverMenu {...props} {...bindMenu(popupState)} />
+    </CascadingContext.Provider>
+  )
+}
+
+function CascadingMenu({
+  popupState,
+  onMenuItemClick,
+  menuItems,
+  ...props
+}: any) {
+  const { rootPopupState } = React.useContext(CascadingContext)
+  const context = React.useMemo(
+    () => ({
+      rootPopupState: rootPopupState || popupState,
+      parentPopupState: popupState,
+    }),
+    [rootPopupState, popupState],
+  )
+
+  return (
+    <CascadingContext.Provider value={context}>
+      <Menu {...props} {...bindMenu(popupState)} />
     </CascadingContext.Provider>
   )
 }
@@ -105,28 +146,38 @@ function EndDecoration({ item }: any) {
   return null
 }
 
-function CascadingMenuList(props: any) {
-  const { onMenuItemClick, menuItems } = props
+function CascadingMenuList({ onMenuItemClick, menuItems, ...props }: any) {
   function handleClick(callback: Function) {
     return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
       onMenuItemClick(event, callback)
     }
   }
-  console.log(props)
+
+  const hasIcon = menuItems.some(
+    menuItem => 'icon' in menuItem && menuItem.icon,
+  )
   return (
     <>
-      {menuItems.map(item => {
+      {menuItems.map((item, idx) => {
         const { label } = item
-        console.log(item)
+
         return item.subMenu ? (
           <CascadingSubmenu
-            popupId="moreChoicesCascadingMenu"
+            popupId={'moreChoicesCascadingMenu-' + item.label}
             title={item.label}
+            inset={hasIcon}
           >
             <CascadingMenuList {...props} menuItems={item.subMenu} />
           </CascadingSubmenu>
+        ) : item.type === 'divider' ? (
+          <Divider key={`divider-${idx}`} component="li" />
+        ) : item.type === 'subHeader' ? (
+          <ListSubheader key={`subHeader-${label}-${idx}`}>
+            {label}
+          </ListSubheader>
         ) : (
           <CascadingMenuItem
+            key={`${label}-${idx}`}
             onClick={'onClick' in item ? handleClick(item.onClick) : undefined}
           >
             {item.icon ? (
@@ -134,7 +185,11 @@ function CascadingMenuList(props: any) {
                 <item.icon />
               </ListItemIcon>
             ) : null}{' '}
-            {label}
+            <ListItemText
+              primary={label}
+              secondary={item.subLabel}
+              inset={hasIcon && !item.icon}
+            />
             <div style={{ flexGrow: 1, minWidth: 10 }} />
             <EndDecoration item={item} />
           </CascadingMenuItem>

@@ -1,6 +1,6 @@
 import React from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
+import { CascadingMenu } from '@jbrowse/core/ui'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -11,16 +11,21 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
-import { bindTrigger, usePopupState } from 'material-ui-popup-state/hooks'
+import {
+  bindTrigger,
+  bindPopover,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
+
+import clsx from 'clsx'
+import { observer } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 
 // icons
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
 
-import clsx from 'clsx'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '..'
 
 const useStyles = makeStyles(theme => ({
@@ -56,22 +61,23 @@ const useStyles = makeStyles(theme => ({
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const TrackLabel = React.forwardRef(
-  (props: { track: BaseTrackModel; className?: string }, ref) => {
+  (
+    { track, className }: { track: BaseTrackModel; className?: string },
+    ref,
+  ) => {
     const classes = useStyles()
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-    const { track, className } = props
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
     const trackId = getConf(track, 'trackId')
 
     const popupState = usePopupState({
-      popupId: 'demoMenu',
+      popupId: 'trackLabelMenu',
       variant: 'popover',
     })
 
     const handleClose = () => {
-      setAnchorEl(null)
+      popupState.close()
     }
 
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
@@ -147,13 +153,15 @@ const TrackLabel = React.forwardRef(
             <MoreVertIcon />
           </IconButton>
         </Paper>
-        <Menu
-          anchorEl={anchorEl}
+        <CascadingMenu
+          {...bindPopover(popupState)}
           onMenuItemClick={handleMenuItemClick}
-          open={Boolean(anchorEl)}
-          popupState={popupState}
-          onClose={handleClose}
           menuItems={items}
+          popupState={popupState}
+          onClose={() => {
+            console.log('t1')
+            popupState.close()
+          }}
         />
       </>
     )
