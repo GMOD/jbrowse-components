@@ -1,6 +1,6 @@
 import React from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { CascadingMenu } from '@jbrowse/core/ui'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import {

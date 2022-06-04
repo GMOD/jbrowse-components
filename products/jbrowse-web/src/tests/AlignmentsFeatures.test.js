@@ -31,11 +31,10 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 // Note: tracks with assembly volvox don't have much soft clipping
 test('opens the track menu and enables soft clipping', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  console.error = jest.fn()
+  const pm = getPluginManager()
+  const state = pm.rootModel
+  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(0.02, 142956)
 
@@ -68,11 +67,12 @@ test('opens the track menu and enables soft clipping', async () => {
   )
 }, 30000)
 
-test('selects a sort, updates object and layout', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+test('selects a sort, sort by strand', async () => {
+  console.error = jest.fn()
+  const pm = getPluginManager()
+  const state = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
+    <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.02, 2086500)
@@ -109,11 +109,12 @@ test('selects a sort, updates object and layout', async () => {
   )
 }, 35000)
 
-test('selects a color, updates object and layout', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+test('selects a color, color by strand', async () => {
+  console.error = jest.fn()
+  const pm = getPluginManager()
+  const state = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
+    <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.02, 2086500)
@@ -148,11 +149,12 @@ test('selects a color, updates object and layout', async () => {
   )
 }, 30000)
 
-test('colors by tag, updates object and layout', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+test('colors by tag, color by tag', async () => {
+  console.error = jest.fn()
+  const pm = getPluginManager()
+  const state = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
+    <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.465, 85055)

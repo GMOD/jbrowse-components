@@ -177,7 +177,8 @@ function CascadingMenuList({
       {menuItems.map((item, idx) => {
         return 'subMenu' in item ? (
           <CascadingSubmenu
-            popupId={'moreChoicesCascadingMenu-' + item.label}
+            key={`subMenu-${item.label}-${idx}`}
+            popupId={`subMenu-${item.label}`}
             title={item.label}
             inset={hasIcon}
             onMenuItemClick={onMenuItemClick}
