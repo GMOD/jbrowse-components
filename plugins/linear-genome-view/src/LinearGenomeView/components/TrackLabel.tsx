@@ -11,6 +11,8 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
+import { bindTrigger, usePopupState } from 'material-ui-popup-state/hooks'
+
 // icons
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
@@ -63,9 +65,10 @@ const TrackLabel = React.forwardRef(
     const trackConf = track.configuration
     const trackId = getConf(track, 'trackId')
 
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget)
-    }
+    const popupState = usePopupState({
+      popupId: 'demoMenu',
+      variant: 'popover',
+    })
 
     const handleClose = () => {
       setAnchorEl(null)
@@ -135,9 +138,7 @@ const TrackLabel = React.forwardRef(
             {trackName}
           </Typography>
           <IconButton
-            aria-controls="simple-menu"
-            aria-haspopup="true"
-            onClick={handleClick}
+            {...bindTrigger(popupState)}
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
@@ -150,6 +151,7 @@ const TrackLabel = React.forwardRef(
           anchorEl={anchorEl}
           onMenuItemClick={handleMenuItemClick}
           open={Boolean(anchorEl)}
+          popupState={popupState}
           onClose={handleClose}
           menuItems={items}
         />

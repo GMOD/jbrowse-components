@@ -50,6 +50,7 @@
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.5",
     "load-script2": "^2.0.5",
+    "material-ui-popup-state": "^1.9.3",
     "object.fromentries": "^2.0.0",
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
