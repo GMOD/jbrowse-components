@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from 'react'
+import React, { useContext, useMemo, useCallback } from 'react'
 import {
   Divider,
   ListItemIcon,
@@ -6,14 +6,16 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
+  PopoverOrigin,
   makeStyles,
 } from '@material-ui/core'
-import { MenuItemEndDecoration } from './Menu'
+import { MenuItem as JBMenuItem, MenuItemEndDecoration } from './Menu'
 import {
   bindHover,
   bindFocus,
   bindMenu,
   usePopupState,
+  PopupState,
 } from 'material-ui-popup-state/hooks'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
 import ChevronRight from '@material-ui/icons/ChevronRight'
@@ -39,8 +41,9 @@ const useCascadingMenuStyles = makeStyles(theme => ({
 const CascadingContext = React.createContext({
   parentPopupState: null,
   rootPopupState: null,
-})
+} as { parentPopupState: any; rootPopupState: any })
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function CascadingMenuItem({ onClick, ...props }: any) {
   const classes = useCascadingMenuStyles()
   const { rootPopupState } = useContext(CascadingContext)
@@ -62,7 +65,19 @@ function CascadingMenuItem({ onClick, ...props }: any) {
   )
 }
 
-function CascadingSubmenu({ title, inset, popupId, ...props }: any) {
+function CascadingSubmenu({
+  title,
+  inset,
+  popupId,
+  ...props
+}: {
+  children: React.ReactNode
+  title: string
+  onMenuItemClick: Function
+  menuItems: JBMenuItem[]
+  inset: boolean
+  popupId: string
+}) {
   const classes = useCascadingMenuStyles()
   const { parentPopupState } = React.useContext(CascadingContext)
   const popupState = usePopupState({
@@ -78,7 +93,7 @@ function CascadingSubmenu({ title, inset, popupId, ...props }: any) {
       </MenuItem>
       <CascadingSubmenuHover
         {...props}
-        classes={{ ...props.classes, paper: classes.submenu }}
+        classes={{ paper: classes.submenu }}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         popupState={popupState}
@@ -91,10 +106,18 @@ function CascadingSubmenuHover({
   popupState,
   onMenuItemClick,
   menuItems,
+  classes,
   ...props
-}: any) {
-  const { rootPopupState } = React.useContext(CascadingContext)
-  const context = React.useMemo(
+}: {
+  classes: Record<string, string>
+  popupState: PopupState
+  anchorOrigin: PopoverOrigin
+  transformOrigin: PopoverOrigin
+  onMenuItemClick: Function
+  menuItems: JBMenuItem[]
+}) {
+  const { rootPopupState } = useContext(CascadingContext)
+  const context = useMemo(
     () => ({
       rootPopupState: rootPopupState || popupState,
       parentPopupState: popupState,
@@ -146,7 +169,14 @@ function EndDecoration({ item }: any) {
   return null
 }
 
-function CascadingMenuList({ onMenuItemClick, menuItems, ...props }: any) {
+function CascadingMenuList({
+  onMenuItemClick,
+  menuItems,
+  ...props
+}: {
+  menuItems: JBMenuItem[]
+  onMenuItemClick: Function
+}) {
   function handleClick(callback: Function) {
     return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
       onMenuItemClick(event, callback)
@@ -159,25 +189,29 @@ function CascadingMenuList({ onMenuItemClick, menuItems, ...props }: any) {
   return (
     <>
       {menuItems.map((item, idx) => {
-        const { label } = item
-
-        return item.subMenu ? (
+        return 'subMenu' in item ? (
           <CascadingSubmenu
             popupId={'moreChoicesCascadingMenu-' + item.label}
             title={item.label}
             inset={hasIcon}
+            onMenuItemClick={onMenuItemClick}
+            menuItems={item.subMenu}
           >
-            <CascadingMenuList {...props} menuItems={item.subMenu} />
+            <CascadingMenuList
+              {...props}
+              onMenuItemClick={onMenuItemClick}
+              menuItems={item.subMenu}
+            />
           </CascadingSubmenu>
         ) : item.type === 'divider' ? (
           <Divider key={`divider-${idx}`} component="li" />
         ) : item.type === 'subHeader' ? (
-          <ListSubheader key={`subHeader-${label}-${idx}`}>
-            {label}
+          <ListSubheader key={`subHeader-${item.label}-${idx}`}>
+            {item.label}
           </ListSubheader>
         ) : (
           <CascadingMenuItem
-            key={`${label}-${idx}`}
+            key={`${item.label}-${idx}`}
             onClick={'onClick' in item ? handleClick(item.onClick) : undefined}
           >
             {item.icon ? (
@@ -186,7 +220,7 @@ function CascadingMenuList({ onMenuItemClick, menuItems, ...props }: any) {
               </ListItemIcon>
             ) : null}{' '}
             <ListItemText
-              primary={label}
+              primary={item.label}
               secondary={item.subLabel}
               inset={hasIcon && !item.icon}
             />
@@ -199,7 +233,11 @@ function CascadingMenuList({ onMenuItemClick, menuItems, ...props }: any) {
   )
 }
 
-function CascadingMenuChildren(props: any) {
+function CascadingMenuChildren(props: {
+  onMenuItemClick: Function
+  menuItems: JBMenuItem[]
+  popupState: PopupState
+}) {
   return (
     <CascadingMenu {...props}>
       <CascadingMenuList {...props} />

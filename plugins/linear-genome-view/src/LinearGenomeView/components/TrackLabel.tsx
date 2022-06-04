@@ -158,10 +158,6 @@ const TrackLabel = React.forwardRef(
           onMenuItemClick={handleMenuItemClick}
           menuItems={items}
           popupState={popupState}
-          onClose={() => {
-            console.log('t1')
-            popupState.close()
-          }}
         />
       </>
     )
