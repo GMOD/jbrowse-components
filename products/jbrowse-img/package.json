@@ -32,6 +32,7 @@
     "@jbrowse/plugin-linear-genome-view": "^1.7.9",
     "@jbrowse/react-linear-genome-view": "^1.7.9",
     "abortcontroller-polyfill": "^1.7.3",
+    "jsdom": "^19.0.0",
     "mobx": "^5.10.1",
     "node-fetch": "^2.6.7",
     "react": "^17.0.1",

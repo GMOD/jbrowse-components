@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import fs from 'fs'
 import yargs from 'yargs'
+import jsdom from 'jsdom'
 import { standardizeArgv, parseArgv } from './parseArgv'
 import { renderRegion } from './renderRegion'
 import tmp from 'tmp'
@@ -8,6 +9,7 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { spawnSync } from 'child_process'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 
+global.document = jsdom.jsdom()
 if (!global.fetch) {
   global.fetch = fetch
   global.Headers = Headers
