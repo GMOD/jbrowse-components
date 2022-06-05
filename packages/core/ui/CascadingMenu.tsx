@@ -29,6 +29,7 @@ function CascadingMenuItem({
   ...props
 }: {
   onClick?: Function
+  disabled?: boolean
   children: React.ReactNode
 }) {
   const { rootPopupState } = useContext(CascadingContext)
@@ -200,6 +201,7 @@ function CascadingMenuList({
           <CascadingMenuItem
             key={`${item.label}-${idx}`}
             onClick={'onClick' in item ? handleClick(item.onClick) : undefined}
+            disabled={Boolean(item.disabled)}
           >
             {item.icon ? (
               <ListItemIcon>

@@ -76,10 +76,6 @@ const TrackLabel = React.forwardRef(
       variant: 'popover',
     })
 
-    const handleClose = () => {
-      popupState.close()
-    }
-
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
       const target = event.target as HTMLElement
       if (target.parentNode) {
@@ -100,15 +96,10 @@ const TrackLabel = React.forwardRef(
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       const r = session.assemblies.find(a => a.sequence === trackConf)
       trackName =
-        readConfObject(trackConf, 'name') ||
+        trackName ||
         (r
           ? `Reference Sequence (${readConfObject(r, 'name')})`
           : 'Reference Sequence')
-    }
-
-    function handleMenuItemClick(_: unknown, callback: Function) {
-      callback()
-      handleClose()
     }
 
     const items = [
@@ -155,7 +146,7 @@ const TrackLabel = React.forwardRef(
         </Paper>
         <CascadingMenu
           {...bindPopover(popupState)}
-          onMenuItemClick={handleMenuItemClick}
+          onMenuItemClick={(_: unknown, callback: Function) => callback()}
           menuItems={items}
           popupState={popupState}
         />
