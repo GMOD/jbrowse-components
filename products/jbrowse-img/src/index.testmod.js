@@ -49,20 +49,18 @@ xtest(
 test(
   'renders volvox with variety of args',
   async () => {
+    const fp = f => require.resolve('../data/volvox/' + f)
     console.error = jest.fn()
     const result = await renderRegion({
-      fasta: require.resolve('../data/volvox/volvox.fa'),
+      fasta: fp('volvox.fa'),
       trackList: [
-        ['bam', [require.resolve('../data/volvox/volvox-sorted.bam')]],
-        ['cram', [require.resolve('../data/volvox/volvox-sorted.cram')]],
-        [
-          'bigwig',
-          [require.resolve('../data/volvox/volvox-sorted.bam.coverage.bw')],
-        ],
-        ['vcfgz', [require.resolve('../data/volvox/volvox.filtered.vcf.gz')]],
-        ['gffgz', [require.resolve('../data/volvox/volvox.sort.gff3.gz')]],
-        ['bigbed', [require.resolve('../data/volvox/volvox.bb')]],
-        ['bedgz', [require.resolve('../data/volvox/volvox-bed12.bed.gz')]],
+        ['bam', [fp('volvox-sorted.bam')]],
+        ['cram', [fp('volvox-sorted.cram')]],
+        ['bigwig', [fp('volvox-sorted.bam.coverage.bw')]],
+        ['vcfgz', [fp('volvox.filtered.vcf.gz')]],
+        ['gffgz', [fp('volvox.sort.gff3.gz')]],
+        ['bigbed', [fp('volvox.bb')]],
+        ['bedgz', [fp('volvox-bed12.bed.gz')]],
       ],
       loc: 'ctgA:1000-2000',
     })
