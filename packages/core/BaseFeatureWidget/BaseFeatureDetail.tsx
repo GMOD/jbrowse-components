@@ -403,13 +403,18 @@ function UriAttribute({
   prefix,
   name,
 }: {
-  value: { uri: string; baseUri: string }
+  value: { uri: string; baseUri?: string }
   name: string
   prefix: string[]
 }) {
   const classes = useStyles()
-  console.log('HEREHREHE', value)
-  const href = new URL(value.uri, value.baseUri).href
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
   return (
     <div className={classes.field}>
       <FieldName prefix={prefix} name={name} />
@@ -464,9 +469,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
               />
             )
           } else if (isObject(value)) {
-            return isUriLocation(value) &&
-              'baseUri' in value &&
-              typeof value === 'string' ? (
+            return isUriLocation(value) ? (
               <UriAttribute
                 key={key}
                 name={key}
