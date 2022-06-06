@@ -104,8 +104,8 @@ type bigWig
     const {
       findByTestId,
       getAllByRole,
-      findByPlaceholderText,
       findByText,
+      findByPlaceholderText,
       findByDisplayValue,
     } = render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
@@ -121,6 +121,7 @@ type bigWig
         target: { value: 'http://test.com/jbrowse/data/' },
       },
     )
+    fireEvent.click(await findByText('Add item'))
     fireEvent.change(await findByPlaceholderText('add new'), {
       target: { value: 'volMyt1' },
     })
