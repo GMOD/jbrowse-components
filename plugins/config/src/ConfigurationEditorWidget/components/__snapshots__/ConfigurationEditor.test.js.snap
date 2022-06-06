@@ -310,51 +310,21 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </div>
                     </div>
                   </li>
-                  <li
-                    class="MuiListItem-root"
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                    style="margin: 4px;"
+                    tabindex="0"
+                    type="button"
                   >
-                    <div
-                      class="MuiFormControl-root MuiTextField-root"
+                    <span
+                      class="MuiButton-label"
                     >
-                      <div
-                        class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
-                      >
-                        <input
-                          aria-invalid="false"
-                          class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
-                          placeholder="add new"
-                          type="text"
-                          value=""
-                        />
-                        <div
-                          class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-                        >
-                          <button
-                            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-                            data-testid="stringArrayAdd-stringArrayTest"
-                            disabled=""
-                            tabindex="-1"
-                            type="button"
-                          >
-                            <span
-                              class="MuiIconButton-label"
-                            >
-                              <svg
-                                aria-hidden="true"
-                                class="MuiSvgIcon-root"
-                                focusable="false"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                                />
-                              </svg>
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
+                      Add item
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
                 </ul>
                 <p
                   class="MuiFormHelperText-root"
@@ -516,51 +486,21 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                           </div>
                         </div>
                       </li>
-                      <li
-                        class="MuiListItem-root"
+                      <button
+                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                        style="margin: 4px;"
+                        tabindex="0"
+                        type="button"
                       >
-                        <div
-                          class="MuiFormControl-root MuiTextField-root"
+                        <span
+                          class="MuiButton-label"
                         >
-                          <div
-                            class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
-                          >
-                            <input
-                              aria-invalid="false"
-                              class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
-                              placeholder="add new"
-                              type="text"
-                              value=""
-                            />
-                            <div
-                              class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
-                            >
-                              <button
-                                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
-                                data-testid="stringArrayAdd-undefined"
-                                disabled=""
-                                tabindex="-1"
-                                type="button"
-                              >
-                                <span
-                                  class="MuiIconButton-label"
-                                >
-                                  <svg
-                                    aria-hidden="true"
-                                    class="MuiSvgIcon-root"
-                                    focusable="false"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-                                    />
-                                  </svg>
-                                </span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
+                          Add item
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
                     </ul>
                     <p
                       class="MuiFormHelperText-root"
