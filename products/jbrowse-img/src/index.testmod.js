@@ -74,6 +74,35 @@ test(
   timeout,
 )
 
+test(
+  'renders volvox with variety of args (noRasterize)',
+  async () => {
+    const fp = f => require.resolve('../data/volvox/' + f)
+    console.error = jest.fn()
+    const result = await renderRegion({
+      fasta: fp('volvox.fa'),
+      trackList: [
+        ['bam', [fp('volvox-sorted.bam')]],
+        ['cram', [fp('volvox-sorted.cram')]],
+        ['bigwig', [fp('volvox-sorted.bam.coverage.bw')]],
+        ['vcfgz', [fp('volvox.filtered.vcf.gz')]],
+        ['gffgz', [fp('volvox.sort.gff3.gz')]],
+        ['bigbed', [fp('volvox.bb')]],
+        ['bedgz', [fp('volvox-bed12.bed.gz')]],
+      ],
+      loc: 'ctgA:1000-2000',
+      noRasterize: true,
+    })
+    // can't do a snapshot test here, slightly inconsistent results(?)
+    fs.writeFileSync(
+      require.resolve('../test/svg_from_volvox_fasta_and_bam_norasterize.svg'),
+      result,
+    )
+    expect(result).toBeTruthy()
+  },
+  timeout,
+)
+
 // commented out for using remote files currently
 xtest(
   'configtracks arg with urls',
