@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import {
-  Typography,
-  Link,
-  Paper,
+  Button,
   Checkbox,
   FormControlLabel,
   FormGroup,
+  Link,
+  Paper,
+  Typography,
   makeStyles,
 } from '@material-ui/core'
 import { observer } from 'mobx-react'
@@ -81,12 +82,20 @@ function Formatter({ value }: { value: unknown }) {
   if (display.length > 100) {
     return (
       <>
-        <button type="button" onClick={() => copy(display)}>
+        <Button
+          style={{ margin: 2 }}
+          variant="contained"
+          onClick={() => copy(display)}
+        >
           Copy
-        </button>
-        <button type="button" onClick={() => setShow(val => !val)}>
+        </Button>
+        <Button
+          style={{ margin: 2 }}
+          variant="contained"
+          onClick={() => setShow(val => !val)}
+        >
           {show ? 'Show less' : 'Show more'}
-        </button>
+        </Button>
         <div>{show ? display : `${display.slice(0, 100)}...`}</div>
       </>
     )
@@ -108,6 +117,14 @@ function getLengthOnRef(cigar: string) {
   return lengthOnRef
 }
 
+function toP(n: number) {
+  n.toLocaleString('en-US')
+}
+
+function makeStr(ref: string, start: number, end: number) {
+  return `${ref}:${toP(start)}-${toP(end)}`
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SupplementaryAlignments(props: { tag: string; model: any }) {
   const { tag, model } = props
@@ -125,12 +142,11 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             const extra = Math.floor(saLength / 5)
             const start = +saStart
             const end = +saStart + saLength
-            const locString = `${saRef}:${Math.max(1, start - extra)}-${
-              end + extra
-            }`
-            const displayStart = start.toLocaleString('en-US')
-            const displayEnd = end.toLocaleString('en-US')
-            const displayString = `${saRef}:${displayStart}-${displayEnd} (${saStrand})`
+            const locString = makeStr(
+              saRef,
+              Math.max(1, start - extra),
+              end + extra,
+            )
             return (
               <li key={`${locString}-${index}`}>
                 <Link
@@ -152,7 +168,7 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
                   }}
                   href="#"
                 >
-                  {displayString}
+                  {makeStr(saRef, start, end)} ({saStrand})
                 </Link>
               </li>
             )

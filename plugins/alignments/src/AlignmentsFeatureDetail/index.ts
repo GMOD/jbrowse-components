@@ -1,30 +1,20 @@
 import { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from 'mobx-state-tree'
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
+import { stateModelFactory as baseModelFactory } from '@jbrowse/core/BaseFeatureWidget'
 
 const configSchema = ConfigurationSchema('AlignmentsFeatureWidget', {})
 
 export function stateModelFactory(pluginManager: PluginManager) {
-  return types
-    .model('AlignmentsFeatureWidget', {
-      id: ElementId,
+  const baseModel = baseModelFactory(pluginManager)
+  return types.compose(
+    baseModel,
+    types.model('AlignmentsFeatureWidget', {
       type: types.literal('AlignmentsFeatureWidget'),
-      featureData: types.frozen(),
-      view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      ),
-    })
-    .actions(self => ({
-      setFeatureData(data: unknown) {
-        self.featureData = data
-      },
-      clearFeatureData() {
-        self.featureData = undefined
-      },
-    }))
+    }),
+  )
 }
 
 export default function register(pluginManager: PluginManager) {
