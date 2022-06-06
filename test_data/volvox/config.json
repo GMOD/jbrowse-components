@@ -896,6 +896,7 @@
       "trackId": "gff3tabix_genes",
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
+      "formatFields": "jexl:{link:\"https://google.com/?q=\"+feature.name}",
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",

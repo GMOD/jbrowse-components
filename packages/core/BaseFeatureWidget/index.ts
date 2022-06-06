@@ -1,6 +1,8 @@
-import { types } from 'mobx-state-tree'
+import { types, addDisposer } from 'mobx-state-tree'
+import { autorun } from 'mobx'
 import PluginManager from '../PluginManager'
 import { getConf, ConfigurationSchema } from '../configuration'
+import clone from 'clone'
 import { ElementId } from '../util/types/mst'
 
 const configSchema = ConfigurationSchema('BaseFeatureWidget', {})
@@ -42,6 +44,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       id: ElementId,
       type: types.literal('BaseFeatureWidget'),
       featureData: types.frozen(),
+      unformattedFeatureData: types.frozen(),
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
@@ -52,42 +55,67 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('display', 'stateModel'),
       ),
     })
+    .volatile(() => ({}))
     .actions(self => ({
-      setFeatureData(feature: Record<string, unknown>) {
-        let trackExtra = {}
-
-        iterate(feature, (key, val, obj) => {
-          if (key === 'id') {
-            obj.origId = val
-          }
-          if (key === 'name') {
-            obj.origName = val
-          }
-          if (key === 'type') {
-            obj.origType = val
-          }
-        })
-
-        if (self.track) {
-          const ret = getConf(self.track, ['formatFields'], { feature })
-          if (ret) {
-            trackExtra = ret
-          }
-
-          iterateSubfeatures(feature, obj => {
-            const r = getConf(self.track, ['formatFieldsNested'], {
-              feature: obj,
-            })
-            return r ? { ...obj, ...r } : obj
-          })
-        }
-
-        self.featureData = { ...feature, ...trackExtra }
+      setFeatureData(featureData: Record<string, unknown>) {
+        self.unformattedFeatureData = featureData
       },
       clearFeatureData() {
         self.featureData = undefined
       },
+      setFormattedFeatureData(feat: Record<string, unknown>) {
+        self.featureData = feat
+      },
     }))
+    .actions(self => ({
+      afterCreate() {
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.unformattedFeatureData) {
+              const feature = clone(self.unformattedFeatureData)
+              let trackExtra = {}
+
+              iterate(feature, (key, val, obj) => {
+                if (key === 'id') {
+                  obj.origId = val
+                }
+                if (key === 'name') {
+                  obj.origName = val
+                }
+                if (key === 'type') {
+                  obj.origType = val
+                }
+              })
+
+              if (self.track) {
+                const ret = getConf(self.track, ['formatFields'], { feature })
+                if (ret) {
+                  trackExtra = ret
+                }
+
+                iterateSubfeatures(feature, obj => {
+                  const r = getConf(self.track, ['formatFieldsNested'], {
+                    feature: obj,
+                  })
+                  return r ? { ...obj, ...r } : obj
+                })
+              }
+
+              self.setFormattedFeatureData({ ...feature, ...trackExtra })
+            }
+          }),
+        )
+      },
+    }))
+    .preProcessSnapshot(snap => {
+      const { featureData, ...rest } = snap
+      return { unformattedFeatureData: featureData, ...rest }
+    })
+    .postProcessSnapshot(snap => {
+      const { unformattedFeatureData, ...rest } = snap
+      return rest
+    })
 }
 
 export { configSchema, stateModelFactory }

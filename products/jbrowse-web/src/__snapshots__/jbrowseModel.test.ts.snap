@@ -1721,6 +1721,7 @@ Object {
           "type": "LinearArcDisplay",
         },
       ],
+      "formatFields": "jexl:{link:\\"https://google.com/?q=\\"+feature.name}",
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",
       "type": "FeatureTrack",

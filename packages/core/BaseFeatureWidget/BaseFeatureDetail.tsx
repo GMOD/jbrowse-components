@@ -561,9 +561,7 @@ export const FeatureDetails = (props: {
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
-            <Typography color="error">
-              Failed to fetch sequence for feature: {`${error}`}
-            </Typography>
+            <Typography color="error">{`${error}`}</Typography>
           )}
         >
           <SequenceFeatureDetails {...props} />
