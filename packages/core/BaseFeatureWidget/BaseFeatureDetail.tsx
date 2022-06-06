@@ -19,22 +19,12 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../configuration'
-import { measureText, getSession } from '../util'
+import { measureText, getSession, isUriLocation } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerialized } from '../util/simpleFeature'
 import { ellipses } from './util'
-
-function isUriLocation(obj: unknown): obj is { uri: string; baseUri: string } {
-  return (
-    !!obj &&
-    typeof obj === 'object' &&
-    'uri' in obj &&
-    'baseUri' in obj &&
-    'locationType' in obj
-  )
-}
 
 const MAX_FIELD_NAME_WIDTH = 170
 
