@@ -1,5 +1,10 @@
 import { renderRegion } from './renderRegion'
 import fs from 'fs'
+import { JSDOM } from 'jsdom'
+import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
+
+const { document } = new JSDOM(`...`).window
+global.document = document
 
 function hashCode(str) {
   let hash = 0
