@@ -14,7 +14,6 @@ import {
 
 // icons
 import DeleteIcon from '@material-ui/icons/Delete'
-import AddIcon from '@material-ui/icons/Add'
 
 const StringArrayEditor = observer(
   ({

@@ -39,6 +39,7 @@ import JsonEditor from './JsonEditor'
 // adds ability to have html in helperText. note that FormHelperTextProps is
 // div because the default is p which does not like div children
 const MyTextField = props => {
+  // eslint-disable-next-line react/prop-types
   const { helperText } = props
   return (
     <TextField
