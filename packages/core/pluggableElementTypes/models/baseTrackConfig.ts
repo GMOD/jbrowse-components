@@ -53,15 +53,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
 
       formatFields: {
         type: 'frozen',
-        description: 'adds extra fields to the base feature details',
+        description: 'adds extra fields to the feature details',
         defaultValue: {},
         contextVariable: ['feature'],
       },
 
-      formatFieldsNested: {
+      formatSubfeatureFields: {
         type: 'frozen',
-        description:
-          'adds extra fields to the base feature details, applied across nested subfeatures',
+        description: 'adds extra fields to the subfeatures of a feature',
         defaultValue: {},
         contextVariable: ['feature'],
       },

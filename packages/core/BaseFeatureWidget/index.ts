@@ -7,24 +7,6 @@ import { ElementId } from '../util/types/mst'
 
 const configSchema = ConfigurationSchema('BaseFeatureWidget', {})
 
-function isObject(obj: unknown): obj is Record<string, unknown> {
-  return typeof obj === 'object' && obj !== null
-}
-
-function iterate(
-  obj: Record<string, unknown>,
-  parse: (key: string, value: unknown, obj: Record<string, unknown>) => void,
-) {
-  for (const k in obj) {
-    const r = obj[k]
-    if (isObject(r)) {
-      iterate(r, parse)
-    } else if (obj.hasOwnProperty(k)) {
-      parse(k, r, obj)
-    }
-  }
-}
-
 function iterateSubfeatures(
   obj: Record<string, unknown>,
   parse: (obj: Record<string, unknown>) => void,
@@ -72,33 +54,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            if (self.unformattedFeatureData) {
-              const feature = clone(self.unformattedFeatureData)
+            const { unformattedFeatureData, track } = self
+            if (unformattedFeatureData) {
+              const feature = clone(unformattedFeatureData)
               let trackExtra = {}
 
-              iterate(feature, (key, val, obj) => {
-                if (key === 'id') {
-                  obj.origId = val
-                }
-                if (key === 'name') {
-                  obj.origName = val
-                }
-                if (key === 'type') {
-                  obj.origType = val
-                }
-              })
-
               if (self.track) {
-                const ret = getConf(self.track, ['formatFields'], { feature })
+                const ret = getConf(track, ['formatFields'], { feature })
                 if (ret) {
                   trackExtra = ret
                 }
 
-                iterateSubfeatures(feature, obj => {
-                  const r = getConf(self.track, ['formatFieldsNested'], {
-                    feature: obj,
-                  })
-                  return r ? { ...obj, ...r } : obj
+                iterateSubfeatures(feature, subfeature => {
+                  const r =
+                    getConf(track, ['formatSubfeatureFields'], {
+                      feature: subfeature,
+                    }) || {}
+                  return { ...subfeature, ...r }
                 })
               }
 
@@ -109,12 +81,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot(snap => {
-      const { featureData, ...rest } = snap
-      return { unformattedFeatureData: featureData, ...rest }
+      // @ts-ignore
+      const { featureData, finalizedFeatureData, ...rest } = snap
+      return {
+        unformattedFeatureData: featureData,
+        featureData: finalizedFeatureData,
+        ...rest,
+      }
     })
     .postProcessSnapshot(snap => {
-      const { unformattedFeatureData, ...rest } = snap
-      return rest
+      const { unformattedFeatureData, featureData, ...rest } = snap
+      // finalizedFeatureData avoids running formatter twice if loading from
+      // snapshot
+      return { finalizedFeatureData: featureData, ...rest }
     })
 }
 

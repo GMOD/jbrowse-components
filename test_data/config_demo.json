@@ -115,8 +115,8 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
-      "name": "NCBI RefSeq w/ nested feature details",
-      "formatFieldsNested": "jexl:{name:\"https://google.com/?q=\"+feature.id}",
+      "name": "NCBI RefSeq w/ subfeature details",
+      "formatSubfeatureFields": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {
@@ -139,7 +139,7 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19_2",
       "name": "NCBI RefSeq w/ top-level feature details",
-      "formatFields": "jexl:{name:\"https://google.com/?q=\"+feature.name,random:\"Wow\"}",
+      "formatFields": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}",
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
+import dompurify from 'dompurify'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -30,9 +31,6 @@ const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
 const globalOmit = [
-  'origId',
-  'origName',
-  'origType',
   'length',
   'position',
   'subfeatures',
@@ -524,30 +522,33 @@ function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
-function generateTitle(name: string, id: string, type: string) {
-  return [ellipses(name || id), type].filter(f => !!f).join(' - ')
+function textContent(value: string) {
+  const node = document.createElement('div')
+  node.innerHTML = dompurify.sanitize(value)
+  return node.textContent || ''
+}
+function generateTitle(name: unknown, id: unknown, type: unknown) {
+  return [ellipses(textContent(`${name}` || `${id}`)), `${type}`]
+    .filter(f => !!f)
+    .join(' - ')
 }
 
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
-  feature: SimpleFeatureSerialized & {
-    origName?: string
-    origId?: string
-    origType?: string
-  }
+  feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactElement
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
-  const { origName = '', origId = '', origType = '', subfeatures } = feature
+  const { name = '', id = '', type = '', subfeatures } = feature
   const session = getSession(model)
   const defaultSeqTypes = ['mRNA', 'transcript']
   const sequenceTypes =
     getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard title={generateTitle(origName, origId, origType)}>
+    <BaseCard title={generateTitle(name as string, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
