@@ -8,10 +8,9 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
-import { readConfObject } from '../configuration'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 type FileInfo = Record<string, unknown> | string
 
@@ -84,6 +83,7 @@ export default function AboutDialog({
             .replace(/>/g, '&gt;')}</pre>`,
         }
       : info || {}
+
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
@@ -106,7 +106,7 @@ export default function AboutDialog({
           <BaseCard title="File info">
             {error ? (
               <Typography color="error">{`${error}`}</Typography>
-            ) : !info ? (
+            ) : info === undefined ? (
               'Loading file data...'
             ) : (
               <Attributes attributes={details} />
