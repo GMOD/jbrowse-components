@@ -94,12 +94,19 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </legend>
                     </fieldset>
                   </div>
+<<<<<<< HEAD
                   <p
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-2-helper-text"
+=======
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                   >
-                    stringTest
-                  </p>
+                    <div>
+                      stringTest
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -721,7 +728,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 class="makeStyles-paperContent"
               >
                 <div
+<<<<<<< HEAD
                   class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -732,7 +743,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     numberTest
                   </label>
                   <div
+<<<<<<< HEAD
                     class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                   >
                     <input
                       aria-describedby="mui-11-helper-text"
@@ -755,12 +770,19 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </legend>
                     </fieldset>
                   </div>
+<<<<<<< HEAD
                   <p
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-11-helper-text"
+=======
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                   >
-                    numberTest
-                  </p>
+                    <div>
+                      numberTest
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -774,7 +796,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 class="makeStyles-paperContent"
               >
                 <div
+<<<<<<< HEAD
                   class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -785,7 +811,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     integerTest
                   </label>
                   <div
+<<<<<<< HEAD
                     class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                   >
                     <input
                       aria-describedby="mui-12-helper-text"
@@ -808,12 +838,19 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </legend>
                     </fieldset>
                   </div>
+<<<<<<< HEAD
                   <p
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-12-helper-text"
+=======
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                   >
-                    integerTest
-                  </p>
+                    <div>
+                      integerTest
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -995,7 +1032,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 class="makeStyles-paperContent"
               >
                 <div
+<<<<<<< HEAD
                   class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1006,7 +1047,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     maxFeatureScreenDensity
                   </label>
                   <div
+<<<<<<< HEAD
                     class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                   >
                     <input
                       aria-describedby="mui-14-helper-text"
@@ -1029,12 +1074,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       </legend>
                     </fieldset>
                   </div>
+<<<<<<< HEAD
                   <p
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-14-helper-text"
+=======
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                   >
-                    maximum features per pixel that is displayed in the view, used if byte size estimates not available
-                  </p>
+                    <div>
+                      maximum features per pixel that is displayed in the view, used if byte size estimates not available
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -1048,7 +1100,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 class="makeStyles-paperContent"
               >
                 <div
+<<<<<<< HEAD
                   class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1059,7 +1115,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     fetchSizeLimit
                   </label>
                   <div
+<<<<<<< HEAD
                     class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                   >
                     <input
                       aria-describedby="mui-15-helper-text"
@@ -1082,12 +1142,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       </legend>
                     </fieldset>
                   </div>
+<<<<<<< HEAD
                   <p
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-15-helper-text"
+=======
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                   >
-                    maximum data to attempt to download for a given track, used if adapter doesn't specify one
-                  </p>
+                    <div>
+                      maximum data to attempt to download for a given track, used if adapter doesn't specify one
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -1482,12 +1549,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-19-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
-                                </p>
+                                  <div>
+                                    read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1557,12 +1631,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-20-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  Alternative display modes
-                                </p>
+                                  <div>
+                                    Alternative display modes
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1576,7 +1657,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
+<<<<<<< HEAD
                                 class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1587,7 +1672,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   minSubfeatureWidth
                                 </label>
                                 <div
+<<<<<<< HEAD
                                   class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                                 >
                                   <input
                                     aria-describedby="mui-21-helper-text"
@@ -1610,12 +1699,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-21-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
-                                </p>
+                                  <div>
+                                    the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1629,7 +1725,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
+<<<<<<< HEAD
                                 class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1640,7 +1740,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   maxHeight
                                 </label>
                                 <div
+<<<<<<< HEAD
                                   class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                                 >
                                   <input
                                     aria-describedby="mui-22-helper-text"
@@ -1663,12 +1767,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-22-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  the maximum height to be used in a pileup rendering
-                                </p>
+                                  <div>
+                                    the maximum height to be used in a pileup rendering
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1682,7 +1793,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
+<<<<<<< HEAD
                                 class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1693,7 +1808,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   maxClippingSize
                                 </label>
                                 <div
+<<<<<<< HEAD
                                   class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                                 >
                                   <input
                                     aria-describedby="mui-23-helper-text"
@@ -1716,12 +1835,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-23-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  the max clip size to be used in a pileup rendering
-                                </p>
+                                  <div>
+                                    the max clip size to be used in a pileup rendering
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1735,7 +1861,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
+<<<<<<< HEAD
                                 class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1746,7 +1876,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   height
                                 </label>
                                 <div
+<<<<<<< HEAD
                                   class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                                 >
                                   <input
                                     aria-describedby="mui-24-helper-text"
@@ -1769,12 +1903,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-24-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  the height of each feature in a pileup alignment
-                                </p>
+                                  <div>
+                                    the height of each feature in a pileup alignment
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -1862,7 +2003,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="makeStyles-paperContent"
                             >
                               <div
+<<<<<<< HEAD
                                 class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+=======
+                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+>>>>>>> origin/main
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1873,7 +2018,11 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   largeInsertionIndicatorScale
                                 </label>
                                 <div
+<<<<<<< HEAD
                                   class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
+=======
+                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
+>>>>>>> origin/main
                                 >
                                   <input
                                     aria-describedby="mui-25-helper-text"
@@ -1896,12 +2045,19 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
+<<<<<<< HEAD
                                 <p
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-25-helper-text"
+=======
+                                <div
+                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
+>>>>>>> origin/main
                                 >
-                                  scale at which to draw the large insertion indicators (bp/pixel)
-                                </p>
+                                  <div>
+                                    scale at which to draw the large insertion indicators (bp/pixel)
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div
@@ -2068,7 +2224,11 @@ exports[`ConfigurationEditor widget renders with just the required model element
                       </legend>
                     </fieldset>
                   </div>
-                  
+                  <div
+                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+                  >
+                    <div />
+                  </div>
                 </div>
               </div>
               <div

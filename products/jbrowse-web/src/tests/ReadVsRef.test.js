@@ -57,3 +57,26 @@ test('launch read vs ref panel', async () => {
   expect(state.session.views[1].type).toBe('LinearSyntenyView')
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
 }, 20000)
+
+test('launch read vs ref dotplot', async () => {
+  console.warn = jest.fn()
+  const pluginManager = getPluginManager()
+  const state = pluginManager.rootModel
+  const { findByTestId, findByText, findAllByTestId } = render(
+    <JBrowse pluginManager={pluginManager} />,
+  )
+  await findByText('Help')
+  state.session.views[0].setNewView(5, 100)
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+  )
+
+  const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
+  fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
+  fireEvent.click(track[0], { clientX: 200, clientY: 40 })
+  fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
+  fireEvent.click(await findByText('Dotplot of read vs ref'))
+
+  expect(state.session.views[1].type).toBe('DotplotView')
+  expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
+}, 20000)

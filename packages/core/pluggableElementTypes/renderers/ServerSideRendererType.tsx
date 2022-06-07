@@ -1,6 +1,7 @@
 import React from 'react'
 import { DeprecatedThemeOptions } from '@mui/material'
 import { ThemeProvider, Theme } from '@mui/material/styles'
+import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 
 import {
@@ -52,6 +53,19 @@ export type { RenderResults }
 
 export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
   html: string
+}
+
+export interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+  reactElement: unknown
+}
+
+function isSvgExport(
+  elt: ResultsSerialized,
+): elt is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in elt
 }
 
 export type ResultsDeserialized = RenderResults
@@ -161,11 +175,26 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - render args
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    return rpcManager.call(
+    const results = (await rpcManager.call(
       args.sessionId,
       'CoreRender',
       args,
-    ) as Promise<ResultsSerialized>
+    )) as ResultsSerialized
+
+    if (isSvgExport(results)) {
+      const { width, height, canvasRecordedData } = results
+
+      const C2S = await import('canvas2svg')
+      const ctx = new C2S.default(width, height)
+      const seq = new CanvasSequence(canvasRecordedData)
+      seq.execute(ctx)
+      const str = ctx.getSvg()
+      // innerHTML strips the outer <svg> element from returned data, we add
+      // our own <svg> element in the view's SVG export
+      results.html = str.innerHTML
+      delete results.reactElement
+    }
+    return results
   }
 
   /**

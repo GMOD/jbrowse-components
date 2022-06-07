@@ -14,6 +14,14 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    metadataLocation: {
+      description: 'Optional metadata file',
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/fa.metadata.yaml',
+        locationType: 'UriLocation',
+      },
+    },
     gziLocation: {
       type: 'fileLocation',
       defaultValue: {

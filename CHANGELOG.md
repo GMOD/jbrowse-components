@@ -1,3 +1,58 @@
+## 1.7.9 (2022-06-02)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                              | Download                                                          |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| @jbrowse/core                        | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments           | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-comparative-adapters |                                                                   |
+| @jbrowse/plugin-config               | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management      | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view         |                                                                   |
+| @jbrowse/plugin-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence             | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view     |                                                                   |
+| @jbrowse/plugin-variants             | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/cli                         | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                     |                                                                   |
+| @jbrowse/img                         | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view  | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view    | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                         |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#2991](https://github.com/GMOD/jbrowse-components/pull/2991) Use canvas2svg for SVG export, fixes non-rasterized usage of bezier, arcs, and more ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2483](https://github.com/GMOD/jbrowse-components/pull/2483) Add setting to color by query score per alignment for dotplot, support HTML in config slot descriptions ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2983](https://github.com/GMOD/jbrowse-components/pull/2983) Set target=\_blank by default in user HTML links ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#2994](https://github.com/GMOD/jbrowse-components/pull/2994) Allow choosing filename for svg export ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#2989](https://github.com/GMOD/jbrowse-components/pull/2989) Fix bezierCurveTo ponyfill on firefox ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#2977](https://github.com/GMOD/jbrowse-components/pull/2977) Respect --indexFile option when adding VCF and BED tracks ([@heavywatal](https://github.com/heavywatal))
+  - [#2974](https://github.com/GMOD/jbrowse-components/pull/2974) Fix track indexing being ignored after first add track widget usage ([@teresam856](https://github.com/teresam856))
+
+#### :house: Internal
+
+- [#2980](https://github.com/GMOD/jbrowse-components/pull/2980) Remove errors related to test coverage in CI ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 4
+
+- Adam Wright ([@adamjohnwright](https://github.com/adamjohnwright))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Teresa Martinez ([@teresam856](https://github.com/teresam856))
+- Watal M. Iwasaki ([@heavywatal](https://github.com/heavywatal))
+
 ## 1.7.8 (2022-05-20)
 
 <details><summary>Packages in this release</summary>

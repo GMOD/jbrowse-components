@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-circular-genome-view",
-  "version": "1.7.8",
+  "version": "1.7.9",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
     "jbrowse",
@@ -38,13 +38,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/core": "^1.7.8",
-    "@jbrowse/plugin-circular-view": "^1.7.8",
-    "@jbrowse/plugin-config": "^1.7.8",
-    "@jbrowse/plugin-data-management": "^1.7.8",
-    "@jbrowse/plugin-sequence": "^1.7.8",
-    "@jbrowse/plugin-variants": "^1.7.8",
-    "@jbrowse/plugin-wiggle": "^1.7.8",
+    "@jbrowse/core": "^1.7.9",
+    "@jbrowse/plugin-circular-view": "^1.7.9",
+    "@jbrowse/plugin-config": "^1.7.9",
+    "@jbrowse/plugin-data-management": "^1.7.9",
+    "@jbrowse/plugin-sequence": "^1.7.9",
+    "@jbrowse/plugin-variants": "^1.7.9",
+    "@jbrowse/plugin-wiggle": "^1.7.9",
     "@mui/styles": "^5.0.0",
     "@mui/material": "^5.0.0",
     "@mui/icons-material": "^5.0.0",

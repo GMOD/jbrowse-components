@@ -13,6 +13,10 @@ test('adapter can fetch sequence from volvox.fa', async () => {
         localPath: require.resolve('../../test_data/volvox.fa.fai'),
         locationType: 'LocalPathLocation',
       },
+      metadataLocation: {
+        localPath: require.resolve('../../test_data/hello.txt'),
+        locationType: 'LocalPathLocation',
+      },
     }),
   )
 
@@ -39,6 +43,9 @@ test('adapter can fetch sequence from volvox.fa', async () => {
     start: 0,
     end: 20000,
   })
+
+  const data = await adapter.getHeader()
+  expect(data?.trim()).toBe('hello world')
 
   const featuresArray3 = await features3.pipe(toArray()).toPromise()
   expect(featuresArray3).toMatchSnapshot()

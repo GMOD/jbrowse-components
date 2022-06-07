@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getPropertyMembers, getEnv } from 'mobx-state-tree'
-import { FileSelector } from '@jbrowse/core/ui'
+import { FileSelector, SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
@@ -37,12 +37,27 @@ import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
 
+// adds ability to have html in helperText. note that FormHelperTextProps is
+// div because the default is p which does not like div children
+const MyTextField = props => {
+  // eslint-disable-next-line react/prop-types
+  const { helperText } = props
+  return (
+    <TextField
+      {...props}
+      helperText={<SanitizedHTML html={helperText} />}
+      FormHelperTextProps={{
+        component: 'div',
+      }}
+      fullWidth
+    />
+  )
+}
+
 const StringEditor = observer(({ slot }) => (
-  <TextField
+  <MyTextField
     label={slot.name}
-    // error={filterError}
     helperText={slot.description}
-    fullWidth
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
   />
@@ -52,7 +67,6 @@ const TextEditor = observer(({ slot }) => (
   <TextField
     label={slot.name}
     helperText={slot.description}
-    fullWidth
     multiline
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
@@ -268,7 +282,7 @@ const NumberEditor = observer(({ slot }) => {
     }
   }, [slot, val])
   return (
-    <TextField
+    <MyTextField
       label={slot.name}
       helperText={slot.description}
       value={val}
@@ -287,7 +301,7 @@ const IntegerEditor = observer(({ slot }) => {
     }
   }, [slot, val])
   return (
-    <TextField
+    <MyTextField
       label={slot.name}
       helperText={slot.description}
       value={val}
@@ -297,7 +311,7 @@ const IntegerEditor = observer(({ slot }) => {
   )
 })
 
-const booleanEditor = observer(({ slot }) => (
+const BooleanEditor = observer(({ slot }) => (
   <FormControl>
     <FormControlLabel
       label={slot.name}
@@ -312,20 +326,18 @@ const booleanEditor = observer(({ slot }) => (
   </FormControl>
 ))
 
-const stringEnumEditor = observer(({ slot, slotSchema }) => {
+const StringEnumEditor = observer(({ slot, slotSchema }) => {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
     getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
   ).map(t => t.value)
 
   return (
-    <TextField
+    <MyTextField
       value={slot.value}
       label={slot.name}
       select
-      // error={filterError}
       helperText={slot.description}
-      fullWidth
       onChange={evt => slot.set(evt.target.value)}
     >
       {choices.map(str => (
@@ -333,7 +345,7 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
           {str}
         </MenuItem>
       ))}
-    </TextField>
+    </MyTextField>
   )
 })
 
@@ -359,8 +371,8 @@ const valueComponents = {
   number: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
-  stringEnum: stringEnumEditor,
-  boolean: booleanEditor,
+  stringEnum: StringEnumEditor,
+  boolean: BooleanEditor,
   frozen: JsonEditor,
   configRelationships: JsonEditor,
 }

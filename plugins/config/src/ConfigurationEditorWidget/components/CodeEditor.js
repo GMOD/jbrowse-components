@@ -13,20 +13,21 @@ const fontSize = '12px'
 const fontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
   callbackEditor: {
     fontFamily,
     fontSize,
+    background: theme.palette.background.default,
     overflowX: 'auto',
     marginTop: '16px',
-    borderBottom: '1px solid rgba(0,0,0,0.42)',
+    border: '1px solid rgba(0,0,0,0.42)',
   },
   syntaxHighlighter: {
     margin: 0,
     fontFamily,
     fontSize,
   },
-})
+}))
 
 export default function CodeEditor({ contents, setContents }) {
   const classes = useStyles()

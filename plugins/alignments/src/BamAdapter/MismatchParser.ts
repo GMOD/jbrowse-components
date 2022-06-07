@@ -10,6 +10,7 @@ export interface Mismatch {
   cliplen?: number
 }
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
+const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
 export function parseCigar(cigar: string) {
   return (cigar || '').split(/([MIDNSHPX=])/)
 }
@@ -38,6 +39,7 @@ export function cigarToMismatches(
               start: roffset + j,
               type: 'mismatch',
               base: seq[soffset + j],
+              altbase: ref[roffset + j],
               length: 1,
             })
           }
@@ -273,7 +275,7 @@ export function getModificationPositions(
     const [basemod, ...skips] = mod.split(',')
 
     // regexes based on parse_mm.pl from hts-specs
-    const matches = basemod.match(/([A-Z])([-+])([^,.?]+)([.?])?/)
+    const matches = basemod.match(modificationRegex)
     if (!matches) {
       throw new Error('bad format for MM tag')
     }
@@ -328,7 +330,7 @@ export function getModificationTypes(mm: string) {
     .map(mod => {
       const [basemod] = mod.split(',')
 
-      const matches = basemod.match(/([A-Z])([-+])([^,]+)/)
+      const matches = basemod.match(modificationRegex)
       if (!matches) {
         throw new Error('bad format for MM tag')
       }

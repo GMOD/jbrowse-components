@@ -27,9 +27,9 @@ beforeEach(() => {
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
 
@@ -89,7 +89,7 @@ test('assembly aliases', async () => {
     await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
   )
   await findByTestId('box-test-vcf-604452', {}, waitForOptions)
-})
+}, 15000)
 
 test('nclist track test with long name', async () => {
   const pm = getPluginManager()
@@ -104,7 +104,7 @@ test('nclist track test with long name', async () => {
     {},
     waitForOptions,
   )
-})
+}, 15000)
 
 test('test sharing', async () => {
   sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({

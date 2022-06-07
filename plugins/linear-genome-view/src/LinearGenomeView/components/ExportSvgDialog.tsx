@@ -2,17 +2,19 @@ import React, { useState } from 'react'
 import { makeStyles } from '@mui/styles'
 import {
   Button,
+  Checkbox,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
-  Checkbox,
   FormControlLabel,
-  CircularProgress,
+  IconButton,
+  TextField,
   Typography,
   Theme,
 } from '@mui/material'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel as LGV } from '..'
 
@@ -25,6 +27,15 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }))
 
+function LoadingMessage() {
+  return (
+    <div>
+      <CircularProgress size={20} style={{ marginRight: 20 }} />
+      <Typography display="inline">Creating SVG</Typography>
+    </div>
+  )
+}
+
 export default function ExportSvgDlg({
   model,
   handleClose,
@@ -36,29 +47,28 @@ export default function ExportSvgDlg({
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
+  const [filename, setFilename] = useState('jbrowse.svg')
   const [error, setError] = useState<unknown>()
   const classes = useStyles()
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
         Export SVG
-        <IconButton
-          className={classes.closeButton}
-          onClick={handleClose}
-          size="large"
-        >
+        <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent>
         {error ? (
-          <div style={{ color: 'red' }}>{`${error}`}</div>
+          <ErrorMessage error={error} />
         ) : loading ? (
-          <div>
-            <CircularProgress size={20} style={{ marginRight: 20 }} />
-            <Typography display="inline">Creating SVG</Typography>
-          </div>
+          <LoadingMessage />
         ) : null}
+        <TextField
+          helperText="filename"
+          value={filename}
+          onChange={event => setFilename(event.target.value)}
+        />
         {offscreenCanvas ? (
           <FormControlLabel
             control={
@@ -92,12 +102,11 @@ export default function ExportSvgDlg({
             setLoading(true)
             setError(undefined)
             try {
-              await model.exportSvg({ rasterizeLayers })
+              await model.exportSvg({ rasterizeLayers, filename })
               handleClose()
             } catch (e) {
               console.error(e)
               setError(e)
-            } finally {
               setLoading(false)
             }
           }}
