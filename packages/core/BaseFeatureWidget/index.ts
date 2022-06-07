@@ -7,17 +7,25 @@ import { ElementId } from '../util/types/mst'
 
 const configSchema = ConfigurationSchema('BaseFeatureWidget', {})
 
-function iterateSubfeatures(
-  obj: Record<string, unknown>,
+interface Feat {
+  subfeatures?: Record<string, unknown>[]
+}
+
+function formatSubfeatures(
+  obj: Feat,
+  depth: number,
   parse: (obj: Record<string, unknown>) => void,
+  currentDepth = 0,
+  returnObj = {} as Record<string, unknown>,
 ) {
-  if (obj.subfeatures) {
-    // @ts-ignore
-    obj.subfeatures = obj.subfeatures.map(sub => {
-      iterateSubfeatures(sub, parse)
-      return parse(sub)
-    })
+  if (depth <= currentDepth) {
+    return returnObj
   }
+  returnObj.subfeatures = obj.subfeatures?.map(sub => {
+    formatSubfeatures(sub, depth, parse, currentDepth + 1, returnObj)
+    return parse(sub)
+  })
+  return returnObj
 }
 
 export default function stateModelFactory(pluginManager: PluginManager) {
@@ -26,6 +34,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       id: ElementId,
       type: types.literal('BaseFeatureWidget'),
       featureData: types.frozen(),
+      formattedFields: types.frozen(),
       unformattedFeatureData: types.frozen(),
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
@@ -45,7 +54,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       clearFeatureData() {
         self.featureData = undefined
       },
-      setFormattedFeatureData(feat: Record<string, unknown>) {
+      setFormattedData(feat: Record<string, unknown>) {
         self.featureData = feat
       },
     }))
@@ -57,24 +66,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const { unformattedFeatureData, track } = self
             if (unformattedFeatureData) {
               const feature = clone(unformattedFeatureData)
-              let trackExtra = {}
 
-              if (self.track) {
-                const ret = getConf(track, ['formatFields'], { feature })
-                if (ret) {
-                  trackExtra = ret
-                }
+              if (track) {
+                // eslint-disable-next-line no-underscore-dangle
+                feature._fmt = getConf(track, ['formatDetails', 'feature'], {
+                  feature,
+                })
 
-                iterateSubfeatures(feature, subfeature => {
-                  const r =
-                    getConf(track, ['formatSubfeatureFields'], {
-                      feature: subfeature,
-                    }) || {}
-                  return { ...subfeature, ...r }
+                const depth = getConf(track, ['formatDetails', 'depth'])
+
+                formatSubfeatures(feature, depth, subfeature => {
+                  // eslint-disable-next-line no-underscore-dangle
+                  subfeature._fmt = getConf(
+                    track,
+                    ['formatDetails', 'subfeatures'],
+                    { feature: subfeature },
+                  )
                 })
               }
 
-              self.setFormattedFeatureData({ ...feature, ...trackExtra })
+              self.setFormattedData(feature)
             }
           }),
         )

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
-import dompurify from 'dompurify'
 import { ErrorBoundary } from 'react-error-boundary'
 import {
   Accordion,
@@ -31,6 +30,7 @@ const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
 const globalOmit = [
+  '_fmt',
   'length',
   'position',
   'subfeatures',
@@ -239,28 +239,37 @@ const ArrayValue = ({
     )
   }
 }
+const toLocale = (n: number) => n.toLocaleString('en-US')
 
 function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
+  const obj = feature as SimpleFeatureSerialized & {
     start: number
     end: number
     strand: number
     refName: string
+    _fmt: {
+      start?: number
+      end?: number
+      refName?: string
+      name?: string
+    }
   }
+
+  // eslint-disable-next-line no-underscore-dangle
+  const formattedFeat = { ...obj, ...obj._fmt }
+  const { start, strand, end, refName } = formattedFeat
+
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
   }
-  const strandStr = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
-  const displayStart = (start + 1).toLocaleString('en-US')
-  const displayEnd = end.toLocaleString('en-US')
-  const displayRef = refName ? `${refName}:` : ''
+  const str = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayedDetails: Record<string, any> = {
-    ...feature,
-    length: (end - start).toLocaleString('en-US'),
-    position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
+    ...formattedFeat,
+    length: toLocale(end - start),
+    position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
   const coreRenderedDetails = [
@@ -423,7 +432,7 @@ function UriAttribute({
   )
 }
 
-export const Attributes: React.FunctionComponent<AttributeProps> = props => {
+export function Attributes(props: AttributeProps) {
   const {
     attributes,
     omit = [],
@@ -432,9 +441,11 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
+  const { _fmt, ...rest } = attributes
+  const formattedAttributes = { ...rest, ..._fmt }
 
   const maxLabelWidth = generateMaxWidth(
-    Object.entries(attributes).filter(
+    Object.entries(formattedAttributes).filter(
       ([k, v]) => v !== undefined && !omits.includes(k),
     ),
     prefix,
@@ -445,7 +456,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
 
   return (
     <>
-      {Object.entries(attributes)
+      {Object.entries(formattedAttributes)
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
           const description = accessNested([...prefix, key], descriptions)
@@ -522,13 +533,8 @@ function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
-function textContent(value: string) {
-  const node = document.createElement('div')
-  node.innerHTML = dompurify.sanitize(value)
-  return node.textContent || ''
-}
 function generateTitle(name: unknown, id: unknown, type: unknown) {
-  return [ellipses(textContent(`${name}` || `${id}`)), `${type}`]
+  return [ellipses(`${name}` || `${id}`), `${type}`]
     .filter(f => !!f)
     .join(' - ')
 }
@@ -548,7 +554,7 @@ export const FeatureDetails = (props: {
     getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard title={generateTitle(name as string, id, type)}>
+    <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />

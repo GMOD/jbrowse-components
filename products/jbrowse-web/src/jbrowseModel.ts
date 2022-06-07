@@ -50,12 +50,6 @@ export default function JBrowseWeb(
             type: 'stringArray',
             defaultValue: ['mRNA', 'transcript'],
           },
-          extraFields: {
-            type: 'string',
-            description: 'modifies on the base feature details',
-            defaultValue: 'jexl:{}',
-            contextVariable: ['feature'],
-          },
         }),
         disableAnalytics: {
           type: 'boolean',

@@ -51,19 +51,25 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       }),
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
-      formatFields: {
-        type: 'frozen',
-        description: 'adds extra fields to the feature details',
-        defaultValue: {},
-        contextVariable: ['feature'],
-      },
-
-      formatSubfeatureFields: {
-        type: 'frozen',
-        description: 'adds extra fields to the subfeatures of a feature',
-        defaultValue: {},
-        contextVariable: ['feature'],
-      },
+      formatDetails: ConfigurationSchema('FormatDetails', {
+        feature: {
+          type: 'frozen',
+          description: 'adds extra fields to the feature details',
+          defaultValue: {},
+          contextVariable: ['feature'],
+        },
+        subfeatures: {
+          type: 'frozen',
+          description: 'adds extra fields to the subfeatures of a feature',
+          defaultValue: {},
+          contextVariable: ['feature'],
+        },
+        depth: {
+          type: 'number',
+          defaultValue: 2,
+          description: 'depth to iterate on subfeatures',
+        },
+      }),
     },
     {
       preProcessSnapshot: s => {

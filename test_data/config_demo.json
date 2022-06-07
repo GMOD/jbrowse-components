@@ -116,7 +116,9 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
       "name": "NCBI RefSeq w/ subfeature details",
-      "formatSubfeatureFields": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}",
+      "formatDetails": {
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random:'Wow'}"
+      },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {
@@ -139,7 +141,9 @@
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19_2",
       "name": "NCBI RefSeq w/ top-level feature details",
-      "formatFields": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}",
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random:'Wow'}"
+      },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {
@@ -178,9 +182,6 @@
       "type": "FeatureTrack",
       "trackId": "nclist_genes_hg19",
       "name": "Gencode v19",
-      "formatFields": "jexl:{name:\"https://civicdb.org/events/genes/\"+feature.gene_id+\"/summary/variants/\"+feature.id+\"/summary\"}",
-      "formatFieldsNested": "jexl:{name:\"https://civicdb.org/events/genes/\"+feature.gene_id+\"/summary/variants/\"+feature.id+\"/summary\"}",
-
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
