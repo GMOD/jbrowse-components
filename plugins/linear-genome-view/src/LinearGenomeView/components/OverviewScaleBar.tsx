@@ -51,7 +51,6 @@ const useStyles = makeStyles(theme => {
     },
     scaleBarLabel: {
       height: HEADER_OVERVIEW_HEIGHT,
-      width: 1,
       position: 'absolute',
       display: 'flex',
       justifyContent: 'center',
@@ -354,7 +353,7 @@ const OverviewBox = observer(
                     color: refNameColor,
                   }}
                 >
-                  {tickToStringAndTruncate(tickLabel)}
+                  {tickToStringAndTruncate(tickLabel, majorPitch)}
                 </Typography>
               ))
             : null}

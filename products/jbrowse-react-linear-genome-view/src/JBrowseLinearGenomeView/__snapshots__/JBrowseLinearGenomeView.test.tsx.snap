@@ -116,37 +116,37 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        20bp
+                        20 bp
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        40bp
+                        40 bp
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        60bp
+                        60 bp
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        80bp
+                        80 bp
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        100bp
+                        100 bp
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        120bp
+                        120 bp
                       </p>
                     </div>
                   </div>
@@ -703,7 +703,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          10bp
+                          10 bp
                         </p>
                       </div>
                       <div
@@ -713,7 +713,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          20bp
+                          20 bp
                         </p>
                       </div>
                       <div
@@ -723,7 +723,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          30bp
+                          30 bp
                         </p>
                       </div>
                       <div
@@ -733,7 +733,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          40bp
+                          40 bp
                         </p>
                       </div>
                       <div
@@ -743,7 +743,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          50bp
+                          50 bp
                         </p>
                       </div>
                     </div>

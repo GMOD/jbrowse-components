@@ -38,31 +38,31 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                20bp
+                20 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                40bp
+                40 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                60bp
+                60 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                80bp
+                80 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                100bp
+                100 bp
               </p>
             </div>
           </div>
@@ -627,31 +627,31 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 145.0909090909091px; pointer-events: none;"
               >
-                1.2kbp
+                1,200 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 290.1818181818182px; pointer-events: none;"
               >
-                1.4kbp
+                1,400 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 435.27272727272725px; pointer-events: none;"
               >
-                1.6kbp
+                1,600 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 580.3636363636364px; pointer-events: none;"
               >
-                1.8kbp
+                1,800 bp
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 725.4545454545454px; pointer-events: none;"
               >
-                2kbp
+                2,000 bp
               </p>
             </div>
           </div>
@@ -1250,7 +1250,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                 >
-                  1kbp
+                  1,000 bp
                 </p>
               </div>
               <div
@@ -1260,7 +1260,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                 >
-                  1.2kbp
+                  1,200 bp
                 </p>
               </div>
               <div
@@ -1270,7 +1270,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                 >
-                  1.4kbp
+                  1,400 bp
                 </p>
               </div>
               <div
@@ -1280,7 +1280,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                 >
-                  1.6kbp
+                  1,600 bp
                 </p>
               </div>
               <div
@@ -1290,7 +1290,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                 >
-                  1.8kbp
+                  1,800 bp
                 </p>
               </div>
               <div
@@ -1300,7 +1300,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                 >
-                  2kbp
+                  2,000 bp
                 </p>
               </div>
             </div>
