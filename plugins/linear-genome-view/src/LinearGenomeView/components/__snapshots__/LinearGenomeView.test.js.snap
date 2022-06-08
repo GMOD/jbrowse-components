@@ -38,31 +38,31 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                20 bp
+                20
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                40 bp
+                40
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                60 bp
+                60
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                80 bp
+                80
               </p>
               <p
                 class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                 style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
               >
-                100 bp
+                100
               </p>
             </div>
           </div>
@@ -255,8 +255,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          100
-           bp
+          100bp
         </p>
         <div
           class="makeStyles-container"

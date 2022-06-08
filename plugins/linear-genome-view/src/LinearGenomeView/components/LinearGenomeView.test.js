@@ -75,13 +75,11 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText, findAllByText } = render(
-      <LinearGenomeView model={model} />,
-    )
+    const { container, findByText } = render(<LinearGenomeView model={model} />)
     await findByText('Foo Track')
     // test needs to wait until it's updated to display 100 bp in the header to
     // make snapshot pass
-    await findAllByText('100 bp')
+    await findByText('100bp')
     expect(container.firstChild).toMatchSnapshot()
   })
   it('renders two tracks, two regions', async () => {
@@ -147,7 +145,7 @@ describe('<LinearGenomeView />', () => {
       <LinearGenomeView model={model} />,
     )
     await findByText('Foo Track')
-    await findByText('798 bp')
+    await findByText('798bp')
     await findAllByTestId('svgfeatures')
 
     expect(container.firstChild).toMatchSnapshot()

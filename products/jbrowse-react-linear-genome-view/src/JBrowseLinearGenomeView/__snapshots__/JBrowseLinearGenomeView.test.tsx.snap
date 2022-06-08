@@ -116,37 +116,37 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        20 bp
+                        20
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        40 bp
+                        40
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        60 bp
+                        60
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        80 bp
+                        80
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        100 bp
+                        100
                       </p>
                       <p
                         class="MuiTypography-root makeStyles-scaleBarLabel MuiTypography-body2"
                         style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
-                        120 bp
+                        120
                       </p>
                     </div>
                   </div>
@@ -339,8 +339,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
                 >
-                  40
-                   bp
+                  40bp
                 </p>
                 <div
                   class="makeStyles-container"
@@ -703,7 +702,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          10 bp
+                          10
                         </p>
                       </div>
                       <div
@@ -713,7 +712,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          20 bp
+                          20
                         </p>
                       </div>
                       <div
@@ -723,7 +722,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          30 bp
+                          30
                         </p>
                       </div>
                       <div
@@ -733,7 +732,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          40 bp
+                          40
                         </p>
                       </div>
                       <div
@@ -743,7 +742,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         <p
                           class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
                         >
-                          50 bp
+                          50
                         </p>
                       </div>
                     </div>
