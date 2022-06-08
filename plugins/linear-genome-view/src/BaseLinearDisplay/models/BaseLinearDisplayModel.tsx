@@ -336,7 +336,6 @@ export const BaseLinearDisplay = types
           'baseFeature',
           {
             view: getContainingView(self),
-            display: self,
             track: getContainingTrack(self),
             featureData: feature.toJSON(),
           },

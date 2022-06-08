@@ -1722,7 +1722,7 @@ Object {
         },
       ],
       "formatDetails": Object {
-        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random:'Wow'}",
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
       },
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",

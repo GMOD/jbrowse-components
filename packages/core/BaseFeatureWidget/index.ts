@@ -42,9 +42,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       track: types.safeReference(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
-      display: types.safeReference(
-        pluginManager.pluggableMstType('display', 'stateModel'),
-      ),
     })
     .volatile(() => ({}))
     .actions(self => ({
@@ -69,15 +66,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
               if (track) {
                 // eslint-disable-next-line no-underscore-dangle
-                feature._fmt = getConf(track, ['formatDetails', 'feature'], {
-                  feature,
-                })
+                feature.__jbrowsefmt = getConf(
+                  track,
+                  ['formatDetails', 'feature'],
+                  { feature },
+                )
 
                 const depth = getConf(track, ['formatDetails', 'depth'])
 
                 formatSubfeatures(feature, depth, subfeature => {
                   // eslint-disable-next-line no-underscore-dangle
-                  subfeature._fmt = getConf(
+                  subfeature.__jbrowsefmt = getConf(
                     track,
                     ['formatDetails', 'subfeatures'],
                     { feature: subfeature },
@@ -105,10 +104,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // finalizedFeatureData avoids running formatter twice if loading from
       // snapshot
       return {
-        // replacing undefined with helps with allowing fields to be hidden,
-        // setting null is not allowed by jexl so we set it to undefined to
-        // hide. see config guide. this replacement happens both here and when
-        // displaying the featureData in base feature widget
+        // replacing undefined with null helps with allowing fields to be
+        // hidden, setting null is not allowed by jexl so we set it to
+        // undefined to hide. see config guide. this replacement happens both
+        // here and when displaying the featureData in base feature widget
         finalizedFeatureData: JSON.parse(
           JSON.stringify(featureData, (_, v) =>
             typeof v === 'undefined' ? null : v,

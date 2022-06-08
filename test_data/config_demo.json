@@ -117,7 +117,7 @@
       "trackId": "ncbi_gff_hg19",
       "name": "NCBI RefSeq w/ subfeature details",
       "formatDetails": {
-        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random:'Wow'}"
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
@@ -142,7 +142,7 @@
       "trackId": "ncbi_gff_hg19_2",
       "name": "NCBI RefSeq w/ top-level feature details",
       "formatDetails": {
-        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random:'Wow'}"
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],

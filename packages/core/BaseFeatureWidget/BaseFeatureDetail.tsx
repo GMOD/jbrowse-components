@@ -30,7 +30,7 @@ const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
 const globalOmit = [
-  '_fmt',
+  '__jbrowsefmt',
   'length',
   'position',
   'subfeatures',
@@ -248,7 +248,7 @@ function CoreDetails(props: BaseProps) {
     end: number
     strand: number
     refName: string
-    _fmt: {
+    __jbrowsefmt: {
       start?: number
       end?: number
       refName?: string
@@ -257,7 +257,7 @@ function CoreDetails(props: BaseProps) {
   }
 
   // eslint-disable-next-line no-underscore-dangle
-  const formattedFeat = { ...obj, ...obj._fmt }
+  const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
   const { start, strand, end, refName } = formattedFeat
 
   const strandMap: Record<string, string> = {
@@ -441,8 +441,8 @@ export function Attributes(props: AttributeProps) {
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
-  const { _fmt, ...rest } = attributes
-  const formattedAttributes = { ...rest, ..._fmt }
+  const { __jbrowsefmt, ...rest } = attributes
+  const formattedAttributes = { ...rest, ...__jbrowsefmt }
 
   const maxLabelWidth = generateMaxWidth(
     Object.entries(formattedAttributes).filter(
@@ -602,9 +602,9 @@ const BaseFeatureDetails = observer((props: BaseInputProps) => {
     return null
   }
 
-  // replacing undefined with helps with allowing fields to be hidden, setting
-  // null is not allowed by jexl so we set it to undefined to hide. see config
-  // guide. this replacement happens both here and when snapshotting the
+  // replacing undefined with null helps with allowing fields to be hidden,
+  // setting null is not allowed by jexl so we set it to undefined to hide. see
+  // config guide. this replacement happens both here and when snapshotting the
   // featureData
   const feature = JSON.parse(
     JSON.stringify(featureData, (_, v) =>
