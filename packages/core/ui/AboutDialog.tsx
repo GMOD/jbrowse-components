@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
+import copy from 'copy-to-clipboard'
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -28,11 +30,13 @@ export default function AboutDialog({
   handleClose,
 }: {
   config: AnyConfigurationModel
+
   handleClose: () => void
 }) {
   const classes = useStyles()
   const [info, setInfo] = useState<FileInfo>()
   const [error, setError] = useState<unknown>()
+  const [copied, setCopied] = useState(false)
   const session = getSession(config)
   const { rpcManager } = session
   const conf = readConfObject(config)
@@ -67,12 +71,13 @@ export default function AboutDialog({
 
   let trackName = readConfObject(config, 'name')
   if (readConfObject(config, 'type') === 'ReferenceSequenceTrack') {
-    trackName = 'Reference Sequence'
-    session.assemblies.forEach(assembly => {
-      if (assembly.sequence === config.configuration) {
-        trackName = `Reference Sequence (${readConfObject(assembly, 'name')})`
-      }
-    })
+    const asm = session.assemblies.find(
+      a => a.sequence === config.configuration,
+    )
+
+    trackName = asm
+      ? `Reference Sequence (${readConfObject(asm, 'name')})`
+      : 'Reference Sequence'
   }
 
   const details =
@@ -97,6 +102,17 @@ export default function AboutDialog({
       </DialogTitle>
       <DialogContent>
         <BaseCard title="Configuration">
+          <Button
+            variant="contained"
+            style={{ float: 'right' }}
+            onClick={() => {
+              copy(JSON.stringify(conf, null, 2))
+              setCopied(true)
+              setTimeout(() => setCopied(false), 1000)
+            }}
+          >
+            {copied ? 'Copied to clipboard!' : 'Copy config'}
+          </Button>
           <Attributes
             attributes={conf}
             omit={['displays', 'baseUri', 'refNames']}
