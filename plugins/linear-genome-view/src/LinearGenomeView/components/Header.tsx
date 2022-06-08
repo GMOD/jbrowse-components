@@ -7,6 +7,7 @@ import {
   makeStyles,
   alpha,
 } from '@material-ui/core'
+import { getTickDisplayStr2 } from '@jbrowse/core/util'
 import SearchBox from './SearchBox'
 
 // icons
@@ -97,10 +98,10 @@ function PanControls({ model }: { model: LGV }) {
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const { coarseTotalBp } = model
+  const { coarseTotalBp, bpPerPx } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {Math.round(coarseTotalBp).toLocaleString('en-US')} bp
+      {getTickDisplayStr2(coarseTotalBp, bpPerPx)}
     </Typography>
   )
 })

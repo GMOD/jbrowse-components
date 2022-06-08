@@ -5,7 +5,7 @@ import { Instance } from 'mobx-state-tree'
 import clsx from 'clsx'
 
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
@@ -15,7 +15,7 @@ import {
   HEADER_BAR_HEIGHT,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import { chooseGridPitch, tickToStringAndTruncate } from '../util'
+import { chooseGridPitch } from '../util'
 import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
@@ -300,7 +300,7 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
-    const { cytobandOffset, showCytobands } = model
+    const { cytobandOffset, bpPerPx, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
@@ -353,7 +353,7 @@ const OverviewBox = observer(
                     color: refNameColor,
                   }}
                 >
-                  {tickToStringAndTruncate(tickLabel, majorPitch)}
+                  {getTickDisplayStr(tickLabel, bpPerPx)}
                 </Typography>
               ))
             : null}

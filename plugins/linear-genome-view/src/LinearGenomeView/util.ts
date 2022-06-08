@@ -82,15 +82,3 @@ export function makeTicks(
   }
   return ticks
 }
-
-export function tickToStringAndTruncate(label: number, majorPitch: number) {
-  if (label % 1000000 === 0 && majorPitch >= 500000) {
-    const nval = label / 1000000
-    return `${nval.toLocaleString('en-Us')} Mbp`
-  } else if (label % 1000 === 0 && majorPitch >= 500) {
-    const nval = label / 1000
-    return `${nval.toLocaleString('en-Us')} kbp`
-  } else {
-    return `${label.toLocaleString('en-US')} bp`
-  }
-}

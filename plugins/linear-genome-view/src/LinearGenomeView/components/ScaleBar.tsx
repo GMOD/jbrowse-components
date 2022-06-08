@@ -13,7 +13,8 @@ import {
   ElidedBlock as ElidedBlockComponent,
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
-import { makeTicks, chooseGridPitch, tickToStringAndTruncate } from '../util'
+import { makeTicks } from '../util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -95,19 +96,14 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
 
 const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
+  const { bpPerPx } = model
 
   return (
     <>
       {model.staticBlocks.map((block, index) => {
         if (block instanceof ContentBlock) {
-          const ticks = makeTicks(
-            block.start,
-            block.end,
-            model.bpPerPx,
-            true,
-            false,
-          )
-          const { majorPitch } = chooseGridPitch(model.bpPerPx, 60, 15)
+          const { start, end } = block
+          const ticks = makeTicks(start, end, bpPerPx, true, false)
 
           return (
             <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
@@ -126,7 +122,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     >
                       {baseNumber ? (
                         <Typography className={classes.majorTickLabel}>
-                          {tickToStringAndTruncate(baseNumber, majorPitch)}
+                          {getTickDisplayStr(baseNumber, bpPerPx)}
                         </Typography>
                       ) : null}
                     </div>
