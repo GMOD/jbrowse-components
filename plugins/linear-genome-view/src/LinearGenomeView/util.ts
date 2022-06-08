@@ -84,7 +84,6 @@ export function makeTicks(
 }
 
 export function tickToStringAndTruncate(label: number, majorPitch: number) {
-  console.log(majorPitch)
   if (label % 1000000 === 0 && majorPitch >= 500000) {
     const nval = label / 1000000
     return `${nval.toLocaleString('en-Us')} Mbp`
