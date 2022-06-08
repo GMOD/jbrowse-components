@@ -1,6 +1,6 @@
 import React from 'react'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -11,14 +11,21 @@ import {
   makeStyles,
 } from '@material-ui/core'
 
+import {
+  bindTrigger,
+  bindPopover,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
+
+import clsx from 'clsx'
+import { observer } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
+
 // icons
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import DragIcon from '@material-ui/icons/DragIndicator'
 import CloseIcon from '@material-ui/icons/Close'
 
-import clsx from 'clsx'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import { LinearGenomeViewStateModel } from '..'
 
 const useStyles = makeStyles(theme => ({
@@ -54,22 +61,20 @@ const useStyles = makeStyles(theme => ({
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const TrackLabel = React.forwardRef(
-  (props: { track: BaseTrackModel; className?: string }, ref) => {
+  (
+    { track, className }: { track: BaseTrackModel; className?: string },
+    ref,
+  ) => {
     const classes = useStyles()
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-    const { track, className } = props
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
     const trackId = getConf(track, 'trackId')
 
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget)
-    }
-
-    const handleClose = () => {
-      setAnchorEl(null)
-    }
+    const popupState = usePopupState({
+      popupId: 'trackLabelMenu',
+      variant: 'popover',
+    })
 
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
       const target = event.target as HTMLElement
@@ -91,15 +96,10 @@ const TrackLabel = React.forwardRef(
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       const r = session.assemblies.find(a => a.sequence === trackConf)
       trackName =
-        readConfObject(trackConf, 'name') ||
+        trackName ||
         (r
           ? `Reference Sequence (${readConfObject(r, 'name')})`
           : 'Reference Sequence')
-    }
-
-    function handleMenuItemClick(_: unknown, callback: Function) {
-      callback()
-      handleClose()
     }
 
     const items = [
@@ -135,9 +135,7 @@ const TrackLabel = React.forwardRef(
             {trackName}
           </Typography>
           <IconButton
-            aria-controls="simple-menu"
-            aria-haspopup="true"
-            onClick={handleClick}
+            {...bindTrigger(popupState)}
             className={classes.iconButton}
             color="secondary"
             data-testid="track_menu_icon"
@@ -146,12 +144,11 @@ const TrackLabel = React.forwardRef(
             <MoreVertIcon />
           </IconButton>
         </Paper>
-        <Menu
-          anchorEl={anchorEl}
-          onMenuItemClick={handleMenuItemClick}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
+        <CascadingMenu
+          {...bindPopover(popupState)}
+          onMenuItemClick={(_: unknown, callback: Function) => callback()}
           menuItems={items}
+          popupState={popupState}
         />
       </>
     )
