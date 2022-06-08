@@ -1968,6 +1968,36 @@ Object {
     },
     Object {
       "adapter": Object {
+        "bedLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-bed12.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "bed_genes-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "bed_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Bed genes",
+      "trackId": "bed_genes",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
         "bigWigLocation": Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,

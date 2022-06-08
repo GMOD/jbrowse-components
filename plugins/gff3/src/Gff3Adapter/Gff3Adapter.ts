@@ -3,7 +3,6 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
@@ -23,16 +22,14 @@ export default class extends BaseFeatureDataAdapter {
   }>
 
   private async loadDataP() {
-    const buffer = await openLocation(
-      readConfObject(this.config, 'gffLocation'),
-      this.pluginManager,
-    ).readFile()
-    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
+    const pm = this.pluginManager
+    const buf = await openLocation(this.getConf('gffLocation'), pm).readFile()
+    const buffer = isGzip(buf) ? await unzip(buf) : buf
     // 512MB  max chrome string length is 512MB
-    if (buf.length > 536_870_888) {
+    if (buffer.length > 536_870_888) {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
-    const data = new TextDecoder('utf8', { fatal: true }).decode(buf)
+    const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
     const lines = data.split('\n')
     const headerLines = []
     for (let i = 0; i < lines.length && lines[i].startsWith('#'); i++) {
