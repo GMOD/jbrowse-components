@@ -897,7 +897,7 @@
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
       "formatDetails": {
-        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random:'Wow'}"
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',random2:'Wow',phase:undefined,type:undefined}"
       },
       "category": ["Miscellaneous"],
       "adapter": {

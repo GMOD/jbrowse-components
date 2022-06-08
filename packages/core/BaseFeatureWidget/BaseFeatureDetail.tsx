@@ -601,7 +601,16 @@ const BaseFeatureDetails = observer((props: BaseInputProps) => {
   if (!featureData) {
     return null
   }
-  const feature = JSON.parse(JSON.stringify(featureData))
+
+  // replacing undefined with helps with allowing fields to be hidden, setting
+  // null is not allowed by jexl so we set it to undefined to hide. see config
+  // guide. this replacement happens both here and when snapshotting the
+  // featureData
+  const feature = JSON.parse(
+    JSON.stringify(featureData, (_, v) =>
+      typeof v === 'undefined' ? null : v,
+    ),
+  )
   if (isEmpty(feature)) {
     return null
   }

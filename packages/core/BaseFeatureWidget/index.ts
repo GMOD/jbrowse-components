@@ -104,7 +104,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       const { unformattedFeatureData, featureData, ...rest } = snap
       // finalizedFeatureData avoids running formatter twice if loading from
       // snapshot
-      return { finalizedFeatureData: featureData, ...rest }
+      return {
+        // replacing undefined with helps with allowing fields to be hidden,
+        // setting null is not allowed by jexl so we set it to undefined to
+        // hide. see config guide. this replacement happens both here and when
+        // displaying the featureData in base feature widget
+        finalizedFeatureData: JSON.parse(
+          JSON.stringify(featureData, (_, v) =>
+            typeof v === 'undefined' ? null : v,
+          ),
+        ),
+        ...rest,
+      }
     })
 }
 
