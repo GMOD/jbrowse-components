@@ -338,6 +338,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </div>
                     </div>
                   </li>
+<<<<<<< HEAD
                   <li
                     class="MuiListItem-root MuiListItem-padding css-1tnift2-MuiListItem-root"
                   >
@@ -395,6 +396,23 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </div>
                     </div>
                   </li>
+=======
+                  <button
+                    class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                    style="margin: 4px;"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <span
+                      class="MuiButton-label"
+                    >
+                      Add item
+                    </span>
+                    <span
+                      class="MuiTouchRipple-root"
+                    />
+                  </button>
+>>>>>>> origin/main
                 </ul>
                 <p
                   class="MuiFormHelperText-root css-1d1r5q-MuiFormHelperText-root"
@@ -577,6 +595,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                           </div>
                         </div>
                       </li>
+<<<<<<< HEAD
                       <li
                         class="MuiListItem-root MuiListItem-padding css-1tnift2-MuiListItem-root"
                       >
@@ -603,6 +622,64 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                                 disabled=""
                                 tabindex="-1"
                                 type="button"
+=======
+                      <button
+                        class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary"
+                        style="margin: 4px;"
+                        tabindex="0"
+                        type="button"
+                      >
+                        <span
+                          class="MuiButton-label"
+                        >
+                          Add item
+                        </span>
+                        <span
+                          class="MuiTouchRipple-root"
+                        />
+                      </button>
+                    </ul>
+                    <p
+                      class="MuiFormHelperText-root"
+                    >
+                      Values associated with entry key1
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="MuiPaper-root MuiCard-root makeStyles-card MuiPaper-elevation8 MuiPaper-rounded"
+                >
+                  <div
+                    class="MuiCardHeader-root"
+                  >
+                    <div
+                      class="MuiCardHeader-content"
+                    >
+                      <div
+                        class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+                      >
+                        <div
+                          class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl MuiInputBase-adornedEnd"
+                        >
+                          <input
+                            aria-invalid="false"
+                            class="MuiInputBase-input MuiInput-input MuiInputBase-inputAdornedEnd"
+                            placeholder="add new"
+                            type="text"
+                            value=""
+                          />
+                          <div
+                            class="MuiInputAdornment-root MuiInputAdornment-positionEnd"
+                          >
+                            <button
+                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-disabled MuiButtonBase-disabled"
+                              disabled=""
+                              tabindex="-1"
+                              type="button"
+                            >
+                              <span
+                                class="MuiIconButton-label"
+>>>>>>> origin/main
                               >
                                 <svg
                                   aria-hidden="true"

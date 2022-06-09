@@ -795,7 +795,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   Reference Sequence (volvox)
                 </span>
                 <button
-                  aria-controls="simple-menu"
                   aria-haspopup="true"
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-17dsj6n-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
                   data-testid="track_menu_icon"

@@ -201,12 +201,12 @@ const stateModelFactory = (
 
       get maxScore() {
         const { max } = self.constraints
-        return max !== undefined ? max : getConf(self, 'maxScore')
+        return max ?? getConf(self, 'maxScore')
       },
 
       get minScore() {
         const { min } = self.constraints
-        return min !== undefined ? min : getConf(self, 'minScore')
+        return min ?? getConf(self, 'minScore')
       },
     }))
     .views(self => ({
@@ -233,9 +233,7 @@ const stateModelFactory = (
       let oldDomain: [number, number] = [0, 0]
       return {
         get filled() {
-          return typeof self.fill !== 'undefined'
-            ? self.fill
-            : readConfObject(self.rendererConfig, 'filled')
+          return self.fill ?? readConfObject(self.rendererConfig, 'filled')
         },
         get summaryScoreModeSetting() {
           return (

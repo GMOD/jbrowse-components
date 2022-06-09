@@ -33,12 +33,8 @@ export default function HelpDialog({
         Using the search box
         {handleClose ? (
           <IconButton
-            data-testid="close-resultsDialog"
             className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
-            size="large"
+            onClick={() => handleClose()}
           >
             <CloseIcon />
           </IconButton>
@@ -82,6 +78,10 @@ export default function HelpDialog({
           <li>
             <code>chr1:1-100[rev] chr2:1-100</code> - open up the first region
             in the horizontally flipped orientation
+          </li>
+          <li>
+            <code>chr1 100 200</code> - use whitespace separated refname, start,
+            end
           </li>
         </ul>
       </DialogContent>

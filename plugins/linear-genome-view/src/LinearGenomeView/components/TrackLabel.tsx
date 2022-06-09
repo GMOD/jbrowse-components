@@ -2,11 +2,17 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { Menu } from '@jbrowse/core/ui'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { IconButton, Paper, Typography, Theme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+import {
+  bindTrigger,
+  bindPopover,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -48,22 +54,20 @@ const useStyles = makeStyles()((theme: Theme) => ({
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const TrackLabel = React.forwardRef(
-  (props: { track: BaseTrackModel; className?: string }, ref) => {
+  (
+    { track, className }: { track: BaseTrackModel; className?: string },
+    ref,
+  ) => {
     const { classes, cx } = useStyles()
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-    const { track, className } = props
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
     const trackId = getConf(track, 'trackId')
 
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget)
-    }
-
-    const handleClose = () => {
-      setAnchorEl(null)
-    }
+    const popupState = usePopupState({
+      popupId: 'trackLabelMenu',
+      variant: 'popover',
+    })
 
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
       const target = event.target as HTMLElement
@@ -85,15 +89,10 @@ const TrackLabel = React.forwardRef(
     if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
       const r = session.assemblies.find(a => a.sequence === trackConf)
       trackName =
-        readConfObject(trackConf, 'name') ||
+        trackName ||
         (r
           ? `Reference Sequence (${readConfObject(r, 'name')})`
           : 'Reference Sequence')
-    }
-
-    function handleMenuItemClick(_: unknown, callback: Function) {
-      callback()
-      handleClose()
     }
 
     const items = [
@@ -102,51 +101,49 @@ const TrackLabel = React.forwardRef(
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
     return (
-      // @ts-ignore
-      <Paper ref={ref} className={cx(className, classes.root)}>
-        <span
-          draggable
-          className={classes.dragHandle}
-          onDragStart={onDragStart}
-          onDragEnd={onDragEnd}
-          data-testid={`dragHandle-${view.id}-${trackId}`}
-        >
-          <DragIcon className={classes.dragHandleIcon} fontSize="small" />
-        </span>
-        <IconButton
-          onClick={() => view.hideTrack(trackId)}
-          className={classes.iconButton}
-          title="close this track"
-          color="secondary"
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-        <Typography
-          variant="body1"
-          component="span"
-          className={classes.trackName}
-        >
-          {trackName}
-        </Typography>
-        <IconButton
-          aria-controls="simple-menu"
-          aria-haspopup="true"
-          onClick={handleClick}
-          className={classes.iconButton}
-          color="secondary"
-          data-testid="track_menu_icon"
-          disabled={!items.length}
-        >
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          onMenuItemClick={handleMenuItemClick}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
+      <>
+        <Paper ref={ref} className={cx(className, classes.root)}>
+          <span
+            draggable
+            className={classes.dragHandle}
+            onDragStart={onDragStart}
+            onDragEnd={onDragEnd}
+            data-testid={`dragHandle-${view.id}-${trackId}`}
+          >
+            <DragIcon className={classes.dragHandleIcon} fontSize="small" />
+          </span>
+          <IconButton
+            onClick={() => view.hideTrack(trackId)}
+            className={classes.iconButton}
+            title="close this track"
+            color="secondary"
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+          <Typography
+            variant="body1"
+            component="span"
+            className={classes.trackName}
+          >
+            {trackName}
+          </Typography>
+          <IconButton
+            {...bindTrigger(popupState)}
+            className={classes.iconButton}
+            color="secondary"
+            data-testid="track_menu_icon"
+            disabled={!items.length}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        </Paper>
+        <CascadingMenu
+          {...bindPopover(popupState)}
+          onMenuItemClick={(_: unknown, callback: Function) => callback()}
           menuItems={items}
+          popupState={popupState}
         />
-      </Paper>
+      </>
     )
   },
 )

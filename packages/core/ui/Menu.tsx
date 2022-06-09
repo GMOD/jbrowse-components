@@ -41,13 +41,9 @@ const useStyles = makeStyles()({
     outline: 0,
   },
   menuItemEndDecoration: {
-    position: 'absolute',
-    right: 16,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    padding: 2,
-    marginRight: -12,
-    display: 'inline-flex',
+    padding: 0,
+    margin: 0,
+    height: 16,
   },
 })
 
@@ -65,7 +61,7 @@ type MenuItemEndDecorationProps =
   | MenuItemEndDecorationSubMenuProps
   | MenuItemEndDecorationSelectorProps
 
-function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
+export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const { classes } = useStyles()
   const { type } = props
   let checked
