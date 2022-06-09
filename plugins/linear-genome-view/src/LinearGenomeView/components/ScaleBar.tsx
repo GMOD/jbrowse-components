@@ -1,11 +1,10 @@
 import { Paper, Typography, Theme } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import React from 'react'
 import { LinearGenomeViewModel } from '..'
@@ -18,7 +17,7 @@ import { makeTicks } from '../util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   scaleBarContainer: {
     overflow: 'hidden',
     position: 'relative',
@@ -57,10 +56,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     pointerEvents: 'none',
     background: theme.palette.background.paper,
   },
-}))
+}));
 
 const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
@@ -95,7 +94,7 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
 })
 
 const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <>
@@ -164,13 +163,13 @@ interface ScaleBarProps {
 
 const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
   ({ model, style, className, ...other }, ref) => {
-    const classes = useStyles()
+    const { classes, cx } = useStyles()
 
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={clsx(classes.scaleBarContainer, className)}
+        className={cx(classes.scaleBarContainer, className)}
         variant="outlined"
         ref={ref}
         style={style}
@@ -198,7 +197,7 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
         </div>
         <RenderedRefNameLabels model={model} />
       </Paper>
-    )
+    );
   },
 )
 

@@ -1,14 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles((theme: Theme) => {
+const useStyles = makeStyles()((theme: Theme) => {
   // @ts-ignore
   const { primary, tertiary } = theme.palette
   const background = tertiary
@@ -47,11 +47,11 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 10,
     },
   }
-})
+});
 
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     return (
       <Tooltip
         open
@@ -91,7 +91,7 @@ function RubberBand({
   const [guideX, setGuideX] = useState<number | undefined>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
   const { setOffsets, pxToBp } = model

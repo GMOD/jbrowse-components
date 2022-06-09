@@ -9,24 +9,25 @@ import {
   IconButton,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 
-export const useStyles = makeStyles((theme: Theme) => ({
+// TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.
+export const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}))
+}));
 
 export default function HelpDialog({
   handleClose,
 }: {
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog open maxWidth="xl" onClose={handleClose}>
       <DialogTitle>

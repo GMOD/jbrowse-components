@@ -1,5 +1,5 @@
 import React, { useState, lazy } from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { Button, CircularProgress, Container, Grid, Theme } from '@mui/material'
@@ -13,7 +13,7 @@ import RefNameAutocomplete from './RefNameAutocomplete'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   importFormContainer: {
     padding: theme.spacing(2),
   },
@@ -23,12 +23,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   container: {
     padding: theme.spacing(4),
   },
-}))
+}));
 
 type LGV = LinearGenomeViewModel
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
   const { rankSearchResults, isSearchDialogDisplayed, error } = model

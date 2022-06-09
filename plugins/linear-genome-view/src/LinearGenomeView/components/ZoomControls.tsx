@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { Slider, IconButton } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   container: {
     display: 'flex',
     flexDirection: 'row',
@@ -15,10 +15,10 @@ const useStyles = makeStyles({
   slider: {
     width: 70,
   },
-})
+});
 
 function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { maxBpPerPx, minBpPerPx, bpPerPx, scaleFactor } = model
   const [value, setValue] = useState(-Math.log2(bpPerPx) * 100)
   useEffect(() => {

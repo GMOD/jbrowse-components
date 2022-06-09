@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react'
 import { observer } from 'mobx-react'
 import { Portal, Theme, alpha, useTheme } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { usePopper } from 'react-popper'
@@ -14,7 +14,7 @@ function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -37,7 +37,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     maxWidth: 300,
     wordWrap: 'break-word',
   },
-}))
+}));
 
 const TooltipContents = React.forwardRef<
   HTMLDivElement,
@@ -54,7 +54,7 @@ const Tooltip = observer(
     model: BaseLinearDisplayModel
     clientMouseCoord: Coord
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
     const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)
@@ -108,7 +108,7 @@ const Tooltip = observer(
 type Coord = [number, number]
 const BaseLinearDisplay = observer(
   (props: { model: BaseLinearDisplayModel; children?: React.ReactNode }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
     const [clientRect, setClientRect] = useState<DOMRect>()

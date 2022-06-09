@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import normalizeWheel from 'normalize-wheel'
@@ -10,7 +10,7 @@ import ScaleBar from './ScaleBar'
 import VerticalGuides from './VerticalGuides'
 import CenterLine from './CenterLine'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     overflow: 'hidden',
@@ -19,7 +19,7 @@ const useStyles = makeStyles({
     position: 'relative',
     height: 3,
   },
-})
+});
 
 type LGV = Instance<LinearGenomeViewStateModel>
 type Timer = ReturnType<typeof setTimeout>
@@ -31,7 +31,7 @@ function TracksContainer({
   children: React.ReactNode
   model: LGV
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
   const delta = useRef(0)

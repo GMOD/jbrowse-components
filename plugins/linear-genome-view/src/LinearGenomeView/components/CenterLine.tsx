@@ -1,11 +1,11 @@
 import React, { useRef } from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   centerLineContainer: {
     background: 'transparent',
     height: '100%',
@@ -22,12 +22,12 @@ const useStyles = makeStyles(() => ({
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
   },
-}))
+}));
 
 function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model
   const ref = useRef<HTMLDivElement>(null)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const startingPosition = width / 2
 
   return tracks.length ? (

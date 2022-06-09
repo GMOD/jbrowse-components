@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { getSession, stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -9,7 +9,7 @@ import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles((theme: Theme) => {
+const useStyles = makeStyles()((theme: Theme) => {
   // @ts-ignore
   const { tertiary, primary } = theme.palette
   const background = tertiary
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 10,
     },
   }
-})
+});
 
 const HoverTooltip = observer(
   ({
@@ -62,7 +62,7 @@ const HoverTooltip = observer(
     guideX: number
     overview: Base1DViewModel
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
 
@@ -108,7 +108,7 @@ function OverviewRubberBand({
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
   useEffect(() => {

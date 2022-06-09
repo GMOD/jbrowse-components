@@ -1,18 +1,17 @@
 import React, { useEffect, useRef } from 'react'
 import { Paper } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
-import clsx from 'clsx'
 
 import { LinearGenomeViewModel } from '..'
 import TrackLabel from './TrackLabel'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   root: {
     marginTop: 2,
   },
@@ -58,13 +57,13 @@ const useStyles = makeStyles({
     background: 'none',
     zIndex: 2,
   },
-})
+});
 
 type LGV = LinearGenomeViewModel
 
 const TrackContainerLabel = observer(
   ({ model, view }: { model: BaseTrackModel; view: LGV }) => {
-    const classes = useStyles()
+    const { classes, cx } = useStyles()
     const labelStyle =
       view.trackLabels === 'overlapping'
         ? classes.trackLabelOverlap
@@ -72,9 +71,9 @@ const TrackContainerLabel = observer(
     return view.trackLabels !== 'hidden' ? (
       <TrackLabel
         track={model}
-        className={clsx(classes.trackLabel, labelStyle)}
+        className={cx(classes.trackLabel, labelStyle)}
       />
-    ) : null
+    ) : null;
   },
 )
 
@@ -85,7 +84,7 @@ function TrackContainer({
   model: LinearGenomeViewModel
   track: BaseTrackModel
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const display = track.displays[0]
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = display

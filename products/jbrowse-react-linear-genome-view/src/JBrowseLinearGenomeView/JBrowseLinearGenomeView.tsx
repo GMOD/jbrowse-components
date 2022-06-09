@@ -35,8 +35,8 @@ const JBrowseLinearGenomeView = observer(
     )
 
     return (
-      <ThemeProvider theme={theme}>
-        <div className={classes.avoidParentStyle}>
+      <div className={classes.avoidParentStyle}>
+        <ThemeProvider theme={theme}>
           <ScopedCssBaseline>
             <ViewContainer key={`view-${view.id}`} view={view}>
               <Suspense fallback={<div>Loading...</div>}>
@@ -45,8 +45,8 @@ const JBrowseLinearGenomeView = observer(
             </ViewContainer>
             <ModalWidget session={session} />
           </ScopedCssBaseline>
-        </div>
-      </ThemeProvider>
+        </ThemeProvider>
+      </div>
     )
   },
 )

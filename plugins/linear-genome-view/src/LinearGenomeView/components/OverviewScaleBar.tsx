@@ -1,9 +1,8 @@
 import React from 'react'
 import { Typography, Theme, useTheme, alpha } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import clsx from 'clsx'
 
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession } from '@jbrowse/core/util'
@@ -21,7 +20,7 @@ import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   scaleBar: {
     height: HEADER_OVERVIEW_HEIGHT,
   },
@@ -72,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     width: '100%',
     position: 'absolute',
   },
-}))
+}));
 
 const Polygon = observer(
   ({
@@ -301,7 +300,7 @@ const OverviewBox = observer(
     block: ContentBlock
     overview: Base1DViewModel
   }) => {
-    const classes = useStyles()
+    const { classes, cx } = useStyles()
     const { cytobandOffset, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
@@ -328,7 +327,7 @@ const OverviewBox = observer(
           {refName}
         </Typography>
         <div
-          className={clsx(
+          className={cx(
             classes.scaleBarContig,
             showCytobands
               ? undefined
@@ -371,7 +370,7 @@ const OverviewBox = observer(
           ) : null}
         </div>
       </div>
-    )
+    );
   },
 )
 
@@ -385,7 +384,7 @@ const ScaleBar = observer(
     overview: Base1DViewModel
     scale: number
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const { dynamicBlocks, showCytobands, cytobandOffset } = model
     const visibleRegions = dynamicBlocks.contentBlocks
@@ -462,7 +461,7 @@ function OverviewScaleBar({
   model: LGV
   children: React.ReactNode
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { totalBp, width, cytobandOffset, displayedRegions } = model
 
   const overview = Base1DView.create({

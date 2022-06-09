@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import {
   Button,
   CircularProgress,
@@ -31,7 +31,7 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 // locals
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   loadingMessage: {
     padding: theme.spacing(5),
   },
@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-}))
+}));
 
 type LGV = LinearGenomeViewModel
 
@@ -93,7 +93,7 @@ function SequenceDialog({
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequence, setSequence] = useState<string>()

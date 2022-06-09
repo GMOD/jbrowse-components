@@ -1,10 +1,10 @@
 import React from 'react'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Theme } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   contentBlock: {
     position: 'relative',
     minHeight: '100%',
@@ -27,11 +27,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     minHeight: '100%',
     backgroundColor: theme.palette.action.disabledBackground,
   },
-}))
+}));
 
 const ContentBlock = observer(
   ({ block, children }: { block: BaseBlock; children: React.ReactNode }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { widthPx } = block
     return (
       <div style={{ width: widthPx }} className={classes.contentBlock}>
@@ -42,7 +42,7 @@ const ContentBlock = observer(
 )
 
 function ElidedBlock({ width }: { width: number }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return <div className={classes.elidedBlock} style={{ width }} />
 }
 
@@ -55,7 +55,7 @@ function InterRegionPaddingBlock({
   width: number
   style?: React.CSSProperties
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div
       style={{

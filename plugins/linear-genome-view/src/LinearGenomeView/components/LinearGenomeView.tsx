@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Paper, Typography, Theme } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 
@@ -16,7 +16,7 @@ import SearchResultsDialog from './SearchResultsDialog'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   note: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
@@ -42,11 +42,11 @@ const useStyles = makeStyles((theme: Theme) => ({
       content: '"..."',
     },
   },
-}))
+}));
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   if (!initialized && !error) {
     return (

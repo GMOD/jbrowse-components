@@ -1,4 +1,4 @@
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -11,7 +11,7 @@ function mathPower(num: number): string {
   return `${mathPower(~~(num / 1000))},${`00${~~(num % 1000)}`.substr(-3, 3)}`
 }
 
-const useStyles = makeStyles((/* theme */) => ({
+const useStyles = makeStyles()((/* theme */) => ({
   majorTickLabel: {
     fontSize: '11px',
     // fill: theme.palette.text.primary,
@@ -24,7 +24,7 @@ const useStyles = makeStyles((/* theme */) => ({
     stroke: '#999',
     // stroke: theme.palette.text.hint,
   },
-}))
+}));
 
 function Ruler({
   start,
@@ -41,7 +41,7 @@ function Ruler({
   major: boolean
   minor: boolean
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   return (
     <>

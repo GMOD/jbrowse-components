@@ -1,5 +1,4 @@
 import React from 'react'
-import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
@@ -7,7 +6,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { IconButton, Paper, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -16,7 +15,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import { LinearGenomeViewStateModel } from '..'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
@@ -44,13 +43,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   iconButton: {
     padding: theme.spacing(1),
   },
-}))
+}));
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
 const TrackLabel = React.forwardRef(
   (props: { track: BaseTrackModel; className?: string }, ref) => {
-    const classes = useStyles()
+    const { classes, cx } = useStyles()
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const { track, className } = props
     const view = getContainingView(track) as LGV
@@ -104,7 +103,7 @@ const TrackLabel = React.forwardRef(
 
     return (
       // @ts-ignore
-      <Paper ref={ref} className={clsx(className, classes.root)}>
+      <Paper ref={ref} className={cx(className, classes.root)}>
         <span
           draggable
           className={classes.dragHandle}
@@ -148,7 +147,7 @@ const TrackLabel = React.forwardRef(
           menuItems={items}
         />
       </Paper>
-    )
+    );
   },
 )
 

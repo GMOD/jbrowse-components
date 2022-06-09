@@ -11,11 +11,11 @@ import {
   TextField,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     width: 500,
   },
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   field: {
     margin: theme.spacing(2),
   },
-}))
+}));
 
 function SetMaxHeightDlg({
   model,
@@ -40,7 +40,7 @@ function SetMaxHeightDlg({
   }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
 
