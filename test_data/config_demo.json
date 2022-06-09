@@ -115,7 +115,35 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
-      "name": "NCBI RefSeq (GFF3Tabix)",
+      "name": "NCBI RefSeq w/ subfeature details",
+      "formatDetails": {
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+      },
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "metadata": {
+        "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
+        "dateaccessed": "12/03/2020"
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_gff_hg19_2",
+      "name": "NCBI RefSeq w/ top-level feature details",
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+      },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {

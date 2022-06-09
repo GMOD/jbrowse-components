@@ -30,6 +30,7 @@ const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
 const globalOmit = [
+  '__jbrowsefmt',
   'length',
   'position',
   'subfeatures',
@@ -121,8 +122,8 @@ export function BaseCard({
 export const FieldName = ({
   description,
   name,
-  prefix = [],
   width,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
@@ -238,28 +239,37 @@ const ArrayValue = ({
     )
   }
 }
+const toLocale = (n: number) => n.toLocaleString('en-US')
 
 function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
+  const obj = feature as SimpleFeatureSerialized & {
     start: number
     end: number
     strand: number
     refName: string
+    __jbrowsefmt: {
+      start?: number
+      end?: number
+      refName?: string
+      name?: string
+    }
   }
+
+  // eslint-disable-next-line no-underscore-dangle
+  const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
+  const { start, strand, end, refName } = formattedFeat
+
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
   }
-  const strandStr = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
-  const displayStart = (start + 1).toLocaleString('en-US')
-  const displayEnd = end.toLocaleString('en-US')
-  const displayRef = refName ? `${refName}:` : ''
+  const str = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayedDetails: Record<string, any> = {
-    ...feature,
-    length: (end - start).toLocaleString('en-US'),
-    position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
+    ...formattedFeat,
+    length: toLocale(end - start),
+    position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
   const coreRenderedDetails = [
@@ -333,10 +343,9 @@ const DataGridDetails = ({
     const columns = colNames.map(val => ({
       field: val,
       width: Math.max(
-        ...rows.map(row => {
-          const result = String(row[val])
-          return Math.min(Math.max(measureText(result, 14) + 50, 80), 1000)
-        }),
+        ...rows.map(row =>
+          Math.min(Math.max(measureText(String(row[val]), 14) + 50, 80), 1000),
+        ),
       ),
     }))
 
@@ -423,7 +432,7 @@ function UriAttribute({
   )
 }
 
-export const Attributes: React.FunctionComponent<AttributeProps> = props => {
+export function Attributes(props: AttributeProps) {
   const {
     attributes,
     omit = [],
@@ -432,9 +441,11 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
+  const { __jbrowsefmt, ...rest } = attributes
+  const formattedAttributes = { ...rest, ...__jbrowsefmt }
 
   const maxLabelWidth = generateMaxWidth(
-    Object.entries(attributes).filter(
+    Object.entries(formattedAttributes).filter(
       ([k, v]) => v !== undefined && !omits.includes(k),
     ),
     prefix,
@@ -445,7 +456,7 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
 
   return (
     <>
-      {Object.entries(attributes)
+      {Object.entries(formattedAttributes)
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
           const description = accessNested([...prefix, key], descriptions)
@@ -522,9 +533,15 @@ function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
+function generateTitle(name: unknown, id: unknown, type: unknown) {
+  return [ellipses(`${name}` || `${id}`), `${type}`]
+    .filter(f => !!f)
+    .join(' - ')
+}
+
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
-  feature: SimpleFeatureSerialized & { name?: string; id?: string }
+  feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactElement
@@ -537,7 +554,7 @@ export const FeatureDetails = (props: {
     getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard title={[ellipses(name || id), type].filter(f => !!f).join(' - ')}>
+    <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
@@ -551,9 +568,7 @@ export const FeatureDetails = (props: {
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
-            <Typography color="error">
-              Failed to fetch sequence for feature: {`${error}`}
-            </Typography>
+            <Typography color="error">{`${error}`}</Typography>
           )}
         >
           <SequenceFeatureDetails {...props} />
@@ -586,11 +601,20 @@ const BaseFeatureDetails = observer((props: BaseInputProps) => {
   if (!featureData) {
     return null
   }
-  const feature = JSON.parse(JSON.stringify(featureData))
 
+  // replacing undefined with null helps with allowing fields to be hidden,
+  // setting null is not allowed by jexl so we set it to undefined to hide. see
+  // config guide. this replacement happens both here and when snapshotting the
+  // featureData
+  const feature = JSON.parse(
+    JSON.stringify(featureData, (_, v) =>
+      typeof v === 'undefined' ? null : v,
+    ),
+  )
   if (isEmpty(feature)) {
     return null
   }
+
   return <FeatureDetails model={model} feature={feature} />
 })
 

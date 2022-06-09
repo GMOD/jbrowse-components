@@ -50,18 +50,26 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         ),
       }),
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
-      // see corresponding entry in circular-view ChordTrack
-      // no config slot editor exists for this at the time being
-      // configRelationships: {
-      //   type: 'configRelationships',
-      //   model: types.array(
-      //     types.model('Relationship', {
-      //       type: types.string,
-      //       target: types.maybe(types.reference(base)),
-      //     }),
-      //   ),
-      //   defaultValue: [],
-      // },
+
+      formatDetails: ConfigurationSchema('FormatDetails', {
+        feature: {
+          type: 'frozen',
+          description: 'adds extra fields to the feature details',
+          defaultValue: {},
+          contextVariable: ['feature'],
+        },
+        subfeatures: {
+          type: 'frozen',
+          description: 'adds extra fields to the subfeatures of a feature',
+          defaultValue: {},
+          contextVariable: ['feature'],
+        },
+        depth: {
+          type: 'number',
+          defaultValue: 2,
+          description: 'depth to iterate on subfeatures',
+        },
+      }),
     },
     {
       preProcessSnapshot: s => {
