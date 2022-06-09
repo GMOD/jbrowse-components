@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Button, Typography, FormControl, Theme } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { isElectron } from '../../util'
 import { LocalPathLocation, FileLocation, BlobLocation } from '../../util/types'
 import { getBlob, storeBlobLocation } from '../../util/tracks'
@@ -15,17 +15,17 @@ function isBlobLocation(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   filename: {
     marginLeft: theme.spacing(1),
   },
-}))
+}));
 
 function LocalFileChooser(props: {
   location?: FileLocation
   setLocation: Function
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { location, setLocation } = props
 
   const filename =

@@ -15,6 +15,8 @@ import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
 import { SessionModel } from './sessionModelFactory'
 
+import './JBrowse.css'
+
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
     const [adminKey] = useQueryParam('adminKey', StringParam)

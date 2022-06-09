@@ -11,7 +11,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '../util/types'
@@ -25,7 +25,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // locals
 import Drawer from './Drawer'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   formControl: {
     margin: 0,
   },
@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   header: {
     background: theme.palette.secondary.main,
   },
-}))
+}));
 
 const DrawerHeader = observer(
   ({
@@ -55,7 +55,7 @@ const DrawerHeader = observer(
   }) => {
     const { pluginManager } = getEnv(session)
     const { visibleWidget, activeWidgets, drawerPosition } = session
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 

@@ -10,11 +10,10 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-import clsx from 'clsx'
 import isObject from 'is-object'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 
@@ -52,7 +51,8 @@ const coreDetails = [
   'type',
 ]
 
-export const useStyles = makeStyles((theme: Theme) => ({
+// TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.
+export const useStyles = makeStyles()((theme: Theme) => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -94,14 +94,14 @@ export const useStyles = makeStyles((theme: Theme) => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
-}))
+}));
 
 export function BaseCard({
   children,
   title,
   defaultExpanded = true,
 }: BaseCardProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [expanded, setExpanded] = useState(defaultExpanded)
   return (
     <Accordion
@@ -132,11 +132,11 @@ export const FieldName = ({
   prefix?: string[]
   width?: number
 }) => {
-  const classes = useStyles()
+  const { classes, cx } = useStyles()
   const val = [...prefix, name].join('.')
   return description ? (
     <Tooltip title={description} placement="left">
-      <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+      <div className={cx(classes.fieldDescription, classes.fieldName)}>
         {val}
       </div>
     </Tooltip>
@@ -144,11 +144,11 @@ export const FieldName = ({
     <div className={classes.fieldName} style={{ width: width }}>
       {val}
     </div>
-  )
+  );
 }
 
 export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const isLink = `${value}`.match(/^https?:\/\//)
   return (
     <div className={classes.fieldValue}>
@@ -178,7 +178,7 @@ export const SimpleValue = ({
   prefix?: string[]
   width?: number
 }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return value !== null && value !== undefined ? (
     <div className={classes.field}>
       <FieldName
@@ -203,7 +203,7 @@ const ArrayValue = ({
   value: any[]
   prefix?: string[]
 }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   if (value.length === 1) {
     return isObject(value[0]) ? (
       <Attributes attributes={value[0]} prefix={[...prefix, name]} />
@@ -408,7 +408,7 @@ function UriAttribute({
   name: string
   prefix: string[]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { uri, baseUri = '' } = value
   let href
   try {

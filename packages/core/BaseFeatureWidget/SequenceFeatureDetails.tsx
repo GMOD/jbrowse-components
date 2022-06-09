@@ -8,7 +8,7 @@ import {
   Tooltip,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 import {
@@ -36,11 +36,11 @@ interface CoordFeat extends SimpleFeatureSerialized {
   end: number
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     margin: theme.spacing(1),
   },
-}))
+}));
 
 // note that these are currently put into the style section instead of being
 // defined in classes to aid copy and paste to an external document e.g. word
@@ -265,7 +265,7 @@ export const SequencePanel = React.forwardRef<
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const parentFeature = feature as unknown as ParentFeat
   const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
   const seqPanelRef = useRef<HTMLDivElement>(null)

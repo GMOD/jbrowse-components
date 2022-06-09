@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react'
 import { Button, Theme, alpha } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 import Menu, { MenuItem } from './Menu'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     display: 'flex',
   },
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => ({
       },
     },
   },
-}))
+}));
 
 function DropDownMenu({
   menuTitle,
@@ -35,7 +35,7 @@ function DropDownMenu({
 }) {
   const [open, setOpen] = useState(false)
   const anchorEl = useRef(null)
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   function handleToggle() {
     setOpen(!open)

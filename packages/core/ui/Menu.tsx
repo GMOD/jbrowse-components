@@ -14,7 +14,7 @@ import {
   PopoverProps,
   SvgIconProps,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 // icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
@@ -25,7 +25,7 @@ import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 // other
 import { findLastIndex } from '../util'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   paper: {
     position: 'fixed',
     overflowY: 'auto',
@@ -49,7 +49,7 @@ const useStyles = makeStyles({
     marginRight: -12,
     display: 'inline-flex',
   },
-})
+});
 
 interface MenuItemEndDecorationSubMenuProps {
   type: 'subMenu'
@@ -66,7 +66,7 @@ type MenuItemEndDecorationProps =
   | MenuItemEndDecorationSelectorProps
 
 function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { type } = props
   let checked
   let disabled
@@ -197,7 +197,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
       left?: number
     }>()
     const paperRef = useRef<HTMLDivElement | null>(null)
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const {
       menuItems,

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '../configuration'
 import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { AbstractSessionModel } from '../util'
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   importFormEntry: {
     minWidth: 180,
   },
-}))
+}));
 
 // Hook from https://usehooks.com/useLocalStorage/
 function useLocalStorage<T>(key: string, initialValue: T) {
@@ -53,7 +53,7 @@ const AssemblySelector = observer(
     InputProps?: IIP
     extra?: unknown
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { assemblyNames, assemblyManager } = session
 
     // constructs a localstorage key based on host/path/config to help

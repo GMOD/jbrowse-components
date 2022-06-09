@@ -6,6 +6,8 @@ import { App, createJBrowseTheme } from '@jbrowse/core/ui'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
+import './JBrowse.css'
+
 // locals
 import { RootModel } from './rootModel'
 

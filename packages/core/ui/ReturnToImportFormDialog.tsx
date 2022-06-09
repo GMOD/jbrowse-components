@@ -11,17 +11,17 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}))
+}));
 
 function ReturnToImportFormDialog({
   model,
@@ -30,7 +30,7 @@ function ReturnToImportFormDialog({
   model: { clearView: Function }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog maxWidth="xl" open onClose={handleClose}>
       <DialogTitle>

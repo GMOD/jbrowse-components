@@ -8,7 +8,7 @@ import {
   Theme,
   useTheme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
@@ -23,7 +23,7 @@ import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     borderColor: theme.palette.primary.main,
     backgroundColor: theme.palette.secondary.light,
   },
-}))
+}));
 
 const ViewMenu = observer(
   ({
@@ -118,7 +118,7 @@ const ViewContainer = observer(
     style?: React.CSSProperties
     children: React.ReactNode
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const padWidth = theme.spacing(1)
 

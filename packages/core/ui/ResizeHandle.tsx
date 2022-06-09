@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles } from '@mui/styles'
-import clsx from 'clsx'
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   horizontalHandle: {
     cursor: 'row-resize',
     width: '100%',
@@ -19,7 +18,7 @@ const useStyles = makeStyles({
     cursor: 'row-resize',
     alignSelf: 'stretch', // similar to above
   },
-})
+});
 
 function ResizeHandle({
   onDrag,
@@ -36,7 +35,7 @@ function ResizeHandle({
 }) {
   const [mouseDragging, setMouseDragging] = useState(false)
   const prevPos = useRef(0)
-  const classes = useStyles()
+  const { classes, cx } = useStyles()
 
   useEffect(() => {
     function mouseMove(event: MouseEvent) {
@@ -85,10 +84,10 @@ function ResizeHandle({
         setMouseDragging(true)
       }}
       role="presentation"
-      className={clsx(className, originalClassName)}
+      className={cx(className, originalClassName)}
       {...props}
     />
-  )
+  );
 }
 
 export default ResizeHandle
