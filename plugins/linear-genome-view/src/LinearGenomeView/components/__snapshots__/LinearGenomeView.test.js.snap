@@ -1586,28 +1586,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 100px;"
               >
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-loading"
-                  >
-                    <p
-                      class="MuiTypography-root makeStyles-dots MuiTypography-body2"
-                    >
-                      Loading
-                    </p>
-                  </div>
-                  <div
-                    class="makeStyles-loading"
-                  >
-                    <p
-                      class="MuiTypography-root makeStyles-dots MuiTypography-body2"
-                    >
-                      Loading
-                    </p>
-                  </div>
-                </div>
+                <svg
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
               </div>
               <div
                 class="makeStyles-interRegionPaddingBlock"
@@ -1617,28 +1600,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 class="makeStyles-contentBlock"
                 style="width: 1000px;"
               >
-                <div
-                  style="display: flex;"
-                >
-                  <div
-                    class="makeStyles-loading"
-                  >
-                    <p
-                      class="MuiTypography-root makeStyles-dots MuiTypography-body2"
-                    >
-                      Loading
-                    </p>
-                  </div>
-                  <div
-                    class="makeStyles-loading"
-                  >
-                    <p
-                      class="MuiTypography-root makeStyles-dots MuiTypography-body2"
-                    >
-                      Loading
-                    </p>
-                  </div>
-                </div>
+                <svg
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="1000"
+                />
               </div>
               <div
                 class="makeStyles-boundaryPaddingBlock"
