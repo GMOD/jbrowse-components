@@ -25,7 +25,7 @@ import Menu from './Menu'
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.main,
+    background: theme.palette.secondary.main, // + ' !important',
     margin: theme.spacing(0.5),
   },
   icon: {

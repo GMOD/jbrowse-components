@@ -14,7 +14,7 @@ export function ThemeProvider({
   _theme,
   children,
 }: {
-  _theme
+  _theme: unknown
   children: ReactNode
 }) {
   console.warn(

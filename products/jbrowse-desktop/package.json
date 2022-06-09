@@ -42,6 +42,8 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
+    "@emotion/react": "^11.9.0",
+    "@emotion/cache": "^11.7.1",
     "@gmod/faidx": "^1.0.1",
     "@jbrowse/core": "^1.7.9",
     "@jbrowse/plugin-alignments": "^1.7.9",
