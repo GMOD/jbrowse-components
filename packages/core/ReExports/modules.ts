@@ -13,7 +13,6 @@ import * as MUIStyles from '@mui/material/styles'
 import * as MUICore from '@mui/material'
 import * as MUIUtils from '@mui/material/utils'
 import MUISvgIcon from '@mui/material/SvgIcon'
-import * as MUILab from '@mui/lab'
 import * as MUIDataGrid from '@mui/x-data-grid'
 import MUIBox from '@mui/material/Box'
 import MUIButton from '@mui/material/Button'
@@ -82,7 +81,6 @@ import * as MUIColors from './material-ui-colors'
 import * as mstTypes from '../util/types/mst'
 
 import ReExportsList from './list'
-
 const libs = {
   mobx,
   'mobx-state-tree': mst,
@@ -98,7 +96,6 @@ const libs = {
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
   // end special case
-  '@mui/lab': MUILab,
   '@mui/x-data-grid': MUIDataGrid,
   // legacy
   '@material-ui/data-grid': MUIDataGrid,

@@ -9,7 +9,6 @@ export default [
   '@mui/material',
   '@mui/material/SvgIcon',
   '@mui/material/utils',
-  '@mui/lab',
   '@mui/x-data-grid',
 
   '@jbrowse/core/Plugin',

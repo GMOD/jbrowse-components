@@ -11,13 +11,13 @@ import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 import { ViewModel } from '../createModel/createModel'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   // avoid parent styles getting into this div
   // https://css-tricks.com/almanac/properties/a/all/
   avoidParentStyle: {
     all: 'initial',
   },
-}))
+})
 
 const JBrowseCircularGenomeView = observer(
   ({ viewState }: { viewState: ViewModel }) => {

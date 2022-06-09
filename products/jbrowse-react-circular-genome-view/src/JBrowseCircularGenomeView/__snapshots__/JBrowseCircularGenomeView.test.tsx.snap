@@ -2,23 +2,23 @@
 
 exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
 <div
-  class="makeStyles-avoidParentStyle"
+  class="tss-jn2cxo-avoidParentStyle"
 >
   <div
     class="MuiScopedCssBaseline-root css-1pa2gw3-MuiScopedCssBaseline-root"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 makeStyles-viewContainer css-15s4tt4-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 tss-1c5v0p0-viewContainer css-15s4tt4-MuiPaper-root"
       style="padding: 0px 4px 4px;"
     >
       <div
         style="display: flex;"
       >
         <div
-          class="makeStyles-grow"
+          class="tss-122lw0e-grow"
         />
         <div
-          class="makeStyles-grow"
+          class="tss-122lw0e-grow"
         />
         <div
           style="width: 20px; height: 20px;"
