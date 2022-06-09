@@ -134,6 +134,11 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           dense: true,
         },
       },
+      MuiMenuItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
 
       MuiTextField: {
         defaultProps: {

@@ -37,12 +37,9 @@ function CascadingMenuItem({
     throw new Error('must be used inside a CascadingMenu')
   }
   const handleClick = useCallback(
-    (event: any) => {
-      // @ts-ignore
-      rootPopupState.close(event)
-      if (onClick) {
-        onClick(event)
-      }
+    (event: React.MouseEvent) => {
+      rootPopupState.close()
+      onClick?.(event)
     },
     [rootPopupState, onClick],
   )
