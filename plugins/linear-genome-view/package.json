@@ -53,7 +53,8 @@
     "mobx-state-tree": "3.14.1",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react-dom": ">=16.8.0",
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
