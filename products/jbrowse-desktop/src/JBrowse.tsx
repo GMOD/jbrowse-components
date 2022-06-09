@@ -17,6 +17,7 @@ import './JBrowse.css'
 // locals
 import { RootModel } from './rootModel'
 
+// without this, the styles can become messed up
 // xref https://github.com/garronej/tss-react/issues/25
 export const muiCache = createCache({
   key: 'mui',
