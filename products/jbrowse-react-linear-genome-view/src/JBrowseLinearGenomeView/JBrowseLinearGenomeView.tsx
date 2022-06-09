@@ -4,9 +4,11 @@ import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material/styles'
+import { ScopedCssBaseline } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { CacheProvider } from '@emotion/react'
+import createCache from '@emotion/cache'
 
-import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 import { ViewModel } from '../createModel/createModel'
@@ -18,6 +20,11 @@ const useStyles = makeStyles()(() => ({
     all: 'initial',
   },
 }))
+
+export const muiCache = createCache({
+  key: 'mui',
+  prepend: true,
+})
 
 const JBrowseLinearGenomeView = observer(
   ({ viewState }: { viewState: ViewModel }) => {
@@ -35,18 +42,20 @@ const JBrowseLinearGenomeView = observer(
     )
 
     return (
-      <div className={classes.avoidParentStyle}>
+      <CacheProvider value={muiCache}>
         <ThemeProvider theme={theme}>
-          <ScopedCssBaseline>
-            <ViewContainer key={`view-${view.id}`} view={view}>
-              <Suspense fallback={<div>Loading...</div>}>
-                <ReactComponent model={view} session={session} />
-              </Suspense>
-            </ViewContainer>
-            <ModalWidget session={session} />
-          </ScopedCssBaseline>
+          <div className={classes.avoidParentStyle}>
+            <ScopedCssBaseline>
+              <ViewContainer key={`view-${view.id}`} view={view}>
+                <Suspense fallback={<div>Loading...</div>}>
+                  <ReactComponent model={view} session={session} />
+                </Suspense>
+              </ViewContainer>
+              <ModalWidget session={session} />
+            </ScopedCssBaseline>
+          </div>
         </ThemeProvider>
-      </div>
+      </CacheProvider>
     )
   },
 )

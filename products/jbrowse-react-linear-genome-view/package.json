@@ -37,6 +37,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@emotion/react": "^11.9.0",
+    "@emotion/cache": "^11.7.1",
+    "@emotion/styled": "^11.8.1",
     "@jbrowse/core": "^1.7.9",
     "@jbrowse/plugin-alignments": "^1.7.9",
     "@jbrowse/plugin-bed": "^1.7.9",
