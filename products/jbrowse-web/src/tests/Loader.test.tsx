@@ -167,7 +167,7 @@ describe('<Loader />', () => {
 
   // minimal session with plugin in our plugins.json
   // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
-  it('can warn of  callbacks in json session', async () => {
+  it('can warn of callbacks in json session', async () => {
     render(
       <QueryParamProvider
         // @ts-ignore
@@ -179,10 +179,10 @@ describe('<Loader />', () => {
         <Loader />
       </QueryParamProvider>,
     )
-    await waitFor(() => {
-      expect(sessionStorage.length).toBeGreaterThan(0)
-    }, delay)
-  }, 20000)
+    await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), {
+      timeout: 30000,
+    })
+  }, 30000)
 
   // minimal session,
   // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
