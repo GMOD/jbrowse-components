@@ -55,7 +55,6 @@
     "@jbrowse/plugin-variants": "^1.7.9",
     "@jbrowse/plugin-wiggle": "^1.7.9",
     "@mui/material": "^5.0.0",
-    "@mui/styles": "^5.0.0",
     "@mui/icons-material": "^5.0.0",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
