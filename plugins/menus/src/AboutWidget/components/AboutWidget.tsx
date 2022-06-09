@@ -2,11 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { Typography, Link, Theme } from '@mui/material'
+import { Typography, Link } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(2),
     paddingTop: theme.spacing(2),

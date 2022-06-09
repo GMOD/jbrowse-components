@@ -2,7 +2,6 @@ import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
-import { Theme } from '@mui/material'
 
 // locals
 import { BreakpointViewModel } from '../model'
@@ -11,7 +10,7 @@ import Breakends from './Breakends'
 import Header from './Header'
 import Translocations from './Translocations'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),

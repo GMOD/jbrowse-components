@@ -6,7 +6,6 @@ import {
   StepLabel,
   Stepper,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
@@ -24,7 +23,7 @@ import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),
   },

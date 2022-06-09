@@ -8,18 +8,18 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 import DeleteIcon from '@mui/icons-material/Delete'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   menu: {
     left: '65%',
   },
 })
 
 function RecentSessionCard({ sessionName, onClick, onDelete }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
 

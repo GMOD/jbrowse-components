@@ -2,7 +2,7 @@ import React, { useState, lazy } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import { Button, CircularProgress, Container, Grid, Theme } from '@mui/material'
+import { Button, CircularProgress, Container, Grid } from '@mui/material'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -13,7 +13,7 @@ import RefNameAutocomplete from './RefNameAutocomplete'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(2),
   },

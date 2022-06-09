@@ -1,4 +1,4 @@
-import { Paper, Typography, Theme } from '@mui/material'
+import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
   ContentBlock,
@@ -17,7 +17,7 @@ import { makeTicks } from '../util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   scaleBarContainer: {
     overflow: 'hidden',
     position: 'relative',

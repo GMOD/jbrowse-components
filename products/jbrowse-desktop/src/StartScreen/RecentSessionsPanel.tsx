@@ -9,9 +9,8 @@ import {
   Link,
   Tooltip,
   Typography,
-  Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { ToggleButtonGroup, ToggleButton, ToggleButtonProps } from '@mui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -32,7 +31,7 @@ import SessionCard from './SessionCard'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   pointer: {
     cursor: 'pointer',
   },
@@ -72,7 +71,7 @@ function RecentSessionsList({
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const columns = [
     {
       field: 'rename',
@@ -221,7 +220,7 @@ function RecentSessionsCards({
 // note: adjust props so disabled button can have a tooltip and not lose styling
 // https://stackoverflow.com/a/63276424
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { title = '', children, disabled, onClick, ...other } = props
   const adjustedButtonProps = {
     disabled: disabled,
@@ -248,7 +247,7 @@ export default function RecentSessionPanel({
   setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()

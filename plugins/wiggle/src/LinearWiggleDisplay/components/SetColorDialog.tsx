@@ -9,13 +9,12 @@ import {
   IconButton,
   Radio,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

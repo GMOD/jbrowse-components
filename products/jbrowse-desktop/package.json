@@ -98,6 +98,7 @@
     "rxjs": "^6.5.2",
     "sanitize-filename": "^1.6.3",
     "timeago.js": "^4.0.2",
+    "tss-react": "^3.7.0",
     "use-query-params": "1.2.3",
     "webpack": "^5.72.0"
   },

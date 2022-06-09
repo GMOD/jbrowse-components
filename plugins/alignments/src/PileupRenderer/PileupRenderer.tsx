@@ -1,4 +1,5 @@
 import Color from 'color'
+import { Theme } from '@mui/material/styles'
 import BoxRendererType, {
   RenderArgs,
   RenderArgsSerialized,
@@ -7,7 +8,6 @@ import BoxRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType'
-import { Theme } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   bpSpanPx,

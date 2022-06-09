@@ -8,7 +8,6 @@ import {
   Divider,
   Tooltip,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import ExpandMore from '@mui/icons-material/ExpandMore'
@@ -51,7 +50,7 @@ const coreDetails = [
   'type',
 ]
 
-export const useStyles = makeStyles()((theme: Theme) => ({
+export const useStyles = makeStyles()(theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),

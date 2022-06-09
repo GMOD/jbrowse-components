@@ -5,7 +5,6 @@ import {
   IconButtonProps as IconButtonPropsType,
   Paper,
   Tooltip,
-  Theme,
   useTheme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -23,7 +22,7 @@ import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,

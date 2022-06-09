@@ -3,9 +3,9 @@ import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
-import { Link, Typography, Theme } from '@mui/material'
+import { Link, Typography } from '@mui/material'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(2),
     fontSize: '1.2em',

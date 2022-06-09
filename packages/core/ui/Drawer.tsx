@@ -1,11 +1,11 @@
 import React from 'react'
-import { Paper, Theme } from '@mui/material'
+import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ResizeHandle from './ResizeHandle'
 import { SessionWithDrawerWidgets } from '../util/types'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   paper: {
     overflowY: 'auto',
     height: '100%',

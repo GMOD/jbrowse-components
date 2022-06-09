@@ -4,14 +4,14 @@ import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material/styles'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 
 import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 import { ViewModel } from '../createModel/createModel'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   // avoid parent styles getting into this div
   // https://css-tricks.com/almanac/properties/a/all/
   avoidParentStyle: {
@@ -21,7 +21,7 @@ const useStyles = makeStyles(() => ({
 
 const JBrowseCircularGenomeView = observer(
   ({ viewState }: { viewState: ViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { session } = viewState
     const { view } = session
     const { pluginManager } = getEnv(session)

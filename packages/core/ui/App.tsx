@@ -9,7 +9,6 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import LaunchIcon from '@mui/icons-material/Launch'
@@ -31,7 +30,7 @@ import {
 } from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     fontFamily: 'Roboto',
     display: 'grid',

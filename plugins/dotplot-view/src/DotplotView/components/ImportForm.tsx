@@ -9,7 +9,6 @@ import {
   Radio,
   RadioGroup,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
@@ -19,7 +18,7 @@ import { transaction } from 'mobx'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
     margin: '0 auto',

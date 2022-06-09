@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
@@ -10,7 +10,7 @@ import { LinearComparativeViewModel } from '../model'
 type LCV = LinearComparativeViewModel
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()((theme: Theme) => {
+const useStyles = makeStyles()(theme => {
   // @ts-ignore
   const { tertiary, primary } = theme.palette
   const background = tertiary

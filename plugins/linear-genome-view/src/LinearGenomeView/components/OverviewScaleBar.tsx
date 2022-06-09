@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Theme, useTheme, alpha } from '@mui/material'
+import { Typography, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
@@ -20,7 +20,7 @@ import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   scaleBar: {
     height: HEADER_OVERVIEW_HEIGHT,
   },

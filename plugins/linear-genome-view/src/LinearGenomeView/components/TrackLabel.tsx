@@ -5,7 +5,7 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { IconButton, Paper, Typography, Theme, alpha } from '@mui/material'
+import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import {
@@ -21,7 +21,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import { LinearGenomeViewStateModel } from '..'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {

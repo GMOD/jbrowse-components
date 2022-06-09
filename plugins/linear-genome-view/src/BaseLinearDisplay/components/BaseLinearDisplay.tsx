@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react'
 import { observer } from 'mobx-react'
-import { Portal, Theme, alpha, useTheme } from '@mui/material'
+import { Portal, alpha, useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
@@ -14,7 +14,7 @@ function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',

@@ -18,7 +18,7 @@ import {
   MenuItem,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 import WarningIcon from '@mui/icons-material/Warning'
 import SettingsIcon from '@mui/icons-material/Settings'
 
@@ -29,9 +29,8 @@ import {
   NewSVInspectorSession,
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
-import { Theme } from '@mui/material/styles'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   newSession: {
     backgroundColor: theme.palette?.grey['300'],
     padding: 8, // theme.spacing(2),
@@ -105,7 +104,7 @@ export default function StartScreen({
   rootModel: any
   onFactoryReset: Function
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const [sessions, setSessions] = useState<Record<string, any>>()
   const [sessionToDelete, setSessionToDelete] = useState<string>()

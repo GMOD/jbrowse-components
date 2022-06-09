@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Button, FormGroup, Typography, Theme, alpha } from '@mui/material'
+import { Button, FormGroup, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import SearchBox from './SearchBox'
 
@@ -20,7 +20,7 @@ import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
 
 type LGV = LinearGenomeViewModel
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   headerBar: {
     height: HEADER_BAR_HEIGHT,
     display: 'flex',

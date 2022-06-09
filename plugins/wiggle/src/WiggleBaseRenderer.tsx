@@ -22,7 +22,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
   displayCrossHatches: boolean
   ticks: { values: number[] }
-  theme: ThemeOptions
+  themeOptions: ThemeOptions
 }
 
 export interface RenderArgsDeserializedWithFeatures

@@ -12,13 +12,12 @@ import {
   IconButton,
   TextField,
   Typography,
-  Theme,
 } from '@mui/material'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel as LGV } from '..'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   Dialog,
@@ -9,9 +9,8 @@ import {
   Divider,
 } from '@mui/material'
 import WarningIcon from '@mui/icons-material/Warning'
-import { Theme } from '@mui/material/styles'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   main: {
     textAlign: 'center',
     margin: 8, // theme.spacing(2),
@@ -34,7 +33,7 @@ export default function SessionWarningModal({
   onCancel: () => void
   reason: { url: string }[]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog
       open

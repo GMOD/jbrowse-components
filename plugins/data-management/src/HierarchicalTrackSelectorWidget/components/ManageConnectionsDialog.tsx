@@ -8,7 +8,6 @@ import {
   IconButton,
   Tooltip,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
@@ -16,7 +15,7 @@ import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

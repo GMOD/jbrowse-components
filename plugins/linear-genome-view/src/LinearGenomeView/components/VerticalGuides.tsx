@@ -5,7 +5,6 @@ import {
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
 import { makeStyles } from 'tss-react/mui'
-import { Theme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '..'
 import {
@@ -18,7 +17,7 @@ import { makeTicks } from '../util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     height: '100%',

@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -17,7 +16,7 @@ import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel, NewJob } from '../model'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },

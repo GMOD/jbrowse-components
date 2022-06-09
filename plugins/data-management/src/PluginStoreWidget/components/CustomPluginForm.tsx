@@ -11,7 +11,6 @@ import {
   DialogContent,
   DialogContentText,
   TextField,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -25,7 +24,7 @@ import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 // locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

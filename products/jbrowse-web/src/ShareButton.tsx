@@ -19,8 +19,8 @@ import {
   Typography,
 } from '@mui/material'
 
-import { alpha, Theme } from '@mui/material/styles'
-import { makeStyles } from '@mui/styles'
+import { alpha } from '@mui/material/styles'
+import { makeStyles } from 'tss-react/mui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // icons
@@ -34,7 +34,7 @@ import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import { toUrlSafeB64 } from './util'
 import { shareSessionToDynamo } from './sessionSharing'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   shareDiv: {
     textAlign: 'center',
     paddingLeft: '2px',
@@ -68,7 +68,7 @@ function SettingsDialog(props: {
   onClose: Function
   currentSetting: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { onClose, open, currentSetting } = props
   const [setting, setSetting] = useState(currentSetting)
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
@@ -128,7 +128,7 @@ function SettingsDialog(props: {
   )
 }
 function InfoDialog(props: { open: boolean; onClose: Function }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { onClose, open } = props
 
   const handleClose = () => {
@@ -179,7 +179,7 @@ const ShareDialog = observer(
     handleClose: () => void
     session: AbstractSessionModel & { shareURL: string }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const [shortUrl, setShortUrl] = useState('')
     const [longUrl, setLongUrl] = useState('')
     const [loading, setLoading] = useState(true)
@@ -345,7 +345,7 @@ const ShareButton = observer(
     const [open, setOpen] = useState(false)
 
     const { session } = props
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const handleClose = () => {
       setOpen(false)

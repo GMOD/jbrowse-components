@@ -7,7 +7,6 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-  Theme,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { makeStyles } from 'tss-react/mui'
@@ -17,7 +16,7 @@ import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),

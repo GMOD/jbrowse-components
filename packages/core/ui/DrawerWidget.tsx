@@ -9,7 +9,6 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -25,7 +24,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // locals
 import Drawer from './Drawer'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 0,
   },

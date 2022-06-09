@@ -12,7 +12,6 @@ import {
   IconButton,
   TextField,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -88,7 +87,7 @@ interface ReducedFeature {
   }
 }
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     width: 300,
   },

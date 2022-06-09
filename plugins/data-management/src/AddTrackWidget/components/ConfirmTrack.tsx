@@ -22,7 +22,6 @@ import {
   Paper,
   TextField,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -39,7 +38,7 @@ import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '../model'
 import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },

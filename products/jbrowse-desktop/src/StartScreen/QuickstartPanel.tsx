@@ -9,9 +9,8 @@ import {
   TextField,
   Tooltip,
   Typography,
-  Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
 import SearchIcon from '@mui/icons-material/Search'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
@@ -24,7 +23,7 @@ import { loadPluginManager } from './util'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   button: {
     float: 'right',
     height: '3em',
@@ -48,7 +47,7 @@ function QuickstartPanel({
 }: {
   setPluginManager: (arg0: PluginManager) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [search, setSearch] = useState('')
   const [error, setError] = useState<unknown>()

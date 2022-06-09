@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
@@ -8,7 +8,7 @@ import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()((theme: Theme) => {
+const useStyles = makeStyles()(theme => {
   // @ts-ignore
   const { primary, tertiary } = theme.palette
   const background = tertiary

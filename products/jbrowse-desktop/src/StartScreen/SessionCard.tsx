@@ -10,7 +10,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui'
 
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -19,7 +19,7 @@ import TextFieldsIcon from '@mui/icons-material/TextFields'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   card: {
     width: 250,
     cursor: 'pointer',
@@ -50,7 +50,7 @@ function RecentSessionCard({
   onRename: (arg: RecentSessionData) => void
   onAddToQuickstartList: (arg: RecentSessionData) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
   const [screenshot, setScreenshot] = useState<string>()

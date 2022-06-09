@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
-import { LinearProgress, Theme } from '@mui/material'
+import { LinearProgress } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
@@ -13,7 +13,7 @@ import Header from './Header'
 import { locstr } from './util'
 import { HorizontalAxis, VerticalAxis } from './Axes'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   spacer: {
     gridColumn: '1/2',
     gridRow: '2/2',

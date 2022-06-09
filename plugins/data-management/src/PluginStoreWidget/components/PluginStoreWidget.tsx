@@ -10,7 +10,6 @@ import {
   InputAdornment,
   TextField,
   Typography,
-  Theme,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -28,7 +27,7 @@ import PluginCard from './PluginCard'
 import CustomPluginForm from './CustomPluginForm'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },

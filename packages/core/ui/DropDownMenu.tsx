@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react'
-import { Button, Theme, alpha } from '@mui/material'
+import { Button, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 import Menu, { MenuItem } from './Menu'
 
-const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     display: 'flex',
   },
