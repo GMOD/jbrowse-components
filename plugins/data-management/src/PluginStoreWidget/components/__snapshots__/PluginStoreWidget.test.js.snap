@@ -2,7 +2,7 @@
 
 exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
 <div
-  class="makeStyles-root"
+  class="tss-dgo1uw-root"
 >
   <div
     class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -86,7 +86,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -123,7 +123,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -145,7 +145,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -167,7 +167,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -189,7 +189,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -211,7 +211,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -233,7 +233,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -255,7 +255,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -277,7 +277,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -299,7 +299,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -321,7 +321,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -343,7 +343,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -365,7 +365,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -387,7 +387,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -409,7 +409,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -431,7 +431,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -453,7 +453,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -475,7 +475,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -497,7 +497,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -519,7 +519,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -541,7 +541,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -563,7 +563,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -585,7 +585,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -607,7 +607,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -629,7 +629,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -651,7 +651,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -673,7 +673,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -695,7 +695,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -717,7 +717,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -763,7 +763,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -789,13 +789,13 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
             role="region"
           >
             <div
-              class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root makeStyles-card css-1v5z4dq-MuiPaper-root-MuiCard-root"
+              class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded MuiCard-root tss-s87f4t-card css-1v5z4dq-MuiPaper-root-MuiCard-root"
             >
               <div
                 class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
               >
                 <div
-                  class="makeStyles-dataField"
+                  class="tss-yyi66y-dataField"
                 >
                   <h5
                     class="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
@@ -811,7 +811,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   </h5>
                 </div>
                 <div
-                  class="makeStyles-dataField"
+                  class="tss-yyi66y-dataField"
                 >
                   <svg
                     aria-hidden="true"
@@ -832,7 +832,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   </p>
                 </div>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 makeStyles-bold css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 tss-19fbf4i-bold css-ahj2mt-MuiTypography-root"
                 >
                   Description:
                 </p>

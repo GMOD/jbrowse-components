@@ -2,10 +2,10 @@
 
 exports[`<AddTrackWidget /> renders 1`] = `
 <div
-  class="makeStyles-root"
+  class="tss-1ohm0fb-root"
 >
   <div
-    class="MuiStepper-root MuiStepper-vertical makeStyles-stepper css-9tmuzo-MuiStepper-root"
+    class="MuiStepper-root MuiStepper-vertical tss-1v8zuu8-stepper css-9tmuzo-MuiStepper-root"
   >
     <div
       class="MuiStep-root MuiStep-vertical css-8wcvy5-MuiStep-root"
@@ -61,7 +61,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
               class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-hhqfdh-paper css-1ps6pg7-MuiPaper-root"
               >
                 <div
                   class="MuiBox-root css-k008qs"
@@ -153,7 +153,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                   class="MuiFormHelperText-root css-1d1r5q-MuiFormHelperText-root"
                 />
                 <div
-                  class="makeStyles-spacer"
+                  class="tss-ehv88g-spacer"
                 />
                 <div
                   class="MuiBox-root css-k008qs"
@@ -248,10 +248,10 @@ exports[`<AddTrackWidget /> renders 1`] = `
                 </p>
               </div>
               <div
-                class="makeStyles-actionsContainer"
+                class="tss-1spe31o-actionsContainer"
               >
                 <button
-                  class="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root Mui-disabled makeStyles-button css-1e6y48t-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root Mui-disabled tss-11xjtta-button css-1e6y48t-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -259,7 +259,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                   Back
                 </button>
                 <button
-                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled makeStyles-button css-sghohy-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root Mui-disabled tss-11xjtta-button css-sghohy-MuiButtonBase-root-MuiButton-root"
                   data-testid="addTrackNextButton"
                   disabled=""
                   tabindex="-1"

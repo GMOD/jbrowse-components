@@ -44,16 +44,15 @@ beforeEach(() => {
 })
 
 test('open a dotplot view', async () => {
-  const pluginManager = getPluginManager(dotplotConfig, false)
-  const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
-
+  const pm = getPluginManager(dotplotConfig, false)
+  const { findByTestId } = render(<JBrowse pluginManager={pm} />)
   expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
 }, 20000)
 
 test('open a dotplot view with import form', async () => {
-  const pluginManager = getPluginManager(dotplotConfig, false)
+  const pm = getPluginManager(dotplotConfig, false)
   const { findByTestId, findAllByTestId, findByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
+    <JBrowse pluginManager={pm} />,
   )
 
   fireEvent.click(await findByTestId('close_view'))

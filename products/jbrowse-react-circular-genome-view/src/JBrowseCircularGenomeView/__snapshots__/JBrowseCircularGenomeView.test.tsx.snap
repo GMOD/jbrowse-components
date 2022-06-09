@@ -9,6 +9,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
   >
     <div
       class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 makeStyles-viewContainer css-15s4tt4-MuiPaper-root"
+      style="padding: 0px 4px 4px;"
     >
       <div
         style="display: flex;"
@@ -52,19 +53,19 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
       >
         <div
-          class="makeStyles-root"
+          class="tss-1e5hhmt-root"
           data-testid="test_view"
           style="width: 800px; height: 400px;"
         >
           <div
-            class="makeStyles-scroller"
+            class="tss-4l8qn4-scroller"
             style="width: 800px; height: 400px;"
           >
             <div
               style="transform: rotate(-1.5707963267948966rad); transition: transform 0.5s; transform-origin: 108.1830988618379px 108.1830988618379px;"
             >
               <svg
-                class="makeStyles-sliceRoot"
+                class="tss-9a6cxh-sliceRoot"
                 height="216.3661977236758px"
                 style="position: absolute; left: 0px; top: 0px;"
                 version="1.1"
@@ -74,7 +75,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                   transform="translate(108.1830988618379,108.1830988618379)"
                 >
                   <text
-                    class="makeStyles-rulerLabel"
+                    class="tss-wdlapd-rulerLabel"
                     dominant-baseline="baseline"
                     style="fill: rgb(153, 102, 0);"
                     text-anchor="middle"
@@ -98,7 +99,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                     </title>
                   </path>
                   <text
-                    class="makeStyles-rulerLabel"
+                    class="tss-wdlapd-rulerLabel"
                     dominant-baseline="baseline"
                     style="fill: rgb(102, 102, 0);"
                     text-anchor="middle"
@@ -126,10 +127,10 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             </div>
           </div>
           <div
-            class="makeStyles-controls"
+            class="tss-1g5scrt-controls"
           >
             <button
-              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeSmall makeStyles-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               disabled=""
               tabindex="-1"
               title="unlock to zoom out"
@@ -148,7 +149,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               </svg>
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall makeStyles-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="zoom in"
               type="button"
@@ -172,7 +173,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall makeStyles-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="rotate counter-clockwise"
               type="button"
@@ -193,7 +194,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall makeStyles-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="rotate clockwise"
               type="button"
@@ -214,7 +215,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall makeStyles-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="locked model to window size"
               type="button"
@@ -257,7 +258,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             </button>
           </div>
           <div
-            class="makeStyles-horizontalHandle"
+            class="tss-1g8jgpw-horizontalHandle"
             data-resizer="true"
             role="presentation"
             style="height: 3px; position: absolute; bottom: 0px; left: 0px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"

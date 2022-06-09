@@ -25,7 +25,7 @@ exports[`open up a widget 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-rb1zhf-expandIcon css-i4bv87-MuiSvgIcon-root"
         data-testid="ExpandMoreIcon"
         focusable="false"
         viewBox="0 0 24 24"
@@ -51,7 +51,7 @@ exports[`open up a widget 1`] = `
           role="region"
         >
           <div
-            class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+            class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
           >
             <p
               class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -59,15 +59,15 @@ exports[`open up a widget 1`] = `
               Core details
             </p>
             <div
-              class="makeStyles-field"
+              class="tss-1m8nxnb-field"
             >
               <div
-                class="makeStyles-fieldName"
+                class="tss-1y9c7n2-fieldName"
               >
                 Position
               </div>
               <div
-                class="makeStyles-fieldValue"
+                class="tss-1omt041-fieldValue"
               >
                 <div>
                   ctgA:3..102 (+)
@@ -75,15 +75,15 @@ exports[`open up a widget 1`] = `
               </div>
             </div>
             <div
-              class="makeStyles-field"
+              class="tss-1m8nxnb-field"
             >
               <div
-                class="makeStyles-fieldName"
+                class="tss-1y9c7n2-fieldName"
               >
                 Length
               </div>
               <div
-                class="makeStyles-fieldValue"
+                class="tss-1omt041-fieldValue"
               >
                 <div>
                   100
@@ -99,16 +99,16 @@ exports[`open up a widget 1`] = `
               Attributes
             </p>
             <div
-              class="makeStyles-field"
+              class="tss-1m8nxnb-field"
             >
               <div
-                class="makeStyles-fieldName"
+                class="tss-1y9c7n2-fieldName"
                 style="width: 40px;"
               >
                 score
               </div>
               <div
-                class="makeStyles-fieldValue"
+                class="tss-1omt041-fieldValue"
               >
                 <div>
                   37

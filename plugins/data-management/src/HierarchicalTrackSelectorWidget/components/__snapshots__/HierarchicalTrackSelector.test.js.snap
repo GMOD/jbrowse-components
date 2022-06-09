@@ -2,7 +2,7 @@
 
 exports[`HierarchicalTrackSelector widget renders nothing with no assembly 1`] = `
 <button
-  class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary makeStyles-fab css-kznubb-MuiButtonBase-root-MuiFab-root"
+  class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeLarge MuiFab-secondary tss-jdumxy-fab css-kznubb-MuiButtonBase-root-MuiFab-root"
   tabindex="0"
   type="button"
 >
@@ -31,7 +31,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
     style="display: flex;"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium tss-1imaff4-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
       tabindex="0"
       type="button"
     >
@@ -51,7 +51,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
       />
     </button>
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium tss-1imaff4-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
       tabindex="0"
       type="button"
     >
@@ -70,7 +70,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
       />
     </button>
     <div
-      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root makeStyles-searchBox css-wb57ya-MuiFormControl-root-MuiTextField-root"
+      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root tss-11q958z-searchBox css-wb57ya-MuiFormControl-root-MuiTextField-root"
     >
       <label
         class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
@@ -140,7 +140,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
     style="display: flex;"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium tss-1imaff4-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
       tabindex="0"
       type="button"
     >
@@ -160,7 +160,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
       />
     </button>
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium makeStyles-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium tss-1imaff4-menuIcon css-78trlr-MuiButtonBase-root-MuiIconButton-root"
       tabindex="0"
       type="button"
     >
@@ -179,7 +179,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
       />
     </button>
     <div
-      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root makeStyles-searchBox css-wb57ya-MuiFormControl-root-MuiTextField-root"
+      class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root tss-11q958z-searchBox css-wb57ya-MuiFormControl-root-MuiTextField-root"
     >
       <label
         class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"

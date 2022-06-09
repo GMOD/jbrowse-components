@@ -29,7 +29,7 @@ exports[`open up a widget 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-rb1zhf-expandIcon css-i4bv87-MuiSvgIcon-root"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -55,7 +55,7 @@ exports[`open up a widget 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
             >
               <p
                 class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
@@ -63,15 +63,15 @@ exports[`open up a widget 1`] = `
                 Core details
               </p>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                 >
                   Position
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     ctgA:3..102 (+)
@@ -79,15 +79,15 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                 >
                   Name
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     ctgA_3_555_0:0:0_2:0:0_102d
@@ -95,15 +95,15 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                 >
                   Length
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     100
@@ -111,15 +111,15 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                 >
                   Type
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     match
@@ -135,16 +135,16 @@ exports[`open up a widget 1`] = `
                 Attributes
               </p>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   seq
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG
@@ -152,16 +152,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   score
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     37
@@ -169,16 +169,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   qual
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <button
                     type="button"
@@ -196,16 +196,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   MQ
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     37
@@ -213,16 +213,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   CIGAR
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     100M
@@ -230,16 +230,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   length_on_ref
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     100
@@ -247,16 +247,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   template_length
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     0
@@ -264,16 +264,16 @@ exports[`open up a widget 1`] = `
                 </div>
               </div>
               <div
-                class="makeStyles-field"
+                class="tss-1m8nxnb-field"
               >
                 <div
-                  class="makeStyles-fieldName"
+                  class="tss-1y9c7n2-fieldName"
                   style="width: 96px;"
                 >
                   seq_length
                 </div>
                 <div
-                  class="makeStyles-fieldValue"
+                  class="tss-1omt041-fieldValue"
                 >
                   <div>
                     100
@@ -310,7 +310,7 @@ exports[`open up a widget 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-rb1zhf-expandIcon css-i4bv87-MuiSvgIcon-root"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -336,7 +336,7 @@ exports[`open up a widget 1`] = `
             role="region"
           >
             <div
-              class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+              class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
             >
               <div
                 class="MuiFormGroup-root css-dmmspl-MuiFormGroup-root"
@@ -345,7 +345,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -379,7 +379,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -413,7 +413,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -447,7 +447,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -481,7 +481,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -515,7 +515,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -549,7 +549,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -583,7 +583,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -617,7 +617,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -651,7 +651,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -685,7 +685,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -719,7 +719,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root makeStyles-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"

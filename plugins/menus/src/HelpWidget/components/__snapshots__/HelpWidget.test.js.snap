@@ -2,7 +2,7 @@
 
 exports[`<HelpWidget /> renders 1`] = `
 <div
-  class="makeStyles-root"
+  class="tss-yyj9d3-root"
 >
   <h4
     class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1oih086-MuiTypography-root"
@@ -10,7 +10,7 @@ exports[`<HelpWidget /> renders 1`] = `
     JBrowse 2
   </h4>
   <h6
-    class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter makeStyles-subtitle css-1kgxqm0-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-h6 MuiTypography-alignCenter tss-1e61rmc-subtitle css-1kgxqm0-MuiTypography-root"
   />
   <p>
     Here are some resources to get help. Please report the version number above when asking questions. Thanks!

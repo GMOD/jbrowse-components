@@ -22,6 +22,8 @@ beforeEach(() => {
     }),
   )
 })
+
+const delay = { timeout: 10000 }
 test('test trix from lgv header', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
@@ -32,7 +34,7 @@ test('test trix from lgv header', async () => {
   // @ts-ignore
   const view = state.session.views[0]
 
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const auto = await findByTestId('autocomplete', {}, delay)
   const input = await findByPlaceholderText('Search for location')
 
   // wait for displayedRegions[0] to be volvox, required for searching header
@@ -48,7 +50,7 @@ test('test trix from lgv header', async () => {
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
   await waitFor(
     () => expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
-    { timeout: 10000 },
+    delay,
   )
 }, 30000)
 
@@ -59,7 +61,7 @@ test('opens a dialog with multiple results', async () => {
     <JBrowse pluginManager={pm} />,
   )
 
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const auto = await findByTestId('autocomplete', {}, delay)
   const input = await findByPlaceholderText('Search for location')
   await waitFor(() => {
     // @ts-ignore
@@ -70,7 +72,7 @@ test('opens a dialog with multiple results', async () => {
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search results', {}, { timeout: 10000 })
+  await screen.findByText('Search results', {}, delay)
   // @ts-ignore
   expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
 }, 30000)
@@ -82,7 +84,7 @@ test('opens a dialog with multiple results with jb1 text search adapter results'
     <JBrowse pluginManager={pm} />,
   )
 
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+  const auto = await findByTestId('autocomplete', {}, delay)
   const input = await findByPlaceholderText('Search for location')
   await waitFor(() => {
     // @ts-ignore
@@ -93,7 +95,7 @@ test('opens a dialog with multiple results with jb1 text search adapter results'
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search results', {}, { timeout: 10000 })
+  await screen.findByText('Search results', {}, delay)
   // @ts-ignore
   expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
 }, 30000)
@@ -124,4 +126,4 @@ test('test navigation with the search input box', async () => {
     // @ts-ignore
     expect(view.displayedRegions[0].assemblyName).toEqual('volvox2'),
   )
-})
+}, 30000)

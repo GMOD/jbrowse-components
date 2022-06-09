@@ -2,7 +2,7 @@
 
 exports[`ConfigurationEditor widget renders all the different types of built-in slots 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters makeStyles-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters tss-r6x2pq-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
 >
   <div
     aria-expanded="true"
@@ -24,7 +24,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
     >
       <svg
         aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
         data-testid="ExpandMoreIcon"
         focusable="false"
         viewBox="0 0 24 24"
@@ -50,14 +50,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
           role="region"
         >
           <div
-            class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+            class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
             data-testid="configEditor"
           >
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -94,14 +94,9 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </legend>
                     </fieldset>
                   </div>
-<<<<<<< HEAD
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-2-helper-text"
-=======
-                  <div
-                    class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                   >
                     <div>
                       stringTest
@@ -110,14 +105,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
                   class="MuiBox-root css-k008qs"
@@ -212,14 +207,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </p>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <label
                   class="MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-root MuiFormLabel-colorPrimary css-9npbnl-MuiFormLabel-root-MuiInputLabel-root"
@@ -408,14 +403,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </p>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <label
                   class="MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-root MuiFormLabel-colorPrimary css-9npbnl-MuiFormLabel-root-MuiInputLabel-root"
@@ -423,7 +418,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   stringArrayMapTest
                 </label>
                 <div
-                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root makeStyles-card css-fky5tw-MuiPaper-root-MuiCard-root"
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root tss-j5n5ux-card css-fky5tw-MuiPaper-root-MuiCard-root"
                 >
                   <div
                     class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
@@ -648,7 +643,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   </div>
                 </div>
                 <div
-                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root makeStyles-card css-fky5tw-MuiPaper-root-MuiCard-root"
+                  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation8 MuiCard-root tss-j5n5ux-card css-fky5tw-MuiPaper-root-MuiCard-root"
                 >
                   <div
                     class="MuiCardHeader-root css-185gdzj-MuiCardHeader-root"
@@ -718,21 +713,17 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </p>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
-<<<<<<< HEAD
-                  class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -743,11 +734,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     numberTest
                   </label>
                   <div
-<<<<<<< HEAD
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                   >
                     <input
                       aria-describedby="mui-11-helper-text"
@@ -770,14 +757,9 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </legend>
                     </fieldset>
                   </div>
-<<<<<<< HEAD
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-11-helper-text"
-=======
-                  <div
-                    class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                   >
                     <div>
                       numberTest
@@ -786,21 +768,17 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
-<<<<<<< HEAD
-                  class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -811,11 +789,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     integerTest
                   </label>
                   <div
-<<<<<<< HEAD
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                   >
                     <input
                       aria-describedby="mui-12-helper-text"
@@ -838,14 +812,9 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       </legend>
                     </fieldset>
                   </div>
-<<<<<<< HEAD
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-12-helper-text"
-=======
-                  <div
-                    class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                   >
                     <div>
                       integerTest
@@ -854,14 +823,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -908,14 +877,14 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
                   class="MuiFormControl-root css-1nrlq1o-MuiFormControl-root"
@@ -961,7 +930,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
           </div>
@@ -974,7 +943,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
 
 exports[`ConfigurationEditor widget renders with defaults of the PileupTrack schema 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters makeStyles-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters tss-r6x2pq-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
 >
   <div
     aria-expanded="true"
@@ -996,7 +965,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
     >
       <svg
         aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
         data-testid="ExpandMoreIcon"
         focusable="false"
         viewBox="0 0 24 24"
@@ -1022,21 +991,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
           role="region"
         >
           <div
-            class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+            class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
             data-testid="configEditor"
           >
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
-<<<<<<< HEAD
-                  class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1047,11 +1012,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     maxFeatureScreenDensity
                   </label>
                   <div
-<<<<<<< HEAD
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                   >
                     <input
                       aria-describedby="mui-14-helper-text"
@@ -1074,14 +1035,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       </legend>
                     </fieldset>
                   </div>
-<<<<<<< HEAD
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-14-helper-text"
-=======
-                  <div
-                    class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                   >
                     <div>
                       maximum features per pixel that is displayed in the view, used if byte size estimates not available
@@ -1090,21 +1046,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
-<<<<<<< HEAD
-                  class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                  class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                 >
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1115,11 +1067,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     fetchSizeLimit
                   </label>
                   <div
-<<<<<<< HEAD
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                    class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                   >
                     <input
                       aria-describedby="mui-15-helper-text"
@@ -1142,14 +1090,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       </legend>
                     </fieldset>
                   </div>
-<<<<<<< HEAD
-                  <p
+                  <div
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-15-helper-text"
-=======
-                  <div
-                    class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                   >
                     <div>
                       maximum data to attempt to download for a given track, used if adapter doesn't specify one
@@ -1158,14 +1101,14 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
                   class="MuiFormControl-root css-1nrlq1o-MuiFormControl-root"
@@ -1178,7 +1121,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     mouseover
                   </label>
                   <div
-                    class="makeStyles-callbackEditor"
+                    class="tss-1dkc4ws-callbackEditor"
                     style="position: relative; text-align: left; white-space: pre-wrap; word-break: keep-all; box-sizing: border-box; padding: 0px; overflow: hidden;"
                   >
                     <textarea
@@ -1260,7 +1203,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 </button>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               >
                 <button
                   class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
@@ -1285,7 +1228,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
               </div>
             </div>
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters makeStyles-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters tss-r6x2pq-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
             >
               <div
                 aria-expanded="true"
@@ -1307,7 +1250,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
                     data-testid="ExpandMoreIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
@@ -1333,13 +1276,13 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       role="region"
                     >
                       <div
-                        class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+                        class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
                       >
                         <div
-                          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                          class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                         >
                           <div
-                            class="makeStyles-paperContent"
+                            class="tss-1962tgi-paperContent"
                           >
                             <div
                               class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -1411,10 +1354,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                           class="MuiFormGroup-root css-dmmspl-MuiFormGroup-root"
                         >
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
                                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -1461,7 +1404,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             >
                               <button
                                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
@@ -1487,10 +1430,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                             </div>
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
                                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -1549,14 +1492,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-19-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
@@ -1565,14 +1503,14 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
                                 class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -1631,14 +1569,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-20-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     Alternative display modes
@@ -1647,21 +1580,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
-<<<<<<< HEAD
-                                class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1672,11 +1601,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   minSubfeatureWidth
                                 </label>
                                 <div
-<<<<<<< HEAD
-                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                                 >
                                   <input
                                     aria-describedby="mui-21-helper-text"
@@ -1699,14 +1624,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-21-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
@@ -1715,21 +1635,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
-<<<<<<< HEAD
-                                class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1740,11 +1656,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   maxHeight
                                 </label>
                                 <div
-<<<<<<< HEAD
-                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                                 >
                                   <input
                                     aria-describedby="mui-22-helper-text"
@@ -1767,14 +1679,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-22-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     the maximum height to be used in a pileup rendering
@@ -1783,21 +1690,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
-<<<<<<< HEAD
-                                class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1808,11 +1711,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   maxClippingSize
                                 </label>
                                 <div
-<<<<<<< HEAD
-                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                                 >
                                   <input
                                     aria-describedby="mui-23-helper-text"
@@ -1835,14 +1734,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-23-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     the max clip size to be used in a pileup rendering
@@ -1851,21 +1745,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
-<<<<<<< HEAD
-                                class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -1876,11 +1766,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   height
                                 </label>
                                 <div
-<<<<<<< HEAD
-                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                                 >
                                   <input
                                     aria-describedby="mui-24-helper-text"
@@ -1903,14 +1789,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-24-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     the height of each feature in a pileup alignment
@@ -1919,7 +1800,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             >
                               <button
                                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
@@ -1945,10 +1826,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                             </div>
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
                                 class="MuiFormControl-root css-1nrlq1o-MuiFormControl-root"
@@ -1993,21 +1874,17 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
-<<<<<<< HEAD
-                                class="MuiFormControl-root MuiTextField-root css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
-=======
-                                class="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
->>>>>>> origin/main
+                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                               >
                                 <label
                                   class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
@@ -2018,11 +1895,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   largeInsertionIndicatorScale
                                 </label>
                                 <div
-<<<<<<< HEAD
-                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl css-9ddj71-MuiInputBase-root-MuiOutlinedInput-root"
-=======
-                                  class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-fullWidth MuiInput-fullWidth MuiInputBase-formControl MuiInput-formControl"
->>>>>>> origin/main
+                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                                 >
                                   <input
                                     aria-describedby="mui-25-helper-text"
@@ -2045,14 +1918,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     </legend>
                                   </fieldset>
                                 </div>
-<<<<<<< HEAD
-                                <p
+                                <div
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-25-helper-text"
-=======
-                                <div
-                                  class="MuiFormHelperText-root MuiFormHelperText-filled"
->>>>>>> origin/main
                                 >
                                   <div>
                                     scale at which to draw the large insertion indicators (bp/pixel)
@@ -2061,14 +1929,14 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                           <div
-                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+                            class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
                           >
                             <div
-                              class="makeStyles-paperContent"
+                              class="tss-1962tgi-paperContent"
                             >
                               <div
                                 class="MuiFormControl-root css-1nrlq1o-MuiFormControl-root"
@@ -2113,7 +1981,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </div>
                             </div>
                             <div
-                              class="makeStyles-slotModeSwitch"
+                              class="tss-8lz2mt-slotModeSwitch"
                             />
                           </div>
                         </div>
@@ -2133,7 +2001,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
 
 exports[`ConfigurationEditor widget renders with just the required model elements 1`] = `
 <div
-  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters makeStyles-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters tss-r6x2pq-accordion css-1elwnq4-MuiPaper-root-MuiAccordion-root"
 >
   <div
     aria-expanded="true"
@@ -2155,7 +2023,7 @@ exports[`ConfigurationEditor widget renders with just the required model element
     >
       <svg
         aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium makeStyles-expandIcon css-i4bv87-MuiSvgIcon-root"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
         data-testid="ExpandMoreIcon"
         focusable="false"
         viewBox="0 0 24 24"
@@ -2181,14 +2049,14 @@ exports[`ConfigurationEditor widget renders with just the required model element
           role="region"
         >
           <div
-            class="MuiAccordionDetails-root makeStyles-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+            class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
             data-testid="configEditor"
           >
             <div
-              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 makeStyles-paper css-1ps6pg7-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
             >
               <div
-                class="makeStyles-paperContent"
+                class="tss-1962tgi-paperContent"
               >
                 <div
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
@@ -2205,6 +2073,7 @@ exports[`ConfigurationEditor widget renders with just the required model element
                     class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                   >
                     <input
+                      aria-describedby="mui-1-helper-text"
                       aria-invalid="false"
                       class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                       id="mui-1"
@@ -2225,14 +2094,15 @@ exports[`ConfigurationEditor widget renders with just the required model element
                     </fieldset>
                   </div>
                   <div
-                    class="MuiFormHelperText-root MuiFormHelperText-filled"
+                    class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
+                    id="mui-1-helper-text"
                   >
                     <div />
                   </div>
                 </div>
               </div>
               <div
-                class="makeStyles-slotModeSwitch"
+                class="tss-8lz2mt-slotModeSwitch"
               />
             </div>
           </div>

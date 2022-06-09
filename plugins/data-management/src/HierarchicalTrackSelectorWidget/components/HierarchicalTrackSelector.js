@@ -62,6 +62,7 @@ const useStyles = makeStyles()(theme => ({
 
   checkboxLabel: {
     marginRight: 0,
+    marginTop: 0,
     '&:hover': {
       backgroundColor: '#eee',
     },
@@ -122,7 +123,7 @@ const Node = props => {
   const width = 10
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
   const unsupported =
-    name && (name.endsWith('(Unsupported)') || name.endsWith('(Unknown)'))
+    name?.endsWith('(Unsupported)') || name?.endsWith('(Unknown)')
   const description = (conf && readConfObject(conf, ['description'])) || ''
 
   return (
@@ -177,6 +178,7 @@ const Node = props => {
               </Tooltip>
               <IconButton
                 onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
+                style={{ padding: 0 }}
                 color="secondary"
                 data-testid={`htsTrackEntryMenu-${id}`}
               >
