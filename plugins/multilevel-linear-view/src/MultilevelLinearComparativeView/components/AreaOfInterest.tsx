@@ -62,7 +62,7 @@ const AreaOfInterest = observer(
             left,
             width,
             height,
-            background: alpha(polygonColor, 0.3),
+            background: alpha(polygonColor, 0.2),
           }}
         />
         <Typography
