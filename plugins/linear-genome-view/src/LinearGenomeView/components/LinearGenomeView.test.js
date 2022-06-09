@@ -186,7 +186,46 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { queryByTitle } = render(<LinearGenomeView model={model} />)
-    expect(queryByTitle('Open track selector')).toBeNull()
+    const { queryByTestId } = render(<LinearGenomeView model={model} />)
+    expect(queryByTestId('controls_lgv')).toBeNull()
+  })
+  it('renders header but does not render overview', async () => {
+    const session = createTestSession()
+    session.addAssemblyConf(assemblyConf)
+    session.addTrackConf({
+      trackId: 'testConfig',
+      assemblyNames: ['volMyt1'],
+      name: 'Foo Track',
+      type: 'BasicTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+    session.addView('LinearGenomeView', {
+      type: 'LinearGenomeView',
+      id: 'lgv',
+      offsetPx: 0,
+      bpPerPx: 1,
+      hideHeaderOverview: true,
+      tracks: [
+        {
+          id: 'foo',
+          type: 'BasicTrack',
+          height: 20,
+          configuration: 'testConfig',
+          displays: [
+            {
+              type: 'LinearBareDisplay',
+              configuration: 'testConfig-LinearBareDisplay',
+            },
+          ],
+        },
+      ],
+      displayedRegions: [
+        { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 100 },
+      ],
+    })
+    const model = session.views[0]
+    model.setWidth(800)
+    const { queryByTestId } = render(<LinearGenomeView model={model} />)
+    expect(queryByTestId('controls_lgv')).toBeNull()
   })
 })

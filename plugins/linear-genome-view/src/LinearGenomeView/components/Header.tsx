@@ -126,7 +126,7 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
   // @ts-ignore
   return !model.hasCustomHeader ? (
     model.hideHeaderOverview ? (
-      <Controls model={model} />
+      <Controls model={model} data-testid="controls_lgv" />
     ) : (
       <OverviewScaleBar model={model}>
         {
