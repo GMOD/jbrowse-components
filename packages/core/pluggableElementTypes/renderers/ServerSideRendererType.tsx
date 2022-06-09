@@ -1,6 +1,6 @@
 import React from 'react'
 import { DeprecatedThemeOptions } from '@mui/material'
-import { ThemeProvider, Theme } from '@mui/material/styles'
+import { ThemeProvider } from '@mui/material/styles'
 import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 
@@ -19,11 +19,6 @@ import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
-
-declare module '@mui/styles/defaultTheme' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
 
 interface BaseRenderArgs extends RenderProps {
   sessionId: string
