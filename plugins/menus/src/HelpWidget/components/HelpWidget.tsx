@@ -2,10 +2,10 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { Link, Typography, Theme } from '@mui/material'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     margin: theme.spacing(2),
     fontSize: '1.2em',
@@ -13,10 +13,10 @@ const useStyles = makeStyles((theme: Theme) => ({
   subtitle: {
     margin: theme.spacing(1),
   },
-}))
+}));
 
 function Help({ model }: { model?: IAnyStateTreeNode }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const root = model ? getSession(model) : { version: '' }
   return (
     <div className={classes.root}>

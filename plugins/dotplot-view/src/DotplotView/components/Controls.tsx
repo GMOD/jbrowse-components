@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { IconButton } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import {
@@ -19,7 +19,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   iconButton: {
     margin: 5,
   },
@@ -31,10 +31,10 @@ const useStyles = makeStyles({
     boxSizing: 'border-box',
     border: '1px solid #a2a2a2',
   },
-})
+});
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.controls}>
       <IconButton

@@ -1,6 +1,6 @@
 import React from 'react'
 import { IconButton, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -13,7 +13,7 @@ import { LinearComparativeViewModel } from '../model'
 
 type LCV = LinearComparativeViewModel
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
   searchBox: {
     display: 'flex',
   },
-}))
+}));
 
 const LinkViews = observer(({ model }: { model: LCV }) => {
   return (
@@ -62,7 +62,7 @@ const SquareView = observer(({ model }: { model: LCV }) => {
 
 const Header = observer(
   ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const anyShowHeaders = model.views.some(view => !view.hideHeader)
     return (
       <div className={classes.headerBar}>

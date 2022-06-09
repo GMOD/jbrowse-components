@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import ReactPropTypes from 'prop-types'
 import { ChromePicker, Color, ColorResult } from 'react-color'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   popover: {
     position: 'absolute',
     zIndex: 2,
@@ -15,14 +15,14 @@ const useStyles = makeStyles({
     bottom: 0,
     left: 0,
   },
-})
+});
 
 export function ColorPicker(props: {
   color: Color
   onChange: (color: ColorResult) => void
 }) {
   const { color, onChange } = props
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [displayColorPicker, setDisplayColorPicker] = useState(true)
 
   const handleClose = () => {

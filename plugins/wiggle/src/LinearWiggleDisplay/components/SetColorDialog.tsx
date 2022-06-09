@@ -11,18 +11,18 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}))
+}));
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
@@ -46,7 +46,7 @@ export default function SetColorDialog({
   }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [posneg, setPosNeg] = useState(false)
 
   return (

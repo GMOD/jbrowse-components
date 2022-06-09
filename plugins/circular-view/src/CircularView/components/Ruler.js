@@ -8,16 +8,16 @@ import {
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   rulerLabel: {
     fontSize: '0.8rem',
     fontWeight: 500,
     lineHeight: 1.6,
     letterSpacing: '0.0075em',
   },
-})
+});
 
 function sliceArcPath(slice, radiusPx, startBase, endBase) {
   // A rx ry x-axis-rotation large-arc-flag sweep-flag x y
@@ -90,7 +90,7 @@ const ElisionRulerArc = observer(({ model, slice }) => {
 
 const RulerLabel = observer(
   ({ view, text, maxWidthPx, radians, radiusPx, title, color }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const textXY = polarToCartesian(radiusPx + 5, radians)
     if (!text) {
       return null

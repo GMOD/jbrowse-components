@@ -14,12 +14,12 @@ import {
   DialogActions,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 import ImportIcon from '@mui/icons-material/Publish'
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   closeDialog: {
     position: 'absolute',
     right: 0,
@@ -31,7 +31,7 @@ const useStyles = makeStyles(() => ({
   flexItem: {
     margin: 5,
   },
-}))
+}));
 
 function ImportBookmarks({
   model,
@@ -40,7 +40,7 @@ function ImportBookmarks({
   model: GridBookmarkModel
   assemblyName: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
   const [dialogOpen, setDialogOpen] = useState(false)

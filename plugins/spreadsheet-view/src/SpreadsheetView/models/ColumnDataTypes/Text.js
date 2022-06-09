@@ -16,7 +16,7 @@ import {
   InputAdornment,
   Select,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 const OPERATIONS = [
   'equals',
@@ -52,7 +52,7 @@ OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
 OPERATION_PREDICATES['does not equal'] = (textInCell, stringToFind) => {
   return !OPERATION_PREDICATES.equals(textInCell, stringToFind)
 }
-const useStyles = makeStyles((/* theme */) => {
+const useStyles = makeStyles()((/* theme */) => {
   return {
     textFilterControlAdornment: { marginRight: '-18px' },
     textFilterControl: {
@@ -68,11 +68,11 @@ const useStyles = makeStyles((/* theme */) => {
       },
     },
   }
-})
+});
 
 // React component for the column filter control
 const FilterReactComponent = observer(({ filterModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const operationChoices = getEnumerationValues(
     getSubType(getPropertyType(getType(filterModel), 'operation')),
   )

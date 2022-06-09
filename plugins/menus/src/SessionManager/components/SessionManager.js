@@ -16,24 +16,24 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import DeleteIcon from '@mui/icons-material/Delete'
 import ViewListIcon from '@mui/icons-material/ViewList'
 
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },
   message: {
     padding: theme.spacing(3),
   },
-}))
+}));
 
 const AutosaveEntry = observer(({ session }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const autosavedSession = JSON.parse(
     localStorage.getItem(session.previousAutosaveId) || '{}',
   ).session
@@ -69,7 +69,7 @@ const AutosaveEntry = observer(({ session }) => {
 })
 
 const SessionManager = observer(({ session }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
   const [open, setOpen] = useState(false)
 

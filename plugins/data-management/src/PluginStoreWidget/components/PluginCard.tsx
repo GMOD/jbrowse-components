@@ -15,7 +15,7 @@ import {
   Link,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import PersonIcon from '@mui/icons-material/Person'
@@ -23,7 +23,7 @@ import AddIcon from '@mui/icons-material/Add'
 import CheckIcon from '@mui/icons-material/Check'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   card: {
     margin: '1em',
   },
@@ -39,7 +39,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'center',
     margin: '0.4em 0em',
   },
-}))
+}));
 
 function PluginCard({
   plugin,
@@ -50,7 +50,7 @@ function PluginCard({
   model: PluginStoreModel
   adminMode: boolean
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(model) as { pluginManager: PluginManager }
   const isInstalled = Boolean(

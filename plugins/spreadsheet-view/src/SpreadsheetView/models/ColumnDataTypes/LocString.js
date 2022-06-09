@@ -24,9 +24,9 @@ import {
   InputAdornment,
   Select,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles((/* theme */) => {
+const useStyles = makeStyles()((/* theme */) => {
   return {
     textFilterControlAdornment: { marginRight: '-18px' },
     textFilterControl: {
@@ -42,11 +42,11 @@ const useStyles = makeStyles((/* theme */) => {
       },
     },
   }
-})
+});
 
 // React component for the column filter control
 const FilterReactComponent = observer(({ filterModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const operationChoices = getEnumerationValues(
     getSubType(getPropertyType(getType(filterModel), 'operation')),
   )

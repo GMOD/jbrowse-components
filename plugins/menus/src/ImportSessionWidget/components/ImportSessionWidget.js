@@ -3,7 +3,7 @@ import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 import { Button, Paper, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { alpha } from '@mui/material/styles'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
@@ -18,7 +18,7 @@ function styledBy(property, mapping) {
   return props => mapping[props[property]]
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },
@@ -74,7 +74,7 @@ const useStyles = makeStyles(theme => ({
   errorMessage: {
     padding: theme.spacing(2),
   },
-}))
+}));
 
 function ImportSession(props) {
   const [errorMessage, setErrorMessage] = useState('')
@@ -126,7 +126,7 @@ function ImportSession(props) {
       }
     },
   })
-  const classes = useStyles({ isDragActive })
+  const { classes } = useStyles({ isDragActive })
 
   return (
     <div className={classes.root}>

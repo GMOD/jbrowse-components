@@ -8,7 +8,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import {
   getSession,
   isElectron,
@@ -24,7 +24,7 @@ import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     marginTop: theme.spacing(1),
   },
@@ -44,13 +44,13 @@ const useStyles = makeStyles((theme: Theme) => ({
   alertContainer: {
     padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
   },
-}))
+}));
 
 const steps = ['Enter track data', 'Confirm track type']
 
 function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { rootModel } = pluginManager

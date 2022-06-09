@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { Theme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles((theme: Theme) => {
+const useStyles = makeStyles()((theme: Theme) => {
   const offset = 2
   const duration = 1.4
 
@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
   }
-})
+});
 
 // 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
 const Loading = observer(
@@ -59,7 +59,7 @@ const Loading = observer(
   }: {
     model: { renderProps: { radius: number } }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     // only show the loading message after 400ms to prevent excessive flickering
     const [shown, setShown] = useState(false)

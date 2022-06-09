@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
 import { IconButton } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { grey } from '@mui/material/colors'
 
 // icons
@@ -23,7 +23,7 @@ import ImportForm from './ImportForm'
 
 const dragHandleHeight = 3
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
@@ -57,7 +57,7 @@ const useStyles = makeStyles(theme => ({
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
-}))
+}));
 
 const Slices = observer(({ model }) => {
   return (
@@ -86,7 +86,7 @@ const Slices = observer(({ model }) => {
 })
 
 const Controls = observer(({ model, showingFigure }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.controls}>
       <IconButton
@@ -160,7 +160,7 @@ const Controls = observer(({ model, showingFigure }) => {
 })
 
 const CircularView = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const initialized =
     !!model.displayedRegions.length && model.figureWidth && model.figureHeight
 

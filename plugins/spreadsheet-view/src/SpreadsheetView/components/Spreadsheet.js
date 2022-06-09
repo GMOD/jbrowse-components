@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { grey, indigo } from '@mui/material/colors'
 import { Checkbox, IconButton, Tooltip, FormControlLabel } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -31,7 +31,7 @@ export function numToColName(num) {
   throw new RangeError('column number out of range')
 }
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
   return {
     root: {
       position: 'relative',
@@ -131,7 +131,7 @@ const useStyles = makeStyles(theme => {
     },
     emptyMessage: { captionSide: 'bottom' },
   }
-})
+});
 
 const CellData = observer(({ cell, spreadsheetModel, columnNumber }) => {
   const { dataType } = spreadsheetModel.columns.get(columnNumber)
@@ -150,7 +150,7 @@ const CellData = observer(({ cell, spreadsheetModel, columnNumber }) => {
 })
 
 const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { hideRowSelection, columnDisplayOrder } = spreadsheetModel
   let rowClass = classes.dataRow
   if (rowModel.isSelected) {
@@ -210,7 +210,7 @@ const DataRow = observer(({ rowModel, rowNumber, spreadsheetModel }) => {
 })
 
 function SortIndicator({ model, columnNumber }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const sortSpec = model.sortColumns.find(c => c.columnNumber === columnNumber)
 
   if (sortSpec) {
@@ -226,7 +226,7 @@ function SortIndicator({ model, columnNumber }) {
 
 const DataTableBody = observer(
   ({ rows, spreadsheetModel, page, rowsPerPage }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     return (
       <tbody className={classes.dataTableBody}>
         {rows.slice(rowsPerPage * page, rowsPerPage * (page + 1)).map(row => (
@@ -244,7 +244,7 @@ const DataTableBody = observer(
 
 const DataTable = observer(({ model, page, rowsPerPage }) => {
   const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   // column menu active state
   const [currentColumnMenu, setColumnMenu] = useState(null)
@@ -343,7 +343,7 @@ const DataTable = observer(({ model, page, rowsPerPage }) => {
 })
 
 const Spreadsheet = observer(({ model, height, page, rowsPerPage }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <div className={classes.root} style={{ height }}>

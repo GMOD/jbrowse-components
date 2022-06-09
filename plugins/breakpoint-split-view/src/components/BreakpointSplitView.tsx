@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { Theme } from '@mui/material'
 
 // locals
@@ -11,7 +11,7 @@ import Breakends from './Breakends'
 import Header from './Header'
 import Translocations from './Translocations'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   content: {
     gridArea: '1/1',
   },
-}))
+}));
 
 const Overlay = observer(
   (props: {
@@ -72,7 +72,7 @@ const Overlay = observer(
 
 const BreakpointSplitView = observer(
   ({ model }: { model: BreakpointViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
     const ref = useRef(null)

@@ -12,10 +12,10 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -29,14 +29,14 @@ const useStyles = makeStyles((theme: Theme) => ({
       padding: theme.spacing(1),
     },
   },
-}))
+}));
 
 function ModificationTable({
   modifications,
 }: {
   modifications: [string, string][]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <table className={classes.table}>
       <tbody>
@@ -65,7 +65,7 @@ function ColorByTagDlg(props: {
   }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { model, handleClose } = props
   const { colorBy, modificationTagMap } = model
 

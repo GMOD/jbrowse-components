@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   Button,
@@ -19,7 +19,7 @@ import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   titleBox: {
     color: '#fff',
     backgroundColor: theme.palette.primary.main,
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}))
+}));
 
 const AssemblyManager = observer(
   ({
@@ -51,7 +51,7 @@ const AssemblyManager = observer(
     rootModel: any
     onClose: (arg: boolean) => void
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
     const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
     const [assemblyBeingEdited, setAssemblyBeingEdited] =

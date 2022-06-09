@@ -1,12 +1,12 @@
 import React from 'react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getBlockLabelKeysToHide } from './util'
 import { viewBpToPx } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   vtext: {
     gridColumn: '1/2',
     gridRow: '1/2',
@@ -28,11 +28,11 @@ const useStyles = makeStyles(() => ({
   minorTick: {
     stroke: '#999',
   },
-}))
+}));
 
 export const HorizontalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
     const { offsetPx, width, dynamicBlocks } = hview
     const dblocks = dynamicBlocks.contentBlocks
@@ -129,7 +129,7 @@ export const HorizontalAxis = observer(
 )
 export const VerticalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { borderX, viewHeight, borderY, vview, vtextRotation, vticks } = model
     const { offsetPx, width, dynamicBlocks } = vview
     const dblocks = dynamicBlocks.contentBlocks

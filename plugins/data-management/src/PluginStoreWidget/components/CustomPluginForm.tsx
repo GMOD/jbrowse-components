@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import clsx from 'clsx'
 
 import {
   Button,
@@ -14,7 +13,7 @@ import {
   TextField,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import IconButton from '@mui/material/IconButton'
@@ -26,7 +25,7 @@ import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 // locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -46,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   expandOpen: {
     transform: 'rotate(180deg)',
   },
-}))
+}));
 
 function CustomPluginForm({
   open,
@@ -57,7 +56,7 @@ function CustomPluginForm({
   onClose(): void
   model: PluginStoreModel
 }) {
-  const classes = useStyles()
+  const { classes, cx } = useStyles()
   const [umdPluginName, setUMDPluginName] = useState('')
   const [umdPluginUrl, setUMDPluginUrl] = useState('')
   const [esmPluginUrl, setESMPluginUrl] = useState('')
@@ -153,7 +152,7 @@ function CustomPluginForm({
           />
           <DialogContentText onClick={handleOpenAdvancedOptions}>
             <IconButton
-              className={clsx(classes.expand, {
+              className={cx(classes.expand, {
                 [classes.expandOpen]: advancedOptionsOpen,
               })}
               aria-expanded={advancedOptionsOpen}
@@ -205,7 +204,7 @@ function CustomPluginForm({
         </DialogActions>
       </form>
     </Dialog>
-  )
+  );
 }
 
 export default observer(CustomPluginForm)

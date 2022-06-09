@@ -24,7 +24,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -39,7 +39,7 @@ import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '../model'
 import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },
@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   card: {
     marginTop: theme.spacing(1),
   },
-}))
+}));
 
 function StatusMessage({
   trackAdapter,
@@ -63,7 +63,7 @@ function StatusMessage({
   trackAdapter: { type: string; subadapter?: { type: string } }
   trackType: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return trackAdapter.type === 'SNPCoverageAdapter' ? (
     <Typography className={classes.spacing}>
       Selected <code>{trackType}</code>. Using adapter{' '}
@@ -131,7 +131,7 @@ function getTrackTypes(pluginManager: PluginManager) {
 }
 
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [value1, setValue1] = useState('')
   const [value2, setValue2] = useState('')
   const [attributes, setAttributes] = useState(['Name', 'ID'])
@@ -230,7 +230,7 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
 })
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { trackAdapter } = model
   // prettier-ignore
@@ -274,7 +274,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
 })
 
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       <Typography className={classes.spacing}>
@@ -303,7 +303,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
 }
 
 const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { trackType } = model
   const trackTypes = getTrackTypes(getEnv(session).pluginManager)
@@ -363,7 +363,7 @@ const TrackAssemblySelector = observer(
 )
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [check, setCheck] = useState(true)
   const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
     model

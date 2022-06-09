@@ -12,7 +12,7 @@ import {
   AccordionSummary,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
@@ -24,7 +24,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   expandIcon: {
     color: '#fff',
   },
@@ -39,10 +39,10 @@ const useStyles = makeStyles(theme => ({
   accordion: {
     border: `1px solid ${theme.palette.text.primary}`,
   },
-}))
+}));
 
 const Member = observer(props => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const {
     slotName,
     slotSchema,
@@ -118,7 +118,7 @@ const Schema = observer(({ schema, path = [] }) => {
 })
 
 const ConfigurationEditor = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   // key forces a re-render, otherwise the same field can end up being used
   // for different tracks since only the backing model changes for example
   // see pr #804

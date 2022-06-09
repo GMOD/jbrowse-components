@@ -2,20 +2,20 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { AlignmentsDisplayModel } from '../models/model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   resizeHandle: {
     height: 2,
     position: 'absolute',
     zIndex: 2,
   },
-}))
+}));
 
 function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
   const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
-  const classes = useStyles()
+  const { classes } = useStyles()
   const top = SNPCoverageDisplay.height
   return (
     <div

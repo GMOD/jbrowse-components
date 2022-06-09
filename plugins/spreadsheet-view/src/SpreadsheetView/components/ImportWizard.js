@@ -14,7 +14,7 @@ import {
   Typography,
   TextField,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
@@ -22,9 +22,9 @@ import { getSession } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   buttonContainer: { marginTop: theme.spacing(1) },
-}))
+}));
 
 const NumberEditor = observer(
   ({ model, disabled, modelPropName, modelSetterName }) => {
@@ -61,7 +61,7 @@ const ErrorDisplay = observer(({ error }) => {
 
 const ImportForm = observer(({ model }) => {
   const session = getSession(model)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
   const {
     fileType,
@@ -178,7 +178,7 @@ const ImportForm = observer(({ model }) => {
 })
 
 const ImportWizard = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       {model.error ? (

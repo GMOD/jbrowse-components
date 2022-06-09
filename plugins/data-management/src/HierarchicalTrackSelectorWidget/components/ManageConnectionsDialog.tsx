@@ -10,13 +10,13 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: theme.spacing(4),
     width: 500,
   },
-}))
+}));
 
 function ManageConnectionsDlg({
   session,
@@ -39,7 +39,7 @@ function ManageConnectionsDlg({
   session: AbstractSessionModel
   breakConnection: Function
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session
   return (
     <Dialog open onClose={handleClose} maxWidth="lg">

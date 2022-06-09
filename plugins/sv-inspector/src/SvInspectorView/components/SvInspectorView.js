@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton, Grid, FormControlLabel, Checkbox } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { ResizeHandle } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { grey } from '@mui/material/colors'
@@ -15,7 +15,7 @@ const style = {
   borderTop: '1px solid #fafafa',
 }
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
   return {
     root: {
       marginBottom: theme.spacing(1),
@@ -45,10 +45,10 @@ const useStyles = makeStyles(theme => {
       background: grey[200],
     },
   }
-})
+});
 
 const ViewControls = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Grid
       className={classes.viewControls}
@@ -73,7 +73,7 @@ const ViewControls = observer(({ model }) => {
 })
 
 const CircularViewOptions = observer(({ svInspector }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <Grid
@@ -102,7 +102,7 @@ const CircularViewOptions = observer(({ svInspector }) => {
 })
 
 function SvInspectorView({ model }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const {
     resizeHeight,

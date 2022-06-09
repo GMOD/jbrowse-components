@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
@@ -19,7 +19,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   iconButton: {
     margin: 5,
   },
@@ -34,10 +34,10 @@ const useStyles = makeStyles({
   headerBar: {
     display: 'flex',
   },
-})
+});
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   return (
     <div>
@@ -154,7 +154,7 @@ const Header = observer(
     model: DotplotViewModel
     selection?: { width: number; height: number }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { hview, vview } = model
     return (
       <div className={classes.headerBar}>

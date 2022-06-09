@@ -12,7 +12,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import CloseIcon from '@mui/icons-material/Close'
 import LockIcon from '@mui/icons-material/Lock'
@@ -25,7 +25,7 @@ import {
 } from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   closeDialog: {
     position: 'absolute',
     right: 0,
@@ -37,10 +37,10 @@ const useStyles = makeStyles(() => ({
   lockedPluginTooltip: {
     marginRight: '0.5rem',
   },
-}))
+}));
 
 function LockedPlugin() {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Tooltip
       className={classes.lockedPluginTooltip}
@@ -58,7 +58,7 @@ function PluginDialog({
   plugin: string
   onClose: (s?: string) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>

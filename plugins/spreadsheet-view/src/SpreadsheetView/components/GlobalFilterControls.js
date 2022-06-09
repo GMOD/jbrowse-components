@@ -5,17 +5,17 @@ import ClearIcon from '@mui/icons-material/Clear'
 import FilterIcon from '@mui/icons-material/FilterList'
 
 import { observer } from 'mobx-react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { useDebounce } from '@jbrowse/core/util'
 
-const useStyles = makeStyles((/* theme */) => {
+const useStyles = makeStyles()((/* theme */) => {
   return {
     textFilterControlEndAdornment: { marginRight: '-18px' },
   }
-})
+});
 
 const TextFilter = observer(({ textFilter }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   // this paragraph is silliness to debounce the text filter input
   const [textFilterValue, setTextFilterValue] = useState(
     textFilter.stringToFind,

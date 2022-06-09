@@ -25,7 +25,7 @@ import {
   SvgIcon,
   TextField,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -136,14 +136,14 @@ const StringArrayEditor = observer(({ slot }) => {
   )
 })
 
-const useMapEditorStyles = makeStyles(theme => ({
+const useMapEditorStyles = makeStyles()(theme => ({
   card: {
     marginTop: theme.spacing(1),
   },
-}))
+}));
 
 const StringArrayMapEditor = observer(({ slot }) => {
-  const classes = useMapEditorStyles()
+  const { classes } = useMapEditorStyles()
   const [value, setValue] = useState('')
   return (
     <>
@@ -212,7 +212,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
 })
 
 const NumberMapEditor = observer(({ slot }) => {
-  const classes = useMapEditorStyles()
+  const { classes } = useMapEditorStyles()
   const [value, setValue] = useState('')
   return (
     <>
@@ -377,7 +377,8 @@ const valueComponents = {
   configRelationships: JsonEditor,
 }
 
-export const useSlotEditorStyles = makeStyles(theme => ({
+// TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.
+export const useSlotEditorStyles = makeStyles()(theme => ({
   paper: {
     display: 'flex',
     marginBottom: theme.spacing(2),
@@ -393,10 +394,10 @@ export const useSlotEditorStyles = makeStyles(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-}))
+}));
 
 const SlotEditor = observer(({ slot, slotSchema }) => {
-  const classes = useSlotEditorStyles()
+  const { classes } = useSlotEditorStyles()
   const { type } = slot
   let ValueComponent = slot.isCallback ? CallbackEditor : valueComponents[type]
   if (!ValueComponent) {

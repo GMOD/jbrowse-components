@@ -1,19 +1,19 @@
 import React, { lazy, useEffect, useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util'
 import { FormControl, FormHelperText, InputLabel } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer, PropTypes } from 'mobx-react'
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   error: {
     color: 'red',
     fontSize: '0.8em',
   },
-})
+});
 
 const CodeEditor = lazy(() => import('./CodeEditor'))
 
 function JsonEditor({ slot }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [contents, setContents] = useState(
     JSON.stringify(slot.value, null, '  '),
   )

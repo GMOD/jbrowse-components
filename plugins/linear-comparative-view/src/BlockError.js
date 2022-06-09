@@ -1,19 +1,19 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Button, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import RefreshIcon from '@mui/icons-material/Refresh'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   blockError: {
     width: '30em',
     whiteSpace: 'normal',
   },
-})
+});
 
 function BlockError({ error, reload }) {
   // reload function gets passed here
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.blockError}>
       {reload ? (

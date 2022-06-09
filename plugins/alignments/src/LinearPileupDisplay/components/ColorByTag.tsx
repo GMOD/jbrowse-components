@@ -11,10 +11,10 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     width: 300,
   },
@@ -24,13 +24,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}))
+}));
 
 function ColorByTagDlg(props: {
   model: { setColorScheme: Function }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)

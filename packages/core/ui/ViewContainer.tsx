@@ -85,6 +85,7 @@ const ViewMenu = observer(
       <>
         <IconButton
           {...IconButtonProps}
+          style={{ padding: 3 }}
           onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
           size="small"

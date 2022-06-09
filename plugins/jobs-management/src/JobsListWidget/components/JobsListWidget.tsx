@@ -7,7 +7,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 
 // icons
@@ -17,7 +17,7 @@ import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel, NewJob } from '../model'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     margin: theme.spacing(1),
   },
@@ -37,10 +37,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     alignContent: 'center',
   },
-}))
+}));
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { jobs, finished, queued } = model
   return (
     <div className={classes.root}>

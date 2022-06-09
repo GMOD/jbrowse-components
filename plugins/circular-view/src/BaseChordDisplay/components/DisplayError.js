@@ -1,12 +1,12 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   errorMessage: {},
   errorBackground: {},
   errorText: {},
-})
+});
 
 // 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
 const DisplayError = observer(
@@ -16,7 +16,7 @@ const DisplayError = observer(
       error,
     },
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     return (
       <g className={classes.errorMessage}>
         <defs>

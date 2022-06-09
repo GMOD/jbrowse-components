@@ -12,7 +12,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import { JBrowsePlugin } from '@jbrowse/core/util/types'
 import { getSession, isElectron } from '@jbrowse/core/util'
@@ -28,7 +28,7 @@ import PluginCard from './PluginCard'
 import CustomPluginForm from './CustomPluginForm'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     margin: theme.spacing(1),
   },
@@ -49,10 +49,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     justifyContent: 'center',
   },
-}))
+}));
 
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [pluginArray, setPluginArray] = useState<JBrowsePlugin[]>()
   const [error, setError] = useState<unknown>()
   const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link, IconButton, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -15,11 +15,11 @@ import ClearBookmarks from './ClearBookmarks'
 import { GridBookmarkModel } from '../model'
 import { navToBookmark } from '../utils'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   link: {
     cursor: 'pointer',
   },
-}))
+}));
 
 // creates a coarse measurement of column width, similar to code in
 // BaseFeatureDetails
@@ -28,7 +28,7 @@ const measure = (row: any, col: string) =>
   Math.min(Math.max(measureText(String(row[col]), 14) + 20, 80), 1000)
 
 const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [dialogRowNumber, setDialogRowNumber] = useState<number>()
   const { bookmarkedRegions, selectedAssembly } = model
   const { views } = getSession(model)

@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
@@ -43,7 +43,7 @@ const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
 const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
 const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   searchBox: {
     margin: theme.spacing(2),
   },
@@ -99,7 +99,7 @@ const useStyles = makeStyles(theme => ({
     margin: 'auto 0',
     display: 'flex',
   },
-}))
+}));
 
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
@@ -118,7 +118,7 @@ const Node = props => {
     drawerPosition,
   } = data
 
-  const classes = useStyles()
+  const { classes } = useStyles()
   const width = 10
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
   const unsupported =
@@ -300,7 +300,7 @@ const Wrapper = ({ overrideDimensions, children }) => {
 }
 const HierarchicalTrackSelectorContainer = observer(
   ({ model, toolbarHeight, overrideDimensions }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const session = getSession(model)
     const [anchorEl, setAnchorEl] = useState(null)
 
@@ -369,7 +369,7 @@ const HierarchicalTrackSelectorContainer = observer(
 
 const HierarchicalTrackSelectorHeader = observer(
   ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const session = getSession(model)
     const [connectionAnchorEl, setConnectionAnchorEl] = useState()
     const [menuAnchorEl, setMenuAnchorEl] = useState()

@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 // icons
 import LocationSearching from '@mui/icons-material/LocationSearching'
@@ -13,7 +13,7 @@ import LinkOffIcon from '@mui/icons-material/LinkOff'
 
 import { BreakpointViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
   spacer: {
     flexGrow: 1,
   },
-}))
+}));
 
 const InteractWithSquiggles = observer(
   ({ model }: { model: BreakpointViewModel }) => {
@@ -67,7 +67,7 @@ const Sync = observer(({ model }: { model: BreakpointViewModel }) => {
 })
 
 const Header = observer(({ model }: { model: BreakpointViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <div className={classes.headerBar}>

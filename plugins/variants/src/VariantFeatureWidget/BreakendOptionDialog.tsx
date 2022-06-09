@@ -13,12 +13,12 @@ import {
   IconButton,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import CloseIcon from '@mui/icons-material/Close'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession, Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   block: {
     display: 'block',
   },
-}))
+}));
 
 function BreakendOptionDialog({
   model,
@@ -41,7 +41,7 @@ function BreakendOptionDialog({
   feature: Feature
   viewType: any
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirrorTracks, setMirrorTracks] = useState(true)
 

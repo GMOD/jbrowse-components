@@ -8,7 +8,7 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
@@ -16,7 +16,7 @@ import { getEnv } from 'mobx-state-tree'
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),
   },
@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
   actionsContainer: {
     marginBottom: theme.spacing(2),
   },
-}))
+}));
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 
@@ -39,7 +39,7 @@ function AddConnectionWidget({ model }) {
   const [configModel, setConfigModel] = useState({})
   const [configModelReady, setConfigModelReady] = useState(true)
   const [activeStep, setActiveStep] = useState(0)
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const session = getSession(model)
 

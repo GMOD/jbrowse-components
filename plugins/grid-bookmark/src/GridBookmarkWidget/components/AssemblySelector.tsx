@@ -2,11 +2,11 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 import { Typography, Select, MenuItem, FormControl } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   container: {
     display: 'flex',
     flexDirection: 'row',
@@ -19,10 +19,10 @@ const useStyles = makeStyles(() => ({
   flexItem: {
     marginRight: 8,
   },
-}))
+}));
 
 function AssemblySelector({ model }: { model: GridBookmarkModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { assemblies, selectedAssembly, setSelectedAssembly } = model
   const noAssemblies = assemblies.length === 0 ? true : false
 

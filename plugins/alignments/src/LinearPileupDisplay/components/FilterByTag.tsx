@@ -13,11 +13,11 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   paper: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),
@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   field: {
     margin: theme.spacing(2),
   },
-}))
+}));
 
 const flagNames = [
   'read paired',
@@ -94,7 +94,7 @@ function FilterByTagDlg(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { filterBy } = model
   const [flagInclude, setFlagInclude] = useState(filterBy?.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)

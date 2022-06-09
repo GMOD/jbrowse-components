@@ -8,7 +8,7 @@ import {
   Tooltip,
   IconButton,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
@@ -22,17 +22,17 @@ const fontSize = '12px'
 const fontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   callbackEditor: {
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
     fontFamily,
     fontSize,
   },
-}))
+}));
 
 function CallbackEditor({ slot }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const [code, setCode] = useState(slot.value)
   const [error, setCodeError] = useState()

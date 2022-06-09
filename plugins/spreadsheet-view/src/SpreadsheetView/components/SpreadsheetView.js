@@ -1,6 +1,6 @@
 import React from 'react'
 import { FormGroup, Grid, IconButton, TablePagination } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -14,7 +14,7 @@ const headerHeight = 52
 const colFilterHeight = 46
 const statusBarHeight = 40
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
@@ -62,10 +62,10 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
   },
   textFilterControlAdornment: { marginRight: '-18px' },
-}))
+}));
 
 const ViewControls = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Grid
       className={classes.viewControls}
@@ -121,7 +121,7 @@ const RowCountMessage = observer(({ spreadsheet }) => {
 })
 
 const SpreadsheetView = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const { spreadsheet, filterControls } = model
 

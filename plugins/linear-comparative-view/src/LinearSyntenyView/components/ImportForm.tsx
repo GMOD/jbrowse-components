@@ -14,12 +14,12 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },
@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: 12,
     marginBottom: 10,
   },
-}))
+}));
 
 function getName(
   trackData?: { uri: string } | { localPath: string } | { name: string },
@@ -47,7 +47,7 @@ function stripGz(fileName: string) {
 }
 
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
 
   const { assemblyNames, assemblyManager } = session

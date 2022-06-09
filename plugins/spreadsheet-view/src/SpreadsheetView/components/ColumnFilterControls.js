@@ -4,9 +4,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { Grid, IconButton, Typography } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
   return {
     columnName: { verticalAlign: 'middle', paddingRight: '0.3em' },
     columnFilter: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => {
       padding: [[0, theme.spacing(1.5)]],
     },
   }
-})
+});
 
 function FilterOperations({ filterModel }) {
   if (filterModel) {
@@ -34,7 +34,7 @@ function FilterOperations({ filterModel }) {
 
 const ColumnFilterControls = observer(
   ({ viewModel, filterModel, columnNumber, height }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const removeFilter = () => {
       const filterControls = getParent(filterModel, 2)

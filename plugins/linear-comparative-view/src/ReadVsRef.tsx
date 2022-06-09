@@ -14,7 +14,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from '@mui/styles'
+import { makeStyles } from 'tss-react/mui';
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -67,7 +67,7 @@ function getLengthSansClipping(cigar: string) {
 function getClip(cigar: string, strand: number) {
   return strand === -1
     ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0;
 }
 
 interface ReducedFeature {
@@ -88,7 +88,7 @@ interface ReducedFeature {
   }
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   root: {
     width: 300,
   },
@@ -98,7 +98,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}))
+}));
 
 function getTag(f: Feature, tag: string) {
   const tags = f.get('tags')
@@ -173,7 +173,7 @@ export function WindowSizeDlg(props: {
   handleClose: () => void
   track: any
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { track, feature: preFeature, handleClose } = props
 
   // window size stored as string, because it corresponds to a textfield which
