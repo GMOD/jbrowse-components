@@ -25,6 +25,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           <div>
             <IconButton
               color="secondary"
+              datatest-id="mllv-minicontrols"
               onClick={event => {
                 setAnchorEl(event.currentTarget)
               }}

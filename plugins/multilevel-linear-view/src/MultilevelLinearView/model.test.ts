@@ -33,7 +33,20 @@ test('creation', () => {
             assemblyName: 'hg38',
           },
         ],
-        tracks: [],
+        tracks: [
+          {
+            id: 'foo',
+            type: 'BasicTrack',
+            height: 20,
+            configuration: 'testConfig',
+            displays: [
+              {
+                type: 'LinearBareDisplay',
+                configuration: 'testConfig-LinearBareDisplay',
+              },
+            ],
+          },
+        ],
       },
       {
         id: 'MoMeeVasdfade',
@@ -49,7 +62,20 @@ test('creation', () => {
             assemblyName: 'hg38',
           },
         ],
-        tracks: [],
+        tracks: [
+          {
+            id: 'foo',
+            type: 'BasicTrack',
+            height: 20,
+            configuration: 'testConfig',
+            displays: [
+              {
+                type: 'LinearBareDisplay',
+                configuration: 'testConfig-LinearBareDisplay',
+              },
+            ],
+          },
+        ],
       },
       {
         id: 'MoasdfMeeVade',
@@ -66,7 +92,20 @@ test('creation', () => {
             assemblyName: 'hg38',
           },
         ],
-        tracks: [],
+        tracks: [
+          {
+            id: 'foo',
+            type: 'BasicTrack',
+            height: 20,
+            configuration: 'testConfig',
+            displays: [
+              {
+                type: 'LinearBareDisplay',
+                configuration: 'testConfig-LinearBareDisplay',
+              },
+            ],
+          },
+        ],
       },
     ],
   })
