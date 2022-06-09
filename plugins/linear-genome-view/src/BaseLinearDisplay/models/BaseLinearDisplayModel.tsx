@@ -551,7 +551,7 @@ export const BaseLinearDisplay = types
           self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        onFeatureClick(_: unknown, featureId: string | undefined) {
+        onFeatureClick(_: unknown, featureId?: string) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -566,7 +566,7 @@ export const BaseLinearDisplay = types
           self.clearFeatureSelection()
         },
         // similar to click but opens a menu with further options
-        onFeatureContextMenu(_: unknown, featureId: string | undefined) {
+        onFeatureContextMenu(_: unknown, featureId?: string) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -576,7 +576,7 @@ export const BaseLinearDisplay = types
           }
         },
 
-        onMouseMove(_: unknown, featureId: string | undefined) {
+        onMouseMove(_: unknown, featureId?: string) {
           self.setFeatureIdUnderMouse(featureId)
         },
 
