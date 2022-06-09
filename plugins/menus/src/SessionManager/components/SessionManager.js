@@ -16,7 +16,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ViewListIcon from '@mui/icons-material/ViewList'
 
@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   message: {
     padding: theme.spacing(3),
   },
-}));
+}))
 
 const AutosaveEntry = observer(({ session }) => {
   const { classes } = useStyles()

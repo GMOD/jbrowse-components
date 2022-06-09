@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Paper } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -57,7 +57,7 @@ const useStyles = makeStyles()({
     background: 'none',
     zIndex: 2,
   },
-});
+})
 
 type LGV = LinearGenomeViewModel
 
@@ -73,7 +73,7 @@ const TrackContainerLabel = observer(
         track={model}
         className={cx(classes.trackLabel, labelStyle)}
       />
-    ) : null;
+    ) : null
   },
 )
 

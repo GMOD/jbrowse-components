@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { Link, IconButton, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -19,7 +19,7 @@ const useStyles = makeStyles()(() => ({
   link: {
     cursor: 'pointer',
   },
-}));
+}))
 
 // creates a coarse measurement of column width, similar to code in
 // BaseFeatureDetails

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { Button, Theme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
@@ -21,7 +21,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       },
     },
   },
-}));
+}))
 
 function DropDownMenu({
   menuTitle,

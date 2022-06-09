@@ -11,7 +11,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
@@ -22,7 +22,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example

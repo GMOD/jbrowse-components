@@ -14,7 +14,7 @@ import {
   Typography,
   TextField,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
@@ -24,7 +24,7 @@ import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
 const useStyles = makeStyles()(theme => ({
   buttonContainer: { marginTop: theme.spacing(1) },
-}));
+}))
 
 const NumberEditor = observer(
   ({ model, disabled, modelPropName, modelSetterName }) => {

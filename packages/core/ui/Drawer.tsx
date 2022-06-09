@@ -1,6 +1,6 @@
 import React from 'react'
 import { Paper, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ResizeHandle from './ResizeHandle'
 import { SessionWithDrawerWidgets } from '../util/types'
@@ -19,7 +19,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: 0,
     zIndex: theme.zIndex.drawer + 1,
   },
-}));
+}))
 
 function Drawer({
   children,

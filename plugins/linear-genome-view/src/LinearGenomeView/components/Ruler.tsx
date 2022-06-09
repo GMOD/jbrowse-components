@@ -1,4 +1,4 @@
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
@@ -24,7 +24,7 @@ const useStyles = makeStyles()((/* theme */) => ({
     stroke: '#999',
     // stroke: theme.palette.text.hint,
   },
-}));
+}))
 
 function Ruler({
   start,

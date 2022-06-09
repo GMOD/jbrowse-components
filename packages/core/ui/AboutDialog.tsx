@@ -8,7 +8,7 @@ import {
   Theme,
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { readConfObject } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
@@ -23,7 +23,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 export default function AboutDialog({
   config,

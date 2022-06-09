@@ -16,7 +16,7 @@ import {
   InputAdornment,
   Select,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 const OPERATIONS = [
   'equals',
@@ -68,7 +68,7 @@ const useStyles = makeStyles()((/* theme */) => {
       },
     },
   }
-});
+})
 
 // React component for the column filter control
 const FilterReactComponent = observer(({ filterModel }) => {

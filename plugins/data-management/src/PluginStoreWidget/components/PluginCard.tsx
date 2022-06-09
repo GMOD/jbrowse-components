@@ -15,7 +15,7 @@ import {
   Link,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import PersonIcon from '@mui/icons-material/Person'
@@ -39,7 +39,7 @@ const useStyles = makeStyles()(() => ({
     alignItems: 'center',
     margin: '0.4em 0em',
   },
-}));
+}))
 
 function PluginCard({
   plugin,

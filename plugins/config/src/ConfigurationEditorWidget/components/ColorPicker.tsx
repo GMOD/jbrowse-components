@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import ReactPropTypes from 'prop-types'
 import { ChromePicker, Color, ColorResult } from 'react-color'
 
@@ -15,7 +15,7 @@ const useStyles = makeStyles()({
     bottom: 0,
     left: 0,
   },
-});
+})
 
 export function ColorPicker(props: {
   color: Color

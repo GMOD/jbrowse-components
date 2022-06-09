@@ -12,7 +12,7 @@ import {
   AccordionSummary,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getMembers } from 'mobx-state-tree'
 import { singular } from 'pluralize'
@@ -39,7 +39,7 @@ const useStyles = makeStyles()(theme => ({
   accordion: {
     border: `1px solid ${theme.palette.text.primary}`,
   },
-}));
+}))
 
 const Member = observer(props => {
   const { classes } = useStyles()

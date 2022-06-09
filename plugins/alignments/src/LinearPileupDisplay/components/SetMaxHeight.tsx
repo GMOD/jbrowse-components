@@ -11,7 +11,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -27,7 +27,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   field: {
     margin: theme.spacing(2),
   },
-}));
+}))
 
 function SetMaxHeightDlg(props: {
   model: {

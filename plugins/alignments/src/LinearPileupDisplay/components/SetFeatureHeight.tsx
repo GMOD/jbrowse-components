@@ -13,7 +13,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -23,7 +23,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 function SetFeatureHeightDlg(props: {
   model: {

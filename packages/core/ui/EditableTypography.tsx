@@ -6,7 +6,7 @@ import {
   Theme,
   useTheme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 type Variant = TypographyProps['variant']
 
@@ -33,7 +33,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderStyle: 'solid',
     borderWidth: 2,
   },
-}));
+}))
 
 interface EditableTypographyPropTypes {
   value: string
@@ -60,7 +60,7 @@ const EditableTypography = React.forwardRef(
     }, [blur, inputNode])
 
     const { classes } = useStyles(props, {
-      props: props
+      props: props,
     })
     const theme = useTheme()
 

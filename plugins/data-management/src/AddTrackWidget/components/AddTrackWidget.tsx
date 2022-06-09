@@ -8,7 +8,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import {
   getSession,
   isElectron,
@@ -44,7 +44,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   alertContainer: {
     padding: `${theme.spacing(2)}px 0px ${theme.spacing(2)}px 0px`,
   },
-}));
+}))
 
 const steps = ['Enter track data', 'Confirm track type']
 

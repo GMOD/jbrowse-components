@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Button, FormGroup, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import SearchBox from './SearchBox'
 
 // icons
@@ -51,7 +51,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   buttonSpacer: {
     marginRight: theme.spacing(2),
   },
-}));
+}))
 
 const HeaderButtons = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()

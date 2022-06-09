@@ -11,7 +11,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '../util/types'
@@ -43,7 +43,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   header: {
     background: theme.palette.secondary.main,
   },
-}));
+}))
 
 const DrawerHeader = observer(
   ({

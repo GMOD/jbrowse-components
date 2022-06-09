@@ -1,7 +1,7 @@
 import React from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
 import { Paper, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getRoot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 
@@ -17,7 +17,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   spacer: {
     height: theme.spacing(8),
   },
-}));
+}))
 
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()

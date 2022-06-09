@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Typography, Button, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -57,7 +57,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       content: '"..."',
     },
   },
-}));
+}))
 
 function Repeater({ children }: { children: React.ReactNode }) {
   return (

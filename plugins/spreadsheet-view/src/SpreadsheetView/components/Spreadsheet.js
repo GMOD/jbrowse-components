@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { grey, indigo } from '@mui/material/colors'
 import { Checkbox, IconButton, Tooltip, FormControlLabel } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -131,7 +131,7 @@ const useStyles = makeStyles()(theme => {
     },
     emptyMessage: { captionSide: 'bottom' },
   }
-});
+})
 
 const CellData = observer(({ cell, spreadsheetModel, columnNumber }) => {
   const { dataType } = spreadsheetModel.columns.get(columnNumber)

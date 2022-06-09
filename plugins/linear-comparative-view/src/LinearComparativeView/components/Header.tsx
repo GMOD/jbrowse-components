@@ -1,6 +1,6 @@
 import React from 'react'
 import { IconButton, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -32,7 +32,7 @@ const useStyles = makeStyles()(() => ({
   searchBox: {
     display: 'flex',
   },
-}));
+}))
 
 const LinkViews = observer(({ model }: { model: LCV }) => {
   return (

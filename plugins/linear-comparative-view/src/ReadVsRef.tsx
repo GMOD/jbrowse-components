@@ -14,7 +14,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -67,7 +67,7 @@ function getLengthSansClipping(cigar: string) {
 function getClip(cigar: string, strand: number) {
   return strand === -1
     ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0;
+    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
 }
 
 interface ReducedFeature {
@@ -98,7 +98,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 function getTag(f: Feature, tag: string) {
   const tags = f.get('tags')

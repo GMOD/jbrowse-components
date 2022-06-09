@@ -1,5 +1,5 @@
 import React, { useState, lazy } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { Button, CircularProgress, Container, Grid, Theme } from '@mui/material'
@@ -23,7 +23,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   container: {
     padding: theme.spacing(4),
   },
-}));
+}))
 
 type LGV = LinearGenomeViewModel
 

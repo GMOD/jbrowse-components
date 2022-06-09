@@ -25,7 +25,7 @@ import {
   SvgIcon,
   TextField,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -40,7 +40,6 @@ import JsonEditor from './JsonEditor'
 // adds ability to have html in helperText. note that FormHelperTextProps is
 // div because the default is p which does not like div children
 const MyTextField = props => {
-  // eslint-disable-next-line react/prop-types
   const { helperText } = props
   return (
     <TextField
@@ -140,7 +139,7 @@ const useMapEditorStyles = makeStyles()(theme => ({
   card: {
     marginTop: theme.spacing(1),
   },
-}));
+}))
 
 const StringArrayMapEditor = observer(({ slot }) => {
   const { classes } = useMapEditorStyles()
@@ -377,7 +376,6 @@ const valueComponents = {
   configRelationships: JsonEditor,
 }
 
-// TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.
 export const useSlotEditorStyles = makeStyles()(theme => ({
   paper: {
     display: 'flex',
@@ -394,7 +392,7 @@ export const useSlotEditorStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
-}));
+}))
 
 const SlotEditor = observer(({ slot, slotSchema }) => {
   const { classes } = useSlotEditorStyles()

@@ -12,7 +12,7 @@ import {
   Select,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 import GetAppIcon from '@mui/icons-material/GetApp'
 
@@ -36,7 +36,7 @@ const useStyles = makeStyles()(() => ({
     justifyContent: 'space-evenly',
     width: 200,
   },
-}));
+}))
 
 function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()

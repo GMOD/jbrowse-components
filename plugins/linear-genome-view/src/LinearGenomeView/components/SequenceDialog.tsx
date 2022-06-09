@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   CircularProgress,
@@ -47,7 +47,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-}));
+}))
 
 type LGV = LinearGenomeViewModel
 

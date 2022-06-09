@@ -11,7 +11,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
@@ -28,7 +28,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '75%',
     margin: '0 auto',
   },
-}));
+}))
 
 function getName(
   trackData?: { uri: string } | { localPath: string } | { name: string },

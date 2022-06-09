@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   Button,
@@ -40,7 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 const AssemblyManager = observer(
   ({

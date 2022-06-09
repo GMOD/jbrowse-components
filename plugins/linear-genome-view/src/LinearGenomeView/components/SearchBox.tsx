@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { useTheme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -15,7 +15,7 @@ const useStyles = makeStyles()(() => ({
   headerRefName: {
     minWidth: 100,
   },
-}));
+}))
 
 function SearchBox({
   model,

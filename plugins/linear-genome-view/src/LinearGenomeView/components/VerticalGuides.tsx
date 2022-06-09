@@ -4,7 +4,7 @@ import {
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { Theme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '..'
@@ -44,51 +44,53 @@ const useStyles = makeStyles()((theme: Theme) => ({
   minorTick: {
     background: theme.palette.divider,
   },
-}));
+}))
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
   const { classes, cx } = useStyles()
-  return <>
-    {model.staticBlocks.map((block, index) => {
-      if (block instanceof ContentBlock) {
-        const ticks = makeTicks(block.start, block.end, model.bpPerPx)
-        return (
-          <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
-            {ticks.map(tick => {
-              const x =
-                (block.reversed
-                  ? block.end - tick.base
-                  : tick.base - block.start) / model.bpPerPx
-              return (
-                <div
-                  key={tick.base}
-                  className={cx(
-                    classes.tick,
-                    tick.type === 'major' || tick.type === 'labeledMajor'
-                      ? classes.majorTick
-                      : classes.minorTick,
-                  )}
-                  style={{ left: x }}
-                />
-              );
-            })}
-          </ContentBlockComponent>
-        );
-      }
-      if (block instanceof ElidedBlock) {
-        return <ElidedBlockComponent key={block.key} width={block.widthPx} />
-      }
-      if (block instanceof InterRegionPaddingBlock) {
-        return (
-          <InterRegionPaddingBlockComponent
-            key={block.key}
-            width={block.widthPx}
-            boundary={block.variant === 'boundary'}
-          />
-        )
-      }
-      return null
-    })}
-  </>;
+  return (
+    <>
+      {model.staticBlocks.map((block, index) => {
+        if (block instanceof ContentBlock) {
+          const ticks = makeTicks(block.start, block.end, model.bpPerPx)
+          return (
+            <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
+              {ticks.map(tick => {
+                const x =
+                  (block.reversed
+                    ? block.end - tick.base
+                    : tick.base - block.start) / model.bpPerPx
+                return (
+                  <div
+                    key={tick.base}
+                    className={cx(
+                      classes.tick,
+                      tick.type === 'major' || tick.type === 'labeledMajor'
+                        ? classes.majorTick
+                        : classes.minorTick,
+                    )}
+                    style={{ left: x }}
+                  />
+                )
+              })}
+            </ContentBlockComponent>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return <ElidedBlockComponent key={block.key} width={block.widthPx} />
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockComponent
+              key={block.key}
+              width={block.widthPx}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        return null
+      })}
+    </>
+  )
 })
 function VerticalGuides({ model }: { model: LGV }) {
   const { classes } = useStyles()

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import {
@@ -36,7 +36,7 @@ const useStyles = makeStyles()({
     zIndex: 2000,
     boxSizing: 'border-box',
   },
-});
+})
 const RenderedBlocks = observer(
   ({ model }: { model: BaseLinearDisplayModel }) => {
     const { classes } = useStyles()

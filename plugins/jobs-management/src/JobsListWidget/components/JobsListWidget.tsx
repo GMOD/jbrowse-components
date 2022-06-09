@@ -7,7 +7,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 // icons
@@ -37,7 +37,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     display: 'flex',
     alignContent: 'center',
   },
-}));
+}))
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
   const { classes } = useStyles()

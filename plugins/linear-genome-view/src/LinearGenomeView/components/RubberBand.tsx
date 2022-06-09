@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { LinearGenomeViewModel } from '..'
@@ -47,7 +47,7 @@ const useStyles = makeStyles()((theme: Theme) => {
       zIndex: 10,
     },
   }
-});
+})
 
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {

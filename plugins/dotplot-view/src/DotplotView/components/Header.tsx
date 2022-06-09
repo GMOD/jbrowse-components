@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
@@ -34,7 +34,7 @@ const useStyles = makeStyles()({
   headerBar: {
     display: 'flex',
   },
-});
+})
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const { classes } = useStyles()

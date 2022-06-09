@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { Link, Typography, Theme } from '@mui/material'
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -13,7 +13,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   subtitle: {
     margin: theme.spacing(1),
   },
-}));
+}))
 
 function Help({ model }: { model?: IAnyStateTreeNode }) {
   const { classes } = useStyles()

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 import normalizeWheel from 'normalize-wheel'
@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
     position: 'relative',
     height: 3,
   },
-});
+})
 
 type LGV = Instance<LinearGenomeViewStateModel>
 type Timer = ReturnType<typeof setTimeout>

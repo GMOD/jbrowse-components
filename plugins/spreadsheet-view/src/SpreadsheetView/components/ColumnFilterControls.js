@@ -4,7 +4,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { Grid, IconButton, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => {
   return {
@@ -23,7 +23,7 @@ const useStyles = makeStyles()(theme => {
       padding: [[0, theme.spacing(1.5)]],
     },
   }
-});
+})
 
 function FilterOperations({ filterModel }) {
   if (filterModel) {

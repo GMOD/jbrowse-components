@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Paper, Typography, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 
@@ -42,7 +42,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
       content: '"..."',
     },
   },
-}));
+}))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model

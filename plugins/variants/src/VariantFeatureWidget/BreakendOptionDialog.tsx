@@ -13,7 +13,7 @@ import {
   IconButton,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 import { getSnapshot } from 'mobx-state-tree'
 import { getSession, Feature } from '@jbrowse/core/util'
@@ -28,7 +28,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   block: {
     display: 'block',
   },
-}));
+}))
 
 function BreakendOptionDialog({
   model,

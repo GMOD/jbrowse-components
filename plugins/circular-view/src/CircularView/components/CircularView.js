@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
 import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { grey } from '@mui/material/colors'
 
 // icons
@@ -57,7 +57,7 @@ const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
-}));
+}))
 
 const Slices = observer(({ model }) => {
   return (

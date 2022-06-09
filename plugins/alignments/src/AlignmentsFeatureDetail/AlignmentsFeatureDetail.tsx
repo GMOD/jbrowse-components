@@ -7,7 +7,7 @@ import {
   FormControlLabel,
   FormGroup,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import copy from 'copy-to-clipboard'
@@ -24,7 +24,7 @@ const useStyles = makeStyles()(() => ({
     paddingTop: 0,
     paddingBottom: 0,
   },
-}));
+}))
 
 const omit = ['clipPos', 'flags']
 

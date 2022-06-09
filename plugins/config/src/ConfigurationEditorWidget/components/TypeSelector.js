@@ -5,7 +5,7 @@ import { useSlotEditorStyles } from './SlotEditor'
 
 const TypeSelector = observer(
   ({ typeNameChoices, slot, slotName, onChange }) => {
-    const classes = useSlotEditorStyles()
+    const { classes } = useSlotEditorStyles()
     return (
       <Paper className={classes.paper}>
         <div className={classes.paperContent}>
@@ -13,7 +13,6 @@ const TypeSelector = observer(
             value={slot.type}
             label="Type"
             select
-            // error={filterError}
             helperText={`Type of ${slotName} to use`}
             fullWidth
             onChange={onChange}

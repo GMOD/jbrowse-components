@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -23,8 +23,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel } from '../..'
 
-// TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.
-export const useStyles = makeStyles()((theme: Theme) => ({
+const useStyles = makeStyles()((theme: Theme) => ({
   dialogContent: {
     width: '80em',
   },
@@ -34,7 +33,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 export default function SearchResultsDialog({
   model,

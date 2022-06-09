@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Button, Typography } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
 const useStyles = makeStyles()({
@@ -9,7 +9,7 @@ const useStyles = makeStyles()({
     width: '30em',
     whiteSpace: 'normal',
   },
-});
+})
 
 function BlockError({ error, reload }) {
   // reload function gets passed here

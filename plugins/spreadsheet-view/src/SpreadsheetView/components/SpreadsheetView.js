@@ -1,6 +1,6 @@
 import React from 'react'
 import { FormGroup, Grid, IconButton, TablePagination } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -62,7 +62,7 @@ const useStyles = makeStyles()(theme => ({
     flexGrow: 1,
   },
   textFilterControlAdornment: { marginRight: '-18px' },
-}));
+}))
 
 const ViewControls = observer(({ model }) => {
   const { classes } = useStyles()

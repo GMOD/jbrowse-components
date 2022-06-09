@@ -1,5 +1,5 @@
 import React, { useRef } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { LinearGenomeViewModel } from '..'
 
@@ -22,7 +22,7 @@ const useStyles = makeStyles()(() => ({
     whiteSpace: 'nowrap',
     fontWeight: 'bold',
   },
-}));
+}))
 
 function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, trackHeights, tracks, width } = model

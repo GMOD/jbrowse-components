@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import LocationSearching from '@mui/icons-material/LocationSearching'
@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
   spacer: {
     flexGrow: 1,
   },
-}));
+}))
 
 const InteractWithSquiggles = observer(
   ({ model }: { model: BreakpointViewModel }) => {

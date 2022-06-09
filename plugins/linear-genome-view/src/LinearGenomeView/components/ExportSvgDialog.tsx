@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   Checkbox,
@@ -25,7 +25,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-}));
+}))
 
 function LoadingMessage() {
   return (

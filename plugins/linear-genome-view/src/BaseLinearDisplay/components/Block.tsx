@@ -1,7 +1,7 @@
 import React from 'react'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -27,7 +27,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     minHeight: '100%',
     backgroundColor: theme.palette.action.disabledBackground,
   },
-}));
+}))
 
 const ContentBlock = observer(
   ({ block, children }: { block: BaseBlock; children: React.ReactNode }) => {

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getSession, stringify } from '@jbrowse/core/util'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
@@ -48,7 +48,7 @@ const useStyles = makeStyles()((theme: Theme) => {
       zIndex: 10,
     },
   }
-});
+})
 
 const HoverTooltip = observer(
   ({

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { Theme } from '@mui/material'
 
 // locals
@@ -43,7 +43,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   content: {
     gridArea: '1/1',
   },
-}));
+}))
 
 const Overlay = observer(
   (props: {

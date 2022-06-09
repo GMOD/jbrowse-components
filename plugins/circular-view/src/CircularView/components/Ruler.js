@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
 import { useTheme } from '@mui/material/styles'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   rulerLabel: {
@@ -17,7 +17,7 @@ const useStyles = makeStyles()({
     lineHeight: 1.6,
     letterSpacing: '0.0075em',
   },
-});
+})
 
 function sliceArcPath(slice, radiusPx, startBase, endBase) {
   // A rx ry x-axis-rotation large-arc-flag sweep-flag x y

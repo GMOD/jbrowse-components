@@ -8,7 +8,7 @@ import {
   Stepper,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   actionsContainer: {
     marginBottom: theme.spacing(2),
   },
-}));
+}))
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 

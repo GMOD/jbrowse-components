@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react'
 import { observer } from 'mobx-react'
 import { Portal, Theme, alpha, useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 import { usePopper } from 'react-popper'
@@ -37,7 +37,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     maxWidth: 300,
     wordWrap: 'break-word',
   },
-}));
+}))
 
 const TooltipContents = React.forwardRef<
   HTMLDivElement,

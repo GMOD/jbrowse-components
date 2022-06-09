@@ -5,7 +5,7 @@ import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
 import a11yDark from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-dark'
 import a11yLight from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-light'
 import { useTheme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // fontSize and fontFamily have to match between Editor and SyntaxHighlighter
 const fontSize = '12px'
@@ -27,7 +27,7 @@ const useStyles = makeStyles()(theme => ({
     fontFamily,
     fontSize,
   },
-}));
+}))
 
 export default function CodeEditor({ contents, setContents }) {
   const { classes } = useStyles()

@@ -6,7 +6,7 @@ import { Menu } from '@jbrowse/core/ui'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { IconButton, Paper, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'
@@ -43,7 +43,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   iconButton: {
     padding: theme.spacing(1),
   },
-}));
+}))
 
 type LGV = Instance<LinearGenomeViewStateModel>
 
@@ -147,7 +147,7 @@ const TrackLabel = React.forwardRef(
           menuItems={items}
         />
       </Paper>
-    );
+    )
   },
 )
 

@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { IconButton } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import {
@@ -31,7 +31,7 @@ const useStyles = makeStyles()({
     boxSizing: 'border-box',
     border: '1px solid #a2a2a2',
   },
-});
+})
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const { classes } = useStyles()

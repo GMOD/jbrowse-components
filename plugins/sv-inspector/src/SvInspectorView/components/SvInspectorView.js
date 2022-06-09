@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton, Grid, FormControlLabel, Checkbox } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { grey } from '@mui/material/colors'
@@ -45,7 +45,7 @@ const useStyles = makeStyles()(theme => {
       background: grey[200],
     },
   }
-});
+})
 
 const ViewControls = observer(({ model }) => {
   const { classes } = useStyles()

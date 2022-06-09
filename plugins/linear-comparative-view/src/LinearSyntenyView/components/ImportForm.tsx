@@ -14,7 +14,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
@@ -29,7 +29,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: 12,
     marginBottom: 10,
   },
-}));
+}))
 
 function getName(
   trackData?: { uri: string } | { localPath: string } | { name: string },

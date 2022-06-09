@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { Button, Grid, MenuItem, Paper, TextField, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import AddIcon from '@mui/icons-material/Add'
 
 const useStyles = makeStyles()((theme: Theme) => ({
@@ -26,7 +26,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     padding: theme.spacing(1),
     overflow: 'auto',
   },
-}));
+}))
 
 const AdapterSelector = observer(
   ({

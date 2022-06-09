@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({
   horizontalHandle: {
@@ -18,7 +18,7 @@ const useStyles = makeStyles()({
     cursor: 'row-resize',
     alignSelf: 'stretch', // similar to above
   },
-});
+})
 
 function ResizeHandle({
   onDrag,
@@ -87,7 +87,7 @@ function ResizeHandle({
       className={cx(className, originalClassName)}
       {...props}
     />
-  );
+  )
 }
 
 export default ResizeHandle

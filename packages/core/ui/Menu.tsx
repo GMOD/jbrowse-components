@@ -14,7 +14,7 @@ import {
   PopoverProps,
   SvgIconProps,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 // icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
@@ -49,7 +49,7 @@ const useStyles = makeStyles()({
     marginRight: -12,
     display: 'inline-flex',
   },
-});
+})
 
 interface MenuItemEndDecorationSubMenuProps {
   type: 'subMenu'

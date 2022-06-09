@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getBlockLabelKeysToHide } from './util'
@@ -28,7 +28,7 @@ const useStyles = makeStyles()(() => ({
   minorTick: {
     stroke: '#999',
   },
-}));
+}))
 
 export const HorizontalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {

@@ -12,7 +12,7 @@ import {
   DialogActions,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 
 import { GridBookmarkModel } from '../model'
@@ -26,7 +26,7 @@ const useStyles = makeStyles()(() => ({
   dialogContainer: {
     margin: 15,
   },
-}));
+}))
 
 function DeleteBookmarkDialog({
   rowNumber,

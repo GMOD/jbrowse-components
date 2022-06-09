@@ -13,7 +13,7 @@ import {
   TextField,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import IconButton from '@mui/material/IconButton'
@@ -45,7 +45,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   expandOpen: {
     transform: 'rotate(180deg)',
   },
-}));
+}))
 
 function CustomPluginForm({
   open,
@@ -204,7 +204,7 @@ function CustomPluginForm({
         </DialogActions>
       </form>
     </Dialog>
-  );
+  )
 }
 
 export default observer(CustomPluginForm)

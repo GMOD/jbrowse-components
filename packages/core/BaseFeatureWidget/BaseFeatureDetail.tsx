@@ -10,7 +10,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
@@ -51,7 +51,6 @@ const coreDetails = [
   'type',
 ]
 
-// TODO jss-to-tss-react codemod: usages of this hook outside of this file will not be converted.
 export const useStyles = makeStyles()((theme: Theme) => ({
   expansionPanelDetails: {
     display: 'block',
@@ -94,7 +93,7 @@ export const useStyles = makeStyles()((theme: Theme) => ({
     boxSizing: 'border-box',
     overflow: 'auto',
   },
-}));
+}))
 
 export function BaseCard({
   children,
@@ -144,7 +143,7 @@ export const FieldName = ({
     <div className={classes.fieldName} style={{ width: width }}>
       {val}
     </div>
-  );
+  )
 }
 
 export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {

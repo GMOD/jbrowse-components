@@ -12,7 +12,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 import CloseIcon from '@mui/icons-material/Close'
 import LockIcon from '@mui/icons-material/Lock'
@@ -37,7 +37,7 @@ const useStyles = makeStyles()(() => ({
   lockedPluginTooltip: {
     marginRight: '0.5rem',
   },
-}));
+}))
 
 function LockedPlugin() {
   const { classes } = useStyles()

@@ -8,7 +8,7 @@ import {
   Theme,
   useTheme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
@@ -63,7 +63,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     borderColor: theme.palette.primary.main,
     backgroundColor: theme.palette.secondary.light,
   },
-}));
+}))
 
 const ViewMenu = observer(
   ({

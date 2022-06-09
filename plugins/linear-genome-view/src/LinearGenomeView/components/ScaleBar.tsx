@@ -1,5 +1,5 @@
 import { Paper, Typography, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import {
   ContentBlock,
   ElidedBlock,
@@ -56,7 +56,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     pointerEvents: 'none',
     background: theme.palette.background.paper,
   },
-}));
+}))
 
 const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
@@ -197,7 +197,7 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
         </div>
         <RenderedRefNameLabels model={model} />
       </Paper>
-    );
+    )
   },
 )
 

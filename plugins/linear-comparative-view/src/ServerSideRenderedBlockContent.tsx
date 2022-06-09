@@ -1,4 +1,4 @@
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 import PropTypes from 'prop-types'
@@ -30,7 +30,7 @@ const useStyles = makeStyles()({
     padding: '10px',
     color: 'red',
   },
-});
+})
 
 function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering

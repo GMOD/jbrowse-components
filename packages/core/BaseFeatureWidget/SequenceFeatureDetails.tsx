@@ -8,7 +8,7 @@ import {
   Tooltip,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 import {
@@ -40,7 +40,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   button: {
     margin: theme.spacing(1),
   },
-}));
+}))
 
 // note that these are currently put into the style section instead of being
 // defined in classes to aid copy and paste to an external document e.g. word

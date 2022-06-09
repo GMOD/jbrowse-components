@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { alpha, Portal, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 // locals
@@ -46,7 +46,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     position: 'absolute',
     pointerEvents: 'none',
   },
-}));
+}))
 
 const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
   ({ feature }: { feature: Feature }, ref) => {

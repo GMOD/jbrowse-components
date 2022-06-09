@@ -8,7 +8,7 @@ import {
   Tooltip,
   IconButton,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer, PropTypes } from 'mobx-react'
@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
     fontFamily,
     fontSize,
   },
-}));
+}))
 
 function CallbackEditor({ slot }) {
   const { classes } = useStyles()

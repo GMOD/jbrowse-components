@@ -5,14 +5,14 @@ import ClearIcon from '@mui/icons-material/Clear'
 import FilterIcon from '@mui/icons-material/FilterList'
 
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { useDebounce } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()((/* theme */) => {
   return {
     textFilterControlEndAdornment: { marginRight: '-18px' },
   }
-});
+})
 
 const TextFilter = observer(({ textFilter }) => {
   const { classes } = useStyles()

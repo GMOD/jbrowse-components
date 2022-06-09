@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 import { Typography, Select, MenuItem, FormControl } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 import { GridBookmarkModel } from '../model'
 
@@ -19,7 +19,7 @@ const useStyles = makeStyles()(() => ({
   flexItem: {
     marginRight: 8,
   },
-}));
+}))
 
 function AssemblySelector({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()

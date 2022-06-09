@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { Popover, Tooltip, Typography, Theme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -52,7 +52,7 @@ const useStyles = makeStyles()((theme: Theme) => {
       fontSize: 10,
     },
   }
-});
+})
 
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LCV; coordX: number }) => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button, Container, Grid, Theme } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
@@ -9,7 +9,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   importFormContainer: {
     marginBottom: theme.spacing(4),
   },
-}));
+}))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ImportForm = observer(({ model }: { model: any }) => {

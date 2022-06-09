@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '../configuration'
 import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { AbstractSessionModel } from '../util'
 const useStyles = makeStyles()(() => ({
   importFormEntry: {
     minWidth: 180,
   },
-}));
+}))
 
 // Hook from https://usehooks.com/useLocalStorage/
 function useLocalStorage<T>(key: string, initialValue: T) {

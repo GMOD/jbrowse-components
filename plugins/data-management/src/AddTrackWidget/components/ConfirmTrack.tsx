@@ -24,7 +24,7 @@ import {
   Typography,
   Theme,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -54,7 +54,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
   card: {
     marginTop: theme.spacing(1),
   },
-}));
+}))
 
 function StatusMessage({
   trackAdapter,

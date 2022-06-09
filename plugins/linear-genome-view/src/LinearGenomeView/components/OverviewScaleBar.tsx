@@ -1,6 +1,6 @@
 import React from 'react'
 import { Typography, Theme, useTheme, alpha } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
 
@@ -71,7 +71,7 @@ const useStyles = makeStyles()((theme: Theme) => ({
     width: '100%',
     position: 'absolute',
   },
-}));
+}))
 
 const Polygon = observer(
   ({
@@ -370,7 +370,7 @@ const OverviewBox = observer(
           ) : null}
         </div>
       </div>
-    );
+    )
   },
 )
 

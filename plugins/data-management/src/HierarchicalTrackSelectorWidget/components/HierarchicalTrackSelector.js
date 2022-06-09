@@ -19,7 +19,7 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
@@ -99,7 +99,7 @@ const useStyles = makeStyles()(theme => ({
     margin: 'auto 0',
     display: 'flex',
   },
-}));
+}))
 
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked

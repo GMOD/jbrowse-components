@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Feature } from '../util/simpleFeature'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
@@ -12,7 +12,7 @@ const useStyles = makeStyles()({
     pointerEvents: 'none',
     zIndex: 10000,
   },
-});
+})
 
 const Tooltip = ({
   offsetX,

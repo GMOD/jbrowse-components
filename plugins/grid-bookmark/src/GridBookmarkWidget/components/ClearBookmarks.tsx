@@ -10,7 +10,7 @@ import {
   DialogActions,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import CloseIcon from '@mui/icons-material/Close'
 
@@ -25,7 +25,7 @@ const useStyles = makeStyles()(() => ({
   dialogContainer: {
     margin: 15,
   },
-}));
+}))
 
 function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
   const { classes } = useStyles()

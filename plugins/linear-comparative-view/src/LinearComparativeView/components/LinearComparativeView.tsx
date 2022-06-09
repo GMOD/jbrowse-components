@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { makeStyles } from 'tss-react/mui';
+import { makeStyles } from 'tss-react/mui'
 import { getEnv } from 'mobx-state-tree'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
@@ -35,7 +35,7 @@ const useStyles = makeStyles()(() => ({
     position: 'relative',
     overflow: 'hidden',
   },
-}));
+}))
 
 type LCV = LinearComparativeViewModel
 

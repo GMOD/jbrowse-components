@@ -21,7 +21,6 @@ beforeEach(() => {
   )
 })
 
-// eslint-disable-next-line react/prop-types
 function FallbackComponent({ error }) {
   return <div>there was an error: {String(error)}</div>
 }
