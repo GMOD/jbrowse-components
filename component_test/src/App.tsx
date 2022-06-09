@@ -77,7 +77,7 @@ function View() {
       assembly,
       tracks,
       location: '10:29,838,655..29,838,737',
-      onChange: patch => {
+      onChange: (patch: unknown) => {
         setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,

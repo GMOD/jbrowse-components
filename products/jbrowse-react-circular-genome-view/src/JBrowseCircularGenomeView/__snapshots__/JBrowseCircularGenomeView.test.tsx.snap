@@ -5,10 +5,10 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
   class="tss-jn2cxo-avoidParentStyle"
 >
   <div
-    class="MuiScopedCssBaseline-root css-1pa2gw3-MuiScopedCssBaseline-root"
+    class="MuiScopedCssBaseline-root mui-1pa2gw3-MuiScopedCssBaseline-root"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 tss-1c5v0p0-viewContainer css-15s4tt4-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 tss-1c5v0p0-viewContainer mui-15s4tt4-MuiPaper-root"
       style="padding: 0px 4px 4px;"
     >
       <div
@@ -50,7 +50,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
         </div>
       </div>
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 mui-1ps6pg7-MuiPaper-root"
       >
         <div
           class="tss-1e5hhmt-root"
@@ -130,7 +130,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             class="tss-1g5scrt-controls"
           >
             <button
-              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               disabled=""
               tabindex="-1"
               title="unlock to zoom out"
@@ -138,7 +138,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-havevq-MuiSvgIcon-root"
                 data-testid="ZoomOutIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -149,14 +149,14 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               </svg>
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="zoom in"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-havevq-MuiSvgIcon-root"
                 data-testid="ZoomInIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -169,18 +169,18 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="rotate counter-clockwise"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-havevq-MuiSvgIcon-root"
                 data-testid="RotateLeftIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -190,18 +190,18 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="rotate clockwise"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-havevq-MuiSvgIcon-root"
                 data-testid="RotateRightIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -211,18 +211,18 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-1x8r4a2-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="locked model to window size"
               type="button"
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-havevq-MuiSvgIcon-root"
                 data-testid="LockIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -232,11 +232,11 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
               data-testid="circular_track_select"
               tabindex="0"
               title="Open track selector"
@@ -244,7 +244,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-havevq-MuiSvgIcon-root"
                 focusable="false"
                 viewBox="0 0 24 24"
               >
@@ -253,7 +253,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <span
-                class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
               />
             </button>
           </div>
