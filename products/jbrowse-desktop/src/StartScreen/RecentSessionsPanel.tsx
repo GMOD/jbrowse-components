@@ -8,11 +8,13 @@ import {
   IconButton,
   Link,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
+  ToggleButtonProps,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
-import { ToggleButtonGroup, ToggleButton, ToggleButtonProps } from '@mui/lab'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { format } from 'timeago.js'
 

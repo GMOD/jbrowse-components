@@ -42,7 +42,6 @@
     "@jbrowse/plugin-alignments": "^1.0.0",
     "@jbrowse/plugin-linear-genome-view": "^1.0.0",
     "@mui/material": "^5.0.0",
-    "@mui/lab": "^5.0.0-alpha.45",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
     "mobx-state-tree": "3.14.1",

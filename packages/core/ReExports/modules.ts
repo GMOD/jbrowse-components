@@ -45,8 +45,8 @@ import MUITooltip from '@mui/material/Tooltip'
 import MUITypography from '@mui/material/Typography'
 
 // material-ui lab
-import ToggleButton from '@mui/lab/ToggleButton'
-import ToggleButtonGroup from '@mui/lab/ToggleButtonGroup'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 

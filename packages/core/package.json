@@ -61,7 +61,6 @@
   },
   "peerDependencies": {
     "@mui/material": "^5.0.0",
-    "@mui/lab": "^5.0.0-alpha.45",
     "@mui/styles": "^5.0.0",
     "@mui/x-data-grid": "^5.0.0",
     "mobx": "^5.0.0",

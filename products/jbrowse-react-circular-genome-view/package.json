@@ -48,7 +48,6 @@
     "@mui/styles": "^5.0.0",
     "@mui/material": "^5.0.0",
     "@mui/icons-material": "^5.0.0",
-    "@mui/lab": "^5.0.0-alpha.45",
     "mobx": "^5.10.1",
     "mobx-react": "^6.0.3",
     "mobx-state-tree": "3.14.1",

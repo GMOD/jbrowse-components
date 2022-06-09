@@ -78,7 +78,6 @@
     "@jbrowse/plugin-wiggle": "^1.7.9",
     "@jbrowse/text-indexing": "^1.7.9",
     "@mui/icons-material": "^5.0.0",
-    "@mui/lab": "^5.0.0-alpha.45",
     "@mui/material": "^5.0.0",
     "@mui/styles": "^5.0.0",
     "@mui/x-data-grid": "^5.0.1",
