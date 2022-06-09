@@ -52,12 +52,12 @@ const useStyles = makeStyles()((theme: Theme) => ({
 }))
 
 type LGV = Instance<LinearGenomeViewStateModel>
-
-const TrackLabel = React.forwardRef(
-  (
-    { track, className }: { track: BaseTrackModel; className?: string },
-    ref,
-  ) => {
+interface Props {
+  track: BaseTrackModel
+  className?: string
+}
+const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
+  ({ track, className }, ref) => {
     const { classes, cx } = useStyles()
     const view = getContainingView(track) as LGV
     const session = getSession(track)
@@ -72,11 +72,8 @@ const TrackLabel = React.forwardRef(
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
       const target = event.target as HTMLElement
       if (target.parentNode) {
-        event.dataTransfer.setDragImage(
-          target.parentNode as HTMLElement,
-          20,
-          20,
-        )
+        const parent = target.parentNode as HTMLElement
+        event.dataTransfer.setDragImage(parent, 20, 20)
         view.setDraggingTrackId(track.id)
       }
     }

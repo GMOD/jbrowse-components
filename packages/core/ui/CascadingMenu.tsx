@@ -7,7 +7,7 @@ import {
   Menu,
   MenuItem,
   PopoverOrigin,
-} from '@material-ui/core'
+} from '@mui/material'
 import { MenuItem as JBMenuItem, MenuItemEndDecoration } from './Menu'
 import {
   bindHover,
@@ -17,7 +17,7 @@ import {
   PopupState,
 } from 'material-ui-popup-state/hooks'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
-import ChevronRight from '@material-ui/icons/ChevronRight'
+import ChevronRight from '@mui/icons-material/ChevronRight'
 
 const CascadingContext = React.createContext({
   parentPopupState: null,
@@ -37,7 +37,7 @@ function CascadingMenuItem({
     throw new Error('must be used inside a CascadingMenu')
   }
   const handleClick = useCallback(
-    event => {
+    (event: any) => {
       // @ts-ignore
       rootPopupState.close(event)
       if (onClick) {

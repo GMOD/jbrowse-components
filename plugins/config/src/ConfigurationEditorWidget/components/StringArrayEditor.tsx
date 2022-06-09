@@ -10,10 +10,10 @@ import {
   List,
   ListItem,
   TextField,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const StringArrayEditor = observer(
   ({

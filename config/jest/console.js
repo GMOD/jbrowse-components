@@ -28,5 +28,9 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   ) {
     return undefined
   }
+
+  if (String(args[0]).includes('popupState')) {
+    return undefined
+  }
   return originalError.call(console, ...args)
 })
