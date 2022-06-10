@@ -11,7 +11,6 @@ import {
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
-import 'core-js/stable'
 import queryString from 'query-string'
 import shortid from 'shortid'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
@@ -237,7 +236,7 @@ const Renderer = observer(
   }: {
     loader: SessionLoaderModel
     initialTimestamp: number
-    initialSessionQuery: string | null | undefined
+    initialSessionQuery?: string
   }) => {
     const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()

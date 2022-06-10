@@ -1,45 +1,112 @@
 // this is all the stuff that the pluginManager re-exports for plugins to use
-import React from 'react'
+import React, { lazy, Suspense } from 'react'
 import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+import PropTypes from 'prop-types'
 
 import * as MUIStyles from '@mui/material/styles'
-
-import * as MUICore from '@mui/material'
 import * as MUIUtils from '@mui/material/utils'
-import MUISvgIcon from '@mui/material/SvgIcon'
-import MUIBox from '@mui/material/Box'
-import MUIButton from '@mui/material/Button'
-import MUIButtonGroup from '@mui/material/ButtonGroup'
-import MUICard from '@mui/material/Card'
-import MUICardContent from '@mui/material/CardContent'
-import MUICheckbox from '@mui/material/Checkbox'
-import MUIContainer from '@mui/material/Container'
-import MUIDialog from '@mui/material/Dialog'
-import MUIFormLabel from '@mui/material/FormLabel'
-import MUIFormControl from '@mui/material/FormControl'
-import MUIFormControlLabel from '@mui/material/FormControlLabel'
-import MUIFormGroup from '@mui/material/FormGroup'
-import MUIGrid from '@mui/material/Grid'
-import MUIIcon from '@mui/material/Icon'
-import MUIIconButton from '@mui/material/IconButton'
-import MUIInputAdornment from '@mui/material/InputAdornment'
-import MUILinearProgress from '@mui/material/LinearProgress'
-import MUIListItemIcon from '@mui/material/ListItemIcon'
-import MUIListItemText from '@mui/material/ListItemText'
-import MUIMenu from '@mui/material/Menu'
-import MUIMenuItem from '@mui/material/MenuItem'
-import MUIRadio from '@mui/material/Radio'
-import MUIRadioGroup from '@mui/material/RadioGroup'
-import MUISelect from '@mui/material/Select'
-import MUISnackbar from '@mui/material/Snackbar'
-import MUISnackbarContent from '@mui/material/SnackbarContent'
-import MUITextField from '@mui/material/TextField'
-import MUITooltip from '@mui/material/Tooltip'
-import MUITypography from '@mui/material/Typography'
+import { useTheme } from '@mui/material'
+
+const SvgIcon = lazy(() => import('@mui/material/SvgIcon'))
+const Box = lazy(() => import('@mui/material/Box'))
+const Button = lazy(() => import('@mui/material/Button'))
+const ButtonGroup = lazy(() => import('@mui/material/ButtonGroup'))
+const Card = lazy(() => import('@mui/material/Card'))
+const CardContent = lazy(() => import('@mui/material/CardContent'))
+const Checkbox = lazy(() => import('@mui/material/Checkbox'))
+const Container = lazy(() => import('@mui/material/Container'))
+const Dialog = lazy(() => import('@mui/material/Dialog'))
+const DialogActions = lazy(() => import('@mui/material/DialogActions'))
+const DialogTitle = lazy(() => import('@mui/material/DialogTitle'))
+const DialogContent = lazy(() => import('@mui/material/DialogContent'))
+const FormLabel = lazy(() => import('@mui/material/FormLabel'))
+const FormControl = lazy(() => import('@mui/material/FormControl'))
+const FormControlLabel = lazy(() => import('@mui/material/FormControlLabel'))
+const FormGroup = lazy(() => import('@mui/material/FormGroup'))
+const Grid = lazy(() => import('@mui/material/Grid'))
+const Icon = lazy(() => import('@mui/material/Icon'))
+const IconButton = lazy(() => import('@mui/material/IconButton'))
+const InputAdornment = lazy(() => import('@mui/material/InputAdornment'))
+const Link = lazy(() => import('@mui/material/Link'))
+const LinearProgress = lazy(() => import('@mui/material/LinearProgress'))
+const ListItemIcon = lazy(() => import('@mui/material/ListItemIcon'))
+const ListItemText = lazy(() => import('@mui/material/ListItemText'))
+const Menu = lazy(() => import('@mui/material/Menu'))
+const MenuItem = lazy(() => import('@mui/material/MenuItem'))
+const Paper = lazy(() => import('@mui/material/Paper'))
+const Radio = lazy(() => import('@mui/material/Radio'))
+const RadioGroup = lazy(() => import('@mui/material/RadioGroup'))
+const Select = lazy(() => import('@mui/material/Select'))
+const Snackbar = lazy(() => import('@mui/material/Snackbar'))
+const SnackbarContent = lazy(() => import('@mui/material/SnackbarContent'))
+const TextField = lazy(() => import('@mui/material/TextField'))
+const Tooltip = lazy(() => import('@mui/material/Tooltip'))
+const Typography = lazy(() => import('@mui/material/Typography'))
+
+const LazyMUICore = Object.fromEntries(
+  Object.entries({
+    Box,
+    Button,
+    ButtonGroup,
+    Card,
+    CardContent,
+    Checkbox,
+    Container,
+    Dialog,
+    DialogActions,
+    DialogTitle,
+    DialogContent,
+    FormLabel,
+    FormControl,
+    FormControlLabel,
+    FormGroup,
+    Grid,
+    Icon,
+    IconButton,
+    InputAdornment,
+    LinearProgress,
+    ListItemIcon,
+    ListItemText,
+    Link,
+    Menu,
+    MenuItem,
+    Paper,
+    Radio,
+    RadioGroup,
+    Select,
+    Snackbar,
+    SnackbarContent,
+    SvgIcon,
+    TextField,
+    Tooltip,
+    Typography,
+  }).map(([key, ReactComponent]) => [
+    key,
+    (props: any) => (
+      <Suspense fallback={<div />}>
+        <ReactComponent {...props} />
+      </Suspense>
+    ),
+  ]),
+)
+
+const MaterialPrefixMUI = Object.fromEntries(
+  Object.entries(LazyMUICore).map(([key, value]) => [
+    '@material-ui/core/' + key,
+    value,
+  ]),
+)
+
+const MuiPrefixMUI = Object.fromEntries(
+  Object.entries(LazyMUICore).map(([key, value]) => [
+    '@mui/material/' + key,
+    value,
+  ]),
+)
 
 // material-ui lab
 import ToggleButton from '@mui/material/ToggleButton'
@@ -76,6 +143,9 @@ import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
 import * as mstTypes from '../util/types/mst'
 
+// create a lazy component for feature details, used by msaview
+const Attributes = lazy(() => import('./Attributes'))
+
 import ReExportsList from './list'
 const libs = {
   mobx,
@@ -86,72 +156,19 @@ const libs = {
   // material-ui 1st-level components
 
   // special case so plugins can easily use @mui/icons-material; don't remove
-  '@mui/material/SvgIcon': MUISvgIcon,
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
+
+  '@material-ui/core': { ...LazyMUICore, useTheme, makeStyles },
+  '@mui/material': LazyMUICore,
+  'prop-types': PropTypes,
+
   // end special case
   // material-ui subcomponents, should get rid of these
   '@mui/material/styles': MUIStyles,
-  '@mui/material/Box': MUIBox,
-  '@mui/material/Button': MUIButton,
-  '@mui/material/ButtonGroup': MUIButtonGroup,
-  '@mui/material/Card': MUICard,
-  '@mui/material/CardContent': MUICardContent,
-  '@mui/material/Container': MUIContainer,
-  '@mui/material/Checkbox': MUICheckbox,
-  '@mui/material/Dialog': MUIDialog,
-  '@mui/material/FormGroup': MUIFormGroup,
-  '@mui/material/FormLabel': MUIFormLabel,
-  '@mui/material/FormControl': MUIFormControl,
-  '@mui/material/FormControlLabel': MUIFormControlLabel,
-  '@mui/material/Grid': MUIGrid,
-  '@mui/material/Icon': MUIIcon,
-  '@mui/material/IconButton': MUIIconButton,
-  '@mui/material/InputAdornment': MUIInputAdornment,
-  '@mui/material/LinearProgress': MUILinearProgress,
-  '@mui/material/ListItemIcon': MUIListItemIcon,
-  '@mui/material/ListItemText': MUIListItemText,
-  '@mui/material/Menu': MUIMenu,
-  '@mui/material/MenuItem': MUIMenuItem,
-  '@mui/material/RadioGroup': MUIRadioGroup,
-  '@mui/material/Radio': MUIRadio,
-  '@mui/material/Select': MUISelect,
-  '@mui/material/Snackbar': MUISnackbar,
-  '@mui/material/SnackbarContent': MUISnackbarContent,
-  '@mui/material/TextField': MUITextField,
-  '@mui/material/Tooltip': MUITooltip,
-  '@mui/material/Typography': MUITypography,
-
   '@material-ui/core/styles': MUIStyles,
-  '@material-ui/core/Box': MUIBox,
-  '@material-ui/core/Button': MUIButton,
-  '@material-ui/core/ButtonGroup': MUIButtonGroup,
-  '@material-ui/core/Card': MUICard,
-  '@material-ui/core/CardContent': MUICardContent,
-  '@material-ui/core/Container': MUIContainer,
-  '@material-ui/core/Checkbox': MUICheckbox,
-  '@material-ui/core/Dialog': MUIDialog,
-  '@material-ui/core/FormGroup': MUIFormGroup,
-  '@material-ui/core/FormLabel': MUIFormLabel,
-  '@material-ui/core/FormControl': MUIFormControl,
-  '@material-ui/core/FormControlLabel': MUIFormControlLabel,
-  '@material-ui/core/Grid': MUIGrid,
-  '@material-ui/core/Icon': MUIIcon,
-  '@material-ui/core/IconButton': MUIIconButton,
-  '@material-ui/core/InputAdornment': MUIInputAdornment,
-  '@material-ui/core/LinearProgress': MUILinearProgress,
-  '@material-ui/core/ListItemIcon': MUIListItemIcon,
-  '@material-ui/core/ListItemText': MUIListItemText,
-  '@material-ui/core/Menu': MUIMenu,
-  '@material-ui/core/MenuItem': MUIMenuItem,
-  '@material-ui/core/RadioGroup': MUIRadioGroup,
-  '@material-ui/core/Radio': MUIRadio,
-  '@material-ui/core/Select': MUISelect,
-  '@material-ui/core/Snackbar': MUISnackbar,
-  '@material-ui/core/SnackbarContent': MUISnackbarContent,
-  '@material-ui/core/TextField': MUITextField,
-  '@material-ui/core/Tooltip': MUITooltip,
-  '@material-ui/core/Typography': MUITypography,
+  ...MaterialPrefixMUI,
+  ...MuiPrefixMUI,
 
   // these are core in @mui/material, but used to be in @material-ui/lab
   '@material-ui/lab/ToggleButton': ToggleButton,
@@ -185,6 +202,8 @@ const libs = {
   '@jbrowse/core/util/io': coreIo,
   '@jbrowse/core/util/mst-reflection': coreMstReflection,
   '@jbrowse/core/util/rxjs': rxjs,
+
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetails': { Attributes },
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 

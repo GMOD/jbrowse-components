@@ -4,7 +4,7 @@ export default [
   'react',
   'react-dom',
   'mobx-react',
-
+  'prop-types',
 
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes',
