@@ -25,7 +25,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           <div>
             <IconButton
               color="secondary"
-              datatest-id="mllv-minicontrols"
+              datatest-id="mllv-minicontrols-menu"
               onClick={event => {
                 setAnchorEl(event.currentTarget)
               }}
@@ -36,7 +36,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
             <LabelField model={model} />
           </div>
         ) : null}
-        <div>
+        <div data-testid="mllv-minicontrols">
           {
             // @ts-ignore
             model.limitBpPerPx.limited &&
@@ -47,7 +47,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
                 arrow
               >
                 <span>
-                  <IconButton disabled>
+                  <IconButton disabled data-testid="zoom_out">
                     <ZoomOut />
                   </IconButton>
                 </span>
@@ -75,7 +75,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
                 arrow
               >
                 <span>
-                  <IconButton disabled>
+                  <IconButton disabled data-testid="zoom_in">
                     <ZoomOut />
                   </IconButton>
                 </span>
