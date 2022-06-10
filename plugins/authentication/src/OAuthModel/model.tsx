@@ -198,10 +198,11 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             return this.deleteMessageChannel()
           }
           const redirectUriWithInfo = event.data.redirectUri
-          if (redirectUriWithInfo.includes('access_token')) {
-            const fixedQueryString = redirectUriWithInfo.replace('#', '?')
-            const queryStringSearch = new URL(fixedQueryString).search
-            const urlParams = new URLSearchParams(queryStringSearch)
+          const fixedQueryString = redirectUriWithInfo.replace('#', '?')
+          const redirectUrl = new URL(fixedQueryString)
+          const queryStringSearch = redirectUrl.search
+          const urlParams = new URLSearchParams(queryStringSearch)
+          if (urlParams.has('access_token')) {
             const token = urlParams.get('access_token')
             if (!token) {
               return reject(new Error('Error with token endpoint'))
@@ -209,10 +210,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             self.storeToken(token)
             return resolve(token)
           }
-          if (redirectUriWithInfo.includes('code')) {
-            const redirectUri = new URL(redirectUriWithInfo)
-            const queryString = redirectUri.search
-            const urlParams = new URLSearchParams(queryString)
+          if (urlParams.has('code')) {
             const code = urlParams.get('code')
             if (!code) {
               return reject(new Error('Error with authorization endpoint'))
@@ -220,7 +218,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             try {
               const token = await self.exchangeAuthorizationForAccessToken(
                 code,
-                redirectUri.origin + redirectUri.pathname,
+                redirectUrl.origin + redirectUrl.pathname,
               )
               self.storeToken(token)
               return resolve(token)
@@ -234,6 +232,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           if (redirectUriWithInfo.includes('access_denied')) {
             return reject(new Error('OAuth flow was cancelled'))
+          }
+          if (redirectUriWithInfo.includes('error')) {
+            return reject(new Error('Oauth flow error: ' + queryStringSearch))
           }
           this.deleteMessageChannel()
         },
