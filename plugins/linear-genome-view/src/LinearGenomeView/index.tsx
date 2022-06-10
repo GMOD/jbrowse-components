@@ -127,6 +127,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         hideHeader: false,
         hideHeaderOverview: false,
+        hideNoTracksActive: false,
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
           'hierarchical',
@@ -455,6 +456,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       toggleHeaderOverview() {
         self.hideHeaderOverview = !self.hideHeaderOverview
+      },
+      toggleNoTracksActive() {
+        self.hideNoTracksActive = !self.hideNoTracksActive
       },
 
       scrollTo(offsetPx: number) {
@@ -1223,6 +1227,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             checked: !self.hideHeaderOverview,
             onClick: self.toggleHeaderOverview,
             disabled: self.hideHeader,
+          },
+          {
+            label: 'Show no tracks active button',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideNoTracksActive,
+            onClick: self.toggleNoTracksActive,
           },
           {
             label: 'Track labels',

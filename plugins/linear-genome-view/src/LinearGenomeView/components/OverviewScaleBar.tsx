@@ -5,7 +5,7 @@ import { Instance } from 'mobx-state-tree'
 import clsx from 'clsx'
 
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
@@ -51,7 +51,6 @@ const useStyles = makeStyles(theme => {
     },
     scaleBarLabel: {
       height: HEADER_OVERVIEW_HEIGHT,
-      width: 1,
       position: 'absolute',
       display: 'flex',
       justifyContent: 'center',
@@ -301,7 +300,7 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const classes = useStyles()
-    const { cytobandOffset, showCytobands } = model
+    const { cytobandOffset, bpPerPx, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
@@ -354,7 +353,7 @@ const OverviewBox = observer(
                     color: refNameColor,
                   }}
                 >
-                  {tickLabel.toLocaleString('en-US')}
+                  {getTickDisplayStr(tickLabel, bpPerPx)}
                 </Typography>
               ))
             : null}
