@@ -132,8 +132,9 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
       get featuresRefNamesP(): Promise<string[]> {
         const { getAdapterClass } =
           pluginManager.getAdapterType('FromConfigAdapter')
-        return getAdapterClass().then(Adapter => 
-          new Adapter(self.featuresAdapterConfigSnapshot).getRefNames()
+        return getAdapterClass().then(Adapter =>
+          // @ts-ignore
+          new Adapter(self.featuresAdapterConfigSnapshot).getRefNames(),
         )
       },
       get featuresCircularTrackConfiguration() {
