@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { autorun } from 'mobx'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
@@ -124,7 +125,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       setWidth(newWidth: number) {
         self.width = newWidth
-        self.views.forEach(v => v.setWidth(newWidth))
       },
       setHeight(newHeight: number) {
         self.height = newHeight
@@ -184,6 +184,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       showTrack(trackId: string, initialSnapshot = {}) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(schema, getRoot(self), trackId)
+        if (!configuration) {
+          throw new Error(`track not found ${trackId}`)
+        }
         const trackType = pluginManager.getTrackType(configuration.type)
         if (!trackType) {
           throw new Error(`unknown track type ${configuration.type}`)
@@ -270,6 +273,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             },
           },
         ]
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.initialized) {
+              self.views.forEach(v => v.setWidth(self.width))
+            }
+          }),
+        )
       },
     }))
 }
