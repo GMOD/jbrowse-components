@@ -94,6 +94,7 @@ const Polygon = observer(
         points={points.toString()}
         fill={alpha(polygonColor, 0.2)}
         stroke={alpha(polygonColor, 0.8)}
+        data-testid="polygon"
       />
     )
   },
@@ -107,6 +108,7 @@ export function PanControls({ model }: { model: LGV }) {
         variant="outlined"
         className={classes.panButton}
         onClick={() => model.slide(-0.9)}
+        data-testid="panleft"
       >
         <ArrowBackIcon />
       </Button>
@@ -114,6 +116,7 @@ export function PanControls({ model }: { model: LGV }) {
         variant="outlined"
         className={classes.panButton}
         onClick={() => model.slide(0.9)}
+        data-testid="panright"
       >
         <ArrowForwardIcon />
       </Button>

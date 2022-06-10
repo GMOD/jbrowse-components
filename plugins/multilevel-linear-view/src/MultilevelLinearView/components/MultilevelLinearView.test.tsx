@@ -61,21 +61,19 @@ describe('<MultilevelLinearView />', () => {
     const model = session.views[0]
     model.setWidth(800)
 
-    const { findByTestId, findByPlaceholderText } = render(
+    const { findByTestId, findByPlaceholderText, findByText } = render(
       <MultilevelLinearView model={model} />,
     )
-    const autocomplete = await findByTestId('autocomplete')
-    const inputBox = await findByPlaceholderText('Search for location')
-    fireEvent.mouseDown(inputBox)
-    autocomplete.focus()
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    const option = (await screen.findAllByText('ctgB'))[0]
-    fireEvent.click(option)
-    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    // @ts-ignore
-    expect((await findByPlaceholderText('Search for location')).value).toEqual(
-      expect.stringContaining('ctgB'),
-    )
+    const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
+    const input = await findByPlaceholderText('Search for location')
+    auto.focus()
+    fireEvent.mouseDown(input)
+    fireEvent.change(input, { target: { value: 'ctgB' } })
+    fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
+    fireEvent.click(await findByText('Open'))
+
+    await waitFor(() => {
+      expect(findByText('ctgB:11..10')).toBeDefined()
+    })
   })
 })
