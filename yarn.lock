@@ -4725,6 +4725,11 @@
   resolved "https://registry.yarnpkg.com/@types/npmlog/-/npmlog-4.1.4.tgz#30eb872153c7ead3e8688c476054ddca004115f6"
   integrity sha512-WKG4gTr8przEZBiJ5r3s8ZIAoMXNbOgQ+j/d5O4X3x6kZJRLNvyUJuUK/KoG3+8BaOHPhp2m7WC6JKKeovDSzQ==
 
+"@types/object.fromentries@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@types/object.fromentries/-/object.fromentries-2.0.1.tgz#7b1bc05244e67d4b4ad46f2b6d5ad5bd035f3bdb"
+  integrity sha512-lP1hS37U5G83Z5xzyEIMIBKjWlAwu2AnZOHCsWDPitY7lmOBDqSiVtdJZVeUJdGEbcJZBG3sif52XHf7WvKrgQ==
+
 "@types/offscreencanvas@^2019.6.4":
   version "2019.7.0"
   resolved "https://registry.yarnpkg.com/@types/offscreencanvas/-/offscreencanvas-2019.7.0.tgz#e4a932069db47bb3eabeb0b305502d01586fa90d"

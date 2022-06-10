@@ -1,4 +1,3 @@
-import Color from 'color'
 import { Theme } from '@mui/material/styles'
 import BoxRendererType, {
   RenderArgs,
@@ -455,7 +454,7 @@ export default class PileupRenderer extends BoxRendererType {
     canvasWidth: number
   }) {
     const { feature, topPx, heightPx } = feat
-    const { modificationTagMap = {} } = renderArgs
+    const { Color, modificationTagMap = {} } = renderArgs
 
     const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
 
@@ -483,6 +482,8 @@ export default class PileupRenderer extends BoxRendererType {
     for (let i = 0; i < modifications.length; i++) {
       const { type, positions } = modifications[i]
       const col = modificationTagMap[type] || 'black'
+
+      // @ts-ignore
       const base = Color(col)
       for (const readPos of getNextRefPos(cigarOps, positions)) {
         const r = start + readPos
@@ -845,7 +846,7 @@ export default class PileupRenderer extends BoxRendererType {
     charHeight: number
     canvasWidth: number
   }) {
-    const { bpPerPx, regions } = renderArgs
+    const { Color, bpPerPx, regions } = renderArgs
     const { heightPx, topPx, feature } = feat
     const [region] = regions
     const start = feature.get('start')
@@ -883,7 +884,8 @@ export default class PileupRenderer extends BoxRendererType {
           !mismatchAlpha
             ? baseColor
             : mismatch.qual !== undefined
-            ? Color(baseColor)
+            ? // @ts-ignore
+              Color(baseColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
                 .hsl()
                 .string()
@@ -896,7 +898,8 @@ export default class PileupRenderer extends BoxRendererType {
           ctx.fillStyle = !mismatchAlpha
             ? contrastColor
             : mismatch.qual !== undefined
-            ? Color(contrastColor)
+            ? // @ts-ignore
+              Color(contrastColor)
                 .alpha(Math.min(1, mismatch.qual / 50))
                 .hsl()
                 .string()
@@ -1283,6 +1286,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
+    const Color = await import('color').then(f => !!f)
     const res = await renderToAbstractCanvas(
       width,
       height,
@@ -1297,6 +1301,7 @@ export default class PileupRenderer extends BoxRendererType {
             layout,
             features,
             regionSequence,
+            Color,
           },
         }),
     )

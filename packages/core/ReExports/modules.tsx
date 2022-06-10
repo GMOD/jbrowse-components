@@ -11,6 +11,41 @@ import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
 import { useTheme } from '@mui/material'
 
+// material-ui lab
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+
+import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
+
+import Base1DView from '../util/Base1DViewModel'
+import * as pluggableElementTypes from '../pluggableElementTypes'
+import ViewType from '../pluggableElementTypes/ViewType'
+import AdapterType from '../pluggableElementTypes/AdapterType'
+import DisplayType from '../pluggableElementTypes/DisplayType'
+import TrackType from '../pluggableElementTypes/TrackType'
+import WidgetType from '../pluggableElementTypes/WidgetType'
+
+import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
+import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
+import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
+import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
+import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
+import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
+
+import * as Configuration from '../configuration'
+import Plugin from '../Plugin'
+import * as coreUi from '../ui'
+import * as coreUtil from '../util'
+import * as coreColor from '../util/color'
+import * as coreLayouts from '../util/layouts'
+import * as trackUtils from '../util/tracks'
+import * as coreIo from '../util/io'
+import * as coreMstReflection from '../util/mst-reflection'
+import * as rxjs from '../util/rxjs'
+import * as mstTypes from '../util/types/mst'
+
+import ReExportsList from './list'
+
 const SvgIcon = lazy(() => import('@mui/material/SvgIcon'))
 const Box = lazy(() => import('@mui/material/Box'))
 const Button = lazy(() => import('@mui/material/Button'))
@@ -86,6 +121,7 @@ const LazyMUICore = Object.fromEntries(
     Typography,
   }).map(([key, ReactComponent]) => [
     key,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (props: any) => (
       <Suspense fallback={<div />}>
         <ReactComponent {...props} />
@@ -108,50 +144,15 @@ const MuiPrefixMUI = Object.fromEntries(
   ]),
 )
 
-// material-ui lab
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-
-import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
-
-import * as BaseFeatureDetail from '../BaseFeatureWidget/BaseFeatureDetail'
-
-import Base1DView from '../util/Base1DViewModel'
-import * as pluggableElementTypes from '../pluggableElementTypes'
-import ViewType from '../pluggableElementTypes/ViewType'
-import AdapterType from '../pluggableElementTypes/AdapterType'
-import DisplayType from '../pluggableElementTypes/DisplayType'
-import TrackType from '../pluggableElementTypes/TrackType'
-import WidgetType from '../pluggableElementTypes/WidgetType'
-
-import * as pluggableElementTypeModels from '../pluggableElementTypes/models'
-import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType'
-import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType'
-import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType'
-import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType'
-import * as RendererType from '../pluggableElementTypes/renderers/RendererType'
-
-import * as Configuration from '../configuration'
-import Plugin from '../Plugin'
-import * as coreUi from '../ui'
-import * as coreUtil from '../util'
-import * as coreColor from '../util/color'
-import * as coreLayouts from '../util/layouts'
-import * as trackUtils from '../util/tracks'
-import * as coreIo from '../util/io'
-import * as coreMstReflection from '../util/mst-reflection'
-import * as rxjs from '../util/rxjs'
-import * as mstTypes from '../util/types/mst'
-
 // create a lazy component for feature details, used by msaview
 const Attributes = lazy(() => import('./Attributes'))
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAttributes = (props: any) => (
   <Suspense fallback={<div />}>
     <Attributes {...props} />
   </Suspense>
 )
-
-import ReExportsList from './list'
 const libs = {
   mobx,
   'mobx-state-tree': mst,

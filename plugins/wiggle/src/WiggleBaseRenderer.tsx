@@ -45,7 +45,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const { height, regions, bpPerPx } = renderProps
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
-    const Color = await import('color')
 
     const res = await renderToAbstractCanvas(
       width,
@@ -55,7 +54,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
         this.draw(ctx, {
           ...renderProps,
           features,
-          Color,
         }),
     )
 
@@ -84,5 +82,5 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
     props: T,
-  ): void
+  ): Promise<void>
 }

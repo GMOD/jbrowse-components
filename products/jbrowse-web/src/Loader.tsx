@@ -236,7 +236,7 @@ const Renderer = observer(
   }: {
     loader: SessionLoaderModel
     initialTimestamp: number
-    initialSessionQuery?: string
+    initialSessionQuery?: string | null
   }) => {
     const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
