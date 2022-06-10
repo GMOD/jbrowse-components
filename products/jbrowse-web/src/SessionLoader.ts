@@ -472,7 +472,7 @@ interface ViewSpec {
 export function loadSessionSpec(
   {
     views,
-    sessionTracks,
+    sessionTracks = [],
   }: {
     views: ViewSpec[]
     sessionTracks: unknown[]

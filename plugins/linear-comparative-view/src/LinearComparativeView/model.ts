@@ -21,7 +21,7 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
