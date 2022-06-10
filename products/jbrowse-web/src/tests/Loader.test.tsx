@@ -234,7 +234,7 @@ describe('<Loader />', () => {
     await findAllByText(/Failed to load/)
   }, 20000)
 
-  it('can use a spec url', async () => {
+  it('can use a spec url for lgv', async () => {
     const { findByText, findByPlaceholderText } = render(
       <QueryParamProvider
         // @ts-ignore
@@ -255,4 +255,28 @@ describe('<Loader />', () => {
     // @ts-ignore
     await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), delay)
   }, 40000)
+
+  it('can use a spec url for synteny view', async () => {
+    const { findByText, findByPlaceholderText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+
+    await findByText(/volvox-sorted.bam/, {}, delay)
+    const elt = await findByPlaceholderText('Search for location', {}, delay)
+
+    // @ts-ignore
+    await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), delay)
+  }, 40000)
 })
+
+//http://localhost:3000/?config=test_data/volvox/config_main_thread.json&session=spec-{%22views%22:[{%22type%22:%22LinearSyntenyView%22,%22tracks%22:[%22volvox_fake_synteny%22],%22views%22:[{%22loc%22:%22ctgA:1-100%22,%22assembly%22:%22volvox%22},{%22loc%22:%22ctgA:300-400%22,%22assembly%22:%22volvox%22}]}]}

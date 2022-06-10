@@ -11,54 +11,62 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-LinearSyntenyView',
     // @ts-ignore
-    async (props: {
+    async ({
+      session,
+      views,
+      tracks = [],
+    }: {
       session: AbstractSessionModel
       views: { loc: string; assembly: string; tracks?: string[] }[]
       tracks?: string[]
     }) => {
-      const { session, views, tracks = [] } = props
-      const { assemblyManager } = session
-      const model = session.addView('LinearSyntenyView', {}) as LSV
+      try {
+        const { assemblyManager } = session
+        const model = session.addView('LinearSyntenyView', {}) as LSV
 
-      await when(() => !!model.width)
+        await when(() => !!model.width)
 
-      model.setViews(
-        await Promise.all(
-          views.map(async view => {
-            const assembly = await assemblyManager.waitForAssembly(
-              view.assembly,
-            )
-            if (!assembly) {
-              throw new Error(`Assembly ${view.assembly} failed to load`)
-            }
-            return {
-              type: 'LinearGenomeView' as const,
-              bpPerPx: 1,
-              offsetPx: 0,
-              hideHeader: true,
-              displayedRegions: assembly.regions,
-            }
-          }),
-        ),
-      )
-
-      await Promise.all(model.views.map(view => when(() => view.initialized)))
-
-      const idsNotFound = [] as string[]
-      for (let i = 0; i < views.length; i++) {
-        const view = model.views[i]
-        const { loc, tracks = [] } = views[i]
-
-        view.navToLocString(loc)
-        tracks.forEach(track => tryTrack(view, track, idsNotFound))
-      }
-
-      tracks.forEach(track => tryTrack(model, track, idsNotFound))
-
-      if (idsNotFound.length) {
-        throw new Error(
-          `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+        model.setViews(
+          await Promise.all(
+            views.map(async view => {
+              const assembly = await assemblyManager.waitForAssembly(
+                view.assembly,
+              )
+              if (!assembly) {
+                throw new Error(`Assembly ${view.assembly} failed to load`)
+              }
+              return {
+                type: 'LinearGenomeView' as const,
+                bpPerPx: 1,
+                offsetPx: 0,
+                hideHeader: true,
+                displayedRegions: assembly.regions,
+              }
+            }),
+          ),
         )
+
+        await Promise.all(model.views.map(view => when(() => view.initialized)))
+
+        const idsNotFound = [] as string[]
+        for (let i = 0; i < views.length; i++) {
+          const view = model.views[i]
+          const { loc, tracks = [] } = views[i]
+
+          view.navToLocString(loc)
+          tracks.forEach(track => tryTrack(view, track, idsNotFound))
+        }
+
+        tracks.forEach(track => tryTrack(model, track, idsNotFound))
+
+        if (idsNotFound.length) {
+          throw new Error(
+            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+          )
+        }
+      } catch (e) {
+        session.notify(`${e}`, 'error')
+        throw e
       }
     },
   )
