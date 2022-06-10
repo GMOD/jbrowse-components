@@ -4,6 +4,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import DotplotViewF from './DotplotView'
 import DotplotDisplayF from './DotplotDisplay'
 import DotplotRendererF from './DotplotRenderer'
+import LaunchDotplotViewF from './LaunchDotplotView'
 
 import AddIcon from '@material-ui/icons/Add'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -24,6 +25,7 @@ export default class DotplotPlugin extends Plugin {
     DotplotViewF(pluginManager)
     DotplotDisplayF(pluginManager)
     DotplotRendererF(pluginManager)
+    LaunchDotplotViewF(pluginManager)
 
     // install our comparative rendering rpc callback
     pluginManager.addRpcMethod(() => new ComparativeRender(pluginManager))

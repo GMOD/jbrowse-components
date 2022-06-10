@@ -10,11 +10,9 @@ import {
   getRoot,
 } from 'mobx-state-tree'
 
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeTicks } from './components/util'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import { observable, autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -29,6 +27,10 @@ import {
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
 type Coord = [number, number]
 
@@ -141,6 +143,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
+        console.log(
+          self.volatileWidth !== undefined,
+          self.hview.displayedRegions.length > 0,
+          self.vview.displayedRegions.length > 0,
+          self.assembliesInitialized,
+        )
         return (
           self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
@@ -411,6 +419,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             function initializer() {
               const session = getSession(self)
+              console.log('here333')
               if (self.volatileWidth === undefined) {
                 return
               }
@@ -418,10 +427,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               if (self.initialized) {
                 return
               }
+              console.log('here111', self.assemblyNames.length)
               const axis = [self.viewWidth, self.viewHeight]
               const views = [self.hview, self.vview]
               self.assemblyNames.forEach((name, index) => {
                 const assembly = session.assemblyManager.get(name)
+                console.log('here111222')
                 if (assembly) {
                   if (assembly.error) {
                     self.setError(assembly.error)
