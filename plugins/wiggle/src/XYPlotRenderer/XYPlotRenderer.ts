@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
-import Color from 'color'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
@@ -22,6 +21,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       config,
       ticks,
       displayCrossHatches,
+      Color,
     } = props
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx

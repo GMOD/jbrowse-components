@@ -1,7 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-
-import AdapterClass from './MCScanSimpleAnchorsAdapter'
 import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
@@ -16,7 +14,8 @@ export default (pluginManager: PluginManager) => {
           displayName: null,
           description: null,
         },
-        AdapterClass,
+        getAdapterClass: () =>
+          import('./MCScanSimpleAnchorsAdapter').then(r => r.default),
       }),
   )
 }

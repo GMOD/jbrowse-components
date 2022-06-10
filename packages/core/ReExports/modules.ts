@@ -4,16 +4,13 @@ import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
 import * as mxreact from 'mobx-react'
-import PropTypes from 'prop-types'
 import { makeStyles } from 'tss-react/mui'
 
 import * as MUIStyles from '@mui/material/styles'
 
-// @material-ui components
 import * as MUICore from '@mui/material'
 import * as MUIUtils from '@mui/material/utils'
 import MUISvgIcon from '@mui/material/SvgIcon'
-import * as MUIDataGrid from '@mui/x-data-grid'
 import MUIBox from '@mui/material/Box'
 import MUIButton from '@mui/material/Button'
 import MUIButtonGroup from '@mui/material/ButtonGroup'
@@ -77,7 +74,6 @@ import * as trackUtils from '../util/tracks'
 import * as coreIo from '../util/io'
 import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
-import * as MUIColors from './material-ui-colors'
 import * as mstTypes from '../util/types/mst'
 
 import ReExportsList from './list'
@@ -87,20 +83,14 @@ const libs = {
   react: React,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
-  'prop-types': PropTypes,
   // material-ui 1st-level components
-  '@mui/material': MUICore,
-  '@material-ui/core': { ...MUICore, makeStyles },
+
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/SvgIcon': MUISvgIcon,
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
   // end special case
-  '@mui/x-data-grid': MUIDataGrid,
-  // legacy
-  '@material-ui/data-grid': MUIDataGrid,
   // material-ui subcomponents, should get rid of these
-  '@mui/material/colors': MUIColors,
   '@mui/material/styles': MUIStyles,
   '@mui/material/Box': MUIBox,
   '@mui/material/Button': MUIButton,
@@ -132,7 +122,6 @@ const libs = {
   '@mui/material/Tooltip': MUITooltip,
   '@mui/material/Typography': MUITypography,
 
-  '@material-ui/core/colors': MUIColors,
   '@material-ui/core/styles': MUIStyles,
   '@material-ui/core/Box': MUIBox,
   '@material-ui/core/Button': MUIButton,
@@ -196,7 +185,6 @@ const libs = {
   '@jbrowse/core/util/io': coreIo,
   '@jbrowse/core/util/mst-reflection': coreMstReflection,
   '@jbrowse/core/util/rxjs': rxjs,
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
