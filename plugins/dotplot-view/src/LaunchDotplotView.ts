@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 import { DotplotViewModel } from './DotplotView/model'
-import { when, transaction } from 'mobx'
+import { transaction } from 'mobx'
 
 export default function LaunchDotplotView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
@@ -28,7 +28,7 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
           model.setAssemblyNames(assemblyNames[0], assemblyNames[1])
         })
 
-        //http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}
+        // http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}
 
         const idsNotFound = [] as string[]
         tracks.forEach(track => tryTrack(model, track, idsNotFound))

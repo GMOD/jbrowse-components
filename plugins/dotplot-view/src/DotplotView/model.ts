@@ -143,12 +143,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get initialized() {
-        console.log(
-          self.volatileWidth !== undefined,
-          self.hview.displayedRegions.length > 0,
-          self.vview.displayedRegions.length > 0,
-          self.assembliesInitialized,
-        )
         return (
           self.volatileWidth !== undefined &&
           self.hview.displayedRegions.length > 0 &&
@@ -419,7 +413,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             function initializer() {
               const session = getSession(self)
-              console.log('here333')
               if (self.volatileWidth === undefined) {
                 return
               }
@@ -427,12 +420,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               if (self.initialized) {
                 return
               }
-              console.log('here111', self.assemblyNames.length)
               const axis = [self.viewWidth, self.viewHeight]
               const views = [self.hview, self.vview]
               self.assemblyNames.forEach((name, index) => {
                 const assembly = session.assemblyManager.get(name)
-                console.log('here111222')
                 if (assembly) {
                   if (assembly.error) {
                     self.setError(assembly.error)
