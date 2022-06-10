@@ -10,7 +10,6 @@ import {
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import fromEntries from 'object.fromentries'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
@@ -33,11 +32,6 @@ export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
-
-if (!Object.fromEntries) {
-  // @ts-ignore
-  fromEntries.shim()
-}
 
 export const inDevelopment =
   typeof process === 'object' &&
@@ -560,8 +554,6 @@ export function bpSpanPx(
   const end = bpToPx(rightBp, region, bpPerPx)
   return region.reversed ? [end, start] : [start, end]
 }
-
-export const objectFromEntries = Object.fromEntries.bind(Object)
 
 // do an array map of an iterable
 export function iterMap<T, U>(

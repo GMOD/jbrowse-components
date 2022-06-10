@@ -145,6 +145,11 @@ import * as mstTypes from '../util/types/mst'
 
 // create a lazy component for feature details, used by msaview
 const Attributes = lazy(() => import('./Attributes'))
+const LazyAttributes = (props: any) => (
+  <Suspense fallback={<div />}>
+    <Attributes {...props} />
+  </Suspense>
+)
 
 import ReExportsList from './list'
 const libs = {
@@ -203,7 +208,9 @@ const libs = {
   '@jbrowse/core/util/mst-reflection': coreMstReflection,
   '@jbrowse/core/util/rxjs': rxjs,
 
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetails': { Attributes },
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': {
+    Attributes: LazyAttributes,
+  },
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
