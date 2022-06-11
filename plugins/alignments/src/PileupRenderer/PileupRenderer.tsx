@@ -1286,7 +1286,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const width = (end - start) / bpPerPx
     const height = Math.max(layout.getTotalHeight(), 1)
-    const Color = await import('color').then(f => !!f)
+    const Color = await import('color').then(f => f.default)
     const res = await renderToAbstractCanvas(
       width,
       height,
