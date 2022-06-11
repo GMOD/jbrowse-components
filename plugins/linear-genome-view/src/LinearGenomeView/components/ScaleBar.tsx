@@ -14,6 +14,7 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -95,28 +96,22 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
 
 const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
+  const { bpPerPx, staticBlocks } = model
 
   return (
     <>
-      {model.staticBlocks.map((block, index) => {
+      {staticBlocks.map((block, index) => {
+        const { reversed, start, end, key, widthPx } = block
         if (block instanceof ContentBlock) {
-          const ticks = makeTicks(
-            block.start,
-            block.end,
-            model.bpPerPx,
-            true,
-            false,
-          )
+          const ticks = makeTicks(start, end, bpPerPx, true, false)
 
           return (
-            <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
+            <ContentBlockComponent key={`${key}-${index}`} block={block}>
               {ticks.map(tick => {
                 if (tick.type === 'major') {
                   const x =
-                    (block.reversed
-                      ? block.end - tick.base
-                      : tick.base - block.start) / model.bpPerPx
-                  const baseNumber = (tick.base + 1).toLocaleString('en-US')
+                    (reversed ? end - tick.base : tick.base - start) / bpPerPx
+                  const baseNumber = tick.base + 1
                   return (
                     <div
                       key={tick.base}
@@ -125,7 +120,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     >
                       {baseNumber ? (
                         <Typography className={classes.majorTickLabel}>
-                          {baseNumber}
+                          {getTickDisplayStr(baseNumber, bpPerPx)}
                         </Typography>
                       ) : null}
                     </div>
@@ -137,13 +132,13 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
           )
         }
         if (block instanceof ElidedBlock) {
-          return <ElidedBlockComponent key={block.key} width={block.widthPx} />
+          return <ElidedBlockComponent key={key} width={widthPx} />
         }
         if (block instanceof InterRegionPaddingBlock) {
           return (
             <InterRegionPaddingBlockComponent
-              key={block.key}
-              width={block.widthPx}
+              key={key}
+              width={widthPx}
               style={{ background: 'none' }}
               boundary={block.variant === 'boundary'}
             />

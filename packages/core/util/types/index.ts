@@ -29,7 +29,7 @@ export interface AbstractViewContainer extends IAnyStateTreeNode {
   removeView(view: AbstractViewModel): void
   addView(
     typeName: string,
-    initialState: Record<string, unknown>,
+    initialState?: Record<string, unknown>,
   ): void | AbstractViewModel
 }
 export function isViewContainer(

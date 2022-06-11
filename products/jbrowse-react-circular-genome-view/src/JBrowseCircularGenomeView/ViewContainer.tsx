@@ -20,7 +20,7 @@ import { getSession } from '@jbrowse/core/util'
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.main + ' !important',
+    background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),
   },
   icon: {
@@ -69,9 +69,7 @@ const ViewMenu = observer(
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
+          onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
         >
           <MenuIcon {...IconProps} />
@@ -83,9 +81,7 @@ const ViewMenu = observer(
             callback()
             setAnchorEl(undefined)
           }}
-          onClose={() => {
-            setAnchorEl(undefined)
-          }}
+          onClose={() => setAnchorEl(undefined)}
           menuItems={model.menuItems()}
         />
       </>

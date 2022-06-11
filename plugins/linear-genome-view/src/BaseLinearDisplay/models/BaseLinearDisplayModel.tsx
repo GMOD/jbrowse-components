@@ -7,6 +7,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import {
   isAbortException,
   getContainingView,
+  getContainingTrack,
   getSession,
   getViewParams,
   isSelectionContainer,
@@ -333,8 +334,13 @@ export const BaseLinearDisplay = types
         const featureWidget = session.addWidget(
           'BaseFeatureWidget',
           'baseFeature',
-          { featureData: feature.toJSON(), view: getContainingView(self) },
+          {
+            view: getContainingView(self),
+            track: getContainingTrack(self),
+            featureData: feature.toJSON(),
+          },
         )
+
         session.showWidget(featureWidget)
       }
       if (isSelectionContainer(session)) {

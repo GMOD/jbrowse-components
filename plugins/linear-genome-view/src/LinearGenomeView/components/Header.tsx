@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { Button, FormGroup, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import SearchBox from './SearchBox'
+import { getTickDisplayStr2 } from '@jbrowse/core/util'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -18,6 +18,7 @@ import {
 } from '..'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
+import SearchBox from './SearchBox'
 
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
@@ -92,10 +93,10 @@ function PanControls({ model }: { model: LGV }) {
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
-  const { coarseTotalBp } = model
+  const { coarseTotalBp, bpPerPx } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {Math.round(coarseTotalBp).toLocaleString('en-US')} bp
+      {getTickDisplayStr2(coarseTotalBp, bpPerPx)}
     </Typography>
   )
 })

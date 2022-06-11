@@ -465,6 +465,8 @@ OPTIONS
   --file=file                  File or files to index (can be used to create trix indexes for embedded component use
                                cases not using a config.json for example)
 
+  --fileId=fileId              Set the trackId used for the indexes generated with the --file argument
+
   --force                      Overwrite previously existing indexes
 
   --out=out                    Synonym for target

@@ -1137,12 +1137,36 @@ export function supportedIndexingAdapters(type: string) {
 
 export function getBpDisplayStr(totalBp: number) {
   let str
-  if (Math.floor(totalBp / 1000000) > 0) {
-    str = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
-  } else if (Math.floor(totalBp / 1000) > 0) {
-    str = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
+  if (Math.floor(totalBp / 1_000_000) > 0) {
+    str = `${parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
+  } else if (Math.floor(totalBp / 1_000) > 0) {
+    str = `${parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
   } else {
-    str = `${Math.floor(totalBp)}bp`
+    str = `${Math.floor(totalBp).toLocaleString('en-US')}bp`
+  }
+  return str
+}
+
+export function toLocale(n: number) {
+  return n.toLocaleString('en-US')
+}
+
+export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
+  let str
+  if (Math.floor(bpPerPx / 1_000) > 0) {
+    str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
+  } else {
+    str = `${toLocale(Math.floor(totalBp))}`
+  }
+  return str
+}
+
+export function getTickDisplayStr2(totalBp: number, bpPerPx: number) {
+  let str
+  if (Math.floor(bpPerPx / 1_000) > 0) {
+    str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}Mbp`
+  } else {
+    str = `${toLocale(Math.floor(totalBp))}bp`
   }
   return str
 }
