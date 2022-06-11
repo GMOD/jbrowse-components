@@ -7,6 +7,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
 import stateModelFactory, {
   CircularViewModel,
+  CircularViewStateModel,
 } from './CircularView/models/CircularView'
 
 type CGV = CircularViewModel
@@ -83,3 +84,5 @@ export {
   baseChordDisplayConfig,
   BaseChordDisplayComponent,
 } from './BaseChordDisplay'
+
+export type { CircularViewModel, CircularViewStateModel }

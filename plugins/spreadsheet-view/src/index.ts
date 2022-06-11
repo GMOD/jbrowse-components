@@ -37,11 +37,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
         uri: string
         fileType?: string
       }) => {
-        // add view, make typescript happy with return type
-        const { rootModel } = pluginManager
-        const view = rootModel?.session?.addView(
-          'SpreadsheetView',
-        ) as SpreadsheetView
+        const view = session.addView('SpreadsheetView') as SpreadsheetView
 
         if (!view) {
           throw new Error('Failed to initialize view')
@@ -76,3 +72,5 @@ export default class SpreadsheetViewPlugin extends Plugin {
     }
   }
 }
+
+export type { SpreadsheetViewModel, SpreadsheetView }

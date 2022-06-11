@@ -204,7 +204,7 @@ export default function CircularView(pluginManager: PluginManager) {
         },
       }))
       .volatile(() => ({
-        error: undefined as Error | undefined,
+        error: undefined as unknown,
       }))
       .actions(self => ({
         // toggle action with a flag stating which mode it's in
@@ -304,7 +304,7 @@ export default function CircularView(pluginManager: PluginManager) {
           }
         },
 
-        setError(error: Error) {
+        setError(error: unknown) {
           console.error(error)
           self.error = error
         },

@@ -30,7 +30,7 @@ export interface AbstractViewContainer extends IAnyStateTreeNode {
   addView(
     typeName: string,
     initialState?: Record<string, unknown>,
-  ): void | AbstractViewModel
+  ): AbstractViewModel
 }
 export function isViewContainer(
   thing: unknown,

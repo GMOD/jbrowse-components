@@ -87,6 +87,8 @@ const Polygon = observer(
     const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
       model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 
@@ -386,6 +388,8 @@ const ScaleBar = observer(
     const { dynamicBlocks, showCytobands, cytobandOffset } = model
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
+
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const scaleBarColor = tertiary ? tertiary.light : primary.light
 

@@ -6,8 +6,9 @@ import {
 } from '@jbrowse/core/util/types'
 import TableChartIcon from '@mui/icons-material/TableChart'
 import SvInspectorViewTypeFactory from './SvInspectorView/SvInspectorViewType'
+import SvInspectorViewModel from './SvInspectorView/models/SvInspectorView'
 
-type SvInspectorView = ReturnType<typeof SvInspectorViewTypeFactory>
+type SvInspectorView = ReturnType<typeof SvInspectorViewModel>['stateModel']
 
 export default class SvInspectorViewPlugin extends Plugin {
   name = 'SvInspectorViewPlugin'
@@ -32,10 +33,9 @@ export default class SvInspectorViewPlugin extends Plugin {
         fileType?: string
       }) => {
         // add view, make typescript happy with return type
-        const { rootModel } = pluginManager
-        const view = rootModel?.session?.addView(
+        const view = session.addView(
           'SvInspectorView',
-        ) as SvInspectorView
+        ) as unknown as SvInspectorView
 
         if (!view) {
           throw new Error('Failed to initialize view')
@@ -46,12 +46,16 @@ export default class SvInspectorViewPlugin extends Plugin {
           ext = exts?.pop()?.toUpperCase()
         }
 
+        // @ts-ignore
         view.spreadsheetView.importWizard.setFileType(fileType || ext || '')
+        // @ts-ignore
         view.spreadsheetView.importWizard.setSelectedAssemblyName(assembly)
+        // @ts-ignore
         view.spreadsheetView.importWizard.setFileSource({
           uri,
           locationType: 'UriLocation',
         })
+        // @ts-ignore
         view.spreadsheetView.importWizard.import(assembly)
       },
     )

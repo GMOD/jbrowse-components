@@ -292,8 +292,24 @@ describe('<Loader />', () => {
     )
 
     await findByText('Help', {}, delay)
-
-    // random row in spreadsheet
     await findByText('ctgA:8470..8471', {}, delay)
+  }, 40000)
+
+  it('can use a spec url for sv inspector view', async () => {
+    console.warn = jest.fn()
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+    await findByText('ctgB:1982..1983', {}, delay)
   }, 40000)
 })
