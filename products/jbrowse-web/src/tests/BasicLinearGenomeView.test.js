@@ -41,7 +41,9 @@ test('access about menu', async () => {
 test('click and drag to move sideways', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
-  const { findByTestId } = render(<JBrowse pluginManager={pm} />)
+  const { findByTestId, findAllByTestId } = render(
+    <JBrowse pluginManager={pm} />,
+  )
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
 
   const start = state.session.views[0].offsetPx
@@ -57,7 +59,11 @@ test('click and drag to move sideways', async () => {
   await waitFor(() => {})
   const end = state.session.views[0].offsetPx
   expect(end - start).toEqual(150)
-}, 10000)
+
+  // wait for this unrelated thing because otherwise it warns about prerendered
+  // canvas still running after jest is torn down
+  await findAllByTestId(/prerendered_canvas/, {}, delay)
+}, 20000)
 
 test('click and drag to rubberBand', async () => {
   const pm = getPluginManager()
@@ -78,16 +84,12 @@ test('click and drag rubberBand, click get sequence to open sequenceDialog', asy
   const pm = getPluginManager()
   const state = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const rubberBandComponent = await findByTestId(
-    'rubberBand_controls',
-    {},
-    delay,
-  )
+  const band = await findByTestId('rubberBand_controls', {}, delay)
 
   expect(state.session.views[0].bpPerPx).toEqual(0.05)
-  fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
-  fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-  fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+  fireEvent.mouseDown(band, { clientX: 100, clientY: 0 })
+  fireEvent.mouseMove(band, { clientX: 250, clientY: 0 })
+  fireEvent.mouseUp(band, { clientX: 250, clientY: 0 })
   const getSeqMenuItem = await findByText('Get sequence')
   fireEvent.click(getSeqMenuItem)
   expect(state.session.views[0].leftOffset).toBeTruthy()

@@ -1,4 +1,4 @@
-import React, { lazy } from 'react'
+import React from 'react'
 import {
   measureText,
   getContainingView,
@@ -11,7 +11,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 import { WiggleDisplayModel } from '../models/model'
-const YScaleBar = lazy(() => import('./YScaleBar'))
+import YScaleBar from './YScaleBar'
 
 type LGV = LinearGenomeViewModel
 
