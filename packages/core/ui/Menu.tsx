@@ -245,19 +245,10 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
     }
   }, [position, anchorEl])
 
-  const hasEndDecoration = menuItems.some(
-    menuItem =>
-      'subMenu' in menuItem ||
-      menuItem.type === 'checkbox' ||
-      menuItem.type === 'radio',
-  )
   const hasIcon = menuItems.some(
     menuItem => 'icon' in menuItem && menuItem.icon,
   )
   const menuItemStyle: MenuItemStyleProp = {}
-  if (hasEndDecoration) {
-    menuItemStyle.paddingRight = 48
-  }
 
   function handleClick(callback: Function) {
     return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
