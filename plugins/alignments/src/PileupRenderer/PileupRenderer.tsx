@@ -246,7 +246,7 @@ export default class PileupRenderer extends BoxRendererType {
     )
 
     return {
-      ...region,
+      ...(region as Omit<typeof region, symbol>),
       start: Math.floor(Math.max(start - bpExpansion, 0)),
       end: Math.ceil(end + bpExpansion),
     }

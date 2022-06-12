@@ -59,10 +59,11 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
     .views(self => ({
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
+        const config = configBlob as Omit<typeof configBlob, symbol>
 
         return self.rendererType.configSchema.create(
           {
-            ...configBlob,
+            ...config,
             showLabels: self.showLabels,
             showDescriptions: self.showDescriptions,
             displayMode: self.displayMode,
@@ -95,9 +96,13 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       return {
         renderProps() {
           const config = self.rendererConfig
+          const superProps = superRenderProps()
+
+          const superPropsOmit = superProps as Omit<typeof superProps, symbol>
 
           return {
-            ...superRenderProps(),
+            ...superPropsOmit,
+
             config,
           }
         },

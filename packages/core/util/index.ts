@@ -1198,3 +1198,8 @@ export function getLayoutId({
 }) {
   return sessionId + '-' + layoutId
 }
+
+export function getSnapshotOmitInternals<T>(obj: T) {
+  const snap = getSnapshot(obj)
+  return snap as Omit<typeof snap, symbol>
+}

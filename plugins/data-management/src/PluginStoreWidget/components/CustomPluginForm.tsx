@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getSession } from '@jbrowse/core/util'
+import { getRoot } from 'mobx-state-tree'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   Button,
@@ -80,7 +80,7 @@ function CustomPluginForm({
     setAdvancedOptionsOpen(!advancedOptionsOpen)
   }
 
-  const { jbrowse } = getSession(model)
+  const { jbrowse } = getRoot<any>(model)
 
   const ready = Boolean(
     (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,
