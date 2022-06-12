@@ -321,16 +321,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         }
         const { refName, assemblyName, offset } = centerLineInfo
         const centerBp = Math.round(offset) + 1
-        const centerRefName = refName
 
-        if (centerBp < 0) {
+        if (centerBp < 0 || !refName) {
           return
         }
 
         self.sortedBy = {
           type,
           pos: centerBp,
-          refName: centerRefName,
+          refName,
           assemblyName,
           tag,
         }

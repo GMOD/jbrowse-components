@@ -679,7 +679,9 @@ export const BaseLinearDisplay = types
     },
   }))
   .postProcessSnapshot(self => {
-    const { blockState, ...rest } = self
+    // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+    const r = self as Omit<typeof self, symbol>
+    const { blockState, ...rest } = r
     return rest
   })
 

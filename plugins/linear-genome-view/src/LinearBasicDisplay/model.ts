@@ -51,19 +51,22 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
 
       get displayMode() {
-        const displayMode = getConf(self, ['renderer', 'displayMode'])
-        return self.trackDisplayMode ?? displayMode
+        return (
+          self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
+        )
       },
+    }))
+    .views(self => ({
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
 
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            showLabels: this.showLabels,
-            showDescriptions: this.showDescriptions,
-            displayMode: this.displayMode,
-            maxHeight: this.maxHeight,
+            showLabels: self.showLabels,
+            showDescriptions: self.showDescriptions,
+            displayMode: self.displayMode,
+            maxHeight: self.maxHeight,
           },
           getEnv(self),
         )
@@ -138,9 +141,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },

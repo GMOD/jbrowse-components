@@ -298,11 +298,11 @@ const Base1DView = types
       self.offsetPx = newOffsetPx
       return newOffsetPx
     },
-    centerAt(bp: number, refName: string, regionIndex: number) {
+    centerAt(coord: number, refName: string, regionNumber: number) {
       const centerPx = self.bpToPx({
         refName,
-        coord: bp,
-        regionNumber: regionIndex,
+        coord,
+        regionNumber,
       })
       if (centerPx) {
         this.scrollTo(Math.round(centerPx - self.width / 2))

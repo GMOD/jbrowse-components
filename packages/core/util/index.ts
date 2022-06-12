@@ -798,7 +798,7 @@ export function stringify({
   oob,
 }: {
   coord: number
-  refName: string
+  refName?: string
   oob?: boolean
 }) {
   return `${refName}:${coord.toLocaleString('en-US')}${
