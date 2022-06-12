@@ -18,6 +18,12 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   if (String(args).includes('popupState')) {
     return undefined
   }
+  if (String(args).includes('createRoot')) {
+    return undefined
+  }
+  if (String(args).includes('hydrateRoot')) {
+    return undefined
+  }
 
   return originalError.call(console, ...args)
 })

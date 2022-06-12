@@ -69,8 +69,8 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                     data-shrink="true"
-                    for="mui-1"
-                    id="mui-1-label"
+                    for=":r0:"
+                    id=":r0:-label"
                   >
                     connectionType
                   </label>
@@ -79,12 +79,12 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                     variant="outlined"
                   >
                     <div
-                      aria-describedby="mui-1-helper-text"
+                      aria-describedby=":r0:-helper-text"
                       aria-expanded="false"
                       aria-haspopup="listbox"
-                      aria-labelledby="mui-1-label mui-1"
+                      aria-labelledby=":r0:-label :r0:"
                       class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="mui-1"
+                      id=":r0:"
                       role="button"
                       tabindex="0"
                     >
@@ -122,7 +122,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   </div>
                   <p
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
-                    id="mui-1-helper-text"
+                    id=":r0:-helper-text"
                   >
                     A track or assembly hub in the Track Hub format
                     <a
