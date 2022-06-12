@@ -156,7 +156,8 @@ const model = types
     },
 
     closeView() {
-      getParent(self, 2).removeView(self)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getParent<any>(self, 2).removeView(self)
     },
   }))
 

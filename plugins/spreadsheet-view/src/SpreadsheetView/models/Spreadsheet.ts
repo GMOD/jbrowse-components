@@ -44,7 +44,7 @@ const ColumnDefinition = types
     },
   }))
 
-type RowMenuPosition = { anchorEl: Element; rowNumber: number } | null
+type RowMenuPosition = { anchorEl: Element; rowNumber: string } | null
 
 const Spreadsheet = types
   .model('Spreadsheet', {
@@ -81,7 +81,7 @@ const Spreadsheet = types
     },
     get hideRowSelection() {
       // just delegates to parent
-      return getParent(self).hideRowSelection
+      return getParent<any>(self).hideRowSelection
     },
 
     // list of data type names to be made available in the column
