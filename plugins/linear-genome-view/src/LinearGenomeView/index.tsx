@@ -15,7 +15,6 @@ import {
   parseLocString,
   springAnimate,
   viewBpToPx,
-  getSnapshotOmitInternals,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -312,9 +311,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (bp < 0) {
           const region = self.displayedRegions[0]
           const offset = bp
+          const snap = getSnapshot(region)
           return {
             // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-            ...getSnapshotOmitInternals(region),
+            ...(snap as Omit<typeof snap, symbol>),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -332,9 +332,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const len = region.end - region.start
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
+            const snap = getSnapshot(region)
             return {
               // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-              ...getSnapshotOmitInternals(region),
+              ...(snap as Omit<typeof snap, symbol>),
               oob: false,
               offset,
               coord: region.reversed
@@ -361,9 +362,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[n - 1]
           const len = region.end - region.start
           const offset = bp - bpSoFar + len
+          const snap = getSnapshot(region)
           return {
             // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-            ...getSnapshotOmitInternals(region),
+            ...(snap as Omit<typeof snap, symbol>),
             oob: true,
             offset,
             coord: region.reversed

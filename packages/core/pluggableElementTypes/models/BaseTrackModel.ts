@@ -112,7 +112,7 @@ export function createBaseTrackModel(
         const display = displayType.stateModel.create({
           ...initialSnapshot,
           type: conf.type,
-          conf,
+          configuration: conf,
         })
         self.displays.push(display)
       },
@@ -138,7 +138,7 @@ export function createBaseTrackModel(
         self.displays.splice(idx, 1, {
           ...initialSnapshot,
           type: conf.type,
-          conf,
+          configuration: conf,
         })
       },
     }))
