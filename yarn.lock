@@ -14149,27 +14149,27 @@ mkdirp@^1.0.3, mkdirp@^1.0.4:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-mobx-react-lite@^2.2.0:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/mobx-react-lite/-/mobx-react-lite-2.2.2.tgz#87c217dc72b4e47b22493daf155daf3759f868a6"
-  integrity sha512-2SlXALHIkyUPDsV4VTKVR9DW7K3Ksh1aaIv3NrNJygTbhXe2A9GrcKHZ2ovIiOp/BXilOcTYemfHHZubP431dg==
+mobx-react-lite@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/mobx-react-lite/-/mobx-react-lite-3.4.0.tgz#d59156a96889cdadad751e5e4dab95f28926dfff"
+  integrity sha512-bRuZp3C0itgLKHu/VNxi66DN/XVkQG7xtoBVWxpvC5FhAqbOCP21+nPhULjnzEqd7xBMybp6KwytdUpZKEgpIQ==
 
-mobx-react@^6.0.0, mobx-react@^6.0.3:
-  version "6.3.1"
-  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-6.3.1.tgz#204f9756e42e19d91cb6598837063b7e7de87c52"
-  integrity sha512-IOxdJGnRSNSJrL2uGpWO5w9JH5q5HoxEqwOF4gye1gmZYdjoYkkMzSGMDnRCUpN/BNzZcFoMdHXrjvkwO7KgaQ==
+mobx-react@^7.0.0, mobx-react@^7.5.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/mobx-react/-/mobx-react-7.5.0.tgz#8da71f8d3c96409cf178112503ec50467e5cea70"
+  integrity sha512-riHu0XZJA6f64L1iXZoAaDjVt6suYoy8I2HIfuz2tX3O4FFaAe4lVA2CoObttmUQTTFPM7j3Df6T4re0cHkghQ==
   dependencies:
-    mobx-react-lite "^2.2.0"
+    mobx-react-lite "^3.4.0"
 
-mobx-state-tree@3.14.1:
-  version "3.14.1"
-  resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-3.14.1.tgz#0a523876b87817f5c8553a162e71b38044f0c9da"
-  integrity sha512-cmwO1jvYPgaJTGJtqId0Qod4cDqcJEWWCwSu/Uns7jFT+kWKzLFhzb9jxPub8YM3HSXg7HPGpKiLe970he9FOw==
+mobx-state-tree@^5.0.0:
+  version "5.1.5"
+  resolved "https://registry.yarnpkg.com/mobx-state-tree/-/mobx-state-tree-5.1.5.tgz#7344d61072705747abb98d23ad21302e38200105"
+  integrity sha512-jugIic0PYWW+nzzYfp4RUy9dec002Z778OC6KzoOyBHnqxupK9iPCsUJYkHjmNRHjZ8E4Z7qQpsKV3At/ntGVw==
 
-mobx@^5.0.0, mobx@^5.10.1:
-  version "5.15.7"
-  resolved "https://registry.yarnpkg.com/mobx/-/mobx-5.15.7.tgz#b9a5f2b6251f5d96980d13c78e9b5d8d4ce22665"
-  integrity sha512-wyM3FghTkhmC+hQjyPGGFdpehrcX1KOXsDuERhfK2YbJemkUhEB+6wzEN639T21onxlfYBmriA1PFnvxTUhcKw==
+mobx@^6.0.0, mobx@^6.6.0:
+  version "6.6.0"
+  resolved "https://registry.yarnpkg.com/mobx/-/mobx-6.6.0.tgz#617ca1f3b745a781fa89c5eb94a773e3cbeff8ae"
+  integrity sha512-MNTKevLH/6DShLZcmSL351+JgiJPO56A4GUpoiDQ3/yZ0mAtclNLdHK9q4BcQhibx8/JSDupfTpbX2NZPemlRg==
 
 mock-stdin@^1.0.0:
   version "1.0.0"

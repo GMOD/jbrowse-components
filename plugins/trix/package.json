@@ -37,7 +37,7 @@
     "@mui/material": "^4.9.13",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0"
   },
