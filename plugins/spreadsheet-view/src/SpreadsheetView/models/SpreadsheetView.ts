@@ -38,7 +38,6 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
     onClick(_view: unknown, spreadsheet: Spreadsheet) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
       if (rowNumber !== undefined) {
-        console.log(rowNumber)
         spreadsheet.rowSet.rows[+rowNumber - 1].toggleSelect()
       }
     },

@@ -31,7 +31,6 @@ import {
   resolveIdentifier,
   types,
   Instance,
-  IAnyModelType,
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'

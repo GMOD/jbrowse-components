@@ -60,6 +60,7 @@ export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).viewWidth
     },
   },
@@ -68,6 +69,7 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).viewHeight
     },
   },
@@ -216,6 +218,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
@@ -352,9 +355,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             })
             .filter(f => !!f)
             .map(displayConf => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const trackConf = getParent<any>(displayConf, 2)
               return {
-                type: getParent<any>(displayConf, 2).type,
+                type: trackConf.type,
                 configuration: trackConf,
                 displays: [
                   { type: displayConf.type, configuration: displayConf },

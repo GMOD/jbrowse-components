@@ -5,12 +5,7 @@ import { grey, indigo } from '@mui/material/colors'
 import { Checkbox, IconButton, Tooltip, FormControlLabel } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import SpreadsheetStateModel from '../models/Spreadsheet'
-import SpreadsheetViewStateModel from '../models/SpreadsheetView'
 import RowStateModel from '../models/Row'
-
-type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
-type SpreadsheetViewModel = Instance<typeof SpreadsheetViewStateModel>
-type RowModel = Instance<typeof RowStateModel>
 
 // icons
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -21,6 +16,9 @@ import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 // locals
 import ColumnMenu from './ColumnMenu'
 import RowMenu from './RowMenu'
+
+type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
+type RowModel = Instance<typeof RowStateModel>
 
 function letterFor(n: number) {
   return String.fromCharCode(n + 65)
@@ -147,6 +145,7 @@ const CellData = observer(
     spreadsheetModel,
     columnNumber,
   }: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cell: any
     spreadsheetModel: SpreadsheetModel
     columnNumber: number
@@ -173,7 +172,7 @@ const DataRow = observer(
     rowNumber,
     spreadsheetModel,
   }: {
-    rowModel: any
+    rowModel: RowModel
     rowNumber: string
     spreadsheetModel: SpreadsheetModel
   }) => {

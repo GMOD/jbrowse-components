@@ -208,6 +208,7 @@ export const BaseChordDisplayModel = types
           self,
           () => ({
             assemblyNames: getTrackAssemblyNames(self.parentTrack) as string[],
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             adapter: getConf(getParent<any>(self, 2), 'adapter'),
             assemblyManager: getSession(self).assemblyManager,
           }),

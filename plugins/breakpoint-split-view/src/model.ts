@@ -217,6 +217,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 

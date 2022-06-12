@@ -84,12 +84,14 @@ export default function JBrowseDesktop(
     })
     .views(self => ({
       get savedSessionNames() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).savedSessionNames
       },
       get assemblyNames() {
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },
       get rpcManager() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
@@ -171,6 +173,7 @@ export default function JBrowseDesktop(
       },
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
@@ -184,6 +187,7 @@ export default function JBrowseDesktop(
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).setPluginsUpdated(true)
       },
       addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {

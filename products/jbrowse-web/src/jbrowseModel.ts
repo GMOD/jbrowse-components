@@ -97,6 +97,7 @@ export default function JBrowseWeb(
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },
       get rpcManager() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
@@ -196,6 +197,7 @@ export default function JBrowseWeb(
       },
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         let newDefault
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (getParent<any>(self).session.name === sessionConf.name) {
           newDefault = getSnapshot(sessionConf)
         } else {
@@ -211,6 +213,7 @@ export default function JBrowseWeb(
       },
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getRoot<any>(self).setPluginsUpdated(true)
       },
 
@@ -224,6 +227,7 @@ export default function JBrowseWeb(
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).setPluginsUpdated(true)
       },
 
@@ -245,6 +249,7 @@ export default function JBrowseWeb(
     }))
 
   return types.snapshotProcessor(JBrowseModel, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postProcessor(snapshot: { [key: string]: any }) {
       return removeAttr(clone(snapshot), 'baseUri')
     },

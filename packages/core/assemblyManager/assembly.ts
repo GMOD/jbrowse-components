@@ -189,6 +189,7 @@ export default function assemblyFactory(
           : Object.keys(self.refNameAliases)
       },
       get rpcManager() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self, 2).rpcManager
       },
       get refNameColors() {

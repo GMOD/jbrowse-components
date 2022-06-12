@@ -16,7 +16,10 @@ if (window?.name.startsWith('JBrowseAuthWindow')) {
   window.close()
 }
 const rootElement = document.getElementById('root')
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(rootElement!)
+
 root.render(
   <Suspense fallback={<Loading />}>
     <Main initialTimestamp={initialTimeStamp} />

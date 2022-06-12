@@ -48,6 +48,7 @@ const ImportWizard = types
       )
     },
     get canCancel() {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).readyToDisplay
     },
 
@@ -122,6 +123,7 @@ const ImportWizard = types
 
     cancelButton() {
       self.error = undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       getParent<any>(self).setDisplayMode()
     },
 
@@ -166,6 +168,7 @@ const ImportWizard = types
         .then(buffer => typeParser(buffer, self))
         .then(spreadsheet => {
           this.setLoaded()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           getParent<any>(self).displaySpreadsheet(spreadsheet)
         })
     },

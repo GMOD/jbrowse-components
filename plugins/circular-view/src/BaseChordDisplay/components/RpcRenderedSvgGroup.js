@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import { unmountComponentAtNode, hydrate } from 'react-dom'
+import { hydrate } from 'react-dom'
 import { rIC } from '@jbrowse/core/util'
 
 function RpcRenderedSvgGroup({ model }) {

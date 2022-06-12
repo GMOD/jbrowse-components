@@ -81,6 +81,7 @@ const Spreadsheet = types
     },
     get hideRowSelection() {
       // just delegates to parent
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return getParent<any>(self).hideRowSelection
     },
 
