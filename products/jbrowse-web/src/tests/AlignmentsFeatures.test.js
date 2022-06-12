@@ -29,7 +29,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 20000 }
-// Note: tracks with assembly volvox don't have much soft clipping
+
 test('opens the track menu and enables soft clipping', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()

@@ -23,5 +23,11 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
     return undefined
   }
 
+  if (
+    String(args).includes('A suspended resource finished loading inside a test')
+  ) {
+    return undefined
+  }
+
   return originalError.call(console, ...args)
 })
