@@ -30,7 +30,13 @@ test('change color on track', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_filtered_vcf',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
   fireEvent.click(await findByText('Settings'))
   await findByTestId('configEditor', {}, waitForOptions)

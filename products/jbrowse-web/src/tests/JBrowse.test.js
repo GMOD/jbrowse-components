@@ -52,7 +52,9 @@ test('lollipop track test', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(1, 150)
-  fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-lollipop_track', {}, { timeout: 10000 }),
+  )
 
   await findByTestId('display-lollipop_track_linear', {}, waitForOptions)
   await findByTestId('three', {}, waitForOptions)
@@ -86,7 +88,11 @@ test('assembly aliases', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias',{},{timeout:10000}),
+    await findByTestId(
+      'htsTrackEntry-volvox_filtered_vcf_assembly_alias',
+      {},
+      { timeout: 10000 },
+    ),
   )
   await findByTestId('box-test-vcf-604452', {}, waitForOptions)
 }, 15000)
@@ -97,7 +103,13 @@ test('nclist track test with long name', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(1, -539)
-  fireEvent.click(await findByTestId('htsTrackEntry-nclist_long_names',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-nclist_long_names',
+      {},
+      { timeout: 10000 },
+    ),
+  )
 
   await findByText(
     'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',

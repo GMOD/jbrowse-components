@@ -9,7 +9,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import {
   JBrowse,
   setup,
-  expectCanvasMatch,
+  awaitCanvasMatch,
   generateReadBuffer,
   getPluginManager,
 } from './util'
@@ -27,6 +27,8 @@ beforeEach(() => {
     ),
   )
 })
+
+const prefix = 'prerendered_canvas_'
 
 const delay = { timeout: 20000 }
 
@@ -58,9 +60,9 @@ test('opens the track menu and enables soft clipping', async () => {
     await findByTestId('Blockset-pileup'),
   )
 
-  expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_softclipped_{volvox}ctgA:2,849..2,864-0',
+  awaitCanvasMatch(() =>
+    findByTestId1(
+      prefix + 'softclipped_{volvox}ctgA:2,849..2,864-0',
       {},
       delay,
     ),
@@ -78,7 +80,9 @@ test('selects a sort, sort by strand', async () => {
   state.session.views[0].setNewView(0.02, 2086500)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-cram', {}, delay),
+  )
   await findByTestId(
     'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
     {},
@@ -100,12 +104,8 @@ test('selects a sort, sort by strand', async () => {
     await findByTestId('Blockset-pileup'),
   )
 
-  expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
-      {},
-      delay,
-    ),
+  awaitCanvasMatch(() =>
+    findByTestId1(prefix + '{volvox}ctgA:41,729..41,744-0', {}, delay),
   )
 }, 35000)
 
@@ -120,7 +120,9 @@ test('selects a color, color by strand', async () => {
   state.session.views[0].setNewView(0.02, 2086500)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-cram', {}, delay),
+  )
   await findByTestId(
     'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
     {},
@@ -140,12 +142,8 @@ test('selects a color, color by strand', async () => {
   const { findByTestId: findByTestId1 } = within(
     await findByTestId('Blockset-pileup'),
   )
-  expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
-      {},
-      delay,
-    ),
+  awaitCanvasMatch(() =>
+    findByTestId1(prefix + '{volvox}ctgA:41,729..41,744-0', {}, delay),
   )
 }, 30000)
 
@@ -160,7 +158,7 @@ test('colors by tag, color by tag', async () => {
   state.session.views[0].setNewView(0.465, 85055)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram',{},{timeout:10000}))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram', {}, delay))
   await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
   expect(state.session.views[0].tracks[0]).toBeTruthy()
 
@@ -183,11 +181,7 @@ test('colors by tag, color by tag', async () => {
     await findByTestId('Blockset-pileup'),
   )
 
-  expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:39,805..40,176-0',
-      {},
-      delay,
-    ),
+  awaitCanvasMatch(() =>
+    findByTestId1(prefix + '{volvox}ctgA:39,805..40,176-0', {}, delay),
   )
 }, 30000)

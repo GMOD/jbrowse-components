@@ -38,7 +38,11 @@ test('opens an alignments track', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(5, 100)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage',{},{timeout:10000}),
+    await findByTestId(
+      'htsTrackEntry-volvox_alignments_pileup_coverage',
+      {},
+      { timeout: 10000 },
+    ),
   )
 
   const { findByTestId: findByTestId1 } = within(
@@ -79,7 +83,11 @@ test('test that bam with small max height displays message', async () => {
   const pm = getPluginManager()
   const { findByTestId, findAllByText } = render(<JBrowse pluginManager={pm} />)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_bam_small_max_height',{},{timeout:10000}),
+    await findByTestId(
+      'htsTrackEntry-volvox_bam_small_max_height',
+      {},
+      { timeout: 10000 },
+    ),
   )
 
   await findAllByText('Max height reached', {}, delay)

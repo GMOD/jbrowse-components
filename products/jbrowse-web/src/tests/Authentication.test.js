@@ -65,7 +65,13 @@ test('open a bigwig track that needs oauth authentication and has existing token
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
   await findByText('Help')
   state.session.views[0].setNewView(5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_dropbox',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray_dropbox',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   expectCanvasMatch(
     await findByTestId('prerendered_canvas_{volvox}ctgA:1..4,000-0', {}, delay),
   )
@@ -105,7 +111,11 @@ test('opens a bigwig track that needs external token authentication', async () =
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
   state.session.views[0].setNewView(5, 0)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray_externaltoken',{},{timeout:10000}),
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray_externaltoken',
+      {},
+      { timeout: 10000 },
+    ),
   )
   const { findByText: findByTextWithin } = within(
     await findByTestId('externalToken-form', {}, delay),
@@ -148,7 +158,11 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   state.session.views[0].setNewView(5, 0)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray_httpbasic',{},{timeout:10000}),
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray_httpbasic',
+      {},
+      { timeout: 10000 },
+    ),
   )
   await findByTestId('login-httpbasic')
   fireEvent.change(await findByTestId('login-httpbasic-username'), {

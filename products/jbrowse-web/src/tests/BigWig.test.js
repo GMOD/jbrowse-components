@@ -35,7 +35,13 @@ test('open a bigwig track', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   expectCanvasMatch(
     await findByTestId('prerendered_canvas_{volvox}ctgA:1..4,000-0', {}, delay),
   )
@@ -46,7 +52,13 @@ test('open a bigwig line track 2', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(10, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_line',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray_line',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   expectCanvasMatch(
     await findByTestId('prerendered_canvas_{volvox}ctgA:1..8,000-0', {}, delay),
   )
@@ -57,7 +69,13 @@ test('open a bigwig density track', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_density',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray_density',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   expectCanvasMatch(
     await findByTestId('prerendered_canvas_{volvox}ctgA:1..4,000-0', {}, delay),
   )

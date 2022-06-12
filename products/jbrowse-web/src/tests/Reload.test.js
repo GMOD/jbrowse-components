@@ -49,7 +49,13 @@ test('reloads alignments track (CRAI 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_cram_pileup',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
@@ -78,7 +84,13 @@ test('reloads alignments track (CRAM 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_snpcoverage',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_cram_snpcoverage',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, delay)
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
@@ -102,7 +114,13 @@ test('reloads alignments track (BAI 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_snpcoverage',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_bam_snpcoverage',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
@@ -126,7 +144,13 @@ test('reloads alignments track (BAM 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_bam_pileup',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_bam_pileup',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
@@ -153,7 +177,13 @@ test('reloads bigwig (BW 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(10, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, { timeout: 10000 })
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
@@ -179,7 +209,13 @@ test('reloads vcf (VCF.GZ 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_filtered_vcf',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, delay)
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
@@ -204,7 +240,13 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf',{},{timeout:10000}))
+  fireEvent.click(
+    await findByTestId(
+      'htsTrackEntry-volvox_filtered_vcf',
+      {},
+      { timeout: 10000 },
+    ),
+  )
   await findAllByText(/HTTP 404/, {}, delay)
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
