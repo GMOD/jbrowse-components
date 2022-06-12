@@ -40,7 +40,7 @@ test('export svg', async () => {
   await findByText('Help')
   view.setNewView(0.1, 1)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage',{},{timeout:10000}),
   )
   view.exportSvg()
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {

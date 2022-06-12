@@ -40,7 +40,7 @@ test('launch read vs ref panel', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(5, 100)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage',{},{timeout:10000}),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
@@ -68,7 +68,7 @@ test('launch read vs ref dotplot', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(5, 100)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage',{},{timeout:10000}),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)

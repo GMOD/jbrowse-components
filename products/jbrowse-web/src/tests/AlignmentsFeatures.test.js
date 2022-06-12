@@ -160,7 +160,7 @@ test('colors by tag, color by tag', async () => {
   state.session.views[0].setNewView(0.465, 85055)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram',{},{timeout:10000}))
   await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
   expect(state.session.views[0].tracks[0]).toBeTruthy()
 

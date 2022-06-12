@@ -39,7 +39,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
   await findByText('Help')
   session.views[0].setNewView(30, 183)
 
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup',{},{timeout:10000}))
 
   await findAllByText(/Requested too much data/, {}, delay)
   const before = session.views[0].bpPerPx
@@ -66,7 +66,7 @@ test('test stats estimation pileup, force load to see', async () => {
   await findByText('Help')
   session.views[0].setNewView(25.07852564102564, 283)
 
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup',{},{timeout:10000}))
 
   await findAllByText(/Requested too much data/, {}, delay)
   const buttons = await findAllByText(/Force Load/, {}, delay)
@@ -90,7 +90,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   await findByText('Help')
   session.views[0].setNewView(34, 5)
 
-  fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
+  fireEvent.click(await findByTestId('htsTrackEntry-variant_colors',{},{timeout:10000}))
 
   await findAllByText(/Zoom in to see features/, {}, delay)
   const before = session.views[0].bpPerPx
@@ -112,7 +112,7 @@ test('test stats estimation on vcf track, force load to see', async () => {
   state.session.views[0].setNewView(34, 5)
   await findAllByText('ctgA', {}, { timeout: 10000 })
 
-  fireEvent.click(await findByTestId('htsTrackEntry-variant_colors'))
+  fireEvent.click(await findByTestId('htsTrackEntry-variant_colors',{},{timeout:10000}))
 
   await findAllByText(/Zoom in to see features/, {}, delay)
   const buttons = await findAllByText(/Force Load/, {}, delay)

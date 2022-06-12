@@ -30,7 +30,7 @@ test('variant track test - opens feature detail view', async () => {
   await findByText('Help')
   const view = state.session.views[0]
   act(() => view.setNewView(0.05, 5000))
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf',{},{timeout:10000}))
   act(() =>
     view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604452'),
   )
@@ -52,7 +52,7 @@ test('widget drawer navigation', async () => {
   await findByText('Help')
   act(() => state.session.views[0].setNewView(0.05, 5000))
   // opens a config editor widget
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf',{},{timeout:10000}))
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
   fireEvent.click(await findByText('Settings'))
   await findByTestId('configEditor', {}, waitForOptions)
