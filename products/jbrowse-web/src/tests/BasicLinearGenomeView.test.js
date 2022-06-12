@@ -34,7 +34,11 @@ test('access about menu', async () => {
   fireEvent.click(await findByText('Help'))
   fireEvent.click(await findByText('About'))
 
-  const dlg = await findByText(/The Evolutionary Software Foundation/)
+  const dlg = await findByText(
+    /The Evolutionary Software Foundation/,
+    {},
+    delay,
+  )
   expect(dlg).toBeTruthy()
 }, 15000)
 
