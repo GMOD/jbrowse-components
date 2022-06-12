@@ -7,14 +7,12 @@ import { makeStyles } from 'tss-react/mui'
 import { grey } from '@mui/material/colors'
 
 // icons
-import {
-  ZoomOut,
-  ZoomIn,
-  RotateLeft,
-  RotateRight,
-  Lock,
-  LockOpen,
-} from '@mui/icons-material'
+import ZoomOutIcon from '@mui/icons-material/ZoomOut'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import RotateLeftIcon from '@mui/icons-material/RotateLeft'
+import RotateRightIcon from '@mui/icons-material/RotateRight'
+import LockOpenIcon from '@mui/icons-material/LockOpen'
+import LockIcon from '@mui/icons-material/Lock'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -98,7 +96,7 @@ const Controls = observer(({ model, showingFigure }) => {
         }
         color="secondary"
       >
-        <ZoomOut />
+        <ZoomOutIcon />
       </IconButton>
 
       <IconButton
@@ -108,7 +106,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={!showingFigure || model.atMinBpPerPx}
         color="secondary"
       >
-        <ZoomIn />
+        <ZoomInIcon />
       </IconButton>
 
       <IconButton
@@ -118,7 +116,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={!showingFigure}
         color="secondary"
       >
-        <RotateLeft />
+        <RotateLeftIcon />
       </IconButton>
 
       <IconButton
@@ -128,7 +126,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={!showingFigure}
         color="secondary"
       >
-        <RotateRight />
+        <RotateRightIcon />
       </IconButton>
 
       <IconButton
@@ -142,7 +140,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={model.tooSmallToLock}
         color="secondary"
       >
-        {model.lockedFitToWindow ? <Lock /> : <LockOpen />}
+        {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
       {model.hideTrackSelectorButton ? null : (

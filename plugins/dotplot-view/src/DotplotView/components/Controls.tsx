@@ -4,15 +4,13 @@ import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import {
-  ZoomOut,
-  ZoomIn,
-  ArrowUpward,
-  ArrowDownward,
-  ArrowLeft,
-  ArrowRight,
-  CropFree,
-} from '@mui/icons-material'
+import ZoomOutIcon from '@mui/icons-material/ZoomOut'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
@@ -45,7 +43,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowLeft />
+        <ArrowLeftIcon />
       </IconButton>
 
       <IconButton
@@ -56,7 +54,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowRight />
+        <ArrowRightIcon />
       </IconButton>
       <IconButton
         onClick={() => {
@@ -66,7 +64,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowDownward />
+        <ArrowDownwardIcon />
       </IconButton>
       <IconButton
         onClick={() => {
@@ -76,14 +74,14 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowUpward />
+        <ArrowUpwardIcon />
       </IconButton>
       <IconButton
         onClick={model.zoomOutButton}
         className={classes.iconButton}
         color="secondary"
       >
-        <ZoomOut />
+        <ZoomOutIcon />
       </IconButton>
 
       <IconButton
@@ -92,7 +90,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="zoom in"
         color="secondary"
       >
-        <ZoomIn />
+        <ZoomInIcon />
       </IconButton>
 
       <IconButton
@@ -111,7 +109,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="Square view"
         color="secondary"
       >
-        <CropFree />
+        <CropFreeIcon />
       </IconButton>
     </div>
   )
