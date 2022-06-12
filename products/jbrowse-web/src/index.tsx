@@ -1,11 +1,11 @@
-import React, { lazy, Suspense } from 'react'
-import ReactDOM from 'react-dom'
+import { lazy, Suspense } from 'react'
+import { createRoot } from 'react-dom/client'
 import Loading from './Loading'
 
 const Main = lazy(() => import('./Loader'))
 const initialTimeStamp = Date.now()
 
-if (window && window.name.startsWith('JBrowseAuthWindow')) {
+if (window?.name.startsWith('JBrowseAuthWindow')) {
   const parent = window.opener
   if (parent) {
     parent.postMessage({
@@ -15,10 +15,10 @@ if (window && window.name.startsWith('JBrowseAuthWindow')) {
   }
   window.close()
 }
-
-ReactDOM.render(
+const rootElement = document.getElementById('root')
+const root = createRoot(rootElement!)
+root.render(
   <Suspense fallback={<Loading />}>
     <Main initialTimestamp={initialTimeStamp} />
   </Suspense>,
-  document.getElementById('root'),
 )
