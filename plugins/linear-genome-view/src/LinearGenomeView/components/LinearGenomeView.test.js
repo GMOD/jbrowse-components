@@ -76,11 +76,19 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText } = render(<LinearGenomeView model={model} />)
+    const { container, getByPlaceholderText, findByText } = render(
+      <LinearGenomeView model={model} />,
+    )
     await findByText('Foo Track')
     // test needs to wait until it's updated to display 100 bp in the header to
     // make snapshot pass
     await findByText('100bp')
+
+    await waitFor(() => {
+      expect(getByPlaceholderText('Search for location').value).toEqual(
+        'ctgA:1..100',
+      )
+    })
     expect(container.firstChild).toMatchSnapshot()
   })
 
