@@ -652,6 +652,7 @@ export function makeAbortableReaction<T, U, V>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
+  // @ts-ignore
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
@@ -669,50 +670,51 @@ export function makeAbortableReaction<T, U, V>(
     }
   }
 
-  const reactionDisposer = reaction(
-    () => {
-      try {
-        return dataFunction(self)
-      } catch (e) {
-        handleError(e)
-        return undefined
-      }
-    },
-    async (data, mobxReactionHandle) => {
-      if (inProgress && !inProgress.signal.aborted) {
-        inProgress.abort()
-      }
-
-      if (!isAlive(self)) {
-        return
-      }
-      inProgress = new AbortController()
-
-      const thisInProgress = inProgress
-      startedFunction(thisInProgress)
-      try {
-        const result = await asyncReactionFunction(
-          data,
-          thisInProgress.signal,
-          self,
-          // @ts-ignore
-          mobxReactionHandle,
-        )
-        checkAbortSignal(thisInProgress.signal)
-        if (isAlive(self)) {
-          successFunction(result)
+  addDisposer(
+    self,
+    reaction(
+      () => {
+        try {
+          return dataFunction(self)
+        } catch (e) {
+          handleError(e)
+          return undefined
         }
-      } catch (e) {
-        if (thisInProgress && !thisInProgress.signal.aborted) {
-          thisInProgress.abort()
+      },
+      async (data, mobxReactionHandle) => {
+        if (inProgress && !inProgress.signal.aborted) {
+          inProgress.abort()
         }
-        handleError(e)
-      }
-    },
-    reactionOptions,
+
+        if (!isAlive(self)) {
+          return
+        }
+        inProgress = new AbortController()
+
+        const thisInProgress = inProgress
+        startedFunction(thisInProgress)
+        try {
+          const result = await asyncReactionFunction(
+            data,
+            thisInProgress.signal,
+            self,
+            // @ts-ignore
+            mobxReactionHandle,
+          )
+          checkAbortSignal(thisInProgress.signal)
+          if (isAlive(self)) {
+            successFunction(result)
+          }
+        } catch (e) {
+          if (thisInProgress && !thisInProgress.signal.aborted) {
+            thisInProgress.abort()
+          }
+          handleError(e)
+        }
+      },
+      reactionOptions,
+    ),
   )
-
-  addDisposer(self, reactionDisposer)
   addDisposer(self, () => {
     if (inProgress && !inProgress.signal.aborted) {
       inProgress.abort()
@@ -731,6 +733,7 @@ export function renameRegionIfNeeded(
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
+      // @ts-ignore
       region = { ...getSnapshot(region) }
     } else {
       region = { ...region }
