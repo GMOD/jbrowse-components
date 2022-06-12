@@ -15,7 +15,7 @@ function RpcRenderedSvgGroup({ model }) {
       if (domNode && filled) {
         if (domNode && domNode.innerHTML) {
           domNode.style.display = 'none'
-          unmountComponentAtNode(domNode)
+          // unmountComponentAtNode(domNode)
         }
 
         // setting outline:none fixes react "focusable" element issue. see
@@ -46,7 +46,7 @@ function RpcRenderedSvgGroup({ model }) {
     doHydrate()
     return () => {
       if (domNode) {
-        unmountComponentAtNode(domNode)
+        // unmountComponentAtNode(domNode)
       }
     }
   })
