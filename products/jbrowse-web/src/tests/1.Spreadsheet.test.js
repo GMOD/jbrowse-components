@@ -21,11 +21,13 @@ beforeEach(() => {
   clearAdapterCache()
   fetch.resetMocks()
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
+
+const delay = { timeout: 10000 }
 
 test('opens a vcf.gz file in the spreadsheet view', async () => {
   const pluginManager = getPluginManager()
@@ -36,7 +38,7 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Spreadsheet view'))
 
-  await findByTestId('spreadsheet_view_open')
+  await findByTestId('spreadsheet_view_open', {}, delay)
   fireEvent.change(await findByTestId('urlInput'), {
     target: { value: 'volvox.filtered.vcf.gz' },
   })
@@ -46,7 +48,6 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
     ).not.toBeDisabled(),
   )
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  // fireEvent.click(await findByText('ctgA:276..277'))
   expect(pluginManager.rootModel.session.views.length).toBe(2)
 }, 15000)
 
@@ -59,7 +60,7 @@ test('opens a bed.gz file in the spreadsheet view', async () => {
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Spreadsheet view'))
 
-  await findByTestId('spreadsheet_view_open')
+  await findByTestId('spreadsheet_view_open', {}, delay)
   fireEvent.change(await findByTestId('urlInput'), {
     target: { value: 'volvox-bed12.bed.gz' },
   })
@@ -69,6 +70,5 @@ test('opens a bed.gz file in the spreadsheet view', async () => {
     ).not.toBeDisabled(),
   )
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  // fireEvent.click(await findByText('ctgA:1299..9000'))
   expect(pluginManager.rootModel.session.views.length).toBe(2)
 }, 15000)
