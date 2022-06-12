@@ -54,12 +54,13 @@ test('click and drag to move sideways', async () => {
   fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
   fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
   // wait for requestAnimationFrame
-  await waitFor(() => {})
-  const end = state.session.views[0].offsetPx
-  expect(end - start).toEqual(150)
+  await waitFor(
+    () => expect(state.session.views[0].offsetPx - start).toEqual(150),
+    delay,
+  )
 }, 10000)
 
-test('click and drag to rubberBand', async () => {
+test('click and drag to rubberband', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
@@ -177,7 +178,7 @@ test('opens track selector', async () => {
 test('opens reference sequence track and expects zoom in message', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
-  const { getAllByText, findByTestId } = render(<JBrowse pluginManager={pm} />)
+  const { findAllByText, findByTestId } = render(<JBrowse pluginManager={pm} />)
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
   state.session.views[0].setNewView(20, 0)
   await findByTestId(
@@ -185,7 +186,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
     {},
     delay,
   )
-  expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
+  await findAllByText('Zoom in to see sequence')
 }, 30000)
 
 test('click to display center line with correct value', async () => {
@@ -260,9 +261,12 @@ test('navigates to bookmarked region from widget', async () => {
 test('test choose option from dropdown refName autocomplete', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
-  const { findByText, findByTestId, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
+  const {
+    findByText,
+    findByTestId,
+    getByPlaceholderText,
+    findByPlaceholderText,
+  } = render(<JBrowse pluginManager={pm} />)
   const view = state.session.views[0]
   expect(view.displayedRegions[0].refName).toEqual('ctgA')
   fireEvent.click(await findByText('Help'))
@@ -291,7 +295,10 @@ test('test choose option from dropdown refName autocomplete', async () => {
     () => expect(view.displayedRegions[0].refName).toEqual('ctgB'),
     delay,
   )
-  expect((await findByPlaceholderText('Search for location')).value).toEqual(
-    expect.stringContaining('ctgB'),
-  )
+
+  await waitFor(() => {
+    expect(getByPlaceholderText('Search for location').value).toEqual(
+      expect.stringContaining('ctgB'),
+    )
+  }, delay)
 }, 15000)
