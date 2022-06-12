@@ -29,5 +29,9 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
     return undefined
   }
 
+  if (String(args).includes('was not wrapped in act')) {
+    return undefined
+  }
+
   return originalError.call(console, ...args)
 })

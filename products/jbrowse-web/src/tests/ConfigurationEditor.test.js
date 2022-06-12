@@ -33,7 +33,7 @@ test('change color on track', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
   fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
   fireEvent.click(await findByText('Settings'))
-  await findByTestId('configEditor')
+  await findByTestId('configEditor', {}, waitForOptions)
   fireEvent.change(await findByDisplayValue('goldenrod'), {
     target: { value: 'green' },
   })
