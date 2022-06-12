@@ -35,11 +35,12 @@ describe('<LinearGenomeView />', () => {
     model.setWidth(800)
     const { findByText } = render(<LinearGenomeView model={model} />)
     expect(model.displayedRegions.length).toEqual(0)
-    fireEvent.click(await findByText('Open'))
-    await waitFor(() => {
-      expect(model.displayedRegions.length).toEqual(1)
-    })
-  })
+    const elt = await findByText('Open')
+    await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
+    fireEvent.click(elt)
+    await waitFor(() => expect(model.displayedRegions.length).toEqual(1), 15000)
+  }, 15000)
+
   it('renders one track, one region', async () => {
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
@@ -82,6 +83,7 @@ describe('<LinearGenomeView />', () => {
     await findByText('100bp')
     expect(container.firstChild).toMatchSnapshot()
   })
+
   it('renders two tracks, two regions', async () => {
     const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
