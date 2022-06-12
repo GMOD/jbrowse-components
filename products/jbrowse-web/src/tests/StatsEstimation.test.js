@@ -84,7 +84,7 @@ test('test stats estimation pileup, force load to see', async () => {
 test('test stats estimation on vcf track, zoom in to see', async () => {
   const pluginManager = getPluginManager()
   const { session } = pluginManager.rootModel
-  const { findByText, findAllByText, findByTestId } = render(
+  const { findByText, findAllByText, findAllByTestId, findByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
@@ -99,7 +99,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
 
-  await findByTestId('box-test-vcf-605560', {}, delay)
+  await findAllByTestId('box-test-vcf-605560', {}, delay)
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
