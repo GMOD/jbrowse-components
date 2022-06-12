@@ -123,7 +123,7 @@ function InstalledPlugin({
     p => pluginManager.pluginMetadata[plugin.name].url === p.url,
   )
 
-  const rootModel = getParent(model, 3)
+  const rootModel = getParent<any>(model, 3)
   const { jbrowse, adminMode } = rootModel
 
   return (

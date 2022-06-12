@@ -38,7 +38,7 @@ export default function createConfigModel(
         return readConfObject(self.assembly, 'name')
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        return getParent<any>(self).rpcManager
       },
     }))
 }

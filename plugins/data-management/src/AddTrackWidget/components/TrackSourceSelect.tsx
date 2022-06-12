@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
 
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
-  const rootModel = getRoot(model)
+  const rootModel = getRoot<any>(model)
 
   return (
     <Paper className={classes.paper}>

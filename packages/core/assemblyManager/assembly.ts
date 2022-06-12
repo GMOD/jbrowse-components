@@ -189,7 +189,7 @@ export default function assemblyFactory(
           : Object.keys(self.refNameAliases)
       },
       get rpcManager() {
-        return getParent(self, 2).rpcManager
+        return getParent<any>(self, 2).rpcManager
       },
       get refNameColors() {
         const colors: string[] = getConf(self, 'refNameColors')

@@ -48,7 +48,7 @@ const ImportWizard = types
       )
     },
     get canCancel() {
-      return getParent(self).readyToDisplay
+      return getParent<any>(self).readyToDisplay
     },
 
     get fileName() {
@@ -122,7 +122,7 @@ const ImportWizard = types
 
     cancelButton() {
       self.error = undefined
-      getParent(self).setDisplayMode()
+      getParent<any>(self).setDisplayMode()
     },
 
     // fetch and parse the file, make a new Spreadsheet model for it,
@@ -166,7 +166,7 @@ const ImportWizard = types
         .then(buffer => typeParser(buffer, self))
         .then(spreadsheet => {
           this.setLoaded()
-          getParent(self).displaySpreadsheet(spreadsheet)
+          getParent<any>(self).displaySpreadsheet(spreadsheet)
         })
     },
   }))

@@ -4,6 +4,8 @@ import {
   Instance,
   SnapshotIn,
   IAnyStateTreeNode,
+  IStateTreeNode,
+  IType,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
@@ -24,7 +26,8 @@ import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer extends IAnyStateTreeNode {
+export interface AbstractViewContainer
+  extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(

@@ -193,19 +193,19 @@ const DataRow = observer(
     return (
       <tr className={rowClass}>
         <th className={classes.rowNumCell} onClick={labelClick}>
-          <FormControlLabel
-            className={classes.rowNumber}
-            control={
-              hideRowSelection ? null : (
+          {hideRowSelection ? (
+            <FormControlLabel
+              className={classes.rowNumber}
+              control={
                 <Checkbox
                   className={classes.rowSelector}
                   checked={rowModel.isSelected}
                   onClick={labelClick}
                 />
-              )
-            }
-            label={rowModel.id}
-          />
+              }
+              label={rowModel.id}
+            />
+          ) : null}
           <IconButton
             className={classes.rowMenuButton}
             onClick={event => {

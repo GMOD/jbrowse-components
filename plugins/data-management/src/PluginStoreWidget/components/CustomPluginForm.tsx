@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { getRoot } from 'mobx-state-tree'
-
+import { getSession } from '@jbrowse/core/util'
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   Button,
   Collapse,
@@ -18,8 +18,6 @@ import { makeStyles } from 'tss-react/mui'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
 // locals
 import { PluginStoreModel } from '../model'
@@ -82,8 +80,7 @@ function CustomPluginForm({
     setAdvancedOptionsOpen(!advancedOptionsOpen)
   }
 
-  const rootModel = getRoot(model)
-  const { jbrowse } = rootModel
+  const { jbrowse } = getSession(model)
 
   const ready = Boolean(
     (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,

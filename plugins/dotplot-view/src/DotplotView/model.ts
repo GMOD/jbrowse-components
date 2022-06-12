@@ -60,7 +60,7 @@ export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent(self).viewWidth
+      return getParent<any>(self).viewWidth
     },
   },
 }))
@@ -68,7 +68,7 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent(self).viewHeight
+      return getParent<any>(self).viewHeight
     },
   },
 }))
@@ -113,7 +113,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
-      volatileError: undefined as Error | undefined,
+      volatileError: undefined as unknown,
       borderX: 100,
       borderY: 100,
     }))
@@ -211,12 +211,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.height
       },
 
-      setError(e: Error) {
+      setError(e: unknown) {
         self.volatileError = e
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
 
       setHeaderHeight(height: number) {
@@ -247,29 +247,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        const trackType = pluginManager.getTrackType(configuration.type)
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const conf = resolveIdentifier(schema, getRoot(self), trackId)
+        const trackType = pluginManager.getTrackType(conf.type)
         if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
+          throw new Error(`unknown track type ${conf.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => {
-            if (
-              viewType.displayTypes.find(
-                displayType => displayType.name === d.type,
-              )
-            ) {
-              return true
-            }
-            return false
-          },
+        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
+          viewType.displayTypes.find(type => type.name === d.type),
         )
         if (!displayConf) {
           throw new Error(
@@ -278,27 +264,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
         const track = trackType.stateModel.create({
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: conf.type,
+          configuration: conf,
           displays: [{ type: displayConf.type, configuration: displayConf }],
         })
         self.tracks.push(track)
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        // if we have any tracks with that configuration, turn them off
-        const shownTracks = self.tracks.filter(
-          t => t.configuration === configuration,
-        )
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-        return shownTracks.length
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const conf = resolveIdentifier(schema, getRoot(self), trackId)
+        const t = self.tracks.filter(t => t.configuration === conf)
+        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        return t.length
       },
 
       toggleTrack(trackId: string) {
@@ -374,9 +352,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             })
             .filter(f => !!f)
             .map(displayConf => {
-              const trackConf = getParent(displayConf, 2)
+              const trackConf = getParent<any>(displayConf, 2)
               return {
-                type: getParent(displayConf, 2).type,
+                type: getParent<any>(displayConf, 2).type,
                 configuration: trackConf,
                 displays: [
                   { type: displayConf.type, configuration: displayConf },

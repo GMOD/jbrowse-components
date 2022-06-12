@@ -229,7 +229,7 @@ const SpreadsheetView = observer(
           <ResizeHandle
             onDrag={model.resizeHeight}
             style={{
-              height: model.dragHandleHeight,
+              height: 3,
               position: 'absolute',
               bottom: 0,
               left: 0,

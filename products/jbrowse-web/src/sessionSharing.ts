@@ -34,7 +34,7 @@ function getErrorMsg(err: string) {
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
-  session: Record<string, unknown>,
+  session: unknown,
   url: string,
   referer: string,
 ) {

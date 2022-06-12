@@ -103,68 +103,42 @@ export function createBaseTrackModel(
         }
       },
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          displayId,
-        )
-        const displayType = pluginManager.getDisplayType(configuration.type)
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), displayId)
+        const displayType = pluginManager.getDisplayType(conf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${configuration.type}`)
+          throw new Error(`unknown display type ${conf.type}`)
         }
         const display = displayType.stateModel.create({
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: conf.type,
+          conf,
         })
         self.displays.push(display)
       },
 
       hideDisplay(displayId: string) {
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          displayId,
-        )
-        // if we have any displays with that configuration, turn them off
-        const shownDisplays = self.displays.filter(
-          d => d.configuration === configuration,
-        )
-        transaction(() => shownDisplays.forEach(d => self.displays.remove(d)))
-        return shownDisplays.length
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), displayId)
+        const t = self.displays.filter(d => d.conf === conf)
+        transaction(() => t.forEach(d => self.displays.remove(d)))
+        return t.length
       },
-      replaceDisplay(
-        oldDisplayId: string,
-        newDisplayId: string,
-        initialSnapshot = {},
-      ) {
-        const displayIdx = self.displays.findIndex(
-          d => d.configuration.displayId === oldDisplayId,
-        )
-        if (displayIdx === -1) {
-          throw new Error(
-            `could not find display id ${oldDisplayId} to replace`,
-          )
+      replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
+        const idx = self.displays.findIndex(d => d.conf.displayId === oldId)
+        if (idx === -1) {
+          throw new Error(`could not find display id ${oldId} to replace`)
         }
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          newDisplayId,
-        )
-        const displayType = pluginManager.getDisplayType(configuration.type)
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), newId)
+        const displayType = pluginManager.getDisplayType(conf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${configuration.type}`)
+          throw new Error(`unknown display type ${conf.type}`)
         }
-        self.displays.splice(displayIdx, 1, {
+        self.displays.splice(idx, 1, {
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: conf.type,
+          conf,
         })
       },
     }))

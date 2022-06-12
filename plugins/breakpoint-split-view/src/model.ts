@@ -217,7 +217,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
 
       toggleInteract() {

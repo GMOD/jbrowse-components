@@ -38,7 +38,7 @@ export default function assemblyManagerFactory(
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [] } = {},
-        } = getParent(self)
+        } = getParent<any>(self)
         return [
           ...assemblies,
           ...sessionAssemblies,
@@ -46,10 +46,10 @@ export default function assemblyManagerFactory(
       },
 
       get rpcManager() {
-        return getParent(self).rpcManager
+        return getParent<any>(self).rpcManager
       },
       get pluginManager() {
-        return getParent(self).pluginManager
+        return getParent<any>(self).pluginManager
       },
       get allPossibleRefNames() {
         let refNames: string[] = []

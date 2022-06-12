@@ -54,14 +54,12 @@ function PluginCard({
   const session = getSession(model)
   const { pluginManager } = getEnv(model) as { pluginManager: PluginManager }
   const isInstalled = Boolean(
-    pluginManager.runtimePluginDefinitions.find(
-      pluginDefinition => pluginDefinition.url === plugin.url,
-    ),
+    pluginManager.runtimePluginDefinitions.find(def => def.url === plugin.url),
   )
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 
-  const rootModel = getParent(model, 3)
+  const rootModel = getParent<any>(model, 3)
   const { jbrowse } = rootModel
 
   return (

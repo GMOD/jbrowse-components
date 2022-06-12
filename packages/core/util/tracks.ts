@@ -29,7 +29,7 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
     rpcSessionId: string
   }
   let highestRpcSessionId
-  for (let node = thisNode; !isRoot(node); node = getParent(node)) {
+  for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
     if ('rpcSessionId' in node) {
       highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
     }
@@ -50,9 +50,9 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
  */
 export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
-    let currentNode = getParent(node);
+    let currentNode = getParent<any>(node);
     !isRoot(currentNode);
-    currentNode = getParent(currentNode)
+    currentNode = getParent<any>(currentNode)
   ) {
     if ('renderProps' in currentNode) {
       return currentNode.renderProps()

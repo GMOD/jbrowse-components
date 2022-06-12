@@ -191,7 +191,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
 
       setDisplayedRegions(regions: Region[]) {

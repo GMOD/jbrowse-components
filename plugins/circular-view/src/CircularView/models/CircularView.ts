@@ -1,17 +1,20 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
+  cast,
+  getParent,
+  getRoot,
+  resolveIdentifier,
+  types,
   SnapshotOrInstance,
   Instance,
-  types,
-  getParent,
-  resolveIdentifier,
-  getRoot,
-  cast,
 } from 'mobx-state-tree'
 import { Region } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+
 import {
   getSession,
   clamp,
@@ -263,7 +266,7 @@ export default function CircularView(pluginManager: PluginManager) {
         },
 
         closeView() {
-          getParent(self, 2).removeView(self)
+          getParent<any>(self, 2).removeView(self)
         },
 
         setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
@@ -310,28 +313,21 @@ export default function CircularView(pluginManager: PluginManager) {
         },
 
         showTrack(trackId: string, initialSnapshot = {}) {
-          const trackConfigSchema =
-            pluginManager.pluggableConfigSchemaType('track')
-          const configuration = resolveIdentifier(
-            trackConfigSchema,
-            getRoot(self),
-            trackId,
-          )
-          const trackType = pluginManager.getTrackType(configuration.type)
+          const schema = pluginManager.pluggableConfigSchemaType('track')
+          const conf = resolveIdentifier(schema, getRoot(self), trackId)
+          const trackType = pluginManager.getTrackType(conf.type)
           if (!trackType) {
-            throw new Error(`unknown track type ${configuration.type}`)
+            throw new Error(`unknown track type ${conf.type}`)
           }
           const viewType = pluginManager.getViewType(self.type)
-          const supportedDisplays = viewType.displayTypes.map(
-            displayType => displayType.name,
-          )
-          const displayConf = configuration.displays.find(
-            (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+          const supportedDisplays = viewType.displayTypes.map(d => d.name)
+          const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
+            supportedDisplays.includes(d.type),
           )
           const track = trackType.stateModel.create({
             ...initialSnapshot,
-            type: configuration.type,
-            configuration,
+            type: conf.type,
+            configuration: conf,
             displays: [{ type: displayConf.type, configuration: displayConf }],
           })
           self.tracks.push(track)
@@ -348,9 +344,7 @@ export default function CircularView(pluginManager: PluginManager) {
             throw new Error(`unknown track type ${configuration.type}`)
           }
           const viewType = pluginManager.getViewType(self.type)
-          const supportedDisplays = viewType.displayTypes.map(
-            displayType => displayType.name,
-          )
+          const supportedDisplays = viewType.displayTypes.map(d => d.name)
           const displayConf = configuration.displays.find(
             (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
           )
@@ -365,19 +359,11 @@ export default function CircularView(pluginManager: PluginManager) {
         },
 
         hideTrack(trackId: string) {
-          const trackConfigSchema =
-            pluginManager.pluggableConfigSchemaType('track')
-          const configuration = resolveIdentifier(
-            trackConfigSchema,
-            getRoot(self),
-            trackId,
-          )
-          // if we have any tracks with that configuration, turn them off
-          const shownTracks = self.tracks.filter(
-            t => t.configuration === configuration,
-          )
-          transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-          return shownTracks.length
+          const schema = pluginManager.pluggableConfigSchemaType('track')
+          const conf = resolveIdentifier(schema, getRoot(self), trackId)
+          const t = self.tracks.filter(t => t.configuration === conf)
+          transaction(() => t.forEach(t => self.tracks.remove(t)))
+          return t.length
         },
 
         toggleFitToWindowLock() {
