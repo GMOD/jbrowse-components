@@ -1332,9 +1332,9 @@ In the example above we return an object with:
 - `type` - we make this undefined, which removes it from the feature details
 - `newfield` - this generates a new field in the feature details
 
-## Using javascript for feature detail panels
+### Making sophisticated customizations to feature detail panels
 
-You can create a custom jexl callback in a plugin, and then use e.g.
+If your feature detail panel customization is complex, you can create a custom javascript function in a plugin that is registered with the jexl system e.g.
 
 ```js
 class MyPlugin {
@@ -1347,8 +1347,7 @@ class MyPlugin {
 }
 ```
 
-This can be quite useful for complicated formatting callbacks. Then you can use
-the custom jexl function in your config callbacks as follows:
+Then you can use the custom jexl function in your config callbacks as follows:
 
 ```json
 {
