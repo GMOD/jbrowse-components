@@ -1,10 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { LinearSyntenyViewModel } from './LinearSyntenyView/model'
 import { when } from 'mobx'
 
-type LGV = LinearGenomeViewModel
 type LSV = LinearSyntenyViewModel
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
@@ -29,10 +27,8 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         model.setViews(
           await Promise.all(
             views.map(async view => {
-              const assembly = await assemblyManager.waitForAssembly(
-                view.assembly,
-              )
-              if (!assembly) {
+              const asm = await assemblyManager.waitForAssembly(view.assembly)
+              if (!asm) {
                 throw new Error(`Assembly ${view.assembly} failed to load`)
               }
               return {
@@ -40,7 +36,7 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
                 bpPerPx: 1,
                 offsetPx: 0,
                 hideHeader: true,
-                displayedRegions: assembly.regions,
+                displayedRegions: asm.regions,
               }
             }),
           ),
@@ -72,7 +68,11 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
   )
 }
 
-function tryTrack(model: LSV | LGV, trackId: string, idsNotFound: string[]) {
+function tryTrack(
+  model: { showTrack: (arg: string) => void },
+  trackId: string,
+  idsNotFound: string[],
+) {
   try {
     model.showTrack(trackId)
   } catch (e) {

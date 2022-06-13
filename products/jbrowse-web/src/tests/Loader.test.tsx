@@ -259,6 +259,23 @@ describe('<Loader />', () => {
     await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), delay)
   }, 40000)
 
+  it('can use a spec url for dotplot view', async () => {
+    const { findByText, findByTestId } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+    await findByTestId('prerendered_canvas', {}, delay)
+  }, 40000)
+
   it('can use a spec url for synteny view', async () => {
     console.warn = jest.fn()
     const { findByText, findByTestId } = render(
