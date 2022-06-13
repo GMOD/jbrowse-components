@@ -229,7 +229,7 @@ test('bookmarks current region', async () => {
   const { bookmarkedRegions } = widgets.get('GridBookmark')
   expect(bookmarkedRegions[0].start).toEqual(100)
   expect(bookmarkedRegions[0].end).toEqual(140)
-})
+}, 20000)
 
 test('navigates to bookmarked region from widget', async () => {
   const pm = getPluginManager()
@@ -267,7 +267,7 @@ test('navigates to bookmarked region from widget', async () => {
     view.rightOffset,
   )[0]
   expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
-})
+}, 20000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
   const pm = getPluginManager()
