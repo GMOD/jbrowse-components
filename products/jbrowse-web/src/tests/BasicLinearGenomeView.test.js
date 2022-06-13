@@ -71,8 +71,7 @@ test('click and drag to rubberband', async () => {
   fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
-  const zoomMenuItem = await findByText('Zoom to region')
-  fireEvent.click(zoomMenuItem)
+  fireEvent.click(await findByText('Zoom to region'))
   expect(state.session.views[0].bpPerPx).toEqual(0.02)
 }, 15000)
 
@@ -90,31 +89,9 @@ test('click and drag rubberBand, click get sequence to open sequenceDialog', asy
   fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
-  const getSeqMenuItem = await findByText('Get sequence')
-  fireEvent.click(getSeqMenuItem)
+  fireEvent.click(await findByText('Get sequence'))
   expect(state.session.views[0].leftOffset).toBeTruthy()
   expect(state.session.views[0].rightOffset).toBeTruthy()
-})
-
-test('click and drag rubberBand, bookmarks region', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const rubberBandComponent = await findByTestId(
-    'rubberBand_controls',
-    {},
-    delay,
-  )
-
-  expect(state.session.views[0].bpPerPx).toEqual(0.05)
-  fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
-  fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-  fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
-  const bookmarkMenuItem = await findByText('Bookmark region')
-  fireEvent.click(bookmarkMenuItem)
-  const { widgets } = state.session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
 })
 
 test('click and drag to reorder tracks', async () => {
@@ -163,10 +140,8 @@ test('click and zoom in and back out', async () => {
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
-  expect(view.bpPerPx).toBe(before / 2)
   fireEvent.click(await findByTestId('zoom_out'))
   await waitFor(() => expect(view.bpPerPx).toBe(before), delay)
-  expect(view.bpPerPx).toBe(before)
 }, 30000)
 
 test('opens track selector', async () => {
@@ -207,8 +182,7 @@ test('click to display center line with correct value', async () => {
   await findByTestId('display-volvox_alignments_alignments', {}, delay)
 
   // opens the view menu and selects show center line
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
+  fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Show center line'))
   expect(state.session.views[0].showCenterLine).toBe(true)
 
@@ -216,58 +190,6 @@ test('click to display center line with correct value', async () => {
   expect(centerLineInfo.refName).toBe('ctgA')
   expect(centerLineInfo.offset).toEqual(120)
 })
-
-test('bookmarks current region', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
-  fireEvent.click(await findByText('Bookmark current region'))
-  const { widgets } = state.session
-  const { bookmarkedRegions } = widgets.get('GridBookmark')
-  expect(bookmarkedRegions[0].start).toEqual(100)
-  expect(bookmarkedRegions[0].end).toEqual(140)
-}, 20000)
-
-test('navigates to bookmarked region from widget', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-
-  // need this to complete before we can try to navigate
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-  )
-  await findByTestId(
-    'trackRenderingContainer-integration_test-volvox_alignments',
-    {},
-    delay,
-  )
-
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
-  fireEvent.click(await findByText('Open bookmark widget'))
-
-  const { widgets } = state.session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  bookmarkWidget.addBookmark({
-    start: 200,
-    end: 240,
-    refName: 'ctgA',
-    assemblyName: 'volvox',
-  })
-  const view = state.session.views[0]
-
-  fireEvent.click(await findByText('ctgA:201..240'), {}, delay)
-  const newRegion = view.getSelectedRegions(
-    view.leftOffset,
-    view.rightOffset,
-  )[0]
-  expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
-}, 20000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
   const pm = getPluginManager()
