@@ -1,7 +1,6 @@
-import { ThemeProvider } from '@mui/material/styles'
 import React, { useEffect, useRef } from 'react'
-import { hydrateRoot } from 'react-dom/client'
-
+import { ThemeProvider } from '@mui/material/styles'
+import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { createJBrowseTheme } from '../../ui'
 import { rIC } from '../../util'
 import { ResultsSerialized, RenderArgs } from './ServerSideRendererType'
@@ -24,9 +23,9 @@ export default function ServerSideRenderedContent(
     const domNode = ssrContainerNode.current
     function doHydrate() {
       if (domNode) {
-        // if (domNode) {
-        //   unmountComponentAtNode(domNode)
-        // }
+        if (domNode) {
+          unmountComponentAtNode(domNode)
+        }
         domNode.innerHTML = html
 
         // defer main-thread rendering and hydration for when
@@ -38,11 +37,11 @@ export default function ServerSideRenderedContent(
         // so
         rIC(
           () => {
-            hydrateRoot(
-              domNode,
+            hydrate(
               <ThemeProvider theme={jbrowseTheme}>
                 <RenderingComponent {...rest} />
               </ThemeProvider>,
+              domNode,
             )
           },
           { timeout: 300 },
@@ -54,7 +53,7 @@ export default function ServerSideRenderedContent(
 
     return () => {
       if (domNode) {
-        // unmountComponentAtNode(domNode)
+        unmountComponentAtNode(domNode)
       }
     }
   }, [html, jbrowseTheme, rest, RenderingComponent])

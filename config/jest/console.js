@@ -32,6 +32,13 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   if (String(args).includes('was not wrapped in act')) {
     return undefined
   }
+  if (
+    String(args).includes(
+      'attempting to unmount was rendered by another copy of React',
+    )
+  ) {
+    return undefined
+  }
 
   return originalError.call(console, ...args)
 })
