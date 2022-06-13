@@ -35,10 +35,10 @@ const delay = { timeout: 20000 }
 test('opens the track menu and enables soft clipping', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
-  state.session.views[0].setNewView(0.02, 142956)
+  session.views[0].setNewView(0.02, 142956)
 
   // load track
   fireEvent.click(
@@ -49,7 +49,7 @@ test('opens the track menu and enables soft clipping', async () => {
     {},
     delay,
   )
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
+  expect(session.views[0].tracks[0]).toBeTruthy()
 
   // opens the track menu
   fireEvent.click(await findByTestId('track_menu_icon'))
@@ -72,12 +72,12 @@ test('opens the track menu and enables soft clipping', async () => {
 test('selects a sort, sort by strand', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(0.02, 2086500)
+  session.views[0].setNewView(0.02, 2086500)
 
   // load track
   fireEvent.click(
@@ -88,12 +88,9 @@ test('selects a sort, sort by strand', async () => {
     {},
     delay,
   )
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
+  expect(session.views[0].tracks[0]).toBeTruthy()
 
-  // opens the track menu
-  const trackMenu = await findByTestId('track_menu_icon')
-
-  fireEvent.click(trackMenu)
+  fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Sort by'))
   fireEvent.click(await findByText('Read strand'))
 
@@ -112,12 +109,12 @@ test('selects a sort, sort by strand', async () => {
 test('selects a color, color by strand', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(0.02, 2086500)
+  session.views[0].setNewView(0.02, 2086500)
 
   // load track
   fireEvent.click(
@@ -128,9 +125,7 @@ test('selects a color, color by strand', async () => {
     {},
     delay,
   )
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-  // opens the track menu and turns on soft clipping
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Color scheme'))
   fireEvent.click(await findByText('Strand'))
@@ -150,23 +145,20 @@ test('selects a color, color by strand', async () => {
 test('colors by tag, color by tag', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(0.465, 85055)
+  session.views[0].setNewView(0.465, 85055)
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram', {}, delay))
   await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
-
-  // opens the track menu
-  const trackMenu = await findByTestId('track_menu_icon')
+  expect(session.views[0].tracks[0]).toBeTruthy()
 
   // colors by HP tag
-  fireEvent.click(trackMenu)
+  fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Color scheme'))
   fireEvent.click(await findByText('Color by tag...'))
   fireEvent.change(await findByTestId('color-tag-name-input'), {
@@ -175,6 +167,7 @@ test('colors by tag, color by tag', async () => {
   fireEvent.click(await findByText('Submit'))
   // wait for pileup track to render with color
   await findAllByTestId('pileup-tagHP', {}, delay)
+  await new Promise(r => setTimeout(r, 300))
 
   // wait for pileup track to render
   const { findByTestId: findByTestId1 } = within(

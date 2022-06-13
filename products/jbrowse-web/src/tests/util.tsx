@@ -112,11 +112,10 @@ export function expectCanvasMatch(canvas: HTMLCanvasElement) {
 export async function awaitCanvasMatch(
   findCanvas: () => Promise<HTMLCanvasElement>,
 ) {
-  const canvas = await findCanvas()
-  await new Promise(r => setTimeout(r, 50))
-  expectCanvasMatch(canvas)
+  expectCanvasMatch(await findCanvas())
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function JBrowse(props: any) {
   return (
     <QueryParamProvider>
