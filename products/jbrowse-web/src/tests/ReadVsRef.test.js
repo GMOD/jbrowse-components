@@ -43,7 +43,7 @@ test('launch read vs ref panel', async () => {
     await findByTestId(
       'htsTrackEntry-volvox_alignments_pileup_coverage',
       {},
-      { timeout: 10000 },
+      delay,
     ),
   )
 
@@ -75,7 +75,7 @@ test('launch read vs ref dotplot', async () => {
     await findByTestId(
       'htsTrackEntry-volvox_alignments_pileup_coverage',
       {},
-      { timeout: 10000 },
+      delay,
     ),
   )
 
