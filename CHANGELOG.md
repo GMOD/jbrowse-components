@@ -1,3 +1,69 @@
+## 1.7.10 (2022-06-13)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication          |                                                                   |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-sv-inspector            |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| jbrowse-predefined-sessions             |                                                                   |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3025](https://github.com/GMOD/jbrowse-components/pull/3025) Add dotplot session spec ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2975](https://github.com/GMOD/jbrowse-components/pull/2975) Add simplified URL format for loading synteny views ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3023](https://github.com/GMOD/jbrowse-components/pull/3023) Add error handling in case of invalid OAuth2 configuration used. ([@andrzejgrzelak](https://github.com/andrzejgrzelak))
+  - [#3020](https://github.com/GMOD/jbrowse-components/pull/3020) Allow choosing trackId when using text-index with --file with --fileId ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3016](https://github.com/GMOD/jbrowse-components/pull/3016) Allow whitespace separated refname,start,end type locstring ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3006](https://github.com/GMOD/jbrowse-components/pull/3006) Add string array configuration slot UI improvements ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2998](https://github.com/GMOD/jbrowse-components/pull/2998) Avoid rendering offscreen contents in pileup renderer ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3000](https://github.com/GMOD/jbrowse-components/pull/3000) Add reference base and correct percentage calculations to tooltip on SNPCoverage display ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#2981](https://github.com/GMOD/jbrowse-components/pull/2981) Add simplified URL format for loading spreadsheet and SV inspector ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2990](https://github.com/GMOD/jbrowse-components/pull/2990) Use shortened megabases (M) display when zoomed out, and option to hide the "open track selector" button ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+  - [#3003](https://github.com/GMOD/jbrowse-components/pull/3003) Add ability to run field formatters on the feature details panel ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3017](https://github.com/GMOD/jbrowse-components/pull/3017) Add button to copy track config in About track dialog ([@cmdcolin](https://github.com/cmdcolin))
+  - [#2999](https://github.com/GMOD/jbrowse-components/pull/2999) Generate clickable links to track data in about track dialog ([@cmdcolin](https://github.com/cmdcolin))
+- `__mocks__`, `core`
+  - [#3005](https://github.com/GMOD/jbrowse-components/pull/3005) Use cascading menu helper library for track menu to avoid menu going offscreen ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3021](https://github.com/GMOD/jbrowse-components/pull/3021) Fix mouseover display of read name to alignments track ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3012](https://github.com/GMOD/jbrowse-components/pull/3012) Small fix to rankSearchResults logic ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3009](https://github.com/GMOD/jbrowse-components/pull/3009) Add jsdom to jbrowse-img to fix --noRasterize option ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3007](https://github.com/GMOD/jbrowse-components/pull/3007) Fix read vs ref dotplot view ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- [@andrzejgrzelak](https://github.com/andrzejgrzelak)
+
 ## 1.7.9 (2022-06-02)
 
 <details><summary>Packages in this release</summary>
