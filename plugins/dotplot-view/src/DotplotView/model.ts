@@ -10,11 +10,9 @@ import {
   getRoot,
 } from 'mobx-state-tree'
 
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { makeTicks } from './components/util'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 import { observable, autorun, transaction } from 'mobx'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -29,6 +27,10 @@ import {
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import FolderOpenIcon from '@material-ui/icons/FolderOpen'
 
 type Coord = [number, number]
 
