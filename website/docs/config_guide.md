@@ -1308,6 +1308,8 @@ Here is an example track with a formatter
 }
 ```
 
+<Figure src="/img/customized_feature_details.png" caption="Example screenshot showing customized feature detail panel with links"/>
+
 This feature formatter changes the `"name"` field in the feature detail panel
 to have a link to a google search for that feature's name. This can be used to
 link to gene pages for example as well.
