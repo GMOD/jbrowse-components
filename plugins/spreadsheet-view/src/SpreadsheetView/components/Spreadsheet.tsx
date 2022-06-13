@@ -150,7 +150,7 @@ const CellData = observer(
     spreadsheetModel: SpreadsheetModel
     columnNumber: number
   }) => {
-    const ret = spreadsheetModel.columns.at(columnNumber)
+    const ret = spreadsheetModel.columns[columnNumber]
     if (ret && 'dataType' in ret && ret.dataType.DataCellReactComponent) {
       return (
         <ret.dataType.DataCellReactComponent
@@ -358,15 +358,14 @@ const DataTable = observer(
                   onMouseOut={columnHeaderMouseOut.bind(null, colNumber)}
                 >
                   <SortIndicator model={model} columnNumber={colNumber} />
-                  {(hasColumnNames && columns.at(colNumber)?.name) ||
+                  {(hasColumnNames && columns[colNumber]?.name) ||
                     numToColName(colNumber)}
                   <div
                     className={classes.columnButtonContainer}
                     style={{
                       display:
                         currentHoveredColumn === colNumber ||
-                        (currentColumnMenu &&
-                          currentColumnMenu.colNumber === colNumber)
+                        currentColumnMenu?.colNumber === colNumber
                           ? 'block'
                           : 'none',
                     }}

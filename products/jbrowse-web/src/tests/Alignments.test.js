@@ -29,6 +29,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 20000 }
+
 test('opens an alignments track', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
@@ -97,7 +98,9 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
   state.session.views[0].setNewView(0.03932, 67884.16536402702)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram', {}, delay),
+  )
 
   const { findByTestId: findByTestId1 } = within(
     await findByTestId('Blockset-snpcoverage', {}, delay),
