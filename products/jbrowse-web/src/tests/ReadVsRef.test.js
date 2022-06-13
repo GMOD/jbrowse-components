@@ -86,5 +86,5 @@ test('launch read vs ref dotplot', async () => {
   fireEvent.click(await findByText('Dotplot of read vs ref'))
 
   expect(state.session.views[1].type).toBe('DotplotView')
-  expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)

@@ -40,6 +40,10 @@ test('hic', async () => {
     await findByTestId('htsTrackEntry-hic_test', {}, { timeout: 10000 }),
   )
   expectCanvasMatch(
-    await findByTestId('prerendered_canvas_{hg19}1:1..4,000,000-0', {}, delay),
+    await findByTestId(
+      'prerendered_canvas_{hg19}1:1..4,000,000-0_done',
+      {},
+      delay,
+    ),
   )
 }, 25000)

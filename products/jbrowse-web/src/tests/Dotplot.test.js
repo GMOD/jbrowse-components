@@ -46,7 +46,7 @@ beforeEach(() => {
 test('open a dotplot view', async () => {
   const pm = getPluginManager(dotplotConfig, false)
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-  expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)
 
 test('open a dotplot view with import form', async () => {
@@ -65,12 +65,12 @@ test('open a dotplot view with import form', async () => {
       value: 'peach',
     },
   })
-  fireEvent.change(await findByTestId('urlInput'), {
+  fireEvent.change(await findByTestId('urlInput', {}, delay), {
     target: {
       value: 'peach_grape_small.paf',
     },
   })
   fireEvent.click(await findByTestId('submitDotplot'))
 
-  expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 30000)

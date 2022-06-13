@@ -109,12 +109,6 @@ export function expectCanvasMatch(canvas: HTMLCanvasElement) {
   })
 }
 
-export async function awaitCanvasMatch(
-  findCanvas: () => Promise<HTMLCanvasElement>,
-) {
-  expectCanvasMatch(await findCanvas())
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function JBrowse(props: any) {
   return (

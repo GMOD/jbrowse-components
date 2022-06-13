@@ -27,6 +27,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 test('opens a vcf.gz file in the sv inspector view', async () => {
   console.warn = jest.fn()
   const pluginManager = getPluginManager()
@@ -40,7 +42,7 @@ test('opens a vcf.gz file in the sv inspector view', async () => {
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('SV inspector'))
 
-  fireEvent.change(await findByTestId('urlInput'), {
+  fireEvent.change(await findByTestId('urlInput', {}, delay), {
     target: { value: 'volvox.dup.renamed.vcf.gz' },
   })
   await waitFor(() =>
@@ -49,9 +51,9 @@ test('opens a vcf.gz file in the sv inspector view', async () => {
     ).not.toBeDisabled(),
   )
   fireEvent.click(await findByTestId('open_spreadsheet'))
-  fireEvent.click(await findByTestId('chord-vcf-0', {}, { timeout: 10000 }))
+  fireEvent.click(await findByTestId('chord-vcf-0', {}, delay))
 
   // confirm breakpoint split view opened
   expect(session.views.length).toBe(3)
   expect(session.views[2].displayName).toBe('bnd_A split detail')
-}, 15000)
+}, 20000)

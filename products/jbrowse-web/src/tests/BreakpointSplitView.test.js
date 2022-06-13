@@ -21,6 +21,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 test('breakpoint split view', async () => {
   console.warn = jest.fn()
   const pm = getPluginManager(breakpointConfig)
@@ -28,9 +30,7 @@ test('breakpoint split view', async () => {
     <JBrowse pluginManager={pm} />,
   )
   // the breakpoint could be partially loaded so explicitly wait for two items
-  await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), {
-    timeout: 10000,
-  })
+  await waitFor(() => expect(queryAllByTestId('r1').length).toBe(2), delay)
 
   expect(
     await findByTestId('pacbio_hg002_breakpoints-loaded'),

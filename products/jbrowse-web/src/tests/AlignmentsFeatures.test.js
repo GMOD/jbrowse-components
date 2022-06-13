@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, render, within } from '@testing-library/react'
+import { act } from 'react-dom/test-utils'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -9,7 +10,7 @@ import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import {
   JBrowse,
   setup,
-  awaitCanvasMatch,
+  expectCanvasMatch,
   generateReadBuffer,
   getPluginManager,
 } from './util'
@@ -28,8 +29,6 @@ beforeEach(() => {
   )
 })
 
-const prefix = 'prerendered_canvas_'
-
 const delay = { timeout: 20000 }
 
 test('opens the track menu and enables soft clipping', async () => {
@@ -38,7 +37,7 @@ test('opens the track menu and enables soft clipping', async () => {
   const { session } = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
-  session.views[0].setNewView(0.02, 142956)
+  act(() => session.views[0].setNewView(0.02, 142956))
 
   // load track
   fireEvent.click(
@@ -60,9 +59,9 @@ test('opens the track menu and enables soft clipping', async () => {
     await findByTestId('Blockset-pileup'),
   )
 
-  awaitCanvasMatch(() =>
-    findByTestId1(
-      prefix + 'softclipped_{volvox}ctgA:2,849..2,864-0',
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_softclipped_{volvox}ctgA:2,849..2,864-0_done',
       {},
       delay,
     ),
@@ -77,7 +76,7 @@ test('selects a sort, sort by strand', async () => {
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  session.views[0].setNewView(0.02, 2086500)
+  act(() => session.views[0].setNewView(0.02, 2086500))
 
   // load track
   fireEvent.click(
@@ -101,12 +100,16 @@ test('selects a sort, sort by strand', async () => {
     await findByTestId('Blockset-pileup'),
   )
 
-  awaitCanvasMatch(() =>
-    findByTestId1(prefix + '{volvox}ctgA:41,729..41,744-0', {}, delay),
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0_done',
+      {},
+      delay,
+    ),
   )
 }, 35000)
 
-test('selects a color, color by strand', async () => {
+test('color by strand', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
   const { session } = pm.rootModel
@@ -114,7 +117,7 @@ test('selects a color, color by strand', async () => {
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  session.views[0].setNewView(0.02, 2086500)
+  act(() => session.views[0].setNewView(0.02, 2086500))
 
   // load track
   fireEvent.click(
@@ -137,12 +140,16 @@ test('selects a color, color by strand', async () => {
   const { findByTestId: findByTestId1 } = within(
     await findByTestId('Blockset-pileup'),
   )
-  awaitCanvasMatch(() =>
-    findByTestId1(prefix + '{volvox}ctgA:41,729..41,744-0', {}, delay),
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0_done',
+      {},
+      delay,
+    ),
   )
 }, 30000)
 
-test('colors by tag, color by tag', async () => {
+test('color by tag', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
   const { session } = pm.rootModel
@@ -150,7 +157,7 @@ test('colors by tag, color by tag', async () => {
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  session.views[0].setNewView(0.465, 85055)
+  act(() => session.views[0].setNewView(0.465, 85055))
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram', {}, delay))
@@ -167,14 +174,17 @@ test('colors by tag, color by tag', async () => {
   fireEvent.click(await findByText('Submit'))
   // wait for pileup track to render with color
   await findAllByTestId('pileup-tagHP', {}, delay)
-  await new Promise(r => setTimeout(r, 300))
 
   // wait for pileup track to render
   const { findByTestId: findByTestId1 } = within(
     await findByTestId('Blockset-pileup'),
   )
 
-  awaitCanvasMatch(() =>
-    findByTestId1(prefix + '{volvox}ctgA:39,805..40,176-0', {}, delay),
+  expectCanvasMatch(
+    await findByTestId1(
+      'prerendered_canvas_{volvox}ctgA:39,805..40,176-0_done',
+      {},
+      delay,
+    ),
   )
 }, 30000)

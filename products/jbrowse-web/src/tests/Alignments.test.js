@@ -41,7 +41,7 @@ test('opens an alignments track', async () => {
     await findByTestId(
       'htsTrackEntry-volvox_alignments_pileup_coverage',
       {},
-      { timeout: 10000 },
+      delay,
     ),
   )
 
@@ -50,7 +50,7 @@ test('opens an alignments track', async () => {
   )
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
       {},
       delay,
     ),
@@ -61,7 +61,7 @@ test('opens an alignments track', async () => {
   )
   expectCanvasMatch(
     await findByTestId2(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
       {},
       delay,
     ),
@@ -83,11 +83,7 @@ test('test that bam with small max height displays message', async () => {
   const pm = getPluginManager()
   const { findByTestId, findAllByText } = render(<JBrowse pluginManager={pm} />)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_bam_small_max_height',
-      {},
-      { timeout: 10000 },
-    ),
+    await findByTestId('htsTrackEntry-volvox_bam_small_max_height', {}, delay),
   )
 
   await findAllByText('Max height reached', {}, delay)
@@ -109,14 +105,14 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
 
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:2,657..2,688-0',
+      'prerendered_canvas_{volvox}ctgA:2,657..2,688-0_done',
       {},
       delay,
     ),
   )
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:2,689..2,720-0',
+      'prerendered_canvas_{volvox}ctgA:2,689..2,720-0_done',
       {},
       delay,
     ),
