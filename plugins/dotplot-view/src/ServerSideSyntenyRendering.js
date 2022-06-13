@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 

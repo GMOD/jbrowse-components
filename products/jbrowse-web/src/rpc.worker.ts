@@ -1,9 +1,9 @@
-/* eslint-disable no-restricted-globals,react-hooks/rules-of-hooks */
+/* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 
 // @ts-ignore
 import RpcServer from 'librpc-web-mod'
-import { useStaticRendering } from 'mobx-react'
+import { enableStaticRendering } from 'mobx-react'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
@@ -14,7 +14,7 @@ import corePlugins from './corePlugins'
 // prevent mobx-react from doing funny things when we render in the worker.
 // but only if we are running in the browser.  in node tests, leave it alone.
 if (typeof __webpack_require__ === 'function') {
-  useStaticRendering(true)
+  enableStaticRendering(true)
 }
 
 interface WorkerConfiguration {

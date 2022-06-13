@@ -1,6 +1,9 @@
 import React from 'react'
+
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { GenericFilehandle } from 'generic-filehandle'
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
@@ -18,7 +21,8 @@ configSnapshot.configuration = {
   },
 }
 
-export function getPluginManager(initialState: any, adminMode = true) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getPluginManager(initialState?: any, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -30,6 +34,7 @@ export function getPluginManager(initialState: any, adminMode = true) {
     },
     { pluginManager },
   )
+  // @ts-ignore
   if (rootModel && rootModel.jbrowse.defaultSession.length) {
     const { name } = rootModel.jbrowse.defaultSession
     localStorage.setItem(
@@ -41,6 +46,7 @@ export function getPluginManager(initialState: any, adminMode = true) {
     rootModel.setDefaultSession()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   rootModel.session!.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
