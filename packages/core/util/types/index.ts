@@ -238,7 +238,7 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-interface AbstractTrackModel {
+export interface AbstractTrackModel {
   displays: AbstractDisplayModel[]
 }
 
