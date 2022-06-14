@@ -12,9 +12,6 @@ import * as MUIUtils from '@mui/material/utils'
 import { useTheme } from '@mui/material'
 
 // material-ui lab
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
-
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
 
 import Base1DView from '../util/Base1DViewModel'
@@ -79,6 +76,8 @@ const Select = lazy(() => import('@mui/material/Select'))
 const Snackbar = lazy(() => import('@mui/material/Snackbar'))
 const SnackbarContent = lazy(() => import('@mui/material/SnackbarContent'))
 const TextField = lazy(() => import('@mui/material/TextField'))
+const ToggleButton = lazy(() => import('@mui/material/ToggleButton'))
+const ToggleButtonGroup = lazy(() => import('@mui/material/ToggleButtonGroup'))
 const Tooltip = lazy(() => import('@mui/material/Tooltip'))
 const Typography = lazy(() => import('@mui/material/Typography'))
 
@@ -144,8 +143,13 @@ const MuiPrefixMUI = Object.fromEntries(
   ]),
 )
 
-// create a lazy component for feature details, used by msaview
 const Attributes = lazy(() => import('./Attributes'))
+
+// uses 'as any' because otherwise typescript gives warning Exported variable
+// 'libs' has or is using name 'DataGridComponent' from external module
+// "node_modules/@mui/x-data-grid/DataGrid/DataGrid" but cannot be named.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const DataGrid = lazy(() => import('./DataGrid')) as any
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAttributes = (props: any) => (
@@ -159,7 +163,7 @@ const libs = {
   react: React,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
-  // material-ui 1st-level components
+  '@mui/x-data-grid': { DataGrid },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/utils': MUIUtils,
