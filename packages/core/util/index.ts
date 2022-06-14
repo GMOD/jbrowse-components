@@ -1220,7 +1220,7 @@ export function getCompatibleDisplays(
     .map(d => d.name)
 
   const trackDisplays = [...config.displays.entries()]
-    .sort((a, b) => b[1].priority.value - a[1].priority.value)
+    .sort((a, b) => (b[1].priority?.value || 0) - (a[1].priority?.value || 0))
     .map(ent => ent[0])
 
   // note: order of params to intersect matter here: this prioritizes

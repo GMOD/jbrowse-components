@@ -224,6 +224,7 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
         try {
           view.toggleTrack(trackId)
         } catch (e) {
+          console.error(e)
           session.notify(`${e}`, 'error')
         }
       },

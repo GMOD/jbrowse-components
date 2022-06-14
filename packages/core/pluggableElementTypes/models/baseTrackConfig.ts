@@ -89,15 +89,22 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           const trackType = pluginManager.getTrackType(snap.type)
           trackType.displayTypes.forEach(d => {
             displays[d.name] = displays[d.name] || {
-              displayId: `${snap.trackId}-${d.name}`,
               type: d.name,
               priority: -1,
             }
           })
         }
+        console.log({ displays }, snap.trackId)
         return {
           ...snap,
-          displays,
+          displays: Object.fromEntries(
+            Object.entries(displays).map(([key, val]) => [
+              key,
+              // synthesizes display id if none availble
+              // @ts-ignore
+              { displayId: `${snap.trackId}-${key}`, ...val },
+            ]),
+          ),
         }
       },
       explicitIdentifier: 'trackId',

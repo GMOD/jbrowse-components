@@ -1671,6 +1671,35 @@
           }
         }
       }
+    },
+
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_cram_snpcoverage_new_display_config",
+      "name": "volvox-sorted.cram (new display config type)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "uri": "volvox-sorted-altname.cram",
+          "locationType": "UriLocation"
+        },
+        "craiLocation": {
+          "uri": "volvox-sorted-altname.cram.crai",
+          "locationType": "UriLocation"
+        },
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": {
+        "LinearSNPCoverageDisplay": {}
+      }
     }
   ],
   "defaultSession": {
