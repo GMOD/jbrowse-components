@@ -1034,6 +1034,19 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "bed_genes",
+      "name": "Bed genes",
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "volvox-bed12.bed"
+        }
+      }
+    },
+    {
       "type": "QuantitativeTrack",
       "trackId": "LrM3WWJR0tj",
       "name": "Volvox microarray",
