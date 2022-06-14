@@ -13,6 +13,7 @@ export default function register(pluginManager: PluginManager) {
       stateModel: modelFactory(configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
+      priority: 0,
       ReactComponent: BaseLinearDisplayComponent,
     })
   })

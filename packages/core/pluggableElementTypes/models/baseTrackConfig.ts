@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import clone from 'clone'
 import { types, Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
@@ -49,7 +50,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           'text search adapter',
         ),
       }),
-      displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
+      displays: types.map(pluginManager.pluggableConfigSchemaType('display')),
 
       formatDetails: ConfigurationSchema('FormatDetails', {
         feature: {
@@ -73,25 +74,31 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
     },
     {
       preProcessSnapshot: s => {
-        const snap = JSON.parse(JSON.stringify(s))
-        const displayTypes = new Set()
-        const { displays = [] } = snap
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const snap = clone(s) as any
+        const displays = Array.isArray(snap.displays)
+          ? Object.fromEntries(
+              snap.displays.map((d: { type: string }) => [d.type, d]),
+            )
+          : snap.displays || {}
+
         if (snap.trackId !== 'placeholderId') {
           // Gets the displays on the track snapshot and the possible displays
           // from the track type and adds any missing possible displays to the
           // snapshot
-          displays.forEach((d: any) => d && displayTypes.add(d.type))
           const trackType = pluginManager.getTrackType(snap.type)
-          trackType.displayTypes.forEach(displayType => {
-            if (!displayTypes.has(displayType.name)) {
-              displays.push({
-                displayId: `${snap.trackId}-${displayType.name}`,
-                type: displayType.name,
-              })
+          trackType.displayTypes.forEach(d => {
+            displays[d.name] = displays[d.name] || {
+              displayId: `${snap.trackId}-${d.name}`,
+              type: d.name,
+              priority: -1,
             }
           })
         }
-        return { ...snap, displays }
+        return {
+          ...snap,
+          displays,
+        }
       },
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,

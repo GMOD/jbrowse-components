@@ -220,7 +220,13 @@ const HierarchicalTree = observer(({ height, tree, model }) => {
 
   const extra = useMemo(
     () => ({
-      onChange: trackId => view.toggleTrack(trackId),
+      onChange: trackId => {
+        try {
+          view.toggleTrack(trackId)
+        } catch (e) {
+          session.notify(`${e}`, 'error')
+        }
+      },
       toggleCollapse: pathName => model.toggleCategory(pathName),
       onMoreInfo: setMoreInfo,
       drawerPosition,

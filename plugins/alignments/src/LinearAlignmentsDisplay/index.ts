@@ -14,6 +14,7 @@ export default function (pluginManager: PluginManager) {
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
+      priority: 1,
       ReactComponent,
     })
   })

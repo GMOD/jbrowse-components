@@ -1,4 +1,4 @@
-import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
 import { ElementId, Region as MUIRegion } from '@jbrowse/core/util/types/mst'
@@ -8,6 +8,7 @@ import {
   clamp,
   findLastIndex,
   getContainingView,
+  getCompatibleDisplays,
   getSession,
   isViewContainer,
   isSessionModelWithWidgets,
@@ -86,6 +87,15 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     }),
   )
   return locs.join(' ')
+}
+
+// https://stackoverflow.com/a/49186706/2129219 the array-intersection package
+// on npm has a large kb size, and we are just intersecting open track ids so
+// simple is better
+function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[][]): T[] {
+  const ids = a2
+  const a12 = a1.filter(value => ids.includes(value))
+  return rest.length === 0 ? a12 : intersect(a12, ...rest)
 }
 
 export interface NavLocation {
@@ -543,13 +553,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (!trackType) {
           throw new Error(`Unknown track type ${configuration.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(
-          displayType => displayType.name,
+
+        const compatibleDisplays = getCompatibleDisplays(
+          configuration,
+          self.type,
+          pluginManager,
         )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
-        )
+        const displayConf = configuration.displays.get(compatibleDisplays[0])
         if (!displayConf) {
           throw new Error(
             `Could not find a compatible display for view type ${self.type}`,

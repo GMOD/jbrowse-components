@@ -147,10 +147,8 @@ export default pluginManager =>
             })
             .filter(conf => {
               const { displayTypes } = pluginManager.getViewType(self.view.type)
-              const compatibleDisplays = displayTypes.map(
-                display => display.name,
-              )
-              const trackDisplays = conf.displays.map(display => display.type)
+              const compatibleDisplays = displayTypes.map(d => d.name)
+              const trackDisplays = [...conf.displays.keys()]
               return hasAnyOverlap(compatibleDisplays, trackDisplays)
             }),
         ])

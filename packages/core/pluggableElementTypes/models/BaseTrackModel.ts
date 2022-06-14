@@ -1,4 +1,3 @@
-import { transaction } from 'mobx'
 import {
   getEnv,
   getRoot,
@@ -8,13 +7,16 @@ import {
 } from 'mobx-state-tree'
 import {
   getConf,
-  AnyConfigurationModel,
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession } from '../../util'
+import {
+  getContainingView,
+  getSession,
+  getCompatibleDisplays,
+} from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
@@ -34,9 +36,7 @@ export function createBaseTrackModel(
       id: ElementId,
       type: types.literal(trackType),
       configuration: ConfigurationReference(baseTrackConfig),
-      displays: types.array(
-        pluginManager.pluggableMstType('display', 'stateModel'),
-      ),
+      display: pluginManager.pluggableMstType('display', 'stateModel'),
     })
     .views(self => ({
       get rpcSessionId() {
@@ -68,22 +68,17 @@ export function createBaseTrackModel(
       },
 
       get viewMenuActions(): MenuItem[] {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.viewMenuActions)
-        })
-        return menuItems
+        return self.display.viewMenuActions
       },
       get canConfigure() {
         const session = getSession(self)
+        // @ts-ignore
+        const isSessionTrack = session.sessionTracks.find(
+          (t: { trackId: string }) => t.trackId === self.configuration.trackId,
+        )
         return (
           isSessionModelWithConfigEditing(session) &&
-          // @ts-ignore
-          (session.adminMode ||
-            // @ts-ignore
-            session.sessionTracks.find(track => {
-              return track.trackId === self.configuration.trackId
-            }))
+          (session.adminMode || isSessionTrack)
         )
       },
     }))
@@ -102,107 +97,63 @@ export function createBaseTrackModel(
           }
         }
       },
-      showDisplay(displayId: string, initialSnapshot = {}) {
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          displayId,
-        )
-        const displayType = pluginManager.getDisplayType(configuration.type)
-        if (!displayType) {
-          throw new Error(`unknown display type ${configuration.type}`)
-        }
-        const display = displayType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
-        self.displays.push(display)
-      },
 
-      hideDisplay(displayId: string) {
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          displayId,
-        )
-        // if we have any displays with that configuration, turn them off
-        const shownDisplays = self.displays.filter(
-          d => d.configuration === configuration,
-        )
-        transaction(() => shownDisplays.forEach(d => self.displays.remove(d)))
-        return shownDisplays.length
-      },
-      replaceDisplay(
-        oldDisplayId: string,
-        newDisplayId: string,
-        initialSnapshot = {},
-      ) {
-        const displayIdx = self.displays.findIndex(
-          d => d.configuration.displayId === oldDisplayId,
-        )
-        if (displayIdx === -1) {
-          throw new Error(
-            `could not find display id ${oldDisplayId} to replace`,
-          )
-        }
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          newDisplayId,
-        )
-        const displayType = pluginManager.getDisplayType(configuration.type)
+      showDisplay(newDisplayId: string, initialSnapshot = {}) {
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), newDisplayId)
+        const displayType = pluginManager.getDisplayType(conf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${configuration.type}`)
+          throw new Error(`unknown display type ${conf.type}`)
         }
-        self.displays.splice(displayIdx, 1, {
+        self.display = {
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
+          type: conf.type,
+          configuration: conf,
+        }
       },
     }))
     .views(self => ({
       trackMenuItems(): MenuItem[] {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.trackMenuItems())
-        })
+        const menuItems = self.display.trackMenuItems()
+
         const displayChoices: MenuItem[] = []
         const view = getContainingView(self)
-        const viewType = pluginManager.getViewType(view.type)
-        const compatibleDisplayTypes = viewType.displayTypes.map(
-          displayType => displayType.name,
+        const compatibleDisplays = getCompatibleDisplays(
+          self.configuration,
+          view.type,
+          pluginManager,
         )
-        const compatibleDisplays = self.configuration.displays.filter(
-          (displayConf: AnyConfigurationModel) =>
-            compatibleDisplayTypes.includes(displayConf.type),
-        )
-        const shownId = self.displays[0].configuration.displayId
+
+        const shownId = self.display.configuration.displayId
         if (compatibleDisplays.length > 1) {
           displayChoices.push(
             { type: 'divider' },
             { type: 'subHeader', label: 'Display types' },
           )
-          compatibleDisplays.forEach((displayConf: AnyConfigurationModel) => {
+          compatibleDisplays.forEach(str => {
+            const displayConf = self.configuration.displays.get(str)
             displayChoices.push({
               type: 'radio',
               label: displayConf.type,
               checked: displayConf.displayId === shownId,
-              onClick: () =>
-                self.replaceDisplay(shownId, displayConf.displayId),
+              onClick: () => self.showDisplay(displayConf.displayId),
             })
           })
         }
         return [...menuItems, ...displayChoices]
       },
     }))
+    .preProcessSnapshot(snap => {
+      // @ts-ignore
+      if (Array.isArray(snap.displays)) {
+        return {
+          ...snap,
+          // @ts-ignore
+          display: snap.displays[0],
+        }
+      }
+      return snap
+    })
 }
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>

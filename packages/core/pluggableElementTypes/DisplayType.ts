@@ -13,12 +13,18 @@ export default class DisplayType extends PluggableElementBase {
 
   trackType: string
 
+  // priority allows a given display to be "higher priority" for being the
+  // default when you turn on a track for the first time. higher number ==
+  // higher priority
+  priority: number
+
   viewType: string
 
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType
     trackType: string
+    priority?: number
     viewType: string
     configSchema: AnyConfigurationSchemaType
     ReactComponent: AnyReactComponentType
@@ -29,6 +35,7 @@ export default class DisplayType extends PluggableElementBase {
     this.ReactComponent = stuff.ReactComponent
     this.trackType = stuff.trackType
     this.viewType = stuff.viewType
+    this.priority = stuff.priority || 0
     if (!this.stateModel) {
       throw new Error(`no stateModel defined for display ${this.name}`)
     }

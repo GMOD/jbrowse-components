@@ -23,6 +23,8 @@ import {
   TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import { AnyConfigurationModel } from '../configuration'
+import PluginManager from '../PluginManager'
 
 export type { Feature }
 export * from './types'
@@ -1193,4 +1195,35 @@ export function getLayoutId({
   layoutId: string
 }) {
   return sessionId + '-' + layoutId
+}
+
+// https://stackoverflow.com/a/49186706/2129219 the array-intersection package
+// on npm has a large kb size, and we are just intersecting open track ids so
+// simple is better
+function intersect<T>(a1: T[] = [], a2: T[] = [], ...rest: T[][]): T[] {
+  const ids = a2
+  const a12 = a1.filter(value => ids.includes(value))
+  return rest.length === 0 ? a12 : intersect(a12, ...rest)
+}
+
+// returns an array of compatible display types for a given track config,
+// ordered by the priority of both the users preference in their config and the
+// plugin's claimed priority in the DisplayType pluggableElement
+export function getCompatibleDisplays(
+  config: AnyConfigurationModel,
+  viewName: string,
+  pluginManager: PluginManager,
+): string[] {
+  const viewType = pluginManager.getViewType(viewName)
+  const supportedDisplays = viewType.displayTypes
+    .sort((a, b) => b.priority - a.priority)
+    .map(d => d.name)
+
+  const trackDisplays = [...config.displays.entries()]
+    .sort((a, b) => b[1].priority.value - a[1].priority.value)
+    .map(ent => ent[0])
+
+  // note: order of params to intersect matter here: this prioritizes
+  // trackDisplays
+  return intersect(trackDisplays, supportedDisplays)
 }

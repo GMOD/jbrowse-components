@@ -85,7 +85,7 @@ function TrackContainer({
   track: BaseTrackModel
 }) {
   const classes = useStyles()
-  const display = track.displays[0]
+  const display = track.display
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = display
   const trackId = getConf(track, 'trackId')

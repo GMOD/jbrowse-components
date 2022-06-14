@@ -3,6 +3,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 export const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
   {
+    priority: {
+      type: 'number',
+      description: 'The priority to give to this display type in your config',
+      defaultValue: 0,
+    },
     maxFeatureScreenDensity: {
       type: 'number',
       description:
