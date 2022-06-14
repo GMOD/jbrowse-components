@@ -13,7 +13,10 @@ import {
 } from '@material-ui/core'
 import CloseIcon from '@material-ui/icons/Close'
 import { observer } from 'mobx-react'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles(theme => ({
@@ -39,7 +42,7 @@ function ToggleConnectionDialog({
   handleClose: () => void
   session: AbstractSessionModel
   assemblyName: string
-  breakConnection: Function
+  breakConnection: (arg: AnyConfigurationModel) => void
 }) {
   const classes = useStyles()
   const { connections, connectionInstances } = session

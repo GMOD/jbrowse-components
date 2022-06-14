@@ -471,7 +471,7 @@ const HierarchicalTrackSelectorHeader = observer(
     const [modalInfo, setModalInfo] = useState<{
       connectionConf: AnyConfigurationModel
       safelyBreakConnection: Function
-      dereferenceTypeCount: number
+      dereferenceTypeCount: { [key: string]: number }
       name: string
     }>()
     const [deleteDialogDetails, setDeleteDialogDetails] = useState<{
@@ -485,7 +485,7 @@ const HierarchicalTrackSelectorHeader = observer(
 
     function breakConnection(
       connectionConf: AnyConfigurationModel,
-      deletingConnection: boolean,
+      deletingConnection?: boolean,
     ) {
       const name = readConfObject(connectionConf, 'name')
 
