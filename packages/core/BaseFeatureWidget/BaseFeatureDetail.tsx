@@ -500,7 +500,7 @@ export function Attributes(props: AttributeProps) {
                 value={formatter(value, key)}
                 description={description}
                 prefix={prefix}
-                width={Math.max(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
+                width={Math.min(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
               />
             )
           }
