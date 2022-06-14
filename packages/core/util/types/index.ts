@@ -111,6 +111,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   name: string
   id?: string
+  tracks: AbstractTrackModel[]
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -226,7 +227,10 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-type AbstractTrackModel = {}
+interface AbstractTrackModel {
+  displays: AbstractDisplayModel[]
+}
+
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&
