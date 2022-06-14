@@ -78,6 +78,7 @@ export type DialogComponentType =
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
+  drawerPosition?: string
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
@@ -111,7 +112,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   name: string
   id?: string
-  tracks: AbstractTrackModel[]
+  tracks: AnyConfigurationModel[]
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -179,6 +180,16 @@ export function isSessionModelWithWidgets(
   thing: unknown,
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
+}
+
+interface SessionWithConnections {
+  addConnectionConf: (arg: AnyConfigurationModel) => void
+}
+
+export function isSessionModelWithConnections(
+  thing: unknown,
+): thing is SessionWithConnections {
+  return isSessionModel(thing) && 'addConnectionConf' in thing
 }
 
 export interface SessionWithSessionPlugins extends AbstractSessionModel {

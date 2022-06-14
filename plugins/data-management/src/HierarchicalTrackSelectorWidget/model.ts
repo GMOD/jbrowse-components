@@ -1,6 +1,7 @@
 import { types, getParent, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationModel,
+  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
@@ -31,7 +32,7 @@ function getTrackName(config: AnyConfigurationModel) {
   )
 }
 
-type TreeNode = {
+export type TreeNode = {
   name: string
   id: string
   conf?: AnyConfigurationModel
@@ -39,10 +40,11 @@ type TreeNode = {
   isOpenByDefault?: boolean
   children: TreeNode[]
 }
+
 export function generateHierarchy(
-  model: HierarchicalTrackSelectorModel,
+  model: any,
   trackConfigurations: AnyConfigurationModel[],
-  collapsed: Map<string, string>,
+  collapsed: { get: (arg: string) => boolean | undefined },
 ) {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
@@ -130,21 +132,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
         const viewType = pluginManager.getViewType(self.view.type)
-        if (trackConf) {
-          for (const display of trackConf.displays) {
-            if (viewType.displayTypes.find(d => d.name === display.type)) {
-              return trackConf
-            }
+        if (!trackConf) {
+          return undefined
+        }
+        for (const display of trackConf.displays) {
+          if (viewType.displayTypes.find(d => d.name === display.type)) {
+            return trackConf
           }
         }
-        return undefined
       },
+    }))
+    .views(self => ({
       trackConfigurations(assemblyName: string) {
         if (!self.view) {
           return []
         }
-        const session = getSession(self)
-        const { tracks: trackConfigurations, assemblyManager } = session
+        const { tracks, assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         if (!assembly) {
           return []
@@ -153,32 +156,36 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // filter out tracks that don't match the current assembly (check all
         // assembly aliases) and display types
         return (refseq ? [refseq] : []).concat([
-          ...trackConfigurations
-            .filter(conf => {
-              const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+          ...tracks
+            .filter(c => {
+              const trackConfAssemblies = readConfObject(c, 'assemblyNames')
               const { allAliases } = assembly
               return hasAnyOverlap(allAliases, trackConfAssemblies)
             })
-            .filter(conf => {
+            .filter(c => {
               const { displayTypes } = pluginManager.getViewType(self.view.type)
               const compatibleDisplays = displayTypes.map(d => d.name)
-              const trackDisplays = conf.displays.map(d => d.type)
+              const trackDisplays = c.displays.map(
+                (d: { type: string }) => d.type,
+              )
               return hasAnyOverlap(compatibleDisplays, trackDisplays)
             }),
         ])
       },
 
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         return self.view?.assemblyNames || []
       },
 
-      connectionTrackConfigurations(assemblyName: string, connection: any) {
+      connectionTrackConfigurations(
+        assemblyName: string,
+        connection: { tracks: AnyConfigurationModel[] },
+      ) {
         if (!self.view) {
           return []
         }
         const trackConfigurations = connection.tracks
-        const session = getSession(self)
-        const { assemblyManager } = session
+        const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
 
         if (!(assembly && assembly.initialized)) {
@@ -187,49 +194,47 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
         // filter out tracks that don't match the current display types
         return trackConfigurations
-          .filter(conf => {
-            const trackConfAssemblies = readConfObject(conf, 'assemblyNames')
+          .filter(c => {
+            const trackConfAssemblies = readConfObject(c, 'assemblyNames')
             const { allAliases } = assembly
             return hasAnyOverlap(allAliases, trackConfAssemblies)
           })
-          .filter(conf => {
+          .filter(c => {
             const { displayTypes } = pluginManager.getViewType(self.view.type)
-            const compatibleDisplays = displayTypes.map(display => display.name)
-            const trackDisplays = conf.displays.map(display => display.type)
+            const compatibleDisplays = displayTypes.map(d => d.name)
+            const trackDisplays = c.displays.map(
+              (d: { type: string }) => d.type,
+            )
             return hasAnyOverlap(compatibleDisplays, trackDisplays)
           })
       },
-
-      hierarchy(assemblyName) {
+    }))
+    .views(self => ({
+      hierarchy(assemblyName: string) {
         const hier = generateHierarchy(
-          self,
+          self as any,
           self.trackConfigurations(assemblyName),
           self.collapsed,
         )
 
         const session = getSession(self)
-        const conns = session.connectionInstances
-          .filter(conn => {
-            const configAssemblyNames = readConfObject(
-              conn.configuration,
-              'assemblyNames',
-            )
-            if (configAssemblyNames.length === 0) {
-              return true
-            }
-            return configAssemblyNames.includes(assemblyName)
-          })
-          .map((conn, index) => {
-            const c = session.connections[index]
-            return {
-              id: c.connectionId,
-              name: readConfObject(c, 'name'),
-              children: this.connectionHierarchy(assemblyName, conn),
-              state: {
-                expanded: true,
-              },
-            }
-          })
+        const conns =
+          session.connectionInstances
+            ?.filter(c => {
+              const names = getConf(c, 'assemblyNames')
+              return names.length === 0 ? true : names.includes(assemblyName)
+            })
+            .map((conn, index) => {
+              const c = session.connections[index]
+              return {
+                id: c.connectionId,
+                name: readConfObject(c, 'name'),
+                children: this.connectionHierarchy(assemblyName, conn),
+                state: {
+                  expanded: true,
+                },
+              }
+            }) || []
 
         return {
           name: 'Root',
@@ -241,34 +246,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         }
       },
 
-      connectionHierarchy(assemblyName, connection) {
+      connectionHierarchy(assemblyName: string, connection: any) {
         return generateHierarchy(
-          self,
+          self as any,
           self.connectionTrackConfigurations(assemblyName, connection),
           self.collapsed,
         )
-      },
-
-      // This recursively gets tracks from lower paths
-      allTracksInCategoryPath(path, connection, assemblyName) {
-        let currentHier = connection
-          ? self.connectionHierarchy(connection)
-          : self.hierarchy(assemblyName)
-        path.forEach(pathItem => {
-          currentHier = currentHier.get(pathItem) || new Map()
-        })
-        let tracks = {}
-        currentHier.forEach((contents, name) => {
-          if (contents.trackId) {
-            tracks[contents.trackId] = contents
-          } else {
-            tracks = Object.assign(
-              tracks,
-              self.allTracksInCategoryPath(path.concat([name])),
-            )
-          }
-        })
-        return tracks
       },
     }))
 }
