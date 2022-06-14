@@ -1,22 +1,2 @@
 #!/bin/bash
-cd jbrowse-react-linear-genome-view
-yarn deploy
-cd -
-cd jbrowse-react-circular-genome-view
-yarn deploy
-cd -
-cd jbrowse-react-linear-genome-view-cra5
-yarn deploy
-cd -
-cd jbrowse-react-circular-genome-view-cra5
-yarn deploy
-cd -
-cd jbrowse-react-linear-genome-view-vite
-yarn deploy
-cd -
-cd jbrowse-react-linear-genome-view-vanillajs
-yarn deploy
-cd -
-cd jbrowse-react-circular-genome-view-vanillajs
-yarn deploy
-cd -
+for i in jbrowse*; do cd $i; yarn deploy; cd -; done;
