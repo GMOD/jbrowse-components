@@ -565,9 +565,7 @@ export default function sessionModelFactory(
           },
           {
             label: 'Settings',
-            onClick: () => {
-              session.editConfiguration(config)
-            },
+            onClick: () => session.editConfiguration(config),
             icon: SettingsIcon,
           },
           {
@@ -582,11 +580,9 @@ export default function sessionModelFactory(
             onClick: () => {
               const now = Date.now()
               trackSnapshot.trackId += `-${now}`
-              trackSnapshot.displays.forEach(
-                (display: { displayId: string }) => {
-                  display.displayId += `-${now}`
-                },
-              )
+              trackSnapshot.displays.forEach((d: { displayId: string }) => {
+                d.displayId += `-${now}`
+              })
               trackSnapshot.name += ' (copy)'
               trackSnapshot.category = undefined
               session.addTrackConf(trackSnapshot)
@@ -603,30 +599,27 @@ export default function sessionModelFactory(
               const { jobsManager } = rootModel
               const { trackId, assemblyNames, textSearching, name } =
                 trackSnapshot
-              // create text indexing parameters
               const indexName = name + '-index'
-              const indexingParams = {
-                attributes: textSearching?.indexingAttributes || ['Name', 'ID'],
-                exclude: textSearching?.indexingFeatureTypesToExclude || [
-                  'CDS',
-                  'exon',
-                ],
-                assemblies: assemblyNames,
-                tracks: [trackId],
-                indexType: 'perTrack',
-                timestamp: new Date().toISOString(),
-                name: indexName, // trackName
-              }
-              // create job entry for queue of long running jobs
-              const newEntry = {
-                indexingParams,
-                name: indexName,
-                cancelCallback: () => {
-                  jobsManager.abortJob()
-                },
-              } as TextJobsEntry
-              jobsManager.queueJob(newEntry)
               // TODO: open jobs list widget
+              jobsManager.queueJob({
+                indexingParams: {
+                  attributes: textSearching?.indexingAttributes || [
+                    'Name',
+                    'ID',
+                  ],
+                  exclude: textSearching?.indexingFeatureTypesToExclude || [
+                    'CDS',
+                    'exon',
+                  ],
+                  assemblies: assemblyNames,
+                  tracks: [trackId],
+                  indexType: 'perTrack',
+                  timestamp: new Date().toISOString(),
+                  name: indexName,
+                },
+                name: indexName,
+                cancelCallback: () => jobsManager.abortJob(),
+              })
             },
             icon: Indexing,
           },
