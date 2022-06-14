@@ -10,6 +10,7 @@ machine, try:
 ```
 yarn build # running build from root of the repo copies files to component_test/packed
 cd component_test
+rm -f yarn.lock
 rm -rf node_modules
 yarn cache clean
 yarn
