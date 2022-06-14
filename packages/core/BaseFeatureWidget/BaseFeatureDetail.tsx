@@ -450,9 +450,6 @@ export function Attributes(props: AttributeProps) {
     prefix,
   )
 
-  const labelWidth =
-    maxLabelWidth <= MAX_FIELD_NAME_WIDTH ? maxLabelWidth : MAX_FIELD_NAME_WIDTH
-
   return (
     <>
       {Object.entries(formattedAttributes)
@@ -503,7 +500,7 @@ export function Attributes(props: AttributeProps) {
                 value={formatter(value, key)}
                 description={description}
                 prefix={prefix}
-                width={labelWidth}
+                width={Math.max(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
               />
             )
           }
