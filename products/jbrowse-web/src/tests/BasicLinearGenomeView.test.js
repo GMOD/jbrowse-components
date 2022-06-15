@@ -40,7 +40,9 @@ test('access about menu', async () => {
 test('click and drag to move sideways', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
-  const { findByTestId } = render(<JBrowse pluginManager={pm} />)
+  const { findByTestId, findAllByTestId } = render(
+    <JBrowse pluginManager={pm} />,
+  )
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
   )
@@ -59,6 +61,10 @@ test('click and drag to move sideways', async () => {
     () => expect(state.session.views[0].offsetPx - start).toEqual(150),
     delay,
   )
+
+  // wait for this unrelated thing because otherwise it warns about prerendered
+  // canvas still running after jest is torn down
+  await findAllByTestId(/prerendered_canvas/, {}, delay)
 }, 10000)
 
 test('click and drag to rubberband', async () => {

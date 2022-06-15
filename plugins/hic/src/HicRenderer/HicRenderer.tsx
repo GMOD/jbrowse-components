@@ -1,4 +1,3 @@
-import Color from 'color'
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized,
@@ -75,6 +74,8 @@ export default class HicRenderer extends ServerSideRendererType {
     const res = await (dataAdapter as HicDataAdapter).getResolution(
       bpPerPx / resolution,
     )
+
+    const Color = await import('color').then(f => f.default)
     const w = res / (bpPerPx * Math.sqrt(2))
     const baseColor = Color(readConfObject(config, 'baseColor'))
     if (features.length) {

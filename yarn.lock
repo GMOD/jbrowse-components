@@ -4725,7 +4725,7 @@
   resolved "https://registry.yarnpkg.com/@types/npmlog/-/npmlog-4.1.4.tgz#30eb872153c7ead3e8688c476054ddca004115f6"
   integrity sha512-WKG4gTr8przEZBiJ5r3s8ZIAoMXNbOgQ+j/d5O4X3x6kZJRLNvyUJuUK/KoG3+8BaOHPhp2m7WC6JKKeovDSzQ==
 
-"@types/object.fromentries@^2.0.0":
+"@types/object.fromentries@^2.0.1":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/object.fromentries/-/object.fromentries-2.0.1.tgz#7b1bc05244e67d4b4ad46f2b6d5ad5bd035f3bdb"
   integrity sha512-lP1hS37U5G83Z5xzyEIMIBKjWlAwu2AnZOHCsWDPitY7lmOBDqSiVtdJZVeUJdGEbcJZBG3sif52XHf7WvKrgQ==
@@ -14755,7 +14755,7 @@ object.entries@^1.1.0, object.entries@^1.1.5:
     define-properties "^1.1.3"
     es-abstract "^1.19.1"
 
-object.fromentries@^2.0.0, "object.fromentries@^2.0.0 || ^1.0.0", object.fromentries@^2.0.4, object.fromentries@^2.0.5:
+"object.fromentries@^2.0.0 || ^1.0.0", object.fromentries@^2.0.4, object.fromentries@^2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/object.fromentries/-/object.fromentries-2.0.5.tgz#7b37b205109c21e741e605727fe8b0ad5fa08251"
   integrity sha512-CAyG5mWQRRiBU57Re4FKoTBjXfDoNwdFVH2Y1tS9PqCsfUTymAohOkEMSG3aRNKmv4lV3O7p1et7c187q6bynw==

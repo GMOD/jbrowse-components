@@ -130,18 +130,13 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
 
       // Promise<string[]> of refnames
       get featuresRefNamesP(): Promise<string[]> {
-        const { AdapterClass: FromConfigAdapter } =
+        const { getAdapterClass } =
           pluginManager.getAdapterType('FromConfigAdapter')
-
-        // @ts-ignore
-        const adapter = new FromConfigAdapter(
+        return getAdapterClass().then(Adapter =>
           // @ts-ignore
-          self.featuresAdapterConfigSnapshot,
+          new Adapter(self.featuresAdapterConfigSnapshot).getRefNames(),
         )
-        // @ts-ignore
-        return adapter.getRefNames()
       },
-
       get featuresCircularTrackConfiguration() {
         pluginManager.jexl.addFunction(
           'defaultOnChordClick',

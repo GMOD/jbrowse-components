@@ -77,4 +77,4 @@ test('open a circular view', async () => {
 
   // make sure a chord is rendered
   await findByTestId('chord-test-vcf-62852', {}, delay)
-}, 15000)
+}, 25000)
