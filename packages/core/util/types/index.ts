@@ -97,7 +97,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]
-  connectionInstances?: { name: string }[]
+  connectionInstances?: {
+    name: string
+    connectionId: string
+    tracks: AnyConfigurationModel[]
+  }[]
   makeConnection?: Function
   adminMode?: boolean
   showWidget?: Function

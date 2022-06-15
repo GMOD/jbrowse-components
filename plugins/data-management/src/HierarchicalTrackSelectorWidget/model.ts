@@ -42,7 +42,7 @@ export type TreeNode = {
 }
 
 export function generateHierarchy(
-  model: any,
+  model: HierarchicalTrackSelectorModel,
   trackConfigurations: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },
 ) {
@@ -212,20 +212,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     .views(self => ({
       hierarchy(assemblyName: string) {
         const hier = generateHierarchy(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
           self.trackConfigurations(assemblyName),
           self.collapsed,
         )
 
         const session = getSession(self)
+        const { connections, connectionInstances } = session
         const conns =
-          session.connectionInstances
+          connectionInstances
             ?.filter(c => {
               const names = getConf(c, 'assemblyNames')
               return names.length === 0 ? true : names.includes(assemblyName)
             })
             .map((conn, index) => {
-              const c = session.connections[index]
+              const c = connections[index]
               return {
                 id: c.connectionId,
                 name: readConfObject(c, 'name'),
@@ -246,8 +248,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         }
       },
 
-      connectionHierarchy(assemblyName: string, connection: any) {
+      connectionHierarchy(
+        assemblyName: string,
+        connection: { tracks: AnyConfigurationModel[] },
+      ) {
         return generateHierarchy(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
           self.connectionTrackConfigurations(assemblyName, connection),
           self.collapsed,

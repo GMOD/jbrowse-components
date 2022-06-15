@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, {
   Suspense,
   lazy,
@@ -135,7 +134,7 @@ function Node(props: {
     drawerPosition: unknown
   }
   isOpen: boolean
-  style?: any
+  style?: { height: number }
   setOpen: (arg: boolean) => void
 }) {
   const { data, isOpen, style, setOpen } = props
@@ -164,7 +163,7 @@ function Node(props: {
       {new Array(nestingLevel).fill(0).map((_, idx) => (
         <div
           key={`mark-${idx}`}
-          style={{ left: idx * width + 4, height: style.height }}
+          style={{ left: idx * width + 4, height: style?.height }}
           className={classes.nestingLevelMarker}
         />
       ))}
@@ -336,7 +335,7 @@ const AutoSizedHierarchicalTree = ({
   model,
   offset,
 }: {
-  tree: any
+  tree: TreeNode
   model: HierarchicalTrackSelectorModel
   offset: number
 }) => {
@@ -364,7 +363,6 @@ const Wrapper = ({
   overrideDimensions?: { width: number; height: number }
   children: React.ReactNode
 }) => {
-  console.log(overrideDimensions)
   return overrideDimensions ? (
     <div style={{ ...overrideDimensions }}>{children}</div>
   ) : (
