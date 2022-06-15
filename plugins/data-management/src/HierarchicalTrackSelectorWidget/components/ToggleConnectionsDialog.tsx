@@ -13,7 +13,10 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
@@ -39,10 +42,10 @@ function ToggleConnectionDialog({
   handleClose: () => void
   session: AbstractSessionModel
   assemblyName: string
-  breakConnection: Function
+  breakConnection: (arg: AnyConfigurationModel) => void
 }) {
   const { classes } = useStyles()
-  const { connections, connectionInstances } = session
+  const { connections, connectionInstances: instances = [] } = session
   const assemblySpecificConnections = connections.filter(c => {
     const configAssemblyNames = readConfObject(c, 'assemblyNames')
     if (configAssemblyNames.length === 0) {
@@ -50,6 +53,7 @@ function ToggleConnectionDialog({
     }
     return configAssemblyNames.includes(assemblyName)
   })
+
   return (
     <Dialog open onClose={handleClose} maxWidth="lg">
       <DialogTitle>
@@ -66,31 +70,25 @@ function ToggleConnectionDialog({
         <div className={classes.connectionContainer}>
           {assemblySpecificConnections.map(conf => {
             const name = readConfObject(conf, 'name')
+            const found = instances.find(conn => name === conn.name)
             return (
-              <div key={conf.connectionId}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={
-                        !!connectionInstances?.find(conn => name === conn.name)
+              <FormControlLabel
+                key={conf.connectionId}
+                control={
+                  <Checkbox
+                    checked={!!found}
+                    onChange={() => {
+                      if (found) {
+                        breakConnection(conf)
+                      } else {
+                        session.makeConnection?.(conf)
                       }
-                      onChange={() => {
-                        if (
-                          connectionInstances?.find(
-                            conn => conn.name === readConfObject(conf, 'name'),
-                          )
-                        ) {
-                          breakConnection(conf)
-                        } else {
-                          session.makeConnection?.(conf)
-                        }
-                      }}
-                      color="primary"
-                    />
-                  }
-                  label={name}
-                />
-              </div>
+                    }}
+                    color="primary"
+                  />
+                }
+                label={name}
+              />
             )
           })}
           {!assemblySpecificConnections.length ? (

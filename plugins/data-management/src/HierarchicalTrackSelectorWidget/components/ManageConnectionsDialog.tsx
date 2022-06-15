@@ -12,7 +12,10 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
@@ -36,7 +39,7 @@ function ManageConnectionsDlg({
 }: {
   handleClose: () => void
   session: AbstractSessionModel
-  breakConnection: Function
+  breakConnection: (conf: AnyConfigurationModel, arg: boolean) => void
 }) {
   const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session

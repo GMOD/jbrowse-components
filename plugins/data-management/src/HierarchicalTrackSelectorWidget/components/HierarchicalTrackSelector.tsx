@@ -20,7 +20,6 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
 import AddIcon from '@mui/icons-material/Add'
@@ -33,11 +32,23 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 // other
 import AutoSizer from 'react-virtualized-auto-sizer'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
-import { getSession } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  getSession,
+  isSessionModelWithWidgets,
+  isSessionModelWithConnections,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 
+// locals
+import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
+
+// lazy components
 const CloseConnectionDialog = lazy(() => import('./CloseConnectionDialog'))
 const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
 const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
@@ -62,7 +73,6 @@ const useStyles = makeStyles()(theme => ({
 
   checkboxLabel: {
     marginRight: 0,
-    marginTop: 0,
     '&:hover': {
       backgroundColor: '#eee',
     },
@@ -88,7 +98,9 @@ const useStyles = makeStyles()(theme => ({
   // accordionColor set's display:flex so that the child accordionText use
   // vertically centered text
   accordionColor: {
+    // @ts-ignore
     background: theme.palette.tertiary?.main,
+    // @ts-ignore
     color: theme.palette.tertiary?.contrastText,
     width: '100%',
     display: 'flex',
@@ -98,13 +110,34 @@ const useStyles = makeStyles()(theme => ({
   // margin:auto 0 to center text vertically
   accordionText: {
     margin: 'auto 0',
-    display: 'flex',
   },
 }))
 
+interface MoreInfoArgs {
+  target: HTMLElement
+  id: string
+  conf: AnyConfigurationModel
+}
+
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
-const Node = props => {
+function Node(props: {
+  data: {
+    isLeaf: boolean
+    nestingLevel: number
+    checked: boolean
+    id: string
+    name: string
+    onChange: Function
+    toggleCollapse: (arg: string) => void
+    conf: AnyConfigurationModel
+    onMoreInfo: (arg: MoreInfoArgs) => void
+    drawerPosition: unknown
+  }
+  isOpen: boolean
+  style?: { height: number }
+  setOpen: (arg: boolean) => void
+}) {
   const { data, isOpen, style, setOpen } = props
   const {
     isLeaf,
@@ -131,7 +164,7 @@ const Node = props => {
       {new Array(nestingLevel).fill(0).map((_, idx) => (
         <div
           key={`mark-${idx}`}
-          style={{ left: idx * width + 4, height: style.height }}
+          style={{ left: idx * width + 4, height: style?.height }}
           className={classes.nestingLevelMarker}
         />
       ))}
@@ -150,8 +183,10 @@ const Node = props => {
         <div className={!isLeaf ? classes.accordionColor : undefined}>
           {!isLeaf ? (
             <div className={classes.accordionText}>
-              {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-              <Typography>{name}</Typography>
+              <Typography>
+                {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
+                {name}
+              </Typography>
             </div>
           ) : (
             <>
@@ -169,6 +204,7 @@ const Node = props => {
                       color="primary"
                       disabled={unsupported}
                       inputProps={{
+                        // @ts-ignore
                         'data-testid': `htsTrackEntry-${id}`,
                       }}
                     />
@@ -192,7 +228,11 @@ const Node = props => {
   )
 }
 
-const getNodeData = (node, nestingLevel, extra) => {
+function getNodeData(
+  node: TreeNode,
+  nestingLevel: number,
+  extra: Record<string, unknown>,
+) {
   const isLeaf = !!node.conf
   return {
     data: {
@@ -208,74 +248,99 @@ const getNodeData = (node, nestingLevel, extra) => {
   }
 }
 
+type NodeData = ReturnType<typeof getNodeData>
+
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
 // includes the height of the toolbar, so we subtract the given offsets
-const HierarchicalTree = observer(({ height, tree, model }) => {
-  const { filterText, view } = model
-  const treeRef = useRef(null)
-  const [info, setMoreInfo] = useState()
-  const session = getSession(model)
-  const { drawerPosition } = session
+const HierarchicalTree = observer(
+  ({
+    height,
+    tree,
+    model,
+  }: {
+    height: number
+    tree: TreeNode
+    model: HierarchicalTrackSelectorModel
+  }) => {
+    const { filterText, view } = model
+    const treeRef = useRef<NodeData>(null)
+    const [info, setMoreInfo] = useState<MoreInfoArgs>()
+    const session = getSession(model)
+    const { drawerPosition } = session
 
-  const extra = useMemo(
-    () => ({
-      onChange: trackId => view.toggleTrack(trackId),
-      toggleCollapse: pathName => model.toggleCategory(pathName),
-      onMoreInfo: setMoreInfo,
-      drawerPosition,
-    }),
-    [view, model, drawerPosition],
-  )
-  const treeWalker = useCallback(
-    function* treeWalker() {
-      for (let i = 0; i < tree.children.length; i++) {
-        yield getNodeData(tree.children[i], 0, extra)
-      }
-
-      while (true) {
-        const parentMeta = yield
-
-        for (let i = 0; i < parentMeta.node.children.length; i++) {
-          const curr = parentMeta.node.children[i]
-          yield getNodeData(curr, parentMeta.nestingLevel + 1, extra)
+    const extra = useMemo(
+      () => ({
+        onChange: (trackId: string) => view.toggleTrack(trackId),
+        toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
+        onMoreInfo: setMoreInfo,
+        drawerPosition,
+      }),
+      [view, model, drawerPosition],
+    )
+    const treeWalker = useCallback(
+      function* treeWalker() {
+        for (let i = 0; i < tree.children.length; i++) {
+          const r = tree.children[i]
+          yield getNodeData(r, 0, extra)
         }
-      }
-    },
-    [tree, extra],
-  )
 
-  const conf = info?.conf
-  const menuItems = (conf && session.getTrackActionMenuItems?.(conf)) || []
+        while (true) {
+          // @ts-ignore
+          const parentMeta = yield
 
-  useEffect(() => {
-    treeRef.current.recomputeTree({
-      refreshNodes: true,
-      useDefaultHeight: true,
-    })
-  }, [tree, filterText])
-  return (
-    <>
-      <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
-        {Node}
-      </VariableSizeTree>
-      <JBrowseMenu
-        anchorEl={info?.target}
-        menuItems={menuItems}
-        onMenuItemClick={(_event, callback) => {
-          callback()
-          setMoreInfo(undefined)
-        }}
-        open={Boolean(info)}
-        onClose={() => setMoreInfo(undefined)}
-      />
-    </>
-  )
-})
+          for (let i = 0; i < parentMeta.node.children.length; i++) {
+            const curr = parentMeta.node.children[i]
+            yield getNodeData(curr, parentMeta.nestingLevel + 1, extra)
+          }
+        }
+      },
+      [tree, extra],
+    )
+
+    const conf = info?.conf
+    const menuItems = (conf && session.getTrackActionMenuItems?.(conf)) || []
+
+    useEffect(() => {
+      // @ts-ignore
+      treeRef.current.recomputeTree({
+        refreshNodes: true,
+        useDefaultHeight: true,
+      })
+    }, [tree, filterText])
+    return (
+      <>
+        {/* @ts-ignore */}
+        <VariableSizeTree ref={treeRef} treeWalker={treeWalker} height={height}>
+          {/* @ts-ignore */}
+          {Node}
+        </VariableSizeTree>
+        <JBrowseMenu
+          anchorEl={info?.target}
+          menuItems={menuItems}
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setMoreInfo(undefined)
+          }}
+          open={Boolean(info)}
+          onClose={() => setMoreInfo(undefined)}
+        />
+      </>
+    )
+  },
+)
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests
-const AutoSizedHierarchicalTree = ({ tree, model, offset }) => {
+const AutoSizedHierarchicalTree = ({
+  tree,
+  model,
+  offset,
+}: {
+  tree: TreeNode
+  model: HierarchicalTrackSelectorModel
+  offset: number
+}) => {
   return typeof jest === 'undefined' ? (
     <AutoSizer disableWidth>
       {({ height }) => {
@@ -293,7 +358,13 @@ const AutoSizedHierarchicalTree = ({ tree, model, offset }) => {
   )
 }
 
-const Wrapper = ({ overrideDimensions, children }) => {
+const Wrapper = ({
+  overrideDimensions,
+  children,
+}: {
+  overrideDimensions?: { width: number; height: number }
+  children: React.ReactNode
+}) => {
   return overrideDimensions ? (
     <div style={{ ...overrideDimensions }}>{children}</div>
   ) : (
@@ -301,22 +372,31 @@ const Wrapper = ({ overrideDimensions, children }) => {
   )
 }
 const HierarchicalTrackSelectorContainer = observer(
-  ({ model, toolbarHeight, overrideDimensions }) => {
+  ({
+    model,
+    toolbarHeight,
+    overrideDimensions,
+  }: {
+    model: HierarchicalTrackSelectorModel
+    toolbarHeight: number
+    overrideDimensions?: { width: number; height: number }
+  }) => {
     const { classes } = useStyles()
     const session = getSession(model)
-    const [anchorEl, setAnchorEl] = useState(null)
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
 
     function handleFabClose() {
       setAnchorEl(null)
     }
+    const hasConnections = isSessionModelWithConnections(session)
+    const hasAddTrack = isSessionWithAddTracks(session)
     return (
       <Wrapper overrideDimensions={overrideDimensions}>
         <HierarchicalTrackSelector
           model={model}
           toolbarHeight={toolbarHeight}
-          overrideDimensions={overrideDimensions}
         />
-        {session.addConnectionConf || session.addTrackConf ? (
+        {hasAddTrack || hasConnections ? (
           <>
             <Fab
               color="secondary"
@@ -330,32 +410,34 @@ const HierarchicalTrackSelectorContainer = observer(
               open={Boolean(anchorEl)}
               onClose={() => setAnchorEl(null)}
             >
-              {session.addConnectionConf ? (
+              {hasConnections ? (
                 <MenuItem
                   onClick={() => {
                     handleFabClose()
-                    const widget = session.addWidget(
-                      'AddConnectionWidget',
-                      'addConnectionWidget',
-                    )
-                    session.showWidget(widget)
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget(
+                          'AddConnectionWidget',
+                          'addConnectionWidget',
+                        ),
+                      )
+                    }
                   }}
                 >
                   Add connection
                 </MenuItem>
               ) : null}
-              {session.addTrackConf ? (
+              {hasAddTrack ? (
                 <MenuItem
                   onClick={() => {
                     handleFabClose()
-                    const widget = session.addWidget(
-                      'AddTrackWidget',
-                      'addTrackWidget',
-                      {
-                        view: model.view.id,
-                      },
-                    )
-                    session.showWidget(widget)
+                    if (isSessionModelWithWidgets(session)) {
+                      session.showWidget(
+                        session.addWidget('AddTrackWidget', 'addTrackWidget', {
+                          view: model.view.id,
+                        }),
+                      )
+                    }
                   }}
                 >
                   Add track
@@ -370,20 +452,44 @@ const HierarchicalTrackSelectorContainer = observer(
 )
 
 const HierarchicalTrackSelectorHeader = observer(
-  ({ model, setHeaderHeight, setAssemblyIdx, assemblyIdx }) => {
+  ({
+    model,
+    setHeaderHeight,
+    setAssemblyIdx,
+    assemblyIdx,
+  }: {
+    model: HierarchicalTrackSelectorModel
+    setHeaderHeight: (n: number) => void
+    setAssemblyIdx: (n: number) => void
+    assemblyIdx: number
+  }) => {
     const { classes } = useStyles()
     const session = getSession(model)
-    const [connectionAnchorEl, setConnectionAnchorEl] = useState()
-    const [menuAnchorEl, setMenuAnchorEl] = useState()
-    const [modalInfo, setModalInfo] = useState()
-    const [deleteDialogDetails, setDeleteDialogDetails] = useState()
+    const [connectionAnchorEl, setConnectionAnchorEl] =
+      useState<HTMLButtonElement>()
+    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLButtonElement>()
+    const [modalInfo, setModalInfo] = useState<{
+      connectionConf: AnyConfigurationModel
+      safelyBreakConnection: Function
+      dereferenceTypeCount: { [key: string]: number }
+      name: string
+    }>()
+    const [deleteDialogDetails, setDeleteDialogDetails] = useState<{
+      name: string
+      connectionConf: AnyConfigurationModel
+    }>()
     const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
     const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
     const { assemblyNames } = model
     const assemblyName = assemblyNames[assemblyIdx]
 
-    function breakConnection(connectionConf, deletingConnection) {
+    function breakConnection(
+      connectionConf: AnyConfigurationModel,
+      deletingConnection?: boolean,
+    ) {
       const name = readConfObject(connectionConf, 'name')
+
+      // @ts-ignore
       const result = session.prepareToBreakConnection(connectionConf)
       if (result) {
         const [safelyBreakConnection, dereferenceTypeCount] = result
@@ -410,13 +516,17 @@ const HierarchicalTrackSelectorHeader = observer(
       },
     ]
 
-    if (session.addConnectionConf) {
+    if (isSessionModelWithConnections(session)) {
       connectionMenuItems.unshift({
         label: 'Add connection',
         onClick: () => {
-          session.showWidget(
-            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-          )
+          if (isSessionModelWithWidgets(session)) {
+            const widget = session.addWidget(
+              'AddConnectionWidget',
+              'addConnectionWidget',
+            )
+            session.showWidget(widget)
+          }
         },
       })
 
@@ -433,9 +543,7 @@ const HierarchicalTrackSelectorHeader = observer(
               label: 'Select assembly...',
               subMenu: assemblyNames.map((name, idx) => ({
                 label: name,
-                onClick: () => {
-                  setAssemblyIdx(idx)
-                },
+                onClick: () => setAssemblyIdx(idx),
               })),
             },
           ]
@@ -445,11 +553,16 @@ const HierarchicalTrackSelectorHeader = observer(
       {
         label: 'Add track...',
         onClick: () => {
-          session.showWidget(
-            session.addWidget('AddTrackWidget', 'addTrackWidget', {
-              view: model.view.id,
-            }),
-          )
+          if (isSessionModelWithWidgets(session)) {
+            const widget = session.addWidget(
+              'AddTrackWidget',
+              'addTrackWidget',
+              {
+                view: model.view.id,
+              },
+            )
+            session.showWidget(widget)
+          }
         },
       },
 
@@ -462,23 +575,23 @@ const HierarchicalTrackSelectorHeader = observer(
         data-testid="hierarchical_track_selector"
       >
         <div style={{ display: 'flex' }}>
-          {session.addTrackConf ? (
+          {isSessionWithAddTracks(session) && (
             <IconButton
               className={classes.menuIcon}
               onClick={event => setMenuAnchorEl(event.currentTarget)}
             >
               <MenuIcon />
             </IconButton>
-          ) : null}
+          )}
 
-          {session.makeConnection ? (
+          {session.makeConnection && (
             <IconButton
               className={classes.menuIcon}
               onClick={event => setConnectionAnchorEl(event.currentTarget)}
             >
               <Cable />
             </IconButton>
-          ) : null}
+          )}
 
           <TextField
             className={classes.searchBox}
@@ -522,7 +635,6 @@ const HierarchicalTrackSelectorHeader = observer(
             <CloseConnectionDialog
               modalInfo={modalInfo}
               setModalInfo={setModalInfo}
-              session={session}
             />
           ) : deleteDialogDetails ? (
             <DeleteConnectionDialog
@@ -551,27 +663,35 @@ const HierarchicalTrackSelectorHeader = observer(
     )
   },
 )
-const HierarchicalTrackSelector = observer(({ model, toolbarHeight = 0 }) => {
-  const [assemblyIdx, setAssemblyIdx] = useState(0)
-  const [headerHeight, setHeaderHeight] = useState(0)
+const HierarchicalTrackSelector = observer(
+  ({
+    model,
+    toolbarHeight = 0,
+  }: {
+    model: HierarchicalTrackSelectorModel
+    toolbarHeight?: number
+  }) => {
+    const [assemblyIdx, setAssemblyIdx] = useState(0)
+    const [headerHeight, setHeaderHeight] = useState(0)
 
-  const { assemblyNames } = model
-  const assemblyName = assemblyNames[assemblyIdx]
-  return assemblyName ? (
-    <>
-      <HierarchicalTrackSelectorHeader
-        model={model}
-        setHeaderHeight={setHeaderHeight}
-        setAssemblyIdx={setAssemblyIdx}
-        assemblyIdx={assemblyIdx}
-      />
-      <AutoSizedHierarchicalTree
-        tree={model.hierarchy(assemblyName)}
-        model={model}
-        offset={toolbarHeight + headerHeight}
-      />
-    </>
-  ) : null
-})
+    const { assemblyNames } = model
+    const assemblyName = assemblyNames[assemblyIdx]
+    return assemblyName ? (
+      <>
+        <HierarchicalTrackSelectorHeader
+          model={model}
+          setHeaderHeight={setHeaderHeight}
+          setAssemblyIdx={setAssemblyIdx}
+          assemblyIdx={assemblyIdx}
+        />
+        <AutoSizedHierarchicalTree
+          tree={model.hierarchy(assemblyName)}
+          model={model}
+          offset={toolbarHeight + headerHeight}
+        />
+      </>
+    ) : null
+  },
+)
 
 export default HierarchicalTrackSelectorContainer
