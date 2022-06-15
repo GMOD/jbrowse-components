@@ -143,3 +143,14 @@ export function getNiceDomain({
   scale.nice()
   return scale.domain() as [number, number]
 }
+
+
+
+
+export function groupBy<T>(array: T[], predicate: (v: T) => string) {
+  return array.reduce((acc, value) => {
+    const entry = (acc[predicate(value)] ||= [])
+    entry.push(value)
+    return acc
+  }, {} as { [key: string]: T[] })
+}

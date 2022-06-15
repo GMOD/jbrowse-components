@@ -1,0 +1,117 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adapter can fetch features from volvox.bw adapter can fetch stats from volvox.bw 1`] = `
+Object {
+  "basesCovered": 49984,
+  "featureDensity": 0.00002000640204865557,
+  "scoreMax": 38,
+  "scoreMean": 19.197983354673497,
+  "scoreMin": 1,
+  "scoreStdDev": 4.55961443138808,
+  "scoreSum": 959592,
+  "scoreSumSquares": 19461382,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw get local stats 1`] = `
+Object {
+  "basesCovered": 30100,
+  "featureCount": 30000,
+  "featureDensity": 0.9966777408637874,
+  "scoreMax": 38,
+  "scoreMean": 19.297233333333335,
+  "scoreMin": 5,
+  "scoreStdDev": 4.380942680236127,
+  "scoreSum": 578917,
+  "scoreSumSquares": 11747257,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw get region stats 1`] = `
+Object {
+  "basesCovered": 30001,
+  "featureCount": 30001,
+  "featureDensity": 1,
+  "scoreMax": 38,
+  "scoreMean": 19.297356754774842,
+  "scoreMin": 5,
+  "scoreStdDev": 4.380921822290578,
+  "scoreSum": 578940,
+  "scoreSumSquares": 11747786,
+}
+`;
+
+exports[`adapter can fetch features from volvox.bw test basic aspects of getfeatures 1`] = `
+Array [
+  Object {
+    "end": 1003,
+    "refName": "ctgA",
+    "score": 18,
+    "start": 1002,
+    "uniqueId": "ctgA:1002-1003",
+  },
+  Object {
+    "end": 1004,
+    "refName": "ctgA",
+    "score": 18,
+    "start": 1003,
+    "uniqueId": "ctgA:1003-1004",
+  },
+  Object {
+    "end": 1005,
+    "refName": "ctgA",
+    "score": 18,
+    "start": 1004,
+    "uniqueId": "ctgA:1004-1005",
+  },
+  Object {
+    "end": 1006,
+    "refName": "ctgA",
+    "score": 19,
+    "start": 1005,
+    "uniqueId": "ctgA:1005-1006",
+  },
+  Object {
+    "end": 1007,
+    "refName": "ctgA",
+    "score": 20,
+    "start": 1006,
+    "uniqueId": "ctgA:1006-1007",
+  },
+  Object {
+    "end": 1008,
+    "refName": "ctgA",
+    "score": 20,
+    "start": 1007,
+    "uniqueId": "ctgA:1007-1008",
+  },
+  Object {
+    "end": 1009,
+    "refName": "ctgA",
+    "score": 20,
+    "start": 1008,
+    "uniqueId": "ctgA:1008-1009",
+  },
+  Object {
+    "end": 1010,
+    "refName": "ctgA",
+    "score": 20,
+    "start": 1009,
+    "uniqueId": "ctgA:1009-1010",
+  },
+  Object {
+    "end": 1011,
+    "refName": "ctgA",
+    "score": 20,
+    "start": 1010,
+    "uniqueId": "ctgA:1010-1011",
+  },
+  Object {
+    "end": 1012,
+    "refName": "ctgA",
+    "score": 19,
+    "start": 1011,
+    "uniqueId": "ctgA:1011-1012",
+  },
+]
+`;

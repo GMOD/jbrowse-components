@@ -13,6 +13,7 @@ import { FileLocation } from '@jbrowse/core/util/types'
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
 import { configSchema as bigWigAdapterConfigSchema } from './BigWigAdapter'
+import { configSchema as multiWiggleAdapterConfigSchema } from './MultiWiggleAdapter'
 import DensityRenderer, {
   configSchema as densityRendererConfigSchema,
   ReactComponent as DensityRendererReactComponent,
@@ -24,10 +25,19 @@ import {
   ReactComponent as LinearWiggleDisplayReactComponent,
   YSCALEBAR_LABEL_OFFSET,
 } from './LinearWiggleDisplay'
+import {
+  configSchemaFactory as multiLinearWiggleDisplayConfigSchemaFactory,
+  modelFactory as multiLinearWiggleDisplayModelFactory,
+  ReactComponent as MultiLinearWiggleDisplayReactComponent,
+} from './MultiLinearWiggleDisplay'
 import XYPlotRenderer, {
   configSchema as xyPlotRendererConfigSchema,
   ReactComponent as XYPlotRendererReactComponent,
 } from './XYPlotRenderer'
+import MultiXYPlotRenderer, {
+  configSchema as multiXYPlotRendererConfigSchema,
+  ReactComponent as MultiXYPlotRendererReactComponent,
+} from './MultiXYPlotRenderer'
 import LinePlotRenderer, {
   configSchema as linePlotRendererConfigSchema,
   ReactComponent as LinePlotRendererReactComponent,
@@ -63,6 +73,39 @@ export default class WigglePlugin extends Plugin {
       })
     })
 
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'MultiQuantitativeTrack',
+        {},
+        { baseConfiguration: createBaseTrackConfig(pluginManager) },
+      )
+      return new TrackType({
+        name: 'MultiQuantitativeTrack',
+        configSchema,
+        stateModel: createBaseTrackModel(
+          pluginManager,
+          'MultiQuantitativeTrack',
+          configSchema,
+        ),
+      })
+    })
+
+    pluginManager.addDisplayType(() => {
+      const configSchema =
+        multiLinearWiggleDisplayConfigSchemaFactory(pluginManager)
+      return new DisplayType({
+        name: 'MultiLinearWiggleDisplay',
+        configSchema,
+        stateModel: multiLinearWiggleDisplayModelFactory(
+          pluginManager,
+          configSchema,
+        ),
+        trackType: 'MultiQuantitativeTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: MultiLinearWiggleDisplayReactComponent,
+      })
+    })
+
     pluginManager.addDisplayType(() => {
       const configSchema = linearWiggleDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
@@ -92,6 +135,23 @@ export default class WigglePlugin extends Plugin {
             import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
         }),
     )
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'MultiWiggleAdapter',
+          configSchema: multiWiggleAdapterConfigSchema,
+          adapterCapabilities: [
+            'hasResolution',
+            'hasLocalStats',
+            'hasGlobalStats',
+          ],
+          getAdapterClass: () =>
+            import('./MultiWiggleAdapter/MultiWiggleAdapter').then(
+              r => r.default,
+            ),
+        }),
+    )
+
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
@@ -156,6 +216,16 @@ export default class WigglePlugin extends Plugin {
           name: 'XYPlotRenderer',
           ReactComponent: XYPlotRendererReactComponent,
           configSchema: xyPlotRendererConfigSchema,
+          pluginManager,
+        }),
+    )
+
+    pluginManager.addRendererType(
+      () =>
+        new MultiXYPlotRenderer({
+          name: 'MultiXYPlotRenderer',
+          ReactComponent: MultiXYPlotRendererReactComponent,
+          configSchema: multiXYPlotRendererConfigSchema,
           pluginManager,
         }),
     )
