@@ -29,9 +29,10 @@ exports[`<AddTrackWidget /> renders 1`] = `
             />
             <text
               class="MuiStepIcon-text css-117w1su-MuiStepIcon-text"
+              dominant-baseline="central"
               text-anchor="middle"
               x="12"
-              y="16"
+              y="12"
             >
               1
             </text>
@@ -302,9 +303,10 @@ exports[`<AddTrackWidget /> renders 1`] = `
             />
             <text
               class="MuiStepIcon-text css-117w1su-MuiStepIcon-text"
+              dominant-baseline="central"
               text-anchor="middle"
               x="12"
-              y="16"
+              y="12"
             >
               2
             </text>

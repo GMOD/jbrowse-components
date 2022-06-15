@@ -63,7 +63,6 @@
     "node-polyfill-webpack-plugin": "^1.1.4",
     "pako": "^1.0.10",
     "prop-types": "^15.7.2",
-    "query-string": "^6.9.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^3.0.0",

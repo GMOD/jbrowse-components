@@ -11,7 +11,6 @@ import {
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
-import queryString from 'query-string'
 import shortid from 'shortid'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
@@ -68,12 +67,16 @@ function NoConfigMessage() {
           <ul>
             {links.map(([link, name]) => {
               const { href, search } = window.location
-              const { config, ...rest } = queryString.parse(search)
+              const { config, ...rest } = Object.fromEntries(
+                new URLSearchParams(search),
+              )
               const root = href.split('?')[0]
-              const params = queryString.stringify({
-                ...rest,
-                config: link,
-              })
+              const params = new URLSearchParams(
+                Object.entries({
+                  ...rest,
+                  config: link,
+                }),
+              )
               return (
                 <li key={name}>
                   <a href={`${root}?${params}`}>{name}</a>
