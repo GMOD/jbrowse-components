@@ -19,7 +19,7 @@ beforeEach(() => {
   )
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 15000 }
 
 test('click and drag rubberBand, bookmarks region', async () => {
   const pm = getPluginManager()

@@ -43,82 +43,112 @@ import * as mstTypes from '../util/types/mst'
 
 import ReExportsList from './list'
 
-const SvgIcon = lazy(() => import('@mui/material/SvgIcon'))
-const Box = lazy(() => import('@mui/material/Box'))
-const Button = lazy(() => import('@mui/material/Button'))
-const ButtonGroup = lazy(() => import('@mui/material/ButtonGroup'))
-const Card = lazy(() => import('@mui/material/Card'))
-const CardContent = lazy(() => import('@mui/material/CardContent'))
-const Checkbox = lazy(() => import('@mui/material/Checkbox'))
-const Container = lazy(() => import('@mui/material/Container'))
-const Dialog = lazy(() => import('@mui/material/Dialog'))
-const DialogActions = lazy(() => import('@mui/material/DialogActions'))
-const DialogTitle = lazy(() => import('@mui/material/DialogTitle'))
-const DialogContent = lazy(() => import('@mui/material/DialogContent'))
-const FormLabel = lazy(() => import('@mui/material/FormLabel'))
-const FormControl = lazy(() => import('@mui/material/FormControl'))
-const FormControlLabel = lazy(() => import('@mui/material/FormControlLabel'))
-const FormGroup = lazy(() => import('@mui/material/FormGroup'))
-const Grid = lazy(() => import('@mui/material/Grid'))
-const Icon = lazy(() => import('@mui/material/Icon'))
-const IconButton = lazy(() => import('@mui/material/IconButton'))
-const InputAdornment = lazy(() => import('@mui/material/InputAdornment'))
-const Link = lazy(() => import('@mui/material/Link'))
-const LinearProgress = lazy(() => import('@mui/material/LinearProgress'))
-const ListItemIcon = lazy(() => import('@mui/material/ListItemIcon'))
-const ListItemText = lazy(() => import('@mui/material/ListItemText'))
-const Menu = lazy(() => import('@mui/material/Menu'))
-const MenuItem = lazy(() => import('@mui/material/MenuItem'))
-const Paper = lazy(() => import('@mui/material/Paper'))
-const Radio = lazy(() => import('@mui/material/Radio'))
-const RadioGroup = lazy(() => import('@mui/material/RadioGroup'))
-const Select = lazy(() => import('@mui/material/Select'))
-const Snackbar = lazy(() => import('@mui/material/Snackbar'))
-const SnackbarContent = lazy(() => import('@mui/material/SnackbarContent'))
-const TextField = lazy(() => import('@mui/material/TextField'))
-const ToggleButton = lazy(() => import('@mui/material/ToggleButton'))
-const ToggleButtonGroup = lazy(() => import('@mui/material/ToggleButtonGroup'))
-const Tooltip = lazy(() => import('@mui/material/Tooltip'))
-const Typography = lazy(() => import('@mui/material/Typography'))
+const Entries = {
+  Accordion: lazy(() => import('@mui/material/Accordion')),
+  AccordionActions: lazy(() => import('@mui/material/AccordionActions')),
+  AccordionDetails: lazy(() => import('@mui/material/AccordionDetails')),
+  Alert: lazy(() => import('@mui/material/Alert')),
+  AlertTitle: lazy(() => import('@mui/material/AlertTitle')),
+  Box: lazy(() => import('@mui/material/Box')),
+  Button: lazy(() => import('@mui/material/Button')),
+  ButtonGroup: lazy(() => import('@mui/material/ButtonGroup')),
+  Card: lazy(() => import('@mui/material/Card')),
+  CardActions: lazy(() => import('@mui/material/CardActions')),
+  CardActionArea: lazy(() => import('@mui/material/CardActionArea')),
+  CardContent: lazy(() => import('@mui/material/CardContent')),
+  CircularProgress: lazy(() => import('@mui/material/CircularProgress')),
+  Collapse: lazy(() => import('@mui/material/Collapse')),
+  ClickAwayListener: lazy(() => import('@mui/material/ClickAwayListener')),
+  Chip: lazy(() => import('@mui/material/Chip')),
+  Checkbox: lazy(() => import('@mui/material/Checkbox')),
+  Container: lazy(() => import('@mui/material/Container')),
+  Dialog: lazy(() => import('@mui/material/Dialog')),
+  DialogActions: lazy(() => import('@mui/material/DialogActions')),
+  DialogTitle: lazy(() => import('@mui/material/DialogTitle')),
+  DialogContent: lazy(() => import('@mui/material/DialogContent')),
+  Divider: lazy(() => import('@mui/material/Divider')),
+  Drawer: lazy(() => import('@mui/material/Drawer')),
+  Fab: lazy(() => import('@mui/material/Fab')),
+  Fade: lazy(() => import('@mui/material/Fade')),
+  FilledInput: lazy(() => import('@mui/material/FilledInput')),
+  FormLabel: lazy(() => import('@mui/material/FormLabel')),
+  FormControl: lazy(() => import('@mui/material/FormControl')),
+  FormControlLabel: lazy(() => import('@mui/material/FormControlLabel')),
+  FormHelperText: lazy(() => import('@mui/material/FormHelperText')),
+  FormGroup: lazy(() => import('@mui/material/FormGroup')),
+  Grid: lazy(() => import('@mui/material/Grid')),
+  Grow: lazy(() => import('@mui/material/Grow')),
+  Icon: lazy(() => import('@mui/material/Icon')),
+  IconButton: lazy(() => import('@mui/material/IconButton')),
+  Input: lazy(() => import('@mui/material/Input')),
+  InputBase: lazy(() => import('@mui/material/InputBase')),
+  InputLabel: lazy(() => import('@mui/material/InputLabel')),
+  InputAdornment: lazy(() => import('@mui/material/InputAdornment')),
+  Link: lazy(() => import('@mui/material/Link')),
+  LinearProgress: lazy(() => import('@mui/material/LinearProgress')),
+  ListItem: lazy(() => import('@mui/material/ListItem')),
+  ListItemAvatar: lazy(() => import('@mui/material/ListItemAvatar')),
+  ListItemSecondaryAction: lazy(
+    () => import('@mui/material/ListItemSecondaryAction'),
+  ),
+  ListItemIcon: lazy(() => import('@mui/material/ListItemIcon')),
+  ListSubheader: lazy(() => import('@mui/material/ListSubheader')),
+  ListItemText: lazy(() => import('@mui/material/ListItemText')),
+  Menu: lazy(() => import('@mui/material/Menu')),
+  MenuItem: lazy(() => import('@mui/material/MenuItem')),
+  MenuList: lazy(() => import('@mui/material/MenuList')),
+  Modal: lazy(() => import('@mui/material/Modal')),
+  NativeSelect: lazy(() => import('@mui/material/NativeSelect')),
+  OutlinedInput: lazy(() => import('@mui/material/OutlinedInput')),
+  Pagination: lazy(() => import('@mui/material/Pagination')),
+  PaginationItem: lazy(() => import('@mui/material/PaginationItem')),
+  Paper: lazy(() => import('@mui/material/Paper')),
+  Popover: lazy(() => import('@mui/material/Popover')),
+  Popper: lazy(() => import('@mui/material/Popper')),
+  Portal: lazy(() => import('@mui/material/Portal')),
+  Radio: lazy(() => import('@mui/material/Radio')),
+  RadioGroup: lazy(() => import('@mui/material/RadioGroup')),
+  Rating: lazy(() => import('@mui/material/Rating')),
+  ScopedCssBaseline: lazy(() => import('@mui/material/ScopedCssBaseline')),
+  Select: lazy(() => import('@mui/material/Select')),
+  Skeleton: lazy(() => import('@mui/material/Skeleton')),
+  Slider: lazy(() => import('@mui/material/Slider')),
+  Snackbar: lazy(() => import('@mui/material/Snackbar')),
+  SnackbarContent: lazy(() => import('@mui/material/SnackbarContent')),
+  SpeedDial: lazy(() => import('@mui/material/SpeedDial')),
+  SpeedDialAction: lazy(() => import('@mui/material/SpeedDialAction')),
+  SpeedDialIcon: lazy(() => import('@mui/material/SpeedDialIcon')),
+  Stack: lazy(() => import('@mui/material/Stack')),
+  Step: lazy(() => import('@mui/material/Step')),
+  StepButton: lazy(() => import('@mui/material/StepButton')),
+  StepConnector: lazy(() => import('@mui/material/StepConnector')),
+  StepLabel: lazy(() => import('@mui/material/StepLabel')),
+  StepIcon: lazy(() => import('@mui/material/StepIcon')),
+  Stepper: lazy(() => import('@mui/material/Stepper')),
+  SvgIcon: lazy(() => import('@mui/material/SvgIcon')),
+  Switch: lazy(() => import('@mui/material/Switch')),
+  Tab: lazy(() => import('@mui/material/Tab')),
+  Table: lazy(() => import('@mui/material/Table')),
+  TableBody: lazy(() => import('@mui/material/TableBody')),
+  TableCell: lazy(() => import('@mui/material/TableCell')),
+  TableContainer: lazy(() => import('@mui/material/TableContainer')),
+  TableFooter: lazy(() => import('@mui/material/TableFooter')),
+  TableHead: lazy(() => import('@mui/material/TableHead')),
+  TablePagination: lazy(() => import('@mui/material/TablePagination')),
+  TableRow: lazy(() => import('@mui/material/TableRow')),
+  TableSortLabel: lazy(() => import('@mui/material/TableSortLabel')),
+  Tabs: lazy(() => import('@mui/material/Tabs')),
+  TextField: lazy(() => import('@mui/material/TextField')),
+  TextareaAutosize: lazy(() => import('@mui/material/TextareaAutosize')),
+  ToggleButton: lazy(() => import('@mui/material/ToggleButton')),
+  ToggleButtonGroup: lazy(() => import('@mui/material/ToggleButtonGroup')),
+  Toolbar: lazy(() => import('@mui/material/Toolbar')),
+  Tooltip: lazy(() => import('@mui/material/Tooltip')),
+  Typography: lazy(() => import('@mui/material/Typography')),
+}
 
 const LazyMUICore = Object.fromEntries(
-  Object.entries({
-    Box,
-    Button,
-    ButtonGroup,
-    Card,
-    CardContent,
-    Checkbox,
-    Container,
-    Dialog,
-    DialogActions,
-    DialogTitle,
-    DialogContent,
-    FormLabel,
-    FormControl,
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Icon,
-    IconButton,
-    InputAdornment,
-    LinearProgress,
-    ListItemIcon,
-    ListItemText,
-    Link,
-    Menu,
-    MenuItem,
-    Paper,
-    Radio,
-    RadioGroup,
-    Select,
-    Snackbar,
-    SnackbarContent,
-    SvgIcon,
-    TextField,
-    Tooltip,
-    Typography,
-  }).map(([key, ReactComponent]) => [
+  Object.entries(Entries).map(([key, ReactComponent]) => [
     key,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (props: any) => (
@@ -181,8 +211,8 @@ const libs = {
   ...MuiPrefixMUI,
 
   // these are core in @mui/material, but used to be in @material-ui/lab
-  '@material-ui/lab/ToggleButton': ToggleButton,
-  '@material-ui/lab/ToggleButtonGroup': ToggleButtonGroup,
+  '@material-ui/lab/ToggleButton': Entries.ToggleButton,
+  '@material-ui/lab/ToggleButtonGroup': Entries.ToggleButtonGroup,
 
   '@jbrowse/core/Plugin': Plugin,
   '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
