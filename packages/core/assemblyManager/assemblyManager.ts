@@ -38,7 +38,8 @@ export default function assemblyManagerFactory(
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [] } = {},
-        } = getParent(self)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } = getParent<any>(self)
         return [
           ...assemblies,
           ...sessionAssemblies,
@@ -46,10 +47,12 @@ export default function assemblyManagerFactory(
       },
 
       get rpcManager() {
-        return getParent(self).rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).rpcManager
       },
       get pluginManager() {
-        return getParent(self).pluginManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).pluginManager
       },
       get allPossibleRefNames() {
         let refNames: string[] = []

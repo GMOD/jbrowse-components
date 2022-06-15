@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import { unmountComponentAtNode, hydrate } from 'react-dom'
+import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { rIC } from '@jbrowse/core/util'
 
 function RpcRenderedSvgGroup({ model }) {
@@ -13,7 +13,7 @@ function RpcRenderedSvgGroup({ model }) {
     const domNode = ssrContainerNode.current
     function doHydrate() {
       if (domNode && filled) {
-        if (domNode && domNode.innerHTML) {
+        if (domNode.innerHTML) {
           domNode.style.display = 'none'
           unmountComponentAtNode(domNode)
         }

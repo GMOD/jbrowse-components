@@ -34,15 +34,16 @@ test('access about menu', async () => {
   fireEvent.click(await findByText('Help'))
   fireEvent.click(await findByText('About'))
 
-  const dlg = await findByText(/The Evolutionary Software Foundation/)
-  expect(dlg).toBeTruthy()
+  await findByText(/The Evolutionary Software Foundation/, {}, delay)
 }, 15000)
 
 test('click and drag to move sideways', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
+  )
 
   const start = state.session.views[0].offsetPx
   const track = await findByTestId(
@@ -54,12 +55,13 @@ test('click and drag to move sideways', async () => {
   fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
   fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
   // wait for requestAnimationFrame
-  await waitFor(() => {})
-  const end = state.session.views[0].offsetPx
-  expect(end - start).toEqual(150)
+  await waitFor(
+    () => expect(state.session.views[0].offsetPx - start).toEqual(150),
+    delay,
+  )
 }, 10000)
 
-test('click and drag to rubberBand', async () => {
+test('click and drag to rubberband', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
@@ -69,8 +71,7 @@ test('click and drag to rubberBand', async () => {
   fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
-  const zoomMenuItem = await findByText('Zoom to region')
-  fireEvent.click(zoomMenuItem)
+  fireEvent.click(await findByText('Zoom to region'))
   expect(state.session.views[0].bpPerPx).toEqual(0.02)
 }, 15000)
 
@@ -88,39 +89,21 @@ test('click and drag rubberBand, click get sequence to open sequenceDialog', asy
   fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
-  const getSeqMenuItem = await findByText('Get sequence')
-  fireEvent.click(getSeqMenuItem)
+  fireEvent.click(await findByText('Get sequence'))
   expect(state.session.views[0].leftOffset).toBeTruthy()
   expect(state.session.views[0].rightOffset).toBeTruthy()
-})
-
-test('click and drag rubberBand, bookmarks region', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const rubberBandComponent = await findByTestId(
-    'rubberBand_controls',
-    {},
-    delay,
-  )
-
-  expect(state.session.views[0].bpPerPx).toEqual(0.05)
-  fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
-  fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-  fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
-  const bookmarkMenuItem = await findByText('Bookmark region')
-  fireEvent.click(bookmarkMenuItem)
-  const { widgets } = state.session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
 })
 
 test('click and drag to reorder tracks', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
+  )
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
+  )
 
   const view = state.session.views[0]
   const trackId1 = view.tracks[1].id
@@ -152,15 +135,13 @@ test('click and zoom in and back out', async () => {
   const pm = getPluginManager()
   const { session } = pm.rootModel
   const { findByTestId, findAllByText } = render(<JBrowse pluginManager={pm} />)
-  await findAllByText('ctgA', {}, { timeout: 10000 })
+  await findAllByText('ctgA', {}, delay)
   const view = session.views[0]
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
-  expect(view.bpPerPx).toBe(before / 2)
   fireEvent.click(await findByTestId('zoom_out'))
   await waitFor(() => expect(view.bpPerPx).toBe(before), delay)
-  expect(view.bpPerPx).toBe(before)
 }, 30000)
 
 test('opens track selector', async () => {
@@ -168,24 +149,26 @@ test('opens track selector', async () => {
   const state = pm.rootModel
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
 
-  await findByTestId('htsTrackEntry-volvox_alignments')
+  await findByTestId('htsTrackEntry-volvox_alignments', {}, delay)
   expect(state.session.views[0].tracks.length).toBe(0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
+  )
   expect(state.session.views[0].tracks.length).toBe(1)
 })
 
 test('opens reference sequence track and expects zoom in message', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
-  const { getAllByText, findByTestId } = render(<JBrowse pluginManager={pm} />)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq'))
+  const { findAllByText, findByTestId } = render(<JBrowse pluginManager={pm} />)
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_refseq', {}, delay))
   state.session.views[0].setNewView(20, 0)
   await findByTestId(
     'display-volvox_refseq-LinearReferenceSequenceDisplay',
     {},
     delay,
   )
-  expect(getAllByText('Zoom in to see sequence')).toBeTruthy()
+  await findAllByText('Zoom in to see sequence')
 }, 30000)
 
 test('click to display center line with correct value', async () => {
@@ -193,12 +176,13 @@ test('click to display center line with correct value', async () => {
   const state = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
 
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
+  )
   await findByTestId('display-volvox_alignments_alignments', {}, delay)
 
   // opens the view menu and selects show center line
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
+  fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Show center line'))
   expect(state.session.views[0].showCenterLine).toBe(true)
 
@@ -207,67 +191,22 @@ test('click to display center line with correct value', async () => {
   expect(centerLineInfo.offset).toEqual(120)
 })
 
-test('bookmarks current region', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
-  fireEvent.click(await findByText('Bookmark current region'))
-  const { widgets } = state.session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  expect(bookmarkWidget.bookmarkedRegions[0].start).toEqual(100)
-  expect(bookmarkWidget.bookmarkedRegions[0].end).toEqual(140)
-})
-
-test('navigates to bookmarked region from widget', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-
-  // need this to complete before we can try to navigate
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
-  await findByTestId(
-    'trackRenderingContainer-integration_test-volvox_alignments',
-    {},
-    delay,
-  )
-
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
-  fireEvent.click(await findByText('Open bookmark widget'))
-
-  const { widgets } = state.session
-  const bookmarkWidget = widgets.get('GridBookmark')
-  bookmarkWidget.addBookmark({
-    start: 200,
-    end: 240,
-    refName: 'ctgA',
-    assemblyName: 'volvox',
-  })
-  const view = state.session.views[0]
-
-  fireEvent.click(await findByText('ctgA:201..240'))
-  const newRegion = view.getSelectedRegions(
-    view.leftOffset,
-    view.rightOffset,
-  )[0]
-  expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
-})
-
 test('test choose option from dropdown refName autocomplete', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
-  const { findByText, findByTestId, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
+  const {
+    findByText,
+    findByTestId,
+    getByPlaceholderText,
+    findByPlaceholderText,
+  } = render(<JBrowse pluginManager={pm} />)
   const view = state.session.views[0]
   expect(view.displayedRegions[0].refName).toEqual('ctgA')
   fireEvent.click(await findByText('Help'))
   // need this to complete before we can try to search
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_alignments'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
+  )
   await findByTestId(
     'trackRenderingContainer-integration_test-volvox_alignments',
     {},
@@ -291,7 +230,10 @@ test('test choose option from dropdown refName autocomplete', async () => {
     () => expect(view.displayedRegions[0].refName).toEqual('ctgB'),
     delay,
   )
-  expect((await findByPlaceholderText('Search for location')).value).toEqual(
-    expect.stringContaining('ctgB'),
-  )
+
+  await waitFor(() => {
+    expect(getByPlaceholderText('Search for location').value).toEqual(
+      expect.stringContaining('ctgB'),
+    )
+  }, delay)
 }, 15000)

@@ -65,9 +65,15 @@ test('open a bigwig track that needs oauth authentication and has existing token
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
   await findByText('Help')
   state.session.views[0].setNewView(5, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_microarray_dropbox'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_microarray_dropbox', {}, delay),
+  )
   expectCanvasMatch(
-    await findByTestId('prerendered_canvas_{volvox}ctgA:1..4,000-0', {}, delay),
+    await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
+      {},
+      delay,
+    ),
   )
 }, 25000)
 
@@ -105,7 +111,11 @@ test('opens a bigwig track that needs external token authentication', async () =
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
   state.session.views[0].setNewView(5, 0)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray_externaltoken'),
+    await findByTestId(
+      'htsTrackEntry-volvox_microarray_externaltoken',
+      {},
+      delay,
+    ),
   )
   const { findByText: findByTextWithin } = within(
     await findByTestId('externalToken-form', {}, delay),
@@ -119,7 +129,11 @@ test('opens a bigwig track that needs external token authentication', async () =
   expect(Object.values(sessionStorage)).toContain('testentry')
 
   expectCanvasMatch(
-    await findByTestId('prerendered_canvas_{volvox}ctgA:1..4,000-0', {}, delay),
+    await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
+      {},
+      delay,
+    ),
   )
 }, 25000)
 
@@ -148,7 +162,7 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   state.session.views[0].setNewView(5, 0)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray_httpbasic'),
+    await findByTestId('htsTrackEntry-volvox_microarray_httpbasic', {}, delay),
   )
   await findByTestId('login-httpbasic')
   fireEvent.change(await findByTestId('login-httpbasic-username'), {
@@ -167,6 +181,10 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   ).toContain(btoa(`username:password`))
 
   expectCanvasMatch(
-    await findByTestId('prerendered_canvas_{volvox}ctgA:1..4,000-0', {}, delay),
+    await findByTestId(
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
+      {},
+      delay,
+    ),
   )
 })

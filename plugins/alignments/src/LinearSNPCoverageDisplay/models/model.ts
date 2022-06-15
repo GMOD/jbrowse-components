@@ -93,35 +93,29 @@ const stateModelFactory = (
             {
               ...configBlob,
               drawInterbaseCounts:
-                self.drawInterbaseCounts === undefined
-                  ? configBlob.drawInterbaseCounts
-                  : self.drawInterbaseCounts,
-              drawIndicators:
-                self.drawIndicators === undefined
-                  ? configBlob.drawIndicators
-                  : self.drawIndicators,
-              drawArcs:
-                self.drawArcs === undefined
-                  ? configBlob.drawArcs
-                  : self.drawArcs,
+                self.drawInterbaseCounts ?? configBlob.drawInterbaseCounts,
+              drawIndicators: self.drawIndicators ?? configBlob.drawIndicators,
+              drawArcs: self.drawArcs ?? configBlob.drawArcs,
             },
             getEnv(self),
           )
         },
         get drawArcsSetting() {
-          return self.drawArcs !== undefined
-            ? self.drawArcs
-            : readConfObject(this.rendererConfig, 'drawArcs')
+          return (
+            self.drawArcs ?? readConfObject(this.rendererConfig, 'drawArcs')
+          )
         },
         get drawInterbaseCountsSetting() {
-          return self.drawInterbaseCounts !== undefined
-            ? self.drawInterbaseCounts
-            : readConfObject(this.rendererConfig, 'drawInterbaseCounts')
+          return (
+            self.drawInterbaseCounts ??
+            readConfObject(this.rendererConfig, 'drawInterbaseCounts')
+          )
         },
         get drawIndicatorsSetting() {
-          return self.drawIndicators !== undefined
-            ? self.drawIndicators
-            : readConfObject(this.rendererConfig, 'drawIndicators')
+          return (
+            self.drawIndicators ??
+            readConfObject(this.rendererConfig, 'drawIndicators')
+          )
         },
 
         get modificationsReady() {
@@ -133,17 +127,16 @@ const stateModelFactory = (
 
         renderProps() {
           const superProps = superRenderProps()
+          const { colorBy, filterBy, modificationTagMap } = self
           return {
             ...superProps,
             notReady: superProps.notReady || !this.modificationsReady,
-            modificationTagMap: JSON.parse(
-              JSON.stringify(self.modificationTagMap),
-            ),
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
 
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
-            colorBy: self.colorBy ? getSnapshot(self.colorBy) : undefined,
-            filterBy: self.filterBy ? getSnapshot(self.filterBy) : undefined,
+            colorBy: colorBy ? getSnapshot(colorBy) : undefined,
+            filterBy: filterBy ? getSnapshot(filterBy) : undefined,
           }
         },
       }

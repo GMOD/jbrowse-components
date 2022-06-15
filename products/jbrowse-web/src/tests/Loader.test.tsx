@@ -273,7 +273,7 @@ describe('<Loader />', () => {
     )
 
     await findByText('Help', {}, delay)
-    await findByTestId('prerendered_canvas', {}, delay)
+    await findByTestId('prerendered_canvas_done', {}, delay)
   }, 40000)
 
   it('can use a spec url for synteny view', async () => {

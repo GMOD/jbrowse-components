@@ -311,8 +311,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (bp < 0) {
           const region = self.displayedRegions[0]
           const offset = bp
+          const snap = getSnapshot(region)
           return {
-            ...getSnapshot(region),
+            // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+            ...(snap as Omit<typeof snap, symbol>),
             oob: true,
             coord: region.reversed
               ? Math.floor(region.end - offset) + 1
@@ -330,8 +332,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const len = region.end - region.start
           const offset = bp - bpSoFar
           if (len + bpSoFar > bp && bpSoFar <= bp) {
+            const snap = getSnapshot(region)
             return {
-              ...getSnapshot(region),
+              // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+              ...(snap as Omit<typeof snap, symbol>),
               oob: false,
               offset,
               coord: region.reversed
@@ -358,8 +362,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const region = self.displayedRegions[n - 1]
           const len = region.end - region.start
           const offset = bp - bpSoFar + len
+          const snap = getSnapshot(region)
           return {
-            ...getSnapshot(region),
+            // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+            ...(snap as Omit<typeof snap, symbol>),
             oob: true,
             offset,
             coord: region.reversed
@@ -529,26 +535,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
         initialSnapshot = {},
         displayInitialSnapshot = {},
       ) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        if (!configuration) {
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const conf = resolveIdentifier(schema, getRoot(self), trackId)
+        if (!conf) {
           throw new Error(`Could not resolve identifier "${trackId}"`)
         }
-        const trackType = pluginManager.getTrackType(configuration?.type)
+        const trackType = pluginManager.getTrackType(conf?.type)
         if (!trackType) {
-          throw new Error(`Unknown track type ${configuration.type}`)
+          throw new Error(`Unknown track type ${conf.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(
-          displayType => displayType.name,
-        )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
+          supportedDisplays.includes(d.type),
         )
         if (!displayConf) {
           throw new Error(
@@ -556,14 +555,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
           )
         }
 
-        const shownTracks = self.tracks.filter(
-          t => t.configuration === configuration,
-        )
-        if (shownTracks.length === 0) {
+        const t = self.tracks.filter(t => t.configuration === conf)
+        if (t.length === 0) {
           const track = trackType.stateModel.create({
             ...initialSnapshot,
-            type: configuration.type,
-            configuration,
+            type: conf.type,
+            configuration: conf,
             displays: [
               {
                 type: displayConf.type,
@@ -575,38 +572,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self.tracks.push(track)
           return track
         }
-        return shownTracks[0]
+        return t[0]
       },
 
       hideTrack(trackId: string) {
-        const trackConfigSchema =
-          pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(
-          trackConfigSchema,
-          getRoot(self),
-          trackId,
-        )
-        // if we have any tracks with that configuration, turn them off
-        const shownTracks = self.tracks.filter(
-          t => t.configuration === configuration,
-        )
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-        return shownTracks.length
+        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const conf = resolveIdentifier(schema, getRoot(self), trackId)
+        const t = self.tracks.filter(t => t.configuration === conf)
+        transaction(() => t.forEach(t => self.tracks.remove(t)))
+        return t.length
       },
     }))
     .actions(self => ({
-      moveTrack(movingTrackId: string, targetTrackId: string) {
-        const oldIndex = self.tracks.findIndex(
-          track => track.id === movingTrackId,
-        )
+      moveTrack(movingId: string, targetId: string) {
+        const oldIndex = self.tracks.findIndex(track => track.id === movingId)
         if (oldIndex === -1) {
-          throw new Error(`Track ID ${movingTrackId} not found`)
+          throw new Error(`Track ID ${movingId} not found`)
         }
-        const newIndex = self.tracks.findIndex(
-          track => track.id === targetTrackId,
-        )
+        const newIndex = self.tracks.findIndex(track => track.id === targetId)
         if (newIndex === -1) {
-          throw new Error(`Track ID ${targetTrackId} not found`)
+          throw new Error(`Track ID ${targetId} not found`)
         }
         const track = getSnapshot(self.tracks[oldIndex])
         self.tracks.splice(oldIndex, 1)
@@ -953,21 +938,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
         leftOffset: BpOffset | undefined,
         rightOffset: BpOffset | undefined,
       ) {
+        const snap = getSnapshot(self)
         const simView = Base1DView.create({
-          ...getSnapshot(self),
+          // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+          ...(snap as Omit<typeof self, symbol>),
           interRegionPaddingWidth: self.interRegionPaddingWidth,
         })
 
         simView.setVolatileWidth(self.width)
         simView.zoomToDisplayedRegions(leftOffset, rightOffset)
 
-        return simView.dynamicBlocks.contentBlocks.map(region => {
-          return {
-            ...region,
-            start: Math.floor(region.start),
-            end: Math.ceil(region.end),
-          }
-        })
+        return simView.dynamicBlocks.contentBlocks.map(region => ({
+          ...region,
+          start: Math.floor(region.start),
+          end: Math.ceil(region.end),
+        }))
       },
 
       // schedule something to be run after the next time displayedRegions is set

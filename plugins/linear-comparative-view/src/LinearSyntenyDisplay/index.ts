@@ -79,6 +79,7 @@ export function stateModelFactory(
       get adapterConfig() {
         // TODO possibly enriches with the adapters from associated trackIds
         return {
+          // @ts-ignore
           name: self.parentTrack.configuration.adapter.type,
           assemblyNames: getConf(self, 'assemblyNames'),
           ...getConf(self.parentTrack, 'adapter'),

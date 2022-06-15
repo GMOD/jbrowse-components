@@ -191,7 +191,8 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self, 2).removeView(self)
       },
 
       setDisplayedRegions(regions: Region[]) {

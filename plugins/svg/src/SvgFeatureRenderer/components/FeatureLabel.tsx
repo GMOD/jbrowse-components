@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { isStateTreeNode } from 'mobx-state-tree'
+import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
 import { DisplayModel } from './util'
 
@@ -47,6 +47,9 @@ export default observer(
 
     const viewLeft = reversed ? params.end : params.start
 
+    if (isStateTreeNode(region) && !isAlive(region)) {
+      return null
+    }
     const rstart = region.start
     const rend = region.end
     const fstart = feature.get('start')

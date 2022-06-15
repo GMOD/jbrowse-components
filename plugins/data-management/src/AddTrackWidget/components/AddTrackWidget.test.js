@@ -107,7 +107,7 @@ describe('<AddTrackWidget />', () => {
     fireEvent.change(getAllByTestId('urlInput')[0], {
       target: { value: 'test.txt' },
     })
-    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
     fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
     const bamAdapter = await findByText('BamAdapter')
     fireEvent.click(bamAdapter)
@@ -122,7 +122,7 @@ describe('<AddTrackWidget />', () => {
     fireEvent.mouseDown(assemblyNameSelect)
     const volMyt1 = await findAllByText('volMyt1')
     fireEvent.click(volMyt1[1])
-    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
     expect(session.sessionTracks.length).toBe(2)
   })
 
@@ -134,11 +134,11 @@ describe('<AddTrackWidget />', () => {
     fireEvent.change(getAllByTestId('urlInput')[0], {
       target: { value: 'test.txt' },
     })
-    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
     fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
     const chrom = await findByText('ChromSizesAdapter')
     fireEvent.click(chrom)
-    fireEvent.click(getByTestId('addTrackNextButton'))
+    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
     expect(session.sessionTracks.length).toBe(2)
   })
 })

@@ -34,10 +34,8 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
   const { views } = getSession(model)
 
   const bookmarkRows = bookmarkedRegions
-    .toJS()
     .filter(
-      region =>
-        selectedAssembly === 'all' || region.assemblyName === selectedAssembly,
+      r => selectedAssembly === 'all' || r.assemblyName === selectedAssembly,
     )
     .map((region, index) => {
       const { assemblyName, ...rest } = region

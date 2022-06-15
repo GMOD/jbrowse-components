@@ -10,8 +10,8 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
     <label
       class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
       data-shrink="false"
-      for="mui-1"
-      id="mui-1-label"
+      for=":r0:"
+      id=":r0:-label"
     >
       Filter plugins
     </label>
@@ -21,7 +21,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       <input
         aria-invalid="false"
         class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-        id="mui-1"
+        id=":r0:"
         type="text"
         value=""
       />
@@ -866,9 +866,6 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     </svg>
                   </span>
                   Install
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
                 </button>
               </div>
             </div>

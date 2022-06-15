@@ -552,7 +552,7 @@ export const BaseLinearDisplay = types
     renderProps() {
       const view = getContainingView(self) as LGV
       return {
-        ...getParentRenderProps(self),
+        ...(getParentRenderProps(self) as any),
         notReady:
           self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
@@ -679,7 +679,9 @@ export const BaseLinearDisplay = types
     },
   }))
   .postProcessSnapshot(self => {
-    const { blockState, ...rest } = self
+    // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+    const r = self as Omit<typeof self, symbol>
+    const { blockState, ...rest } = r
     return rest
   })
 

@@ -21,7 +21,8 @@ const useStyles = makeStyles()(theme => ({
 
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
-  const rootModel = getRoot(model)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rootModel = getRoot<any>(model)
 
   return (
     <Paper className={classes.paper}>

@@ -39,9 +39,9 @@
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "@mui/material": "^5.0.0",
-    "mobx": "^5.0.0",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "tss-react": "^3.0.0"

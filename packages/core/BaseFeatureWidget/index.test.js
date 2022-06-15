@@ -8,7 +8,7 @@ import PluginManager from '../PluginManager'
 import { stateModelFactory } from '.'
 import BaseFeatureDetails from './BaseFeatureDetail'
 
-test('open up a widget', () => {
+test('open up a widget', async () => {
   console.warn = jest.fn()
   const pluginManager = new PluginManager([])
 
@@ -21,7 +21,7 @@ test('open up a widget', () => {
   const model = Session.create({
     widget: { type: 'BaseFeatureWidget' },
   })
-  const { container, getByText } = render(
+  const { container, findByText } = render(
     <BaseFeatureDetails model={model.widget} />,
   )
   model.widget.setFeatureData({
@@ -31,6 +31,6 @@ test('open up a widget', () => {
     score: 37,
     refName: 'ctgA',
   })
+  expect(await findByText('ctgA:3..102 (+)')).toBeTruthy()
   expect(container.firstChild).toMatchSnapshot()
-  expect(getByText('ctgA:3..102 (+)')).toBeTruthy()
 })

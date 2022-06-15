@@ -29,6 +29,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 20000 }
+
 test('opens an alignments track', async () => {
   const pm = getPluginManager()
   const state = pm.rootModel
@@ -38,7 +39,11 @@ test('opens an alignments track', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(5, 100)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    await findByTestId(
+      'htsTrackEntry-volvox_alignments_pileup_coverage',
+      {},
+      delay,
+    ),
   )
 
   const { findByTestId: findByTestId1 } = within(
@@ -46,7 +51,7 @@ test('opens an alignments track', async () => {
   )
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
       {},
       delay,
     ),
@@ -57,7 +62,7 @@ test('opens an alignments track', async () => {
   )
   expectCanvasMatch(
     await findByTestId2(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0',
+      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
       {},
       delay,
     ),
@@ -79,7 +84,7 @@ test('test that bam with small max height displays message', async () => {
   const pm = getPluginManager()
   const { findByTestId, findAllByText } = render(<JBrowse pluginManager={pm} />)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_bam_small_max_height'),
+    await findByTestId('htsTrackEntry-volvox_bam_small_max_height', {}, delay),
   )
 
   await findAllByText('Max height reached', {}, delay)
@@ -93,7 +98,9 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
   state.session.views[0].setNewView(0.03932, 67884.16536402702)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram', {}, delay),
+  )
 
   const { findByTestId: findByTestId1 } = within(
     await findByTestId('Blockset-snpcoverage', {}, delay),
@@ -101,14 +108,14 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
 
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:2,657..2,688-0',
+      'prerendered_canvas_{volvox}ctgA:2,657..2,688-0_done',
       {},
       delay,
     ),
   )
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:2,689..2,720-0',
+      'prerendered_canvas_{volvox}ctgA:2,689..2,720-0_done',
       {},
       delay,
     ),

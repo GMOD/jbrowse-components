@@ -321,16 +321,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         }
         const { refName, assemblyName, offset } = centerLineInfo
         const centerBp = Math.round(offset) + 1
-        const centerRefName = refName
 
-        if (centerBp < 0) {
+        if (centerBp < 0 || !refName) {
           return
         }
 
         self.sortedBy = {
           type,
           pos: centerBp,
-          refName: centerRefName,
+          refName,
           assemblyName,
           tag,
         }
@@ -466,8 +465,8 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             sortedBy,
             colorBy,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
-            colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
-            modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
+            colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
             async onFeatureClick(_: unknown, featureId?: string) {

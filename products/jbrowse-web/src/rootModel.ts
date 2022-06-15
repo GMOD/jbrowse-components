@@ -16,6 +16,7 @@ import {
   IAnyType,
   Instance,
   SnapshotIn,
+  IAnyModelType,
 } from 'mobx-state-tree'
 
 import makeWorkerInstance from './makeWorkerInstance'
@@ -263,7 +264,7 @@ export default function RootModel(
         const internetAccountConfigSchema =
           pluginManager.pluggableConfigSchemaType('internet account')
         const configuration = resolveIdentifier(
-          internetAccountConfigSchema,
+          internetAccountConfigSchema as IAnyModelType,
           self,
           internetAccountId,
         )
