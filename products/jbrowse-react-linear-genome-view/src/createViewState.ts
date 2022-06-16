@@ -67,16 +67,22 @@ export default function createViewState({
 
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
+
   if (location) {
     autorun(reaction => {
-      if (stateTree.session.view.initialized) {
-        if (typeof location === 'string') {
-          const assemblyName = stateTree.assemblyManager.assemblies[0].name
-          stateTree.session.view.navToLocString(location, assemblyName)
-        } else {
-          stateTree.session.view.navTo(location)
+      if (
+        stateTree.assemblyManager.allPossibleRefNames &&
+        stateTree.assemblyManager.allPossibleRefNames.length
+      ) {
+        if (stateTree.session.view.initialized) {
+          if (typeof location === 'string') {
+            const assemblyName = stateTree.assemblyManager.assemblies[0].name
+            stateTree.session.view.navToLocString(location, assemblyName)
+          } else {
+            stateTree.session.view.navTo(location)
+          }
+          reaction.dispose()
         }
-        reaction.dispose()
       }
     })
   }
