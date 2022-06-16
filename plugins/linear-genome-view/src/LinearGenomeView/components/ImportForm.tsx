@@ -57,14 +57,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     label: value,
   })
 
-  async function fetchResults(query: string, searchType?: SearchType) {
+  async function fetchResults(queryString: string, searchType?: SearchType) {
     if (!textSearchManager) {
       console.warn('No text search manager')
     }
 
     const textSearchResults = await textSearchManager?.search(
       {
-        queryString: query,
+        queryString,
         searchType,
       },
       searchScope,
@@ -72,9 +72,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     )
 
     const refNameResults = assembly?.allRefNames
-      ?.filter(refName => refName.toLowerCase().startsWith(query.toLowerCase()))
-      .map(r => new BaseResult({ label: r }))
+      ?.filter(ref => queryString.toLowerCase().startsWith(ref.toLowerCase()))
       .slice(0, 10)
+      .map(r => new BaseResult({ label: r }))
 
     return [...(refNameResults || []), ...(textSearchResults || [])]
   }

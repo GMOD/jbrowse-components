@@ -156,7 +156,6 @@ export default function SearchResultsDialog({
                             }
                             handleClose()
                           }}
-                          disabled={!getTrackName(result.getTrackId())}
                           color="primary"
                           variant="contained"
                         >
