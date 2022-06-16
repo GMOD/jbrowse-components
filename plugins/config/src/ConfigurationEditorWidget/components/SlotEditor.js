@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getPropertyMembers, getEnv } from 'mobx-state-tree'
-import { FileSelector } from '@jbrowse/core/ui'
+import { FileSelector, SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
@@ -18,8 +18,6 @@ import {
   IconButton,
   InputAdornment,
   InputLabel,
-  List,
-  ListItem,
   MenuItem,
   Paper,
   SvgIcon,
@@ -33,16 +31,32 @@ import AddIcon from '@material-ui/icons/Add'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 
 // locals
+import StringArrayEditor from './StringArrayEditor'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
 
+// adds ability to have html in helperText. note that FormHelperTextProps is
+// div because the default is p which does not like div children
+const MyTextField = props => {
+  // eslint-disable-next-line react/prop-types
+  const { helperText } = props
+  return (
+    <TextField
+      {...props}
+      helperText={<SanitizedHTML html={helperText} />}
+      FormHelperTextProps={{
+        component: 'div',
+      }}
+      fullWidth
+    />
+  )
+}
+
 const StringEditor = observer(({ slot }) => (
-  <TextField
+  <MyTextField
     label={slot.name}
-    // error={filterError}
     helperText={slot.description}
-    fullWidth
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
   />
@@ -52,7 +66,6 @@ const TextEditor = observer(({ slot }) => (
   <TextField
     label={slot.name}
     helperText={slot.description}
-    fullWidth
     multiline
     value={slot.value}
     onChange={evt => slot.set(evt.target.value)}
@@ -65,62 +78,6 @@ const SvgCheckbox = () => (
     <path d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z" />
   </SvgIcon>
 )
-
-const StringArrayEditor = observer(({ slot }) => {
-  const [value, setValue] = useState('')
-  return (
-    <>
-      {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
-      <List disablePadding>
-        {slot.value.map((val, idx) => (
-          <ListItem key={idx} disableGutters>
-            <TextField
-              value={val}
-              onChange={evt => slot.setAtIndex(idx, evt.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      color="secondary"
-                      onClick={() => slot.removeAtIndex(idx)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </ListItem>
-        ))}
-        <ListItem disableGutters>
-          <TextField
-            value={value}
-            placeholder="add new"
-            onChange={event => setValue(event.target.value)}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => {
-                      slot.add(value)
-                      setValue('')
-                    }}
-                    disabled={value === ''}
-                    color="secondary"
-                    data-testid={`stringArrayAdd-${slot.name}`}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </ListItem>
-      </List>
-      <FormHelperText>{slot.description}</FormHelperText>
-    </>
-  )
-})
 
 const useMapEditorStyles = makeStyles(theme => ({
   card: {
@@ -268,7 +225,7 @@ const NumberEditor = observer(({ slot }) => {
     }
   }, [slot, val])
   return (
-    <TextField
+    <MyTextField
       label={slot.name}
       helperText={slot.description}
       value={val}
@@ -287,7 +244,7 @@ const IntegerEditor = observer(({ slot }) => {
     }
   }, [slot, val])
   return (
-    <TextField
+    <MyTextField
       label={slot.name}
       helperText={slot.description}
       value={val}
@@ -297,7 +254,7 @@ const IntegerEditor = observer(({ slot }) => {
   )
 })
 
-const booleanEditor = observer(({ slot }) => (
+const BooleanEditor = observer(({ slot }) => (
   <FormControl>
     <FormControlLabel
       label={slot.name}
@@ -312,20 +269,18 @@ const booleanEditor = observer(({ slot }) => (
   </FormControl>
 ))
 
-const stringEnumEditor = observer(({ slot, slotSchema }) => {
+const StringEnumEditor = observer(({ slot, slotSchema }) => {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
     getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
   ).map(t => t.value)
 
   return (
-    <TextField
+    <MyTextField
       value={slot.value}
       label={slot.name}
       select
-      // error={filterError}
       helperText={slot.description}
-      fullWidth
       onChange={evt => slot.set(evt.target.value)}
     >
       {choices.map(str => (
@@ -333,7 +288,7 @@ const stringEnumEditor = observer(({ slot, slotSchema }) => {
           {str}
         </MenuItem>
       ))}
-    </TextField>
+    </MyTextField>
   )
 })
 
@@ -359,8 +314,8 @@ const valueComponents = {
   number: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
-  stringEnum: stringEnumEditor,
-  boolean: booleanEditor,
+  stringEnum: StringEnumEditor,
+  boolean: BooleanEditor,
   frozen: JsonEditor,
   configRelationships: JsonEditor,
 }

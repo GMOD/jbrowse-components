@@ -97,6 +97,11 @@ export default class TextIndex extends JBrowseCommand {
         'File or files to index (can be used to create trix indexes for embedded component use cases not using a config.json for example)',
       multiple: true,
     }),
+    fileId: flags.string({
+      description:
+        'Set the trackId used for the indexes generated with the --file argument',
+      multiple: true,
+    }),
     dryrun: flags.boolean({
       description:
         'Just print out tracks that will be indexed by the process, without doing any indexing',
@@ -320,7 +325,16 @@ export default class TextIndex extends JBrowseCommand {
 
   async indexFileList() {
     const { flags } = this.parse(TextIndex)
-    const { out, target, file, attributes, quiet, exclude, prefixSize } = flags
+    const {
+      out,
+      target,
+      fileId,
+      file,
+      attributes,
+      quiet,
+      exclude,
+      prefixSize,
+    } = flags
     const outFlag = target || out || '.'
     const trixDir = path.join(outFlag, 'trix')
     if (!fs.existsSync(trixDir)) {
@@ -330,6 +344,12 @@ export default class TextIndex extends JBrowseCommand {
     const configs = file
       .map(file => guessAdapterFromFileName(file))
       .filter(fileConfig => supported(fileConfig.adapter.type))
+
+    if (fileId?.length) {
+      for (let i = 0; i < fileId.length; i++) {
+        configs[i].trackId = fileId[i]
+      }
+    }
 
     await this.indexDriver({
       configs,

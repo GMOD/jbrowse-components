@@ -115,7 +115,35 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
-      "name": "NCBI RefSeq (GFF3Tabix)",
+      "name": "NCBI RefSeq w/ subfeature details",
+      "formatDetails": {
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+      },
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "metadata": {
+        "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
+        "dateaccessed": "12/03/2020"
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_gff_hg19_2",
+      "name": "NCBI RefSeq w/ top-level feature details",
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+      },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {
@@ -287,7 +315,6 @@
         "track": "genomicSuperDups"
       }
     },
-
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
@@ -441,13 +468,13 @@
     {
       "type": "FeatureTrack",
       "trackId": "mane_hg38",
-      "name": "MANE 0.92",
+      "name": "MANE 1.0",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
           "locationType": "UriLocation"
         }
       },
@@ -3864,6 +3891,37 @@
         }
       },
       "assemblyNames": ["chm13v2.0"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "bonito_calls",
+      "name": "Clive-ome 5mC",
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/cliveome_kit14_2022.05/cfdna/basecalling/bonito_mod/bonito_calls.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ont-open-data.s3.amazonaws.com/cliveome_kit14_2022.05/cfdna/basecalling/bonito_mod/bonito_calls.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
     }
   ],
   "connections": [],

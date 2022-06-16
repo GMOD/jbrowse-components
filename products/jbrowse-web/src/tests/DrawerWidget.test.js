@@ -39,7 +39,7 @@ test('variant track test - opens feature detail view', async () => {
   fireEvent.contextMenu(feats2[0])
   fireEvent.click(await findByText('Open feature details'))
   expect(await findByTestId('variant-side-drawer')).toBeInTheDocument()
-}, 10000)
+}, 20000)
 
 test('widget drawer navigation', async () => {
   const pm = getPluginManager(undefined, true)

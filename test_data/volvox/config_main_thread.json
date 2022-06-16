@@ -64,6 +64,21 @@
           "displayId": "volvox_bam_pileup_pileup"
         }
       ]
+    },
+
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_fake_synteny",
+      "name": "volvox_fake_synteny",
+      "assemblyNames": ["volvox", "volvox"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_fake_synteny.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      }
     }
   ]
 }

@@ -36,7 +36,7 @@ test('access about menu', async () => {
 
   const dlg = await findByText(/The Evolutionary Software Foundation/)
   expect(dlg).toBeTruthy()
-})
+}, 15000)
 
 test('click and drag to move sideways', async () => {
   const pm = getPluginManager()
@@ -294,4 +294,4 @@ test('test choose option from dropdown refName autocomplete', async () => {
   expect((await findByPlaceholderText('Search for location')).value).toEqual(
     expect.stringContaining('ctgB'),
   )
-})
+}, 15000)

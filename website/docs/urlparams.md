@@ -20,13 +20,15 @@ linear genome view
 
 Example
 
-http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track
+`http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
 Here are the query params used here
 
 ### ?config=
 
-E.g. config=test_data/volvox/config.json
+Example
+
+`?config=test_data/volvox/config.json`
 
 A path to a JBrowse 2 config file, relative to the current folder on the disk.
 Note that this just uses client side fetch to read the file, not server side
@@ -36,17 +38,22 @@ up by default
 
 ### &assembly=
 
-E.g. &assembly=hg19
+Example
+
+`&assembly=hg19`
 
 The &assembly parameter refers to an assembly's "name" field one of the
-"assemblies" array in the from the config.json.
+"assemblies" array in the from the config.json. This is only used for launching
+a single linear genome view.
 
 ### &loc=
 
-E.g. &loc=chr1:6000-7000
+Example
+
+`&loc=chr1:6000-7000`
 
 This performs a navigation to this region on load, which can be specified using
-the syntax
+the syntax. This is only used for launching a single linear genome view.
 
 Example strings
 
@@ -56,35 +63,40 @@ chr1:6000..7000 // using .. notation for range
 chr1:7000 // centered on this position
 ```
 
-Note: Navigating via a text search query e.g. supply &loc=gene_name is not yet supported
+Note: Navigating via a text search query e.g. supply &loc=gene_name is not yet
+supported
 
 ### &tracks=
 
-E.g. &tracks=gene_track,vcf_track
+Example
+
+`&tracks=gene_track,vcf_track`
 
 This is a comma separated list of trackIds. You can see your trackId's in the
 config.json. Note, you can also refer to a trackId added by &sessionTracks=
-here
+here. This is only used for launching a single linear genome view.
 
-## More URL paramters
+## More URL parameters
 
 ### &sessionTracks=
 
 If you want to dynamically add a track to the session, you can do so with
-&sessionTracks=
+`&sessionTracks=`
 
-You can also use this method to add a FromConfigAdapter track, which let's you
+You can also use this method to add a `FromConfigAdapter` track, which let's you
 specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
 
 Example
 
 ```
-http://localhost:3000/?config=test_data/volvox/config.json&loc=ctgA:6000-7000&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["hg19"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"chr1","start":100,"end":200,"name":"Boris"}]}}]
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
 ```
 
-This creates a track dynamically that has a single feature at chr1:100-200
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}])
 
-The data to supply to &sessionTracks= is an array of track configs, and in the
+This creates a track dynamically that has a single feature at `chr1:100-200`
+
+The data to supply to `&sessionTracks=` is an array of track configs, and in the
 above URL, looks like this when pretty-printed
 
 ```json
@@ -93,7 +105,7 @@ above URL, looks like this when pretty-printed
     "type": "FeatureTrack",
     "trackId": "url_track",
     "name": "URL track",
-    "assemblyNames": ["hg19"],
+    "assemblyNames": ["volvox"],
     "adapter": {
       "type": "FromConfigAdapter",
       "features": [
@@ -135,23 +147,161 @@ See [this FAQ entry for more info about how shared sessions work](../faq#how-doe
 
 #### Session spec
 
-Another useful session URL is called a "session spec" or "session specification"
+Another useful session URL is called a "session spec" or "session
+specification". This provides a way to launch multiple views at once, including
+view types other than the linear genome view
 
-This looks like
-
-```
-http://localhost:3000/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}
-```
-
-As you can see from the URL, you supply an array of views (so you can open
-multiple views at once) and can specify the loc, tracks, assembly, and view
-type, or other view specific parameters (different view types may accept
-different params, e.g. dotplot has two assemblies)
-
-Here is a session spec for a Circular Genome View
+##### Linear Genome View
 
 ```
-http://localhost:3000/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-5100",
+      "type": "LinearGenomeView",
+      "tracks": [
+        "gff3tabix_genes",
+        "volvox_filtered_vcf",
+        "volvox_microarray",
+        "volvox_cram"
+      ]
+    }
+  ]
+}
+```
+
+As you can see, you can supply an array of views (so you can open multiple
+views at once) and can specify the loc, tracks, assembly, and view type, or
+other view specific parameters (different view types may accept different
+params, e.g. dotplot has two assemblies)
+
+##### Circular view
+
+Here is a session spec for a Circular View
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"CircularView","tracks":["volvox_sv_test"]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-5100",
+      "type": "CircularView",
+      "tracks": ["volvox_sv_test"]
+    }
+  ]
+}
+```
+
+##### Dotplot view
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D)
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }],
+      "tracks": ["volvox_fake_synteny"]
+    }
+  ]
+}
+```
+
+Note that this dotplot session spec doesn't have the ability to navigate to
+specific regions on the assembly yet, it just navigates to a whole genome
+overview
+
+##### Spreadsheet view
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D)
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "SpreadsheetView",
+      "uri": "test_data/volvox/volvox.filtered.vcf.gz",
+      "assembly": "volvox"
+    }
+  ]
+}
+```
+
+##### SV inspector
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B"views":%5B%7B"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"%7D%5D%7D
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SvInspectorView%22,%20%22uri%22:%22test_data/volvox/volvox.dup.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D)
+
+Expanded
+
+```
+{
+  views: [
+    {
+      type: "SvInspectorView",
+      uri: "test_data/volvox/volvox.dup.vcf.gz",
+      assembly: "volvox",
+    },
+  ],
+};
+```
+
+##### Linear synteny view
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]})
+
+Expanded
+
+```json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": ["volvox_fake_synteny"],
+      "views": [
+        { "loc": "ctgA:1-100", "assembly": "volvox" },
+        { "loc": "ctgA:300-400", "assembly": "volvox" }
+      ]
+    }
+  ]
+}
 ```
 
 #### JSON sessions

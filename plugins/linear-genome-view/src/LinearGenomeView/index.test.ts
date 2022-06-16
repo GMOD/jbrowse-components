@@ -72,7 +72,7 @@ function initialize() {
     })
     .actions(self => ({
       isValidRefName(str: string) {
-        return !str.includes(':')
+        return str === 'ctgA' || str === 'ctgB'
       },
       get(str: string) {
         return self.assemblies.get(str)
@@ -989,8 +989,23 @@ test('multi region', () => {
   model.navToLocString('ctgA ctgB')
   expect(model.displayedRegions[0].refName).toBe('ctgA')
   expect(model.displayedRegions[1].refName).toBe('ctgB')
-  // [
-  //   { refName: 'ctgA', start: 0, end: 50001 },
-  //   { refName: 'ctgB', start: 0, end: 6079 },
-  // ])
+})
+
+test('space separated locstring', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+
+  model.navToLocString('ctgA 0 100')
+
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBe(0.125)
 })

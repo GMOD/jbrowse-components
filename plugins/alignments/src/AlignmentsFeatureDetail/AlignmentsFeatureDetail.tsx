@@ -77,12 +77,22 @@ function AlignmentFlags(props: { feature: any }) {
 
 function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
+  const [copied, setCopied] = useState(false)
   const display = String(value)
   if (display.length > 100) {
     return (
       <>
-        <button type="button" onClick={() => copy(display)}>
-          Copy
+        <button
+          type="button"
+          onClick={() => {
+            copy(display)
+            setCopied(true)
+            setTimeout(() => {
+              setCopied(false)
+            }, 700)
+          }}
+        >
+          {copied ? 'Copied to clipboard' : 'Copy'}
         </button>
         <button type="button" onClick={() => setShow(val => !val)}>
           {show ? 'Show less' : 'Show more'}
@@ -134,7 +144,8 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             return (
               <li key={`${locString}-${index}`}>
                 <Link
-                  onClick={() => {
+                  onClick={event => {
+                    event.preventDefault()
                     const { view } = model
                     try {
                       if (view) {

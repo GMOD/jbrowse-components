@@ -143,7 +143,7 @@ function BreakendPanel(props: {
           <li key={`${JSON.stringify(locString)}`}>
             <Link
               href="#"
-              onClick={(event: any) => {
+              onClick={event => {
                 event.preventDefault()
                 const { view } = model
                 try {
@@ -175,7 +175,7 @@ function BreakendPanel(props: {
               <li key={`${JSON.stringify(locString)}`}>
                 <Link
                   href="#"
-                  onClick={(event: any) => {
+                  onClick={event => {
                     event.preventDefault()
                     setBreakpointDialog(true)
                   }}

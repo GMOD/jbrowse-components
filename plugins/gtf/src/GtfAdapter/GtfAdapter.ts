@@ -23,11 +23,9 @@ export default class extends BaseFeatureDataAdapter {
     [key: string]: Promise<IntervalTree | undefined> | undefined
   } = {}
 
-  private async loadDataP() {
-    const buffer = await openLocation(
-      this.getConf('gtfLocation'),
-      this.pluginManager,
-    ).readFile()
+  private async loadDataP(opts: BaseOptions = {}) {
+    const gtfLoc = this.getConf('gtfLocation')
+    const buffer = await openLocation(gtfLoc, this.pluginManager).readFile(opts)
 
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     // 512MB  max chrome string length is 512MB
@@ -39,7 +37,12 @@ export default class extends BaseFeatureDataAdapter {
     const lines = data.split('\n').filter(f => !!f && !f.startsWith('#'))
     const feats = {} as { [key: string]: string[] }
     for (let i = 0; i < lines.length; i++) {
-      const refName = lines[i].split('\t')[0]
+      const line = lines[i]
+      if (line.startsWith('#')) {
+        continue
+      }
+      const tab = line.indexOf('\t')
+      const refName = line.slice(0, tab)
       if (!feats[refName]) {
         feats[refName] = []
       }
@@ -49,9 +52,9 @@ export default class extends BaseFeatureDataAdapter {
     return { feats }
   }
 
-  private async loadData() {
+  private async loadData(opts: BaseOptions = {}) {
     if (!this.gtfFeatures) {
-      this.gtfFeatures = this.loadDataP().catch(e => {
+      this.gtfFeatures = this.loadDataP(opts).catch(e => {
         this.gtfFeatures = undefined
         throw e
       })
@@ -61,7 +64,7 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const { feats } = await this.loadData()
+    const { feats } = await this.loadData(opts)
     return Object.keys(feats)
   }
 
@@ -83,7 +86,7 @@ export default class extends BaseFeatureDataAdapter {
       (f, i) =>
         new SimpleFeature({
           data: featureData(f),
-          id: `${this.id}-offset-${i}`,
+          id: `${this.id}-${refName}-${i}`,
         }),
     )
 

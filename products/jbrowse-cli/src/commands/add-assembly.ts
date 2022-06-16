@@ -523,7 +523,11 @@ custom         Either a JSON file location or inline JSON that defines a custom
     ) {
       return 'indexedFasta'
     }
-    if (sequence.endsWith('.fa.gz') || sequence.endsWith('.fasta.gz')) {
+    if (
+      sequence.endsWith('.fa.gz') ||
+      sequence.endsWith('.fna.gz') ||
+      sequence.endsWith('.fasta.gz')
+    ) {
       return 'bgzipFasta'
     }
     if (sequence.endsWith('.2bit')) {
@@ -538,7 +542,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (isValidJSON(sequence)) {
       return 'custom'
     }
-    return this.error('Could not determine sequence type', { exit: 170 })
+    return this.error(
+      'Could not determine sequence type automatically, add --type to specify it',
+      { exit: 170 },
+    )
   }
 
   needLoadData(location: string) {

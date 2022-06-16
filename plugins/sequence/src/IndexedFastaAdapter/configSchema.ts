@@ -11,6 +11,14 @@ export default ConfigurationSchema(
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     },
+    metadataLocation: {
+      description: 'Optional metadata file',
+      type: 'fileLocation',
+      defaultValue: {
+        uri: '/path/to/fa.metadata.yaml',
+        locationType: 'UriLocation',
+      },
+    },
   },
   { explicitlyTyped: true },
 )

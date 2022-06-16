@@ -896,6 +896,9 @@
       "trackId": "gff3tabix_genes",
       "assemblyNames": ["volvox"],
       "name": "GFF3Tabix genes",
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}"
+      },
       "category": ["Miscellaneous"],
       "adapter": {
         "type": "Gff3TabixAdapter",
@@ -1027,6 +1030,19 @@
             "uri": "volvox-bed12.bed.gz.tbi",
             "locationType": "UriLocation"
           }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bed_genes",
+      "name": "Bed genes",
+      "assemblyNames": ["volvox"],
+      "category": ["Miscellaneous"],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "volvox-bed12.bed"
         }
       }
     },

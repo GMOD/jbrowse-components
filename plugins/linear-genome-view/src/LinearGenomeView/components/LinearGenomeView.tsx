@@ -89,16 +89,22 @@ const LinearGenomeView = observer(({ model }: { model: any }) => {
       <TracksContainer model={model}>
         {!tracks.length ? (
           <Paper variant="outlined" className={classes.note}>
-            <Typography>No tracks active.</Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={model.activateTrackSelector}
-              style={{ zIndex: 1000 }}
-              startIcon={<TrackSelectorIcon />}
-            >
-              Open track selector
-            </Button>
+            {!model.hideNoTracksActive ? (
+              <>
+                <Typography>No tracks active.</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={model.activateTrackSelector}
+                  style={{ zIndex: 1000 }}
+                  startIcon={<TrackSelectorIcon />}
+                >
+                  Open track selector
+                </Button>
+              </>
+            ) : (
+              <div style={{ height: '48px' }}></div>
+            )}
           </Paper>
         ) : (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

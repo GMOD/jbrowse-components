@@ -255,8 +255,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          100
-           bp
+          100bp
         </p>
         <div
           class="makeStyles-container"
@@ -425,13 +424,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               <div
                 class="makeStyles-tick"
                 style="left: -1px;"
-              >
-                <p
-                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-                >
-                  0
-                </p>
-              </div>
+              />
             </div>
             <div
               class="makeStyles-boundaryPaddingBlock"
@@ -500,7 +493,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           Foo Track
         </span>
         <button
-          aria-controls="simple-menu"
           aria-haspopup="true"
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           data-testid="track_menu_icon"
@@ -850,8 +842,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <p
           class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
         >
-          798
-           bp
+          798bp
         </p>
         <div
           class="makeStyles-container"
@@ -1239,13 +1230,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               <div
                 class="makeStyles-tick"
                 style="left: -1px;"
-              >
-                <p
-                  class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-                >
-                  0
-                </p>
-              </div>
+              />
             </div>
             <div
               class="makeStyles-interRegionPaddingBlock"
@@ -1390,7 +1375,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           Foo Track
         </span>
         <button
-          aria-controls="simple-menu"
           aria-haspopup="true"
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           data-testid="track_menu_icon"
@@ -1533,7 +1517,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           Bar Track
         </span>
         <button
-          aria-controls="simple-menu"
           aria-haspopup="true"
           class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary"
           data-testid="track_menu_icon"

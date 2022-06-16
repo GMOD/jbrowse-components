@@ -1,19 +1,13 @@
 // This file is a ponyfill for the HTML5 OffscreenCanvas API.
 
 import isNode from 'detect-node'
-import OffscreenCanvasShim from './CanvasShim'
 
-import {
-  AbstractCanvas,
-  AbstractImageBitmap,
-  CanvasImageDataShim,
-  isCanvasImageDataShim,
-} from './types'
-import type {
-  createCanvas as NodeCreateCanvas,
-  Canvas as NodeCanvas,
-} from 'canvas'
-import { replayCommandsOntoContext } from './Canvas2DContextShim/context'
+import { CanvasSequence } from 'canvas-sequencer'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AbstractCanvas = any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AbstractImageBitmap = any
 
 export let createCanvas: (width: number, height: number) => AbstractCanvas
 export let createImageBitmap: (
@@ -24,19 +18,17 @@ export let createImageBitmap: (
 export let ImageBitmapType: Function
 
 export function drawImageOntoCanvasContext(
-  imageData: AbstractImageBitmap,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  imageData: any,
   context: CanvasRenderingContext2D,
 ) {
-  if (isCanvasImageDataShim(imageData)) {
-    replayCommandsOntoContext(context, imageData.serializedCommands)
+  if (imageData.serializedCommands) {
+    const seq = new CanvasSequence(imageData.serializedCommands)
+    seq.execute(context)
   } else if (imageData instanceof ImageBitmapType) {
     context.drawImage(imageData as CanvasImageSource, 0, 0)
-    // @ts-ignore
   } else if (imageData.dataURL) {
     throw new Error('dataURL deserialization no longer supported')
-    // const img = new Image()
-    // img.onload = () => context.drawImage(img, 0, 0)
-    // img.src = imageData.dataURL
   }
 }
 
@@ -44,9 +36,9 @@ const weHave = {
   realOffscreenCanvas: typeof OffscreenCanvas === 'function',
   node: isNode,
 }
+
 if (weHave.realOffscreenCanvas) {
   createCanvas = (width, height) => new OffscreenCanvas(width, height)
-  // @ts-ignore
   // eslint-disable-next-line no-restricted-globals
   createImageBitmap = window.createImageBitmap || self.createImageBitmap
   // eslint-disable-next-line no-restricted-globals
@@ -54,14 +46,14 @@ if (weHave.realOffscreenCanvas) {
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
   const { createCanvas: nodeCreateCanvas, Image } = require('canvas')
-  createCanvas = nodeCreateCanvas as typeof NodeCreateCanvas
+  createCanvas = nodeCreateCanvas
   createImageBitmap = async (canvas, ...otherargs) => {
     if (otherargs.length) {
       throw new Error(
         'only one-argument uses of createImageBitmap are supported by the node offscreencanvas ponyfill',
       )
     }
-    const dataUri = (canvas as NodeCanvas).toDataURL()
+    const dataUri = canvas.toDataURL()
     const img = new Image()
     return new Promise((resolve, reject) => {
       img.onload = () => resolve(img)
@@ -71,18 +63,24 @@ if (weHave.realOffscreenCanvas) {
   }
   ImageBitmapType = Image
 } else {
-  createCanvas = (width, height) => {
-    return new OffscreenCanvasShim(width, height)
+  createCanvas = (width: number, height: number) => {
+    const context = new CanvasSequence()
+    return {
+      width,
+      height,
+      getContext() {
+        return context
+      },
+    }
   }
   createImageBitmap = async canvas => {
-    const ctx = (canvas as OffscreenCanvasShim).getContext('2d')
-    const d: CanvasImageDataShim = {
-      height: ctx.height,
-      width: ctx.width,
-      serializedCommands: ctx.getSerializedCommands(),
+    const ctx = canvas.getContext('2d')
+    return {
+      height: canvas.height,
+      width: canvas.width,
+      serializedCommands: ctx.toJSON(),
       containsNoTransferables: true,
     }
-    return d
   }
   ImageBitmapType = String
 }

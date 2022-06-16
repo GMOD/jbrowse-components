@@ -339,8 +339,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 <p
                   class="MuiTypography-root makeStyles-bp MuiTypography-body2 MuiTypography-colorTextSecondary"
                 >
-                  40
-                   bp
+                  40bp
                 </p>
                 <div
                   class="makeStyles-container"
@@ -695,13 +694,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       <div
                         class="makeStyles-tick"
                         style="left: -20px;"
-                      >
-                        <p
-                          class="MuiTypography-root makeStyles-majorTickLabel MuiTypography-body1"
-                        >
-                          0
-                        </p>
-                      </div>
+                      />
                       <div
                         class="makeStyles-tick"
                         style="left: 180px;"
@@ -816,7 +809,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   Reference Sequence (volvox)
                 </span>
                 <button
-                  aria-controls="simple-menu"
                   aria-haspopup="true"
                   class="MuiButtonBase-root MuiIconButton-root makeStyles-iconButton MuiIconButton-colorSecondary MuiIconButton-sizeSmall"
                   data-testid="track_menu_icon"

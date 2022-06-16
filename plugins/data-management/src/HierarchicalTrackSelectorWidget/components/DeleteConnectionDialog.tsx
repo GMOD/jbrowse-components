@@ -18,7 +18,7 @@ function DeleteConnectionDialog({
 }: {
   deleteDialogDetails: { name: string; connectionConf: AnyConfigurationModel }
   session: AbstractSessionModel
-  handleClose: Function
+  handleClose: () => void
 }) {
   const { connectionConf, name } = deleteDialogDetails
   return (

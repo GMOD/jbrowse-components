@@ -113,7 +113,7 @@ that JBrowse 2 has been downloaded properly. Run
 
 ```sh-session
 cd jbrowse2/
-npx serve .
+npx serve . # use npx serve -S . if you want to refer to symlinked data later on
 ```
 
 This will start a web server in our JBrowse 2 directory. Navigate to the

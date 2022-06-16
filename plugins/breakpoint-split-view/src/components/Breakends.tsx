@@ -159,7 +159,7 @@ const Breakends = observer(
                       'VariantFeatureWidget',
                       'variantFeature',
                       {
-                        featureData: totalFeatures.get(id),
+                        featureData: totalFeatures.get(id)?.toJSON(),
                       },
                     )
                     session.showWidget?.(featureWidget)

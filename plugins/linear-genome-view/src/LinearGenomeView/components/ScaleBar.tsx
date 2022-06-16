@@ -14,6 +14,7 @@ import {
   InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
 } from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
@@ -95,18 +96,14 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
 
 const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
+  const { bpPerPx } = model
 
   return (
     <>
       {model.staticBlocks.map((block, index) => {
         if (block instanceof ContentBlock) {
-          const ticks = makeTicks(
-            block.start,
-            block.end,
-            model.bpPerPx,
-            true,
-            false,
-          )
+          const { start, end } = block
+          const ticks = makeTicks(start, end, bpPerPx, true, false)
 
           return (
             <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
@@ -116,7 +113,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     (block.reversed
                       ? block.end - tick.base
                       : tick.base - block.start) / model.bpPerPx
-                  const baseNumber = (tick.base + 1).toLocaleString('en-US')
+                  const baseNumber = tick.base + 1
                   return (
                     <div
                       key={tick.base}
@@ -125,7 +122,7 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
                     >
                       {baseNumber ? (
                         <Typography className={classes.majorTickLabel}>
-                          {baseNumber}
+                          {getTickDisplayStr(baseNumber, bpPerPx)}
                         </Typography>
                       ) : null}
                     </div>

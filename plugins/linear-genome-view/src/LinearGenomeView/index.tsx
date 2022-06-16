@@ -67,6 +67,7 @@ export interface BpOffset {
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
+  filename?: string
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
@@ -126,6 +127,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ),
         hideHeader: false,
         hideHeaderOverview: false,
+        hideNoTracksActive: false,
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
           'hierarchical',
@@ -176,11 +178,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get interRegionPaddingWidth() {
         return INTER_REGION_PADDING_WIDTH
       },
+
+      get assemblyNames() {
+        return [
+          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
+        ]
+      },
     }))
     .views(self => ({
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames
+        const { assemblyNames } = self
+        return assemblyNames
           .map(a => assemblyManager.get(a)?.error)
           .filter(f => !!f)
           .join(', ')
@@ -188,9 +197,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
-        return this.assemblyNames.every(
-          a => assemblyManager.get(a)?.initialized,
-        )
+        const { assemblyNames } = self
+        return assemblyNames.every(a => assemblyManager.get(a)?.initialized)
       },
       get initialized() {
         return self.volatileWidth !== undefined && this.assembliesInitialized
@@ -272,11 +280,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      get assemblyNames() {
-        return [
-          ...new Set(self.displayedRegions.map(region => region.assemblyName)),
-        ]
-      },
       searchScope(assemblyName: string) {
         return {
           assemblyName,
@@ -285,13 +288,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      /**
-       * @param refName - refName of the displayedRegion
-       * @param coord - coordinate at the displayed Region
-       * @param regionNumber - optional param used as identifier when
-       * there are multiple displayedRegions with the same refName
-       * @returns offsetPx of the displayed region that it lands in
-       */
       bpToPx({
         refName,
         coord,
@@ -395,10 +391,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           track => track.configuration.trackId,
         )
         results.forEach(result => {
-          if (openTrackIds !== []) {
-            if (openTrackIds.includes(result.trackId)) {
-              result.updateScore(result.getScore() + 1)
-            }
+          if (openTrackIds.includes(result.trackId)) {
+            result.updateScore(result.getScore() + 1)
           }
         })
         return results
@@ -406,7 +400,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       // modifies view menu action onClick to apply to all tracks of same type
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
-        viewMenuActions.forEach((action: MenuItem) => {
+        viewMenuActions.forEach(action => {
           // go to lowest level menu
           if ('subMenu' in action) {
             this.rewriteOnClicks(trackType, action.subMenu)
@@ -460,6 +454,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleHeaderOverview() {
         self.hideHeaderOverview = !self.hideHeaderOverview
+      },
+      toggleNoTracksActive() {
+        self.hideNoTracksActive = !self.hideNoTracksActive
       },
 
       scrollTo(offsetPx: number) {
@@ -672,13 +669,38 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
         const assemblyName = optAssemblyName || assemblyNames[0]
+        let parsedLocStrings
+        const inputs = locString
+          .split(/(\s+)/)
+          .map(f => f.trim())
+          .filter(f => !!f)
 
-        const parsedLocStrings = locString
-          .split(' ')
-          .filter(f => !!f.trim())
-          .map(l => parseLocString(l, ref => isValidRefName(ref, assemblyName)))
+        // first try interpreting as a whitespace-separated sequence of
+        // multiple locstrings
+        try {
+          parsedLocStrings = inputs.map(l =>
+            parseLocString(l, ref => isValidRefName(ref, assemblyName)),
+          )
+        } catch (e) {
+          // if this fails, try interpreting as a whitespace-separated refname,
+          // start, end if start and end are integer inputs
+          const [refName, start, end] = inputs
+          if (
+            `${e}`.match(/Unknown reference sequence/) &&
+            Number.isInteger(+start) &&
+            Number.isInteger(+end)
+          ) {
+            parsedLocStrings = [
+              parseLocString(refName + ':' + start + '..' + end, ref =>
+                isValidRefName(ref, assemblyName),
+              ),
+            ]
+          } else {
+            throw e
+          }
+        }
 
-        const locations = parsedLocStrings.map(region => {
+        const locations = parsedLocStrings?.map(region => {
           const asmName = region.assemblyName || assemblyName
           const asm = assemblyManager.get(asmName)
           const { refName } = region
@@ -1205,6 +1227,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             disabled: self.hideHeader,
           },
           {
+            label: 'Show no tracks active button',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: !self.hideNoTracksActive,
+            onClick: self.toggleNoTracksActive,
+          },
+          {
             label: 'Track labels',
             icon: LabelIcon,
             subMenu: [
@@ -1328,7 +1357,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, 'image.svg')
+        saveAs(blob, opts.filename || 'image.svg')
       },
     }))
     .views(self => ({

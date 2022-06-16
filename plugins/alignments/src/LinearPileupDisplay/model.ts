@@ -1,5 +1,9 @@
 import { lazy } from 'react'
+import { autorun, observable } from 'mobx'
+import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
+import copy from 'copy-to-clipboard'
 import {
+  AnyConfigurationModel,
   ConfigurationReference,
   readConfObject,
   getConf,
@@ -13,26 +17,25 @@ import {
   Feature,
 } from '@jbrowse/core/util'
 
-import VisibilityIcon from '@material-ui/icons/Visibility'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
-import copy from 'copy-to-clipboard'
+
+// icons
+import VisibilityIcon from '@material-ui/icons/Visibility'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
 import SortIcon from '@material-ui/icons/Sort'
 import PaletteIcon from '@material-ui/icons/Palette'
 import FilterListIcon from '@material-ui/icons/ClearAll'
 
-import { autorun, observable } from 'mobx'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+// locals
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-
 import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
 
+// async
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
@@ -94,6 +97,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
+      featureUnderMouseVolatile: undefined as undefined | Feature,
       ready: false,
     }))
     .actions(self => ({
@@ -128,7 +132,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
       },
 
       updateColorTagMap(uniqueTag: string[]) {
-        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
+        // pale color scheme
+        // https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
+        // e.g. "tol_light"
         const colorPalette = [
           '#BBCCEE',
           'pink',
@@ -149,6 +155,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             self.colorTagMap.set(value, newColor)
           }
         })
+      },
+      setFeatureUnderMouse(feat?: Feature) {
+        self.featureUnderMouseVolatile = feat
       },
     }))
     .actions(self => ({
@@ -225,6 +234,48 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             },
             { delay: 1000 },
           ),
+        )
+
+        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            try {
+              const featureId = self.featureIdUnderMouse
+              if (self.featureUnderMouse?.id() !== featureId) {
+                if (!featureId) {
+                  self.setFeatureUnderMouse(undefined)
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const view = getContainingView(self)
+                  const { feature } = (await session.rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId,
+                      sessionId,
+                      layoutId: view.id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  // check featureIdUnderMouse is still the same as the
+                  // feature.id that was returned e.g. that the user hasn't
+                  // moused over to a new position during the async operation
+                  // above
+                  // @ts-ignore
+                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                    // @ts-ignore
+                    self.setFeatureUnderMouse(new SimpleFeature(feature))
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
+            }
+          }),
         )
       },
       selectFeature(feature: Feature) {
@@ -337,6 +388,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
           ? self.mismatchAlpha
           : readConfObject(this.rendererConfig, 'mismatchAlpha')
       },
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
+      },
     }))
     .views(self => {
       const {
@@ -395,6 +449,8 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             colorBy,
             filterBy,
             rpcDriverName,
+            currBpPerPx,
+            ready,
           } = self
 
           const superProps = superRenderProps()
@@ -403,8 +459,8 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             ...superProps,
             notReady:
               superProps.notReady ||
-              !self.ready ||
-              (sortedBy && self.currBpPerPx !== view.bpPerPx),
+              !ready ||
+              (sortedBy && currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,
@@ -414,7 +470,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
-            async onFeatureClick(_: unknown, featureId: string | undefined) {
+            async onFeatureClick(_: unknown, featureId?: string) {
               const session = getSession(self)
               const { rpcManager } = session
               try {
@@ -444,14 +500,12 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 session.notify(`${e}`)
               }
             },
+
             onClick() {
               self.clearFeatureSelection()
             },
             // similar to click but opens a menu with further options
-            async onFeatureContextMenu(
-              _: unknown,
-              featureId: string | undefined,
-            ) {
+            async onFeatureContextMenu(_: unknown, featureId?: string) {
               const session = getSession(self)
               const { rpcManager } = session
               try {
@@ -507,19 +561,17 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               disabled: self.showSoftClipping,
               subMenu: [
                 ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => {
-                    return {
-                      label: option,
-                      onClick: () => self.setSortedBy(option),
-                    }
-                  },
+                  option => ({
+                    label: option,
+                    onClick: () => self.setSortedBy(option),
+                  }),
                 ),
                 {
                   label: 'Sort by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog(doneCallback => [
+                    getSession(self).queueDialog(handleClose => [
                       SortByTagDlg,
-                      { model: self, handleClose: doneCallback },
+                      { model: self, handleClose },
                     ])
                   },
                 },
