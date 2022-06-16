@@ -98,7 +98,7 @@ function PanControls({ model }: { model: LGV }) {
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
   const classes = useStyles()
-  const { coarseTotalBp, bpPerPx } = model
+  const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
       {getBpDisplayStr(coarseTotalBp)}
