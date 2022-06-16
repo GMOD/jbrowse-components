@@ -70,18 +70,18 @@ export default function assemblyManagerFactory(
           throw new Error('no assembly name supplied to waitForAssembly')
         }
         const assembly = self.get(assemblyName)
-        if (assembly) {
-          await when(
-            () =>
-              Boolean(assembly.regions && assembly.refNameAliases) ||
-              !!assembly.error,
-          )
-          if (assembly.error) {
-            throw assembly.error
-          }
-          return assembly
+        if (!assembly) {
+          return undefined
         }
-        return undefined
+        await when(
+          () =>
+            Boolean(assembly.regions && assembly.refNameAliases) ||
+            !!assembly.error,
+        )
+        if (assembly.error) {
+          throw assembly.error
+        }
+        return assembly
       },
 
       async getRefNameMapForAdapter(

@@ -72,7 +72,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     )
 
     const refNameResults = assembly?.allRefNames
-      ?.filter(refName => refName.startsWith(query))
+      ?.filter(refName => refName.toLowerCase().startsWith(query.toLowerCase()))
       .map(r => new BaseResult({ label: r }))
       .slice(0, 10)
 

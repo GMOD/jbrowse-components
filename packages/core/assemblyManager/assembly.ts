@@ -1,17 +1,18 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import { Feature } from '../util/simpleFeature'
-import { getConf } from '../configuration'
+import { getConf, AnyConfigurationModel } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
   RegionsAdapter,
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
-import { Region } from '../util/types'
-import { makeAbortableReaction, when } from '../util'
+import { makeAbortableReaction, when, Region, Feature } from '../util'
 import QuickLRU from '../util/QuickLRU'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+
+const refNameRegex = new RegExp(
+  '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
+)
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -48,7 +49,7 @@ const refNameColors = [
 
 async function loadRefNameMap(
   assembly: Assembly,
-  adapterConf: unknown,
+  adapterConfig: unknown,
   options: BaseOptions,
   signal?: AbortSignal,
 ) {
@@ -62,7 +63,7 @@ async function loadRefNameMap(
     sessionId,
     'CoreGetRefNames',
     {
-      adapterConfig: adapterConf,
+      adapterConfig,
       signal,
       ...options,
     },
@@ -97,11 +98,7 @@ async function loadRefNameMap(
 
 // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
 function checkRefName(refName: string) {
-  if (
-    !refName.match(
-      /[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*/,
-    )
-  ) {
+  if (!refName.match(refNameRegex)) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
 }
