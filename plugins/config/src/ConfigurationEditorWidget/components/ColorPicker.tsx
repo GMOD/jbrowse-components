@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import ReactPropTypes from 'prop-types'
 import { ChromePicker, Color, ColorResult } from 'react-color'
 
 const useStyles = makeStyles()({
@@ -25,9 +24,6 @@ export function ColorPicker(props: {
   const { classes } = useStyles()
   const [displayColorPicker, setDisplayColorPicker] = useState(true)
 
-  const handleClose = () => {
-    setDisplayColorPicker(false)
-  }
   return (
     <div>
       {displayColorPicker ? (
@@ -35,19 +31,13 @@ export function ColorPicker(props: {
           <div
             role="presentation"
             className={classes.cover}
-            onClick={handleClose}
+            onClick={() => setDisplayColorPicker(false)}
           />
-          {/* @ts-ignore */}
           <ChromePicker color={color} onChange={onChange} />
         </div>
       ) : null}
     </div>
   )
-}
-
-ColorPicker.propTypes = {
-  color: ReactPropTypes.string.isRequired,
-  onChange: ReactPropTypes.func.isRequired,
 }
 
 export default ColorPicker
