@@ -7,7 +7,7 @@ import {
   makeStyles,
   alpha,
 } from '@material-ui/core'
-import { getTickDisplayStr2 } from '@jbrowse/core/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import SearchBox from './SearchBox'
 
 // icons
@@ -101,7 +101,7 @@ const RegionWidth = observer(({ model }: { model: LGV }) => {
   const { coarseTotalBp, bpPerPx } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {getTickDisplayStr2(coarseTotalBp, bpPerPx)}
+      {getBpDisplayStr(coarseTotalBp)}
     </Typography>
   )
 })
