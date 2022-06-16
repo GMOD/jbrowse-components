@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import Controls from './Controls'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
@@ -119,6 +119,7 @@ const polygonPoints = {
 }
 
 describe('View controls component', () => {
+  console.warn = jest.fn()
   it('renders the component', () => {
     const session = createTestSession(sessionConfig) as any
     session.addAssemblyConf(assemblyConf)

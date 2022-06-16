@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import MiniControls from './MiniControls'
+import Subheader from './Subheader'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 const sessionConfig = {
@@ -110,50 +110,57 @@ const assemblyConf = {
   },
 }
 
-describe('MLLV Mini controls component', () => {
+const polygonPoints = {
+  left: 0,
+  right: 10,
+  prevLeft: 0,
+  prevRight: 10,
+}
+
+describe('MLLV Subheader component', () => {
   console.warn = jest.fn()
-  it('renders the component', () => {
+  it('renders the component with extra buttons', () => {
     const session = createTestSession(sessionConfig) as any
     session.addAssemblyConf(assemblyConf)
     const model = session.views[0]
-    const { getByTestId } = render(<MiniControls model={model.views[1]} />)
-    const com = getByTestId('mllv-minicontrols')
+    const { getByTitle } = render(
+      <Subheader
+        model={model}
+        view={model.views[1]}
+        polygonPoints={polygonPoints}
+      />,
+    )
+    const com = getByTitle('Open view menu')
     expect(com).toBeDefined()
   })
-  it('zooms in on view 1', async () => {
+  it('clicks open view menu', async () => {
     const session = createTestSession(sessionConfig) as any
     session.addAssemblyConf(assemblyConf)
     const model = session.views[0]
-    const { findByTestId, findByText } = render(
-      <MiniControls model={model.views[1]} />,
+    const { findByTitle, getByText } = render(
+      <Subheader
+        model={model}
+        view={model.views[1]}
+        polygonPoints={polygonPoints}
+      />,
     )
-    const com = await findByTestId('zoom_in')
-    await waitFor(() => {
-      fireEvent.click(com)
-      expect(findByText('94800 bp')).toBeDefined()
-    })
+    const com = await findByTitle('Open view menu')
+    fireEvent.click(com)
+    expect(getByText('Export SVG')).toBeDefined()
   })
-  it('zooms out on view 1', async () => {
+  it('hides the view', async () => {
     const session = createTestSession(sessionConfig) as any
     session.addAssemblyConf(assemblyConf)
     const model = session.views[0]
-    const { findByTestId, findByText } = render(
-      <MiniControls model={model.views[1]} />,
+    const { findByTitle } = render(
+      <Subheader
+        model={model}
+        view={model.views[1]}
+        polygonPoints={polygonPoints}
+      />,
     )
-    const com = await findByTestId('zoom_out')
-    await waitFor(() => {
-      fireEvent.click(com)
-      expect(findByText('284,400 bp')).toBeDefined()
-    })
-  })
-  it('cannot zoom in on view 0', async () => {
-    const session = createTestSession(sessionConfig) as any
-    session.addAssemblyConf(assemblyConf)
-    const model = session.views[0]
-    const { findByTestId } = render(<MiniControls model={model.views[0]} />)
-    const com = await findByTestId('zoom_out')
-    await waitFor(() => {
-      expect(com).toHaveProperty('disabled', true)
-    })
+    const com = await findByTitle('Toggle show/hide view')
+    fireEvent.click(com)
+    expect(model.views[1].isVisible).toBe(false)
   })
 })

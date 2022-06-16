@@ -1,12 +1,10 @@
 import React from 'react'
-import { fireEvent, render, waitFor, screen } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import 'requestidlecallback-polyfill'
 import MultilevelLinearView from './MultilevelLinearView'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
-
-const delay = { timeout: 10000 }
 
 const assemblyConf = {
   name: 'volMyt1',
@@ -36,6 +34,7 @@ const assemblyConf = {
 }
 
 describe('<MultilevelLinearView />', () => {
+  console.warn = jest.fn()
   it('renders setup wizard', async () => {
     const session = createTestSession()
     // @ts-ignore

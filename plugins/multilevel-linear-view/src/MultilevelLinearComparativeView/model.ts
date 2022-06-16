@@ -1,12 +1,8 @@
-import { transaction } from 'mobx'
 import {
   addDisposer,
   cast,
-  getParent,
   getPath,
-  getRoot,
   onAction,
-  resolveIdentifier,
   types,
   Instance,
   SnapshotIn,
@@ -24,7 +20,6 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
@@ -56,9 +51,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
-      get highResolutionScaling() {
-        return 2
-      },
       get initialized() {
         return self.views.length > 0
       },
@@ -287,14 +279,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views = cast(views)
       },
 
-      removeView(view: LinearGenomeViewModel) {
-        self.views.remove(view)
-      },
-
-      closeView() {
-        getParent(self, 2).removeView(self)
-      },
-
       setHeaderHeight(height: number) {
         self.headerHeight = height
       },
@@ -307,49 +291,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.linkViews = !self.linkViews
       },
 
-      toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(trackId)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-        }
-      },
-
-      showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const configuration = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pluginManager.getTrackType(configuration.type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${configuration.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `could not find a compatible display for view type ${self.type}`,
-          )
-        }
-        self.tracks.push(
-          trackType.stateModel.create({
-            ...initialSnapshot,
-            type: configuration.type,
-            configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
-          }),
-        )
-      },
-
-      hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const config = resolveIdentifier(schema, getRoot(self), trackId)
-        const shownTracks = self.tracks.filter(t => t.configuration === config)
-        transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-        return shownTracks.length
-      },
       alignViews() {
         // @ts-ignore
         const anchorViewIndex = self.views.findIndex(view => view.isAnchor)
@@ -360,9 +301,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           view.zoomTo(targetBp)
           view.centerAt(center.coord, center.refName, center.index)
         })
-      },
-      clearView() {
-        self.views = cast([])
       },
     }))
     .views(self => ({

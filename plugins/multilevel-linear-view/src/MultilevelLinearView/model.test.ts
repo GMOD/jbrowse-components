@@ -4,6 +4,7 @@ import LinearGenomeMultilevelView from '../LinearGenomeMultilevelView'
 import stateModelFactory from './model'
 
 test('creation', () => {
+  console.warn = jest.fn()
   const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
   pluginManager.addViewType(() =>
     pluginManager.jbrequire(LinearGenomeMultilevelView),
