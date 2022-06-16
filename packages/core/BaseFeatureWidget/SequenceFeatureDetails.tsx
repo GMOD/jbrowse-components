@@ -297,11 +297,6 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     'updownstreamBp',
     500,
   )
-  const [codonTable, setCodonTable] = useLocalStorage(
-    'codonTable',
-    defaultCodonTable,
-  )
-
   useEffect(() => {
     let finished = false
     if (!model || !inView) {
@@ -359,6 +354,11 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   }, [feature, inView, model, upDownStreamBp])
 
   const loading = !sequence
+  if (!model) {
+    return null
+  }
+  const session = getSession(model)
+  const { codonTable } = session
 
   return (
     <div ref={ref}>
@@ -447,7 +447,8 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
           handleClose={arg => {
             if (arg) {
               const { codonTable, upDownStreamBp, intronBp } = arg
-              setCodonTable(codonTable)
+              // @ts-ignore
+              session.setCodonTable?.(codonTable)
               setIntronBp(intronBp)
               setUpDownStreamBp(upDownStreamBp)
             }

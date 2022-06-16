@@ -16,7 +16,7 @@ import {
 } from '@jbrowse/core/util/types'
 
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, defaultCodonTable } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -94,6 +94,7 @@ export default function sessionModelFactory(
         types.string,
         localStorage.getItem('drawerPosition') || 'right',
       ),
+      codonTable: types.optional(types.string, defaultCodonTable),
     })
     .volatile((/* self */) => ({
       /**
@@ -252,6 +253,9 @@ export default function sessionModelFactory(
         self.sessionPlugins.push(plugin)
         const rootModel = getRoot(self)
         rootModel.setPluginsUpdated(true)
+      },
+      setCodonTable(str: string) {
+        self.codonTable = str
       },
       removeAssembly(assemblyName: string) {
         const index = self.sessionAssemblies.findIndex(

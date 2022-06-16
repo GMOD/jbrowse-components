@@ -71,9 +71,9 @@ export default function SetCodonTableDialog({
             table of genetic codes
           </Link>{' '}
           for more information on translation tables. You can replace the table
-          below with one of choice from a different translation table. Note: The
-          codon table in the feature sequence details is separate from the
-          sequence track codon table.
+          below with one of choice from a different translation table. Note:
+          this will set the codon table for the current session, so results will
+          apply to other areas of the app
         </Typography>{' '}
         {codonTable !== defaultCodonTable ? (
           <Chip

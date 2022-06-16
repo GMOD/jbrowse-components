@@ -8,11 +8,7 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
-import {
-  getSession,
-  getContainingView,
-  defaultCodonTable,
-} from '@jbrowse/core/util'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 const SetCodonTableDlg = lazy(() => import('./SetCodonTableDialog'))
 
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
@@ -27,7 +23,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         showReverse: types.optional(types.boolean, true),
         showTranslation: types.optional(types.boolean, true),
         showAltStarts: types.optional(types.boolean, false),
-        codonTable: types.optional(types.string, defaultCodonTable),
         height: 180,
       }),
     )
@@ -35,13 +30,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       const { renderProps: superRenderProps } = self
       return {
         renderProps() {
-          const {
-            codonTable,
-            showForward,
-            showReverse,
-            showAltStarts,
-            showTranslation,
-          } = self
+          const { showForward, showReverse, showAltStarts, showTranslation } =
+            self
           return {
             ...superRenderProps(),
             rpcDriverName: self.rpcDriverName,
@@ -50,7 +40,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             showReverse,
             showAltStarts,
             showTranslation,
-            codonTable,
+            // @ts-ignore
+            codonTable: getSession(self).codonTable,
           }
         },
         regionCannotBeRendered(/* region */) {
@@ -78,9 +69,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       toggleShowAltStarts() {
         self.showAltStarts = !self.showAltStarts
-      },
-      setCodonTable(arg: string) {
-        self.codonTable = arg
       },
     }))
     .views(self => ({
@@ -118,10 +106,12 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
               getSession(self).queueDialog(doneCallback => [
                 SetCodonTableDlg,
                 {
-                  codonTable: self.codonTable,
+                  // @ts-ignore
+                  codonTable: getSession(self).codonTable,
                   handleClose: (arg?: { codonTable: string }) => {
                     if (arg) {
-                      self.setCodonTable(arg.codonTable)
+                      // @ts-ignore
+                      getSession(self).setCodonTable(arg.codonTable)
                     }
                     doneCallback()
                   },

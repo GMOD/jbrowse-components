@@ -86,8 +86,8 @@ export default function SequenceFeatureSettingsDialog({
           </Link>{' '}
           for more information on translation tables. You can replace the table
           below with one of choice from a different translation table. Note:
-          changes here will remain the same until you change it back. The codon
-          table on the sequence track is also separate from here.
+          this will set the codon table for the current session, so results will
+          apply to other areas of the app{' '}
         </Typography>
 
         {codonTable !== defaultCodonTable ? (
