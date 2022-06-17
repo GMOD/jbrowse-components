@@ -13,14 +13,21 @@ export function dedupe(
   )
 }
 
-export async function fetchResults(
-  queryString: string,
-  searchType: SearchType,
-  searchScope: SearchScope,
-  rankSearchResults: (results: BaseResult[]) => BaseResult[],
-  textSearchManager: TextSearchManager,
-  assembly: Assembly,
-) {
+export async function fetchResults({
+  queryString,
+  searchType,
+  searchScope,
+  rankSearchResults,
+  textSearchManager,
+  assembly,
+}: {
+  queryString: string
+  searchScope: SearchScope
+  rankSearchResults: (results: BaseResult[]) => BaseResult[]
+  searchType?: SearchType
+  textSearchManager?: TextSearchManager
+  assembly?: Assembly
+}) {
   if (!textSearchManager) {
     console.warn('No text search manager')
   }

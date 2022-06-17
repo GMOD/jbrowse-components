@@ -8,7 +8,6 @@ import {
   Grid,
   makeStyles,
 } from '@material-ui/core'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
@@ -84,14 +83,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       ) {
         model.navToLocString(location, selectedAsm)
       } else {
-        const results = await fetchResults(
-          input,
-          'exact',
+        const results = await fetchResults({
+          queryString: input,
+          searchType: 'exact',
           searchScope,
           rankSearchResults,
           textSearchManager,
           assembly,
-        )
+        })
         if (results.length > 1) {
           model.setSearchResults(results, input.toLowerCase())
           return
@@ -151,7 +150,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   <CloseIcon style={{ color: 'red' }} />
                 ) : value ? (
                   <RefNameAutocomplete
-                    fetchResults={fetchResults}
+                    fetchResults={queryString =>
+                      fetchResults({
+                        queryString,
+                        assembly,
+                        textSearchManager,
+                        rankSearchResults,
+                        searchScope,
+                      })
+                    }
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
                     value={value}

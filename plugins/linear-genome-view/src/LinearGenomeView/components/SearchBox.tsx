@@ -56,14 +56,14 @@ function SearchBox({
       ) {
         model.navToLocString(location, assemblyName)
       } else {
-        const results = await fetchResults(
-          label,
-          'exact',
+        const results = await fetchResults({
+          queryString: label,
+          searchType: 'exact',
           searchScope,
           rankSearchResults,
           textSearchManager,
           assembly,
-        )
+        })
         if (results.length > 1) {
           model.setSearchResults(results, label.toLowerCase())
           return
@@ -87,7 +87,15 @@ function SearchBox({
       showHelp={showHelp}
       onSelect={handleSelectedRegion}
       assemblyName={assemblyName}
-      fetchResults={fetchResults}
+      fetchResults={queryString =>
+        fetchResults({
+          queryString,
+          searchScope,
+          rankSearchResults,
+          textSearchManager,
+          assembly,
+        })
+      }
       model={model}
       TextFieldProps={{
         variant: 'outlined',
