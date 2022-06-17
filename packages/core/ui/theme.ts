@@ -190,14 +190,19 @@ export function createJBrowseTheme(theme?: any) {
   if (theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
-        tertiary: refTheme.palette.augmentColor(theme.palette.tertiary),
+        tertiary: refTheme.palette.augmentColor({
+          color: theme.palette.tertiary,
+        }),
       },
     })
   }
   if (theme?.palette?.quaternary) {
+    console.log(theme.palette.quaternary)
     theme = deepmerge(theme, {
       palette: {
-        quaternary: refTheme.palette.augmentColor(theme.palette.quaternary),
+        quaternary: refTheme.palette.augmentColor({
+          color: theme.palette.quaternary,
+        }),
       },
     })
   }
