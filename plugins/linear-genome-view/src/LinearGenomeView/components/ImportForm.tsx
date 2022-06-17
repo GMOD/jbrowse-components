@@ -16,6 +16,7 @@ import CloseIcon from '@material-ui/icons/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
+import { fetchResults } from './util'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
@@ -57,28 +58,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     label: value,
   })
 
-  async function fetchResults(queryString: string, searchType?: SearchType) {
-    if (!textSearchManager) {
-      console.warn('No text search manager')
-    }
-
-    const textSearchResults = await textSearchManager?.search(
-      {
-        queryString,
-        searchType,
-      },
-      searchScope,
-      rankSearchResults,
-    )
-
-    const refNameResults = assembly?.allRefNames
-      ?.filter(ref => queryString.toLowerCase().startsWith(ref.toLowerCase()))
-      .slice(0, 10)
-      .map(r => new BaseResult({ label: r }))
-
-    return [...(refNameResults || []), ...(textSearchResults || [])]
-  }
-
   // gets a string as input, or use stored option results from previous query,
   // then re-query and
   // 1) if it has multiple results: pop a dialog
@@ -105,7 +84,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       ) {
         model.navToLocString(location, selectedAsm)
       } else {
-        const results = await fetchResults(input, 'exact')
+        const results = await fetchResults(
+          input,
+          'exact',
+          searchScope,
+          rankSearchResults,
+          textSearchManager,
+          assembly,
+        )
         if (results.length > 1) {
           model.setSearchResults(results, input.toLowerCase())
           return

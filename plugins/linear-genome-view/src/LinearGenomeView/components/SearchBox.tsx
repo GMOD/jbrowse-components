@@ -3,11 +3,10 @@ import { observer } from 'mobx-react'
 import { makeStyles, useTheme, alpha } from '@material-ui/core'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { dedupe } from './util'
+import { fetchResults } from './util'
 import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
 
 const useStyles = makeStyles(() => ({
@@ -33,31 +32,6 @@ function SearchBox({
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 
-  async function fetchResults(queryString: string, searchType?: SearchType) {
-    if (!textSearchManager) {
-      console.warn('No text search manager')
-    }
-
-    const textSearchResults = await textSearchManager?.search(
-      {
-        queryString,
-        searchType,
-      },
-      searchScope,
-      rankSearchResults,
-    )
-
-    const refNameResults = assembly?.allRefNames
-      ?.filter(ref => queryString.toLowerCase().startsWith(ref.toLowerCase()))
-      .slice(0, 10)
-      .map(r => new BaseResult({ label: r }))
-
-    return dedupe(
-      [...(refNameResults || []), ...(textSearchResults || [])],
-      elt => elt.getId(),
-    )
-  }
-
   // gets a string as input, or use stored option results from previous query,
   // then re-query and
   // 1) if it has multiple results: pop a dialog
@@ -82,7 +56,14 @@ function SearchBox({
       ) {
         model.navToLocString(location, assemblyName)
       } else {
-        const results = await fetchResults(label, 'exact')
+        const results = await fetchResults(
+          label,
+          'exact',
+          searchScope,
+          rankSearchResults,
+          textSearchManager,
+          assembly,
+        )
         if (results.length > 1) {
           model.setSearchResults(results, label.toLowerCase())
           return
