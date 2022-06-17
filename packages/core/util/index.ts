@@ -1138,7 +1138,7 @@ export function getBpDisplayStr(totalBp: number) {
   } else if (Math.floor(totalBp / 1_000) > 0) {
     str = `${parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
   } else {
-    str = `${Math.floor(totalBp).toLocaleString('en-US')}bp`
+    str = `${toLocale(Math.floor(totalBp))}bp`
   }
   return str
 }
@@ -1153,16 +1153,6 @@ export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
     str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
   } else {
     str = `${toLocale(Math.floor(totalBp))}`
-  }
-  return str
-}
-
-export function getTickDisplayStr2(totalBp: number, bpPerPx: number) {
-  let str
-  if (Math.floor(bpPerPx / 1_000) > 0) {
-    str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}Mbp`
-  } else {
-    str = `${toLocale(Math.floor(totalBp))}bp`
   }
   return str
 }

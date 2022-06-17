@@ -2,7 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { Button, FormGroup, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { getTickDisplayStr2 } from '@jbrowse/core/util'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -93,10 +93,10 @@ function PanControls({ model }: { model: LGV }) {
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
-  const { coarseTotalBp, bpPerPx } = model
+  const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {getTickDisplayStr2(coarseTotalBp, bpPerPx)}
+      {getBpDisplayStr(coarseTotalBp)}
     </Typography>
   )
 })
