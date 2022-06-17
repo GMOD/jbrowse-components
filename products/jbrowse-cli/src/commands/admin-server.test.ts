@@ -4,7 +4,7 @@
 
 import fs from 'fs'
 import * as path from 'path'
-import fetch from 'node-fetch-with-proxy'
+import fetch from '../fetchWithProxy'
 import { setup } from '../testUtil'
 
 const { copyFile, rename, chmod, readFile } = fs.promises

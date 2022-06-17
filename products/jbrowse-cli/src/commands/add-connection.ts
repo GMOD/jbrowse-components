@@ -1,5 +1,5 @@
 import { flags } from '@oclif/command'
-import fetch from 'node-fetch-with-proxy'
+import fetch from '../fetchWithProxy'
 import fs from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'

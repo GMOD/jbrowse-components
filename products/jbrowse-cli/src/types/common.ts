@@ -1,7 +1,7 @@
 import fs from 'fs'
 import { Track, LocalPathLocation, UriLocation } from '../base'
-import fetch from 'node-fetch-with-proxy'
 import path from 'path'
+import fetch from '../fetchWithProxy'
 
 // Method for handing off the parsing of a gff3 file URL.
 // Calls the proper parser depending on if it is gzipped or not.

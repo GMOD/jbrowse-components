@@ -13965,15 +13965,7 @@ node-dir@^0.1.10:
   dependencies:
     minimatch "^3.0.2"
 
-node-fetch-with-proxy@^0.1.6:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/node-fetch-with-proxy/-/node-fetch-with-proxy-0.1.6.tgz#20325185c80917e6d1e23c332838b76d05f6ad20"
-  integrity sha512-gw/TN6EZpL9Fp7YwGRJa6pz3akgFTHF2tTFNKXX3qG8bJGBzF+Hd6pTsFW4p0zBiRF6OBALR02G1FoTpQEyU+g==
-  dependencies:
-    node-fetch "^2.6.2"
-    proxy-agent "^5.0.0"
-
-node-fetch@2.6.7, node-fetch@^2.6.0, node-fetch@^2.6.1, node-fetch@^2.6.2, node-fetch@^2.6.7:
+node-fetch@2.6.7, node-fetch@^2.6.0, node-fetch@^2.6.1, node-fetch@^2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
