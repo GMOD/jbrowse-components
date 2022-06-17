@@ -86,6 +86,7 @@ const Entries = {
   InputAdornment: lazy(() => import('@mui/material/InputAdornment')),
   Link: lazy(() => import('@mui/material/Link')),
   LinearProgress: lazy(() => import('@mui/material/LinearProgress')),
+  List: lazy(() => import('@mui/material/List')),
   ListItem: lazy(() => import('@mui/material/ListItem')),
   ListItemAvatar: lazy(() => import('@mui/material/ListItemAvatar')),
   ListItemSecondaryAction: lazy(
