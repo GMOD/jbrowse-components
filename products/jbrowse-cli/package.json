@@ -57,6 +57,7 @@
     "ixixx": "^1.0.20",
     "json-parse-better-errors": "^1.0.2",
     "node-fetch": "^2.6.0",
+    "node-fetch-with-proxy": "^0.1.6",
     "object.fromentries": "^2.0.5",
     "rimraf": "^3.0.2",
     "tslib": "^2.3.1",

@@ -2,7 +2,7 @@ import { flags } from '@oclif/command'
 import rimraf from 'rimraf'
 import fs from 'fs'
 import path from 'path'
-import fetch from 'node-fetch'
+import fetch from 'node-fetch-with-proxy'
 import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 
