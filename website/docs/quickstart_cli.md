@@ -242,7 +242,7 @@ jbrowse add-track yourfile.sorted.gff.gz --load copy
 Note: as an alternative to gt gff3 -sortlines is awk+GNU sort
 
 ```sh-session
-awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n -k5,5n"}' file.gff > file.sorted.gff
+awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n"}' file.gff > file.sorted.gff
 bgzip file.sorted.gff
 tabix file.sorted.gff.gz
 ```
