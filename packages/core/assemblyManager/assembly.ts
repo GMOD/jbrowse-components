@@ -155,7 +155,8 @@ export default function assemblyFactory(
     .volatile(() => ({
       error: undefined as Error | undefined,
       regions: undefined as BasicRegion[] | undefined,
-      refNameAliases: undefined as { [key: string]: string } | undefined,
+      refNameAliases: undefined as RefNameAliases | undefined,
+      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
@@ -190,20 +191,19 @@ export default function assemblyFactory(
       },
       get refNameColors() {
         const colors: string[] = getConf(self, 'refNameColors')
-        if (colors.length === 0) {
-          return refNameColors
-        }
-        return colors
+        return colors.length === 0 ? refNameColors : colors
       },
     }))
     .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (!self.refNameAliases) {
+        if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
           throw new Error(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        return self.refNameAliases[refName]
+        return (
+          self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
+        )
       },
       getRefNameColor(refName: string) {
         const idx = self.refNames?.findIndex(r => r === refName)
@@ -226,14 +226,16 @@ export default function assemblyFactory(
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
+        lowerCaseRefNameAliases,
         cytobands,
       }: {
         adapterRegionsWithAssembly: Region[]
         refNameAliases: RefNameAliases
+        lowerCaseRefNameAliases: RefNameAliases
         cytobands: Feature[]
       }) {
         this.setRegions(adapterRegionsWithAssembly)
-        this.setRefNameAliases(refNameAliases)
+        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
         this.setCytobands(cytobands)
       },
       setError(e: Error) {
@@ -243,8 +245,12 @@ export default function assemblyFactory(
       setRegions(regions: Region[]) {
         self.regions = regions
       },
-      setRefNameAliases(refNameAliases: RefNameAliases) {
+      setRefNameAliases(
+        refNameAliases: RefNameAliases,
+        lowerCaseRefNameAliases: RefNameAliases,
+      ) {
         self.refNameAliases = refNameAliases
+        self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
       },
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
@@ -374,7 +380,19 @@ async function loadAssemblyReaction(
     refNameAliases[region.refName] = region.refName
   })
 
-  return { adapterRegionsWithAssembly, refNameAliases, cytobands }
+  const lowerCaseRefNameAliases = Object.fromEntries(
+    Object.entries(refNameAliases).map(([key, val]) => [
+      key.toLowerCase(),
+      val,
+    ]),
+  )
+
+  return {
+    adapterRegionsWithAssembly,
+    refNameAliases,
+    lowerCaseRefNameAliases,
+    cytobands,
+  }
 }
 
 async function getRefNameAliases(
