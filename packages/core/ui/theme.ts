@@ -159,10 +159,6 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
-            // REMOVEME: testing out not having !important
-            // OLDCOMMENT: !important needed to combat the MuiButton being applied to
-            // accordions in mui5.0.0 having a background:'transparent' that
-            // otherwise overrides this other
             backgroundColor: generatedPalette.tertiary.main,
           },
           content: {
@@ -183,36 +179,33 @@ export const jbrowseBaseTheme = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createJBrowseTheme(theme?: any) {
-  // if (!theme) {
-  //   // @ts-ignore
-  //   return createTheme(jbrowseBaseTheme)
-  // }
   if (theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
-        tertiary: refTheme.palette.augmentColor({
-          color: theme.palette.tertiary,
-        }),
+        tertiary: refTheme.palette.augmentColor(
+          theme.palette.tertiary?.color
+            ? theme.palette.tertiary
+            : {
+                color: theme.palette.tertiary,
+              },
+        ),
       },
     })
   }
   if (theme?.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {
-        quaternary: refTheme.palette.augmentColor({
-          color: theme.palette.quaternary,
-        }),
+        quaternary: refTheme.palette.augmentColor(
+          theme.palette.quaternary?.color
+            ? theme.palette.quaternary
+            : {
+                color: theme.palette.quaternary,
+              },
+        ),
       },
     })
   }
-  // theme = {
-  //   ...theme,
-  //   props: deepmerge(createJBrowseDefaultProps(), theme.props || {}),
-  //   overrides: deepmerge(
-  //     createJBrowseDefaultOverrides(theme.palette),
-  //     theme.overrides || {},
-  //   ),
-  // }
+
   // @ts-ignore
   return createTheme(deepmerge(jbrowseBaseTheme, theme || {}))
 }
