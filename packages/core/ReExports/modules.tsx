@@ -208,7 +208,17 @@ const libs = {
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
 
-  '@material-ui/core': { ...LazyMUICore, useTheme, makeStyles },
+  '@material-ui/core': {
+    ...LazyMUICore,
+    useTheme,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    makeStyles: (args: any) => {
+      const useStyles = makeStyles()(args)
+      return () => {
+        return useStyles().classes
+      }
+    },
+  },
   '@mui/material': LazyMUICore,
   'prop-types': PropTypes,
 
