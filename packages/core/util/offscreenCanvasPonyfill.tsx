@@ -45,6 +45,7 @@ if (weHave.realOffscreenCanvas) {
   // use node-canvas if we are running in node (i.e. automated tests)
   createCanvas = (...args) => {
     // @ts-ignore
+    // eslint-disable-next-line no-undef
     return nodeCreateCanvas(...args)
   }
   createImageBitmap = async (canvas, ...otherargs) => {
@@ -55,6 +56,7 @@ if (weHave.realOffscreenCanvas) {
     }
     const dataUri = canvas.toDataURL()
     // @ts-ignore
+    // eslint-disable-next-line no-undef
     const img = new nodeImage()
     return new Promise((resolve, reject) => {
       img.onload = () => resolve(img)
