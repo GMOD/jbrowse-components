@@ -25,10 +25,8 @@ export function drawImageOntoCanvasContext(
   if (imageData.serializedCommands) {
     const seq = new CanvasSequence(imageData.serializedCommands)
     seq.execute(context)
-  } else if (imageData instanceof ImageBitmapType) {
+  } else {
     context.drawImage(imageData as CanvasImageSource, 0, 0)
-  } else if (imageData.dataURL) {
-    throw new Error('dataURL deserialization no longer supported')
   }
 }
 
@@ -45,8 +43,10 @@ if (weHave.realOffscreenCanvas) {
   ImageBitmapType = window.ImageBitmap || self.ImageBitmap
 } else if (weHave.node) {
   // use node-canvas if we are running in node (i.e. automated tests)
-  const { createCanvas: nodeCreateCanvas, Image } = require('canvas')
-  createCanvas = nodeCreateCanvas
+  createCanvas = (...args) => {
+    // @ts-ignore
+    return nodeCreateCanvas(...args)
+  }
   createImageBitmap = async (canvas, ...otherargs) => {
     if (otherargs.length) {
       throw new Error(
@@ -54,14 +54,14 @@ if (weHave.realOffscreenCanvas) {
       )
     }
     const dataUri = canvas.toDataURL()
-    const img = new Image()
+    // @ts-ignore
+    const img = new nodeImage()
     return new Promise((resolve, reject) => {
       img.onload = () => resolve(img)
       img.onerror = reject
       img.src = dataUri
     })
   }
-  ImageBitmapType = Image
 } else {
   createCanvas = (width: number, height: number) => {
     const context = new CanvasSequence()

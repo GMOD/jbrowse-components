@@ -8,6 +8,10 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { spawnSync } from 'child_process'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { JSDOM } from 'jsdom'
+import { Image, createCanvas } from 'canvas'
+
+global.nodeImage = Image
+global.nodeCreateCanvas = createCanvas
 
 const { document } = new JSDOM(`...`).window
 global.document = document
