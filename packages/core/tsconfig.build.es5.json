@@ -5,11 +5,22 @@
   "compilerOptions": {
     "declaration": true,
     "noEmit": false,
-    "outDir": "esm",
+    "outDir": "dist",
     "rootDir": "./src",
     "composite": true,
-    "target": "es2018"
+    "target": "es5"
   },
-  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"]
+  "include": [
+    "./src/**/*.ts*",
+    "./src/**/*.js*"
+  ],
+  "exclude": [
+    "src/**/*.test.ts*",
+    "src/**/*.test.js*"
+  ],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.json"
+    }
+  ]
 }

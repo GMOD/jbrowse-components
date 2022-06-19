@@ -20,13 +20,33 @@
   "author": "JBrowse Team",
   "main": "index.js",
   "scripts": {
+    "prebuild": "npm run clean",
+    "build": "npm-run-all build:*",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "clean": "rimraf dist esm *.tsbuildinfo",
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
-    "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/",
     "postbuild": "tsc -b tsconfig.build.json"
+  },
+  "exports": {
+    "./PluginManager": {
+      "require": "./dist/PluginManager.js",
+      "import": "./esm/PluginManager.js"
+    },
+    "./configuration": {
+      "require": "./dist/configuration/index.js",
+      "import": "./esm/configuration/index.js"
+    },
+    "./ui": {
+      "require": "./dist/ui/index.js",
+      "import": "./esm/ui/index.js"
+    },
+    "./util": {
+      "requtilre": "./dist/util/index.js",
+      "import": "./esm/util/index.js"
+    }
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
