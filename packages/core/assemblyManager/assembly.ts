@@ -181,6 +181,10 @@ export default function assemblyFactory(
       get refNames() {
         return self.regions?.map(region => region.refName)
       },
+
+      // note: lowerCaseRefNameAliases not included here: this allows the list
+      // of refnames to be just the "normal casing", but things like
+      // getCanonicalRefName can resolve a lower-case name if needed
       get allRefNames() {
         return !self.refNameAliases
           ? undefined
