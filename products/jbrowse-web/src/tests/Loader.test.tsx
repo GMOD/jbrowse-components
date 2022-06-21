@@ -5,10 +5,16 @@ import { render, waitFor } from '@testing-library/react'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
+import { Image, createCanvas } from 'canvas'
 
 import { QueryParamProvider } from 'use-query-params'
 
 import { Loader } from '../Loader'
+
+// @ts-ignore
+global.nodeImage = Image
+// @ts-ignore
+global.nodeCreateCanvas = createCanvas
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

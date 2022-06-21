@@ -12,7 +12,16 @@ import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Image, createCanvas } from 'canvas'
+
 jest.mock('../makeWorkerInstance', () => () => {})
+
+// @ts-ignore
+global.nodeImage = Image
+// @ts-ignore
+global.nodeCreateCanvas = createCanvas
 
 // @ts-ignore
 configSnapshot.configuration = {
