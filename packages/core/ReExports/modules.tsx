@@ -211,12 +211,11 @@ const libs = {
   '@material-ui/core': {
     ...LazyMUICore,
     useTheme,
+    alpha: MUIStyles.alpha,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     makeStyles: (args: any) => {
       const useStyles = makeStyles()(args)
-      return () => {
-        return useStyles().classes
-      }
+      return () => useStyles().classes
     },
   },
   '@mui/material': LazyMUICore,
