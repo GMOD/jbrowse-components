@@ -74,6 +74,7 @@ const Entries = {
   DialogActions: lazy(() => import('@mui/material/DialogActions')),
   DialogTitle: lazy(() => import('@mui/material/DialogTitle')),
   DialogContent: lazy(() => import('@mui/material/DialogContent')),
+  DialogContentText: lazy(() => import('@mui/material/DialogContentText')),
   Divider: lazy(() => import('@mui/material/Divider')),
   Drawer: lazy(() => import('@mui/material/Drawer')),
   Fab: lazy(() => import('@mui/material/Fab')),
