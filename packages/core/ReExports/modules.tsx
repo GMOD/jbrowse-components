@@ -207,6 +207,7 @@ const libs = {
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
+  'tss-react/mui': { makeStyles },
 
   '@material-ui/core': {
     ...LazyMUICore,
