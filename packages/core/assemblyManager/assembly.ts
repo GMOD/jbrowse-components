@@ -1,17 +1,18 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import { Feature } from '../util/simpleFeature'
-import { getConf } from '../configuration'
+import { getConf, AnyConfigurationModel } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
   RegionsAdapter,
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
-import { Region } from '../util/types'
-import { makeAbortableReaction, when } from '../util'
+import { makeAbortableReaction, when, Region, Feature } from '../util'
 import QuickLRU from '../util/QuickLRU'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+
+const refNameRegex = new RegExp(
+  '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
+)
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -48,7 +49,7 @@ const refNameColors = [
 
 async function loadRefNameMap(
   assembly: Assembly,
-  adapterConf: unknown,
+  adapterConfig: unknown,
   options: BaseOptions,
   signal?: AbortSignal,
 ) {
@@ -62,7 +63,7 @@ async function loadRefNameMap(
     sessionId,
     'CoreGetRefNames',
     {
-      adapterConfig: adapterConf,
+      adapterConfig,
       signal,
       ...options,
     },
@@ -97,11 +98,7 @@ async function loadRefNameMap(
 
 // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
 function checkRefName(refName: string) {
-  if (
-    !refName.match(
-      /[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*/,
-    )
-  ) {
+  if (!refName.match(refNameRegex)) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
 }
@@ -158,7 +155,8 @@ export default function assemblyFactory(
     .volatile(() => ({
       error: undefined as Error | undefined,
       regions: undefined as BasicRegion[] | undefined,
-      refNameAliases: undefined as { [key: string]: string } | undefined,
+      refNameAliases: undefined as RefNameAliases | undefined,
+      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
@@ -183,6 +181,10 @@ export default function assemblyFactory(
       get refNames() {
         return self.regions?.map(region => region.refName)
       },
+
+      // note: lowerCaseRefNameAliases not included here: this allows the list
+      // of refnames to be just the "normal casing", but things like
+      // getCanonicalRefName can resolve a lower-case name if needed
       get allRefNames() {
         return !self.refNameAliases
           ? undefined
@@ -193,20 +195,19 @@ export default function assemblyFactory(
       },
       get refNameColors() {
         const colors: string[] = getConf(self, 'refNameColors')
-        if (colors.length === 0) {
-          return refNameColors
-        }
-        return colors
+        return colors.length === 0 ? refNameColors : colors
       },
     }))
     .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (!self.refNameAliases) {
+        if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
           throw new Error(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        return self.refNameAliases[refName]
+        return (
+          self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
+        )
       },
       getRefNameColor(refName: string) {
         const idx = self.refNames?.findIndex(r => r === refName)
@@ -229,14 +230,16 @@ export default function assemblyFactory(
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
+        lowerCaseRefNameAliases,
         cytobands,
       }: {
         adapterRegionsWithAssembly: Region[]
         refNameAliases: RefNameAliases
+        lowerCaseRefNameAliases: RefNameAliases
         cytobands: Feature[]
       }) {
         this.setRegions(adapterRegionsWithAssembly)
-        this.setRefNameAliases(refNameAliases)
+        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
         this.setCytobands(cytobands)
       },
       setError(e: Error) {
@@ -246,8 +249,12 @@ export default function assemblyFactory(
       setRegions(regions: Region[]) {
         self.regions = regions
       },
-      setRefNameAliases(refNameAliases: RefNameAliases) {
+      setRefNameAliases(
+        refNameAliases: RefNameAliases,
+        lowerCaseRefNameAliases: RefNameAliases,
+      ) {
         self.refNameAliases = refNameAliases
+        self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
       },
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
@@ -377,7 +384,19 @@ async function loadAssemblyReaction(
     refNameAliases[region.refName] = region.refName
   })
 
-  return { adapterRegionsWithAssembly, refNameAliases, cytobands }
+  const lowerCaseRefNameAliases = Object.fromEntries(
+    Object.entries(refNameAliases).map(([key, val]) => [
+      key.toLowerCase(),
+      val,
+    ]),
+  )
+
+  return {
+    adapterRegionsWithAssembly,
+    refNameAliases,
+    lowerCaseRefNameAliases,
+    cytobands,
+  }
 }
 
 async function getRefNameAliases(

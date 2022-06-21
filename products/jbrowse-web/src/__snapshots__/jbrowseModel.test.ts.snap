@@ -3033,6 +3033,36 @@ Object {
       "trackId": "spliced",
       "type": "AlignmentsTrack",
     },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.filtered.lowercase.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox.filtered.lowercase-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "volvox.filtered.lowercase-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "volvox.filtered.lowercase",
+      "trackId": "volvox.filtered.lowercase",
+      "type": "FeatureTrack",
+    },
   ],
 }
 `;

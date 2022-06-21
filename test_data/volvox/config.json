@@ -1671,6 +1671,20 @@
           }
         }
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "volvox.filtered.lowercase",
+      "name": "volvox.filtered.lowercase",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.filtered.lowercase.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox"]
     }
   ],
   "defaultSession": {
