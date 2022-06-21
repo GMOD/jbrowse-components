@@ -16,7 +16,7 @@ export interface UnrectifiedFeatureStats {
 export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreSum: number
   scoreSumSquares: number
-  featureCount: number
+  featureCount?: number
   basesCovered: number
   featureDensity: number
   scoreMean: number | undefined
@@ -75,7 +75,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
     scoreSum: s.scoreSum || 0,
     scoreSumSquares: s.scoreSumSquares || 0,
-    featureCount: s.featureCount || 0,
+    featureCount: s.featureCount,
     basesCovered: s.basesCovered || 0,
     scoreStdDev: calcStdFromSums(
       s.scoreSum,
