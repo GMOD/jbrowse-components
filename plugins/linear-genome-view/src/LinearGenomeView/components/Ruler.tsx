@@ -3,13 +3,7 @@ import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 import { makeTicks } from '../util'
-
-function mathPower(num: number): string {
-  if (num < 999) {
-    return String(num)
-  }
-  return `${mathPower(~~(num / 1000))},${`00${~~(num % 1000)}`.substr(-3, 3)}`
-}
+import { getTickDisplayStr } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()((/* theme */) => ({
   majorTickLabel: {
@@ -75,7 +69,7 @@ function Ruler({
               style={{ fontSize: '11px' }}
               className={classes.majorTickLabel}
             >
-              {mathPower(tick.base + 1)}
+              {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
           )
         })}
