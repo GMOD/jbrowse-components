@@ -10,6 +10,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
+import { fetchResults } from './util'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
@@ -51,28 +52,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     label: value,
   })
 
-  async function fetchResults(query: string, searchType?: SearchType) {
-    if (!textSearchManager) {
-      console.warn('No text search manager')
-    }
-
-    const textSearchResults = await textSearchManager?.search(
-      {
-        queryString: query,
-        searchType,
-      },
-      searchScope,
-      rankSearchResults,
-    )
-
-    const refNameResults = assembly?.allRefNames
-      ?.filter(refName => refName.startsWith(query))
-      .map(r => new BaseResult({ label: r }))
-      .slice(0, 10)
-
-    return [...(refNameResults || []), ...(textSearchResults || [])]
-  }
-
   // gets a string as input, or use stored option results from previous query,
   // then re-query and
   // 1) if it has multiple results: pop a dialog
@@ -99,7 +78,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       ) {
         model.navToLocString(location, selectedAsm)
       } else {
-        const results = await fetchResults(input, 'exact')
+        const results = await fetchResults({
+          queryString: input,
+          searchType: 'exact',
+          searchScope,
+          rankSearchResults,
+          textSearchManager,
+          assembly,
+        })
         if (results.length > 1) {
           model.setSearchResults(results, input.toLowerCase())
           return
@@ -159,7 +145,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   <CloseIcon style={{ color: 'red' }} />
                 ) : value ? (
                   <RefNameAutocomplete
-                    fetchResults={fetchResults}
+                    fetchResults={queryString =>
+                      fetchResults({
+                        queryString,
+                        assembly,
+                        textSearchManager,
+                        rankSearchResults,
+                        searchScope,
+                      })
+                    }
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
                     value={value}
