@@ -7,6 +7,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import {
   isAbortException,
   getContainingView,
+  getContainingTrack,
   getSession,
   getViewParams,
   isSelectionContainer,
@@ -333,8 +334,13 @@ export const BaseLinearDisplay = types
         const featureWidget = session.addWidget(
           'BaseFeatureWidget',
           'baseFeature',
-          { featureData: feature.toJSON(), view: getContainingView(self) },
+          {
+            view: getContainingView(self),
+            track: getContainingTrack(self),
+            featureData: feature.toJSON(),
+          },
         )
+
         session.showWidget(featureWidget)
       }
       if (isSelectionContainer(session)) {
@@ -551,7 +557,7 @@ export const BaseLinearDisplay = types
           self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
         rpcDriverName: self.rpcDriverName,
         displayModel: self,
-        onFeatureClick(_: unknown, featureId: string | undefined) {
+        onFeatureClick(_: unknown, featureId?: string) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -566,7 +572,7 @@ export const BaseLinearDisplay = types
           self.clearFeatureSelection()
         },
         // similar to click but opens a menu with further options
-        onFeatureContextMenu(_: unknown, featureId: string | undefined) {
+        onFeatureContextMenu(_: unknown, featureId?: string) {
           const f = featureId || self.featureIdUnderMouse
           if (!f) {
             self.clearFeatureSelection()
@@ -576,7 +582,7 @@ export const BaseLinearDisplay = types
           }
         },
 
-        onMouseMove(_: unknown, featureId: string | undefined) {
+        onMouseMove(_: unknown, featureId?: string) {
           self.setFeatureIdUnderMouse(featureId)
         },
 
@@ -642,6 +648,7 @@ export const BaseLinearDisplay = types
             const { offsetPx } = roundedDynamicBlocks[index]
             const offset = offsetPx - viewOffsetPx
             const clipid = getId(id, index)
+
             return (
               <React.Fragment key={`frag-${index}`}>
                 <defs>

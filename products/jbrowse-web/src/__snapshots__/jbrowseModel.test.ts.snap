@@ -1721,6 +1721,9 @@ Object {
           "type": "LinearArcDisplay",
         },
       ],
+      "formatDetails": Object {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
+      },
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",
       "type": "FeatureTrack",
@@ -1964,6 +1967,36 @@ Object {
       ],
       "name": "BedTabix genes",
       "trackId": "bedtabix_genes",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bedLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-bed12.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "bed_genes-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "bed_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Bed genes",
+      "trackId": "bed_genes",
       "type": "FeatureTrack",
     },
     Object {
@@ -2999,6 +3032,36 @@ Object {
       "name": "volvox-rnaseq demo",
       "trackId": "spliced",
       "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.filtered.lowercase.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox.filtered.lowercase-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "volvox.filtered.lowercase-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "volvox.filtered.lowercase",
+      "trackId": "volvox.filtered.lowercase",
+      "type": "FeatureTrack",
     },
   ],
 }

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "1.7.8",
+  "version": "1.7.10",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -34,8 +34,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bbi": "^1.0.35",
     "@gmod/bed": "^2.0.6",
+    "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/tabix": "^1.5.2"
   },
   "peerDependencies": {

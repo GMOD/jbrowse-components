@@ -6,7 +6,7 @@ import Command from '@oclif/command'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import parseJSON from 'json-parse-better-errors'
-import fetch from 'node-fetch'
+import fetch from './fetchWithProxy'
 
 export interface UriLocation {
   uri: string

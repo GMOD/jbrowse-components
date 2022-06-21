@@ -41,13 +41,9 @@ const useStyles = makeStyles({
     outline: 0,
   },
   menuItemEndDecoration: {
-    position: 'absolute',
-    right: 16,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    padding: 2,
-    marginRight: -12,
-    display: 'inline-flex',
+    padding: 0,
+    margin: 0,
+    height: 16,
   },
 })
 
@@ -65,7 +61,7 @@ type MenuItemEndDecorationProps =
   | MenuItemEndDecorationSubMenuProps
   | MenuItemEndDecorationSelectorProps
 
-function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
+export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   const classes = useStyles()
   const { type } = props
   let checked
@@ -249,19 +245,10 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
     }
   }, [position, anchorEl])
 
-  const hasEndDecoration = menuItems.some(
-    menuItem =>
-      'subMenu' in menuItem ||
-      menuItem.type === 'checkbox' ||
-      menuItem.type === 'radio',
-  )
   const hasIcon = menuItems.some(
     menuItem => 'icon' in menuItem && menuItem.icon,
   )
   const menuItemStyle: MenuItemStyleProp = {}
-  if (hasEndDecoration) {
-    menuItemStyle.paddingRight = 48
-  }
 
   function handleClick(callback: Function) {
     return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -356,6 +343,7 @@ const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
                   secondary={menuItem.subLabel}
                   inset={hasIcon && !menuItem.icon}
                 />
+                <div style={{ flexGrow: 1, minWidth: 10 }} />
                 {endDecoration}
               </MUIMenuItem>
             )

@@ -341,13 +341,13 @@
     {
       "type": "FeatureTrack",
       "trackId": "mane_hg38",
-      "name": "MANE 0.92",
+      "name": "MANE 1.0",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
           "locationType": "UriLocation"
         }
       },

@@ -29,7 +29,7 @@ export interface AbstractViewContainer extends IAnyStateTreeNode {
   removeView(view: AbstractViewModel): void
   addView(
     typeName: string,
-    initialState: Record<string, unknown>,
+    initialState?: Record<string, unknown>,
   ): void | AbstractViewModel
 }
 export function isViewContainer(
@@ -78,6 +78,7 @@ export type DialogComponentType =
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
+  drawerPosition?: string
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
@@ -96,7 +97,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]
-  connectionInstances?: { name: string }[]
+  connectionInstances?: {
+    name: string
+    connectionId: string
+    tracks: AnyConfigurationModel[]
+  }[]
   makeConnection?: Function
   adminMode?: boolean
   showWidget?: Function
@@ -111,6 +116,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   name: string
   id?: string
+  tracks: AnyConfigurationModel[]
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -180,6 +186,16 @@ export function isSessionModelWithWidgets(
   return isSessionModel(thing) && 'widgets' in thing
 }
 
+interface SessionWithConnections {
+  addConnectionConf: (arg: AnyConfigurationModel) => void
+}
+
+export function isSessionModelWithConnections(
+  thing: unknown,
+): thing is SessionWithConnections {
+  return isSessionModel(thing) && 'addConnectionConf' in thing
+}
+
 export interface SessionWithSessionPlugins extends AbstractSessionModel {
   sessionPlugins: JBrowsePlugin[]
   addSessionPlugin: Function
@@ -226,7 +242,10 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-type AbstractTrackModel = {}
+export interface AbstractTrackModel {
+  displays: AbstractDisplayModel[]
+}
+
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&

@@ -70,18 +70,18 @@ export default function assemblyManagerFactory(
           throw new Error('no assembly name supplied to waitForAssembly')
         }
         const assembly = self.get(assemblyName)
-        if (assembly) {
-          await when(
-            () =>
-              Boolean(assembly.regions && assembly.refNameAliases) ||
-              !!assembly.error,
-          )
-          if (assembly.error) {
-            throw assembly.error
-          }
-          return assembly
+        if (!assembly) {
+          return undefined
         }
-        return undefined
+        await when(
+          () =>
+            Boolean(assembly.regions && assembly.refNameAliases) ||
+            !!assembly.error,
+        )
+        if (assembly.error) {
+          throw assembly.error
+        }
+        return assembly
       },
 
       async getRefNameMapForAdapter(
@@ -90,14 +90,8 @@ export default function assemblyManagerFactory(
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
         if (assemblyName) {
-          await when(() => Boolean(self.get(assemblyName)), {
-            signal: opts.signal,
-            name: 'when assembly ready',
-          })
-
-          return self
-            .get(assemblyName)
-            ?.getRefNameMapForAdapter(adapterConf, opts)
+          const asm = await this.waitForAssembly(assemblyName)
+          return asm?.getRefNameMapForAdapter(adapterConf, opts)
         }
         return {}
       },
@@ -107,13 +101,8 @@ export default function assemblyManagerFactory(
         opts: { signal?: AbortSignal; sessionId: string },
       ) {
         if (assemblyName) {
-          await when(() => Boolean(self.get(assemblyName)), {
-            signal: opts.signal,
-            name: 'when assembly ready',
-          })
-          return self
-            .get(assemblyName)
-            ?.getReverseRefNameMapForAdapter(adapterConf, opts)
+          const asm = await this.waitForAssembly(assemblyName)
+          return asm?.getReverseRefNameMapForAdapter(adapterConf, opts)
         }
         return {}
       },

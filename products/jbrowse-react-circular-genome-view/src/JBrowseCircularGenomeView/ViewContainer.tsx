@@ -69,9 +69,7 @@ const ViewMenu = observer(
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
+          onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
         >
           <MenuIcon {...IconProps} />
@@ -83,9 +81,7 @@ const ViewMenu = observer(
             callback()
             setAnchorEl(undefined)
           }}
-          onClose={() => {
-            setAnchorEl(undefined)
-          }}
+          onClose={() => setAnchorEl(undefined)}
           menuItems={model.menuItems()}
         />
       </>
@@ -102,10 +98,8 @@ const ViewContainer = observer(
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
-      if (width) {
-        if (isAlive(view)) {
-          view.setWidth(width - padWidth * 2)
-        }
+      if (width && isAlive(view)) {
+        view.setWidth(width - padWidth * 2)
       }
     }, [padWidth, view, width])
 

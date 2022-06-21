@@ -23,7 +23,7 @@ export default class RefNameAliasAdapter
       .map(row => {
         const aliases = row.split('\t')
         const [refName] = aliases.splice(refColumn, 1)
-        return { refName, aliases }
+        return { refName, aliases: aliases.filter(f => !!f.trim()) }
       })
   }
 

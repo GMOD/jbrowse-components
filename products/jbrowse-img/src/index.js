@@ -7,6 +7,10 @@ import tmp from 'tmp'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { spawnSync } from 'child_process'
 import fetch, { Headers, Response, Request } from 'node-fetch'
+import { JSDOM } from 'jsdom'
+
+const { document } = new JSDOM(`...`).window
+global.document = document
 
 if (!global.fetch) {
   global.fetch = fetch

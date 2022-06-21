@@ -14,5 +14,8 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   if (String(args[0]).includes('volvox.2bit_404')) {
     return undefined
   }
+  if (String(args).includes('popupState')) {
+    return undefined
+  }
   return originalError.call(console, ...args)
 })

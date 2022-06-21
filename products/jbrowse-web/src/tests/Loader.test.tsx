@@ -234,7 +234,7 @@ describe('<Loader />', () => {
     await findAllByText(/Failed to load/)
   }, 20000)
 
-  it('can use a spec url', async () => {
+  it('can use a spec url for lgv', async () => {
     const { findByText, findByPlaceholderText } = render(
       <QueryParamProvider
         // @ts-ignore
@@ -254,5 +254,60 @@ describe('<Loader />', () => {
 
     // @ts-ignore
     await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), delay)
+  }, 40000)
+
+  it('can use a spec url for dotplot view', async () => {
+    const { findByText, findByTestId } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+    await findByTestId('prerendered_canvas', {}, delay)
+  }, 40000)
+
+  it('can use a spec url for synteny view', async () => {
+    console.warn = jest.fn()
+    const { findByText, findByTestId } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+    await findByTestId('synteny_canvas', {}, delay)
+  }, 40000)
+
+  it('can use a spec url for spreadsheet view', async () => {
+    console.warn = jest.fn()
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SpreadsheetView","uri":"test_data/volvox/volvox.filtered.vcf.gz","assembly":"volvox"}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+
+    // random row in spreadsheet
+    await findByText('ctgA:8470..8471', {}, delay)
   }, 40000)
 })

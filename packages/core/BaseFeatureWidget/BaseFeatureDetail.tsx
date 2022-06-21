@@ -19,7 +19,7 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../configuration'
-import { measureText, getSession } from '../util'
+import { measureText, getSession, isUriLocation } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
@@ -30,6 +30,7 @@ const MAX_FIELD_NAME_WIDTH = 170
 
 // these are always omitted as too detailed
 const globalOmit = [
+  '__jbrowsefmt',
   'length',
   'position',
   'subfeatures',
@@ -121,8 +122,8 @@ export function BaseCard({
 export const FieldName = ({
   description,
   name,
-  prefix = [],
   width,
+  prefix = [],
 }: {
   description?: React.ReactNode
   name: string
@@ -146,10 +147,13 @@ export const FieldName = ({
 
 export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   const classes = useStyles()
+  const isLink = `${value}`.match(/^https?:\/\//)
   return (
     <div className={classes.fieldValue}>
       {React.isValidElement(value) ? (
         value
+      ) : isLink ? (
+        <SanitizedHTML html={`<a href="${value}">${value}</a>`} />
       ) : (
         <SanitizedHTML
           html={isObject(value) ? JSON.stringify(value) : String(value)}
@@ -198,63 +202,74 @@ const ArrayValue = ({
   prefix?: string[]
 }) => {
   const classes = useStyles()
-  return (
-    <>
-      {value.length === 1 ? (
-        isObject(value[0]) ? (
-          <Attributes attributes={value[0]} prefix={[...prefix, name]} />
-        ) : (
-          <div className={classes.field}>
-            <FieldName prefix={prefix} description={description} name={name} />
-            <BasicValue value={value[0]} />
-          </div>
-        )
-      ) : value.every(val => isObject(val)) ? (
-        value.map((val, i) => (
+  if (value.length === 1) {
+    return isObject(value[0]) ? (
+      <Attributes attributes={value[0]} prefix={[...prefix, name]} />
+    ) : (
+      <div className={classes.field}>
+        <FieldName prefix={prefix} description={description} name={name} />
+        <BasicValue value={value[0]} />
+      </div>
+    )
+  } else if (value.every(val => isObject(val))) {
+    return (
+      <>
+        {value.map((val, i) => (
           <Attributes
             key={JSON.stringify(val) + '-' + i}
             attributes={val}
             prefix={[...prefix, name + '-' + i]}
           />
-        ))
-      ) : (
-        <div className={classes.field}>
-          <FieldName prefix={prefix} description={description} name={name} />
-          {value.map((val, i) => (
-            <div
-              key={JSON.stringify(val) + '-' + i}
-              className={classes.fieldSubvalue}
-            >
-              <BasicValue value={val} />
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  )
+        ))}
+      </>
+    )
+  } else {
+    return (
+      <div className={classes.field}>
+        <FieldName prefix={prefix} description={description} name={name} />
+        {value.map((val, i) => (
+          <div
+            key={JSON.stringify(val) + '-' + i}
+            className={classes.fieldSubvalue}
+          >
+            <BasicValue value={val} />
+          </div>
+        ))}
+      </div>
+    )
+  }
 }
+const toLocale = (n: number) => n.toLocaleString('en-US')
 
 function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const { refName, start, end, strand } = feature as SimpleFeatureSerialized & {
+  const obj = feature as SimpleFeatureSerialized & {
     start: number
     end: number
     strand: number
     refName: string
+    __jbrowsefmt: {
+      start?: number
+      end?: number
+      refName?: string
+      name?: string
+    }
   }
+
+  // eslint-disable-next-line no-underscore-dangle
+  const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
+  const { start, strand, end, refName } = formattedFeat
+
   const strandMap: Record<string, string> = {
     '-1': '-',
     '0': '',
     '1': '+',
   }
-  const strandStr = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
-  const displayStart = (start + 1).toLocaleString('en-US')
-  const displayEnd = end.toLocaleString('en-US')
-  const displayRef = refName ? `${refName}:` : ''
+  const str = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayedDetails: Record<string, any> = {
-    ...feature,
-    length: (end - start).toLocaleString('en-US'),
-    position: `${displayRef}${displayStart}..${displayEnd} ${strandStr}`,
+    ...formattedFeat,
+    length: toLocale(end - start),
+    position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
   const coreRenderedDetails = [
@@ -328,10 +343,9 @@ const DataGridDetails = ({
     const columns = colNames.map(val => ({
       field: val,
       width: Math.max(
-        ...rows.map(row => {
-          const result = String(row[val])
-          return Math.min(Math.max(measureText(result, 14) + 50, 80), 1000)
-        }),
+        ...rows.map(row =>
+          Math.min(Math.max(measureText(String(row[val]), 14) + 50, 80), 1000),
+        ),
       ),
     }))
 
@@ -393,7 +407,32 @@ function generateMaxWidth(array: any, prefix: any) {
   return Math.ceil(Math.max(...arr)) + 10
 }
 
-export const Attributes: React.FunctionComponent<AttributeProps> = props => {
+function UriAttribute({
+  value,
+  prefix,
+  name,
+}: {
+  value: { uri: string; baseUri?: string }
+  name: string
+  prefix: string[]
+}) {
+  const classes = useStyles()
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return (
+    <div className={classes.field}>
+      <FieldName prefix={prefix} name={name} />
+      <BasicValue value={href} />
+    </div>
+  )
+}
+
+export function Attributes(props: AttributeProps) {
   const {
     attributes,
     omit = [],
@@ -402,9 +441,11 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
+  const { __jbrowsefmt, ...rest } = attributes
+  const formattedAttributes = { ...rest, ...__jbrowsefmt }
 
   const maxLabelWidth = generateMaxWidth(
-    Object.entries(attributes).filter(
+    Object.entries(formattedAttributes).filter(
       ([k, v]) => v !== undefined && !omits.includes(k),
     ),
     prefix,
@@ -415,27 +456,21 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
 
   return (
     <>
-      {Object.entries(attributes)
+      {Object.entries(formattedAttributes)
         .filter(([k, v]) => v !== undefined && !omits.includes(k))
         .map(([key, value]) => {
-          if (
-            Array.isArray(value) &&
-            value.length > 2 &&
-            value.every(val => isObject(val))
-          ) {
-            return (
-              <DataGridDetails
-                key={key}
-                prefix={prefix}
-                name={key}
-                value={value}
-              />
-            )
-          }
-
           const description = accessNested([...prefix, key], descriptions)
           if (Array.isArray(value)) {
-            return (
+            // check if it looks like an array of objects, which could be used
+            // in data grid
+            return value.length > 2 && value.every(val => isObject(val)) ? (
+              <DataGridDetails
+                key={key}
+                name={key}
+                prefix={prefix}
+                value={value}
+              />
+            ) : (
               <ArrayValue
                 key={key}
                 name={key}
@@ -444,10 +479,15 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                 prefix={prefix}
               />
             )
-          }
-
-          if (isObject(value)) {
-            return (
+          } else if (isObject(value)) {
+            return isUriLocation(value) ? (
+              <UriAttribute
+                key={key}
+                name={key}
+                prefix={prefix}
+                value={value}
+              />
+            ) : (
               <Attributes
                 omit={omits}
                 key={key}
@@ -456,18 +496,18 @@ export const Attributes: React.FunctionComponent<AttributeProps> = props => {
                 prefix={[...prefix, key]}
               />
             )
+          } else {
+            return (
+              <SimpleValue
+                key={key}
+                name={key}
+                value={formatter(value, key)}
+                description={description}
+                prefix={prefix}
+                width={labelWidth}
+              />
+            )
           }
-
-          return (
-            <SimpleValue
-              key={key}
-              name={key}
-              value={formatter(value, key)}
-              description={description}
-              prefix={prefix}
-              width={labelWidth}
-            />
-          )
         })}
     </>
   )
@@ -493,9 +533,15 @@ function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
+function generateTitle(name: unknown, id: unknown, type: unknown) {
+  return [ellipses(`${name}` || `${id}`), `${type}`]
+    .filter(f => !!f)
+    .join(' - ')
+}
+
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
-  feature: SimpleFeatureSerialized & { name?: string; id?: string }
+  feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactElement
@@ -508,7 +554,7 @@ export const FeatureDetails = (props: {
     getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
   return (
-    <BaseCard title={[ellipses(name || id), type].filter(f => !!f).join(' - ')}>
+    <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
@@ -522,9 +568,7 @@ export const FeatureDetails = (props: {
       {sequenceTypes.includes(feature.type) ? (
         <ErrorBoundary
           FallbackComponent={({ error }) => (
-            <Typography color="error">
-              Failed to fetch sequence for feature: {`${error}`}
-            </Typography>
+            <Typography color="error">{`${error}`}</Typography>
           )}
         >
           <SequenceFeatureDetails {...props} />
@@ -557,11 +601,20 @@ const BaseFeatureDetails = observer((props: BaseInputProps) => {
   if (!featureData) {
     return null
   }
-  const feature = JSON.parse(JSON.stringify(featureData))
 
+  // replacing undefined with null helps with allowing fields to be hidden,
+  // setting null is not allowed by jexl so we set it to undefined to hide. see
+  // config guide. this replacement happens both here and when snapshotting the
+  // featureData
+  const feature = JSON.parse(
+    JSON.stringify(featureData, (_, v) =>
+      typeof v === 'undefined' ? null : v,
+    ),
+  )
   if (isEmpty(feature)) {
     return null
   }
+
   return <FeatureDetails model={model} feature={feature} />
 })
 

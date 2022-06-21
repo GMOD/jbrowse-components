@@ -42,7 +42,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       get showDescriptions() {
         return (
           self.trackShowDescriptions ??
-          getConf(self, ['renderer', 'showLabels'])
+          getConf(self, ['renderer', 'showDescriptions'])
         )
       },
 
@@ -116,9 +116,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showDescriptions,
-              onClick: () => {
-                self.toggleShowDescriptions()
-              },
+              onClick: () => self.toggleShowDescriptions(),
             },
             {
               label: 'Display mode',

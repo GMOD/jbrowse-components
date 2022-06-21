@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "1.7.8",
+  "version": "1.7.10",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -40,6 +40,7 @@
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0",
+    "material-ui-popup-state": "^1.9.3",
     "normalize-wheel": "^1.0.1",
     "react-popper": "^2.0.0"
   },

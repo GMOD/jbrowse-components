@@ -7,6 +7,7 @@ import {
   makeStyles,
   alpha,
 } from '@material-ui/core'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 import SearchBox from './SearchBox'
 
 // icons
@@ -100,7 +101,7 @@ const RegionWidth = observer(({ model }: { model: LGV }) => {
   const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {Math.round(coarseTotalBp).toLocaleString('en-US')} bp
+      {getBpDisplayStr(coarseTotalBp)}
     </Typography>
   )
 })
