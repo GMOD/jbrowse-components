@@ -107,8 +107,8 @@ function VariantSamples(props: any) {
         <DataGrid
           rows={rows}
           columns={infoFields}
-          density="compact"
           disableSelectionOnClick
+          rowHeight={25}
           disableColumnMenu
         />
       </div>

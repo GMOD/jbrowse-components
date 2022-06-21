@@ -366,7 +366,7 @@ const DataGridDetails = ({
         >
           <DataGrid
             disableSelectionOnClick
-            density="compact"
+            rowHeight={25}
             rows={rows}
             rowsPerPageOptions={[]}
             hideFooterSelectedRowCount
