@@ -2,9 +2,13 @@ import { renderRegion } from './renderRegion'
 import fs from 'fs'
 import { JSDOM } from 'jsdom'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
+import { Image, createCanvas } from 'canvas'
 
 const { document } = new JSDOM(`...`).window
 global.document = document
+
+global.nodeImage = Image
+global.nodeCreateCanvas = createCanvas
 
 function hashCode(str) {
   let hash = 0
