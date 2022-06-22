@@ -8,6 +8,28 @@ import WiggleBaseRenderer, {
 } from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
+function fillRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  color?: string,
+) {
+  if (color) {
+    ctx.fillStyle = color
+  }
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+  ctx.fillRect(x, y, width, height)
+}
+
 export default class XYPlotRenderer extends WiggleBaseRenderer {
   draw(
     ctx: CanvasRenderingContext2D,
@@ -69,62 +91,85 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
 
       if (summaryScoreMode === 'max') {
         score = summary ? maxr : score
-        ctx.fillStyle = colorCallback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(
+          ctx,
+          leftPx,
+          toY(score),
+          w,
+          filled ? toHeight(score) : 1,
+          colorCallback(feature, score),
+        )
       } else if (summaryScoreMode === 'min') {
         score = summary ? minr : score
-        ctx.fillStyle = colorCallback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(
+          ctx,
+          leftPx,
+          toY(score),
+          w,
+          filled ? toHeight(score) : 1,
+          colorCallback(feature, score),
+        )
       } else if (summaryScoreMode === 'whiskers') {
         const c = colorCallback(feature, score)
         if (summary) {
-          ctx.fillStyle = crossingOrigin
-            ? colorCallback(feature, maxr)
-            : Color(c).lighten(0.6).toString()
-          ctx.fillRect(
+          fillRect(
+            ctx,
             leftPx,
             toY(maxr),
             w,
             filled ? toHeight(maxr) - toHeight(score) : 1,
+            crossingOrigin
+              ? colorCallback(feature, maxr)
+              : Color(c).lighten(0.6).toString(),
           )
         }
 
         // normal
-        ctx.fillStyle =
-          crossingOrigin && summary
-            ? Color(colorCallback(feature, maxr)).mix(
-                Color(colorCallback(feature, minr)),
-              )
-            : c
-        ctx.fillRect(
+
+        fillRect(
+          ctx,
           leftPx,
           toY(score),
           w,
           filled ? toHeight(score) - (summary ? toHeight(minr) : 0) : 1,
+          crossingOrigin && summary
+            ? Color(colorCallback(feature, maxr)).mix(
+                Color(colorCallback(feature, minr)),
+              )
+            : c,
         )
 
         // min
         if (summary) {
-          ctx.fillStyle = crossingOrigin
-            ? colorCallback(feature, minr)
-            : Color(c).darken(0.6).toString()
-          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
+          fillRect(
+            ctx,
+            leftPx,
+            toY(minr),
+            w,
+            filled ? toHeight(minr) : 1,
+            crossingOrigin
+              ? colorCallback(feature, minr)
+              : Color(c).darken(0.6).toString(),
+          )
         }
       } else {
-        ctx.fillStyle = colorCallback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(
+          ctx,
+          leftPx,
+          toY(score),
+          w,
+          filled ? toHeight(score) : 1,
+          colorCallback(feature, score),
+        )
       }
 
       if (highClipping) {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, 0, w, 4)
+        fillRect(ctx, leftPx, 0, w, 4, clipColor)
       } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
+        fillRect(ctx, leftPx, unadjustedHeight - 4, w, 4, clipColor)
       }
       if (feature.get('highlighted')) {
-        ctx.fillStyle = highlightColor
-        ctx.fillRect(leftPx, 0, w, height)
+        fillRect(ctx, leftPx, 0, w, height, highlightColor)
       }
     }
 
