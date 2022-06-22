@@ -11,7 +11,7 @@ import {
   makeStyles,
 } from '@material-ui/core'
 import ExpandMore from '@material-ui/icons/ExpandMore'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import clsx from 'clsx'
 import isObject from 'is-object'
@@ -340,11 +340,15 @@ const DataGridDetails = ({
       colNames = [...unionKeys]
     }
 
+    const getStr = (obj: unknown) =>
+      isObject(obj) ? JSON.stringify(obj) : String(obj)
+
     const columns = colNames.map(val => ({
       field: val,
+      renderCell: (val: GridCellParams) => getStr(val.formattedValue),
       width: Math.max(
         ...rows.map(row =>
-          Math.min(Math.max(measureText(String(row[val]), 14) + 50, 80), 1000),
+          Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
         ),
       ),
     }))
@@ -463,7 +467,7 @@ export function Attributes(props: AttributeProps) {
           if (Array.isArray(value)) {
             // check if it looks like an array of objects, which could be used
             // in data grid
-            return value.length > 2 && value.every(val => isObject(val)) ? (
+            return value.length > 1 && value.every(val => isObject(val)) ? (
               <DataGridDetails
                 key={key}
                 name={key}
