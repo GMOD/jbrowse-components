@@ -1,0 +1,123 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`open up a widget 1`] = `
+<div
+  class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+>
+  <div
+    aria-expanded="true"
+    class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root"
+    role="button"
+    tabindex="0"
+  >
+    <div
+      class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-o4b71y-MuiAccordionSummary-content"
+    >
+      <span
+        class="MuiTypography-root MuiTypography-button css-1f0on15-MuiTypography-root"
+      >
+         
+      </span>
+    </div>
+    <div
+      class="MuiAccordionSummary-expandIconWrapper Mui-expanded css-yw020d-MuiAccordionSummary-expandIconWrapper"
+    >
+      <svg
+        aria-hidden="true"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-rb1zhf-expandIcon css-i4bv87-MuiSvgIcon-root"
+        data-testid="ExpandMoreIcon"
+        focusable="false"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
+        />
+      </svg>
+    </div>
+  </div>
+  <div
+    class="MuiCollapse-root MuiCollapse-vertical MuiCollapse-entered css-pwcg7p-MuiCollapse-root"
+    style="min-height: 0px;"
+  >
+    <div
+      class="MuiCollapse-wrapper MuiCollapse-vertical css-smkl36-MuiCollapse-wrapper"
+    >
+      <div
+        class="MuiCollapse-wrapperInner MuiCollapse-vertical css-9l5vo-MuiCollapse-wrapperInner"
+      >
+        <div
+          class="MuiAccordion-region"
+          role="region"
+        >
+          <div
+            class="MuiAccordionDetails-root tss-1g973hk-expansionPanelDetails css-15v22id-MuiAccordionDetails-root"
+          >
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              Core details
+            </p>
+            <div
+              class="tss-1m8nxnb-field"
+            >
+              <div
+                class="tss-1y9c7n2-fieldName"
+              >
+                Position
+              </div>
+              <div
+                class="tss-1omt041-fieldValue"
+              >
+                <div>
+                  ctgA:3..102 (+)
+                </div>
+              </div>
+            </div>
+            <div
+              class="tss-1m8nxnb-field"
+            >
+              <div
+                class="tss-1y9c7n2-fieldName"
+              >
+                Length
+              </div>
+              <div
+                class="tss-1omt041-fieldValue"
+              >
+                <div>
+                  100
+                </div>
+              </div>
+            </div>
+            <hr
+              class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+            />
+            <p
+              class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+            >
+              Attributes
+            </p>
+            <div
+              class="tss-1m8nxnb-field"
+            >
+              <div
+                class="tss-1y9c7n2-fieldName"
+                style="width: 40px;"
+              >
+                score
+              </div>
+              <div
+                class="tss-1omt041-fieldValue"
+              >
+                <div>
+                  37
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
