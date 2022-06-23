@@ -153,7 +153,7 @@ export default class PileupRenderer extends BoxRendererType {
   // letter M is approximately the height
   getCharWidthHeight(ctx: CanvasRenderingContext2D) {
     const charWidth = measureText('A')
-    const charHeight = measureText('M')
+    const charHeight = measureText('M') - 2
     return { charWidth, charHeight }
   }
 
