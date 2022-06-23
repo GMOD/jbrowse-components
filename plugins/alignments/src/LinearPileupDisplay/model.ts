@@ -178,6 +178,13 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 } = self
                 const { staticBlocks, bpPerPx } = view
 
+                if (!self.estimatedStatsReady) {
+                  return
+                }
+                if (self.regionTooLarge) {
+                  return
+                }
+
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {

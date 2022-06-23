@@ -159,6 +159,13 @@ const stateModelFactory = (
               try {
                 const { colorBy } = self
                 const { staticBlocks } = getContainingView(self) as LGV
+
+                if (!self.estimatedStatsReady) {
+                  return
+                }
+                if (self.regionTooLarge) {
+                  return
+                }
                 if (colorBy?.type === 'modifications') {
                   const vals = await getUniqueModificationValues(
                     self,
