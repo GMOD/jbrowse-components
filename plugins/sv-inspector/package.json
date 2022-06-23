@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sv-inspector",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "JBrowse 2 SV inspector view",
   "keywords": [
     "jbrowse",

@@ -77,6 +77,7 @@ export const UsingLocObject = () => {
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
+
 export const WithLongReads = () => {
   const state = createViewState({
     assembly,
@@ -84,6 +85,17 @@ export const WithLongReads = () => {
     defaultSession: longReadsSession,
     location: 'ctgA:1105..1221',
   })
+
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithShowTrack = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    location: 'ctgA:1105..1221',
+  })
+  state.session.view.showTrack('volvox-long-reads-sv-bam')
 
   return <JBrowseLinearGenomeView viewState={state} />
 }
