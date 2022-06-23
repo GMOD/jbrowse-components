@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// note: AboutDialog is imported statically instead of as a lazy component
-// due to vite failing to load it xref #2896
+import { lazy } from 'react'
 import {
   AbstractSessionModel,
   TrackViewModel,
@@ -26,9 +25,10 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'
+
+const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types

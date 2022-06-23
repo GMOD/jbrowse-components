@@ -2,4 +2,4 @@
 
 ### ts-loader
 
-Used by storybook in e.g. products/jbrowse-react-linaer-genome-view
+Used by storybook in e.g. products/jbrowse-react-linear-genome-view
