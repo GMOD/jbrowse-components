@@ -18,8 +18,6 @@ import type MyConfigSchema from './configSchema'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
 
-const validOptional = ['region_stats', 'region_feature_densities']
-
 export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   pluginManager: PluginManager
   configuration: Instance<typeof MyConfigSchema>
@@ -40,25 +38,11 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     super(config, getSubAdapter, pluginManager)
     this.configuration = config
     this.pluginManager = pluginManager
-
-    // validate the optional_resources configuration
-    for (const resourceName of getConf(
-      this,
-      'optional_resources',
-    ) as string[]) {
-      if (!validOptional.includes(resourceName)) {
-        throw new Error(
-          `invalid optional_resources "${resourceName}", must be one of ${JSON.stringify(
-            validOptional,
-          )}`,
-        )
-      }
-    }
   }
 
   private implementsOptionalResource(resourceName: string) {
-    const optionalResources = getConf(this, 'optional_resources') as string[]
-    return optionalResources.includes(resourceName)
+    const value = getConf(this, ['optional_resources', resourceName])
+    return value === true
   }
 
   /**
@@ -105,7 +89,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
 
     let baseLocation = getConf(this, 'location') as FileLocation
     if (!isUriLocation(baseLocation)) {
-      throw new Error('invalid location ' + baseLocation)
+      throw new Error('invalid location for REST API: ' + baseLocation)
     }
     baseLocation = resolveUriLocation(baseLocation)
 
@@ -145,11 +129,10 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
    * @return Promise<string[]> of empty list
    */
   async getRefNames(opts?: BaseOptions) {
-    const result = await this.fetchFromRestApi(
+    const json = await this.fetchJsonFromRestApi(
       'reference_sequences',
       opts?.signal,
     )
-    const json = await result.json()
     if (!Array.isArray(json)) {
       throw new Error(
         'invalid reference_sequences API response, the response must be a JSON array of string reference sequence names',

@@ -3,16 +3,27 @@ import Adapter from './JBrowseRESTFeatureAdapter'
 import configSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-test('adapter can fetch features from mocked API', async () => {
-  const args = {
-    url: '/mock/url',
-  }
-  const stubManager = new PluginManager()
-  const adapter = new Adapter(configSchema.create(args), undefined, stubManager)
+const testFeatures = [{ start: 100, end: 200, refName: '21', uniqueId: 'foo' }]
+const mockResponses = {
+  '/mock/url/features/21?start=34960388&end=35960388': {
+    features: testFeatures,
+  },
+  '/mock/url/reference_sequences': ['21'],
+}
 
-  const testFeatures = [
-    { start: 100, end: 200, refName: '21', uniqueId: 'foo' },
-  ]
+test('adapter can fetch features from mocked API', async () => {
+  const stubManager = new PluginManager()
+  const adapter = new Adapter(
+    configSchema.create({
+      location: { uri: '/mock/url' },
+      extra_query: { extra_query: 42 },
+      optional_resources: {
+        region_stats: true,
+      },
+    }),
+    undefined,
+    stubManager,
+  )
 
   const fetchMock = jest
     // @ts-ignore
@@ -21,10 +32,8 @@ test('adapter can fetch features from mocked API', async () => {
     .mockImplementation(async (fetcher, url: string, signal) => {
       return {
         async json() {
-          if (url.includes('/features/')) {
-            return { features: testFeatures }
-          } else if (url.endsWith('/reference_sequences')) {
-            return ['21']
+          if (url in mockResponses) {
+            return mockResponses[url as keyof typeof mockResponses]
           }
           throw new Error('no mock for ' + url)
         },
@@ -44,7 +53,7 @@ test('adapter can fetch features from mocked API', async () => {
   expect(featuresArray[0].id()).toBe('foo')
   // @ts-ignore
   expect(fetchMock.mock.calls[0][1]).toBe(
-    '/path/to/my/rest/endpoint/features/21?start=34960388&end=35960388',
+    '/mock/url/features/21?start=34960388&end=35960388',
   )
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(false)
