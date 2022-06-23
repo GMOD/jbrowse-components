@@ -234,6 +234,13 @@ const libs = {
   '@material-ui/lab/ToggleButton': Entries.ToggleButton,
   '@material-ui/lab/ToggleButtonGroup': Entries.ToggleButtonGroup,
   '@material-ui/lab/Autocomplete': Entries.Autocomplete,
+  '@material-ui/lab/Alert': Entries.Alert,
+  '@material-ui/lab': {
+    Alert: Entries.Alert,
+    Autocomplete: Entries.Autocomplete,
+    ToggleButton: Entries.ToggleButton,
+    ToggleButtonGroup: Entries.ToggleButtonGroup,
+  },
 
   '@jbrowse/core/Plugin': Plugin,
   '@jbrowse/core/pluggableElementTypes': pluggableElementTypes,
