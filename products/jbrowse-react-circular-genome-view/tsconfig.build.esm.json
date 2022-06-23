@@ -13,15 +13,10 @@
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "references": [
     { "path": "../../packages/core/tsconfig.build.esm.json" },
-    { "path": "../../plugins/alignments/tsconfig.build.esm.json" },
-    { "path": "../../plugins/bed/tsconfig.build.esm.json" },
+    { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/config/tsconfig.build.esm.json" },
     { "path": "../../plugins/data-management/tsconfig.build.esm.json" },
-    { "path": "../../plugins/gff3/tsconfig.build.esm.json" },
-    { "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/sequence/tsconfig.build.esm.json" },
-    { "path": "../../plugins/svg/tsconfig.build.esm.json" },
-    { "path": "../../plugins/trix/tsconfig.build.esm.json" },
     { "path": "../../plugins/variants/tsconfig.build.esm.json" },
     { "path": "../../plugins/wiggle/tsconfig.build.esm.json" }
   ]

@@ -4,7 +4,6 @@
   "extends": "./tsconfig",
   "compilerOptions": {
     "declaration": true,
-    "moduleResolution": "node16",
     "noEmit": false,
     "outDir": "esm",
     "rootDir": "./src",

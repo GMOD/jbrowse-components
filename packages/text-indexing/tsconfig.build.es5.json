@@ -5,12 +5,12 @@
   "compilerOptions": {
     "declaration": true,
     "noEmit": false,
-    "emitDeclarationOnly": true,
     "outDir": "dist",
     "rootDir": "./src",
+    "target": "es5",
     "composite": true
   },
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
-  "references": [{ "path": "../core/tsconfig.build.json" }]
+  "references": [{ "path": "../core/tsconfig.build.es5.json" }]
 }

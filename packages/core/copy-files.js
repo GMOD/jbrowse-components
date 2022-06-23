@@ -1,4 +1,26 @@
-/* eslint-disable no-console */
+// adapted from https://github.com/mui/material-ui/blob/master/scripts/copy-files.js
+// license of their repository reproduced below
+// The MIT License (MIT)
+
+// Copyright (c) 2014 Call-Em-All
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 const path = require('path')
 const fse = require('fs-extra')
 const glob = require('fast-glob')
@@ -19,11 +41,9 @@ const srcPath = path.join(packagePath, './')
  * @param {string} param0.to
  */
 async function createModulePackages({ from, to }) {
-  console.log({ from })
   const directoryPackages = glob
     .sync('*/index.{js,ts,tsx}', { cwd: from })
     .map(path.dirname)
-  console.log(directoryPackages)
 
   await Promise.all(
     directoryPackages.map(async directoryPackage => {
@@ -31,7 +51,6 @@ async function createModulePackages({ from, to }) {
       const topLevelPathImportsAreCommonJSModules = await fse.pathExists(
         path.resolve(path.dirname(packageJsonPath), '../esm'),
       )
-      console.log({ directoryPackage, packageJsonPath })
 
       const packageJson = {
         sideEffects: false,
@@ -86,61 +105,8 @@ async function createModulePackages({ from, to }) {
   )
 }
 
-async function createPackageFile() {
-  const packageData = await fse.readFile(
-    path.resolve(packagePath, './package.json'),
-    'utf8',
-  )
-  const { nyc, scripts, devDependencies, workspaces, ...packageDataOther } =
-    JSON.parse(packageData)
-
-  const newPackageData = {
-    ...packageDataOther,
-    private: false,
-    ...(packageDataOther.main
-      ? {
-          main: fse.existsSync(path.resolve(buildPath, './node/index.js'))
-            ? './node/index.js'
-            : './index.js',
-          module: fse.existsSync(path.resolve(buildPath, './esm/index.js'))
-            ? './esm/index.js'
-            : './index.js',
-        }
-      : {}),
-    types: './index.d.ts',
-  }
-
-  const targetPath = path.resolve(buildPath, './package.json')
-
-  await fse.writeFile(
-    targetPath,
-    JSON.stringify(newPackageData, null, 2),
-    'utf8',
-  )
-  console.log(`Created package.json in ${targetPath}`)
-
-  return newPackageData
-}
-
-async function prepend(file, string) {
-  const data = await fse.readFile(file, 'utf8')
-  await fse.writeFile(file, string + data, 'utf8')
-}
-
 async function run() {
   try {
-    // const packageData = await createPackageFile()
-
-    // await Promise.all(
-    //   [
-    //     // use enhanced readme from workspace root for `@mui/material`
-    //     packageData.name === '@mui/material'
-    //       ? '../../README.md'
-    //       : './README.md',
-    //     '../../CHANGELOG.md',
-    //   ].map(file => includeFileInBuild(file)),
-    // )
-
     await createModulePackages({ from: srcPath, to: buildPath })
   } catch (err) {
     console.error(err)
