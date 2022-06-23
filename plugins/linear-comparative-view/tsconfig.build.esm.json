@@ -10,23 +10,17 @@
     "composite": true,
     "target": "es2018"
   },
-  "include": [
-    "./src/**/*.ts*",
-    "./src/**/*.js*"
-  ],
-  "exclude": [
-    "src/**/*.test.ts*",
-    "src/**/*.test.js*"
-  ],
+  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "references": [
     {
-      "path": "../../packages/core/tsconfig.build.json"
+      "path": "../../packages/core/tsconfig.build.esm.json"
     },
     {
-      "path": "../wiggle/tsconfig.build.json"
+      "path": "../wiggle/tsconfig.build.esm.json"
     },
     {
-      "path": "../alignments/tsconfig.build.json"
+      "path": "../alignments/tsconfig.build.esm.json"
     }
   ]
 }

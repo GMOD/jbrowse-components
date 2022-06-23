@@ -11,17 +11,11 @@
     "composite": true,
     "target": "es5"
   },
-  "include": [
-    "./src/**/*.ts*",
-    "./src/**/*.js*"
-  ],
-  "exclude": [
-    "src/**/*.test.ts*",
-    "src/**/*.test.js*"
-  ],
+  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "references": [
     {
-      "path": "../../packages/core/tsconfig.build.json"
+      "path": "../../packages/core/tsconfig.build.es5.json"
     }
   ]
 }

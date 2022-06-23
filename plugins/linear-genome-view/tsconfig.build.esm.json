@@ -15,7 +15,7 @@
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
   "references": [
     {
-      "path": "../../packages/core/tsconfig.build.json"
+      "path": "../../packages/core/tsconfig.build.esm.json"
     }
   ]
 }
