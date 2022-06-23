@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   Checkbox,
@@ -11,13 +12,12 @@ import {
   IconButton,
   TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
 import { ErrorMessage } from '@jbrowse/core/ui'
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel as LGV } from '..'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -48,7 +48,7 @@ export default function ExportSvgDlg({
   const [loading, setLoading] = useState(false)
   const [filename, setFilename] = useState('jbrowse.svg')
   const [error, setError] = useState<unknown>()
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>

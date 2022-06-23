@@ -2,16 +2,17 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles, Typography, Link } from '@material-ui/core'
+import { Typography, Link } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(2),
     paddingTop: theme.spacing(2),
   },
   subtitle: {
-    margin: theme.spacing(),
+    margin: theme.spacing(1),
   },
   pluginList: {
     margin: theme.spacing(1),
@@ -20,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function About({ model }: { model: IAnyStateTreeNode }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { version } = getSession(model)
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager

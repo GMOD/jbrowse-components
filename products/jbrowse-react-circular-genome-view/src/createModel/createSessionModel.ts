@@ -25,7 +25,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import InfoIcon from '@material-ui/icons/Info'
+import InfoIcon from '@mui/icons-material/Info'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'
@@ -79,31 +79,31 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return undefined
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        return getParent<any>(self).rpcManager
       },
       get configuration() {
-        return getParent(self).config.configuration
+        return getParent<any>(self).config.configuration
       },
       get assemblies() {
-        return [getParent(self).config.assembly]
+        return [getParent<any>(self).config.assembly]
       },
       get assemblyNames() {
-        return [getParent(self).config.assemblyName]
+        return [getParent<any>(self).config.assemblyName]
       },
       get tracks() {
-        return getParent(self).config.tracks
+        return getParent<any>(self).config.tracks
       },
       get aggregateTextSearchAdapters() {
-        return getParent(self).config.aggregateTextSearchAdapters
+        return getParent<any>(self).config.aggregateTextSearchAdapters
       },
       get connections() {
-        return getParent(self).config.connections
+        return getParent<any>(self).config.connections
       },
       get adminMode() {
         return false
       },
       get assemblyManager() {
-        return getParent(self).assemblyManager
+        return getParent<any>(self).assemblyManager
       },
       get version() {
         return ''
@@ -132,7 +132,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent(self), node => {
+        walk(getParent<any>(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
@@ -261,6 +261,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           ...initialState,
           type: typeName,
         }
+        return self.view
       },
 
       removeView() {},
@@ -325,7 +326,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent(self).renameCurrentSession(sessionName)
+        return getParent<any>(self).renameCurrentSession(sessionName)
       },
     }))
     .views(self => ({

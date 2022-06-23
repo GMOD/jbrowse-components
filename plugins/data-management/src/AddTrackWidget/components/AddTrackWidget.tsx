@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import {
+  Alert,
   Button,
   Step,
   StepContent,
   StepLabel,
   Stepper,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import {
   getSession,
   isElectron,
@@ -16,14 +17,13 @@ import {
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { Alert } from '@material-ui/lab'
 
 // locals
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),
   },
@@ -49,7 +49,7 @@ const steps = ['Enter track data', 'Confirm track type']
 
 function AddTrackWidget({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { rootModel } = pluginManager

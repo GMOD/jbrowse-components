@@ -5,14 +5,14 @@ import {
   Paper,
   Toolbar,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+  ScopedCssBaseline,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionModel } from '../createModel/createSessionModel'
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   paper: {
     overflow: 'auto',
   },
@@ -62,7 +62,7 @@ const ModalWidgetContents = observer(
 )
 
 const ModalWidget = observer(({ session }: { session: SessionModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (
     <Dialog

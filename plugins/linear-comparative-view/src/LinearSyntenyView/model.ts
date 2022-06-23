@@ -1,8 +1,8 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import CropFreeIcon from '@material-ui/icons/CropFree'
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
+import CropFreeIcon from '@mui/icons-material/CropFree'
+import LinkIcon from '@mui/icons-material/Link'
+import LinkOffIcon from '@mui/icons-material/LinkOff'
 import { Curves, StraightLines } from './components/Icons'
 
 import baseModel from '../LinearComparativeView/model'

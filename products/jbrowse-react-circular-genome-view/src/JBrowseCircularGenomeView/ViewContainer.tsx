@@ -5,11 +5,11 @@ import {
   Paper,
   SvgIconProps,
   Typography,
-  makeStyles,
   useTheme,
   alpha,
-} from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
@@ -17,11 +17,11 @@ import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseV
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.5),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
@@ -91,7 +91,7 @@ const ViewMenu = observer(
 
 const ViewContainer = observer(
   ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const session = getSession(view)
     const [ref, { width }] = useMeasure()
@@ -99,7 +99,7 @@ const ViewContainer = observer(
 
     useEffect(() => {
       if (width && isAlive(view)) {
-        view.setWidth(width - padWidth * 2)
+        view.setWidth(width - parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 
@@ -108,7 +108,7 @@ const ViewContainer = observer(
         elevation={12}
         ref={ref}
         className={classes.viewContainer}
-        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+        style={{ padding: `0px ${padWidth} ${padWidth}` }}
       >
         {session.DialogComponent ? (
           <Suspense fallback={<div />}>

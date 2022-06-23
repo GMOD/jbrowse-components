@@ -36,8 +36,14 @@ test('hic', async () => {
   const state = pluginManager.rootModel
   const { findByTestId } = render(<JBrowse pluginManager={pluginManager} />)
   state.session.views[0].setNewView(5000, 0)
-  fireEvent.click(await findByTestId('htsTrackEntry-hic_test'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-hic_test', {}, { timeout: 10000 }),
+  )
   expectCanvasMatch(
-    await findByTestId('prerendered_canvas_{hg19}1:1..4,000,000-0', {}, delay),
+    await findByTestId(
+      'prerendered_canvas_{hg19}1:1..4,000,000-0_done',
+      {},
+      delay,
+    ),
   )
 }, 25000)

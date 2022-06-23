@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { ThemeProvider } from '@material-ui/core'
+import { ThemeProvider } from '@mui/material'
 import DivSequenceRendering from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
 

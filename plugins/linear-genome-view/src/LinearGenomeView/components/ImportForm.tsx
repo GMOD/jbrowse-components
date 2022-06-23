@@ -1,17 +1,11 @@
 import React, { useState, lazy } from 'react'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import {
-  Button,
-  CircularProgress,
-  Container,
-  Grid,
-  makeStyles,
-} from '@material-ui/core'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
@@ -19,7 +13,7 @@ import { fetchResults } from './util'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(2),
   },
@@ -34,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 type LGV = LinearGenomeViewModel
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
   const { rankSearchResults, isSearchDialogDisplayed, error } = model

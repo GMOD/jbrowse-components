@@ -76,8 +76,9 @@ const Base1DView = types
       if (bp < 0) {
         const region = self.displayedRegions[0]
         const offset = bp
+        const snap = getSnapshot(region)
         return {
-          ...getSnapshot(region),
+          ...(snap as Omit<typeof snap, symbol>),
           oob: true,
           coord: region.reversed
             ? Math.floor(region.end - offset) + 1
@@ -95,8 +96,9 @@ const Base1DView = types
         const len = region.end - region.start
         const offset = bp - bpSoFar
         if (len + bpSoFar > bp && bpSoFar <= bp) {
+          const snap = getSnapshot(region)
           return {
-            ...getSnapshot(region),
+            ...(snap as Omit<typeof snap, symbol>),
             oob: false,
             offset,
             coord: region.reversed
@@ -123,8 +125,9 @@ const Base1DView = types
         const region = self.displayedRegions[n - 1]
         const len = region.end - region.start
         const offset = bp - bpSoFar + len
+        const snap = getSnapshot(region)
         return {
-          ...getSnapshot(region),
+          ...(snap as Omit<typeof snap, symbol>),
           oob: true,
           offset,
           coord: region.reversed
@@ -158,13 +161,6 @@ const Base1DView = types
         .reduce((a, b) => a + b, 0)
     },
 
-    /**
-     * calculates the Px at which coord is found.
-     *
-     * @param refName - string, refName of region
-     * @param coord - number, bp to be translated to Px
-     * @param regionNumber - number, index of displayedRegion in displayedRegions array
-     */
     bpToPx({
       refName,
       coord,
@@ -298,11 +294,11 @@ const Base1DView = types
       self.offsetPx = newOffsetPx
       return newOffsetPx
     },
-    centerAt(bp: number, refName: string, regionIndex: number) {
+    centerAt(coord: number, refName: string, regionNumber: number) {
       const centerPx = self.bpToPx({
         refName,
-        coord: bp,
-        regionNumber: regionIndex,
+        coord,
+        regionNumber,
       })
       if (centerPx) {
         this.scrollTo(Math.round(centerPx - self.width / 2))

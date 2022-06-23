@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
-import Color from 'color'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
@@ -31,7 +30,7 @@ function fillRect(
 }
 
 export default class XYPlotRenderer extends WiggleBaseRenderer {
-  draw(
+  async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
@@ -45,8 +44,13 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       ticks,
       displayCrossHatches,
     } = props
+    const Color = await import('color').then(f => f.default)
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rc = (s: string, rest?: Record<string, any>) =>
+      readConfObject(config, s, rest)
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
     // wiggle display, and makes the height of the actual drawn area add
@@ -54,13 +58,13 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    const negColor = readConfObject(config, 'negColor')
-    const posColor = readConfObject(config, 'posColor')
-    const filled = readConfObject(config, 'filled')
-    const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'highlightColor')
-    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+    const pivotValue = rc('bicolorPivotValue')
+    const negColor = rc('negColor')
+    const posColor = rc('posColor')
+    const filled = rc('filled')
+    const clipColor = rc('clipColor')
+    const highlightColor = rc('highlightColor')
+    const summaryScoreMode = rc('summaryScoreMode')
 
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
@@ -70,11 +74,10 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const toHeight = (n: number) => toY(originY) - toY(n)
 
     const colorCallback =
-      readConfObject(config, 'color') === '#f0f'
+      rc('color') === '#f0f'
         ? (_: Feature, score: number) =>
             score < pivotValue ? negColor : posColor
-        : (feature: Feature, _score: number) =>
-            readConfObject(config, 'color', { feature })
+        : (feature: Feature, _score: number) => rc('color', { feature })
 
     const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
     for (const feature of features.values()) {

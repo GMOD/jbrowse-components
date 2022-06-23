@@ -37,10 +37,10 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import SettingsIcon from '@material-ui/icons/Settings'
-import CopyIcon from '@material-ui/icons/FileCopy'
-import DeleteIcon from '@material-ui/icons/Delete'
-import InfoIcon from '@material-ui/icons/Info'
+import SettingsIcon from '@mui/icons-material/Settings'
+import CopyIcon from '@mui/icons-material/FileCopy'
+import DeleteIcon from '@mui/icons-material/Delete'
+import InfoIcon from '@mui/icons-material/Info'
 import shortid from 'shortid'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
@@ -129,55 +129,55 @@ export default function sessionModelFactory(
         return undefined
       },
       get shareURL() {
-        return getConf(getParent(self).jbrowse, 'shareURL')
+        return getConf(getParent<any>(self).jbrowse, 'shareURL')
       },
       get rpcManager() {
-        return getParent(self).jbrowse.rpcManager as RpcManager
+        return getParent<any>(self).jbrowse.rpcManager as RpcManager
       },
       get configuration() {
-        return getParent(self).jbrowse.configuration
+        return getParent<any>(self).jbrowse.configuration
       },
       get assemblies() {
-        return getParent(self).jbrowse.assemblies
+        return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent(self).jbrowse.assemblyNames
+        return getParent<any>(self).jbrowse.assemblyNames
       },
       get tracks() {
-        return [...self.sessionTracks, ...getParent(self).jbrowse.tracks]
+        return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
       get textSearchManager(): TextSearchManager {
-        return getParent(self).textSearchManager
+        return getParent<any>(self).textSearchManager
       },
       get connections() {
         return [
           ...self.sessionConnections,
-          ...getParent(self).jbrowse.connections,
+          ...getParent<any>(self).jbrowse.connections,
         ]
       },
       get adminMode() {
-        return getParent(self).adminMode
+        return getParent<any>(self).adminMode
       },
       get savedSessions() {
-        return getParent(self).savedSessions
+        return getParent<any>(self).savedSessions
       },
       get previousAutosaveId() {
-        return getParent(self).previousAutosaveId
+        return getParent<any>(self).previousAutosaveId
       },
       get savedSessionNames() {
-        return getParent(self).savedSessionNames
+        return getParent<any>(self).savedSessionNames
       },
       get history() {
-        return getParent(self).history
+        return getParent<any>(self).history
       },
       get menus() {
-        return getParent(self).menus
+        return getParent<any>(self).menus
       },
       get assemblyManager() {
-        return getParent(self).assemblyManager
+        return getParent<any>(self).assemblyManager
       },
       get version() {
-        return getParent(self).version
+        return getParent<any>(self).version
       },
 
       renderProps() {
@@ -202,7 +202,7 @@ export default function sessionModelFactory(
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent(self), node => {
+        walk(getParent<any>(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
@@ -250,8 +250,7 @@ export default function sessionModelFactory(
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
-        const rootModel = getRoot(self)
-        rootModel.setPluginsUpdated(true)
+        getRoot<any>(self).setPluginsUpdated(true)
       },
       removeAssembly(assemblyName: string) {
         const index = self.sessionAssemblies.findIndex(
@@ -271,7 +270,7 @@ export default function sessionModelFactory(
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        const rootModel = getParent(self)
+        const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
       makeConnection(
@@ -376,7 +375,7 @@ export default function sessionModelFactory(
         let deletedConn
         if (self.adminMode) {
           deletedConn =
-            getParent(self).jbrowse.deleteConnectionConf(configuration)
+            getParent<any>(self).jbrowse.deleteConnectionConf(configuration)
         }
         if (!deletedConn) {
           const { connectionId } = configuration
@@ -436,12 +435,12 @@ export default function sessionModelFactory(
       },
 
       addAssemblyConf(assemblyConf: AnyConfigurationModel) {
-        return getParent(self).jbrowse.addAssemblyConf(assemblyConf)
+        return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
       addTrackConf(trackConf: AnyConfigurationModel) {
         if (self.adminMode) {
-          return getParent(self).jbrowse.addTrackConf(trackConf)
+          return getParent<any>(self).jbrowse.addTrackConf(trackConf)
         }
         const { trackId, type } = trackConf
         if (!type) {
@@ -467,7 +466,7 @@ export default function sessionModelFactory(
         )
         callbacksToDereferenceTrack.forEach(cb => cb())
         if (self.adminMode) {
-          return getParent(self).jbrowse.deleteTrackConf(trackConf)
+          return getParent<any>(self).jbrowse.deleteTrackConf(trackConf)
         }
         const { trackId } = trackConf
         const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
@@ -479,7 +478,7 @@ export default function sessionModelFactory(
 
       addConnectionConf(connectionConf: any) {
         if (self.adminMode) {
-          return getParent(self).jbrowse.addConnectionConf(connectionConf)
+          return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
         }
         const { connectionId, type } = connectionConf
         if (!type) {
@@ -600,34 +599,34 @@ export default function sessionModelFactory(
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).addSavedSession(sessionSnapshot)
+        return getParent<any>(self).addSavedSession(sessionSnapshot)
       },
 
       removeSavedSession(sessionSnapshot: any) {
-        return getParent(self).removeSavedSession(sessionSnapshot)
+        return getParent<any>(self).removeSavedSession(sessionSnapshot)
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent(self).renameCurrentSession(sessionName)
+        return getParent<any>(self).renameCurrentSession(sessionName)
       },
 
       duplicateCurrentSession() {
-        return getParent(self).duplicateCurrentSession()
+        return getParent<any>(self).duplicateCurrentSession()
       },
       activateSession(sessionName: any) {
-        return getParent(self).activateSession(sessionName)
+        return getParent<any>(self).activateSession(sessionName)
       },
       setDefaultSession() {
-        return getParent(self).setDefaultSession()
+        return getParent<any>(self).setDefaultSession()
       },
       saveSessionToLocalStorage() {
-        return getParent(self).saveSessionToLocalStorage()
+        return getParent<any>(self).saveSessionToLocalStorage()
       },
       loadAutosaveSession() {
-        return getParent(self).loadAutosaveSession()
+        return getParent<any>(self).loadAutosaveSession()
       },
       setSession(sessionSnapshot: SnapshotIn<typeof self>) {
-        return getParent(self).setSession(sessionSnapshot)
+        return getParent<any>(self).setSession(sessionSnapshot)
       },
     }))
 

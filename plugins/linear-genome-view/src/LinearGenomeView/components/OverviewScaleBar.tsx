@@ -1,8 +1,8 @@
 import React from 'react'
-import { Typography, makeStyles, useTheme, alpha } from '@material-ui/core'
+import { Typography, useTheme, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Instance } from 'mobx-state-tree'
-import clsx from 'clsx'
 
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
@@ -20,59 +20,57 @@ import OverviewRubberBand from './OverviewRubberBand'
 
 const wholeSeqSpacer = 2
 
-const useStyles = makeStyles(theme => {
-  return {
-    scaleBar: {
-      height: HEADER_OVERVIEW_HEIGHT,
-    },
-    scaleBarBorder: {
-      border: '1px solid',
-    },
-    scaleBarContig: {
-      backgroundColor: theme.palette.background.default,
-      position: 'absolute',
-      top: 0,
-      height: HEADER_OVERVIEW_HEIGHT,
-    },
-    scaleBarContigForward: {
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
-      backgroundRepeat: 'repeat',
-    },
-    scaleBarContigReverse: {
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
-      backgroundRepeat: 'repeat',
-    },
+const useStyles = makeStyles()(theme => ({
+  scaleBar: {
+    height: HEADER_OVERVIEW_HEIGHT,
+  },
+  scaleBarBorder: {
+    border: '1px solid',
+  },
+  scaleBarContig: {
+    backgroundColor: theme.palette.background.default,
+    position: 'absolute',
+    top: 0,
+    height: HEADER_OVERVIEW_HEIGHT,
+  },
+  scaleBarContigForward: {
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'repeat',
+  },
+  scaleBarContigReverse: {
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'repeat',
+  },
 
-    scaleBarRefName: {
-      position: 'absolute',
-      fontWeight: 'bold',
-      pointerEvents: 'none',
-      zIndex: 100,
-    },
-    scaleBarLabel: {
-      height: HEADER_OVERVIEW_HEIGHT,
-      position: 'absolute',
-      display: 'flex',
-      justifyContent: 'center',
-      pointerEvents: 'none',
-    },
-    scaleBarVisibleRegion: {
-      position: 'absolute',
-      height: HEADER_OVERVIEW_HEIGHT,
-      pointerEvents: 'none',
-      zIndex: 100,
-      border: '1px solid',
-    },
-    overview: {
-      height: HEADER_BAR_HEIGHT,
-      position: 'relative',
-    },
-    overviewSvg: {
-      width: '100%',
-      position: 'absolute',
-    },
-  }
-})
+  scaleBarRefName: {
+    position: 'absolute',
+    fontWeight: 'bold',
+    pointerEvents: 'none',
+    zIndex: 100,
+  },
+  scaleBarLabel: {
+    height: HEADER_OVERVIEW_HEIGHT,
+    position: 'absolute',
+    display: 'flex',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
+  scaleBarVisibleRegion: {
+    position: 'absolute',
+    height: HEADER_OVERVIEW_HEIGHT,
+    pointerEvents: 'none',
+    zIndex: 100,
+    border: '1px solid',
+  },
+  overview: {
+    height: HEADER_BAR_HEIGHT,
+    position: 'relative',
+  },
+  overviewSvg: {
+    width: '100%',
+    position: 'absolute',
+  },
+}))
 
 const Polygon = observer(
   ({
@@ -89,6 +87,8 @@ const Polygon = observer(
     const { interRegionPaddingWidth, offsetPx, dynamicBlocks, cytobandOffset } =
       model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
+
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 
@@ -305,7 +305,7 @@ const OverviewBox = observer(
     block: ContentBlock
     overview: Base1DViewModel
   }) => {
-    const classes = useStyles()
+    const { classes, cx } = useStyles()
     const { cytobandOffset, bpPerPx, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
@@ -335,7 +335,7 @@ const OverviewBox = observer(
           {refName}
         </Typography>
         <div
-          className={clsx(
+          className={cx(
             classes.scaleBarContig,
             canDisplayCytobands
               ? undefined
@@ -392,11 +392,13 @@ const ScaleBar = observer(
     overview: Base1DViewModel
     scale: number
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const { dynamicBlocks, showCytobands, cytobandOffset } = model
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
+
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const scaleBarColor = tertiary ? tertiary.light : primary.light
 
@@ -467,7 +469,7 @@ function OverviewScaleBar({
   model: LGV
   children: React.ReactNode
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { totalBp, width, cytobandOffset, displayedRegions } = model
 
   const overview = Base1DView.create({

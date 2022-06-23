@@ -6,28 +6,28 @@ import {
   isElectron,
 } from '@jbrowse/core/util'
 import {
-  Link,
-  MenuItem,
-  TextField,
-  ListSubheader,
-  Typography,
+  Card,
+  CardContent,
+  Checkbox,
   FormControl,
   FormControlLabel,
-  Checkbox,
-  Paper,
-  Card,
-  List,
-  ListItem,
-  CardContent,
   IconButton,
   InputLabel,
   InputAdornment,
-  makeStyles,
-} from '@material-ui/core'
+  ListSubheader,
+  Link,
+  List,
+  ListItem,
+  MenuItem,
+  Paper,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import AddIcon from '@material-ui/icons/Add'
+import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material//Add'
 // other
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
@@ -38,7 +38,7 @@ import { UNKNOWN } from '@jbrowse/core/util/tracks'
 import { AddTrackModel } from '../model'
 import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
   },
@@ -62,7 +62,7 @@ function StatusMessage({
   trackAdapter: { type: string; subadapter?: { type: string } }
   trackType: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return trackAdapter.type === 'SNPCoverageAdapter' ? (
     <Typography className={classes.spacing}>
       Selected <code>{trackType}</code>. Using adapter{' '}
@@ -130,7 +130,7 @@ function getTrackTypes(pluginManager: PluginManager) {
 }
 
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [value1, setValue1] = useState('')
   const [value2, setValue2] = useState('')
   const [attributes, setAttributes] = useState(['Name', 'ID'])
@@ -229,7 +229,7 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
 })
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { trackAdapter } = model
   // prettier-ignore
@@ -273,7 +273,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
 })
 
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       <Typography className={classes.spacing}>
@@ -302,7 +302,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
 }
 
 const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { trackType } = model
   const trackTypes = getTrackTypes(getEnv(session).pluginManager)
@@ -362,7 +362,7 @@ const TrackAssemblySelector = observer(
 )
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [check, setCheck] = useState(true)
   const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
     model

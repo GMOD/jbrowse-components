@@ -119,6 +119,7 @@ describe('<Loader />', () => {
   it('errors with config in URL that does not exist', async () => {
     console.error = jest.fn()
     const { findByText } = render(
+      // @ts-ignore
       <ErrorBoundary FallbackComponent={FallbackComponent}>
         {/* @ts-ignore */}
         <QueryParamProvider location={{ search: '?config=doesNotExist.json' }}>
@@ -172,7 +173,7 @@ describe('<Loader />', () => {
 
   // minimal session with plugin in our plugins.json
   // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
-  it('can warn of  callbacks in json session', async () => {
+  it('can warn of callbacks in json session', async () => {
     render(
       <QueryParamProvider
         // @ts-ignore
@@ -184,10 +185,10 @@ describe('<Loader />', () => {
         <Loader />
       </QueryParamProvider>,
     )
-    await waitFor(() => {
-      expect(sessionStorage.length).toBeGreaterThan(0)
-    }, delay)
-  }, 20000)
+    await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), {
+      timeout: 30000,
+    })
+  }, 30000)
 
   // minimal session,
   // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
@@ -208,6 +209,7 @@ describe('<Loader />', () => {
 
   it('can use config from a url with nonexistent share param ', async () => {
     const { findAllByText } = render(
+      // @ts-ignore
       <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
         <QueryParamProvider
           // @ts-ignore
@@ -225,6 +227,7 @@ describe('<Loader />', () => {
 
   it('can catch error from loading a bad config', async () => {
     const { findAllByText } = render(
+      // @ts-ignore
       <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
         <QueryParamProvider
           // @ts-ignore
@@ -276,7 +279,7 @@ describe('<Loader />', () => {
     )
 
     await findByText('Help', {}, delay)
-    await findByTestId('prerendered_canvas', {}, delay)
+    await findByTestId('prerendered_canvas_done', {}, delay)
   }, 40000)
 
   it('can use a spec url for synteny view', async () => {
@@ -312,8 +315,24 @@ describe('<Loader />', () => {
     )
 
     await findByText('Help', {}, delay)
-
-    // random row in spreadsheet
     await findByText('ctgA:8470..8471', {}, delay)
+  }, 40000)
+
+  it('can use a spec url for sv inspector view', async () => {
+    console.warn = jest.fn()
+    const { findByText } = render(
+      <QueryParamProvider
+        // @ts-ignore
+        location={{
+          search:
+            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}',
+        }}
+      >
+        <Loader />
+      </QueryParamProvider>,
+    )
+
+    await findByText('Help', {}, delay)
+    await findByText('ctgB:1982..1983', {}, delay)
   }, 40000)
 })

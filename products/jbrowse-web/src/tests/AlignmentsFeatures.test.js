@@ -1,5 +1,6 @@
 import React from 'react'
 import { fireEvent, render, within } from '@testing-library/react'
+import { act } from 'react-dom/test-utils'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -29,14 +30,14 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 20000 }
-// Note: tracks with assembly volvox don't have much soft clipping
+
 test('opens the track menu and enables soft clipping', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
-  state.session.views[0].setNewView(0.02, 142956)
+  act(() => session.views[0].setNewView(0.02, 142956))
 
   // load track
   fireEvent.click(
@@ -47,7 +48,7 @@ test('opens the track menu and enables soft clipping', async () => {
     {},
     delay,
   )
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
+  expect(session.views[0].tracks[0]).toBeTruthy()
 
   // opens the track menu
   fireEvent.click(await findByTestId('track_menu_icon'))
@@ -60,7 +61,7 @@ test('opens the track menu and enables soft clipping', async () => {
 
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_softclipped_{volvox}ctgA:2,849..2,864-0',
+      'prerendered_canvas_softclipped_{volvox}ctgA:2,849..2,864-0_done',
       {},
       delay,
     ),
@@ -70,26 +71,25 @@ test('opens the track menu and enables soft clipping', async () => {
 test('selects a sort, sort by strand', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(0.02, 2086500)
+  act(() => session.views[0].setNewView(0.02, 2086500))
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-cram', {}, delay),
+  )
   await findByTestId(
     'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
     {},
     delay,
   )
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
+  expect(session.views[0].tracks[0]).toBeTruthy()
 
-  // opens the track menu
-  const trackMenu = await findByTestId('track_menu_icon')
-
-  fireEvent.click(trackMenu)
+  fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Sort by'))
   fireEvent.click(await findByText('Read strand'))
 
@@ -102,33 +102,33 @@ test('selects a sort, sort by strand', async () => {
 
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
+      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0_done',
       {},
       delay,
     ),
   )
 }, 35000)
 
-test('selects a color, color by strand', async () => {
+test('color by strand', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(0.02, 2086500)
+  act(() => session.views[0].setNewView(0.02, 2086500))
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox-long-reads-cram', {}, delay),
+  )
   await findByTestId(
     'display-volvox-long-reads-cram-LinearAlignmentsDisplay',
     {},
     delay,
   )
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
 
-  // opens the track menu and turns on soft clipping
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Color scheme'))
   fireEvent.click(await findByText('Strand'))
@@ -142,33 +142,30 @@ test('selects a color, color by strand', async () => {
   )
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0',
+      'prerendered_canvas_{volvox}ctgA:41,729..41,744-0_done',
       {},
       delay,
     ),
   )
 }, 30000)
 
-test('colors by tag, color by tag', async () => {
+test('color by tag', async () => {
   console.error = jest.fn()
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const { session } = pm.rootModel
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pm} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(0.465, 85055)
+  act(() => session.views[0].setNewView(0.465, 85055))
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram', {}, delay))
   await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
-  expect(state.session.views[0].tracks[0]).toBeTruthy()
-
-  // opens the track menu
-  const trackMenu = await findByTestId('track_menu_icon')
+  expect(session.views[0].tracks[0]).toBeTruthy()
 
   // colors by HP tag
-  fireEvent.click(trackMenu)
+  fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Color scheme'))
   fireEvent.click(await findByText('Color by tag...'))
   fireEvent.change(await findByTestId('color-tag-name-input'), {
@@ -185,7 +182,7 @@ test('colors by tag, color by tag', async () => {
 
   expectCanvasMatch(
     await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:39,805..40,176-0',
+      'prerendered_canvas_{volvox}ctgA:39,805..40,176-0_done',
       {},
       delay,
     ),

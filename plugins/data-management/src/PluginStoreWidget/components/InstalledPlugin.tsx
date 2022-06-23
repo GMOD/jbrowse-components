@@ -11,11 +11,11 @@ import {
   ListItem,
   Tooltip,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-import CloseIcon from '@material-ui/icons/Close'
-import LockIcon from '@material-ui/icons/Lock'
+import CloseIcon from '@mui/icons-material/Close'
+import LockIcon from '@mui/icons-material/Lock'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
@@ -25,7 +25,7 @@ import {
 } from '@jbrowse/core/util/types'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   closeDialog: {
     position: 'absolute',
     right: 0,
@@ -40,7 +40,7 @@ const useStyles = makeStyles(() => ({
 }))
 
 function LockedPlugin() {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Tooltip
       className={classes.lockedPluginTooltip}
@@ -58,7 +58,7 @@ function PluginDialog({
   plugin: string
   onClose: (s?: string) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog open onClose={() => onClose()}>
       <DialogTitle>
@@ -123,7 +123,8 @@ function InstalledPlugin({
     p => pluginManager.pluginMetadata[plugin.name].url === p.url,
   )
 
-  const rootModel = getParent(model, 3)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rootModel = getParent<any>(model, 3)
   const { jbrowse, adminMode } = rootModel
 
   return (

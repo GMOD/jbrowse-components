@@ -1,4 +1,3 @@
-import { objectFromEntries } from '../index'
 import {
   RectTuple,
   SerializedLayout,
@@ -567,7 +566,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   toJSON(): SerializedLayout {
-    const rectangles = objectFromEntries(this.getRectangles())
+    const rectangles = Object.fromEntries(this.getRectangles())
     return {
       rectangles,
       containsNoTransferables: true,

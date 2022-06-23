@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles, alpha, Portal } from '@material-ui/core'
+import { alpha, Portal } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 // locals
@@ -18,7 +19,7 @@ function round(value: number) {
 
 const en = (n: number) => n.toLocaleString('en-US')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {
@@ -99,7 +100,7 @@ const Tooltip = observer(
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
     const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     // must be memoized a la https://github.com/popperjs/react-popper/issues/391
     const virtElement = useMemo(

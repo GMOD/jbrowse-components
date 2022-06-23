@@ -8,7 +8,7 @@ import FeatureRendererType, {
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { ThemeOptions } from '@material-ui/core'
+import { ThemeOptions } from '@mui/material'
 import { ScaleOpts } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {
@@ -22,7 +22,7 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
   displayCrossHatches: boolean
   ticks: { values: number[] }
-  theme: ThemeOptions
+  themeOptions: ThemeOptions
 }
 
 export interface RenderArgsDeserializedWithFeatures
@@ -82,5 +82,5 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
     props: T,
-  ): void
+  ): Promise<void>
 }

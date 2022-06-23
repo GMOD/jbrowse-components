@@ -1,6 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles, useTheme, alpha } from '@material-ui/core'
+import { useTheme, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
 
@@ -9,7 +10,7 @@ import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults } from './util'
 import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   headerRefName: {
     minWidth: 100,
   },
@@ -22,7 +23,7 @@ function SearchBox({
   showHelp?: boolean
   model: LinearGenomeViewModel
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const theme = useTheme()
   const session = getSession(model)
 

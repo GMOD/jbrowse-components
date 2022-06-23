@@ -1,10 +1,10 @@
-import { Paper, Typography, makeStyles } from '@material-ui/core'
+import { Paper, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import clsx from 'clsx'
 import { observer } from 'mobx-react'
 import React from 'react'
 import { LinearGenomeViewModel } from '..'
@@ -18,7 +18,7 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   scaleBarContainer: {
     overflow: 'hidden',
     position: 'relative',
@@ -60,7 +60,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   // find the block that needs pinning to the left side for context
   let lastLeftBlock = 0
@@ -95,24 +95,22 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
 })
 
 const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
-  const { bpPerPx } = model
+  const { classes } = useStyles()
+  const { bpPerPx, staticBlocks } = model
 
   return (
     <>
-      {model.staticBlocks.map((block, index) => {
+      {staticBlocks.map((block, index) => {
+        const { reversed, start, end, key, widthPx } = block
         if (block instanceof ContentBlock) {
-          const { start, end } = block
           const ticks = makeTicks(start, end, bpPerPx, true, false)
 
           return (
-            <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
+            <ContentBlockComponent key={`${key}-${index}`} block={block}>
               {ticks.map(tick => {
                 if (tick.type === 'major') {
                   const x =
-                    (block.reversed
-                      ? block.end - tick.base
-                      : tick.base - block.start) / model.bpPerPx
+                    (reversed ? end - tick.base : tick.base - start) / bpPerPx
                   const baseNumber = tick.base + 1
                   return (
                     <div
@@ -134,13 +132,13 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
           )
         }
         if (block instanceof ElidedBlock) {
-          return <ElidedBlockComponent key={block.key} width={block.widthPx} />
+          return <ElidedBlockComponent key={key} width={widthPx} />
         }
         if (block instanceof InterRegionPaddingBlock) {
           return (
             <InterRegionPaddingBlockComponent
-              key={block.key}
-              width={block.widthPx}
+              key={key}
+              width={widthPx}
               style={{ background: 'none' }}
               boundary={block.variant === 'boundary'}
             />
@@ -152,23 +150,21 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-const ScaleBar = React.forwardRef(
-  (
-    {
-      model,
-      style,
-      className,
-      ...other
-    }: { model: LGV; style?: React.CSSProperties; className?: string },
-    ref,
-  ) => {
-    const classes = useStyles()
+interface ScaleBarProps {
+  model: LGV
+  style?: React.CSSProperties
+  className?: string
+}
+
+const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
+  ({ model, style, className, ...other }, ref) => {
+    const { classes, cx } = useStyles()
 
     const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={clsx(classes.scaleBarContainer, className)}
+        className={cx(classes.scaleBarContainer, className)}
         variant="outlined"
         ref={ref}
         style={style}

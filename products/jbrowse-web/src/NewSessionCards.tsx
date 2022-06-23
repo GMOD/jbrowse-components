@@ -1,24 +1,19 @@
 import React, { useState } from 'react'
-import {
-  Card,
-  CardMedia,
-  Container,
-  Typography,
-  makeStyles,
-} from '@material-ui/core'
+import { Card, CardMedia, Container, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import emptyIcon from './img/emptyIcon.png'
 import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
 import svInspectorIcon from './img/svInspectorIcon.png'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   card: {
     width: 200,
     height: 150,
     cursor: 'pointer',
   },
   name: {
-    marginTop: theme.spacing(),
+    marginTop: 4, // theme.spacing(),
     textAlign: 'center',
     maxWidth: 200,
   },
@@ -41,7 +36,7 @@ function NewSessionCard({
   onClick: () => void
   image?: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   return (
     <Container>

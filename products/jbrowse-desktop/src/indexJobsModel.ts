@@ -53,25 +53,29 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get rpcManager() {
-        return getParent(self).jbrowse.rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).jbrowse.rpcManager
       },
       get tracks() {
-        return getParent(self).jbrowse.tracks
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).jbrowse.tracks
       },
       get sessionPath() {
-        return getParent(self).sessionPath
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).sessionPath
       },
       get session() {
-        return getParent(self).session
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).session
       },
       get aggregateTextSearchAdapters() {
-        return getParent(self).jbrowse.aggregateTextSearchAdapters
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).jbrowse.aggregateTextSearchAdapters
       },
       get location() {
-        return getParent(self).sessionPath.substring(
-          0,
-          getParent(self).sessionPath.lastIndexOf('/'),
-        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const path = getParent<any>(self).sessionPath
+        return path.substring(0, path.lastIndexOf('/'))
       },
     }))
     .actions(self => ({

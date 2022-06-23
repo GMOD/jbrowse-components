@@ -1,5 +1,5 @@
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
-import { clamp, objectFromEntries } from '../util'
+import { clamp } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
@@ -151,7 +151,7 @@ export default abstract class BaseRpcDriver {
         return thing
       }
 
-      return objectFromEntries(
+      return Object.fromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
           .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),

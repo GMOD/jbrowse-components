@@ -1,6 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
-import { objectFromEntries } from '@jbrowse/core/util'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
@@ -102,15 +101,9 @@ function scaleRegion(factor, region) {
   return scaled
 }
 
-const aaColors = objectFromEntries(
-  aminoAcids.map(aaRecord => [aaRecord.letter, aaRecord.color]),
-)
-const aaNames = objectFromEntries(
-  aminoAcids.map(aaRecord => [aaRecord.letter, aaRecord.fullName]),
-)
-const bpColors = objectFromEntries(
-  nucleotides.map(nRecord => [nRecord.letter, nRecord.color]),
-)
+const aaColors = Object.fromEntries(aminoAcids.map(a => [a.letter, a.color]))
+const aaNames = Object.fromEntries(aminoAcids.map(a => [a.letter, a.fullName]))
+const bpColors = Object.fromEntries(nucleotides.map(n => [n.letter, n.color]))
 
 function Rendering(props) {
   const { bpPerPx, config, regions, features } = props

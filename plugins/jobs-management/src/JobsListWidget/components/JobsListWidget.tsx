@@ -1,23 +1,22 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-
 import {
   Accordion,
   AccordionSummary,
   Card,
   CardContent,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 
 // icons
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import JobCard from './JobCard'
 import CurrentJobCard from './CurrentJobCard'
 import { JobsListModel, NewJob } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },
@@ -40,7 +39,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function JobsListWidget({ model }: { model: JobsListModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { jobs, finished, queued } = model
   return (
     <div className={classes.root}>

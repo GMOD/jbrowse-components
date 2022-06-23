@@ -10,7 +10,6 @@ import {
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import fromEntries from 'object.fromentries'
 import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
@@ -33,11 +32,6 @@ export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
-
-if (!Object.fromEntries) {
-  // @ts-ignore
-  fromEntries.shim()
-}
 
 export const inDevelopment =
   typeof process === 'object' &&
@@ -102,13 +96,13 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode: IAnyStateTreeNode | undefined = getParent(node)
+  let currentNode: IAnyStateTreeNode | undefined = getParent<any>(node)
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
     }
     if (hasParent(currentNode)) {
-      currentNode = getParent(currentNode)
+      currentNode = getParent<any>(currentNode)
     } else {
       break
     }
@@ -561,8 +555,6 @@ export function bpSpanPx(
   return region.reversed ? [end, start] : [start, end]
 }
 
-export const objectFromEntries = Object.fromEntries.bind(Object)
-
 // do an array map of an iterable
 export function iterMap<T, U>(
   iterable: Iterable<T>,
@@ -652,6 +644,7 @@ export function makeAbortableReaction<T, U, V>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
+  // @ts-ignore
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
@@ -669,49 +662,51 @@ export function makeAbortableReaction<T, U, V>(
     }
   }
 
-  const reactionDisposer = reaction(
-    () => {
-      try {
-        return dataFunction(self)
-      } catch (e) {
-        handleError(e)
-        return undefined
-      }
-    },
-    async (data, mobxReactionHandle) => {
-      if (inProgress && !inProgress.signal.aborted) {
-        inProgress.abort()
-      }
-
-      if (!isAlive(self)) {
-        return
-      }
-      inProgress = new AbortController()
-
-      const thisInProgress = inProgress
-      startedFunction(thisInProgress)
-      try {
-        const result = await asyncReactionFunction(
-          data,
-          thisInProgress.signal,
-          self,
-          mobxReactionHandle,
-        )
-        checkAbortSignal(thisInProgress.signal)
-        if (isAlive(self)) {
-          successFunction(result)
+  addDisposer(
+    self,
+    reaction(
+      () => {
+        try {
+          return dataFunction(self)
+        } catch (e) {
+          handleError(e)
+          return undefined
         }
-      } catch (e) {
-        if (thisInProgress && !thisInProgress.signal.aborted) {
-          thisInProgress.abort()
+      },
+      async (data, mobxReactionHandle) => {
+        if (inProgress && !inProgress.signal.aborted) {
+          inProgress.abort()
         }
-        handleError(e)
-      }
-    },
-    reactionOptions,
+
+        if (!isAlive(self)) {
+          return
+        }
+        inProgress = new AbortController()
+
+        const thisInProgress = inProgress
+        startedFunction(thisInProgress)
+        try {
+          const result = await asyncReactionFunction(
+            data,
+            thisInProgress.signal,
+            self,
+            // @ts-ignore
+            mobxReactionHandle,
+          )
+          checkAbortSignal(thisInProgress.signal)
+          if (isAlive(self)) {
+            successFunction(result)
+          }
+        } catch (e) {
+          if (thisInProgress && !thisInProgress.signal.aborted) {
+            thisInProgress.abort()
+          }
+          handleError(e)
+        }
+      },
+      reactionOptions,
+    ),
   )
-
-  addDisposer(self, reactionDisposer)
   addDisposer(self, () => {
     if (inProgress && !inProgress.signal.aborted) {
       inProgress.abort()
@@ -730,6 +725,7 @@ export function renameRegionIfNeeded(
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
+      // @ts-ignore
       region = { ...getSnapshot(region) }
     } else {
       region = { ...region }
@@ -794,7 +790,7 @@ export function stringify({
   oob,
 }: {
   coord: number
-  refName: string
+  refName?: string
   oob?: boolean
 }) {
   return `${refName}:${coord.toLocaleString('en-US')}${

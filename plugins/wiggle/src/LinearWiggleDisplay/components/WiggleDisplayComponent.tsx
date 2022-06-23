@@ -5,20 +5,25 @@ import {
   getContainingTrack,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import {
+  BaseLinearDisplayComponent,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 import { WiggleDisplayModel } from '../models/model'
 import YScaleBar from './YScaleBar'
+
+type LGV = LinearGenomeViewModel
 
 const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
   const { stats, height, needsScalebar } = model
 
-  // @ts-ignore
-  const { trackLabels } = getContainingView(model)
+  const { trackLabels } = getContainingView(model) as LGV
+  const track = getContainingTrack(model)
   const left =
     trackLabels === 'overlapping'
-      ? measureText(getConf(getContainingTrack(model), 'name'), 12.8) + 100
+      ? measureText(getConf(track, 'name'), 12.8) + 100
       : 50
   return (
     <div>

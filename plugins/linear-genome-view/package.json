@@ -34,26 +34,26 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@material-ui/icons": "^4.9.1",
+    "@mui/icons-material": "^5.0.1",
     "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0",
-    "material-ui-popup-state": "^1.9.3",
+    "material-ui-popup-state": "^3.0.0",
     "normalize-wheel": "^1.0.1",
     "react-popper": "^2.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "mobx": "^5.0.0",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react-dom": ">=16.8.0",
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
