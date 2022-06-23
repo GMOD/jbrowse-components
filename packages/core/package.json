@@ -18,35 +18,81 @@
     "directory": "packages/core"
   },
   "author": "JBrowse Team",
-  "main": "index.js",
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "npm-run-all build:*",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build": "tsc --build tsconfig.build.esm.json",
     "clean": "rimraf dist esm *.tsbuildinfo",
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "prepack": "yarn build",
-    "postbuild": "tsc -b tsconfig.build.json"
+    "prepack": "yarn build"
   },
   "exports": {
-    "./PluginManager": {
-      "require": "./dist/PluginManager.js",
-      "import": "./esm/PluginManager.js"
-    },
-    "./configuration": {
-      "require": "./dist/configuration/index.js",
-      "import": "./esm/configuration/index.js"
-    },
-    "./ui": {
-      "require": "./dist/ui/index.js",
-      "import": "./esm/ui/index.js"
-    },
-    "./util": {
-      "requtilre": "./dist/util/index.js",
-      "import": "./esm/util/index.js"
-    }
+    "./data_adapters/dataAdapterCache": "esm/data_adapters/dataAdapterCache.js",
+    "./data_adapters/BaseAdapter": "esm/data_adapters/BaseAdapter.js",
+    "./pluggableElementTypes/models": "./esm/pluggableElementTypes/models/index.js",
+    "./pluggableElementTypes/models/BaseViewModel": "./esm/pluggableElementTypes/models/BaseViewModel.js",
+    "./pluggableElementTypes/renderers/BoxRendererType": "./esm/pluggableElementTypes/renderers/BoxRendererType.js",
+    "./pluggableElementTypes/renderers/FeatureRendererType": "./esm/pluggableElementTypes/renderers/FeatureRendererType.js",
+    "./pluggableElementTypes/renderers/ComparativeServerSideRendererType": "./esm/pluggableElementTypes/renderers/ComparativeServerSideRendererType.js",
+    "./pluggableElementTypes/renderers/ServerSideRendererType": "./esm/pluggableElementTypes/renderers/ServerSideRendererType.js",
+    "./pluggableElementTypes/renderers/CircularChordRendererType": "./esm/pluggableElementTypes/renderers/CircularChordRendererType.js",
+    "./pluggableElementTypes/TrackType": "./esm/pluggableElementTypes/TrackType.js",
+    "./pluggableElementTypes/DisplayType": "./esm/pluggableElementTypes/DisplayType.js",
+    "./pluggableElementTypes/ConnectionType": "./esm/pluggableElementTypes/ConnectionType.js",
+    "./pluggableElementTypes/TextSearchAdapterType": "./esm/pluggableElementTypes/TextSearchAdapterType.js",
+    "./pluggableElementTypes/ViewType": "./esm/pluggableElementTypes/ViewType.js",
+    "./pluggableElementTypes/RpcMethodType": "./esm/pluggableElementTypes/RpcMethodType.js",
+    "./pluggableElementTypes/WidgetType": "./esm/pluggableElementTypes/WidgetType.js",
+    "./pluggableElementTypes/AdapterType": "./esm/pluggableElementTypes/AdapterType.js",
+    "./pluggableElementTypes/InternetAccountType": "./esm/pluggableElementTypes/InternetAccountType.js",
+    "./pluggableElementTypes/renderers/util/serializableFilterChain": "esm/pluggableElementTypes/renderers/util/serializableFilterChain",
+    "./BaseFeatureWidget/BaseFeatureDetail": "./esm/BaseFeatureWidget/BaseFeatureDetail.js",
+    "./BaseFeatureWidget": "./esm/BaseFeatureWidget/index.js",
+    "./PluginManager": "./esm/PluginManager.js",
+    "./PluginLoader": "./esm/PluginLoader.js",
+    "./Plugin": "./esm/Plugin.js",
+    "./assemblyManager": "./esm/assemblyManager/index.js",
+    "./assemblyManager/assemblyConfigSchema": "./esm/assemblyManager/assemblyConfigSchema.js",
+    "./configuration": "./esm/configuration/index.js",
+    "./configuration/configurationSchema": "./esm/configuration/configurationSchema.js",
+    "./ui": "./esm/ui/index.js",
+    "./ui/Icons": "./esm/ui/Icons.js",
+    "./ui/AboutDialog": "./esm/ui/AboutDialog.js",
+    "./ui/Menu": "./esm/ui/Menu.js",
+    "./ui/FileSelector": "./esm/ui/FileSelector/index.js",
+    "./ui/ErrorMessage": "./esm/ui/ErrorMessage.js",
+    "./ui/SnackbarModel": "./esm/ui/SnackbarModel.js",
+    "./ui/CascadingMenu": "./esm/ui/CascadingMenu.js",
+    "./ui/SanitizedHTML": "./esm/ui/SanitizedHTML.js",
+    "./ui/AssemblySelector": "./esm/ui/AssemblySelector.js",
+    "./util": "./esm/util/index.js",
+    "./util/Base1DViewModel": "./esm/util/Base1DViewModel.js",
+    "./util/calculateDynamicBlocks": "./esm/util/calculateDynamicBlocks.js",
+    "./util/calculateStaticBlocks": "./esm/util/calculateStaticBlocks.js",
+    "./util/layouts/MultiLayout": "./esm/util/layouts/MultiLayout.js",
+    "./util/layouts": "./esm/util/layouts/index.js",
+    "./util/color": "./esm/util/color/index.js",
+    "./util/jexlStrings": "./esm/util/jexlStrings.js",
+    "./util/stats": "./esm/util/stats.js",
+    "./util/QuickLRU": "./esm/util/QuickLRU.js",
+    "./util/types/mst": "./esm/util/types/mst.js",
+    "./util/analytics": "./esm/util/analytics.js",
+    "./util/mst-reflection": "./esm/util/mst-reflection.js",
+    "./util/blockTypes": "./esm/util/blockTypes.js",
+    "./util/compositeMap": "./esm/util/compositeMap.js",
+    "./util/tracks": "./esm/util/tracks.js",
+    "./util/formatFastaStrings": "./esm/util/formatFastaStrings.js",
+    "./util/simpleFeature": "./esm/util/simpleFeature.js",
+    "./util/range": "./esm/util/range.js",
+    "./util/offscreenCanvasUtils": "./esm/util/offscreenCanvasUtils.js",
+    "./util/offscreenCanvasPonyfill": "./esm/util/offscreenCanvasPonyfill.js",
+    "./util/io": "./esm/util/io/index.js",
+    "./util/rxjs": "./esm/util/rxjs.js",
+    "./util/types": "./esm/util/types/index.js",
+    "./rpc/remoteAbortSignals": "./esm/rpc/remoteAbortSignals.js",
+    "./rpc/RpcManager": "./esm/rpc/RpcManager.js",
+    "./TextSearch/TextSearchManager": "./esm/TextSearch/TextSearchManager.js",
+    "./TextSearch/BaseResults": "./esm/TextSearch/BaseResults.js"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
@@ -92,6 +138,6 @@
   },
   "publishConfig": {
     "access": "public",
-    "directory": "dist"
+    "directory": "esm"
   }
 }
