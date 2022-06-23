@@ -1,7 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-
-import AdapterClass from './MashMapAdapter'
 import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
@@ -16,7 +14,7 @@ export default (pluginManager: PluginManager) => {
           displayName: null,
           description: null,
         },
-        AdapterClass,
+        getAdapterClass: () => import('./MashMapAdapter').then(r => r.default),
       }),
   )
 }

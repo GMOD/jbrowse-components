@@ -5,7 +5,7 @@ import WiggleBaseRenderer from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 export default class LinePlotRenderer extends WiggleBaseRenderer {
-  draw(ctx, props) {
+  async draw(ctx, props) {
     const {
       features,
       regions,

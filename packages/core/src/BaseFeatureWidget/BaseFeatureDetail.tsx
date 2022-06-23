@@ -5,15 +5,14 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Typography,
   Divider,
   Tooltip,
-  makeStyles,
-} from '@material-ui/core'
-import ExpandMore from '@material-ui/icons/ExpandMore'
-import { DataGrid } from '@mui/x-data-grid'
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import ExpandMore from '@mui/icons-material/ExpandMore'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
-import clsx from 'clsx'
 import isObject from 'is-object'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 
@@ -52,7 +51,7 @@ const coreDetails = [
   'type',
 ]
 
-export const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles()(theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -73,6 +72,7 @@ export const useStyles = makeStyles(theme => ({
     wordBreak: 'break-all',
     minWidth: '90px',
     borderBottom: '1px solid #0003',
+    fontSize: 12,
     background: theme.palette.grey[200],
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
@@ -80,6 +80,7 @@ export const useStyles = makeStyles(theme => ({
   fieldValue: {
     wordBreak: 'break-word',
     maxHeight: 300,
+    fontSize: 12,
     padding: theme.spacing(0.5),
     overflow: 'auto',
   },
@@ -99,7 +100,7 @@ export function BaseCard({
   title,
   defaultExpanded = true,
 }: BaseCardProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [expanded, setExpanded] = useState(defaultExpanded)
   return (
     <Accordion
@@ -130,11 +131,11 @@ export const FieldName = ({
   prefix?: string[]
   width?: number
 }) => {
-  const classes = useStyles()
+  const { classes, cx } = useStyles()
   const val = [...prefix, name].join('.')
   return description ? (
     <Tooltip title={description} placement="left">
-      <div className={clsx(classes.fieldDescription, classes.fieldName)}>
+      <div className={cx(classes.fieldDescription, classes.fieldName)}>
         {val}
       </div>
     </Tooltip>
@@ -146,7 +147,7 @@ export const FieldName = ({
 }
 
 export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const isLink = `${value}`.match(/^https?:\/\//)
   return (
     <div className={classes.fieldValue}>
@@ -176,7 +177,7 @@ export const SimpleValue = ({
   prefix?: string[]
   width?: number
 }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return value !== null && value !== undefined ? (
     <div className={classes.field}>
       <FieldName
@@ -201,7 +202,7 @@ const ArrayValue = ({
   value: any[]
   prefix?: string[]
 }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   if (value.length === 1) {
     return isObject(value[0]) ? (
       <Attributes attributes={value[0]} prefix={[...prefix, name]} />
@@ -340,11 +341,15 @@ const DataGridDetails = ({
       colNames = [...unionKeys]
     }
 
+    const getStr = (obj: unknown) =>
+      isObject(obj) ? JSON.stringify(obj) : String(obj)
+
     const columns = colNames.map(val => ({
       field: val,
+      renderCell: (val: GridCellParams) => getStr(val.formattedValue),
       width: Math.max(
         ...rows.map(row =>
-          Math.min(Math.max(measureText(String(row[val]), 14) + 50, 80), 1000),
+          Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
         ),
       ),
     }))
@@ -365,11 +370,9 @@ const DataGridDetails = ({
         >
           <DataGrid
             disableSelectionOnClick
-            rowHeight={20}
-            headerHeight={25}
+            rowHeight={25}
             rows={rows}
             rowsPerPageOptions={[]}
-            hideFooterRowCount
             hideFooterSelectedRowCount
             columns={columns}
             hideFooter={rows.length < 100}
@@ -416,7 +419,7 @@ function UriAttribute({
   name: string
   prefix: string[]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { uri, baseUri = '' } = value
   let href
   try {
@@ -451,9 +454,6 @@ export function Attributes(props: AttributeProps) {
     prefix,
   )
 
-  const labelWidth =
-    maxLabelWidth <= MAX_FIELD_NAME_WIDTH ? maxLabelWidth : MAX_FIELD_NAME_WIDTH
-
   return (
     <>
       {Object.entries(formattedAttributes)
@@ -463,7 +463,7 @@ export function Attributes(props: AttributeProps) {
           if (Array.isArray(value)) {
             // check if it looks like an array of objects, which could be used
             // in data grid
-            return value.length > 2 && value.every(val => isObject(val)) ? (
+            return value.length > 1 && value.every(val => isObject(val)) ? (
               <DataGridDetails
                 key={key}
                 name={key}
@@ -504,7 +504,7 @@ export function Attributes(props: AttributeProps) {
                 value={formatter(value, key)}
                 description={description}
                 prefix={prefix}
-                width={labelWidth}
+                width={Math.min(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
               />
             )
           }

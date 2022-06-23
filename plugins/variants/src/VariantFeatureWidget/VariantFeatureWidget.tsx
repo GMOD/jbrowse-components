@@ -8,7 +8,7 @@ import {
   Checkbox,
   TextField,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
@@ -107,9 +107,8 @@ function VariantSamples(props: any) {
         <DataGrid
           rows={rows}
           columns={infoFields}
-          rowHeight={20}
-          headerHeight={25}
           disableSelectionOnClick
+          rowHeight={25}
           disableColumnMenu
         />
       </div>

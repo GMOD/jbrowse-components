@@ -2,20 +2,20 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  TextField,
-  Typography,
-  IconButton,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Checkbox,
   FormControlLabel,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+  IconButton,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -37,7 +37,7 @@ function SetFeatureHeightDlg(props: {
   }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { model, handleClose } = props
   const { featureHeightSetting, noSpacing: noSpacingSetting } = model
   const [height, setHeight] = useState(`${featureHeightSetting}`)

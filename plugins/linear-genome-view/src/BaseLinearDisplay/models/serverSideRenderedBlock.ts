@@ -163,7 +163,7 @@ const blockState = types
         self.maxHeightReached = false
         self.ReactComponent = ServerSideRenderedBlockContent
         self.renderProps = undefined
-        getParent(self, 2).reload()
+        getParent<any>(self, 2).reload()
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {

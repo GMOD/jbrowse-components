@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
+import { Typography, Button } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import Button from '@material-ui/core/Button'
-import RefreshIcon from '@material-ui/icons/Refresh'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   loading: {
     paddingLeft: '0.6em',
     backgroundColor: theme.palette.action.disabledBackground,
@@ -73,7 +72,7 @@ function Repeater({ children }: { children: React.ReactNode }) {
 const LoadingMessage = observer(({ model }: { model: any }) => {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
-  const classes = useStyles()
+  const { classes } = useStyles()
   useEffect(() => {
     let killed = false
     const timeout = setTimeout(() => {
@@ -108,7 +107,7 @@ function BlockMessage({
 }: {
   messageContent: string | React.ReactNode
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return React.isValidElement(messageContent) ? (
     <div className={classes.blockReactNodeMessage}>{messageContent}</div>
@@ -128,7 +127,7 @@ function BlockError({
   reload: () => void
   displayHeight: number
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.blockError} style={{ height: displayHeight }}>
       {reload ? (

@@ -1,6 +1,6 @@
 import React from 'react'
-import { ThemeOptions } from '@material-ui/core'
-import { ThemeProvider } from '@material-ui/core/styles'
+import { DeprecatedThemeOptions } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
 import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 
@@ -25,7 +25,7 @@ interface BaseRenderArgs extends RenderProps {
   // Note that signal serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
-  theme: ThemeOptions
+  theme: DeprecatedThemeOptions
   exportSVG: { rasterizeLayers?: boolean }
 }
 

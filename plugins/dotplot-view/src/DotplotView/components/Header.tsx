@@ -1,24 +1,25 @@
 import React, { useState } from 'react'
 
-import { IconButton, Typography, makeStyles } from '@material-ui/core'
+import { IconButton, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
 // icons
-import ZoomOut from '@material-ui/icons/ZoomOut'
-import ZoomIn from '@material-ui/icons/ZoomIn'
-import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
-import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
-import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
-import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
-import CropFreeIcon from '@material-ui/icons/CropFree'
+import ZoomOut from '@mui/icons-material/ZoomOut'
+import ZoomIn from '@mui/icons-material/ZoomIn'
+import ArrowUp from '@mui/icons-material/KeyboardArrowUp'
+import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
+import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
+import ArrowRight from '@mui/icons-material/KeyboardArrowRight'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 import { observer } from 'mobx-react'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   iconButton: {
     margin: 5,
   },
@@ -36,7 +37,7 @@ const useStyles = makeStyles({
 })
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   return (
     <div>
@@ -153,7 +154,7 @@ const Header = observer(
     model: DotplotViewModel
     selection?: { width: number; height: number }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { hview, vview } = model
     return (
       <div className={classes.headerBar}>

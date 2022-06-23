@@ -5,11 +5,11 @@ import {
   Paper,
   SvgIconProps,
   Typography,
-  makeStyles,
   useTheme,
   alpha,
-} from '@material-ui/core'
-import MenuIcon from '@material-ui/icons/Menu'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
@@ -17,11 +17,11 @@ import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseV
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.main,
-    margin: theme.spacing(1),
+    background: theme.palette.secondary.main + ' !important',
+    margin: theme.spacing(0.5),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
@@ -58,7 +58,8 @@ const ViewMenu = observer(
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-    if (!model.menuItems?.().length) {
+    const items = model.menuItems?.()
+    if (!items?.length) {
       return null
     }
 
@@ -69,9 +70,8 @@ const ViewMenu = observer(
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
+          style={{ padding: 3 }}
+          onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
         >
           <MenuIcon {...IconProps} />
@@ -83,10 +83,8 @@ const ViewMenu = observer(
             callback()
             setAnchorEl(undefined)
           }}
-          onClose={() => {
-            setAnchorEl(undefined)
-          }}
-          menuItems={model.menuItems()}
+          onClose={() => setAnchorEl(undefined)}
+          menuItems={items}
         />
       </>
     )
@@ -96,16 +94,14 @@ const ViewMenu = observer(
 const ViewContainer = observer(
   ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
     const [ref, { width }] = useMeasure()
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const session = getSession(view)
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
-      if (width) {
-        if (isAlive(view)) {
-          view.setWidth(width - padWidth * 2)
-        }
+      if (width && isAlive(view)) {
+        view.setWidth(width - parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 
@@ -114,7 +110,7 @@ const ViewContainer = observer(
         elevation={12}
         ref={ref}
         className={classes.viewContainer}
-        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+        style={{ padding: `0px ${padWidth} ${padWidth}` }}
       >
         {session.DialogComponent ? (
           <Suspense fallback={<div />}>

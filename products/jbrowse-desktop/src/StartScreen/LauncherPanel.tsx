@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Button, Typography, makeStyles } from '@material-ui/core'
+import { Button, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
@@ -9,7 +10,7 @@ import { loadPluginManager } from './util'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   form: {
     marginTop: theme.spacing(4),
   },
@@ -26,7 +27,7 @@ export default function StartScreenOptionsPanel({
 }: {
   setPluginManager: (arg0: PluginManager) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
   return (
     <div className={classes.form}>

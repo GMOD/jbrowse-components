@@ -7,16 +7,16 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import { makeStyles } from 'tss-react/mui'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import { getSession } from '../util'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -30,10 +30,9 @@ export default function AboutDialog({
   handleClose,
 }: {
   config: AnyConfigurationModel
-
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [info, setInfo] = useState<FileInfo>()
   const [error, setError] = useState<unknown>()
   const [copied, setCopied] = useState(false)
@@ -96,6 +95,7 @@ export default function AboutDialog({
         <IconButton
           className={classes.closeButton}
           onClick={() => handleClose()}
+          size="large"
         >
           <CloseIcon />
         </IconButton>

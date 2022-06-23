@@ -1,12 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react'
 import {
   Button,
+  FormControl,
   Select,
   MenuItem,
   Typography,
   Tooltip,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 import {
@@ -34,7 +35,7 @@ interface CoordFeat extends SimpleFeatureSerialized {
   end: number
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -263,7 +264,7 @@ export const SequencePanel = React.forwardRef<
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const parentFeature = feature as unknown as ParentFeat
   const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
   const seqPanelRef = useRef<HTMLDivElement>(null)
@@ -331,24 +332,26 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   return (
     <div ref={ref}>
-      <Select
-        value={mode}
-        onChange={event => setMode(event.target.value as string)}
-      >
-        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
-        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-        <MenuItem value="gene">Gene w/ introns</MenuItem>
-        <MenuItem value="gene_collapsed_intron">
-          Gene w/ 10bp of intron
-        </MenuItem>
-        <MenuItem value="gene_updownstream">
-          Gene w/ 500bp up+down stream
-        </MenuItem>
-        <MenuItem value="gene_updownstream_collapsed_intron">
-          Gene w/ 500bp up+down stream w/ 10bp intron
-        </MenuItem>
-        <MenuItem value="cdna">cDNA</MenuItem>
-      </Select>
+      <FormControl>
+        <Select
+          value={mode}
+          onChange={event => setMode(event.target.value as string)}
+        >
+          {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+          {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+          <MenuItem value="gene">Gene w/ introns</MenuItem>
+          <MenuItem value="gene_collapsed_intron">
+            Gene w/ 10bp of intron
+          </MenuItem>
+          <MenuItem value="gene_updownstream">
+            Gene w/ 500bp up+down stream
+          </MenuItem>
+          <MenuItem value="gene_updownstream_collapsed_intron">
+            Gene w/ 500bp up+down stream w/ 10bp intron
+          </MenuItem>
+          <MenuItem value="cdna">cDNA</MenuItem>
+        </Select>
+      </FormControl>
       <Button
         className={classes.button}
         type="button"

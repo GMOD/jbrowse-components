@@ -1,13 +1,22 @@
-import MenuItem from '@material-ui/core/MenuItem'
-import Paper from '@material-ui/core/Paper'
-import TextField from '@material-ui/core/TextField'
-import { observer } from 'mobx-react'
 import React from 'react'
+import { MenuItem, Paper, TextField } from '@mui/material'
+import { observer } from 'mobx-react'
 import { useSlotEditorStyles } from './SlotEditor'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const TypeSelector = observer(
-  ({ typeNameChoices, slot, slotName, onChange }) => {
-    const classes = useSlotEditorStyles()
+  ({
+    typeNameChoices,
+    slot,
+    slotName,
+    onChange,
+  }: {
+    typeNameChoices: string[]
+    slot: AnyConfigurationModel
+    slotName: string
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+  }) => {
+    const { classes } = useSlotEditorStyles()
     return (
       <Paper className={classes.paper}>
         <div className={classes.paperContent}>
@@ -15,7 +24,6 @@ const TypeSelector = observer(
             value={slot.type}
             label="Type"
             select
-            // error={filterError}
             helperText={`Type of ${slotName} to use`}
             fullWidth
             onChange={onChange}

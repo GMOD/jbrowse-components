@@ -9,19 +9,13 @@ import {
   stateModelFactory as ConfigurationEditorStateModelFactory,
 } from './ConfigurationEditorWidget'
 import {
-  AdapterClass as FromConfigAdapterClass,
-  RegionsAdapterClass as FromConfigRegionsAdapterClass,
-  SequenceAdapterClass as FromConfigSequenceAdapterClass,
   configSchema as fromConfigAdapterConfigSchema,
   regionsConfigSchema as fromConfigRegionsAdapterConfigSchema,
   sequenceConfigSchema as fromConfigSequenceAdapterConfigSchema,
 } from './FromConfigAdapter'
-import {
-  AdapterClass as RefNameAliasAdapterClass,
-  configSchema as refNameAliasAdapterConfigSchema,
-} from './RefNameAliasAdapter'
+import { configSchema as refNameAliasAdapterConfigSchema } from './RefNameAliasAdapter'
 
-const ConfigurationEditorComponent = lazy(
+const LazyConfigurationEditorComponent = lazy(
   () => import('./ConfigurationEditorWidget/components/ConfigurationEditor'),
 )
 
@@ -34,7 +28,10 @@ export default class extends Plugin {
         new AdapterType({
           name: 'FromConfigAdapter',
           configSchema: fromConfigAdapterConfigSchema,
-          AdapterClass: FromConfigAdapterClass,
+          getAdapterClass: () =>
+            import('./FromConfigAdapter/FromConfigAdapter').then(
+              r => r.default,
+            ),
           adapterMetadata: {
             category: null,
             hiddenFromGUI: true,
@@ -48,7 +45,10 @@ export default class extends Plugin {
         new AdapterType({
           name: 'FromConfigRegionsAdapter',
           configSchema: fromConfigRegionsAdapterConfigSchema,
-          AdapterClass: FromConfigRegionsAdapterClass,
+          getAdapterClass: () =>
+            import('./FromConfigAdapter/FromConfigRegionsAdapter').then(
+              r => r.default,
+            ),
           adapterMetadata: {
             category: null,
             hiddenFromGUI: true,
@@ -62,7 +62,10 @@ export default class extends Plugin {
         new AdapterType({
           name: 'FromConfigSequenceAdapter',
           configSchema: fromConfigSequenceAdapterConfigSchema,
-          AdapterClass: FromConfigSequenceAdapterClass,
+          getAdapterClass: () =>
+            import('./FromConfigAdapter/FromConfigSequenceAdapter').then(
+              r => r.default,
+            ),
           adapterMetadata: {
             category: null,
             hiddenFromGUI: true,
@@ -76,7 +79,10 @@ export default class extends Plugin {
         new AdapterType({
           name: 'RefNameAliasAdapter',
           configSchema: refNameAliasAdapterConfigSchema,
-          AdapterClass: RefNameAliasAdapterClass,
+          getAdapterClass: () =>
+            import('./RefNameAliasAdapter/RefNameAliasAdapter').then(
+              r => r.default,
+            ),
           adapterMetadata: {
             category: null,
             hiddenFromGUI: true,
@@ -92,7 +98,7 @@ export default class extends Plugin {
         HeadingComponent: ConfigurationEditorHeadingComponent,
         configSchema: ConfigurationEditorConfigSchema,
         stateModel: ConfigurationEditorStateModelFactory(pluginManager),
-        ReactComponent: ConfigurationEditorComponent,
+        ReactComponent: LazyConfigurationEditorComponent,
       })
     })
   }
@@ -100,4 +106,4 @@ export default class extends Plugin {
 
 export { default as JsonEditor } from './ConfigurationEditorWidget/components/JsonEditor'
 
-export { ConfigurationEditorComponent as ConfigurationEditor }
+export { LazyConfigurationEditorComponent as ConfigurationEditor }

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -50,9 +50,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@material-ui/icons": "^4.0.1",
+    "@mui/icons-material": "^5.0.1",
     "abortable-promise-cache": "^1.5.0",
-    "canvas": "^2.8.0",
     "canvas-sequencer": "^3.1.0",
     "canvas2svg": "^1.0.16",
     "clone": "^2.1.2",
@@ -71,26 +70,25 @@
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.5",
     "load-script2": "^2.0.5",
-    "material-ui-popup-state": "^1.9.3",
-    "object.fromentries": "^2.0.0",
+    "material-ui-popup-state": "^3.0.0",
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
-    "react-intersection-observer": "^8.32.5",
+    "react-intersection-observer": "^9.3.0",
     "react-use-measure": "^2.1.1",
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0"
   },
   "peerDependencies": {
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "@mui/x-data-grid": "^4.0.0",
-    "mobx": "^5.0.0",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "@mui/material": "^5.0.0",
+    "@mui/x-data-grid": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
-    "rxjs": "^6.0.0"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "rxjs": "^6.0.0",
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public",

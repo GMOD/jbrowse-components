@@ -3,18 +3,18 @@ import { observer } from 'mobx-react'
 import { ObservableMap } from 'mobx'
 import {
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   Typography,
-  CircularProgress,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -35,7 +35,7 @@ function ModificationTable({
 }: {
   modifications: [string, string][]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <table className={classes.table}>
       <tbody>
@@ -64,7 +64,7 @@ function ColorByTagDlg(props: {
   }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { model, handleClose } = props
   const { colorBy, modificationTagMap } = model
 

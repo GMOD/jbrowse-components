@@ -12,13 +12,13 @@ import {
   Grid,
   Paper,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { LinearSyntenyViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },
@@ -46,7 +46,7 @@ function stripGz(fileName: string) {
 }
 
 const ImportForm = observer(({ model }: { model: LinearSyntenyViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
 
   const { assemblyNames, assemblyManager } = session

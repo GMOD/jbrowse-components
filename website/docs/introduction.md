@@ -7,8 +7,6 @@ toplevel: true
 
 Welcome to the JBrowse 2 documentation.
 
-Resources for desktop users
-
 - [Quick-start for JBrowse desktop](quickstart_desktop) - a quick-start guide
   to getting JBrowse desktop running on your machine
 - [Quick-start for JBrowse web](quickstart_web) - a quick-start guide to help

@@ -8,24 +8,22 @@ import {
   IconButton,
   Link,
   Tooltip,
-  Typography,
-  makeStyles,
-} from '@material-ui/core'
-import { DataGrid, GridCellParams } from '@mui/x-data-grid'
-import {
-  ToggleButtonGroup,
   ToggleButton,
+  ToggleButtonGroup,
   ToggleButtonProps,
-} from '@material-ui/lab'
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { format } from 'timeago.js'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import EditIcon from '@material-ui/icons/Edit'
-import ViewComfyIcon from '@material-ui/icons/ViewComfy'
-import ListIcon from '@material-ui/icons/List'
-import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd'
+import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
+import ListIcon from '@mui/icons-material/List'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
@@ -35,7 +33,7 @@ import SessionCard from './SessionCard'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   pointer: {
     cursor: 'pointer',
   },
@@ -75,7 +73,7 @@ function RecentSessionsList({
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const columns = [
     {
       field: 'rename',
@@ -224,7 +222,7 @@ function RecentSessionsCards({
 // note: adjust props so disabled button can have a tooltip and not lose styling
 // https://stackoverflow.com/a/63276424
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { title = '', children, disabled, onClick, ...other } = props
   const adjustedButtonProps = {
     disabled: disabled,
@@ -251,7 +249,7 @@ export default function RecentSessionPanel({
   setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()

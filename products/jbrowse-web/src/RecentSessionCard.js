@@ -1,25 +1,25 @@
-import IconButton from '@material-ui/core/IconButton'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import Menu from '@material-ui/core/Menu'
-import MenuItem from '@material-ui/core/MenuItem'
-import { makeStyles } from '@material-ui/core/styles'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
-import DeleteIcon from '@material-ui/icons/Delete'
-import MoreVertIcon from '@material-ui/icons/MoreVert'
-import { ListItem } from '@material-ui/core'
-
-import PropTypes from 'prop-types'
 import React, { useState } from 'react'
+import {
+  IconButton,
+  ListItem,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import DeleteIcon from '@mui/icons-material/Delete'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   menu: {
     left: '65%',
   },
 })
 
 function RecentSessionCard({ sessionName, onClick, onDelete }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
 
@@ -70,12 +70,6 @@ function RecentSessionCard({ sessionName, onClick, onDelete }) {
       </Menu>
     </>
   )
-}
-
-RecentSessionCard.propTypes = {
-  sessionName: PropTypes.string.isRequired,
-  onClick: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
 }
 
 export default RecentSessionCard

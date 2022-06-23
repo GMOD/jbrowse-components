@@ -1,4 +1,10 @@
-import { types, IAnyType, isModelType, isType } from 'mobx-state-tree'
+import {
+  types,
+  IAnyType,
+  isModelType,
+  isType,
+  IAnyModelType,
+} from 'mobx-state-tree'
 
 // Pluggable elements
 import PluggableElementBase from './pluggableElementTypes/PluggableElementBase'
@@ -371,7 +377,7 @@ export default class PluginManager {
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }
-    return types.union(...pluggableTypes)
+    return types.union(...pluggableTypes) as IAnyModelType
   }
 
   jbrequireCache = new Map()

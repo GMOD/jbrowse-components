@@ -1,12 +1,12 @@
-import FilterIcon from '@material-ui/icons/FilterList'
-import CloseIcon from '@material-ui/icons/Close'
-/* eslint-disable react/prop-types */
+import React from 'react'
+import FilterIcon from '@mui/icons-material/FilterList'
+import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import React from 'react'
-import { Grid, IconButton, Typography, makeStyles } from '@material-ui/core'
+import { Grid, IconButton, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
   return {
     columnName: { verticalAlign: 'middle', paddingRight: '0.3em' },
     columnFilter: {
@@ -34,7 +34,7 @@ function FilterOperations({ filterModel }) {
 
 const ColumnFilterControls = observer(
   ({ viewModel, filterModel, columnNumber, height }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const removeFilter = () => {
       const filterControls = getParent(filterModel, 2)

@@ -20,7 +20,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 window.TextEncoder = TextEncoder
 setup()
 
-const waitForOptions = { timeout: 15000 }
+const delay = { timeout: 15000 }
 
 beforeEach(() => {
   clearCache()
@@ -52,10 +52,10 @@ test('lollipop track test', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(1, 150)
-  fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track'))
+  fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track', {}, delay))
 
-  await findByTestId('display-lollipop_track_linear', {}, waitForOptions)
-  await findByTestId('three', {}, waitForOptions)
+  await findByTestId('display-lollipop_track_linear', {}, delay)
+  await findByTestId('three', {}, delay)
 }, 10000)
 
 test('toplevel configuration', () => {
@@ -86,9 +86,13 @@ test('assembly aliases', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_filtered_vcf_assembly_alias'),
+    await findByTestId(
+      'htsTrackEntry-volvox_filtered_vcf_assembly_alias',
+      {},
+      delay,
+    ),
   )
-  await findByTestId('box-test-vcf-604452', {}, waitForOptions)
+  await findByTestId('box-test-vcf-604452', {}, delay)
 }, 15000)
 
 test('nclist track test with long name', async () => {
@@ -97,12 +101,14 @@ test('nclist track test with long name', async () => {
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   await findByText('Help')
   state.session.views[0].setNewView(1, -539)
-  fireEvent.click(await findByTestId('htsTrackEntry-nclist_long_names'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-nclist_long_names', {}, delay),
+  )
 
   await findByText(
     'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
     {},
-    waitForOptions,
+    delay,
   )
 }, 15000)
 
@@ -134,7 +140,7 @@ test('looks at about this track dialog', async () => {
 
   // load track
   fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
-  fireEvent.click(await findByTestId('track_menu_icon', {}, waitForOptions))
+  fireEvent.click(await findByTestId('track_menu_icon', {}, delay))
   fireEvent.click(await findByText('About track'))
-  await findAllByText(/SQ/, {}, waitForOptions)
+  await findAllByText(/SQ/, {}, delay)
 }, 15000)

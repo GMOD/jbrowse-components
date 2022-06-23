@@ -1,5 +1,9 @@
 import React from 'react'
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { GenericFilehandle } from 'generic-filehandle'
+
+// eslint-disable-next-line import/no-extraneous-dependencies
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
@@ -8,15 +12,26 @@ import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Image, createCanvas } from 'canvas'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
+// @ts-ignore
+global.nodeImage = Image
+// @ts-ignore
+global.nodeCreateCanvas = createCanvas
+
+// @ts-ignore
 configSnapshot.configuration = {
   rpc: {
     defaultDriver: 'MainThreadRpcDriver',
   },
 }
 
-export function getPluginManager(initialState, adminMode = true) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getPluginManager(initialState?: any, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
@@ -28,6 +43,7 @@ export function getPluginManager(initialState, adminMode = true) {
     },
     { pluginManager },
   )
+  // @ts-ignore
   if (rootModel && rootModel.jbrowse.defaultSession.length) {
     const { name } = rootModel.jbrowse.defaultSession
     localStorage.setItem(
@@ -38,24 +54,27 @@ export function getPluginManager(initialState, adminMode = true) {
   } else {
     rootModel.setDefaultSession()
   }
-  rootModel.session.views.map(view => view.setWidth(800))
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  rootModel.session!.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
   pluginManager.configure()
   return pluginManager
 }
 
-export function generateReadBuffer(getFileFunction) {
-  return async request => {
+export function generateReadBuffer(
+  getFileFunction: (str: string) => GenericFilehandle,
+) {
+  return async (request: Request) => {
     try {
       const file = getFileFunction(request.url)
       const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
-      if (request.headers.get('range')) {
-        const range = rangeParser(maxRangeRequest, request.headers.get('range'))
+      const r = request.headers.get('range')
+      if (r) {
+        const range = rangeParser(maxRangeRequest, r)
         if (range === -2 || range === -1) {
-          throw new Error(
-            `Error parsing range "${request.headers.get('range')}"`,
-          )
+          throw new Error(`Error parsing range "${r}"`)
         }
         const { start, end } = range[0]
         const len = end - start + 1
@@ -77,9 +96,9 @@ export function generateReadBuffer(getFileFunction) {
 }
 
 export function setup() {
-  window.requestIdleCallback = cb => cb()
+  window.requestIdleCallback = (cb: Function) => cb()
   window.cancelIdleCallback = () => {}
-  window.requestAnimationFrame = cb => setTimeout(cb)
+  window.requestAnimationFrame = (cb: Function) => setTimeout(cb)
   window.cancelAnimationFrame = () => {}
 
   Storage.prototype.getItem = jest.fn(() => null)
@@ -91,21 +110,22 @@ export function setup() {
 // eslint-disable-next-line no-global-assign
 window = Object.assign(window, { innerWidth: 800 })
 
-export function canvasToBuffer(canvas) {
+export function canvasToBuffer(canvas: HTMLCanvasElement) {
   return Buffer.from(
     canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
     'base64',
   )
 }
 
-export function expectCanvasMatch(canvas) {
+export function expectCanvasMatch(canvas: HTMLCanvasElement) {
   expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
     failureThreshold: 0.05,
     failureThresholdType: 'percent',
   })
 }
 
-export function JBrowse(props) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function JBrowse(props: any) {
   return (
     <QueryParamProvider>
       <JBrowseWithoutQueryParamProvider {...props} />

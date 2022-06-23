@@ -36,7 +36,7 @@ describe('JBrowseWebSessionModel', () => {
     expect(session.drawerWidth).toBe(256)
   })
 
-  it('adds connection to session connections', () => {
+  xit('adds connection to session connections', () => {
     const pluginManager = new PluginManager()
     pluginManager.configure()
     const sessionModel = sessionModelFactory(pluginManager)

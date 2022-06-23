@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-circular-genome-view",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
     "jbrowse",
@@ -38,22 +38,25 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/core": "^1.7.10",
-    "@jbrowse/plugin-circular-view": "^1.7.10",
-    "@jbrowse/plugin-config": "^1.7.10",
-    "@jbrowse/plugin-data-management": "^1.7.10",
-    "@jbrowse/plugin-sequence": "^1.7.10",
-    "@jbrowse/plugin-variants": "^1.7.10",
-    "@jbrowse/plugin-wiggle": "^1.7.10",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/icons": "^4.0.0",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "mobx": "^5.10.1",
-    "mobx-react": "^6.0.3",
-    "mobx-state-tree": "3.14.1",
+    "@emotion/cache": "^11.7.1",
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
+    "@jbrowse/core": "^1.7.11",
+    "@jbrowse/plugin-circular-view": "^1.7.11",
+    "@jbrowse/plugin-config": "^1.7.11",
+    "@jbrowse/plugin-data-management": "^1.7.11",
+    "@jbrowse/plugin-sequence": "^1.7.11",
+    "@jbrowse/plugin-variants": "^1.7.11",
+    "@jbrowse/plugin-wiggle": "^1.7.11",
+    "@mui/icons-material": "^5.0.0",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.6.0",
+    "mobx-react": "^7.5.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react-use-measure": "^2.1.1",
-    "rxjs": "^6.0.0"
+    "rxjs": "^6.0.0",
+    "tss-react": "^3.7.0"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

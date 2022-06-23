@@ -10,17 +10,17 @@ import {
   TableRow,
   Paper,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-import CreateIcon from '@material-ui/icons/Create'
-import DeleteIcon from '@material-ui/icons/Delete'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import CreateIcon from '@mui/icons-material/Create'
+import DeleteIcon from '@mui/icons-material/Delete'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
 
-// local
-import { readConfObject } from '@jbrowse/core/configuration'
-
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   table: {
     minWidth: 500,
     minHeight: 150,
@@ -51,7 +51,7 @@ const AssemblyTable = observer(
     setIsAssemblyBeingEdited(arg: boolean): void
     setAssemblyBeingEdited(arg: AnyConfigurationModel): void
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     function removeAssembly(name: string) {
       rootModel.jbrowse.removeAssemblyConf(name)

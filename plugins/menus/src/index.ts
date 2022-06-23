@@ -4,8 +4,8 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { SessionWithWidgets, isAbstractMenuManager } from '@jbrowse/core/util'
 
-import HelpIcon from '@material-ui/icons/Help'
-import InfoIcon from '@material-ui/icons/Info'
+import HelpIcon from '@mui/icons-material/Help'
+import InfoIcon from '@mui/icons-material/Info'
 
 import {
   configSchema as aboutConfigSchema,

@@ -3,7 +3,7 @@ import { Instance } from 'mobx-state-tree'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
-import ViewComfyIcon from '@material-ui/icons/ViewComfy'
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import SpreadsheetViewModel from './SpreadsheetView/models/SpreadsheetView'
 
@@ -37,11 +37,7 @@ export default class SpreadsheetViewPlugin extends Plugin {
         uri: string
         fileType?: string
       }) => {
-        // add view, make typescript happy with return type
-        const { rootModel } = pluginManager
-        const view = rootModel?.session?.addView(
-          'SpreadsheetView',
-        ) as SpreadsheetView
+        const view = session.addView('SpreadsheetView') as SpreadsheetView
 
         if (!view) {
           throw new Error('Failed to initialize view')
@@ -76,3 +72,5 @@ export default class SpreadsheetViewPlugin extends Plugin {
     }
   }
 }
+
+export type { SpreadsheetViewModel, SpreadsheetView }

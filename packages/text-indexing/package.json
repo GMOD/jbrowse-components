@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/text-indexing",
-  "version": "1.7.10",
+  "version": "1.7.11",
   "description": "JBrowse 2 text indexing for desktop",
   "keywords": [
     "jbrowse",
@@ -38,17 +38,13 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "@material-ui/icons": "^4.0.1",
     "ixixx": "^1.0.19",
     "node-fetch": "^2.6.0"
   },
   "peerDependencies": {
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "@mui/x-data-grid": "^4.0.0",
     "mobx": "^5.0.0",
     "mobx-react": "^6.0.0",
-    "mobx-state-tree": "^3.14.1",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",

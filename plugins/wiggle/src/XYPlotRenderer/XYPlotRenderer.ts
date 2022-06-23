@@ -1,15 +1,36 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
-import Color from 'color'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
+function fillRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  color?: string,
+) {
+  if (color) {
+    ctx.fillStyle = color
+  }
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+  ctx.fillRect(x, y, width, height)
+}
+
 export default class XYPlotRenderer extends WiggleBaseRenderer {
-  draw(
+  async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
@@ -23,8 +44,13 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
       ticks,
       displayCrossHatches,
     } = props
+    const Color = await import('color').then(f => f.default)
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rc = (s: string, rest?: Record<string, any>) =>
+      readConfObject(config, s, rest)
 
     // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
     // wiggle display, and makes the height of the actual drawn area add
@@ -32,13 +58,13 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    const negColor = readConfObject(config, 'negColor')
-    const posColor = readConfObject(config, 'posColor')
-    const filled = readConfObject(config, 'filled')
-    const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'highlightColor')
-    const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+    const pivotValue = rc('bicolorPivotValue')
+    const negColor = rc('negColor')
+    const posColor = rc('posColor')
+    const filled = rc('filled')
+    const clipColor = rc('clipColor')
+    const highlightColor = rc('highlightColor')
+    const summaryScoreMode = rc('summaryScoreMode')
 
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const originY = getOrigin(scaleOpts.scaleType)
@@ -48,11 +74,10 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const toHeight = (n: number) => toY(originY) - toY(n)
 
     const colorCallback =
-      readConfObject(config, 'color') === '#f0f'
+      rc('color') === '#f0f'
         ? (_: Feature, score: number) =>
             score < pivotValue ? negColor : posColor
-        : (feature: Feature, _score: number) =>
-            readConfObject(config, 'color', { feature })
+        : (feature: Feature, _score: number) => rc('color', { feature })
 
     const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
     for (const feature of features.values()) {
@@ -69,62 +94,85 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
 
       if (summaryScoreMode === 'max') {
         score = summary ? maxr : score
-        ctx.fillStyle = colorCallback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(
+          ctx,
+          leftPx,
+          toY(score),
+          w,
+          filled ? toHeight(score) : 1,
+          colorCallback(feature, score),
+        )
       } else if (summaryScoreMode === 'min') {
         score = summary ? minr : score
-        ctx.fillStyle = colorCallback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(
+          ctx,
+          leftPx,
+          toY(score),
+          w,
+          filled ? toHeight(score) : 1,
+          colorCallback(feature, score),
+        )
       } else if (summaryScoreMode === 'whiskers') {
         const c = colorCallback(feature, score)
         if (summary) {
-          ctx.fillStyle = crossingOrigin
-            ? colorCallback(feature, maxr)
-            : Color(c).lighten(0.6).toString()
-          ctx.fillRect(
+          fillRect(
+            ctx,
             leftPx,
             toY(maxr),
             w,
             filled ? toHeight(maxr) - toHeight(score) : 1,
+            crossingOrigin
+              ? colorCallback(feature, maxr)
+              : Color(c).lighten(0.6).toString(),
           )
         }
 
         // normal
-        ctx.fillStyle =
-          crossingOrigin && summary
-            ? Color(colorCallback(feature, maxr)).mix(
-                Color(colorCallback(feature, minr)),
-              )
-            : c
-        ctx.fillRect(
+
+        fillRect(
+          ctx,
           leftPx,
           toY(score),
           w,
           filled ? toHeight(score) - (summary ? toHeight(minr) : 0) : 1,
+          crossingOrigin && summary
+            ? Color(colorCallback(feature, maxr)).mix(
+                Color(colorCallback(feature, minr)),
+              )
+            : c,
         )
 
         // min
         if (summary) {
-          ctx.fillStyle = crossingOrigin
-            ? colorCallback(feature, minr)
-            : Color(c).darken(0.6).toString()
-          ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
+          fillRect(
+            ctx,
+            leftPx,
+            toY(minr),
+            w,
+            filled ? toHeight(minr) : 1,
+            crossingOrigin
+              ? colorCallback(feature, minr)
+              : Color(c).darken(0.6).toString(),
+          )
         }
       } else {
-        ctx.fillStyle = colorCallback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(
+          ctx,
+          leftPx,
+          toY(score),
+          w,
+          filled ? toHeight(score) : 1,
+          colorCallback(feature, score),
+        )
       }
 
       if (highClipping) {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, 0, w, 4)
+        fillRect(ctx, leftPx, 0, w, 4, clipColor)
       } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
+        fillRect(ctx, leftPx, unadjustedHeight - 4, w, 4, clipColor)
       }
       if (feature.get('highlighted')) {
-        ctx.fillStyle = highlightColor
-        ctx.fillRect(leftPx, 0, w, height)
+        fillRect(ctx, leftPx, 0, w, height, highlightColor)
       }
     }
 

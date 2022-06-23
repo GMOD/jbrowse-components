@@ -7,11 +7,13 @@ export default ConfigurationSchema(
       type: 'color',
       description: 'the color of the arcs',
       defaultValue: 'darkblue',
+      contextVariable: ['feature'],
     },
     thickness: {
       type: 'number',
       description: 'the thickness of the arcs',
       defaultValue: `jexl:logThickness(feature,'score')`,
+      contextVariable: ['feature'],
     },
     label: {
       type: 'string',
@@ -23,6 +25,7 @@ export default ConfigurationSchema(
       type: 'number',
       description: 'the height of the arcs',
       defaultValue: `jexl:log10(get(feature,'end')-get(feature,'start'))*50`,
+      contextVariable: ['feature'],
     },
     caption: {
       type: 'string',

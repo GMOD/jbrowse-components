@@ -1,55 +1,41 @@
 import React, { Suspense, useState } from 'react'
 import {
   AppBar,
+  FormControl,
   IconButton,
-  ListItemSecondaryAction,
   Menu,
   MenuItem,
   Select,
   Toolbar,
   Tooltip,
   Typography,
-  makeStyles,
-  alpha,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import CloseIcon from '@material-ui/icons/Close'
-import MinimizeIcon from '@material-ui/icons/Minimize'
-import MoreVertIcon from '@material-ui/icons/MoreVert'
+import DeleteIcon from '@mui/icons-material/Delete'
+import CloseIcon from '@mui/icons-material/Close'
+import MinimizeIcon from '@mui/icons-material/Minimize'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 // locals
 import Drawer from './Drawer'
 
-const useStyles = makeStyles(theme => ({
-  drawerActions: {
-    float: 'right',
-    '&:hover': {
-      backgroundColor: alpha(
-        theme.palette.secondary.contrastText,
-        theme.palette.action.hoverOpacity,
-      ),
-      '@media (hover: none)': {
-        backgroundColor: 'transparent',
-      },
-    },
-  },
-  drawerToolbar: {
-    paddingLeft: theme.spacing(2),
+const useStyles = makeStyles()(theme => ({
+  formControl: {
+    margin: 0,
   },
   spacer: {
     flexGrow: 1,
   },
   drawerSelect: {
+    margin: 0,
     color: theme.palette.secondary.contrastText,
   },
-  drawerLoading: {
-    margin: theme.spacing(2),
-  },
+
   dropDownIcon: {
     color: theme.palette.secondary.contrastText,
   },
@@ -68,7 +54,7 @@ const DrawerHeader = observer(
   }) => {
     const { pluginManager } = getEnv(session)
     const { visibleWidget, activeWidgets, drawerPosition } = session
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
@@ -76,75 +62,75 @@ const DrawerHeader = observer(
       <AppBar
         position="sticky"
         className={classes.header}
-        ref={(ref: HTMLDivElement) =>
-          setToolbarHeight(ref?.getBoundingClientRect().height || 0)
-        }
+        ref={ref => setToolbarHeight(ref?.getBoundingClientRect().height || 0)}
       >
-        <Toolbar disableGutters className={classes.drawerToolbar}>
-          <Select
-            value={visibleWidget?.id}
-            data-testid="widget-drawer-selects"
-            className={classes.drawerSelect}
-            classes={{ icon: classes.dropDownIcon }}
-            renderValue={widgetId => {
-              const widget = session.activeWidgets.get(widgetId as string)
-              if (!widget) {
-                return (
+        <Toolbar disableGutters>
+          <FormControl className={classes.formControl}>
+            <Select
+              value={visibleWidget?.id}
+              data-testid="widget-drawer-selects"
+              className={classes.drawerSelect}
+              classes={{ icon: classes.dropDownIcon }}
+              renderValue={widgetId => {
+                const widget = session.activeWidgets.get(widgetId as string)
+                if (!widget) {
+                  return (
+                    <Typography variant="h6" color="inherit">
+                      Unknown widget
+                    </Typography>
+                  )
+                }
+                const widgetType = pluginManager.getWidgetType(widget.type)
+                const { HeadingComponent, heading } = widgetType
+                return HeadingComponent ? (
+                  <HeadingComponent model={widget} />
+                ) : (
                   <Typography variant="h6" color="inherit">
-                    Unknown widget
+                    {heading}
                   </Typography>
                 )
-              }
-              const widgetType = pluginManager.getWidgetType(widget.type)
-              const { HeadingComponent, heading } = widgetType
-              return HeadingComponent ? (
-                <HeadingComponent model={widget} />
-              ) : (
-                <Typography variant="h6" color="inherit">
-                  {heading}
-                </Typography>
-              )
-            }}
-            onChange={e => {
-              const w = session.activeWidgets.get(e.target.value as string)
-              if (!w) {
-                session.notify('Widget not found ' + e.target.value, 'warning')
-              }
-              session.showWidget(w)
-            }}
-          >
-            {Array.from(activeWidgets.values()).map(widget => {
-              const widgetType = pluginManager.getWidgetType(widget.type)
-              const { HeadingComponent, heading } = widgetType
-              return (
-                <MenuItem
-                  data-testid={`widget-drawer-selects-item-${widget.type}`}
-                  key={widget.id}
-                  value={widget.id}
-                >
-                  {HeadingComponent ? (
-                    <HeadingComponent model={widget} />
-                  ) : (
-                    <Typography variant="h6" color="inherit">
-                      {heading}
-                    </Typography>
-                  )}
-                  <ListItemSecondaryAction>
+              }}
+              onChange={e => {
+                const w = session.activeWidgets.get(e.target.value)
+                if (!w) {
+                  session.notify(
+                    `Widget not found ${e.target.value}`,
+                    'warning',
+                  )
+                } else {
+                  session.showWidget(w)
+                }
+              }}
+            >
+              {Array.from(activeWidgets.values()).map(widget => {
+                const widgetType = pluginManager.getWidgetType(widget.type)
+                const { HeadingComponent, heading } = widgetType
+                return (
+                  <MenuItem
+                    data-testid={`widget-drawer-selects-item-${widget.type}`}
+                    key={widget.id}
+                    value={widget.id}
+                  >
+                    {HeadingComponent ? (
+                      <HeadingComponent model={widget} />
+                    ) : (
+                      <Typography variant="h6" color="inherit">
+                        {heading}
+                      </Typography>
+                    )}
                     <IconButton
                       data-testid={`${widget.type}-drawer-delete`}
                       color="inherit"
                       aria-label="Delete"
-                      onClick={() => {
-                        session.hideWidget(widget)
-                      }}
+                      onClick={() => session.hideWidget(widget)}
                     >
                       <DeleteIcon />
                     </IconButton>
-                  </ListItemSecondaryAction>
-                </MenuItem>
-              )
-            })}
-          </Select>
+                  </MenuItem>
+                )
+              })}
+            </Select>
+          </FormControl>
           <div className={classes.spacer} />
           <div>
             <IconButton
@@ -173,9 +159,7 @@ const DrawerHeader = observer(
               <IconButton
                 data-testid="drawer-close"
                 color="inherit"
-                onClick={() => {
-                  session.hideWidget(visibleWidget)
-                }}
+                onClick={() => session.hideWidget(visibleWidget)}
               >
                 <CloseIcon />
               </IconButton>

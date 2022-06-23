@@ -4,7 +4,8 @@ import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
 import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
 import a11yDark from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-dark'
 import a11yLight from 'react-syntax-highlighter/dist/cjs/styles/hljs/a11y-light'
-import { useTheme, makeStyles } from '@material-ui/core'
+import { useTheme } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // fontSize and fontFamily have to match between Editor and SyntaxHighlighter
 const fontSize = '12px'
@@ -12,7 +13,7 @@ const fontSize = '12px'
 const fontFamily =
   'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   callbackEditor: {
     fontFamily,
     fontSize,
@@ -28,9 +29,8 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-// eslint-disable-next-line react/prop-types
 export default function CodeEditor({ contents, setContents }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const theme = useTheme()
   useEffect(() => {
     SyntaxHighlighter.registerLanguage('json', json)

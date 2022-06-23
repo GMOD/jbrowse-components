@@ -11,15 +11,15 @@ import {
   MenuItem,
   Select,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
+import GetAppIcon from '@mui/icons-material/GetApp'
 
 import { GridBookmarkModel } from '../model'
 import { downloadBookmarkFile } from '../utils'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   closeDialog: {
     position: 'absolute',
     right: 0,
@@ -39,7 +39,7 @@ const useStyles = makeStyles(() => ({
 }))
 
 function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [fileType, setFileType] = useState('BED')
   const { bookmarkedRegions } = model

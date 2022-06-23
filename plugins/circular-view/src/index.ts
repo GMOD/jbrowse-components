@@ -4,9 +4,10 @@ import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import DataUsageIcon from '@material-ui/icons/DataUsage'
+import DataUsageIcon from '@mui/icons-material/DataUsage'
 import stateModelFactory, {
   CircularViewModel,
+  CircularViewStateModel,
 } from './CircularView/models/CircularView'
 
 type CGV = CircularViewModel
@@ -81,5 +82,7 @@ export default class CircularViewPlugin extends Plugin {
 export {
   BaseChordDisplayModel,
   baseChordDisplayConfig,
-  BaseChordDisplayComponentFactory,
+  BaseChordDisplayComponent,
 } from './BaseChordDisplay'
+
+export type { CircularViewModel, CircularViewStateModel }

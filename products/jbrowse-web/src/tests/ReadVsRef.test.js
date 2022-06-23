@@ -40,14 +40,18 @@ test('launch read vs ref panel', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(5, 100)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    await findByTestId(
+      'htsTrackEntry-volvox_alignments_pileup_coverage',
+      {},
+      delay,
+    ),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
-  fireEvent.click(await findByText('Linear read vs ref'))
+  fireEvent.click(await findByText('Linear read vs ref', {}, delay))
   const elt = await findByText('Submit')
 
   // https://stackoverflow.com/a/62443937/2129219
@@ -68,15 +72,19 @@ test('launch read vs ref dotplot', async () => {
   await findByText('Help')
   state.session.views[0].setNewView(5, 100)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments_pileup_coverage'),
+    await findByTestId(
+      'htsTrackEntry-volvox_alignments_pileup_coverage',
+      {},
+      delay,
+    ),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
-  fireEvent.click(await findByText('Dotplot of read vs ref'))
+  fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
 
   expect(state.session.views[1].type).toBe('DotplotView')
-  expectCanvasMatch(await findByTestId('prerendered_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)
