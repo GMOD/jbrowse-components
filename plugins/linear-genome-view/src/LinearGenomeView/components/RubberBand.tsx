@@ -88,7 +88,7 @@ function RubberBand({
     clientX: number
     clientY: number
   }>()
-  const [guideX, setGuideX] = useState<number | undefined>()
+  const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
   const { classes } = useStyles()

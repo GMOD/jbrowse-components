@@ -40,7 +40,7 @@ interface EditableTypographyPropTypes {
 const EditableTypography = React.forwardRef(
   (props: EditableTypographyPropTypes, ref: React.Ref<HTMLDivElement>) => {
     const { value, setValue, variant, ...other } = props
-    const [editedValue, setEditedValue] = useState<string | undefined>()
+    const [editedValue, setEditedValue] = useState<string>()
     const [width, setWidth] = useState(0)
     const [sizerNode, setSizerNode] = useState<HTMLSpanElement | null>(null)
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
