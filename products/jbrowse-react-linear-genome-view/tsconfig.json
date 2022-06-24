@@ -4,7 +4,6 @@
   "compilerOptions": {
     "importHelpers": true,
     "declaration": true,
-    "sourceMap": true,
-    "outDir": "./dist"
+    "sourceMap": true
   }
 }
