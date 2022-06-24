@@ -22,7 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 const path = require('path')
+// eslint-disable-next-line import/no-extraneous-dependencies
 const fse = require('fs-extra')
+// eslint-disable-next-line import/no-extraneous-dependencies
 const glob = require('fast-glob')
 
 const packagePath = process.cwd()
