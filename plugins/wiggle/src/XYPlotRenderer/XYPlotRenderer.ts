@@ -16,7 +16,7 @@ function fillRect(
   color?: string,
 ) {
   if (color) {
-    ctx.fillStyle = color
+    ctx.fillStyle = String(color)
   }
   if (width < 0) {
     x += width
@@ -123,12 +123,11 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
             filled ? toHeight(maxr) - toHeight(score) : 1,
             crossingOrigin
               ? colorCallback(feature, maxr)
-              : Color(c).lighten(0.6).toString(),
+              : Color(c).lighten(0.6),
           )
         }
 
         // normal
-
         fillRect(
           ctx,
           leftPx,
@@ -152,7 +151,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
             filled ? toHeight(minr) : 1,
             crossingOrigin
               ? colorCallback(feature, minr)
-              : Color(c).darken(0.6).toString(),
+              : Color(c).darken(0.6),
           )
         }
       } else {
