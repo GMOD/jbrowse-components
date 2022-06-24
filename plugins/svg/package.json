@@ -20,6 +20,7 @@
   "main": "src/index.ts",
   "files": [
     "dist",
+    "esm",
     "src"
   ],
   "scripts": {
@@ -51,5 +52,5 @@
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": ""
+  "module": "src/index.ts"
 }

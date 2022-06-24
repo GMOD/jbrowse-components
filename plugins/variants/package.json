@@ -20,7 +20,8 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "esm"
   ],
   "scripts": {
     "build": "npm-run-all build:*",
@@ -64,5 +65,5 @@
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": ""
+  "module": "src/index.ts"
 }
