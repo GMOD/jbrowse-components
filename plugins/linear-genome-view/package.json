@@ -64,5 +64,5 @@
   "publishConfig": {
     "access": "public"
   },
-  "module": "src/index.ts"
+  "module": ""
 }

@@ -58,5 +58,5 @@
   },
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
-  "module": "src/index.ts"
+  "module": ""
 }
