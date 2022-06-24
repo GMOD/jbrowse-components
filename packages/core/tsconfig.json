@@ -4,5 +4,5 @@
     "outDir": "dist/"
   },
 
-  "exclude": ["**/*.test.ts*", "**/*.test.js*", "dist", "**/test_data/*"]
+  "exclude": ["**/*.test.ts*", "**/*.test.js*", "dist"]
 }

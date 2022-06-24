@@ -20,21 +20,17 @@
   "main": "src/index.ts",
   "files": [
     "dist",
-    "src",
-    "esm"
+    "src"
   ],
   "scripts": {
-    "build": "npm-run-all build:*",
+    "build": "babel src --root-mode upward --out-dir dist --extensions .ts,.js,.tsx,.jsx",
     "test": "cd ../..; jest plugins/legacy-jbrowse",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
-    "prebuild": "npm run clean",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
-    "clean": "rimraf dist esm *.tsbuildinfo"
+    "postbuild": "tsc --build tsconfig.build.json"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
@@ -53,8 +49,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "distModule": "esm/index.js",
-  "srcModule": "src/index.ts",
-  "module": ""
+  }
 }
