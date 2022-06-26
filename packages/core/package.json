@@ -22,12 +22,11 @@
   "scripts": {
     "test": "cd ../..; jest packages/core",
     "coverage": "yarn test --coverage",
-    "clean": "rimraf dist *.build.tsbuildinfo",
+    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "npm run build:esm && npm run build:es5 && cp package.json dist/",
-    "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json"
+    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/",
+    "postbuild": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
