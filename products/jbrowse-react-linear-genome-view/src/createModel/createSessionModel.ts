@@ -26,10 +26,10 @@ import {
   IAnyStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import InfoIcon from '@mui/icons-material/Info'
 import { ReferringNode } from '../types'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types

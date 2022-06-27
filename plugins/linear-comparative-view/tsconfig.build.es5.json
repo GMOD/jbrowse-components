@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "declaration": true,
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "./src",
+    "composite": true,
+    "target": "es5",
+    "module": "commonjs"
+  },
+  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.json"
+    },
+    {
+      "path": "../wiggle/tsconfig.build.es5.json"
+    },
+    {
+      "path": "../alignments/tsconfig.build.es5.json"
+    }
+  ]
+}

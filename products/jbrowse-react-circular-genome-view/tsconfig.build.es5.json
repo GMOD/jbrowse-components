@@ -1,0 +1,23 @@
+{
+  // This config is for emitting declarations (.d.ts) only
+  // Actual .ts source files are transpiled via babel. This file is based on examples from the MUI github repo
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "./src",
+    "target": "es5",
+    "composite": true
+  },
+  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "references": [
+    { "path": "../../packages/core/tsconfig.build.json" },
+    { "path": "../../plugins/circular-view/tsconfig.build.es5.json" },
+    { "path": "../../plugins/config/tsconfig.build.es5.json" },
+    { "path": "../../plugins/data-management/tsconfig.build.es5.json" },
+    { "path": "../../plugins/sequence/tsconfig.build.es5.json" },
+    { "path": "../../plugins/variants/tsconfig.build.es5.json" },
+    { "path": "../../plugins/wiggle/tsconfig.build.es5.json" }
+  ]
+}

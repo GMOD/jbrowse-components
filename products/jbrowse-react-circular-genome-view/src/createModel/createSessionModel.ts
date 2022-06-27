@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// note: AboutDialog is imported statically instead of as a lazy component
-// due to vite failing to load it xref #2896
 import {
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import {
   getMembers,
   getParent,
@@ -26,7 +25,6 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import InfoIcon from '@mui/icons-material/Info'
-import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'
 
