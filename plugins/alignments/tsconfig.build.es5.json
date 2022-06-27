@@ -1,6 +1,4 @@
 {
-  // This config is for emitting declarations (.d.ts) only
-  // Actual .ts source files are transpiled via babel. This file is based on examples from the MUI github repo
   "extends": "./tsconfig",
   "compilerOptions": {
     "composite": true,
@@ -8,7 +6,8 @@
     "noEmit": false,
     "outDir": "dist",
     "rootDir": "./src",
-    "target": "es5"
+    "target": "es5",
+    "module": "commonjs"
   },
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],
   "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],

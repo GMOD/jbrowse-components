@@ -4,6 +4,7 @@
   "extends": "./tsconfig",
   "compilerOptions": {
     "noEmit": false,
+    "module": "commonjs",
     "outDir": "dist",
     "rootDir": "./src",
     "target": "es5",
