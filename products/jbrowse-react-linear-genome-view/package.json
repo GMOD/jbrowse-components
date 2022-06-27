@@ -20,6 +20,7 @@
   "files": [
     "dist",
     "src",
+    "esm",
     "docs"
   ],
   "scripts": {
