@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from 'react'
 import {
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import {
   getMembers,
   getParent,
@@ -27,8 +27,6 @@ import {
 import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'
-
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
