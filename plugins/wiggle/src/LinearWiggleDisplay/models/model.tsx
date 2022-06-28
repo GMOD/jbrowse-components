@@ -214,16 +214,26 @@ const stateModelFactory = (
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+        const {
+          color,
+          posColor,
+          negColor,
+          summaryScoreMode,
+          scaleType,
+          displayCrossHatches,
+          fill,
+        } = self
+
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            filled: self.fill,
-            scaleType: self.scaleType,
-            displayCrossHatches: self.displayCrossHatches,
-            summaryScoreMode: self.summaryScoreMode,
-            ...(self.color ? { color: self.color } : {}),
-            ...(self.negColor ? { negColor: self.negColor } : {}),
-            ...(self.posColor ? { posColor: self.posColor } : {}),
+            ...(scaleType ? { scaleType } : {}),
+            ...(fill ? { filled: fill } : {}),
+            ...(displayCrossHatches ? { displayCrossHatches } : {}),
+            ...(summaryScoreMode ? { summaryScoreMode } : {}),
+            ...(color ? { color } : {}),
+            ...(negColor ? { negColor } : {}),
+            ...(posColor ? { posColor } : {}),
           },
           getEnv(self),
         )
@@ -233,20 +243,18 @@ const stateModelFactory = (
       let oldDomain: [number, number] = [0, 0]
       return {
         get filled() {
-          return self.fill ?? readConfObject(self.rendererConfig, 'filled')
+          const { fill, rendererConfig: conf } = self
+          return fill ?? readConfObject(conf, 'filled')
         },
         get summaryScoreModeSetting() {
-          return (
-            self.summaryScoreMode ||
-            readConfObject(self.rendererConfig, 'summaryScoreMode')
-          )
+          const { summaryScoreMode, rendererConfig: conf } = self
+          return summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode')
         },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
-          const { scoreMin, scoreMax } = stats
 
           const ret = getNiceDomain({
-            domain: [scoreMin, scoreMax],
+            domain: [stats.scoreMin, stats.scoreMax],
             bounds: [minScore, maxScore],
             scaleType,
           })
@@ -285,14 +293,12 @@ const stateModelFactory = (
         },
 
         get autoscaleType() {
-          return self.autoscale || getConf(self, 'autoscale')
+          return self.autoscale ?? getConf(self, 'autoscale')
         },
 
         get displayCrossHatchesSetting() {
-          return (
-            self.displayCrossHatches ||
-            readConfObject(self.rendererConfig, 'displayCrossHatches')
-          )
+          const { displayCrossHatches: hatches, rendererConfig: conf } = self
+          return hatches ?? readConfObject(conf, 'displayCrossHatches')
         },
       }
     })
@@ -318,18 +324,19 @@ const stateModelFactory = (
       return {
         renderProps() {
           const superProps = superRenderProps()
+          const { filters, ticks, height, resolution, scaleOpts } = self
           return {
             ...superProps,
             notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
-            scaleOpts: self.scaleOpts,
-            resolution: self.resolution,
-            height: self.height,
-            ticks: self.ticks,
-            displayCrossHatches: self.displayCrossHatches,
-            filters: self.filters,
+            displayCrossHatches: self.displayCrossHatchesSetting,
+            scaleOpts,
+            resolution,
+            height,
+            ticks,
+            filters,
           }
         },
 

@@ -6,6 +6,16 @@ export { default } from './XYPlotRenderer'
 
 export const configSchema = ConfigurationSchema(
   'XYPlotRenderer',
-  {},
+  {
+    filled: {
+      type: 'boolean',
+      defaultValue: true,
+    },
+    displayCrossHatches: {
+      type: 'boolean',
+      description: 'choose to draw cross hatches (sideways lines)',
+      defaultValue: false,
+    },
+  },
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
