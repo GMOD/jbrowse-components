@@ -308,6 +308,16 @@ interface AttributeProps {
   prefix?: string[]
 }
 
+function UriLink({ value }: { value: { uri: string; baseUri?: string } }) {
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
+}
 const DataGridDetails = ({
   value,
   prefix,
@@ -346,7 +356,10 @@ const DataGridDetails = ({
 
     const columns = colNames.map(val => ({
       field: val,
-      renderCell: (val: GridCellParams) => getStr(val.formattedValue),
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
+      },
       width: Math.max(
         ...rows.map(row =>
           Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
