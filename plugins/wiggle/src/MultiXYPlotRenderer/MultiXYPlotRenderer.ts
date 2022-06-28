@@ -14,7 +14,7 @@ import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 const colors = ['red', 'green', 'blue', 'orange']
 
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
-  draw(
+  async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {

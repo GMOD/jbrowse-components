@@ -21,10 +21,14 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   ]
 
   public async getAdapters() {
+    const getSubAdapter = this.getSubAdapter
+    if (!getSubAdapter) {
+      throw new Error('no getSubAdapter available')
+    }
     const subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
     return Promise.all(
       subConfs.map(async c => {
-        const adapter = await this.getSubAdapter(c)
+        const adapter = await getSubAdapter(c)
         return {
           dataAdapter: adapter.dataAdapter as BaseFeatureDataAdapter,
           source: c.source as string,
@@ -40,6 +44,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
+    // @ts-ignore
     const stats = adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts))
     const scoreMin = Math.min(...stats.map(s => s.scoreMin))
     const scoreMax = Math.max(...stats.map(s => s.scoreMax))
