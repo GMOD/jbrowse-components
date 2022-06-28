@@ -120,8 +120,8 @@ exports[`<AddTrackWidget /> renders 1`] = `
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
                     data-shrink="false"
-                    for=":r0:"
-                    id=":r0:-label"
+                    for="mui-1"
+                    id="mui-1-label"
                   >
                     Enter URL
                   </label>
@@ -132,7 +132,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                       aria-invalid="false"
                       class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                       data-testid="urlInput"
-                      id=":r0:"
+                      id="mui-1"
                       type="text"
                       value=""
                     />
@@ -212,8 +212,8 @@ exports[`<AddTrackWidget /> renders 1`] = `
                   <label
                     class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
                     data-shrink="false"
-                    for=":r1:"
-                    id=":r1:-label"
+                    for="mui-2"
+                    id="mui-2-label"
                   >
                     Enter URL
                   </label>
@@ -224,7 +224,7 @@ exports[`<AddTrackWidget /> renders 1`] = `
                       aria-invalid="false"
                       class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                       data-testid="urlInput"
-                      id=":r1:"
+                      id="mui-2"
                       type="text"
                       value=""
                     />

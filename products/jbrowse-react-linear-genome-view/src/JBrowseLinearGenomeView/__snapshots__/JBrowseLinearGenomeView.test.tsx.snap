@@ -360,6 +360,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                     <span
                       class="MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall MuiSlider-thumb mui-1kbujg-MuiSlider-thumb"
+                      data-focusvisible="false"
                       data-index="0"
                       style="left: 56.78411120929245%;"
                     >
