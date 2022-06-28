@@ -356,7 +356,7 @@ const stateModelFactory = (
     })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
-      console.log(getConf(self, 'renderers'))
+      const hasRenderings = getConf(self, 'defaultRendering')
       return {
         trackMenuItems() {
           return [
@@ -378,12 +378,10 @@ const stateModelFactory = (
                   },
                   {
                     label: 'Summary score mode',
-                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
-                      return {
-                        label: elt,
-                        onClick: () => self.setSummaryScoreMode(elt),
-                      }
-                    }),
+                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
+                      label: elt,
+                      onClick: () => self.setSummaryScoreMode(elt),
+                    })),
                   },
                 ]
               : []),
@@ -408,13 +406,17 @@ const stateModelFactory = (
               checked: self.displayCrossHatchesSetting,
               onClick: () => self.toggleCrossHatches(),
             },
-            {
-              label: 'Renderer type',
-              subMenu: ['xyplot', 'density', 'line'].map(key => ({
-                label: key,
-                onClick: () => self.setRendererType(key),
-              })),
-            },
+            ...(hasRenderings
+              ? [
+                  {
+                    label: 'Renderer type',
+                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
+                      label: key,
+                      onClick: () => self.setRendererType(key),
+                    })),
+                  },
+                ]
+              : []),
             {
               label: 'Autoscale type',
               subMenu: [
