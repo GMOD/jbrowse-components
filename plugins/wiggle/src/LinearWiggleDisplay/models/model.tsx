@@ -356,6 +356,7 @@ const stateModelFactory = (
     })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
+      console.log(getConf(self, 'renderers'))
       return {
         trackMenuItems() {
           return [
@@ -367,15 +368,11 @@ const stateModelFactory = (
                     subMenu: [
                       {
                         label: 'Finer resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution * 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution * 5),
                       },
                       {
                         label: 'Coarser resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution / 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution / 5),
                       },
                     ],
                   },
@@ -396,39 +393,28 @@ const stateModelFactory = (
                     label: self.filled
                       ? 'Turn off histogram fill'
                       : 'Turn on histogram fill',
-                    onClick: () => {
-                      self.setFill(!self.filled)
-                    },
+                    onClick: () => self.setFill(!self.filled),
                   },
                 ]
               : []),
             {
               label:
                 self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-              onClick: () => {
-                self.toggleLogScale()
-              },
+              onClick: () => self.toggleLogScale(),
             },
             {
               type: 'checkbox',
               label: 'Draw cross hatches',
               checked: self.displayCrossHatchesSetting,
-              onClick: () => {
-                self.toggleCrossHatches()
-              },
+              onClick: () => self.toggleCrossHatches(),
             },
-
-            ...(Object.keys(getConf(self, 'renderers') || {}).length > 1
-              ? [
-                  {
-                    label: 'Renderer type',
-                    subMenu: [...rendererTypes.keys()].map(key => ({
-                      label: key,
-                      onClick: () => self.setRendererType(key),
-                    })),
-                  },
-                ]
-              : []),
+            {
+              label: 'Renderer type',
+              subMenu: ['xyplot', 'density', 'line'].map(key => ({
+                label: key,
+                onClick: () => self.setRendererType(key),
+              })),
+            },
             {
               label: 'Autoscale type',
               subMenu: [
@@ -440,30 +426,26 @@ const stateModelFactory = (
                     ]
                   : []),
                 ['localsd', 'Local ± 3σ'],
-              ].map(([val, label]) => {
-                return {
-                  label,
-                  onClick() {
-                    self.setAutoscale(val)
-                  },
-                }
-              }),
+              ].map(([val, label]) => ({
+                label,
+                onClick: () => self.setAutoscale(val),
+              })),
             },
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMinMaxDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetColorDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
