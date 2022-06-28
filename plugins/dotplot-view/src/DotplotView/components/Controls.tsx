@@ -1,22 +1,23 @@
 import React from 'react'
 
-import { IconButton, makeStyles } from '@material-ui/core'
+import { IconButton } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import ZoomOut from '@material-ui/icons/ZoomOut'
-import ZoomIn from '@material-ui/icons/ZoomIn'
-import ArrowUp from '@material-ui/icons/KeyboardArrowUp'
-import ArrowDown from '@material-ui/icons/KeyboardArrowDown'
-import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
-import ArrowRight from '@material-ui/icons/KeyboardArrowRight'
-import CropFreeIcon from '@material-ui/icons/CropFree'
+import ZoomOutIcon from '@mui/icons-material/ZoomOut'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 import { observer } from 'mobx-react'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   iconButton: {
     margin: 5,
   },
@@ -31,7 +32,7 @@ const useStyles = makeStyles({
 })
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.controls}>
       <IconButton
@@ -42,7 +43,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowLeft />
+        <ArrowLeftIcon />
       </IconButton>
 
       <IconButton
@@ -53,7 +54,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowRight />
+        <ArrowRightIcon />
       </IconButton>
       <IconButton
         onClick={() => {
@@ -63,7 +64,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowDown />
+        <ArrowDownwardIcon />
       </IconButton>
       <IconButton
         onClick={() => {
@@ -73,14 +74,14 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="left"
         color="secondary"
       >
-        <ArrowUp />
+        <ArrowUpwardIcon />
       </IconButton>
       <IconButton
         onClick={model.zoomOutButton}
         className={classes.iconButton}
         color="secondary"
       >
-        <ZoomOut />
+        <ZoomOutIcon />
       </IconButton>
 
       <IconButton
@@ -89,7 +90,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         title="zoom in"
         color="secondary"
       >
-        <ZoomIn />
+        <ZoomInIcon />
       </IconButton>
 
       <IconButton

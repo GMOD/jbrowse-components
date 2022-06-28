@@ -84,13 +84,15 @@ export default function JBrowseDesktop(
     })
     .views(self => ({
       get savedSessionNames() {
-        return getParent(self).savedSessionNames
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).savedSessionNames
       },
       get assemblyNames() {
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).rpcManager
       },
     }))
     .actions(self => ({
@@ -171,7 +173,8 @@ export default function JBrowseDesktop(
       },
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
-        const rootModel = getParent(self)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
       removePlugin(pluginDefinition: PluginDefinition) {
@@ -184,8 +187,8 @@ export default function JBrowseDesktop(
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        const rootModel = getParent(self)
-        rootModel.setPluginsUpdated(true)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self).setPluginsUpdated(true)
       },
       addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
         const { type } = internetAccountConf

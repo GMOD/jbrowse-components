@@ -1,4 +1,4 @@
-import Paper from '@material-ui/core/Paper'
+import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 import React from 'react'
 import {

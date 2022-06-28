@@ -1712,40 +1712,17 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "out",
-      "name": "out",
+      "type": "FeatureTrack",
+      "trackId": "volvox.filtered.lowercase",
+      "name": "volvox.filtered.lowercase",
       "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "out.cram",
-          "locationType": "UriLocation"
-        },
-        "craiLocation": {
-          "uri": "out.cram.crai",
-          "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "assemblyNames": ["volvox"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "v1",
-      "name": "v1",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "v1.bw",
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.filtered.lowercase.vcf",
           "locationType": "UriLocation"
         }
       },
+      "category": ["Integration test"],
       "assemblyNames": ["volvox"]
     }
   ],

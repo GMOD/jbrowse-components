@@ -11,12 +11,12 @@ import {
   Paper,
   TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   paper: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),
@@ -93,7 +93,7 @@ function FilterByTagDlg(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { filterBy } = model
   const [flagInclude, setFlagInclude] = useState(filterBy?.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)

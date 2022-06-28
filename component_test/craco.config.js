@@ -7,8 +7,6 @@ module.exports = {
     return config
   },
   webpack: {
-    target: 'node',
-
     plugins: [
       new NodePolyfillPlugin({
         excludeAliases: ['console'],

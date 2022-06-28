@@ -88,6 +88,7 @@ function initialize() {
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
+            // @ts-ignore
             regions: volvoxDisplayedRegions,
           },
         },

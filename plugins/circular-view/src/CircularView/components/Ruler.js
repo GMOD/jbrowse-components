@@ -7,9 +7,10 @@ import {
   assembleLocString,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+import { useTheme } from '@mui/material/styles'
+import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   rulerLabel: {
     fontSize: '0.8rem',
     fontWeight: 500,
@@ -89,7 +90,7 @@ const ElisionRulerArc = observer(({ model, slice }) => {
 
 const RulerLabel = observer(
   ({ view, text, maxWidthPx, radians, radiusPx, title, color }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const textXY = polarToCartesian(radiusPx + 5, radians)
     if (!text) {
       return null

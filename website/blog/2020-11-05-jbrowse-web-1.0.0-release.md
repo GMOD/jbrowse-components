@@ -34,7 +34,7 @@ Changes
 - fixed crash when live editing an assembly in the assembly manager
 - added a simple PAF import form in the DotplotView and LinearSyntenyView
   import forms
-- updated @material-ui/core version
+- updated @mui/material version
 - clearer output printed when using admin-server
 
 Enjoy!

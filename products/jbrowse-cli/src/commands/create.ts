@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import fs from 'fs'
-import fetch from 'node-fetch'
+import fetch from '../fetchWithProxy'
 import unzip from 'unzipper'
 import JBrowseCommand from '../base'
 

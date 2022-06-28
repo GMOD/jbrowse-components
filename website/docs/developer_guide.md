@@ -47,18 +47,24 @@ https://github.com/GMOD/jbrowse-plugin-template.
 
 Here are some examples of working plugins.
 
-- [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api) - probably the simplest plugin example, it demonstrates accessing data from
+- [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api)
+  probably the simplest plugin example, it demonstrates accessing data from
   UCSC REST API
-- [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) - a
+- [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) a
   custom plugin to display manhattan plot GWAS data
-- [jbrowse-plugin-biothings-api](https://github.com/cmdcolin/jbrowse-plugin-biothings-api) - demonstrates accessing data from mygene.info, part of the "biothings API"
+- [jbrowse-plugin-biothings-api](https://github.com/cmdcolin/jbrowse-plugin-biothings-api)
+  demonstrates accessing data from mygene.info, part of the "biothings API"
   family
 - [jbrowse-plugin-msaview](https://github.com/GMOD/jbrowse-plugin-msaview) -
   demonstrates creating a custom view type that doesn't use any conventional
   tracks
-- [jbrowse-plugin-gdc](https://github.com/GMOD/jbrowse-plugin-gdc) -
-  demonstrates accessing GDC cancer data GraphQL API, plus a custom drawer and
-  track type for coloring variants by impact score
+- [jbrowse-plugin-gdc](https://github.com/GMOD/jbrowse-plugin-gdc) demonstrates
+  accessing GDC cancer data GraphQL API, plus a custom drawer and track type
+  for coloring variants by impact score
+- [jbrowse-plugin-systeminformation](https://github.com/garrettjstevens/jbrowse-plugin-systeminformation)
+  demonstrates using desktop specific functionality, accessing system node
+  libraries. This desktop specific functionality should use the CJS bundle type
+  (electron doesn't support ESM yet)
 
 You can use these to see how plugins are generally structured, and can use the
 pluggable elements in them as templates for your own pluggable elements.
@@ -90,14 +96,17 @@ tracks, renderers, and so forth.
 
 Pluggable elements are pieces of functionality that plugins can add to JBrowse. Examples of pluggable types include:
 
-- Adapters
+- Adapter types
 - Track types
+- View types
 - Display types
 - Renderer types
 - Widgets
 - RPC calls
-- Display types
-- View types
+- Extension points
+- Internet account types
+- Connection types
+- Text search adapter types
 - Extension points
 
 In additional to creating plugins that create new adapters, track types,
@@ -291,7 +300,7 @@ not a menu. Here's an example that adds an "Open My View" item to the `File -> A
 ```js
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-import InfoIcon from '@material-ui/icons/Info'
+import InfoIcon from '@mui/icons-material/Info'
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'

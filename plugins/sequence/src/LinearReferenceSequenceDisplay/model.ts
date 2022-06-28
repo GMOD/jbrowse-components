@@ -3,8 +3,10 @@ import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { ConfigurationReference } from '@jbrowse/core/configuration'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
+import {
+  AnyConfigurationSchemaType,
+  ConfigurationReference,
+} from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {

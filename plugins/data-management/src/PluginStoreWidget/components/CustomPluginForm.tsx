@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import clsx from 'clsx'
-
+import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   Button,
   Collapse,
@@ -12,20 +11,18 @@ import {
   DialogContent,
   DialogContentText,
   TextField,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import IconButton from '@material-ui/core/IconButton'
-import CloseIcon from '@material-ui/icons/Close'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
-
-import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import IconButton from '@mui/material/IconButton'
+import CloseIcon from '@mui/icons-material/Close'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -56,7 +53,7 @@ function CustomPluginForm({
   onClose(): void
   model: PluginStoreModel
 }) {
-  const classes = useStyles()
+  const { classes, cx } = useStyles()
   const [umdPluginName, setUMDPluginName] = useState('')
   const [umdPluginUrl, setUMDPluginUrl] = useState('')
   const [esmPluginUrl, setESMPluginUrl] = useState('')
@@ -83,8 +80,8 @@ function CustomPluginForm({
     setAdvancedOptionsOpen(!advancedOptionsOpen)
   }
 
-  const rootModel = getRoot(model)
-  const { jbrowse } = rootModel
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { jbrowse } = getRoot<any>(model)
 
   const ready = Boolean(
     (umdPluginName && umdPluginUrl) || esmPluginUrl || cjsPluginUrl,
@@ -152,7 +149,7 @@ function CustomPluginForm({
           />
           <DialogContentText onClick={handleOpenAdvancedOptions}>
             <IconButton
-              className={clsx(classes.expand, {
+              className={cx(classes.expand, {
                 [classes.expandOpen]: advancedOptionsOpen,
               })}
               aria-expanded={advancedOptionsOpen}

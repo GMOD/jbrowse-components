@@ -4,10 +4,10 @@ import { iterMap } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
 // icons
-import CheckIcon from '@material-ui/icons/Check'
-import FilterListIcon from '@material-ui/icons/FilterList'
-import PermDataSettingIcon from '@material-ui/icons/PermDataSetting'
-import SortIcon from '@material-ui/icons/Sort'
+import CheckIcon from '@mui/icons-material/Check'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import PermDataSettingIcon from '@mui/icons-material/PermDataSetting'
+import SortIcon from '@mui/icons-material/Sort'
 
 const ColumnMenu = observer(
   ({ viewModel, spreadsheetModel, currentColumnMenu, setColumnMenu }) => {

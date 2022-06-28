@@ -14,5 +14,31 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
   if (String(args[0]).includes('volvox.2bit_404')) {
     return undefined
   }
+
+  if (String(args).includes('popupState')) {
+    return undefined
+  }
+
+  if (String(args).includes('hydrateRoot')) {
+    return undefined
+  }
+
+  if (
+    String(args).includes('A suspended resource finished loading inside a test')
+  ) {
+    return undefined
+  }
+
+  if (String(args).includes('was not wrapped in act')) {
+    return undefined
+  }
+  if (
+    String(args).includes(
+      'attempting to unmount was rendered by another copy of React',
+    )
+  ) {
+    return undefined
+  }
+
   return originalError.call(console, ...args)
 })

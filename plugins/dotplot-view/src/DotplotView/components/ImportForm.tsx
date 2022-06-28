@@ -2,15 +2,15 @@ import React, { useState } from 'react'
 import path from 'path'
 import {
   Button,
+  Container,
   FormControlLabel,
+  Grid,
+  Paper,
   Radio,
   RadioGroup,
-  Paper,
-  Container,
-  Grid,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
@@ -18,7 +18,7 @@ import { transaction } from 'mobx'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
     margin: '0 auto',
@@ -45,7 +45,7 @@ function stripGz(fileName: string) {
 }
 
 const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager } = session
   const [trackData, setTrackData] = useState<FileLocation>()

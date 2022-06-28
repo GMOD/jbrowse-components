@@ -1,18 +1,19 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { IconButton, makeStyles } from '@material-ui/core'
+import { IconButton } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import LocationSearching from '@material-ui/icons/LocationSearching'
-import LocationDisabled from '@material-ui/icons/LocationDisabled'
-import LeakAdd from '@material-ui/icons/LeakAdd'
-import LeakRemove from '@material-ui/icons/LeakRemove'
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
+import LocationSearching from '@mui/icons-material/LocationSearching'
+import LocationDisabled from '@mui/icons-material/LocationDisabled'
+import LeakAdd from '@mui/icons-material/LeakAdd'
+import LeakRemove from '@mui/icons-material/LeakRemove'
+import LinkIcon from '@mui/icons-material/Link'
+import LinkOffIcon from '@mui/icons-material/LinkOff'
 
 import { BreakpointViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -66,7 +67,7 @@ const Sync = observer(({ model }: { model: BreakpointViewModel }) => {
 })
 
 const Header = observer(({ model }: { model: BreakpointViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <div className={classes.headerBar}>

@@ -1,12 +1,12 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getBlockLabelKeysToHide } from './util'
-import { viewBpToPx } from '@jbrowse/core/util'
+import { viewBpToPx, getTickDisplayStr } from '@jbrowse/core/util'
 import { DotplotViewModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   vtext: {
     gridColumn: '1/2',
     gridRow: '1/2',
@@ -32,9 +32,9 @@ const useStyles = makeStyles(() => ({
 
 export const HorizontalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
-    const { offsetPx, width, dynamicBlocks } = hview
+    const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
     const dblocks = dynamicBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
     const hviewSnap = { ...getSnapshot(hview), width }
@@ -109,7 +109,7 @@ export const HorizontalAxis = observer(
                 dominantBaseline="middle"
                 textAnchor="end"
               >
-                {(tick.base + 1).toLocaleString('en-US')}
+                {getTickDisplayStr(tick.base + 1, bpPerPx)}
               </text>
             )
           })}
@@ -129,9 +129,9 @@ export const HorizontalAxis = observer(
 )
 export const VerticalAxis = observer(
   ({ model }: { model: DotplotViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { borderX, viewHeight, borderY, vview, vtextRotation, vticks } = model
-    const { offsetPx, width, dynamicBlocks } = vview
+    const { offsetPx, width, dynamicBlocks, bpPerPx } = vview
     const dblocks = dynamicBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
     const vviewSnap = { ...getSnapshot(vview), width }
@@ -202,7 +202,7 @@ export const VerticalAxis = observer(
                 style={{ fontSize: '11px' }}
                 className={classes.majorTickLabel}
               >
-                {(tick.base + 1).toLocaleString('en-US')}
+                {getTickDisplayStr(tick.base + 1, bpPerPx)}
               </text>
             )
           })}

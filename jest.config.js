@@ -27,12 +27,13 @@ module.exports = {
   ],
   coveragePathIgnorePatterns: ['!*.d.ts', 'makeWorkerInstance.ts'],
   setupFiles: [
+    '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/crypto.js',
     'jest-localstorage-mock',
   ],
-  testURL: 'http://localhost',
+  testEnvironmentOptions: { url: 'http://localhost' },
   testEnvironment: 'jsdom',
 }

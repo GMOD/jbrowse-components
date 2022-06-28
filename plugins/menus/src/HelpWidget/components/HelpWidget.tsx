@@ -1,23 +1,22 @@
-import Typography from '@material-ui/core/Typography'
+import React from 'react'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import React from 'react'
-import { makeStyles } from '@material-ui/core'
-import Link from '@material-ui/core/Link'
+import { makeStyles } from 'tss-react/mui'
+import { Link, Typography } from '@mui/material'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(2),
     fontSize: '1.2em',
   },
   subtitle: {
-    margin: theme.spacing(),
+    margin: theme.spacing(1),
   },
 }))
 
 function Help({ model }: { model?: IAnyStateTreeNode }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const root = model ? getSession(model) : { version: '' }
   return (
     <div className={classes.root}>

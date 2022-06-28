@@ -1,15 +1,12 @@
 import React from 'react'
+import { observer } from 'mobx-react'
+import { Instance } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  IconButton,
-  Paper,
-  Typography,
-  alpha,
-  makeStyles,
-} from '@material-ui/core'
+import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import {
   bindTrigger,
@@ -17,18 +14,14 @@ import {
   usePopupState,
 } from 'material-ui-popup-state/hooks'
 
-import clsx from 'clsx'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-
 // icons
-import MoreVertIcon from '@material-ui/icons/MoreVert'
-import DragIcon from '@material-ui/icons/DragIndicator'
-import CloseIcon from '@material-ui/icons/Close'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import DragIcon from '@mui/icons-material/DragIndicator'
+import CloseIcon from '@mui/icons-material/Close'
 
 import { LinearGenomeViewStateModel } from '..'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     background: alpha(theme.palette.background.paper, 0.8),
     '&:hover': {
@@ -59,13 +52,13 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type LGV = Instance<LinearGenomeViewStateModel>
-
-const TrackLabel = React.forwardRef(
-  (
-    { track, className }: { track: BaseTrackModel; className?: string },
-    ref,
-  ) => {
-    const classes = useStyles()
+interface Props {
+  track: BaseTrackModel
+  className?: string
+}
+const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
+  ({ track, className }, ref) => {
+    const { classes, cx } = useStyles()
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
@@ -79,11 +72,8 @@ const TrackLabel = React.forwardRef(
     const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
       const target = event.target as HTMLElement
       if (target.parentNode) {
-        event.dataTransfer.setDragImage(
-          target.parentNode as HTMLElement,
-          20,
-          20,
-        )
+        const parent = target.parentNode as HTMLElement
+        event.dataTransfer.setDragImage(parent, 20, 20)
         view.setDraggingTrackId(track.id)
       }
     }
@@ -109,7 +99,7 @@ const TrackLabel = React.forwardRef(
 
     return (
       <>
-        <Paper ref={ref} className={clsx(className, classes.root)}>
+        <Paper ref={ref} className={cx(className, classes.root)}>
           <span
             draggable
             className={classes.dragHandle}
@@ -117,7 +107,7 @@ const TrackLabel = React.forwardRef(
             onDragEnd={onDragEnd}
             data-testid={`dragHandle-${view.id}-${trackId}`}
           >
-            <DragIcon className={classes.dragHandleIcon} />
+            <DragIcon className={classes.dragHandleIcon} fontSize="small" />
           </span>
           <IconButton
             onClick={() => view.hideTrack(trackId)}
@@ -125,7 +115,7 @@ const TrackLabel = React.forwardRef(
             title="close this track"
             color="secondary"
           >
-            <CloseIcon />
+            <CloseIcon fontSize="small" />
           </IconButton>
           <Typography
             variant="body1"
@@ -141,7 +131,7 @@ const TrackLabel = React.forwardRef(
             data-testid="track_menu_icon"
             disabled={!items.length}
           >
-            <MoreVertIcon />
+            <MoreVertIcon fontSize="small" />
           </IconButton>
         </Paper>
         <CascadingMenu

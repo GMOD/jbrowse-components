@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Feature } from '../util/simpleFeature'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   hoverLabel: {
     border: '1px solid black',
     position: 'absolute',
@@ -27,7 +27,7 @@ const Tooltip = ({
   feature?: Feature
   timeout?: number
 }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [shown, setShown] = useState(false)
   useEffect(() => {
     // only show the loading message after short timeout to prevent excessive

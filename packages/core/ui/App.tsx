@@ -9,15 +9,14 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import LaunchIcon from '@material-ui/icons/Launch'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import LaunchIcon from '@mui/icons-material/Launch'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
 // locals
-import { readConfObject } from '../configuration'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import EditableTypography from './EditableTypography'
@@ -31,29 +30,9 @@ import {
 } from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
-const useStyles = makeStyles(theme => ({
-  '@global': {
-    html: {
-      'font-family': 'Roboto',
-    },
-    /* Based on: https://www.digitalocean.com/community/tutorials/css-scrollbars */
-    /* The emerging W3C standard
-       that is currently Firefox-only */
-    '*': {
-      'scrollbar-width': 'auto',
-      'scrollbar-color': 'rgba(0,0,0,.5) rgba(128,128,128)',
-    },
-    /* Works on Chrome/Edge/Safari */
-    '*::-webkit-scrollbar': {
-      '-webkit-appearance': 'none',
-      width: '12px',
-    },
-    '*::-webkit-scrollbar-thumb': {
-      'background-color': 'rgba(0,0,0,.5)',
-      '-webkit-box-shadow': '0 0 1px rgba(255,255,255,.5)',
-    },
-  },
+const useStyles = makeStyles()(theme => ({
   root: {
+    fontFamily: 'Roboto',
     display: 'grid',
     height: '100vh',
     width: '100%',
@@ -135,7 +114,7 @@ const App = observer(
       popSnackbarMessage: () => unknown
     }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { pluginManager } = getEnv(session)
     const viewTypes = pluginManager.getElementTypeRecord('view').all()
     const [value, setValue] = useState(viewTypes[0]?.name)

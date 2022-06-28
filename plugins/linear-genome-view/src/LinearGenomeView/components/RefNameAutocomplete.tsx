@@ -5,20 +5,17 @@ import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
 import {
+  Autocomplete,
   CircularProgress,
   IconButton,
   InputAdornment,
-  Popper,
-  PopperProps,
   TextField,
   TextFieldProps as TFP,
-  Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 
 // icons
-import SearchIcon from '@material-ui/icons/Search'
-import Autocomplete from '@material-ui/lab/Autocomplete'
-import HelpIcon from '@material-ui/icons/Help'
+import SearchIcon from '@mui/icons-material/Search'
+import HelpIcon from '@mui/icons-material/Help'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -43,25 +40,6 @@ function filterOptions(options: Option[], searchQuery: string) {
       result.matchedObject
     )
   })
-}
-
-// MyPopper used to expand search results box wider if needed
-// xref https://stackoverflow.com/a/63583835/2129219
-const MyPopper = function (
-  props: PopperProps & { style?: { width?: unknown } },
-) {
-  const { style } = props
-  return (
-    <Popper
-      {...props}
-      style={{
-        width: 'fit-content',
-        minWidth: Math.min(+(style?.width || 0), 200),
-        background: 'white',
-      }}
-      placement="bottom-start"
-    />
-  )
 }
 
 function RefNameAutocomplete({
@@ -164,7 +142,6 @@ function RefNameAutocomplete({
         data-testid="autocomplete"
         disableListWrap
         disableClearable
-        PopperComponent={MyPopper}
         disabled={!assemblyName}
         freeSolo
         includeInputInList
@@ -226,11 +203,11 @@ function RefNameAutocomplete({
           const { helperText, InputProps = {} } = TextFieldProps
           return (
             <TextField
-              onBlur={() => {
+              onBlur={() =>
                 // this is used to restore a refName or the non-user-typed input
                 // to the box on blurring
                 setInputValue(inputBoxVal)
-              }}
+              }
               {...params}
               {...TextFieldProps}
               helperText={helperText}
@@ -244,12 +221,13 @@ function RefNameAutocomplete({
                       <CircularProgress color="inherit" size={20} />
                     ) : (
                       <InputAdornment position="end" style={{ marginRight: 7 }}>
-                        <SearchIcon />
+                        <SearchIcon fontSize="small" />
                         {showHelp ? (
                           <IconButton
                             onClick={() => setHelpDialogDisplayed(true)}
+                            size="small"
                           >
-                            <HelpIcon />
+                            <HelpIcon fontSize="small" />
                           </IconButton>
                         ) : null}
                       </InputAdornment>
@@ -259,23 +237,14 @@ function RefNameAutocomplete({
                 ),
               }}
               placeholder="Search for location"
-              onChange={e => {
-                setCurrentSearch(e.target.value)
-              }}
+              onChange={e => setCurrentSearch(e.target.value)}
             />
           )
         }}
-        renderOption={option => {
-          const { result } = option
-          const component = result.getRenderingComponent()
-          if (component && React.isValidElement(component)) {
-            return component
-          }
-
-          return <Typography noWrap>{result.getDisplayString()}</Typography>
-        }}
         getOptionLabel={option =>
-          (typeof option === 'string' ? option : option.result.getLabel()) || ''
+          (typeof option === 'string'
+            ? option
+            : option.result.getDisplayString()) || ''
         }
       />
       {isHelpDialogDisplayed ? (

@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "noEmit": false,
+    "outDir": "esm",
+    "rootDir": "./src",
+    "target": "es2018"
+  },
+  "include": ["./src/**/*.ts*", "./src/**/*.js*"],
+  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.json"
+    },
+    {
+      "path": "../wiggle/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../linear-genome-view/tsconfig.build.esm.json"
+    }
+  ]
+}

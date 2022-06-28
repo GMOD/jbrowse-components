@@ -12,7 +12,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
-import DoneIcon from '@material-ui/icons/Done'
+import DoneIcon from '@mui/icons-material/Done'
 
 import SpreadsheetModel from './Spreadsheet'
 import ImportWizardModel from './ImportWizard'
@@ -38,7 +38,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
     onClick(_view: unknown, spreadsheet: Spreadsheet) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
       if (rowNumber !== undefined) {
-        spreadsheet.rowSet.rows[rowNumber - 1].toggleSelect()
+        spreadsheet.rowSet.rows[+rowNumber - 1].toggleSelect()
       }
     },
   },
@@ -156,7 +156,8 @@ const model = types
     },
 
     closeView() {
-      getParent(self, 2).removeView(self)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getParent<any>(self, 2).removeView(self)
     },
   }))
 

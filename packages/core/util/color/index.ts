@@ -4,7 +4,7 @@ import {
   getContrastRatio,
   getLuminance as muiGetLuminance,
   lighten,
-} from '@material-ui/core/styles/colorManipulator'
+} from '@mui/material/styles'
 import { namedColorToHex, isNamedColor } from './cssColorsLevel4'
 
 export { namedColorToHex, isNamedColor }
