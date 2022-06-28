@@ -541,9 +541,9 @@ const stateModelFactory = (
         async reload() {
           self.setError()
           const aborter = new AbortController()
-          let stats
+          self.setLoading(aborter)
           try {
-            stats = await getStats({
+            const stats = await getStats({
               signal: aborter.signal,
               ...self.renderProps(),
             })
@@ -561,9 +561,7 @@ const stateModelFactory = (
             autorun(
               async () => {
                 try {
-                  const aborter = new AbortController()
                   const view = getContainingView(self) as LGV
-                  self.setLoading(aborter)
 
                   if (!view.initialized) {
                     return
@@ -575,6 +573,8 @@ const stateModelFactory = (
                   if (self.regionTooLarge) {
                     return
                   }
+                  const aborter = new AbortController()
+                  self.setLoading(aborter)
 
                   const wiggleStats = await getStats({
                     signal: aborter.signal,
