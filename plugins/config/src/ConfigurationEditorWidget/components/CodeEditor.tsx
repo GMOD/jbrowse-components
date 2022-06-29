@@ -41,7 +41,7 @@ export default function CodeEditor({
       console.error({ e })
       setCodeError(e)
     }
-  }, [val, contents])
+  }, [val, contents, setContents])
 
   return (
     <TextField

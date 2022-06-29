@@ -53,7 +53,6 @@ function CallbackEditor({
         ? debouncedCode
         : `jexl:${debouncedCode}`
 
-      console.log({ jexlDebouncedCode })
       if (jexlDebouncedCode === 'jexl:') {
         throw new Error('Empty jexl expression is not valid')
       }
