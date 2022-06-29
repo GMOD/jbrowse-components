@@ -1,4 +1,3 @@
-import React from 'react'
 import { createEvent, fireEvent, waitFor, screen } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'

@@ -1,4 +1,3 @@
-import React from 'react'
 import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'

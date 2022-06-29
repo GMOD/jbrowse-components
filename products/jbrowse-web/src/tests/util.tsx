@@ -1,4 +1,5 @@
 import React from 'react'
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -145,8 +146,10 @@ export const pc = (str: string) => `prerendered_canvas_${str}_done`
 export function createView(args?: any) {
   const pm = getPluginManager(args)
   const state = pm.rootModel
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { session } = state!
   const rest = render(<JBrowse pluginManager={pm} />)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const view = session!.views[0] as LGV
   return { view, state, ...rest }
 }

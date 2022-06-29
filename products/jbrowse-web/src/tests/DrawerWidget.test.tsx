@@ -1,4 +1,3 @@
-import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
 
 import { LocalFile } from 'generic-filehandle'

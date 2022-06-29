@@ -1,4 +1,3 @@
-import React from 'react'
 import { fireEvent, within } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
