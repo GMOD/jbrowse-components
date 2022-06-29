@@ -5,6 +5,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 
 // locals
+import { LinearGenomeViewModel } from '..'
 import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
@@ -12,6 +13,8 @@ import ImportForm from './ImportForm'
 import MiniControls from './MiniControls'
 import SequenceDialog from './SequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
+
+type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
   note: {
@@ -46,8 +49,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LinearGenomeView = observer(({ model }: { model: any }) => {
+const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
   const { classes } = useStyles()
 
