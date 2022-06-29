@@ -412,7 +412,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           </div>
           <div
             class="tss-75rarj-tracksContainer"
-            role="presentation"
+            data-testid="trackContainer"
           >
             <div
               class="tss-1rfvwmf-verticalGuidesZoomContainer"

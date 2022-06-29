@@ -162,7 +162,7 @@ function TracksContainer({
   return (
     <div
       ref={ref}
-      role="presentation"
+      data-testid="trackContainer"
       className={classes.tracksContainer}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}

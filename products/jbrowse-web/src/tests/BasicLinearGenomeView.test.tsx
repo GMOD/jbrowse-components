@@ -1,23 +1,16 @@
-import React from 'react'
-import {
-  createEvent,
-  fireEvent,
-  render,
-  waitFor,
-  screen,
-} from '@testing-library/react'
+import { createEvent, fireEvent, waitFor, screen } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
-import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
-
+import { setup, createView, generateReadBuffer, hts } from './util'
 setup()
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(url => {
       return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
@@ -31,8 +24,7 @@ const total = 30000
 test(
   'access about menu',
   async () => {
-    const pm = getPluginManager()
-    const { findByText } = render(<JBrowse pluginManager={pm} />)
+    const { findByText } = createView()
 
     fireEvent.click(await findByText('Help'))
     fireEvent.click(await findByText('About'))
@@ -45,33 +37,13 @@ test(
 test(
   'click and drag to move sideways',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId, findAllByTestId } = render(
-      <JBrowse pluginManager={pm} />,
-    )
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
-
-    const start = state.session.views[0].offsetPx
-    const track = await findByTestId(
-      'display-volvox_alignments_alignments',
-      {},
-      delay,
-    )
+    const { view, findByTestId } = createView()
+    const start = view.offsetPx
+    const track = await findByTestId('trackContainer', {}, delay)
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
-    // wait for requestAnimationFrame
-    await waitFor(
-      () => expect(state.session.views[0].offsetPx - start).toEqual(150),
-      delay,
-    )
-
-    // wait for this unrelated thing because otherwise it warns about prerendered
-    // canvas still running after jest is torn down
-    await findAllByTestId(/prerendered_canvas/, {}, delay)
+    await waitFor(() => expect(view.offsetPx - start).toEqual(150), delay)
   },
   total,
 )
@@ -79,17 +51,14 @@ test(
 test(
   'click and drag to rubberband',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+    const { view, findByTestId, findByText } = createView()
     const track = await findByTestId('rubberBand_controls', {}, delay)
-
-    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    expect(view.bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     fireEvent.click(await findByText('Zoom to region'))
-    expect(state.session.views[0].bpPerPx).toEqual(0.02)
+    expect(view.bpPerPx).toEqual(0.02)
   },
   total,
 )
@@ -97,22 +66,15 @@ test(
 test(
   'click and drag rubberBand, click get sequence to open sequenceDialog',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-    const rubberBandComponent = await findByTestId(
-      'rubberBand_controls',
-      {},
-      delay,
-    )
-
-    expect(state.session.views[0].bpPerPx).toEqual(0.05)
-    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
-    fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    const { view, findByTestId, findByText } = createView()
+    const rubberband = await findByTestId('rubberBand_controls', {}, delay)
+    expect(view.bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
     fireEvent.click(await findByText('Get sequence'))
-    expect(state.session.views[0].leftOffset).toBeTruthy()
-    expect(state.session.views[0].rightOffset).toBeTruthy()
+    expect(view.leftOffset).toBeTruthy()
+    expect(view.rightOffset).toBeTruthy()
   },
   total,
 )
@@ -120,17 +82,10 @@ test(
 test(
   'click and drag to reorder tracks',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
-    )
+    const { view, findByTestId } = createView()
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
+    fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
 
-    const view = state.session.views[0]
     const trackId1 = view.tracks[1].id
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
@@ -161,13 +116,8 @@ test(
 test(
   'click and zoom in and back out',
   async () => {
-    const pm = getPluginManager()
-    const { session } = pm.rootModel
-    const { findByTestId, findAllByText } = render(
-      <JBrowse pluginManager={pm} />,
-    )
+    const { view, findByTestId, findAllByText } = createView()
     await findAllByText('ctgA', {}, delay)
-    const view = session.views[0]
     const before = view.bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
@@ -180,16 +130,11 @@ test(
 test(
   'opens track selector',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-
-    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay)
-    expect(state.session.views[0].tracks.length).toBe(0)
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
-    expect(state.session.views[0].tracks.length).toBe(1)
+    const { view, findByTestId } = createView()
+    await findByTestId(hts('volvox_alignments'), {}, delay)
+    expect(view.tracks.length).toBe(0)
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
+    expect(view.tracks.length).toBe(1)
   },
   total,
 )
@@ -197,15 +142,9 @@ test(
 test(
   'opens reference sequence track and expects zoom in message',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findAllByText, findByTestId } = render(
-      <JBrowse pluginManager={pm} />,
-    )
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_refseq', {}, delay),
-    )
-    state.session.views[0].setNewView(20, 0)
+    const { view, findByTestId, findAllByText } = createView()
+    fireEvent.click(await findByTestId(hts('volvox_refseq'), {}, delay))
+    view.setNewView(20, 0)
     await findByTestId(
       'display-volvox_refseq-LinearReferenceSequenceDisplay',
       {},
@@ -219,23 +158,16 @@ test(
 test(
   'click to display center line with correct value',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
+    const { view, findByTestId, findByText } = createView()
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
     await findByTestId('display-volvox_alignments_alignments', {}, delay)
 
     // opens the view menu and selects show center line
     fireEvent.click(await findByTestId('view_menu_icon'))
     fireEvent.click(await findByText('Show center line'))
-    expect(state.session.views[0].showCenterLine).toBe(true)
-
-    const { centerLineInfo } = state.session.views[0]
-    expect(centerLineInfo.refName).toBe('ctgA')
-    expect(centerLineInfo.offset).toEqual(120)
+    expect(view.showCenterLine).toBe(true)
+    expect(view.centerLineInfo?.refName).toBe('ctgA')
+    expect(view.centerLineInfo?.offset).toEqual(120)
   },
   total,
 )
@@ -243,21 +175,18 @@ test(
 test(
   'test choose option from dropdown refName autocomplete',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
     const {
+      view,
       findByText,
       findByTestId,
       getByPlaceholderText,
       findByPlaceholderText,
-    } = render(<JBrowse pluginManager={pm} />)
-    const view = state.session.views[0]
+    } = createView()
+
     expect(view.displayedRegions[0].refName).toEqual('ctgA')
     fireEvent.click(await findByText('Help'))
     // need this to complete before we can try to search
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
       {},
@@ -283,9 +212,8 @@ test(
     )
 
     await waitFor(() => {
-      expect(getByPlaceholderText('Search for location').value).toEqual(
-        expect.stringContaining('ctgB'),
-      )
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toEqual(expect.stringContaining('ctgB'))
     }, delay)
   },
   total,

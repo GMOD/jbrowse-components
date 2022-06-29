@@ -1,14 +1,10 @@
-import React from 'react'
-import { waitFor, fireEvent, render } from '@testing-library/react'
+import { waitFor, fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { setup, generateReadBuffer, getPluginManager, JBrowse } from './util'
-
-type LGV = LinearGenomeViewModel
+import { setup, generateReadBuffer, createView } from './util'
 
 setup()
 
@@ -20,9 +16,10 @@ beforeEach(() => {
   fetch.resetMocks()
   // @ts-ignore
   fetch.mockResponse(
-    generateReadBuffer((url: string) => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      (url: string) =>
+        new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
 
@@ -31,18 +28,15 @@ const delay = { timeout: 10000 }
 const total = 30000
 
 async function doSetup(val?: unknown) {
-  const pluginManager = getPluginManager(val)
-  const state = pluginManager.rootModel
   const {
+    view,
     findByText,
     findByTestId,
     findAllByText,
     findByPlaceholderText,
     getByPlaceholderText,
-  } = render(<JBrowse pluginManager={pluginManager} />)
+  } = createView(val)
 
-  // @ts-ignore
-  const view = state.session.views[0] as LGV
   view.clearView()
 
   const autocomplete = await findByTestId('autocomplete')
@@ -61,7 +55,6 @@ async function doSetup(val?: unknown) {
     findAllByText,
     findByPlaceholderText,
     getByPlaceholderText,
-    state,
   }
 }
 
@@ -73,15 +66,10 @@ test(
     fireEvent.change(input, { target: { value: 'eden.1' } })
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
     fireEvent.click(await findByText('Open'))
-
-    await waitFor(
-      () =>
-        expect(
-          (getByPlaceholderText('Search for location') as HTMLInputElement)
-            .value,
-        ).toBe('ctgA:1,055..9,005'),
-      delay,
-    )
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgA:1,055..9,005')
+    }, delay)
   },
   total,
 )
@@ -98,14 +86,10 @@ test(
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
     fireEvent.click(await findByText('Open'))
-    await waitFor(
-      () =>
-        expect(
-          (getByPlaceholderText('Search for location') as HTMLInputElement)
-            .value,
-        ).toBe('ctgA:1,055..9,005'),
-      delay,
-    )
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgA:1,055..9,005')
+    }, delay)
   },
   total,
 )
@@ -122,14 +106,10 @@ test(
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
     fireEvent.click(await findByText('Open'))
-    await waitFor(
-      () =>
-        expect(
-          (getByPlaceholderText('Search for location') as HTMLInputElement)
-            .value,
-        ).toBe('ctgB:1..6,079'),
-      delay,
-    )
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgB:1..6,079')
+    }, delay)
   },
   total,
 )
