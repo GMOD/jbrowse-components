@@ -13,6 +13,21 @@ import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 const colors = ['red', 'green', 'blue', 'orange']
 
+function fillRect(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D,
+  path?: Path2D,
+) {
+  if (path) {
+    path.rect(x, y, width, height)
+  } else {
+    ctx.fillRect(x, y, width, height)
+  }
+}
+
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   async draw(
     ctx: CanvasRenderingContext2D,
@@ -20,8 +35,8 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   ) {
     const { features } = props
     const groups = groupBy([...features.values()], f => f.get('source'))
-    Object.entries(groups).forEach(([_, val], idx) => {
-      this.drawFeats(ctx, { ...props, features: val, color: colors[idx] })
+    Object.values(groups).forEach((features, idx) => {
+      this.drawFeats(ctx, { ...props, features, color: colors[idx] })
     })
   }
   drawFeats(
@@ -32,10 +47,11 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       regions: Region[]
       scaleOpts: any
       height: number
-      ticks: any
+      ticks: { values: number[] }
       config: AnyConfigurationModel
       displayCrossHatches: boolean
       color: string
+      exportSVG: boolean
     },
   ) {
     const {
@@ -48,6 +64,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       ticks,
       displayCrossHatches,
       color,
+      exportSVG,
     } = props
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
@@ -58,12 +75,8 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    // const pivotValue = readConfObject(config, 'bicolorPivotValue')
-    // const negColor = readConfObject(config, 'negColor')
-    // const posColor = readConfObject(config, 'posColor')
-    const filled = false //readConfObject(config, 'filled')
+    const filled = false
     const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'highlightColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
 
     const scale = getScale({ ...scaleOpts, range: [0, height] })
@@ -72,88 +85,52 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
 
     const toY = (n: number) => height - (scale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
+    ctx.fillStyle = color
 
-    //     const colorCallback =
-    //       readConfObject(config, 'color') === '#f0f'
-    //         ? (_: Feature, score: number) =>
-    //             score < pivotValue ? negColor : posColor
-    //         : (feature: Feature, _score: number) =>
-    //             readConfObject(config, 'color', { feature })
-
-    // const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
-    for (const feature of features) {
+    // first pass: uses path2d for faster rendering
+    const path = exportSVG ? undefined : new Path2D()
+    let hasClipping = false
+    for (let i = 0; i < features.length; i++) {
+      const feature = features[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       let score = feature.get('score')
-      const maxr = feature.get('maxScore')
-      const minr = feature.get('minScore')
 
-      const lowClipping = score < niceMin
-      const highClipping = score > niceMax
+      hasClipping = score < niceMin || score > niceMax
       const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
 
-      const summary = feature.get('summary')
-
       if (summaryScoreMode === 'max') {
+        const maxr = feature.get('maxScore')
+        const summary = feature.get('summary')
         score = summary ? maxr : score
-        ctx.fillStyle = color
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1, ctx, path)
       } else if (summaryScoreMode === 'min') {
+        const minr = feature.get('minScore')
+        const summary = feature.get('summary')
         score = summary ? minr : score
-        ctx.fillStyle = color //Callback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
+        fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1, ctx, path)
+      } else {
+        fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1, ctx, path)
       }
+    }
+    if (path) {
+      ctx.fill(path)
+    }
 
-      // else if (summaryScoreMode === 'whiskers') {
-      //   const c = color //Callback(feature, score)
-      //   if (summary) {
-      //     ctx.fillStyle = crossingOrigin
-      //       ? colorCallback(feature, maxr)
-      //       : Color(c).lighten(0.6).toString()
-      //     ctx.fillRect(
-      //       leftPx,
-      //       toY(maxr),
-      //       w,
-      //       filled ? toHeight(maxr) - toHeight(score) : 1,
-      //     )
-      //   }
-
-      //   // normal
-      //   ctx.fillStyle =
-      //     crossingOrigin && summary
-      //       ? Color(colorCallback(feature, maxr)).mix(
-      //           Color(colorCallback(feature, minr)),
-      //         )
-      //       : c
-      //   ctx.fillRect(
-      //     leftPx,
-      //     toY(score),
-      //     w,
-      //     filled ? toHeight(score) - (summary ? toHeight(minr) : 0) : 1,
-      //   )
-
-      //   // min
-      //   if (summary) {
-      //     ctx.fillStyle = crossingOrigin
-      //       ? colorCallback(feature, minr)
-      //       : Color(c).darken(0.6).toString()
-      //     ctx.fillRect(leftPx, toY(minr), w, filled ? toHeight(minr) : 1)
-      //   }
-      // }
-      else {
-        ctx.fillStyle = color //Callback(feature, score)
-        ctx.fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1)
-      }
-
-      if (highClipping) {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, 0, w, 4)
-      } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
-      }
-      if (feature.get('highlighted')) {
-        ctx.fillStyle = highlightColor
-        ctx.fillRect(leftPx, 0, w, height)
+    // second pass: draw clipping
+    if (hasClipping) {
+      for (let i = 0; i < features.length; i++) {
+        const feature = features[i]
+        const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+        const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
+        let score = feature.get('score')
+        const lowClipping = score < niceMin
+        const highClipping = score > niceMax
+        if (highClipping) {
+          ctx.fillStyle = clipColor
+          ctx.fillRect(leftPx, 0, w, 4)
+        } else if (lowClipping && scaleOpts.scaleType !== 'log') {
+          ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
+        }
       }
     }
 

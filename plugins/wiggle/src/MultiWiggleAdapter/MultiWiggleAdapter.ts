@@ -57,13 +57,15 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       merge(
         ...adapters.map(adp =>
           adp.dataAdapter.getFeatures(region, opts).pipe(
-            map(
-              p =>
-                new SimpleFeature({
-                  ...p.toJSON(),
-                  uniqueId: adp.source + '-' + p.id(),
-                  source: adp.source,
-                }),
+            map(p =>
+              // add source field if it does not exist
+              p.get('source')
+                ? p
+                : new SimpleFeature({
+                    ...p.toJSON(),
+                    uniqueId: adp.source + '-' + p.id(),
+                    source: adp.source,
+                  }),
             ),
           ),
         ),

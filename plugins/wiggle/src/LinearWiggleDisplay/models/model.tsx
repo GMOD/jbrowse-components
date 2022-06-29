@@ -560,41 +560,38 @@ const stateModelFactory = (
         afterAttach() {
           addDisposer(
             self,
-            autorun(
-              async () => {
-                try {
-                  const view = getContainingView(self) as LGV
+            autorun(async () => {
+              try {
+                const view = getContainingView(self) as LGV
 
-                  if (!view.initialized) {
-                    return
-                  }
-
-                  if (!self.estimatedStatsReady) {
-                    return
-                  }
-                  if (self.regionTooLarge) {
-                    return
-                  }
-                  const aborter = new AbortController()
-                  self.setLoading(aborter)
-
-                  const wiggleStats = await getStats({
-                    signal: aborter.signal,
-                    ...self.renderProps(),
-                  })
-
-                  if (isAlive(self)) {
-                    self.updateStats(wiggleStats)
-                  }
-                } catch (e) {
-                  if (!isAbortException(e) && isAlive(self)) {
-                    console.error(e)
-                    self.setError(e)
-                  }
+                if (!view.initialized) {
+                  return
                 }
-              },
-              { delay: 1000 },
-            ),
+
+                if (!self.estimatedStatsReady) {
+                  return
+                }
+                if (self.regionTooLarge) {
+                  return
+                }
+                const aborter = new AbortController()
+                self.setLoading(aborter)
+
+                const wiggleStats = await getStats({
+                  signal: aborter.signal,
+                  ...self.renderProps(),
+                })
+
+                if (isAlive(self)) {
+                  self.updateStats(wiggleStats)
+                }
+              } catch (e) {
+                if (!isAbortException(e) && isAlive(self)) {
+                  console.error(e)
+                  self.setError(e)
+                }
+              }
+            }),
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
