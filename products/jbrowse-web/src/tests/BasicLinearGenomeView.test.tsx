@@ -9,7 +9,13 @@ import {
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
+import {
+  JBrowse,
+  setup,
+  generateReadBuffer,
+  getPluginManager,
+  hts,
+} from './util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -19,7 +25,9 @@ setup()
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(url => {
       return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
@@ -100,12 +108,8 @@ test(
   'click and drag to reorder tracks',
   async () => {
     const { view, findByTestId } = createView()
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
-    )
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
+    fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
 
     const trackId1 = view.tracks[1].id
     const dragHandle0 = await findByTestId(
@@ -152,10 +156,9 @@ test(
   'opens track selector',
   async () => {
     const { view, findByTestId } = createView()
-    const trackId = 'htsTrackEntry-volvox_alignments'
-    await findByTestId(trackId, {}, delay)
+    await findByTestId(hts('volvox_alignments'), {}, delay)
     expect(view.tracks.length).toBe(0)
-    fireEvent.click(await findByTestId(trackId, {}, delay))
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
     expect(view.tracks.length).toBe(1)
   },
   total,
@@ -165,9 +168,7 @@ test(
   'opens reference sequence track and expects zoom in message',
   async () => {
     const { view, findByTestId, findAllByText } = createView()
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_refseq', {}, delay),
-    )
+    fireEvent.click(await findByTestId(hts('volvox_refseq'), {}, delay))
     view.setNewView(20, 0)
     await findByTestId(
       'display-volvox_refseq-LinearReferenceSequenceDisplay',
@@ -183,9 +184,7 @@ test(
   'click to display center line with correct value',
   async () => {
     const { view, findByTestId, findByText } = createView()
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
     await findByTestId('display-volvox_alignments_alignments', {}, delay)
 
     // opens the view menu and selects show center line
@@ -212,9 +211,7 @@ test(
     expect(view.displayedRegions[0].refName).toEqual('ctgA')
     fireEvent.click(await findByText('Help'))
     // need this to complete before we can try to search
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
+    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
     await findByTestId(
       'trackRenderingContainer-integration_test-volvox_alignments',
       {},

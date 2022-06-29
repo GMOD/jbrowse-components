@@ -117,8 +117,8 @@ export function canvasToBuffer(canvas: HTMLCanvasElement) {
   )
 }
 
-export function expectCanvasMatch(canvas: HTMLCanvasElement) {
-  expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
+export function expectCanvasMatch(canvas: HTMLElement) {
+  expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
     failureThreshold: 0.05,
     failureThresholdType: 'percent',
   })
@@ -132,3 +132,6 @@ export function JBrowse(props: any) {
     </QueryParamProvider>
   )
 }
+
+export const hts = (str: string) => 'htsTrackEntry-' + str
+export const pc = (str: string) => `prerendered_canvas_${str}_done`

@@ -21,9 +21,12 @@ if (!window.TextEncoder) {
 if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
-dotplotConfig.configuration = {
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
+const config = {
+  ...dotplotConfig,
+  configuration: {
+    rpc: {
+      defaultDriver: 'MainThreadRpcDriver',
+    },
   },
 }
 
@@ -35,7 +38,9 @@ setup()
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/${url}`)),
@@ -44,13 +49,13 @@ beforeEach(() => {
 })
 
 test('open a dotplot view', async () => {
-  const pm = getPluginManager(dotplotConfig, false)
+  const pm = getPluginManager(config, false)
   const { findByTestId } = render(<JBrowse pluginManager={pm} />)
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)
 
 test('open a dotplot view with import form', async () => {
-  const pm = getPluginManager(dotplotConfig, false)
+  const pm = getPluginManager(config, false)
   const { findByTestId, findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pm} />,
   )

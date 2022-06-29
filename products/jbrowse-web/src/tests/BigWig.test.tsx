@@ -13,13 +13,19 @@ import {
   getPluginManager,
 } from './util'
 
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
+
 expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
@@ -29,12 +35,18 @@ beforeEach(() => {
 
 const delay = { timeout: 10000 }
 
-test('open a bigwig track', async () => {
+function createView() {
   const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { session } = pm.rootModel!
+  const rest = render(<JBrowse pluginManager={pm} />)
+  const view = session!.views[0] as LGV
+  return { view, ...rest }
+}
+
+test('open a bigwig track', async () => {
+  const { view, findByTestId, findByText } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(5, 0)
+  view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_microarray', {}, delay),
   )
@@ -47,11 +59,10 @@ test('open a bigwig track', async () => {
   )
 }, 15000)
 test('open a bigwig line track 2', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { view, findByTestId, findByText } = createView()
+
   await findByText('Help')
-  state.session.views[0].setNewView(10, 0)
+  view.setNewView(10, 0)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_microarray_line', {}, delay),
   )
@@ -64,11 +75,10 @@ test('open a bigwig line track 2', async () => {
   )
 }, 15000)
 test('open a bigwig density track', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { view, findByTestId, findByText } = createView()
+
   await findByText('Help')
-  state.session.views[0].setNewView(5, 0)
+  view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_microarray_density', {}, delay),
   )

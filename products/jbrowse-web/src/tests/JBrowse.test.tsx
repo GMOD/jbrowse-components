@@ -13,8 +13,19 @@ import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
+import {
+  JBrowse,
+  setup,
+  getPluginManager,
+  generateReadBuffer,
+  hts,
+} from './util'
 import TestPlugin from './TestPlugin'
+
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
 window.TextEncoder = TextEncoder
@@ -25,7 +36,9 @@ const delay = { timeout: 15000 }
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
@@ -33,26 +46,31 @@ beforeEach(() => {
   )
 })
 
-describe('<JBrowse />', () => {
-  it('renders with an empty config', async () => {
-    const pm = getPluginManager({})
-    const { findByText } = render(<JBrowse pluginManager={pm} />)
-    await findByText('Help')
-  })
-  it('renders with an initialState', async () => {
-    const pm = getPluginManager()
-    const { findByText } = render(<JBrowse pluginManager={pm} />)
-    await findByText('Help')
-  })
+function createView() {
+  const pm = getPluginManager()
+  const state = pm.rootModel
+  const { session } = state!
+  const rest = render(<JBrowse pluginManager={pm} />)
+  const view = session!.views[0] as LGV
+  return { view, state, ...rest }
+}
+
+test('renders with an empty config', async () => {
+  const pm = getPluginManager({})
+  const { findByText } = render(<JBrowse pluginManager={pm} />)
+  await findByText('Help')
+})
+test('renders with an initialState', async () => {
+  const pm = getPluginManager()
+  const { findByText } = render(<JBrowse pluginManager={pm} />)
+  await findByText('Help')
 })
 
 test('lollipop track test', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { view, findByTestId, findByText } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(1, 150)
-  fireEvent.click(await findByTestId('htsTrackEntry-lollipop_track', {}, delay))
+  view.setNewView(1, 150)
+  fireEvent.click(await findByTestId(hts('lollipop_track'), {}, delay))
 
   await findByTestId('display-lollipop_track_linear', {}, delay)
   await findByTestId('three', {}, delay)
@@ -70,7 +88,7 @@ test('toplevel configuration', () => {
   pm.setRootModel(rootModel)
   pm.configure()
   const state = pm.rootModel
-  const { jbrowse } = state
+  const { jbrowse } = state!
   const { configuration } = jbrowse
   // test reading top level configurations added by Test Plugin
   const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])
@@ -80,30 +98,20 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { view, findByTestId, findByText } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.05, 5000)
+  view.setNewView(0.05, 5000)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_filtered_vcf_assembly_alias',
-      {},
-      delay,
-    ),
+    await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
   await findByTestId('box-test-vcf-604452', {}, delay)
 }, 15000)
 
 test('nclist track test with long name', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { view, findByTestId, findByText } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(1, -539)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-nclist_long_names', {}, delay),
-  )
+  view.setNewView(1, -539)
+  fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))
 
   await findByText(
     'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
@@ -113,6 +121,7 @@ test('nclist track test with long name', async () => {
 }, 15000)
 
 test('test sharing', async () => {
+  // @ts-ignore
   sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
     encryptedSession: 'A',
     json: {
@@ -127,19 +136,16 @@ test('test sharing', async () => {
 
   // check the share dialog has the above session shared
   await findByTestId('share-dialog')
-  const url = await findByTestId('share-url-text')
+  const url = (await findByTestId('share-url-text')) as HTMLInputElement
   expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
 })
 
 test('looks at about this track dialog', async () => {
-  const pm = getPluginManager()
-  const { findByTestId, findAllByText, findByText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
+  const { findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox-long-reads-cram'))
+  fireEvent.click(await findByTestId(hts('volvox-long-reads-cram')))
   fireEvent.click(await findByTestId('track_menu_icon', {}, delay))
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, delay)

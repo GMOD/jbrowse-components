@@ -12,15 +12,22 @@ import {
   expectCanvasMatch,
   generateReadBuffer,
   getPluginManager,
+  hts,
+  pc,
 } from './util'
 
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
@@ -28,44 +35,36 @@ beforeEach(() => {
   )
 })
 
+function createView() {
+  const pm = getPluginManager()
+  const { session } = pm.rootModel!
+  const rest = render(<JBrowse pluginManager={pm} />)
+  const view = session!.views[0] as LGV
+  return { view, ...rest }
+}
+
 const delay = { timeout: 20000 }
 
 test('opens an alignments track', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText, findAllByTestId } = render(
-    <JBrowse pluginManager={pm} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(5, 100)
+  view.setNewView(5, 100)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_alignments_pileup_coverage',
-      {},
-      delay,
-    ),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
   const { findByTestId: findByTestId1 } = within(
     await findByTestId('Blockset-pileup', {}, delay),
   )
   expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId1(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
   )
 
   const { findByTestId: findByTestId2 } = within(
     await findByTestId('Blockset-snpcoverage', {}, delay),
   )
   expectCanvasMatch(
-    await findByTestId2(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId2(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas')
@@ -81,25 +80,22 @@ test('opens an alignments track', async () => {
 }, 20000)
 
 test('test that bam with small max height displays message', async () => {
-  const pm = getPluginManager()
-  const { findByTestId, findAllByText } = render(<JBrowse pluginManager={pm} />)
+  const { findByTestId, findAllByText } = createView()
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_bam_small_max_height', {}, delay),
+    await findByTestId(hts('volvox_bam_small_max_height'), {}, delay),
   )
 
   await findAllByText('Max height reached', {}, delay)
 }, 30000)
 
 test('test snpcoverage doesnt count snpcoverage', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByText, findByTestId } = render(<JBrowse pluginManager={pm} />)
+  const { view, findByTestId, findByText } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.03932, 67884.16536402702)
+  view.setNewView(0.03932, 67884.16536402702)
 
   // load track
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox-long-reads-sv-cram', {}, delay),
+    await findByTestId(hts('volvox-long-reads-sv-cram'), {}, delay),
   )
 
   const { findByTestId: findByTestId1 } = within(
@@ -107,17 +103,9 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
   )
 
   expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:2,657..2,688-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId1(pc('{volvox}ctgA:2,657..2,688-0'), {}, delay),
   )
   expectCanvasMatch(
-    await findByTestId1(
-      'prerendered_canvas_{volvox}ctgA:2,689..2,720-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId1(pc('{volvox}ctgA:2,689..2,720-0'), {}, delay),
   )
 }, 30000)
