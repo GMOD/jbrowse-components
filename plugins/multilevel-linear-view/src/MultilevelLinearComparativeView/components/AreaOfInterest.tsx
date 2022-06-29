@@ -36,7 +36,7 @@ const AreaOfInterest = observer(
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 
-    const width = !isNaN(right) && right - left !== 0 ? right - left : 3
+    const width = Math.max(!isNaN(right) ? right - left : 0, 3)
 
     const labelOffset =
       view.trackLabels === 'offset' ? view.tracks.length * 25 : 0
