@@ -144,9 +144,6 @@ export function getNiceDomain({
   return scale.domain() as [number, number]
 }
 
-
-
-
 export function groupBy<T>(array: T[], predicate: (v: T) => string) {
   return array.reduce((acc, value) => {
     const entry = (acc[predicate(value)] ||= [])
