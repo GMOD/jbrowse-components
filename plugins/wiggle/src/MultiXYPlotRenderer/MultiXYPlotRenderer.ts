@@ -118,6 +118,8 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
 
     // second pass: draw clipping
     if (hasClipping) {
+      const path = exportSVG ? undefined : new Path2D()
+      ctx.fillStyle = clipColor
       for (let i = 0; i < features.length; i++) {
         const feature = features[i]
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -126,11 +128,13 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         const lowClipping = score < niceMin
         const highClipping = score > niceMax
         if (highClipping) {
-          ctx.fillStyle = clipColor
-          ctx.fillRect(leftPx, 0, w, 4)
+          fillRect(leftPx, 0, w, 4, ctx, path)
         } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-          ctx.fillRect(leftPx, unadjustedHeight - 4, w, 4)
+          fillRect(leftPx, unadjustedHeight - 4, w, 4, ctx, path)
         }
+      }
+      if (path) {
+        ctx.fill(path)
       }
     }
 
