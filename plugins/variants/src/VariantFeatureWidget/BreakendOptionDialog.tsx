@@ -3,22 +3,21 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
-  IconButton,
   FormControlLabel,
-  Checkbox,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+  IconButton,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 import { getSnapshot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { getSession, Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -41,7 +40,7 @@ function BreakendOptionDialog({
   feature: Feature
   viewType: any
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [copyTracks, setCopyTracks] = useState(true)
   const [mirrorTracks, setMirrorTracks] = useState(true)
 

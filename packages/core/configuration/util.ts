@@ -173,7 +173,9 @@ export function isBareConfigurationSchemaType(
   return false
 }
 
-export function isConfigurationSchemaType(thing: unknown): boolean {
+export function isConfigurationSchemaType(
+  thing: unknown,
+): thing is AnyConfigurationSchemaType {
   if (!isType(thing)) {
     return false
   }

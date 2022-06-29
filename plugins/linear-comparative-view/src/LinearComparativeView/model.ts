@@ -21,10 +21,11 @@ import {
   types,
   Instance,
   SnapshotIn,
+  IAnyModelType,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
@@ -139,7 +140,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       closeView() {
-        getParent(self, 2).removeView(self)
+        getParent<any>(self, 2).removeView(self)
       },
 
       setHeaderHeight(height: number) {
@@ -182,7 +183,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const schema = pluginManager.pluggableConfigSchemaType(
+          'track',
+        ) as IAnyModelType
         const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         if (!configuration) {
           throw new Error(`track not found ${trackId}`)
@@ -224,6 +227,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views.forEach(view => {
           const center = view.pxToBp(view.width / 2)
           view.setNewView(avg, view.offsetPx)
+          if (!center.refName) {
+            return
+          }
           view.centerAt(center.coord, center.refName, center.index)
         })
       },

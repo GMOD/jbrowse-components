@@ -1,22 +1,17 @@
 import React from 'react'
-import { makeStyles, CircularProgress } from '@material-ui/core'
-
-const useStyles = makeStyles({
-  loadingIndicator: {
-    position: 'fixed',
-    top: '50%',
-    left: '50%',
-    marginTop: -25,
-    marginLeft: -25,
-  },
-})
+import { CircularProgress } from '@mui/material'
 
 export default function Loading() {
-  const classes = useStyles()
   return (
     <CircularProgress
       disableShrink
-      className={classes.loadingIndicator}
+      style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        marginTop: -25,
+        marginLeft: -25,
+      }}
       size={50}
     />
   )

@@ -5,25 +5,24 @@ import {
   IconButtonProps as IconButtonPropsType,
   Paper,
   Tooltip,
-  makeStyles,
   useTheme,
-  alpha,
-} from '@material-ui/core'
-
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { alpha } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
 
 // icons
-import CloseIcon from '@material-ui/icons/Close'
-import MenuIcon from '@material-ui/icons/Menu'
+import CloseIcon from '@mui/icons-material/Close'
+import MenuIcon from '@mui/icons-material/Menu'
 
 // locals
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
@@ -85,15 +84,12 @@ const ViewMenu = observer(
       <>
         <IconButton
           {...IconButtonProps}
-          aria-label="more"
-          aria-controls="view-menu"
-          aria-haspopup="true"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
+          style={{ padding: 3 }}
+          onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
+          size="small"
         >
-          <MenuIcon {...IconProps} />
+          <MenuIcon {...IconProps} fontSize="small" />
         </IconButton>
         <Menu
           anchorEl={anchorEl}
@@ -102,9 +98,7 @@ const ViewMenu = observer(
             callback()
             setAnchorEl(undefined)
           }}
-          onClose={() => {
-            setAnchorEl(undefined)
-          }}
+          onClose={() => setAnchorEl(undefined)}
           menuItems={model.menuItems()}
         />
       </>
@@ -123,7 +117,7 @@ const ViewContainer = observer(
     style?: React.CSSProperties
     children: React.ReactNode
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const padWidth = theme.spacing(1)
 
@@ -131,7 +125,7 @@ const ViewContainer = observer(
 
     useEffect(() => {
       if (width && isAlive(view)) {
-        view.setWidth(width - padWidth * 2)
+        view.setWidth(width - parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 
@@ -148,7 +142,7 @@ const ViewContainer = observer(
         ref={ref}
         elevation={12}
         className={classes.viewContainer}
-        style={{ ...style, padding: `0px ${padWidth}px ${padWidth}px` }}
+        style={{ ...style, padding: `0px ${padWidth} ${padWidth}` }}
       >
         <div ref={scrollRef} style={{ display: 'flex' }}>
           <ViewMenu
@@ -165,14 +159,10 @@ const ViewContainer = observer(
               value={
                 view.displayName ||
                 // @ts-ignore
-                (view.assemblyNames
-                  ? // @ts-ignore
-                    view.assemblyNames.join(',')
-                  : 'Untitled view')
+                view.assemblyNames?.join(',') ||
+                'Untitled view'
               }
-              setValue={val => {
-                view.setDisplayName(val)
-              }}
+              setValue={val => view.setDisplayName(val)}
               variant="body2"
               classes={{
                 input: classes.input,
@@ -187,9 +177,10 @@ const ViewContainer = observer(
             data-testid="close_view"
             classes={{ root: classes.iconRoot }}
             edge="end"
+            size="small"
             onClick={onClose}
           >
-            <CloseIcon className={classes.icon} />
+            <CloseIcon className={classes.icon} fontSize="small" />
           </IconButton>
         </div>
         <Paper>{children}</Paper>

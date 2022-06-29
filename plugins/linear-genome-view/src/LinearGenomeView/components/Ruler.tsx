@@ -1,17 +1,11 @@
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ReactPropTypes from 'prop-types'
 import React from 'react'
 import { makeTicks } from '../util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 
-function mathPower(num: number): string {
-  if (num < 999) {
-    return String(num)
-  }
-  return `${mathPower(~~(num / 1000))},${`00${~~(num % 1000)}`.substr(-3, 3)}`
-}
-
-const useStyles = makeStyles((/* theme */) => ({
+const useStyles = makeStyles()((/* theme */) => ({
   majorTickLabel: {
     fontSize: '11px',
     // fill: theme.palette.text.primary,
@@ -41,7 +35,7 @@ function Ruler({
   major: boolean
   minor: boolean
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   return (
     <>
@@ -75,7 +69,7 @@ function Ruler({
               style={{ fontSize: '11px' }}
               className={classes.majorTickLabel}
             >
-              {mathPower(tick.base + 1)}
+              {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
           )
         })}

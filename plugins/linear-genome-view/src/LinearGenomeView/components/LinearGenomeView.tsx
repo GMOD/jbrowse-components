@@ -1,5 +1,6 @@
 import React from 'react'
-import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
+import { Button, Paper, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
 
@@ -12,7 +13,9 @@ import MiniControls from './MiniControls'
 import SequenceDialog from './SequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
 
-const useStyles = makeStyles(theme => ({
+type LGV = LinearGenomeViewModel
+
+const useStyles = makeStyles()(theme => ({
   note: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
@@ -48,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LinearGenomeView = observer(({ model }: { model: any }) => {
   const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   if (!initialized && !error) {
     return (

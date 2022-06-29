@@ -9,7 +9,7 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { types, getEnv, Instance } from 'mobx-state-tree'
 
 // icons
-import VisibilityIcon from '@material-ui/icons/Visibility'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // locals
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
@@ -51,19 +51,23 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
 
       get displayMode() {
-        const displayMode = getConf(self, ['renderer', 'displayMode'])
-        return self.trackDisplayMode ?? displayMode
+        return (
+          self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
+        )
       },
+    }))
+    .views(self => ({
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
+        const config = configBlob as Omit<typeof configBlob, symbol>
 
         return self.rendererType.configSchema.create(
           {
-            ...configBlob,
-            showLabels: this.showLabels,
-            showDescriptions: this.showDescriptions,
-            displayMode: this.displayMode,
-            maxHeight: this.maxHeight,
+            ...config,
+            showLabels: self.showLabels,
+            showDescriptions: self.showDescriptions,
+            displayMode: self.displayMode,
+            maxHeight: self.maxHeight,
           },
           getEnv(self),
         )
@@ -92,9 +96,13 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       return {
         renderProps() {
           const config = self.rendererConfig
+          const superProps = superRenderProps()
+
+          const superPropsOmit = superProps as Omit<typeof superProps, symbol>
 
           return {
-            ...superRenderProps(),
+            ...superPropsOmit,
+
             config,
           }
         },
@@ -136,9 +144,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },

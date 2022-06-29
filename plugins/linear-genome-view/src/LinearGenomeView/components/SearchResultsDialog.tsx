@@ -1,4 +1,5 @@
 import React from 'react'
+import { makeStyles } from 'tss-react/mui'
 import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -9,6 +10,7 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -16,13 +18,11 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Paper,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel } from '../..'
 
-export const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   dialogContent: {
     width: '80em',
   },
@@ -43,7 +43,7 @@ export default function SearchResultsDialog({
   optAssemblyName?: string
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
@@ -108,6 +108,7 @@ export default function SearchResultsDialog({
             onClick={() => {
               handleClose()
             }}
+            size="large"
           >
             <CloseIcon />
           </IconButton>
@@ -156,7 +157,6 @@ export default function SearchResultsDialog({
                             }
                             handleClose()
                           }}
-                          disabled={!getTrackName(result.getTrackId())}
                           color="primary"
                           variant="contained"
                         >

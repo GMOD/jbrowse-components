@@ -1,25 +1,19 @@
 import React, { useState, lazy } from 'react'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import {
-  Button,
-  CircularProgress,
-  Container,
-  Grid,
-  makeStyles,
-} from '@material-ui/core'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
+import { fetchResults } from './util'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(2),
   },
@@ -34,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 type LGV = LinearGenomeViewModel
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
   const { rankSearchResults, isSearchDialogDisplayed, error } = model
@@ -56,28 +50,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const option = new BaseResult({
     label: value,
   })
-
-  async function fetchResults(query: string, searchType?: SearchType) {
-    if (!textSearchManager) {
-      console.warn('No text search manager')
-    }
-
-    const textSearchResults = await textSearchManager?.search(
-      {
-        queryString: query,
-        searchType,
-      },
-      searchScope,
-      rankSearchResults,
-    )
-
-    const refNameResults = assembly?.allRefNames
-      ?.filter(refName => refName.startsWith(query))
-      .map(r => new BaseResult({ label: r }))
-      .slice(0, 10)
-
-    return [...(refNameResults || []), ...(textSearchResults || [])]
-  }
 
   // gets a string as input, or use stored option results from previous query,
   // then re-query and
@@ -105,7 +77,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       ) {
         model.navToLocString(location, selectedAsm)
       } else {
-        const results = await fetchResults(input, 'exact')
+        const results = await fetchResults({
+          queryString: input,
+          searchType: 'exact',
+          searchScope,
+          rankSearchResults,
+          textSearchManager,
+          assembly,
+        })
         if (results.length > 1) {
           model.setSearchResults(results, input.toLowerCase())
           return
@@ -164,7 +143,15 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                   <CloseIcon style={{ color: 'red' }} />
                 ) : value ? (
                   <RefNameAutocomplete
-                    fetchResults={fetchResults}
+                    fetchResults={queryString =>
+                      fetchResults({
+                        queryString,
+                        assembly,
+                        textSearchManager,
+                        rankSearchResults,
+                        searchScope,
+                      })
+                    }
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
                     value={value}

@@ -1,6 +1,5 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
 import {
   Button,
   Dialog,
@@ -10,10 +9,11 @@ import {
   Divider,
   IconButton,
   Typography,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -29,7 +29,7 @@ function ReturnToImportFormDialog({
   model: { clearView: Function }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog maxWidth="xl" open onClose={handleClose}>
       <DialogTitle>
@@ -38,6 +38,7 @@ function ReturnToImportFormDialog({
           <IconButton
             className={classes.closeButton}
             onClick={() => handleClose()}
+            size="large"
           >
             <CloseIcon />
           </IconButton>

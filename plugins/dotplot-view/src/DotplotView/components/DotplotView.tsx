@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
-import { makeStyles, LinearProgress } from '@material-ui/core'
+import { LinearProgress } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
+
+// locals
 import { DotplotViewModel } from '../model'
 import ImportForm from './ImportForm'
 import Header from './Header'
 import { locstr } from './util'
 import { HorizontalAxis, VerticalAxis } from './Axes'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   spacer: {
     gridColumn: '1/2',
     gridRow: '2/2',
@@ -139,7 +142,7 @@ function getOffset(coord: Coord, rect: Rect) {
 }
 
 const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.overlay}>
       {model.tracks.map(track => {
@@ -160,7 +163,7 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const { hview, vview, viewHeight } = model
-    const classes = useStyles()
+    const { classes } = useStyles()
     const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
     const [mousedownClient, setMouseDownClient] = useState<Coord>()
     const [mouseOvered, setMouseOvered] = useState(false)

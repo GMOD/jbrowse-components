@@ -1,25 +1,6 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core'
 
-const useStyles = makeStyles(theme => ({
-  message: {
-    border: '1px solid black',
-    background: '#f88',
-    overflow: 'auto',
-    maxHeight: 200,
-    margin: theme.spacing(1),
-    padding: theme.spacing(1),
-  },
-
-  errorBox: {
-    background: 'lightgrey',
-    border: '1px solid black',
-    margin: 20,
-  },
-}))
 const ErrorMessage = ({ error }: { error: unknown }) => {
-  const classes = useStyles()
-
   let snapshotError = ''
   let str = `${error}`
   const findStr = 'is not assignable'
@@ -46,10 +27,25 @@ const ErrorMessage = ({ error }: { error: unknown }) => {
     }
   }
   return (
-    <div className={classes.message}>
+    <div
+      style={{
+        padding: 4,
+        margin: 4,
+        overflow: 'auto',
+        maxHeight: 200,
+        background: '#f88',
+        border: '1px solid black',
+      }}
+    >
       {str.slice(0, 10000)}
       {snapshotError ? (
-        <pre className={classes.errorBox}>
+        <pre
+          style={{
+            background: 'lightgrey',
+            border: '1px solid black',
+            margin: 20,
+          }}
+        >
           {JSON.stringify(JSON.parse(snapshotError), null, 2)}
         </pre>
       ) : null}

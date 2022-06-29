@@ -23,12 +23,12 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
-import VisibilityIcon from '@material-ui/icons/Visibility'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import SortIcon from '@material-ui/icons/Sort'
-import PaletteIcon from '@material-ui/icons/Palette'
-import FilterListIcon from '@material-ui/icons/ClearAll'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import SortIcon from '@mui/icons-material/Sort'
+import PaletteIcon from '@mui/icons-material/Palette'
+import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import { LinearPileupDisplayConfigModel } from './configSchema'
@@ -178,6 +178,13 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 } = self
                 const { staticBlocks, bpPerPx } = view
 
+                if (!self.estimatedStatsReady) {
+                  return
+                }
+                if (self.regionTooLarge) {
+                  return
+                }
+
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
@@ -321,16 +328,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         }
         const { refName, assemblyName, offset } = centerLineInfo
         const centerBp = Math.round(offset) + 1
-        const centerRefName = refName
 
-        if (centerBp < 0) {
+        if (centerBp < 0 || !refName) {
           return
         }
 
         self.sortedBy = {
           type,
           pos: centerBp,
-          refName: centerRefName,
+          refName,
           assemblyName,
           tag,
         }
@@ -466,8 +472,8 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             sortedBy,
             colorBy,
             filterBy: JSON.parse(JSON.stringify(filterBy)),
-            colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
-            modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
+            colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
             async onFeatureClick(_: unknown, featureId?: string) {

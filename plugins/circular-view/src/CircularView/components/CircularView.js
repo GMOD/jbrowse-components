@@ -2,16 +2,17 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
-import { IconButton, makeStyles } from '@material-ui/core'
-import { grey } from '@material-ui/core/colors'
+import { IconButton } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { grey } from '@mui/material/colors'
 
 // icons
-import ZoomOut from '@material-ui/icons/ZoomOut'
-import ZoomIn from '@material-ui/icons/ZoomIn'
-import RotateLeft from '@material-ui/icons/RotateLeft'
-import RotateRight from '@material-ui/icons/RotateRight'
-import LockOutline from '@material-ui/icons/LockOutlined'
-import LockOpen from '@material-ui/icons/LockOpen'
+import ZoomOutIcon from '@mui/icons-material/ZoomOut'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import RotateLeftIcon from '@mui/icons-material/RotateLeft'
+import RotateRightIcon from '@mui/icons-material/RotateRight'
+import LockOpenIcon from '@mui/icons-material/LockOpen'
+import LockIcon from '@mui/icons-material/Lock'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -20,7 +21,7 @@ import ImportForm from './ImportForm'
 
 const dragHandleHeight = 3
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
@@ -83,7 +84,7 @@ const Slices = observer(({ model }) => {
 })
 
 const Controls = observer(({ model, showingFigure }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.controls}>
       <IconButton
@@ -95,7 +96,7 @@ const Controls = observer(({ model, showingFigure }) => {
         }
         color="secondary"
       >
-        <ZoomOut />
+        <ZoomOutIcon />
       </IconButton>
 
       <IconButton
@@ -105,7 +106,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={!showingFigure || model.atMinBpPerPx}
         color="secondary"
       >
-        <ZoomIn />
+        <ZoomInIcon />
       </IconButton>
 
       <IconButton
@@ -115,7 +116,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={!showingFigure}
         color="secondary"
       >
-        <RotateLeft />
+        <RotateLeftIcon />
       </IconButton>
 
       <IconButton
@@ -125,7 +126,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={!showingFigure}
         color="secondary"
       >
-        <RotateRight />
+        <RotateRightIcon />
       </IconButton>
 
       <IconButton
@@ -139,7 +140,7 @@ const Controls = observer(({ model, showingFigure }) => {
         disabled={model.tooSmallToLock}
         color="secondary"
       >
-        {model.lockedFitToWindow ? <LockOutline /> : <LockOpen />}
+        {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
       {model.hideTrackSelectorButton ? null : (
@@ -157,7 +158,7 @@ const Controls = observer(({ model, showingFigure }) => {
 })
 
 const CircularView = observer(({ model }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const initialized =
     !!model.displayedRegions.length && model.figureWidth && model.figureHeight
 

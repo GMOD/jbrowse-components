@@ -5,16 +5,16 @@ import {
   DialogContent,
   DialogActions,
   DialogTitle,
-  IconButton,
-  Typography,
   FormControlLabel,
+  IconButton,
   Radio,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 import { CompactPicker, Color, RGBColor } from 'react-color'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -45,7 +45,7 @@ export default function SetColorDialog({
   }
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [posneg, setPosNeg] = useState(false)
 
   return (
@@ -85,6 +85,7 @@ export default function SetColorDialog({
               }}
             />
             <Typography>Negative color</Typography>
+
             <CompactPicker
               onChange={event => {
                 model.setNegColor(serialize(event.rgb))
@@ -96,9 +97,7 @@ export default function SetColorDialog({
           <>
             <Typography>Overall color</Typography>
             <CompactPicker
-              onChange={event => {
-                model.setColor(serialize(event.rgb))
-              }}
+              onChange={event => model.setColor(serialize(event.rgb))}
             />
           </>
         )}
@@ -120,9 +119,7 @@ export default function SetColorDialog({
           variant="contained"
           color="primary"
           type="submit"
-          onClick={() => {
-            handleClose()
-          }}
+          onClick={() => handleClose()}
         >
           Submit
         </Button>

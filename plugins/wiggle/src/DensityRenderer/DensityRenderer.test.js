@@ -2,6 +2,11 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
 import DensityRenderer, { configSchema, ReactComponent } from '.'
 
+import { Image, createCanvas } from 'canvas'
+
+global.nodeImage = Image
+global.nodeCreateCanvas = createCanvas
+
 const pluginManager = {}
 const renderer = new DensityRenderer({
   name: 'DensityRenderer',

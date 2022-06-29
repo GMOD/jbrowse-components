@@ -22,13 +22,13 @@ import {
   Paper,
   SvgIcon,
   TextField,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import DeleteIcon from '@material-ui/icons/Delete'
-import AddIcon from '@material-ui/icons/Add'
-import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
+import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material/Add'
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 
 // locals
 import StringArrayEditor from './StringArrayEditor'
@@ -39,7 +39,6 @@ import JsonEditor from './JsonEditor'
 // adds ability to have html in helperText. note that FormHelperTextProps is
 // div because the default is p which does not like div children
 const MyTextField = props => {
-  // eslint-disable-next-line react/prop-types
   const { helperText } = props
   return (
     <TextField
@@ -79,14 +78,14 @@ const SvgCheckbox = () => (
   </SvgIcon>
 )
 
-const useMapEditorStyles = makeStyles(theme => ({
+const useMapEditorStyles = makeStyles()(theme => ({
   card: {
     marginTop: theme.spacing(1),
   },
 }))
 
 const StringArrayMapEditor = observer(({ slot }) => {
-  const classes = useMapEditorStyles()
+  const { classes } = useMapEditorStyles()
   const [value, setValue] = useState('')
   return (
     <>
@@ -155,7 +154,7 @@ const StringArrayMapEditor = observer(({ slot }) => {
 })
 
 const NumberMapEditor = observer(({ slot }) => {
-  const classes = useMapEditorStyles()
+  const { classes } = useMapEditorStyles()
   const [value, setValue] = useState('')
   return (
     <>
@@ -320,7 +319,7 @@ const valueComponents = {
   configRelationships: JsonEditor,
 }
 
-export const useSlotEditorStyles = makeStyles(theme => ({
+export const useSlotEditorStyles = makeStyles()(theme => ({
   paper: {
     display: 'flex',
     marginBottom: theme.spacing(2),
@@ -339,7 +338,7 @@ export const useSlotEditorStyles = makeStyles(theme => ({
 }))
 
 const SlotEditor = observer(({ slot, slotSchema }) => {
-  const classes = useSlotEditorStyles()
+  const { classes } = useSlotEditorStyles()
   const { type } = slot
   let ValueComponent = slot.isCallback ? CallbackEditor : valueComponents[type]
   if (!ValueComponent) {

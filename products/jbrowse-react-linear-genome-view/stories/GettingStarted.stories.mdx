@@ -83,6 +83,74 @@ Example
   <Story id="linear-view--using-loc-object" />
 </Canvas>
 
+## Opening up tracks by default
+
+You can use the "showTrack" function on the object returned by
+createViewState
+
+<Canvas withSource="open">
+  <Story id="linear-view--with-show-track" />
+</Canvas>
+
+## An overview of the LGV API
+
+The LGV component relies on the same
+[configuration](https://jbrowse.org/jb2/docs/config_guide) as the main JB2 app,
+with a few noteworthy differences.
+
+First, the component can be configured using a standalone JSON file like JB2,
+or can be configured with JavaScript objects in the source code of the app
+where it is being used, as shown
+[here](https://github.com/GMOD/jbrowse-components/blob/HEAD/products/jbrowse-react-linear-genome-view/docs/example.md).
+
+Second, while this is the structure of a JB2 configuration file:
+
+```json
+{
+  "configuration": {
+    /* global configs here */
+  },
+  "assemblies": [
+    /* list of assembly configurations, e.g. the genomes being viewed */
+  ],
+  "tracks": [
+    /* array of tracks being loaded, contain reference to which assembl(y/ies)
+    they belong to */
+  ],
+  "defaultSession": {
+    /* optional default session */
+  }
+}
+```
+
+The LGV component only accepts a single assembly object instead of an array:
+
+```json
+{
+  "assembly": {
+    /* the assembly being used for the browser */
+  }
+}
+```
+
+You can also set an initial location for when the browser first loads on the package
+when you initialize the state of the component with your configuration values:
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: '10:29,838,737..29,838,819',
+  defaultSession,
+})
+```
+
+Example
+
+<Canvas withSource="open">
+  <Story id="linear-view--using-loc-object" />
+</Canvas>
+
 ## Additional resources
 
 This overview is intended as a launching point for initial use of the LGV component.

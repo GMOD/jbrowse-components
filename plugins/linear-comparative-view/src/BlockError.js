@@ -1,12 +1,10 @@
-import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import RefreshIcon from '@material-ui/icons/Refresh'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React from 'react'
+import { observer } from 'mobx-react'
+import { Button, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   blockError: {
     width: '30em',
     whiteSpace: 'normal',
@@ -15,7 +13,7 @@ const useStyles = makeStyles({
 
 function BlockError({ error, reload }) {
   // reload function gets passed here
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.blockError}>
       {reload ? (
@@ -32,13 +30,6 @@ function BlockError({ error, reload }) {
       </Typography>
     </div>
   )
-}
-BlockError.propTypes = {
-  error: MobxPropTypes.objectOrObservableObject.isRequired,
-  reload: PropTypes.func,
-}
-BlockError.defaultProps = {
-  reload: undefined,
 }
 
 export default observer(BlockError)

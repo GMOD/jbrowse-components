@@ -7,7 +7,7 @@ import {
   DialogActions,
   Button,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 
 function canSetDefaultSession(obj: unknown): obj is {
   jbrowse: { setDefaultSessionConf: Function }

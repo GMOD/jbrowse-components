@@ -76,7 +76,7 @@ describe('<JBrowseCircularGenomeView />', () => {
         <JBrowseCircularGenomeView viewState={state} />
       </Suspense>,
     )
-    await findAllByText('ctgA')
+    await findAllByText('ctgA', {}, { timeout: 10000 })
     expect(container.firstChild).toMatchSnapshot()
-  })
+  }, 10000)
 })

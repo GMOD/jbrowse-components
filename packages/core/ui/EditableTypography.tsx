@@ -1,7 +1,6 @@
-import InputBase from '@material-ui/core/InputBase'
-import Typography, { TypographyProps } from '@material-ui/core/Typography'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
 import React, { useEffect, useState } from 'react'
+import { InputBase, Typography, TypographyProps, useTheme } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 type Variant = TypographyProps['variant']
 
@@ -11,7 +10,7 @@ type EditableTypographyClassKey =
   | 'inputRoot'
   | 'inputFocused'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   input: {},
   inputBase: {},
   typography: {
@@ -26,7 +25,6 @@ const useStyles = makeStyles(theme => ({
   },
   inputFocused: {
     borderStyle: 'solid',
-    borderRadius: theme.shape.borderRadius,
     borderWidth: 2,
   },
 }))
@@ -42,7 +40,7 @@ interface EditableTypographyPropTypes {
 const EditableTypography = React.forwardRef(
   (props: EditableTypographyPropTypes, ref: React.Ref<HTMLDivElement>) => {
     const { value, setValue, variant, ...other } = props
-    const [editedValue, setEditedValue] = useState<string | undefined>()
+    const [editedValue, setEditedValue] = useState<string>()
     const [width, setWidth] = useState(0)
     const [sizerNode, setSizerNode] = useState<HTMLSpanElement | null>(null)
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
@@ -55,47 +53,22 @@ const EditableTypography = React.forwardRef(
       }
     }, [blur, inputNode])
 
-    const classes = useStyles(props)
+    // possibly tss-react does not understand the passing of props to
+    // useStyles, but it appears to work
+    // @ts-ignore
+    const { classes } = useStyles(props, { props })
     const theme = useTheme()
 
-    const clientWidth = sizerNode && sizerNode.clientWidth
+    const clientWidth = sizerNode?.clientWidth
     if (clientWidth && clientWidth !== width) {
       setWidth(clientWidth)
-    }
-
-    const sizerRef = (node: HTMLSpanElement) => {
-      setSizerNode(node)
-    }
-
-    const inputRef = (node: HTMLInputElement) => {
-      setInputNode(node)
-    }
-
-    function handleBlur() {
-      if (editedValue && editedValue !== value) {
-        setValue(editedValue)
-      }
-      setEditedValue(undefined)
-    }
-
-    function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-      if (event.key === 'Enter') {
-        inputNode && inputNode.blur()
-      } else if (event.key === 'Escape') {
-        setEditedValue(undefined)
-        setBlur(true)
-      }
-    }
-
-    function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
-      setEditedValue(event.target.value)
     }
 
     return (
       <div {...other} ref={ref}>
         <div style={{ position: 'relative' }}>
           <Typography
-            ref={sizerRef}
+            ref={(node: HTMLSpanElement) => setSizerNode(node)}
             component="span"
             variant={variant}
             className={classes.typography}
@@ -104,12 +77,12 @@ const EditableTypography = React.forwardRef(
           </Typography>
         </div>
         <InputBase
-          inputRef={inputRef}
+          inputRef={node => setInputNode(node)}
           className={classes.inputBase}
           inputProps={{
             style: {
               width,
-              ...(variant && variant !== 'inherit' && variant !== 'srOnly'
+              ...(variant && variant !== 'inherit'
                 ? theme.typography[variant]
                 : {}),
             },
@@ -120,9 +93,21 @@ const EditableTypography = React.forwardRef(
             focused: classes.inputFocused,
           }}
           value={editedValue === undefined ? value : editedValue}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          onBlur={handleBlur}
+          onChange={event => setEditedValue(event.target.value)}
+          onKeyDown={event => {
+            if (event.key === 'Enter') {
+              inputNode && inputNode.blur()
+            } else if (event.key === 'Escape') {
+              setEditedValue(undefined)
+              setBlur(true)
+            }
+          }}
+          onBlur={() => {
+            if (editedValue && editedValue !== value) {
+              setValue(editedValue)
+            }
+            setEditedValue(undefined)
+          }}
         />
       </div>
     )

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
@@ -12,6 +12,7 @@ function ServerSideSyntenyRendering(props) {
   const { width, height, highResolutionScaling = 1 } = renderProps
 
   const featureCanvas = useRef()
+  const [done, setDone] = useState(false)
 
   useEffect(() => {
     if (!imageData) {
@@ -20,11 +21,12 @@ function ServerSideSyntenyRendering(props) {
     const canvas = featureCanvas.current
     const context = canvas.getContext('2d')
     drawImageOntoCanvasContext(imageData, context)
+    setDone(true)
   }, [height, imageData, width])
 
   return (
     <canvas
-      data-testid="prerendered_canvas"
+      data-testid={`prerendered_canvas${done ? '_done' : ''}`}
       ref={featureCanvas}
       width={width * highResolutionScaling}
       height={height * highResolutionScaling}

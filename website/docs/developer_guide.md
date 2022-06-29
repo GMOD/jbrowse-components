@@ -300,7 +300,7 @@ not a menu. Here's an example that adds an "Open My View" item to the `File -> A
 ```js
 import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-import InfoIcon from '@material-ui/icons/Info'
+import InfoIcon from '@mui/icons-material/Info'
 
 class MyPlugin extends Plugin {
   name = 'MyPlugin'

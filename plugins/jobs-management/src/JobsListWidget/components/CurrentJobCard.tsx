@@ -8,7 +8,7 @@ import {
   CardContent,
   LinearProgress,
   Typography,
-} from '@material-ui/core'
+} from '@mui/material'
 import { NewJob } from '../model'
 
 function CurrentJobCard({ job }: { job: NewJob }) {

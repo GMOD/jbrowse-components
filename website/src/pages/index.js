@@ -198,8 +198,8 @@ function Home() {
           <Typography variant="body1">
             JBrowse development is supported by the US National Institutes of
             Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
-            Institute for Cancer Research, and the University of California,
-            Berkeley.
+            Institute for Cancer Research (OICR), and the University of
+            California, Berkeley.
           </Typography>
         </Box>
       </Box>

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { observer } from 'mobx-react'
-import { useTheme, makeStyles } from '@material-ui/core'
+import { useTheme } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { Menu } from '@jbrowse/core/ui'
 
@@ -9,7 +10,7 @@ import Tooltip from './Tooltip'
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -22,7 +23,7 @@ const useStyles = makeStyles({
 type Coord = [number, number]
 const BaseLinearDisplay = observer(
   (props: { model: BaseLinearDisplayModel; children?: React.ReactNode }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
     const [clientRect, setClientRect] = useState<DOMRect>()

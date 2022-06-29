@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 import { createJBrowseTheme as coreCreateJBrowseTheme } from '@jbrowse/core/ui'
-import { Theme, ThemeOptions } from '@material-ui/core/styles'
+import { ThemeOptions } from '@mui/material/styles'
 
 export function createJBrowseTheme(theme?: ThemeOptions) {
   console.warn(
@@ -14,7 +14,7 @@ export function ThemeProvider({
   _theme,
   children,
 }: {
-  _theme: Theme
+  _theme: unknown
   children: ReactNode
 }) {
   console.warn(

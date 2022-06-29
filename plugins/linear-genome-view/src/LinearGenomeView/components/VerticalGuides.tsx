@@ -1,14 +1,12 @@
+import React from 'react'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
-import { makeStyles } from '@material-ui/core/styles'
-import clsx from 'clsx'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import React from 'react'
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewModel } from '..'
 import {
   ContentBlock as ContentBlockComponent,
   ElidedBlock as ElidedBlockComponent,
@@ -17,9 +15,9 @@ import {
 
 import { makeTicks } from '../util'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     height: '100%',
@@ -40,14 +38,14 @@ const useStyles = makeStyles(theme => ({
     width: 1,
   },
   majorTick: {
-    background: theme.palette.text.hint,
+    background: theme.palette.text.secondary,
   },
   minorTick: {
     background: theme.palette.divider,
   },
 }))
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes, cx } = useStyles()
   return (
     <>
       {model.staticBlocks.map((block, index) => {
@@ -63,7 +61,7 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
                 return (
                   <div
                     key={tick.base}
-                    className={clsx(
+                    className={cx(
                       classes.tick,
                       tick.type === 'major' || tick.type === 'labeledMajor'
                         ? classes.majorTick
@@ -94,7 +92,7 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
   )
 })
 function VerticalGuides({ model }: { model: LGV }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   // find the block that needs pinning to the left side for context
   const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
   return (

@@ -39,14 +39,14 @@ jobs:
           cd website/
           yarn build
   buildwholerepo:
-    name: Build whole repo on node 14 and ubuntu-latest
+    name: Build whole repo on node 16 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build codebase

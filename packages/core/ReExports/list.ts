@@ -6,12 +6,6 @@ export default [
   'mobx-react',
   'prop-types',
 
-  '@material-ui/core',
-  '@material-ui/core/SvgIcon',
-  '@material-ui/core/utils',
-  '@material-ui/lab',
-  '@mui/x-data-grid',
-
   '@jbrowse/core/Plugin',
   '@jbrowse/core/pluggableElementTypes',
   '@jbrowse/core/pluggableElementTypes/ViewType',
@@ -37,7 +31,5 @@ export default [
   '@jbrowse/core/util/io',
   '@jbrowse/core/util/mst-reflection',
   '@jbrowse/core/util/rxjs',
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
-
   '@jbrowse/core/data_adapters/BaseAdapter',
 ]

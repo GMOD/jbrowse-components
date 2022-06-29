@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import { Portal, alpha, makeStyles } from '@material-ui/core'
+import { Portal, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { usePopper } from 'react-popper'
 
 // locals
@@ -10,7 +11,7 @@ import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 function round(value: number) {
   return Math.round(value * 1e5) / 1e5
 }
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   // these styles come from
   // https://github.com/mui-org/material-ui/blob/master/packages/material-ui/src/Tooltip/Tooltip.js
   tooltip: {
@@ -43,7 +44,7 @@ const Tooltip = observer(
     model: BaseLinearDisplayModel
     clientMouseCoord: Coord
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { featureUnderMouse } = model
     const [width, setWidth] = useState(0)
     const [popperElt, setPopperElt] = useState<HTMLDivElement | null>(null)

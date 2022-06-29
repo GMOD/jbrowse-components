@@ -1,18 +1,22 @@
+import React, { useState } from 'react'
 import { getSession } from '@jbrowse/core/util'
-import Button from '@material-ui/core/Button'
-import Step from '@material-ui/core/Step'
-import StepContent from '@material-ui/core/StepContent'
-import StepLabel from '@material-ui/core/StepLabel'
-import Stepper from '@material-ui/core/Stepper'
-import { makeStyles } from '@material-ui/core/styles'
-import Typography from '@material-ui/core/Typography'
+import {
+  Button,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import React, { useState } from 'react'
+
+// locals
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginTop: theme.spacing(1),
   },
@@ -35,7 +39,7 @@ function AddConnectionWidget({ model }) {
   const [configModel, setConfigModel] = useState({})
   const [configModelReady, setConfigModelReady] = useState(true)
   const [activeStep, setActiveStep] = useState(0)
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const session = getSession(model)
 

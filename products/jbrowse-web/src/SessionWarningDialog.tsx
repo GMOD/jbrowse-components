@@ -1,23 +1,25 @@
 import React from 'react'
-import Button from '@material-ui/core/Button'
-import { makeStyles } from '@material-ui/core/styles'
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogContentText from '@material-ui/core/DialogContentText'
-import DialogTitle from '@material-ui/core/DialogTitle'
-import Divider from '@material-ui/core/Divider'
-import WarningIcon from '@material-ui/icons/Warning'
+import { makeStyles } from 'tss-react/mui'
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+} from '@mui/material'
+import WarningIcon from '@mui/icons-material/Warning'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   main: {
     textAlign: 'center',
-    margin: theme.spacing(2),
-    padding: theme.spacing(2),
+    margin: 8, // theme.spacing(2),
+    padding: 8, // theme.spacing(2),
     borderWidth: 2,
     borderRadius: 2,
   },
   buttons: {
-    margin: theme.spacing(2),
+    margin: 8, // theme.spacing(2),
     color: theme.palette.text.primary,
   },
 }))
@@ -31,7 +33,7 @@ export default function SessionWarningModal({
   onCancel: () => void
   reason: { url: string }[]
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog
       open

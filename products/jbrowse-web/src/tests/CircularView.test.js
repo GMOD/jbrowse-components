@@ -21,6 +21,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 test('open a circular view', async () => {
   console.warn = jest.fn()
   const pluginManager = getPluginManager({
@@ -50,16 +52,16 @@ test('open a circular view', async () => {
 
   // wait for the track selector to open and then click the
   // checkbox for the chord test track to toggle it on
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test', {}, delay))
 
   // expect the chord track to render eventually
-  await findByTestId('structuralVariantChordRenderer', {}, { timeout: 10000 })
+  await findByTestId('structuralVariantChordRenderer', {}, delay)
 
   // make sure a chord is rendered
   await findByTestId('chord-test-vcf-66132')
 
   // toggle track off
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test'))
+  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test', {}, delay))
 
   // expect the track to disappear
   await waitFor(() => {
@@ -69,8 +71,10 @@ test('open a circular view', async () => {
   })
 
   // open up VCF with renamed refNames
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test_renamed'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_sv_test_renamed', {}, delay),
+  )
 
   // make sure a chord is rendered
-  await findByTestId('chord-test-vcf-62852', {}, { timeout: 10000 })
-}, 15000)
+  await findByTestId('chord-test-vcf-62852', {}, delay)
+}, 25000)

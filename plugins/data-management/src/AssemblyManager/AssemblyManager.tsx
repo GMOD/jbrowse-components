@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from '@material-ui/core/styles'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { makeStyles } from 'tss-react/mui'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import {
   Button,
   Dialog,
@@ -9,16 +9,16 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-} from '@material-ui/core'
-import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos'
-import CloseIcon from '@material-ui/icons/Close'
-import AddIcon from '@material-ui/icons/Add'
+} from '@mui/material'
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
+import CloseIcon from '@mui/icons-material/Close'
+import AddIcon from '@mui/icons-material/Add'
 
 import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   titleBox: {
     color: '#fff',
     backgroundColor: theme.palette.primary.main,
@@ -50,7 +50,7 @@ const AssemblyManager = observer(
     rootModel: any
     onClose: (arg: boolean) => void
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const [isFormOpen, setFormOpen] = useState(false)
     const [isAssemblyBeingEdited, setIsAssemblyBeingEdited] = useState(false)
     const [assemblyBeingEdited, setAssemblyBeingEdited] =

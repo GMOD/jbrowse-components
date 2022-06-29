@@ -2,17 +2,11 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
-import {
-  Button,
-  Grid,
-  MenuItem,
-  Paper,
-  TextField,
-  makeStyles,
-} from '@material-ui/core'
-import AddIcon from '@material-ui/icons/Add'
+import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import AddIcon from '@mui/icons-material/Add'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     flexGrow: 1,
     overflow: 'hidden',
@@ -160,7 +154,7 @@ const AssemblyAddForm = observer(
     rootModel: any
     setFormOpen: Function
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const adapterTypes = [
       'IndexedFastaAdapter',

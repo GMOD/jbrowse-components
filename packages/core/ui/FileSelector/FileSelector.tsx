@@ -1,29 +1,30 @@
 import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import {
   Box,
   FormHelperText,
   InputLabel,
+  Menu,
   MenuItem,
   Tooltip,
-  Menu,
-} from '@material-ui/core'
-
-import {
   ToggleButtonGroup,
   ToggleButton,
   ToggleButtonProps,
-} from '@material-ui/lab'
-import { observer } from 'mobx-react'
+} from '@mui/material'
+
+// locals
 import {
   FileLocation,
   UriLocation,
-  isUriLocation,
   AbstractRootModel,
+  isUriLocation,
   isAppRootModel,
 } from '../../util/types'
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
 import LocalFileChooser from './LocalFileChooser'
 import UrlChooser from './UrlChooser'
+
+// icons
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 
 function ToggleButtonWithTooltip(props: ToggleButtonProps) {
   const { title, children, ...other } = props
@@ -148,6 +149,7 @@ const FileSelector = observer(
                 </ToggleButtonWithTooltip>
               ))}
               {hiddenAccts.length ? (
+                // @ts-ignore
                 <ToggleButton
                   onClick={event => setAnchorEl(event.target as HTMLElement)}
                   selected={false}
@@ -162,7 +164,6 @@ const FileSelector = observer(
               open={Boolean(anchorEl)}
               anchorEl={anchorEl}
               onClose={() => setAnchorEl(null)}
-              getContentAnchorEl={null}
               anchorOrigin={{
                 vertical: 'bottom',
                 horizontal: 'center',

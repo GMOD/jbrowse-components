@@ -4,22 +4,22 @@ import {
   Button,
   CircularProgress,
   Checkbox,
-  FormControlLabel,
-  TextField,
-  Typography,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
-  makeStyles,
-} from '@material-ui/core'
+  TextField,
+  Typography,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 // icons
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
@@ -87,7 +87,7 @@ interface ReducedFeature {
   }
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     width: 300,
   },
@@ -172,7 +172,7 @@ export function WindowSizeDlg(props: {
   handleClose: () => void
   track: any
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { track, feature: preFeature, handleClose } = props
 
   // window size stored as string, because it corresponds to a textfield which
