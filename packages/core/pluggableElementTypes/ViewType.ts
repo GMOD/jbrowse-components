@@ -18,6 +18,7 @@ export default class ViewType extends PluggableElementBase {
 
   displayTypes: DisplayType[] = []
 
+  // allows for views that are extended from other views to be added as a new view type in the plugin manager
   extendedName?: string
 
   constructor(
