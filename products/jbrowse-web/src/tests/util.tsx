@@ -141,8 +141,9 @@ export function JBrowse(props: any) {
 export const hts = (str: string) => 'htsTrackEntry-' + str
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 
-export function createView() {
-  const pm = getPluginManager()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createView(args?: any) {
+  const pm = getPluginManager(args)
   const state = pm.rootModel
   const { session } = state!
   const rest = render(<JBrowse pluginManager={pm} />)

@@ -1,14 +1,11 @@
 import React from 'react'
-import { waitFor, fireEvent, render } from '@testing-library/react'
+import { waitFor, fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { setup, generateReadBuffer, getPluginManager, JBrowse } from './util'
-
-type LGV = LinearGenomeViewModel
+import { setup, generateReadBuffer, createView } from './util'
 
 setup()
 
@@ -32,17 +29,15 @@ const delay = { timeout: 10000 }
 const total = 30000
 
 async function doSetup(val?: unknown) {
-  const pluginManager = getPluginManager(val)
-  const { session } = pluginManager.rootModel!
   const {
+    view,
     findByText,
     findByTestId,
     findAllByText,
     findByPlaceholderText,
     getByPlaceholderText,
-  } = render(<JBrowse pluginManager={pluginManager} />)
+  } = createView(val)
 
-  const view = session!.views[0] as LGV
   view.clearView()
 
   const autocomplete = await findByTestId('autocomplete')
