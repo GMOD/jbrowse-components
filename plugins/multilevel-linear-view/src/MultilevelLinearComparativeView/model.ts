@@ -190,9 +190,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         if (actionName === 'navToLocString') {
-          const anchorTargetBp = self.views[anchorViewIndex].bpPerPx
           self.views[anchorViewIndex][actionName](args[0])
-          self.views[anchorViewIndex].zoomTo(anchorTargetBp)
           self.views.forEach(view => {
             if (view.initialized) {
               // @ts-ignore

@@ -199,11 +199,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             // @ts-ignore
             self.showAllRegions()
           }
-
-          if (self.isAnchor) {
-            // @ts-ignore
-            self.zoomTo(self.limitBpPerPx.upperLimit)
-          }
         },
         moveIfAnchor(leftOffset: number, rightOffset: number) {
           if (self.isAnchor) {
