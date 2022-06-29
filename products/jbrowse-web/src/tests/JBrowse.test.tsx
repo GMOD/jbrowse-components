@@ -1,7 +1,7 @@
 import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
 
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { TextEncoder } from 'web-encoding'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
@@ -13,18 +13,8 @@ import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import {
-  JBrowse,
-  setup,
-  getPluginManager,
-  generateReadBuffer,
-  hts,
-} from './util'
+import { setup, generateReadBuffer, createView, hts } from './util'
 import TestPlugin from './TestPlugin'
-
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -46,23 +36,12 @@ beforeEach(() => {
   )
 })
 
-function createView() {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { session } = state!
-  const rest = render(<JBrowse pluginManager={pm} />)
-  const view = session!.views[0] as LGV
-  return { view, state, ...rest }
-}
-
 test('renders with an empty config', async () => {
-  const pm = getPluginManager({})
-  const { findByText } = render(<JBrowse pluginManager={pm} />)
+  const { findByText } = createView()
   await findByText('Help')
 })
 test('renders with an initialState', async () => {
-  const pm = getPluginManager()
-  const { findByText } = render(<JBrowse pluginManager={pm} />)
+  const { findByText } = createView()
   await findByText('Help')
 })
 
@@ -129,8 +108,7 @@ test('test sharing', async () => {
     },
     password: '123',
   })
-  const pm = getPluginManager()
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { findByTestId, findByText } = createView()
   await findByText('Help')
   fireEvent.click(await findByText('Share'))
 

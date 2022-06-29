@@ -1,4 +1,5 @@
 import React from 'react'
+import { render } from '@testing-library/react'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GenericFilehandle } from 'generic-filehandle'
@@ -15,6 +16,10 @@ import corePlugins from '../corePlugins'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Image, createCanvas } from 'canvas'
+
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -135,3 +140,12 @@ export function JBrowse(props: any) {
 
 export const hts = (str: string) => 'htsTrackEntry-' + str
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
+
+export function createView() {
+  const pm = getPluginManager()
+  const state = pm.rootModel
+  const { session } = state!
+  const rest = render(<JBrowse pluginManager={pm} />)
+  const view = session!.views[0] as LGV
+  return { view, state, ...rest }
+}

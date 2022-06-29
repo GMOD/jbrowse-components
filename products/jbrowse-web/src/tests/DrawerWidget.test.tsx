@@ -4,11 +4,8 @@ import '@testing-library/jest-dom/extend-expect'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { fireEvent, render, getByRole } from '@testing-library/react'
-import { JBrowse, getPluginManager, generateReadBuffer, hts } from './util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
+import { fireEvent, getByRole } from '@testing-library/react'
+import { createView, generateReadBuffer, hts } from './util'
 
 const delay = { timeout: 15000 }
 
@@ -24,15 +21,6 @@ beforeEach(() => {
     ),
   )
 })
-
-function createView() {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { session } = state!
-  const rest = render(<JBrowse pluginManager={pm} />)
-  const view = session!.views[0] as LGV
-  return { view, state, ...rest }
-}
 
 test('variant track test - opens feature detail view', async () => {
   const { view, findByTestId, findAllByTestId, findByText } = createView()
@@ -57,7 +45,9 @@ test('widget drawer navigation', async () => {
   view.setNewView(0.05, 5000)
   // opens a config editor widget
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
+  fireEvent.click(
+    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+  )
   fireEvent.click(await findByText('Settings'))
   await findByTestId('configEditor', {}, delay)
   // shows up when there active widgets

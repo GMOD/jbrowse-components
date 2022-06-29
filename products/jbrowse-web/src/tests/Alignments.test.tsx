@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, within } from '@testing-library/react'
+import { fireEvent, within } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
@@ -7,18 +7,14 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import {
-  JBrowse,
   setup,
   expectCanvasMatch,
   generateReadBuffer,
-  getPluginManager,
+  createView,
   hts,
   pc,
 } from './util'
 
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 expect.extend({ toMatchImageSnapshot })
 setup()
 
@@ -34,14 +30,6 @@ beforeEach(() => {
     ),
   )
 })
-
-function createView() {
-  const pm = getPluginManager()
-  const { session } = pm.rootModel!
-  const rest = render(<JBrowse pluginManager={pm} />)
-  const view = session!.views[0] as LGV
-  return { view, ...rest }
-}
 
 const delay = { timeout: 20000 }
 

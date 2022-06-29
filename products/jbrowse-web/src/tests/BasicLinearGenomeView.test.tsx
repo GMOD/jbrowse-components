@@ -1,25 +1,9 @@
 import React from 'react'
-import {
-  createEvent,
-  fireEvent,
-  render,
-  waitFor,
-  screen,
-} from '@testing-library/react'
+import { createEvent, fireEvent, waitFor, screen } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  JBrowse,
-  setup,
-  generateReadBuffer,
-  getPluginManager,
-  hts,
-} from './util'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
-
+import { setup, createView, generateReadBuffer, hts } from './util'
 setup()
 
 beforeEach(() => {
@@ -34,14 +18,6 @@ beforeEach(() => {
     }),
   )
 })
-
-function createView() {
-  const pm = getPluginManager()
-  const { session } = pm.rootModel!
-  const rest = render(<JBrowse pluginManager={pm} />)
-  const view = session!.views[0] as LGV
-  return { view, ...rest }
-}
 
 const delay = { timeout: 20000 }
 const total = 30000

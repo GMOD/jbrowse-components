@@ -12,7 +12,13 @@ import {
   expectCanvasMatch,
   generateReadBuffer,
   getPluginManager,
+  hts,
+  pc,
 } from './util'
+
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -20,53 +26,41 @@ setup()
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
 
 const delay = { timeout: 20000 }
 
 test('test stats estimation pileup, zoom in to see', async () => {
-  const pluginManager = getPluginManager()
-  const { session } = pluginManager.rootModel
-  const { findByText, findAllByText, findByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByText, findAllByText, findByTestId } = createView()
   await findByText('Help')
-  session.views[0].setNewView(30, 183)
+  view.setNewView(30, 183)
 
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_cram_pileup', {}, delay),
-  )
+  fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), {}, delay))
 
   await findAllByText(/Requested too much data/, {}, delay)
-  const before = session.views[0].bpPerPx
+  const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
-  await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
+  await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
 
   expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..12,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId(pc('{volvox}ctgA:1..12,000-0'), {}, delay),
   )
 }, 30000)
 
 test('test stats estimation pileup, force load to see', async () => {
-  const pluginManager = getPluginManager()
-  const { session } = pluginManager.rootModel
-  const { findByText, findAllByText, findByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByText, findAllByText, findByTestId } = createView()
   await findByText('Help')
-  session.views[0].setNewView(25.07852564102564, 283)
+  view.setNewView(25.07852564102564, 283)
 
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_cram_pileup', {}, delay),
@@ -77,43 +71,32 @@ test('test stats estimation pileup, force load to see', async () => {
   fireEvent.click(buttons[0])
 
   expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..20,063-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId(pc('{volvox}ctgA:1..20,063-0'), {}, delay),
   )
 }, 30000)
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
-  const pluginManager = getPluginManager()
-  const { session } = pluginManager.rootModel
-  const { findByText, findAllByText, findAllByTestId, findByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
+    createView()
   await findByText('Help')
-  session.views[0].setNewView(34, 5)
+  view.setNewView(34, 5)
 
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', {}, delay))
 
   await findAllByText(/Zoom in to see features/, {}, delay)
-  const before = session.views[0].bpPerPx
+  const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
-  await waitFor(() => expect(session.views[0].bpPerPx).toBe(before / 2), delay)
+  await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
 
   await findAllByTestId('box-test-vcf-605560', {}, delay)
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByText, findAllByText, findByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByText, findAllByText, findByTestId } = createView()
   await findByText('Help')
-  state.session.views[0].setNewView(34, 5)
+  view.setNewView(34, 5)
   await findAllByText('ctgA', {}, delay)
 
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', {}, delay))
