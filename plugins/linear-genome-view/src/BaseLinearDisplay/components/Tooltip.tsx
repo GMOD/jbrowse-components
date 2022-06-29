@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { Portal, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -32,7 +33,15 @@ const TooltipContents = React.forwardRef<
   HTMLDivElement,
   { message: React.ReactNode | string }
 >(({ message }: { message: React.ReactNode | string }, ref) => {
-  return <div ref={ref}>{message}</div>
+  return (
+    <div ref={ref}>
+      {React.isValidElement(message) ? (
+        message
+      ) : message ? (
+        <SanitizedHTML html={String(message)} />
+      ) : null}
+    </div>
+  )
 })
 
 type Coord = [number, number]

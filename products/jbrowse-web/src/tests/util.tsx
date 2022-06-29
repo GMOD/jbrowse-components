@@ -1,4 +1,6 @@
 import React from 'react'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { render } from '@testing-library/react'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GenericFilehandle } from 'generic-filehandle'
@@ -15,6 +17,10 @@ import corePlugins from '../corePlugins'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Image, createCanvas } from 'canvas'
+
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -117,8 +123,8 @@ export function canvasToBuffer(canvas: HTMLCanvasElement) {
   )
 }
 
-export function expectCanvasMatch(canvas: HTMLCanvasElement) {
-  expect(canvasToBuffer(canvas)).toMatchImageSnapshot({
+export function expectCanvasMatch(canvas: HTMLElement) {
+  expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
     failureThreshold: 0.05,
     failureThresholdType: 'percent',
   })
@@ -131,4 +137,19 @@ export function JBrowse(props: any) {
       <JBrowseWithoutQueryParamProvider {...props} />
     </QueryParamProvider>
   )
+}
+
+export const hts = (str: string) => 'htsTrackEntry-' + str
+export const pc = (str: string) => `prerendered_canvas_${str}_done`
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createView(args?: any) {
+  const pm = getPluginManager(args)
+  const state = pm.rootModel
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const { session } = state!
+  const rest = render(<JBrowse pluginManager={pm} />)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const view = session!.views[0] as LGV
+  return { view, state, ...rest }
 }

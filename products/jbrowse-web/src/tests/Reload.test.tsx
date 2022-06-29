@@ -1,17 +1,16 @@
-import React from 'react'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
-  JBrowse,
   setup,
-  getPluginManager,
   expectCanvasMatch,
   generateReadBuffer,
+  hts,
+  pc,
+  createView,
 } from './util'
-
 expect.extend({ toMatchImageSnapshot })
 
 const readBuffer = generateReadBuffer(
@@ -23,7 +22,9 @@ setup()
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
 })
 
@@ -35,8 +36,7 @@ const delay = { timeout: 10000 }
 test('reloads alignments track (CRAI 404)', async () => {
   console.error = jest.fn()
 
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox-sorted-altname.cram.crai') {
       return { status: 404 }
@@ -44,32 +44,24 @@ test('reloads alignments track (CRAI 404)', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_cram_pileup', {}, delay),
-  )
+  view.setNewView(0.5, 0)
+  fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0_done',
-      {},
-      delay,
-    ),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
 }, 20000)
 
 test('reloads alignments track (CRAM 404)', async () => {
   console.error = jest.fn()
 
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox-sorted-altname.cram') {
       return { status: 404 }
@@ -79,29 +71,20 @@ test('reloads alignments track (CRAM 404)', async () => {
     )(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_cram_snpcoverage', {}, delay),
-  )
+  view.setNewView(0.5, 0)
+  fireEvent.click(await findByTestId(hts('volvox_cram_snpcoverage'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0_done',
-      {},
-      delay,
-    ),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
 }, 20000)
 test('reloads alignments track (BAI 404)', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox-sorted-altname.bam.bai') {
       return { status: 404 }
@@ -109,29 +92,20 @@ test('reloads alignments track (BAI 404)', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_bam_snpcoverage', {}, delay),
-  )
+  view.setNewView(0.5, 0)
+  fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0_done',
-      {},
-      delay,
-    ),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
 }, 20000)
 test('reloads alignments track (BAM 404)', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox-sorted-altname.bam') {
       return { status: 404 }
@@ -139,32 +113,24 @@ test('reloads alignments track (BAM 404)', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.5, 0)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_bam_pileup', {}, delay),
-  )
+  view.setNewView(0.5, 0)
+  fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..400-0_done',
-      {},
-      delay,
-    ),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
 }, 20000)
 
 test('reloads bigwig (BW 404)', async () => {
   console.error = jest.fn()
 
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox_microarray.bw') {
       return { status: 404 }
@@ -172,31 +138,25 @@ test('reloads bigwig (BW 404)', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(10, 0)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray', {}, delay),
-  )
+  view.setNewView(10, 0)
+  fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
   expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..8,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId(pc('{volvox}ctgA:1..8,000-0'), {}, delay),
   )
 }, 20000)
 
 test('reloads vcf (VCF.GZ 404)', async () => {
   console.error = jest.fn()
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox.filtered.vcf.gz') {
       return { status: 404 }
@@ -204,15 +164,14 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
-  )
+  view.setNewView(0.05, 5000)
+  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
@@ -222,8 +181,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
 
 test('reloads vcf (VCF.GZ.TBI 404)', async () => {
   console.error = jest.fn()
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  // @ts-ignore
   fetch.mockResponse(async request => {
     if (request.url === 'volvox.filtered.vcf.gz.tbi') {
       return { status: 404 }
@@ -231,15 +189,13 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     return readBuffer(request)
   })
 
-  const { findByTestId, findByText, findAllByTestId, findAllByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, findByTestId, findByText, findAllByTestId, findAllByText } =
+    createView()
   await findByText('Help')
-  state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
-  )
+  view.setNewView(0.05, 5000)
+  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
   await findAllByText(/HTTP 404/, {}, delay)
+  // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])

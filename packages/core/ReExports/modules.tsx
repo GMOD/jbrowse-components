@@ -10,6 +10,11 @@ import PropTypes from 'prop-types'
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
 import { useTheme } from '@mui/material'
+import {
+  useGridApiContext,
+  useGridApiRef,
+  useGridRootProps,
+} from '@mui/x-data-grid'
 
 // material-ui lab
 import * as BaseAdapterExports from '../data_adapters/BaseAdapter'
@@ -203,7 +208,12 @@ const libs = {
   react: React,
   'react-dom': ReactDom,
   'mobx-react': mxreact,
-  '@mui/x-data-grid': { DataGrid },
+  '@mui/x-data-grid': {
+    DataGrid,
+    useGridApiContext,
+    useGridApiRef,
+    useGridRootProps,
+  },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
   '@mui/material/utils': MUIUtils,

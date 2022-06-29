@@ -7,15 +7,12 @@ import {
   InputLabel,
   Tooltip,
   IconButton,
+  TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
-import { observer, PropTypes } from 'mobx-react'
-import Editor from 'react-simple-code-editor'
-
-// fontSize and fontFamily have to match between Editor and SyntaxHighlighter
-const fontSize = '12px'
+import { observer } from 'mobx-react'
 
 // Optimize by using system default fonts:
 // https://css-tricks.com/snippets/css/font-stacks/
@@ -27,15 +24,27 @@ const useStyles = makeStyles()(theme => ({
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
     fontFamily,
-    fontSize,
+  },
+  textAreaFont: {
+    fontFamily,
   },
 }))
 
-function CallbackEditor({ slot }) {
+function CallbackEditor({
+  slot,
+}: {
+  slot: {
+    set: (arg: string) => void
+    description: string
+    name: string
+    value: string
+    contextVariable: string
+  }
+}) {
   const { classes } = useStyles()
 
   const [code, setCode] = useState(slot.value)
-  const [error, setCodeError] = useState()
+  const [error, setCodeError] = useState<unknown>()
   const debouncedCode = useDebounce(code, 400)
 
   useEffect(() => {
@@ -43,12 +52,16 @@ function CallbackEditor({ slot }) {
       const jexlDebouncedCode = debouncedCode.startsWith('jexl:')
         ? debouncedCode
         : `jexl:${debouncedCode}`
+
+      if (jexlDebouncedCode === 'jexl:') {
+        throw new Error('Empty jexl expression is not valid')
+      }
       stringToJexlExpression(
         jexlDebouncedCode,
         getEnv(slot).pluginManager?.jexl,
       )
       slot.set(jexlDebouncedCode)
-      setCodeError(null)
+      setCodeError(undefined)
     } catch (e) {
       console.error({ e })
       setCodeError(e)
@@ -63,13 +76,17 @@ function CallbackEditor({ slot }) {
         <InputLabel shrink htmlFor="callback-editor">
           {slot.name}
         </InputLabel>
-        <Editor
+        <TextField
+          multiline
           className={classes.callbackEditor}
           value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-          onValueChange={newCode => setCode(newCode)}
-          highlight={newCode => newCode}
-          padding={10}
+          onChange={event => setCode(event.target.value)}
           style={{ background: error ? '#fdd' : undefined }}
+          InputProps={{
+            classes: {
+              input: classes.textAreaFont,
+            },
+          }}
         />
         {error ? (
           <FormHelperText
@@ -106,7 +123,5 @@ function CallbackEditor({ slot }) {
     </>
   )
 }
-CallbackEditor.propTypes = {
-  slot: PropTypes.objectOrObservableObject.isRequired,
-}
+
 export default observer(CallbackEditor)
