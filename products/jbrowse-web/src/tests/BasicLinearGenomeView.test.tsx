@@ -10,6 +10,9 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+type LGV = LinearGenomeViewModel
 
 setup()
 
@@ -24,14 +27,21 @@ beforeEach(() => {
   )
 })
 
+function createView() {
+  const pm = getPluginManager()
+  const { session } = pm.rootModel!
+  const rest = render(<JBrowse pluginManager={pm} />)
+  const view = session!.views[0] as LGV
+  return { view, ...rest }
+}
+
 const delay = { timeout: 20000 }
 const total = 30000
 
 test(
   'access about menu',
   async () => {
-    const pm = getPluginManager()
-    const { findByText } = render(<JBrowse pluginManager={pm} />)
+    const { findByText } = createView()
 
     fireEvent.click(await findByText('Help'))
     fireEvent.click(await findByText('About'))
@@ -44,11 +54,7 @@ test(
 test(
   'click and drag to move sideways',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-
-    const view = state.session.views[0]
+    const { view, findByTestId } = createView()
     const start = view.offsetPx
     const track = await findByTestId('trackContainer', {}, delay)
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
@@ -62,11 +68,8 @@ test(
 test(
   'click and drag to rubberband',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+    const { view, findByTestId, findByText } = createView()
     const track = await findByTestId('rubberBand_controls', {}, delay)
-    const view = state.session.views[0]
     expect(view.bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
@@ -80,12 +83,8 @@ test(
 test(
   'click and drag rubberBand, click get sequence to open sequenceDialog',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+    const { view, findByTestId, findByText } = createView()
     const rubberband = await findByTestId('rubberBand_controls', {}, delay)
-
-    const view = state.session.views[0]
     expect(view.bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
@@ -100,9 +99,7 @@ test(
 test(
   'click and drag to reorder tracks',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
-    const { findByTestId } = render(<JBrowse pluginManager={pm} />)
+    const { view, findByTestId } = createView()
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
     )
@@ -110,7 +107,6 @@ test(
       await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
     )
 
-    const view = state.session.views[0]
     const trackId1 = view.tracks[1].id
     const dragHandle0 = await findByTestId(
       'dragHandle-integration_test-volvox_alignments',
@@ -141,13 +137,8 @@ test(
 test(
   'click and zoom in and back out',
   async () => {
-    const pm = getPluginManager()
-    const { session } = pm.rootModel
-    const { findByTestId, findAllByText } = render(
-      <JBrowse pluginManager={pm} />,
-    )
+    const { view, findByTestId, findAllByText } = createView()
     await findAllByText('ctgA', {}, delay)
-    const view = session.views[0]
     const before = view.bpPerPx
     fireEvent.click(await findByTestId('zoom_in'))
     await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
@@ -160,11 +151,7 @@ test(
 test(
   'opens track selector',
   async () => {
-    const pm = getPluginManager()
-    const { session } = pm.rootModel
-    const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-
-    const view = session.views[0]
+    const { view, findByTestId } = createView()
     const trackId = 'htsTrackEntry-volvox_alignments'
     await findByTestId(trackId, {}, delay)
     expect(view.tracks.length).toBe(0)
@@ -177,12 +164,7 @@ test(
 test(
   'opens reference sequence track and expects zoom in message',
   async () => {
-    const pm = getPluginManager()
-    const { session } = pm.rootModel
-    const { findAllByText, findByTestId } = render(
-      <JBrowse pluginManager={pm} />,
-    )
-    const view = session.views[0]
+    const { view, findByTestId, findAllByText } = createView()
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_refseq', {}, delay),
     )
@@ -200,11 +182,7 @@ test(
 test(
   'click to display center line with correct value',
   async () => {
-    const pm = getPluginManager()
-    const { session } = pm.rootModel
-    const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-    const view = session.views[0]
-
+    const { view, findByTestId, findByText } = createView()
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
     )
@@ -214,10 +192,8 @@ test(
     fireEvent.click(await findByTestId('view_menu_icon'))
     fireEvent.click(await findByText('Show center line'))
     expect(view.showCenterLine).toBe(true)
-
-    const { centerLineInfo } = state.session.views[0]
-    expect(centerLineInfo.refName).toBe('ctgA')
-    expect(centerLineInfo.offset).toEqual(120)
+    expect(view.centerLineInfo?.refName).toBe('ctgA')
+    expect(view.centerLineInfo?.offset).toEqual(120)
   },
   total,
 )
@@ -225,15 +201,14 @@ test(
 test(
   'test choose option from dropdown refName autocomplete',
   async () => {
-    const pm = getPluginManager()
-    const state = pm.rootModel
     const {
+      view,
       findByText,
       findByTestId,
       getByPlaceholderText,
       findByPlaceholderText,
-    } = render(<JBrowse pluginManager={pm} />)
-    const view = state.session.views[0]
+    } = createView()
+
     expect(view.displayedRegions[0].refName).toEqual('ctgA')
     fireEvent.click(await findByText('Help'))
     // need this to complete before we can try to search
@@ -265,9 +240,8 @@ test(
     )
 
     await waitFor(() => {
-      expect(getByPlaceholderText('Search for location').value).toEqual(
-        expect.stringContaining('ctgB'),
-      )
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toEqual(expect.stringContaining('ctgB'))
     }, delay)
   },
   total,

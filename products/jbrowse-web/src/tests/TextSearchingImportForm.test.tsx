@@ -20,9 +20,10 @@ beforeEach(() => {
   fetch.resetMocks()
   // @ts-ignore
   fetch.mockResponse(
-    generateReadBuffer((url: string) => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      (url: string) =>
+        new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
 
@@ -32,7 +33,7 @@ const total = 30000
 
 async function doSetup(val?: unknown) {
   const pluginManager = getPluginManager(val)
-  const state = pluginManager.rootModel
+  const { session } = pluginManager.rootModel!
   const {
     findByText,
     findByTestId,
@@ -41,8 +42,7 @@ async function doSetup(val?: unknown) {
     getByPlaceholderText,
   } = render(<JBrowse pluginManager={pluginManager} />)
 
-  // @ts-ignore
-  const view = state.session.views[0] as LGV
+  const view = session!.views[0] as LGV
   view.clearView()
 
   const autocomplete = await findByTestId('autocomplete')
@@ -61,7 +61,6 @@ async function doSetup(val?: unknown) {
     findAllByText,
     findByPlaceholderText,
     getByPlaceholderText,
-    state,
   }
 }
 
@@ -73,15 +72,10 @@ test(
     fireEvent.change(input, { target: { value: 'eden.1' } })
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
     fireEvent.click(await findByText('Open'))
-
-    await waitFor(
-      () =>
-        expect(
-          (getByPlaceholderText('Search for location') as HTMLInputElement)
-            .value,
-        ).toBe('ctgA:1,055..9,005'),
-      delay,
-    )
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgA:1,055..9,005')
+    }, delay)
   },
   total,
 )
@@ -98,14 +92,10 @@ test(
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
     fireEvent.click(await findByText('Open'))
-    await waitFor(
-      () =>
-        expect(
-          (getByPlaceholderText('Search for location') as HTMLInputElement)
-            .value,
-        ).toBe('ctgA:1,055..9,005'),
-      delay,
-    )
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgA:1,055..9,005')
+    }, delay)
   },
   total,
 )
@@ -122,14 +112,10 @@ test(
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
     fireEvent.click(await findByText('Open'))
-    await waitFor(
-      () =>
-        expect(
-          (getByPlaceholderText('Search for location') as HTMLInputElement)
-            .value,
-        ).toBe('ctgB:1..6,079'),
-      delay,
-    )
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgB:1..6,079')
+    }, delay)
   },
   total,
 )
