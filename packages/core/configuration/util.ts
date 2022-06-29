@@ -69,7 +69,7 @@ export function readConfObject(
     }
 
     if (slot.expr) {
-      const appliedFunc = slot.expr.evalSync(args)
+      const appliedFunc = slot.expr ? slot.expr.evalSync(args) : slot.expr
       if (isStateTreeNode(appliedFunc)) {
         return JSON.parse(JSON.stringify(getSnapshot(appliedFunc)))
       }

@@ -40,9 +40,7 @@
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
     "pluralize": "^8.0.0",
-    "react-color": "^2.19.3",
-    "react-simple-code-editor": "0.11.2",
-    "react-syntax-highlighter": "^15.5.0"
+    "react-color": "^2.19.3"
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import SanitizedHTML from '../ui/SanitizedHTML'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { Feature } from '../util/simpleFeature'
@@ -35,6 +36,7 @@ const Tooltip = ({
     const handle = setTimeout(() => setShown(true), timeout)
     return () => clearTimeout(handle)
   })
+  console.log('here')
   if (feature && shown) {
     const text = readConfObject(configuration, 'mouseover', { feature })
     return (
@@ -42,7 +44,7 @@ const Tooltip = ({
         className={classes.hoverLabel}
         style={{ left: offsetX, top: offsetY }}
       >
-        {text}
+        <SanitizedHTML html={text} />
       </div>
     )
   }

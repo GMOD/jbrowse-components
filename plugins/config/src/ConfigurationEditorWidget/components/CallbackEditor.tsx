@@ -52,6 +52,11 @@ function CallbackEditor({
       const jexlDebouncedCode = debouncedCode.startsWith('jexl:')
         ? debouncedCode
         : `jexl:${debouncedCode}`
+
+      console.log({ jexlDebouncedCode })
+      if (jexlDebouncedCode === 'jexl:') {
+        throw new Error('Empty jexl expression is not valid')
+      }
       stringToJexlExpression(
         jexlDebouncedCode,
         getEnv(slot).pluginManager?.jexl,
@@ -66,7 +71,6 @@ function CallbackEditor({
 
   // if default value is a callback, will have to remove jexl:
   // do this last
-  console.log({ error })
   return (
     <>
       <FormControl>
