@@ -2,9 +2,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { featureSpanPx, Region } from '@jbrowse/core/util'
-import Color from 'color'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { getOrigin, getScale, groupBy } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,

@@ -349,6 +349,7 @@ const stateModelFactory = (
     })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
+      const hasRenderings = getConf(self, 'defaultRendering')
       return {
         trackMenuItems() {
           return [
@@ -410,18 +411,18 @@ const stateModelFactory = (
                 self.toggleCrossHatches()
               },
             },
-
-            ...(Object.keys(getConf(self, 'renderers') || {}).length > 1
+            ...(hasRenderings
               ? [
                   {
                     label: 'Renderer type',
-                    subMenu: [...rendererTypes.keys()].map(key => ({
+                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
                       label: key,
                       onClick: () => self.setRendererType(key),
                     })),
                   },
                 ]
               : []),
+
             {
               label: 'Autoscale type',
               subMenu: [

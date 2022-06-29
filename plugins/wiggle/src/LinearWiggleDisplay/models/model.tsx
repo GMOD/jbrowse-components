@@ -306,17 +306,23 @@ const stateModelFactory = (
       get ticks() {
         const { scaleType, domain, height } = self
         const minimalTicks = getConf(self, 'minimalTicks')
+        const inverted = getConf(self, 'inverted')
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
         const scale = getScale({
           scaleType,
           domain,
           range,
-          inverted: getConf(self, 'inverted'),
+          inverted,
         })
         const ticks = axisPropsFromTickScale(scale, 4)
         return height < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
+      },
+
+      get adapterCapabilities() {
+        return pluginManager.getAdapterType(self.adapterTypeName)
+          .adapterCapabilities
       },
     }))
     .views(self => {
@@ -339,18 +345,12 @@ const stateModelFactory = (
             filters,
           }
         },
-
-        get adapterCapabilities() {
-          return pluginManager.getAdapterType(self.adapterTypeName)
-            .adapterCapabilities
-        },
-
         get hasResolution() {
-          return this.adapterCapabilities.includes('hasResolution')
+          return self.adapterCapabilities.includes('hasResolution')
         },
 
         get hasGlobalStats() {
-          return this.adapterCapabilities.includes('hasGlobalStats')
+          return self.adapterCapabilities.includes('hasGlobalStats')
         },
       }
     })
