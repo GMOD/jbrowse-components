@@ -51,7 +51,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       config: AnyConfigurationModel
       displayCrossHatches: boolean
       color: string
-      exportSVG: boolean
+      exportSVG?: { rasterizeLayers?: boolean }
     },
   ) {
     const {
@@ -88,7 +88,8 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     ctx.fillStyle = color
 
     // first pass: uses path2d for faster rendering
-    const path = exportSVG ? undefined : new Path2D()
+    const path =
+      exportSVG || typeof Path2D === 'undefined' ? undefined : new Path2D()
     let hasClipping = false
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]

@@ -7,17 +7,17 @@ export default ConfigurationSchema(
     color: {
       type: 'color',
       description: 'the color of track, overrides posColor and negColor',
-      defaultValue: 'rgba(255,0,0,0.5)',
+      defaultValue: '#f0f',
     },
     posColor: {
       type: 'color',
       description: 'the color to use when the score is positive',
-      defaultValue: 'rgba(0,0,255,0.5)',
+      defaultValue: 'blue',
     },
     negColor: {
       type: 'color',
       description: 'the color to use when the score is negative',
-      defaultValue: 'rgba(255,0,0,0.5)',
+      defaultValue: 'red',
     },
     highlightColor: {
       type: 'color',

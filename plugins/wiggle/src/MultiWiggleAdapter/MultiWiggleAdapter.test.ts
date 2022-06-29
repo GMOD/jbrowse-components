@@ -1,11 +1,11 @@
 import { toArray } from 'rxjs/operators'
-import BigWigAdapter from './BigWigAdapter'
+import MultiWiggleAdapter from './MultiWiggleAdapter'
 import configSchema from './configSchema'
 
 describe('adapter can fetch features from volvox.bw', () => {
-  let adapter: BigWigAdapter
+  let adapter: MultiWiggleAdapter
   beforeEach(() => {
-    adapter = new BigWigAdapter(
+    adapter = new MultiWiggleAdapter(
       configSchema.create({
         bigWigLocation: {
           localPath: require.resolve('./test_data/volvox.bw'),
@@ -21,8 +21,6 @@ describe('adapter can fetch features from volvox.bw', () => {
       end: 20000,
       assemblyName: 'volvox',
     })
-    expect(await adapter.refIdToName(0)).toBe('ctgA')
-    expect(await adapter.refIdToName(1)).toBe(undefined)
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
 

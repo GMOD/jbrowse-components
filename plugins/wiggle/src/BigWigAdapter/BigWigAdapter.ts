@@ -88,10 +88,16 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
       })
 
       feats.forEach(data => {
-        data.source = source
+        if (source) {
+          // @ts-ignore
+          data.source = source
+        }
+        // @ts-ignore
+        data.refName = refName
         const uniqueId = `${region.refName}:${data.start}-${data.end}`
         observer.next({
-          get: (str: string) => data[str],
+          // @ts-ignore
+          get: (str: string) => (data as Record<string, unknown>)[str],
           id: () => `${source}-${uniqueId}`,
           toJSON: () => ({ ...data, uniqueId }),
         })
