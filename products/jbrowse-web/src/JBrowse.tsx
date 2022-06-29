@@ -2,7 +2,8 @@ import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { useQueryParam, StringParam } from 'use-query-params'
-import { CssBaseline, ThemeProvider } from '@material-ui/core'
+import { CssBaseline } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
 
 // core
 import { getConf } from '@jbrowse/core/configuration'
@@ -13,6 +14,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
 import { SessionModel } from './sessionModelFactory'
+
+import './JBrowse.css'
 
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {

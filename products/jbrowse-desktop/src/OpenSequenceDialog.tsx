@@ -10,15 +10,14 @@ import {
   Paper,
   TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import FileSelector from '@jbrowse/core/ui/FileSelector'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { FileSelector, ErrorMessage } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   message: {
     background: '#ddd',
     margin: theme.spacing(2),
@@ -157,7 +156,7 @@ const OpenSequenceDialog = ({
 }: {
   onClose: (conf?: unknown) => Promise<void>
 }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const adapterTypes = [
     'IndexedFastaAdapter',

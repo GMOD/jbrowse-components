@@ -1,21 +1,22 @@
 import React, { useEffect, useRef } from 'react'
+import { Paper } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
-import clsx from 'clsx'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
 
-import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 import TrackLabel from './TrackLabel'
 
-const useStyles = makeStyles(theme => ({
-  root: { marginTop: 2 },
+const useStyles = makeStyles()({
+  root: {
+    marginTop: 2,
+  },
   resizeHandle: {
-    height: RESIZE_HANDLE_HEIGHT,
+    height: 3,
     boxSizing: 'border-box',
     position: 'relative',
     zIndex: 2,
@@ -27,7 +28,6 @@ const useStyles = makeStyles(theme => ({
     left: 0,
     width: '100%',
     zIndex: 3,
-    borderRadius: theme.shape.borderRadius,
   },
   trackLabel: {
     zIndex: 3,
@@ -57,13 +57,13 @@ const useStyles = makeStyles(theme => ({
     background: 'none',
     zIndex: 2,
   },
-}))
+})
 
 type LGV = LinearGenomeViewModel
 
 const TrackContainerLabel = observer(
   ({ model, view }: { model: BaseTrackModel; view: LGV }) => {
-    const classes = useStyles()
+    const { classes, cx } = useStyles()
     const labelStyle =
       view.trackLabels === 'overlapping'
         ? classes.trackLabelOverlap
@@ -71,7 +71,7 @@ const TrackContainerLabel = observer(
     return view.trackLabels !== 'hidden' ? (
       <TrackLabel
         track={model}
-        className={clsx(classes.trackLabel, labelStyle)}
+        className={cx(classes.trackLabel, labelStyle)}
       />
     ) : null
   },
@@ -84,7 +84,7 @@ function TrackContainer({
   model: LinearGenomeViewModel
   track: BaseTrackModel
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const display = track.displays[0]
   const { horizontalScroll, draggingTrackId, moveTrack } = model
   const { height } = display

@@ -17,10 +17,10 @@ import {
   Menu,
   MenuItem,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import WarningIcon from '@material-ui/icons/Warning'
-import SettingsIcon from '@material-ui/icons/Settings'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import WarningIcon from '@mui/icons-material/Warning'
+import SettingsIcon from '@mui/icons-material/Settings'
 
 import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
 import {
@@ -30,14 +30,14 @@ import {
 } from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   newSession: {
-    backgroundColor: theme.palette.grey['300'],
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(6),
+    backgroundColor: theme.palette?.grey['300'],
+    padding: 8, // theme.spacing(2),
+    marginTop: 8, // theme.spacing(6),
   },
   header: {
-    margin: theme.spacing(2),
+    margin: 8, // theme.spacing(2),
   },
   settings: {
     float: 'right',
@@ -104,7 +104,7 @@ export default function StartScreen({
   rootModel: any
   onFactoryReset: Function
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const [sessions, setSessions] = useState<Record<string, any>>()
   const [sessionToDelete, setSessionToDelete] = useState<string>()

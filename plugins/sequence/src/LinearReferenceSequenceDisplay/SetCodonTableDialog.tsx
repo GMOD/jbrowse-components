@@ -10,15 +10,15 @@ import {
   Link,
   TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { defaultCodonTable } from '@jbrowse/core/util'
 
 // icons
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -43,7 +43,7 @@ export default function SetCodonTableDialog({
   codonTable: string
   handleClose: ({ codonTable }?: { codonTable: string }) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [codonTable, setCodonTable] = useState(codonTablePre)
   return (
     <Dialog open maxWidth="xl" onClose={() => handleClose()}>

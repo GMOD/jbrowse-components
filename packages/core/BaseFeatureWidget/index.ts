@@ -100,7 +100,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      const { unformattedFeatureData, featureData, ...rest } = snap
+      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      const { unformattedFeatureData, featureData, ...rest } = snap as Omit<
+        typeof snap,
+        symbol
+      >
       // finalizedFeatureData avoids running formatter twice if loading from
       // snapshot
       return {

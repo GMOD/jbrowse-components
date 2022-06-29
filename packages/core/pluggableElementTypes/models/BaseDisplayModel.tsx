@@ -40,12 +40,12 @@ export const BaseDisplay = types
     },
 
     get parentTrack() {
-      let track = getParent(self)
+      let track = getParent<any>(self)
       while (!(track.configuration && getConf(track, 'trackId'))) {
         if (isRoot(track)) {
           throw new Error(`No parent track found for ${self.type} ${self.id}`)
         }
-        track = getParent(track)
+        track = getParent<any>(track)
       }
       return track
     },

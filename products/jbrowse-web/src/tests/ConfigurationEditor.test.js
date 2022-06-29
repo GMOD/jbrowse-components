@@ -9,7 +9,7 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { JBrowse, getPluginManager, generateReadBuffer } from './util'
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const waitForOptions = { timeout: 15000 }
+const delay = { timeout: 15000 }
 
 beforeEach(() => {
   clearCache()
@@ -30,10 +30,14 @@ test('change color on track', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_filtered_vcf'))
-  fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntry-volvox_filtered_vcf', {}, delay),
+  )
+  fireEvent.click(
+    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+  )
   fireEvent.click(await findByText('Settings'))
-  await findByTestId('configEditor')
+  await findByTestId('configEditor', {}, delay)
   fireEvent.change(await findByDisplayValue('goldenrod'), {
     target: { value: 'green' },
   })
@@ -43,6 +47,6 @@ test('change color on track', async () => {
         'fill',
         'green',
       ),
-    waitForOptions,
+    delay,
   )
 }, 20000)

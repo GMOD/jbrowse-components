@@ -11,15 +11,15 @@ import {
   Link,
   TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { defaultCodonTable } from '@jbrowse/core/util'
 
 // icons
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   formElt: {
     margin: theme.spacing(3),
   },
@@ -55,7 +55,7 @@ export default function SequenceFeatureSettingsDialog({
   intronBp: number
   upDownStreamBp: number
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [codonTable, setCodonTable] = useState(`${codonTableArg}`)
   const [intronBp, setIntronBp] = useState(`${intronBpArg}`)
   const [upDownStreamBp, setUpDownStreamBp] = useState(`${upDownStreamBpArg}`)

@@ -1,3 +1,3 @@
-export { default as BaseChordDisplayComponentFactory } from './components/BaseChordDisplay'
+export { default as BaseChordDisplayComponent } from './components/BaseChordDisplay'
 export { BaseChordDisplayModel } from './models/BaseChordDisplayModel'
 export { baseChordDisplayConfig } from './models/baseChordDisplayConfig'

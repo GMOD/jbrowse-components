@@ -1,7 +1,8 @@
 import React from 'react'
 import { types } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import { MenuItem, Select, TextField, makeStyles } from '@material-ui/core'
+import { MenuItem, Select, TextField } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 
 const OPERATIONS = [
@@ -35,7 +36,7 @@ OPERATION_PREDICATES['not between'] = (
   return !OPERATION_PREDICATES.between(numberInCell, firstNumber, secondNumber)
 }
 
-const useStyles = makeStyles((/* theme */) => {
+const useStyles = makeStyles()((/* theme */) => {
   return {
     textFilterControlAdornment: { marginRight: '-18px' },
     textFilterControl: {
@@ -55,7 +56,7 @@ const useStyles = makeStyles((/* theme */) => {
 
 // React component for the column filter control
 const FilterReactComponent = observer(({ filterModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const operationChoices = OPERATIONS
 

@@ -7,11 +7,11 @@ import {
   DialogTitle,
   Divider,
   IconButton,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 
-export const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -25,7 +25,7 @@ export default function HelpDialog({
 }: {
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Dialog open maxWidth="xl" onClose={handleClose}>
       <DialogTitle>

@@ -343,21 +343,21 @@ Note that you can disable these by clicking on the track menu (vertical ...
 next to track label, then hovering over SNPCoverage options, and unchecking
 "Draw insertion/clipping indicators" and "Draw insertion/clipping counts")
 
-## BigWig tracks
+## Quantitative tracks
 
 Visualizing genome signals, whether it is read depth-of-coverage or other
-signal, can often be done by using BigWig files
+signal, can often be done by using BigWig or other quantitative feature files
 
 <Figure caption="A simple wiggle track with the XY plot renderer" src="/img/bigwig_xyplot.png" />
 
-### Viewing whole-genome coverage for profiling CNV
+### Example use case: viewing whole-genome coverage for profiling CNV
 
-The latest jbrowse also allows refining the resolution of BigWig tracks, and
+The latest JBrowse also allows refining the resolution of BigWig tracks, and
 viewing whole genome coverage. This allows us to get detailed global views of
-CNV for example from whole-genome coverage profiling
+CNV for example from whole-genome coverage profiling.
 
 Here is a short picture guide to setup a whole-genome view of a BigWig for CNV
-coverage visualization
+coverage visualization:
 
 1. Open your BigWig track
 2. Go to the view menu and select "Show all assembly regions"
@@ -369,7 +369,7 @@ coverage visualization
    times until resolution looks nice
 
 Also note: all tracks have a drag handle on the bottom of it which you can drag
-down to make the track taller
+down to make the track taller.
 
 <Figure caption="A step-by-step guide to view a whole-genome CNV profile of coverage from a BigWig file" src="/img/bigwig/whole_genome_coverage.png" />
 
@@ -390,11 +390,11 @@ table can display the details
 
 <Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes" src="/img/variant_panel.png" />
 
-## Linear synteny and dotplot views
+## Comparative views
 
 The dotplot view is a 2D comparative view that can display alignments between
 different genome assemblies, or even compare a long-read or NGS short-read
-versus the genome
+against the genome.
 
 ### Opening a dotplot view
 
@@ -570,9 +570,10 @@ GUI, some plugins require hand editing of configuration files).
 
 ## Using the bookmark widget
 
-JBrowse Web and JBrowse Desktop by default come with a "bookmark widget"
+JBrowse Web and JBrowse Desktop come with a "bookmark widget" that you can use to store lists
+of interesting regions that would would like to easily revisit.
 
-<Figure caption="Clicking and dragging on a region can be used to create a bookmark that can be returned to later on" src="/img/bookmark_widget.png"/>
+<Figure caption="Clicking and dragging on a region can be used to create a bookmark" src="/img/bookmark_widget.png"/>
 
 The bookmark stores a list of single regions (chromosome, start, and end
 coordinate), and clicking on the regions in the bookmark widget will launch a

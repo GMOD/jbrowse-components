@@ -30,6 +30,8 @@ beforeEach(() => {
   )
 })
 
+const delay = { timeout: 10000 }
+
 test('copy and delete track in admin mode', async () => {
   const pluginManager = getPluginManager(undefined, true)
   const state = pluginManager.rootModel
@@ -38,12 +40,14 @@ test('copy and delete track in admin mode', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+  )
   fireEvent.click(await findByText('Copy track'))
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   expect(queryByText(/Session tracks/)).toBeNull()
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
-  await findAllByTestId('box-test-vcf-604452', {}, { timeout: 10000 })
+  await findAllByTestId('box-test-vcf-604452', {}, delay)
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))
@@ -62,7 +66,9 @@ test('copy and delete reference sequence track disabled', async () => {
   const trackConf = readConfObject(testAssemblyConfig, 'sequence')
   const trackMenuItems = state.session.getTrackActionMenuItems(trackConf)
   // copy ref seq track disbaled
-  fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_refseq'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntryMenu-volvox_refseq', {}, delay),
+  )
   fireEvent.click(await findByText('Copy track'))
   expect(queryByText(/Session tracks/)).toBeNull()
   // clicking 'copy track' should not create a copy of a ref sequence track
@@ -79,12 +85,14 @@ test('copy and delete track to session tracks', async () => {
   )
   await findByText('Help')
   state.session.views[0].setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf'))
+  fireEvent.click(
+    await findByTestId('htsTrackEntryMenu-volvox_filtered_vcf', {}, delay),
+  )
   fireEvent.click(await findByText('Copy track'))
   fireEvent.click(await findByText('volvox filtered vcf (copy)'))
   await findByText(/Session tracks/)
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(1))
-  await findAllByTestId('box-test-vcf-604452', {}, { timeout: 10000 })
+  await findAllByTestId('box-test-vcf-604452', {}, delay)
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(state.session.views[0].tracks.length).toBe(0))

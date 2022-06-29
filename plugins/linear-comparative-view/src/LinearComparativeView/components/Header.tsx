@@ -1,18 +1,19 @@
 import React from 'react'
-import { IconButton, Typography, makeStyles } from '@material-ui/core'
+import { IconButton, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 // icons
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
-import CropFreeIcon from '@material-ui/icons/CropFree'
+import LinkIcon from '@mui/icons-material/Link'
+import LinkOffIcon from '@mui/icons-material/LinkOff'
+import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { LinearComparativeViewModel } from '../model'
 
 type LCV = LinearComparativeViewModel
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -61,7 +62,7 @@ const SquareView = observer(({ model }: { model: LCV }) => {
 
 const Header = observer(
   ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const anyShowHeaders = model.views.some(view => !view.hideHeader)
     return (
       <div className={classes.headerBar}>

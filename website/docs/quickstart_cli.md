@@ -239,6 +239,18 @@ tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
+Note: as an alternative to gt gff3 -sortlines is awk+GNU sort
+
+```sh-session
+awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n"}' file.gff > file.sorted.gff
+bgzip file.sorted.gff
+tabix file.sorted.gff.gz
+```
+
+The awk command is inspired by the method in the tabix documentation
+http://www.htslib.org/doc/tabix.html but avoids subshells and properly sets the
+tab delimiter for GNU sort in case there are spaces in the GFF
+
 ## Indexing feature names for searching
 
 The final step of loading you jbrowse instance may include adding a "search

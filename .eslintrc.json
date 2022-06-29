@@ -48,11 +48,11 @@
     "monorepo/no-internal-import": "off",
     "prettier/prettier": "warn",
     "react/no-danger": "warn",
+    "react/prop-types": "off",
     "react/destructuring-assignment": "error",
     "react/no-unused-prop-types": "error",
     "react/no-unused-state": "error",
     "react/prefer-stateless-function": "error",
-    "react/prop-types": "error",
     "spaced-comment": [
       "error",
       "always",

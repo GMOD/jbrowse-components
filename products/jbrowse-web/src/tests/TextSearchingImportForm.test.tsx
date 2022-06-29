@@ -1,10 +1,10 @@
-import React from 'react'
-import { waitFor, fireEvent, render } from '@testing-library/react'
+import { waitFor, fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-import { setup, generateReadBuffer, getPluginManager, JBrowse } from './util'
+// locals
+import { setup, generateReadBuffer, createView } from './util'
 
 setup()
 
@@ -16,79 +16,100 @@ beforeEach(() => {
   fetch.resetMocks()
   // @ts-ignore
   fetch.mockResponse(
-    generateReadBuffer((url: string) => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
+    generateReadBuffer(
+      (url: string) =>
+        new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+    ),
   )
 })
 
 const delay = { timeout: 10000 }
 
-test('test trix on import form (type and hit enter)', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
-  // @ts-ignore
+const total = 30000
 
-  // @ts-ignore
-  state.session.views[0].clearView()
+async function doSetup(val?: unknown) {
+  const {
+    view,
+    findByText,
+    findByTestId,
+    findAllByText,
+    findByPlaceholderText,
+    getByPlaceholderText,
+  } = createView(val)
 
-  const auto = await findByTestId('autocomplete', {}, delay)
-  const input = await findByPlaceholderText('Search for location')
-  await waitFor(() => {
-    // @ts-ignore
-    expect(state.assemblyManager.get('volvox').initialized)
-  })
+  view.clearView()
 
-  auto.focus()
-  fireEvent.mouseDown(input)
-  fireEvent.change(input, { target: { value: 'eden.1' } })
-  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+  const autocomplete = await findByTestId('autocomplete')
+  const input = (await findByPlaceholderText(
+    'Search for location',
+  )) as HTMLInputElement
 
-  // should work to just have enter and no click on open in UI, but this is
-  // needed in test currently. may be worth investigating
-  fireEvent.click(await findByText('Open'))
+  autocomplete.focus()
+  input.focus()
 
-  // this will instead open a dialog of options vs a single item at
-  // location 'ctgA:1,055..9,005'
-  await waitFor(async () => {
-    const newInput = await findByPlaceholderText('Search for location')
-    expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-  }, delay)
-}, 30000)
+  return {
+    view,
+    autocomplete,
+    input,
+    findByText,
+    findAllByText,
+    findByPlaceholderText,
+    getByPlaceholderText,
+  }
+}
 
-test('test trix on import form (type and no hit enter)', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel
-  const { findByTestId, findByText, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
+test(
+  'test trix on import form (type and hit enter)',
+  async () => {
+    console.warn = jest.fn()
+    const { input, findByText, getByPlaceholderText } = await doSetup()
+    fireEvent.change(input, { target: { value: 'eden.1' } })
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+    fireEvent.click(await findByText('Open'))
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgA:1,055..9,005')
+    }, delay)
+  },
+  total,
+)
 
-  // @ts-ignore
-  state.session.views[0].clearView()
+test(
+  'test trix on import form (type and no hit enter)',
+  async () => {
+    console.warn = jest.fn()
+    const { input, findByText, autocomplete, getByPlaceholderText } =
+      await doSetup()
 
-  const auto = await findByTestId('autocomplete', {}, delay)
-  const input = await findByPlaceholderText('Search for location')
-  await waitFor(() => {
-    // @ts-ignore
-    expect(state.assemblyManager.get('volvox').initialized)
-  })
+    fireEvent.mouseDown(input)
+    fireEvent.change(input, { target: { value: 'eden.1' } })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
-  auto.focus()
-  fireEvent.mouseDown(input)
-  fireEvent.change(input, { target: { value: 'eden.1' } })
-  // fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
+    fireEvent.click(await findByText('Open'))
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgA:1,055..9,005')
+    }, delay)
+  },
+  total,
+)
 
-  // should work to just have enter and no click on open in UI, but this is
-  // needed in test currently. may be worth investigating
-  fireEvent.click(await findByText('Open'))
+test(
+  'lower case refname',
+  async () => {
+    console.warn = jest.fn()
+    const { input, findByText, autocomplete, getByPlaceholderText } =
+      await doSetup()
 
-  // this will instead open a dialog of options vs a single item at
-  // location 'ctgA:1,055..9,005'
-  await waitFor(async () => {
-    const newInput = await findByPlaceholderText('Search for location')
-    expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-  }, delay)
-}, 30000)
+    fireEvent.mouseDown(input)
+    fireEvent.change(input, { target: { value: 'contigb' } })
+    fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+
+    fireEvent.click(await findByText('Open'))
+    await waitFor(() => {
+      const n = getByPlaceholderText('Search for location') as HTMLInputElement
+      expect(n.value).toBe('ctgB:1..6,079')
+    }, delay)
+  },
+  total,
+)

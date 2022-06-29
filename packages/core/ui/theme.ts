@@ -1,44 +1,7 @@
-import { blue, green, red, amber } from '@material-ui/core/colors'
-import { ThemeOptions, createTheme } from '@material-ui/core/styles'
-import { PaletteOptions } from '@material-ui/core/styles/createPalette'
+import { blue, green, red, amber } from '@mui/material/colors'
+import { createTheme } from '@mui/material/styles'
+import { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
-
-// use this if we ever want to add some top-level thing to the theme
-// declare module '@material-ui/core/styles/createMuiTheme' {
-//   interface Theme {
-//     status: {
-//       topLevelThing: string
-//     }
-//   }
-//   interface ThemeOptions {
-//     status?: {
-//       topLevelThing?: string
-//     }
-//   }
-// }
-
-declare module '@material-ui/core/styles/createPalette' {
-  interface Palette {
-    tertiary: Palette['primary']
-    quaternary: Palette['primary']
-    bases: {
-      A: Palette['primary']
-      C: Palette['primary']
-      G: Palette['primary']
-      T: Palette['primary']
-    }
-  }
-  interface PaletteOptions {
-    tertiary?: PaletteOptions['primary']
-    quaternary?: PaletteOptions['primary']
-    bases?: {
-      A?: PaletteOptions['primary']
-      C?: PaletteOptions['primary']
-      G?: PaletteOptions['primary']
-      T?: PaletteOptions['primary']
-    }
-  }
-}
 
 const midnight = '#0D233F'
 const grape = '#721E63'
@@ -51,72 +14,112 @@ export const jbrowseDefaultPalette = {
   // type: 'dark',
   primary: { main: midnight },
   secondary: { main: grape },
-  tertiary: refTheme.palette.augmentColor({ main: forest }),
-  quaternary: refTheme.palette.augmentColor({ main: mandarin }),
+  tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+  quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
   stopCodon: '#e22',
   startCodon: '#3e3',
   altStartCodon: '#aca',
   bases: {
-    A: refTheme.palette.augmentColor(green),
-    C: refTheme.palette.augmentColor(blue),
-    G: refTheme.palette.augmentColor(amber),
-    T: refTheme.palette.augmentColor(red),
+    A: refTheme.palette.augmentColor({ color: green }),
+    C: refTheme.palette.augmentColor({ color: blue }),
+    G: refTheme.palette.augmentColor({ color: amber }),
+    T: refTheme.palette.augmentColor({ color: red }),
   },
 }
 
 export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
   return {
-    MuiButton: {
-      size: 'small' as const,
-    },
-    MuiFilledInput: {
-      margin: 'dense' as const,
-    },
-    MuiFormControl: {
-      margin: 'dense' as const,
-    },
-    MuiFormHelperText: {
-      margin: 'dense' as const,
-    },
-    MuiIconButton: {
-      size: 'small' as const,
-    },
-    MuiInputBase: {
-      margin: 'dense' as const,
-    },
-    MuiList: {
-      dense: true,
-    },
-    MuiListItem: {
-      dense: true,
-    },
-    MuiOutlinedInput: {
-      margin: 'dense' as const,
-    },
-    MuiFab: {
-      size: 'small' as const,
-    },
-    MuiTable: {
-      size: 'small' as const,
-    },
-    MuiTextField: {
-      margin: 'dense' as const,
-      size: 'small' as const,
-    },
-    MuiToolbar: {
-      variant: 'dense' as const,
-    },
-    MuiSvgIcon: {
-      fontSize: 'small' as const,
-    },
-    MuiToggleButtonGroup: {
-      size: 'small' as const,
-    },
-    MuiCheckbox: {
-      size: 'small' as const,
-    },
-    MuiLink: {
-      underline: 'always' as const,
+    components: {
+      MuiButton: {
+        defaultProps: {
+          size: 'small',
+        },
+      },
+      MuiAccordion: {
+        defaultProps: {
+          disableGutters: true,
+          TransitionProps: { timeout: 150 },
+        },
+      },
+      MuiFilledInput: {
+        defaultProps: {
+          margin: 'dense',
+        },
+      },
+      MuiFormControl: {
+        defaultProps: {
+          margin: 'dense',
+          size: 'small',
+        },
+      },
+      MuiFormHelperText: {
+        defaultProps: {
+          margin: 'dense',
+        },
+      },
+
+      MuiIconButton: {
+        defaultProps: {
+          size: 'small',
+        },
+      },
+      MuiInputBase: {
+        defaultProps: {
+          margin: 'dense',
+        },
+      },
+      MuiAutocomplete: {
+        defaultProps: {
+          size: 'small',
+        },
+      },
+      MuiInputLabel: {
+        defaultProps: {
+          margin: 'dense',
+        },
+      },
+      MuiToolbar: {
+        defaultProps: {
+          variant: 'dense',
+        },
+      },
+      MuiListItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+      MuiOutlinedInput: {
+        defaultProps: {
+          margin: 'dense',
+        },
+      },
+      MuiFab: {
+        defaultProps: {
+          size: 'small',
+        },
+      },
+      MuiTable: {
+        defaultProps: {
+          size: 'small',
+        },
+      },
+      MuiMenuList: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+      MuiMenuItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+
+      MuiTextField: {
+        defaultProps: {
+          margin: 'dense',
+          variant: 'standard',
+        },
+      },
     },
   }
 }
@@ -124,119 +127,86 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
 export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
   const generatedPalette = deepmerge(jbrowseDefaultPalette, palette)
   return {
-    MuiIconButton: {
-      colorSecondary: {
-        color: generatedPalette.tertiary.main,
-      },
-    },
-    MuiButton: {
-      textSecondary: {
-        color: generatedPalette.tertiary.main,
-      },
-    },
-    MuiFab: {
-      secondary: {
-        backgroundColor: generatedPalette.quaternary.main,
-      },
-    },
-    MuiLink: {
-      root: {
-        color: generatedPalette.tertiary.main,
-      },
-    },
-    MuiAccordion: {
-      root: {
-        // avoid extra padding around accordion element
-        margin: 0,
-        '&$expanded': {
-          margin: 0,
+    components: {
+      MuiIconButton: {
+        styleOverrides: {
+          colorSecondary: {
+            color: generatedPalette.tertiary.main,
+          },
         },
       },
-    },
-    MuiAccordionSummary: {
-      root: {
-        // !important needed to combat the MuiButton being applied to
-        // accordions in mui4.12.2 having a background:'transparent' that
-        // otherwise overrides this other
-        backgroundColor: generatedPalette.tertiary.main + ' !important',
+      MuiButton: {
+        styleOverrides: {
+          textSecondary: {
+            color: generatedPalette.tertiary.main,
+          },
+        },
+      },
+      MuiFab: {
+        styleOverrides: {
+          secondary: {
+            backgroundColor: generatedPalette.quaternary.main,
+          },
+        },
+      },
+      MuiLink: {
+        styleOverrides: {
+          root: {
+            color: generatedPalette.tertiary.main,
+          },
+        },
+      },
 
-        // width:100% added in 4.12.2 also
-        width: '100%',
-        '&$expanded': {
-          // overrides the subclass e.g. .MuiAccordionSummary-root-311.MuiAccordionSummary-expanded-312
-          minHeight: 0,
-          color: generatedPalette.tertiary.contrastText,
-          backgroundColor: generatedPalette.tertiary.main,
+      MuiAccordionSummary: {
+        styleOverrides: {
+          root: {
+            backgroundColor: generatedPalette.tertiary.main,
+          },
+          content: {
+            color: generatedPalette.tertiary.contrastText,
+          },
         },
-        minHeight: 0,
-      },
-      content: {
-        '&$expanded': {
-          margin: '8px 8px',
-        },
-        margin: '8px 8px',
-        color: generatedPalette.tertiary.contrastText,
-      },
-    },
-    // makes menus more compact
-    MuiMenuItem: {
-      root: {
-        paddingTop: 3,
-        paddingBottom: 3,
-      },
-    },
-
-    // the below two are linked to make menus more compact
-    MuiListItemIcon: {
-      root: {
-        minWidth: 32,
-      },
-    },
-    MuiListItemText: {
-      inset: {
-        paddingLeft: 32,
       },
     },
   }
 }
 
-export const jbrowseBaseTheme: ThemeOptions = {
+export const jbrowseBaseTheme = {
   palette: jbrowseDefaultPalette,
   typography: { fontSize: 12 },
   spacing: 4,
-  props: createJBrowseDefaultProps(),
-  overrides: createJBrowseDefaultOverrides(),
+  ...deepmerge(createJBrowseDefaultProps(), createJBrowseDefaultOverrides()),
 }
 
-export function createJBrowseTheme(theme?: ThemeOptions) {
-  if (!theme) {
-    return createTheme(jbrowseBaseTheme)
-  }
-  if (theme.palette?.tertiary) {
-    theme = {
-      ...theme,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createJBrowseTheme(theme?: any) {
+  if (theme?.palette?.tertiary) {
+    theme = deepmerge(theme, {
       palette: {
-        ...theme.palette,
-        tertiary: refTheme.palette.augmentColor(theme.palette.tertiary),
+        tertiary: refTheme.palette.augmentColor(
+          theme.palette.tertiary?.color
+            ? theme.palette.tertiary
+            : {
+                color: theme.palette.tertiary,
+              },
+        ),
       },
-    }
+    })
   }
-  if (theme.palette?.quaternary) {
-    theme = {
-      ...theme,
+  if (theme?.palette?.quaternary) {
+    theme = deepmerge(theme, {
       palette: {
-        ...theme.palette,
-        quaternary: refTheme.palette.augmentColor(theme.palette.quaternary),
+        quaternary: refTheme.palette.augmentColor(
+          theme.palette.quaternary?.color
+            ? theme.palette.quaternary
+            : {
+                color: theme.palette.quaternary,
+              },
+        ),
       },
-    }
+    })
   }
-  theme = {
-    ...theme,
-    props: deepmerge(createJBrowseDefaultProps(), theme.props || {}),
-    overrides: deepmerge(
-      createJBrowseDefaultOverrides(theme.palette),
-      theme.overrides || {},
-    ),
-  }
-  return createTheme(deepmerge(jbrowseBaseTheme, theme))
+
+  // @ts-ignore
+  return createTheme(deepmerge(jbrowseBaseTheme, theme || {}))
 }

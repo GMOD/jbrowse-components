@@ -24,7 +24,7 @@ const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
     return null
   }
 
-  const row = spreadsheetModel.rowSet.rows[rowNumber - 1]
+  const row = spreadsheetModel.rowSet.rows[+rowNumber - 1]
 
   function handleMenuItemClick(_event: unknown, callback: Function) {
     callback(viewModel, spreadsheetModel, rowNumber, row)
@@ -37,7 +37,7 @@ const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
       const disabled = item.disabled(
         viewModel,
         spreadsheetModel,
-        rowNumber,
+        +rowNumber,
         row,
       )
       return { ...item, disabled }

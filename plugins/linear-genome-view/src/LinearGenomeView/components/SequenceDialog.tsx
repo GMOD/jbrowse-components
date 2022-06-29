@@ -1,19 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react'
-
+import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   CircularProgress,
+  Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Container,
-  Typography,
   Divider,
   IconButton,
   TextField,
-  makeStyles,
-} from '@material-ui/core'
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { getConf } from '@jbrowse/core/configuration'
@@ -23,13 +22,13 @@ import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import CloseIcon from '@material-ui/icons/Close'
-import GetAppIcon from '@material-ui/icons/GetApp'
+import CloseIcon from '@mui/icons-material/Close'
+import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   loadingMessage: {
     padding: theme.spacing(5),
   },
@@ -91,7 +90,7 @@ function SequenceDialog({
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<unknown>()
   const [sequence, setSequence] = useState<string>()
@@ -174,6 +173,7 @@ function SequenceDialog({
               handleClose()
               model.setOffsets(undefined, undefined)
             }}
+            size="large"
           >
             <CloseIcon />
           </IconButton>

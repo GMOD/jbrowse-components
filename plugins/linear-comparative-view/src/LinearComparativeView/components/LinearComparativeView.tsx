@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { makeStyles } from '@material-ui/core'
+import { makeStyles } from 'tss-react/mui'
 import { getEnv } from 'mobx-state-tree'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
@@ -10,7 +10,7 @@ import { LinearComparativeViewModel } from '../model'
 import RubberBand from './RubberBand'
 import Header from './Header'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   container: {
     display: 'grid',
   },
@@ -40,7 +40,7 @@ const useStyles = makeStyles(() => ({
 type LCV = LinearComparativeViewModel
 
 const Overlays = observer(({ model }: { model: LCV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       {model.tracks.map(track => {
@@ -67,7 +67,7 @@ const Overlays = observer(({ model }: { model: LCV }) => {
 // The comparative is in the middle of the views
 const MiddleComparativeView = observer(
   ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
     const { ReactComponent } = pluginManager.getViewType(views[0].type)
@@ -103,7 +103,7 @@ const MiddleComparativeView = observer(
 )
 const OverlayComparativeView = observer(
   ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
     return (

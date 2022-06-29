@@ -1,11 +1,14 @@
 import React from 'react'
 import { FileSelector } from '@jbrowse/core/ui'
-import { Paper, makeStyles } from '@material-ui/core'
-import { AddTrackModel } from '../model'
+import { Paper } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { getRoot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles(theme => ({
+// locals
+import { AddTrackModel } from '../model'
+
+const useStyles = makeStyles()(theme => ({
   paper: {
     display: 'flex',
     flexDirection: 'column',
@@ -17,8 +20,9 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function TrackSourceSelect({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
-  const rootModel = getRoot(model)
+  const { classes } = useStyles()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rootModel = getRoot<any>(model)
 
   return (
     <Paper className={classes.paper}>

@@ -15,15 +15,15 @@ import {
   ListSubheader,
   Paper,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
-import ViewListIcon from '@material-ui/icons/ViewList'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ViewListIcon from '@mui/icons-material/ViewList'
 
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },
@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const AutosaveEntry = observer(({ session }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const autosavedSession = JSON.parse(
     localStorage.getItem(session.previousAutosaveId) || '{}',
   ).session
@@ -69,7 +69,7 @@ const AutosaveEntry = observer(({ session }) => {
 })
 
 const SessionManager = observer(({ session }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
   const [open, setOpen] = useState(false)
 

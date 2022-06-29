@@ -13,19 +13,19 @@ import {
   Popover,
   PopoverProps,
   SvgIconProps,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 // icons
-import ArrowRightIcon from '@material-ui/icons/ArrowRight'
-import CheckBoxIcon from '@material-ui/icons/CheckBox'
-import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank'
-import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked'
-import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 
 // other
 import { findLastIndex } from '../util'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   paper: {
     position: 'fixed',
     overflowY: 'auto',
@@ -62,7 +62,7 @@ type MenuItemEndDecorationProps =
   | MenuItemEndDecorationSelectorProps
 
 export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { type } = props
   let checked
   let disabled
@@ -182,212 +182,215 @@ function findPreviousValidIdx(menuItems: MenuItem[], currentIdx: number) {
   )
 }
 
-const MenuPage = React.forwardRef((props: MenuPageProps, ref) => {
-  const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<HTMLElement>()
-  const [openSubMenuIdx, setOpenSubMenuIdx] = useState<number>()
-  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false)
-  const [selectedMenuItemIdx, setSelectedMenuItemIdx] = useState<number>()
-  const [position, setPosition] = useState<{
-    top?: number
-    left?: number
-  }>()
-  const paperRef = useRef<HTMLDivElement>()
-  const classes = useStyles()
+const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
+  (props, ref) => {
+    const [subMenuAnchorEl, setSubMenuAnchorEl] = useState<HTMLElement>()
+    const [openSubMenuIdx, setOpenSubMenuIdx] = useState<number>()
+    const [isSubMenuOpen, setIsSubMenuOpen] = useState(false)
+    const [selectedMenuItemIdx, setSelectedMenuItemIdx] = useState<number>()
+    const [position, setPosition] = useState<{
+      top?: number
+      left?: number
+    }>()
+    const paperRef = useRef<HTMLDivElement | null>(null)
+    const { classes } = useStyles()
 
-  const {
-    menuItems,
-    onMenuItemClick,
-    open,
-    onClose,
-    anchorEl,
-    top = false,
-  } = props
+    const {
+      menuItems,
+      onMenuItemClick,
+      open,
+      onClose,
+      anchorEl,
+      top = false,
+    } = props
 
-  useEffect(() => {
-    if (!open) {
-      setSubMenuAnchorEl(undefined)
-      setOpenSubMenuIdx(undefined)
-    }
-  }, [open])
+    useEffect(() => {
+      if (!open) {
+        setSubMenuAnchorEl(undefined)
+        setOpenSubMenuIdx(undefined)
+      }
+    }, [open])
 
-  useEffect(() => {
-    const shouldSubMenuBeOpen = open && Boolean(subMenuAnchorEl)
-    let timer: ReturnType<typeof setTimeout>
-    if (shouldSubMenuBeOpen && !isSubMenuOpen) {
-      timer = setTimeout(() => {
-        setIsSubMenuOpen(true)
-      }, 300)
-    } else if (!shouldSubMenuBeOpen && isSubMenuOpen) {
-      timer = setTimeout(() => {
-        setIsSubMenuOpen(false)
-      }, 300)
-    }
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [isSubMenuOpen, open, subMenuAnchorEl])
+    useEffect(() => {
+      const shouldSubMenuBeOpen = open && Boolean(subMenuAnchorEl)
+      let timer: ReturnType<typeof setTimeout>
+      if (shouldSubMenuBeOpen && !isSubMenuOpen) {
+        timer = setTimeout(() => {
+          setIsSubMenuOpen(true)
+        }, 300)
+      } else if (!shouldSubMenuBeOpen && isSubMenuOpen) {
+        timer = setTimeout(() => {
+          setIsSubMenuOpen(false)
+        }, 300)
+      }
+      return () => {
+        clearTimeout(timer)
+      }
+    }, [isSubMenuOpen, open, subMenuAnchorEl])
 
-  useEffect(() => {
-    if (anchorEl) {
-      const rect = (anchorEl as HTMLElement).getBoundingClientRect()
-      if (position) {
-        if (
-          rect.top !== position.top ||
-          rect.left + rect.width !== position.left
-        ) {
+    useEffect(() => {
+      if (anchorEl) {
+        const rect = (anchorEl as HTMLElement).getBoundingClientRect()
+        if (position) {
+          if (
+            rect.top !== position.top ||
+            rect.left + rect.width !== position.left
+          ) {
+            setPosition({ top: rect.top, left: rect.left + rect.width })
+          }
+        } else {
           setPosition({ top: rect.top, left: rect.left + rect.width })
         }
-      } else {
-        setPosition({ top: rect.top, left: rect.left + rect.width })
+      } else if (!position) {
+        setPosition({})
       }
-    } else if (!position) {
-      setPosition({})
+    }, [position, anchorEl])
+
+    const hasIcon = menuItems.some(
+      menuItem => 'icon' in menuItem && menuItem.icon,
+    )
+    const menuItemStyle: MenuItemStyleProp = {}
+
+    function handleClick(callback: Function) {
+      return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+        onMenuItemClick(event, callback)
+      }
     }
-  }, [position, anchorEl])
 
-  const hasIcon = menuItems.some(
-    menuItem => 'icon' in menuItem && menuItem.icon,
-  )
-  const menuItemStyle: MenuItemStyleProp = {}
-
-  function handleClick(callback: Function) {
-    return (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-      onMenuItemClick(event, callback)
-    }
-  }
-
-  const ListContents = (
-    <>
-      <MenuList autoFocusItem={open && !isSubMenuOpen}>
-        {menuItems
-          .sort((a, b) => (b.priority || 0) - (a.priority || 0))
-          .map((menuItem, idx) => {
-            if (menuItem.type === 'divider') {
-              return <Divider key={`divider-${idx}`} component="li" />
-            }
-            if (menuItem.type === 'subHeader') {
+    const ListContents = (
+      <>
+        <MenuList autoFocusItem={open && !isSubMenuOpen} dense>
+          {menuItems
+            .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+            .map((menuItem, idx) => {
+              if (menuItem.type === 'divider') {
+                return <Divider key={`divider-${idx}`} component="li" />
+              }
+              if (menuItem.type === 'subHeader') {
+                return (
+                  <ListSubheader key={`subHeader-${menuItem.label}-${idx}`}>
+                    {menuItem.label}
+                  </ListSubheader>
+                )
+              }
+              let icon = null
+              let endDecoration = null
+              if (menuItem.icon) {
+                const Icon = menuItem.icon
+                icon = (
+                  <ListItemIcon>
+                    <Icon />
+                  </ListItemIcon>
+                )
+              }
+              if ('subMenu' in menuItem) {
+                endDecoration = <MenuItemEndDecoration type="subMenu" />
+              } else if (
+                menuItem.type === 'checkbox' ||
+                menuItem.type === 'radio'
+              ) {
+                endDecoration = (
+                  <MenuItemEndDecoration
+                    type={menuItem.type}
+                    checked={menuItem.checked}
+                    disabled={menuItem.disabled}
+                  />
+                )
+              }
+              const onClick =
+                'onClick' in menuItem
+                  ? handleClick(menuItem.onClick)
+                  : undefined
               return (
-                <ListSubheader key={`subHeader-${menuItem.label}-${idx}`}>
-                  {menuItem.label}
-                </ListSubheader>
+                <MUIMenuItem
+                  key={menuItem.label}
+                  style={menuItemStyle}
+                  selected={idx === selectedMenuItemIdx}
+                  onClick={onClick}
+                  onMouseMove={e => {
+                    if (e.currentTarget !== document.activeElement) {
+                      e.currentTarget.focus()
+                      setSelectedMenuItemIdx(idx)
+                    }
+                    if ('subMenu' in menuItem) {
+                      if (openSubMenuIdx !== idx) {
+                        setSubMenuAnchorEl(e.currentTarget)
+                        setOpenSubMenuIdx(idx)
+                      }
+                    } else {
+                      setSubMenuAnchorEl(undefined)
+                      setOpenSubMenuIdx(undefined)
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+                      onClose && onClose(e, 'escapeKeyDown')
+                    } else if (e.key === 'ArrowUp') {
+                      setSelectedMenuItemIdx(
+                        findPreviousValidIdx(menuItems, idx),
+                      )
+                    } else if (e.key === 'ArrowDown') {
+                      const a = findNextValidIdx(menuItems, idx)
+                      setSelectedMenuItemIdx(a)
+                    } else if ('subMenu' in menuItem) {
+                      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                        setSubMenuAnchorEl(e.currentTarget)
+                        setOpenSubMenuIdx(idx)
+                        setIsSubMenuOpen(true)
+                      }
+                    }
+                  }}
+                  disabled={Boolean(menuItem.disabled)}
+                >
+                  {icon}
+                  <ListItemText
+                    primary={menuItem.label}
+                    secondary={menuItem.subLabel}
+                    inset={hasIcon && !menuItem.icon}
+                  />
+                  {endDecoration}
+                </MUIMenuItem>
               )
-            }
-            let icon = null
-            let endDecoration = null
-            if (menuItem.icon) {
-              const Icon = menuItem.icon
-              icon = (
-                <ListItemIcon>
-                  <Icon />
-                </ListItemIcon>
-              )
-            }
-            if ('subMenu' in menuItem) {
-              endDecoration = <MenuItemEndDecoration type="subMenu" />
-            } else if (
-              menuItem.type === 'checkbox' ||
-              menuItem.type === 'radio'
-            ) {
-              endDecoration = (
-                <MenuItemEndDecoration
-                  type={menuItem.type}
-                  checked={menuItem.checked}
-                  disabled={menuItem.disabled}
-                />
-              )
-            }
-            const onClick =
-              'onClick' in menuItem ? handleClick(menuItem.onClick) : undefined
-            return (
-              <MUIMenuItem
+            })}
+        </MenuList>
+        {menuItems.map((menuItem, idx) => {
+          let subMenu = null
+          if ('subMenu' in menuItem) {
+            subMenu = (
+              <MenuPage
                 key={menuItem.label}
-                style={menuItemStyle}
-                selected={idx === selectedMenuItemIdx}
-                onClick={onClick}
-                onMouseMove={e => {
-                  if (e.currentTarget !== document.activeElement) {
-                    e.currentTarget.focus()
-                    setSelectedMenuItemIdx(idx)
-                  }
-                  if ('subMenu' in menuItem) {
-                    if (openSubMenuIdx !== idx) {
-                      setSubMenuAnchorEl(e.currentTarget)
-                      setOpenSubMenuIdx(idx)
-                    }
-                  } else {
-                    setSubMenuAnchorEl(undefined)
-                    setOpenSubMenuIdx(undefined)
-                  }
+                anchorEl={subMenuAnchorEl}
+                open={isSubMenuOpen && openSubMenuIdx === idx}
+                onClose={() => {
+                  setIsSubMenuOpen(false)
+                  setSubMenuAnchorEl(undefined)
                 }}
-                onKeyDown={e => {
-                  if (e.key === 'ArrowLeft' || e.key === 'Escape') {
-                    onClose && onClose(e, 'escapeKeyDown')
-                  } else if (e.key === 'ArrowUp') {
-                    setSelectedMenuItemIdx(findPreviousValidIdx(menuItems, idx))
-                  } else if (e.key === 'ArrowDown') {
-                    const a = findNextValidIdx(menuItems, idx)
-                    setSelectedMenuItemIdx(a)
-                  } else if ('subMenu' in menuItem) {
-                    if (e.key === 'ArrowRight' || e.key === 'Enter') {
-                      setSubMenuAnchorEl(e.currentTarget)
-                      setOpenSubMenuIdx(idx)
-                      setIsSubMenuOpen(true)
-                    }
-                  }
-                }}
-                disabled={Boolean(menuItem.disabled)}
-              >
-                {icon}
-                <ListItemText
-                  primary={menuItem.label}
-                  secondary={menuItem.subLabel}
-                  inset={hasIcon && !menuItem.icon}
-                />
-                <div style={{ flexGrow: 1, minWidth: 10 }} />
-                {endDecoration}
-              </MUIMenuItem>
+                onMenuItemClick={onMenuItemClick}
+                menuItems={menuItem.subMenu}
+              />
             )
-          })}
-      </MenuList>
-      {menuItems.map((menuItem, idx) => {
-        let subMenu = null
-        if ('subMenu' in menuItem) {
-          subMenu = (
-            <MenuPage
-              key={menuItem.label}
-              anchorEl={subMenuAnchorEl}
-              open={isSubMenuOpen && openSubMenuIdx === idx}
-              onClose={() => {
-                setIsSubMenuOpen(false)
-                setSubMenuAnchorEl(undefined)
-              }}
-              onMenuItemClick={onMenuItemClick}
-              menuItems={menuItem.subMenu}
-            />
-          )
-        }
-        return subMenu
-      })}
-    </>
-  )
+          }
+          return subMenu
+        })}
+      </>
+    )
 
-  if (top) {
-    return ListContents
-  }
-
-  return (
-    <Grow in={open} style={{ transformOrigin: `0 0 0` }} ref={ref}>
-      <Paper
-        elevation={8}
-        ref={paperRef}
-        className={classes.paper}
-        style={{ ...position }}
-      >
-        {ListContents}
-      </Paper>
-    </Grow>
-  )
-})
+    return top ? (
+      ListContents
+    ) : (
+      <Grow in={open} style={{ transformOrigin: `0 0 0` }} ref={ref}>
+        <Paper
+          elevation={8}
+          ref={paperRef}
+          className={classes.paper}
+          style={{ ...position }}
+        >
+          {ListContents}
+        </Paper>
+      </Grow>
+    )
+  },
+)
 
 interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]

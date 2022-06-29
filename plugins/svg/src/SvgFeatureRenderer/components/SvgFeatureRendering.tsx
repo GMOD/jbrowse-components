@@ -226,7 +226,7 @@ function SvgFeatureRendering(props: {
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
   const mouseDown = useCallback(
-    event => {
+    (event: React.MouseEvent) => {
       setMouseIsDown(true)
       setMovedDuringLastMouseDown(false)
       return onMouseDown?.(event)
@@ -235,7 +235,7 @@ function SvgFeatureRendering(props: {
   )
 
   const mouseUp = useCallback(
-    event => {
+    (event: React.MouseEvent) => {
       setMouseIsDown(false)
       return onMouseUp?.(event)
     },
@@ -243,7 +243,7 @@ function SvgFeatureRendering(props: {
   )
 
   const mouseMove = useCallback(
-    event => {
+    (event: React.MouseEvent) => {
       if (!ref.current) {
         return
       }
@@ -279,7 +279,7 @@ function SvgFeatureRendering(props: {
   )
 
   const click = useCallback(
-    event => {
+    (event: React.MouseEvent) => {
       // don't select a feature if we are clicking and dragging
       if (movedDuringLastMouseDown) {
         return

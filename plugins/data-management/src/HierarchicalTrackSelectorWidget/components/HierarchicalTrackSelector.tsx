@@ -18,16 +18,15 @@ import {
   TextField,
   Tooltip,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 // icons
-import ClearIcon from '@material-ui/icons/Clear'
-import AddIcon from '@material-ui/icons/Add'
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown'
-import ArrowRightIcon from '@material-ui/icons/ArrowRight'
-import MenuIcon from '@material-ui/icons/Menu'
-import MoreIcon from '@material-ui/icons/MoreHoriz'
+import ClearIcon from '@mui/icons-material/Clear'
+import AddIcon from '@mui/icons-material/Add'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import MenuIcon from '@mui/icons-material/Menu'
+import MoreIcon from '@mui/icons-material/MoreHoriz'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
@@ -55,7 +54,7 @@ const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
 const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
 const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   searchBox: {
     margin: theme.spacing(2),
   },
@@ -99,7 +98,9 @@ const useStyles = makeStyles(theme => ({
   // accordionColor set's display:flex so that the child accordionText use
   // vertically centered text
   accordionColor: {
+    // @ts-ignore
     background: theme.palette.tertiary?.main,
+    // @ts-ignore
     color: theme.palette.tertiary?.contrastText,
     width: '100%',
     display: 'flex',
@@ -151,7 +152,7 @@ function Node(props: {
     drawerPosition,
   } = data
 
-  const classes = useStyles()
+  const { classes } = useStyles()
   const width = 10
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
   const unsupported =
@@ -213,6 +214,7 @@ function Node(props: {
               </Tooltip>
               <IconButton
                 onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
+                style={{ padding: 0 }}
                 color="secondary"
                 data-testid={`htsTrackEntryMenu-${id}`}
               >
@@ -379,7 +381,7 @@ const HierarchicalTrackSelectorContainer = observer(
     toolbarHeight: number
     overrideDimensions?: { width: number; height: number }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const session = getSession(model)
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
 
@@ -461,7 +463,7 @@ const HierarchicalTrackSelectorHeader = observer(
     setAssemblyIdx: (n: number) => void
     assemblyIdx: number
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const session = getSession(model)
     const [connectionAnchorEl, setConnectionAnchorEl] =
       useState<HTMLButtonElement>()

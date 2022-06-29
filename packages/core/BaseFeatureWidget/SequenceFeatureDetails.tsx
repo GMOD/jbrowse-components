@@ -2,18 +2,19 @@ import React, { useRef, useState, useEffect } from 'react'
 import {
   Chip,
   Button,
+  FormControl,
   IconButton,
   MenuItem,
   Select,
   Typography,
   Tooltip,
-  makeStyles,
-} from '@material-ui/core'
-import SettingsDlg from './SequenceFeatureSettingsDialog'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 
 // locals
+import SettingsDlg from './SequenceFeatureSettingsDialog'
 import {
   defaultCodonTable,
   parseCodonTable,
@@ -36,7 +37,7 @@ import {
 } from './util'
 
 // icons
-import SettingsIcon from '@material-ui/icons/Settings'
+import SettingsIcon from '@mui/icons-material/Settings'
 
 interface CoordFeat extends SimpleFeatureSerialized {
   refName: string
@@ -44,7 +45,7 @@ interface CoordFeat extends SimpleFeatureSerialized {
   end: number
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   button: {
     margin: theme.spacing(1),
   },
@@ -280,7 +281,7 @@ export const SequencePanel = React.forwardRef<
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const parentFeature = feature as unknown as ParentFeat
   const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
   const seqPanelRef = useRef<HTMLDivElement>(null)
@@ -297,6 +298,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     'updownstreamBp',
     500,
   )
+
   useEffect(() => {
     let finished = false
     if (!model || !inView) {
@@ -362,24 +364,26 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   return (
     <div ref={ref}>
-      <Select
-        value={mode}
-        onChange={event => setMode(event.target.value as string)}
-      >
-        {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
-        {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-        <MenuItem value="gene">Gene w/ introns</MenuItem>
-        <MenuItem value="gene_collapsed_intron">
-          Gene w/ {intronBp}bp of intron
-        </MenuItem>
-        <MenuItem value="gene_updownstream">
-          Gene w/ {upDownStreamBp}bp up+down stream
-        </MenuItem>
-        <MenuItem value="gene_updownstream_collapsed_intron">
-          Gene w/ {upDownStreamBp}bp up+down stream w/ 10bp intron
-        </MenuItem>
-        <MenuItem value="cdna">cDNA</MenuItem>
-      </Select>
+      <FormControl>
+        <Select
+          value={mode}
+          onChange={event => setMode(event.target.value as string)}
+        >
+          {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
+          {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
+          <MenuItem value="gene">Gene w/ introns</MenuItem>
+          <MenuItem value="gene_collapsed_intron">
+            Gene w/ {intronBp}bp of intron
+          </MenuItem>
+          <MenuItem value="gene_updownstream">
+            Gene w/ {upDownStreamBp}bp up+down stream
+          </MenuItem>
+          <MenuItem value="gene_updownstream_collapsed_intron">
+            Gene w/ {upDownStreamBp}bp up+down stream w/ 10bp intron
+          </MenuItem>
+          <MenuItem value="cdna">cDNA</MenuItem>
+        </Select>
+      </FormControl>
       <IconButton onClick={() => setSettingsDlgOpen(true)}>
         <SettingsIcon />
       </IconButton>

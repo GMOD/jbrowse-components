@@ -1,8 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron } from '@jbrowse/core/util'
-import sha256 from 'crypto-js/sha256'
-import Base64 from 'crypto-js/enc-base64'
 import { Instance, types } from 'mobx-state-tree'
 
 // locals
@@ -258,6 +256,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
           if (self.needsPKCE) {
             const { codeVerifierPKCE } = self
+
+            const sha256 = await import('crypto-js/sha256').then(f => f.default)
+            const Base64 = await import('crypto-js/enc-base64')
             const codeChallenge = fixup(
               Base64.stringify(sha256(codeVerifierPKCE)),
             )

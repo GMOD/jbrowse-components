@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2022-04-14T23:41:01.028Z",
+  "dateCreated": "2022-06-17T10:57:18.370Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -143,6 +143,18 @@
             "locationType": "UriLocation"
           },
           "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "trackId": "volvox.filtered.lowercase",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.filtered.lowercase.vcf",
+          "locationType": "UriLocation"
         }
       }
     }

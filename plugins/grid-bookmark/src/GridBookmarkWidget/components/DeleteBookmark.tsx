@@ -11,13 +11,13 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   closeDialog: {
     position: 'absolute',
     right: 0,
@@ -37,7 +37,7 @@ function DeleteBookmarkDialog({
   model: GridBookmarkModel
   onClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   const { removeBookmark } = model
 

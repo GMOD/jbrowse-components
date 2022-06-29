@@ -98,7 +98,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             label: 'Show translation',
             type: 'checkbox',
             checked: self.showTranslation,
-            onClick: () => self.toggleShowTranslation(),
+            onClick: () => {
+              self.toggleShowTranslation()
+            },
           },
           {
             label: 'Set codon table',

@@ -6,6 +6,7 @@ import {
   types,
   SnapshotIn,
   Instance,
+  IAnyModelType,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import makeWorkerInstance from './makeWorkerInstance'
@@ -18,12 +19,12 @@ import { MenuItem } from '@jbrowse/core/ui'
 import { UriLocation } from '@jbrowse/core/util/types'
 
 // icons
-import OpenIcon from '@material-ui/icons/FolderOpen'
-import ExtensionIcon from '@material-ui/icons/Extension'
-import AppsIcon from '@material-ui/icons/Apps'
-import StorageIcon from '@material-ui/icons/Storage'
-import SettingsIcon from '@material-ui/icons/Settings'
-import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
+import OpenIcon from '@mui/icons-material/FolderOpen'
+import ExtensionIcon from '@mui/icons-material/Extension'
+import AppsIcon from '@mui/icons-material/Apps'
+import StorageIcon from '@mui/icons-material/Storage'
+import SettingsIcon from '@mui/icons-material/Settings'
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -124,29 +125,21 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           this.setSession(snapshot)
         }
       },
-      initializeInternetAccount(
-        internetAccountId: string,
-        initialSnapshot = {},
-      ) {
-        const internetAccountConfigSchema =
-          pluginManager.pluggableConfigSchemaType('internet account')
-        const configuration = resolveIdentifier(
-          internetAccountConfigSchema,
-          self,
-          internetAccountId,
-        )
+      initializeInternetAccount(id: string, initialSnapshot = {}) {
+        const schema = pluginManager.pluggableConfigSchemaType(
+          'internet account',
+        ) as IAnyModelType
+        const config = resolveIdentifier(schema, self, id)
 
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        if (!internetAccountType) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
+        const accountType = pluginManager.getInternetAccountType(config.type)
+        if (!accountType) {
+          throw new Error(`unknown internet account type ${config.type}`)
         }
 
-        const internetAccount = internetAccountType.stateModel.create({
+        const internetAccount = accountType.stateModel.create({
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: config.type,
+          config,
         })
         self.internetAccounts.push(internetAccount)
         return internetAccount

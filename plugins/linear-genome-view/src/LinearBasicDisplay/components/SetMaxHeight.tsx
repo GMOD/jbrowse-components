@@ -9,12 +9,12 @@ import {
   IconButton,
   Typography,
   TextField,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     width: 500,
   },
@@ -29,15 +29,17 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function SetMaxHeightDlg(props: {
+function SetMaxHeightDlg({
+  model,
+  handleClose,
+}: {
   model: {
     maxHeight?: number
     setMaxHeight: Function
   }
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
 
@@ -54,6 +56,7 @@ function SetMaxHeightDlg(props: {
           aria-label="close"
           className={classes.closeButton}
           onClick={handleClose}
+          size="large"
         >
           <CloseIcon />
         </IconButton>

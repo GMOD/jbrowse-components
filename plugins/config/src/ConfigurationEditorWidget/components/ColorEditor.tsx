@@ -1,7 +1,6 @@
 import React, { lazy, useState } from 'react'
 import { observer } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-import TextField from '@material-ui/core/TextField'
+import { TextField } from '@mui/material'
 import { Color, RGBColor } from 'react-color'
 
 const ColorPicker = lazy(() => import('./ColorPicker'))
@@ -18,14 +17,14 @@ function serializeColor(color: Color) {
 
 export const ColorSlot = (props: {
   value: string
-  label: string
-  TextFieldProps: {
+  label?: string
+  TextFieldProps?: {
     helperText: string
     fullWidth: boolean
   }
   onChange: (arg: string) => void
 }) => {
-  const { value, label, TextFieldProps, onChange } = props
+  const { value = '#000', label = '', TextFieldProps = {}, onChange } = props
   const [displayed, setDisplayed] = useState(false)
 
   return (
@@ -42,34 +41,19 @@ export const ColorSlot = (props: {
           },
         }}
         onClick={() => setDisplayed(!displayed)}
-        onChange={event => {
-          onChange(event.target.value)
-        }}
+        onChange={event => onChange(event.target.value)}
         {...TextFieldProps}
       />
       {displayed ? (
         <React.Suspense fallback={<div />}>
           <ColorPicker
             color={value}
-            onChange={event => {
-              onChange(serializeColor(event.rgb))
-            }}
+            onChange={event => onChange(serializeColor(event.rgb))}
           />
         </React.Suspense>
       ) : null}
     </>
   )
-}
-ColorSlot.propTypes = {
-  onChange: ReactPropTypes.func.isRequired,
-  label: ReactPropTypes.string,
-  TextFieldProps: ReactPropTypes.shape({}),
-  value: ReactPropTypes.string,
-}
-ColorSlot.defaultProps = {
-  label: '',
-  value: '#000',
-  TextFieldProps: {},
 }
 
 function ColorEditorSlot(props: {
@@ -85,9 +69,7 @@ function ColorEditorSlot(props: {
     <ColorSlot
       label={slot.name}
       value={slot.value}
-      onChange={(color: string) => {
-        slot.set(color)
-      }}
+      onChange={color => slot.set(color)}
       TextFieldProps={{
         helperText: slot.description,
         fullWidth: true,
@@ -95,12 +77,5 @@ function ColorEditorSlot(props: {
     />
   )
 }
-ColorEditorSlot.propTypes = {
-  slot: ReactPropTypes.shape({
-    name: ReactPropTypes.string.isRequired,
-    description: ReactPropTypes.string,
-    value: ReactPropTypes.string.isRequired,
-    set: ReactPropTypes.func.isRequired,
-  }).isRequired,
-}
+
 export default observer(ColorEditorSlot)

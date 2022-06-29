@@ -9,8 +9,8 @@ import {
 } from '@jbrowse/core/util'
 import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 
-import AddIcon from '@material-ui/icons/Add'
-import CalendarIcon from '@material-ui/icons/CalendarViewDay'
+import AddIcon from '@mui/icons-material/Add'
+import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 import LinearComparativeDisplayF from './LinearComparativeDisplay'
 import LinearComparativeViewF from './LinearComparativeView'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay'

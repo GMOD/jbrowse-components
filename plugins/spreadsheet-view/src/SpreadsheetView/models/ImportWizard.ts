@@ -48,7 +48,8 @@ const ImportWizard = types
       )
     },
     get canCancel() {
-      return getParent(self).readyToDisplay
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return getParent<any>(self).readyToDisplay
     },
 
     get fileName() {
@@ -122,7 +123,8 @@ const ImportWizard = types
 
     cancelButton() {
       self.error = undefined
-      getParent(self).setDisplayMode()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getParent<any>(self).setDisplayMode()
     },
 
     // fetch and parse the file, make a new Spreadsheet model for it,
@@ -166,7 +168,8 @@ const ImportWizard = types
         .then(buffer => typeParser(buffer, self))
         .then(spreadsheet => {
           this.setLoaded()
-          getParent(self).displaySpreadsheet(spreadsheet)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          getParent<any>(self).displaySpreadsheet(spreadsheet)
         })
     },
   }))
