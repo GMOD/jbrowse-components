@@ -1,8 +1,8 @@
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter'
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
+import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter'
+import LinkIcon from '@mui/icons-material/Link'
+import LinkOffIcon from '@mui/icons-material/LinkOff'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 import baseModel from '../MultilevelLinearComparativeView/model'

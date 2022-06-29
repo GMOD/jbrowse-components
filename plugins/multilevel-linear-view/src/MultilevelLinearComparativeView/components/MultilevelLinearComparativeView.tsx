@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from 'tss-react/mui'
 
 import { MultilevelLinearComparativeViewModel } from '../model'
 import AreaOfInterest from './AreaOfInterest'
@@ -10,7 +10,7 @@ import MiniControls from './MiniControls'
 import Header from './Header'
 import { bpToPx } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(theme => ({
   container: {
     display: 'grid',
   },
@@ -101,7 +101,7 @@ const setPolygonPoints = (model: any, view: any) => {
 
 const OverlayComparativeView = observer(
   ({ model, ExtraButtons }: { model: LCV; ExtraButtons?: React.ReactNode }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
 

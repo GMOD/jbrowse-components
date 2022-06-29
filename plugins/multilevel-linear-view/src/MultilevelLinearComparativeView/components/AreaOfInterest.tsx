@@ -1,7 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Typography } from '@material-ui/core'
-import { makeStyles, useTheme, alpha } from '@material-ui/core/styles'
+import { Typography, useTheme, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
 import { MultilevelLinearComparativeViewModel } from '../model'
@@ -9,15 +9,13 @@ import { MultilevelLinearComparativeViewModel } from '../model'
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeMultilevelViewModel
 
-const useStyles = makeStyles(() => {
-  return {
-    guide: {
-      pointerEvents: 'none',
-      position: 'absolute',
-      zIndex: 10,
-    },
-  }
-})
+const useStyles = makeStyles()(theme => ({
+  guide: {
+    pointerEvents: 'none',
+    position: 'absolute',
+    zIndex: 10,
+  },
+}))
 
 const AreaOfInterest = observer(
   ({
@@ -30,10 +28,11 @@ const AreaOfInterest = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints: any
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { left, right } = polygonPoints
 
     const theme = useTheme()
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 

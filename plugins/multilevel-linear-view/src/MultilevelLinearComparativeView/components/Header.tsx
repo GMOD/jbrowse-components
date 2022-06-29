@@ -1,9 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { IconButton, FormGroup, useTheme, alpha } from '@material-ui/core'
-import LinkIcon from '@material-ui/icons/Link'
-import LinkOffIcon from '@material-ui/icons/LinkOff'
-import FormatAlignCenterIcon from '@material-ui/icons/FormatAlignCenter'
+import { IconButton, FormGroup, useTheme, alpha } from '@mui/material'
+import LinkIcon from '@mui/icons-material/Link'
+import LinkOffIcon from '@mui/icons-material/LinkOff'
+import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter'
 import ZoomControls from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ZoomControls'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 

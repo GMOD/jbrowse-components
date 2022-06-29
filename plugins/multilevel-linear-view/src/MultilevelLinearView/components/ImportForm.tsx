@@ -7,9 +7,10 @@ import {
   Grid,
   TextField,
   MenuItem,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+
+import CloseIcon from '@mui/icons-material/Close'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -18,7 +19,7 @@ import RefNameAutocomplete from '@jbrowse/plugin-linear-genome-view/src/LinearGe
 
 import { MultilevelLinearViewModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
   },
@@ -32,7 +33,7 @@ const useStyles = makeStyles(theme => ({
 
 const ImportForm = observer(
   ({ model }: { model: MultilevelLinearViewModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames, assemblyManager } = session
     const [selected, setSelected] = useState([assemblyNames[0]])

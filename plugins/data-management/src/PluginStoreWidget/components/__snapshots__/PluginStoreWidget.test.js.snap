@@ -492,13 +492,15 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters"
+                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root makeStyles-lockedPluginTooltip"
+                    aria-label="This plugin was installed by an administrator, you cannot remove it."
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    data-mui-internal-clone-element="true"
+                    data-testid="LockIcon"
                     focusable="false"
-                    title="This plugin was installed by an administrator, you cannot remove it."
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -506,7 +508,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1"
+                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
                   >
                     RdfPlugin
                   </p>

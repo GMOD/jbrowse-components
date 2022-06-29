@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { IconButton } from '@material-ui/core'
-import UnfoldLessIcon from '@material-ui/icons/UnfoldLess'
-import UnfoldMoreIcon from '@material-ui/icons/UnfoldMore'
-import MenuIcon from '@material-ui/icons/Menu'
+import { IconButton } from '@mui/material'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
+import MenuIcon from '@mui/icons-material/Menu'
 import Menu from '@jbrowse/core/ui/Menu'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'

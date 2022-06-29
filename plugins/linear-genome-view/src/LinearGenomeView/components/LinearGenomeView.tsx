@@ -13,8 +13,6 @@ import MiniControls from './MiniControls'
 import SequenceDialog from './SequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
 
-type LGV = LinearGenomeViewModel
-
 const useStyles = makeStyles()(theme => ({
   note: {
     textAlign: 'center',

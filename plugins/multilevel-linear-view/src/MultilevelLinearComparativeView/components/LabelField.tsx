@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Tooltip, TextField } from '@material-ui/core'
+import { Tooltip, TextField } from '@mui/material'
 import { measureText } from '@jbrowse/core/util'
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
 

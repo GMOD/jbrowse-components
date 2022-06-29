@@ -1,15 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Typography,
-  Button,
-  FormGroup,
-  makeStyles,
-  useTheme,
-  alpha,
-} from '@material-ui/core'
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
-import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+import { Typography, Button, FormGroup, useTheme, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
@@ -22,7 +17,7 @@ const WIDGET_HEIGHT = 32
 const SPACING = 7
 const HEADER_BAR_HEIGHT = 48
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -76,6 +71,7 @@ const Polygon = observer(
     const { left, right, prevLeft, prevRight } = polygonPoints
 
     const theme = useTheme()
+    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 
@@ -101,7 +97,7 @@ const Polygon = observer(
 )
 
 export function PanControls({ model }: { model: LGV }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       <Button
@@ -125,7 +121,7 @@ export function PanControls({ model }: { model: LGV }) {
 }
 
 export const RegionWidth = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
@@ -149,7 +145,7 @@ const Controls = observer(
     ExtraButtons?: React.ReactNode
     ExtraControls?: React.ReactNode
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     return (
       <div className={classes.headerBar}>
         {model.views[0].id !== view.id ? (

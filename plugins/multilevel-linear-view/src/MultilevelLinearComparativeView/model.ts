@@ -7,8 +7,8 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
-import MenuIcon from '@material-ui/icons/Menu'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import MenuIcon from '@mui/icons-material/Menu'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem } from '@jbrowse/core/ui'

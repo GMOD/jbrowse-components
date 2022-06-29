@@ -1,7 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import DynamicFeedIcon from '@material-ui/icons/DynamicFeed'
+import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
 import MultilevelLinearComparativeViewF from './MultilevelLinearComparativeView'
 import MultilevelLinearViewF from './MultilevelLinearView'
 import MultilevelTrackF from './MultilevelTrack'

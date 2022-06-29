@@ -6,8 +6,8 @@ import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import VisibilityIcon from '@material-ui/icons/Visibility'
-import ZoomInIcon from '@material-ui/icons/ZoomIn'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 export interface BpOffset {
   refName?: string
