@@ -9,7 +9,6 @@ import {
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-
 import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
 setup()
@@ -47,31 +46,15 @@ test(
   async () => {
     const pm = getPluginManager()
     const state = pm.rootModel
-    const { findByTestId, findAllByTestId } = render(
-      <JBrowse pluginManager={pm} />,
-    )
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
+    const { findByTestId } = render(<JBrowse pluginManager={pm} />)
 
-    const start = state.session.views[0].offsetPx
-    const track = await findByTestId(
-      'display-volvox_alignments_alignments',
-      {},
-      delay,
-    )
+    const view = state.session.views[0]
+    const start = view.offsetPx
+    const track = await findByTestId('trackContainer', {}, delay)
     fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
     fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
     fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
-    // wait for requestAnimationFrame
-    await waitFor(
-      () => expect(state.session.views[0].offsetPx - start).toEqual(150),
-      delay,
-    )
-
-    // wait for this unrelated thing because otherwise it warns about prerendered
-    // canvas still running after jest is torn down
-    await findAllByTestId(/prerendered_canvas/, {}, delay)
+    await waitFor(() => expect(view.offsetPx - start).toEqual(150), delay)
   },
   total,
 )
@@ -83,13 +66,13 @@ test(
     const state = pm.rootModel
     const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
     const track = await findByTestId('rubberBand_controls', {}, delay)
-
-    expect(state.session.views[0].bpPerPx).toEqual(0.05)
+    const view = state.session.views[0]
+    expect(view.bpPerPx).toEqual(0.05)
     fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
     fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
     fireEvent.mouseUp(track, { clientX: 250, clientY: 0 })
     fireEvent.click(await findByText('Zoom to region'))
-    expect(state.session.views[0].bpPerPx).toEqual(0.02)
+    expect(view.bpPerPx).toEqual(0.02)
   },
   total,
 )
@@ -100,19 +83,16 @@ test(
     const pm = getPluginManager()
     const state = pm.rootModel
     const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-    const rubberBandComponent = await findByTestId(
-      'rubberBand_controls',
-      {},
-      delay,
-    )
+    const rubberband = await findByTestId('rubberBand_controls', {}, delay)
 
-    expect(state.session.views[0].bpPerPx).toEqual(0.05)
-    fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
-    fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-    fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+    const view = state.session.views[0]
+    expect(view.bpPerPx).toEqual(0.05)
+    fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
+    fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
+    fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
     fireEvent.click(await findByText('Get sequence'))
-    expect(state.session.views[0].leftOffset).toBeTruthy()
-    expect(state.session.views[0].rightOffset).toBeTruthy()
+    expect(view.leftOffset).toBeTruthy()
+    expect(view.rightOffset).toBeTruthy()
   },
   total,
 )
@@ -181,15 +161,15 @@ test(
   'opens track selector',
   async () => {
     const pm = getPluginManager()
-    const state = pm.rootModel
+    const { session } = pm.rootModel
     const { findByTestId } = render(<JBrowse pluginManager={pm} />)
 
-    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay)
-    expect(state.session.views[0].tracks.length).toBe(0)
-    fireEvent.click(
-      await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-    )
-    expect(state.session.views[0].tracks.length).toBe(1)
+    const view = session.views[0]
+    const trackId = 'htsTrackEntry-volvox_alignments'
+    await findByTestId(trackId, {}, delay)
+    expect(view.tracks.length).toBe(0)
+    fireEvent.click(await findByTestId(trackId, {}, delay))
+    expect(view.tracks.length).toBe(1)
   },
   total,
 )
@@ -198,14 +178,15 @@ test(
   'opens reference sequence track and expects zoom in message',
   async () => {
     const pm = getPluginManager()
-    const state = pm.rootModel
+    const { session } = pm.rootModel
     const { findAllByText, findByTestId } = render(
       <JBrowse pluginManager={pm} />,
     )
+    const view = session.views[0]
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_refseq', {}, delay),
     )
-    state.session.views[0].setNewView(20, 0)
+    view.setNewView(20, 0)
     await findByTestId(
       'display-volvox_refseq-LinearReferenceSequenceDisplay',
       {},
@@ -220,8 +201,9 @@ test(
   'click to display center line with correct value',
   async () => {
     const pm = getPluginManager()
-    const state = pm.rootModel
+    const { session } = pm.rootModel
     const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+    const view = session.views[0]
 
     fireEvent.click(
       await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
@@ -231,7 +213,7 @@ test(
     // opens the view menu and selects show center line
     fireEvent.click(await findByTestId('view_menu_icon'))
     fireEvent.click(await findByText('Show center line'))
-    expect(state.session.views[0].showCenterLine).toBe(true)
+    expect(view.showCenterLine).toBe(true)
 
     const { centerLineInfo } = state.session.views[0]
     expect(centerLineInfo.refName).toBe('ctgA')
