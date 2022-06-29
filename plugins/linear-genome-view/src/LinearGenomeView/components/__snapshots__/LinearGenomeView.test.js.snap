@@ -328,7 +328,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
   </div>
   <div
     class="tss-75rarj-tracksContainer"
-    role="presentation"
+    data-testid="trackContainer"
   >
     <div
       class="tss-1rfvwmf-verticalGuidesZoomContainer"
@@ -896,7 +896,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
   </div>
   <div
     class="tss-75rarj-tracksContainer"
-    role="presentation"
+    data-testid="trackContainer"
   >
     <div
       class="tss-1rfvwmf-verticalGuidesZoomContainer"

@@ -1,5 +1,4 @@
-import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -8,11 +7,10 @@ import { TextEncoder, TextDecoder } from 'web-encoding'
 
 import dotplotConfig from '../../test_data/config_dotplot.json'
 import {
-  JBrowse,
   setup,
   generateReadBuffer,
   expectCanvasMatch,
-  getPluginManager,
+  createView,
 } from './util'
 
 if (!window.TextEncoder) {
@@ -21,9 +19,12 @@ if (!window.TextEncoder) {
 if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
-dotplotConfig.configuration = {
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
+const config = {
+  ...dotplotConfig,
+  configuration: {
+    rpc: {
+      defaultDriver: 'MainThreadRpcDriver',
+    },
   },
 }
 
@@ -35,7 +36,9 @@ setup()
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/${url}`)),
@@ -44,16 +47,12 @@ beforeEach(() => {
 })
 
 test('open a dotplot view', async () => {
-  const pm = getPluginManager(dotplotConfig, false)
-  const { findByTestId } = render(<JBrowse pluginManager={pm} />)
+  const { findByTestId } = createView(config)
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)
 
 test('open a dotplot view with import form', async () => {
-  const pm = getPluginManager(dotplotConfig, false)
-  const { findByTestId, findAllByTestId, findByText } = render(
-    <JBrowse pluginManager={pm} />,
-  )
+  const { findByTestId, findAllByTestId, findByText } = createView(config)
 
   fireEvent.click(await findByTestId('close_view'))
   fireEvent.click(await findByText('File'))
