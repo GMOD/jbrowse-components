@@ -75,8 +75,8 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
       <label
         class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for=":r4:"
-        id=":r4:-label"
+        for="mui-5"
+        id="mui-5-label"
       >
         Filter tracks
       </label>
@@ -86,7 +86,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
         <input
           aria-invalid="false"
           class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-          id=":r4:"
+          id="mui-5"
           type="text"
           value=""
         />
@@ -184,8 +184,8 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
       <label
         class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
         data-shrink="false"
-        for=":r0:"
-        id=":r0:-label"
+        for="mui-1"
+        id="mui-1-label"
       >
         Filter tracks
       </label>
@@ -195,7 +195,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized
         <input
           aria-invalid="false"
           class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
-          id=":r0:"
+          id="mui-1"
           type="text"
           value=""
         />

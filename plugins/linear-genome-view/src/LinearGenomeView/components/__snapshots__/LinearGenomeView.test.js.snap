@@ -276,6 +276,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
             <span
               class="MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall MuiSlider-thumb css-14gf62f-MuiSlider-thumb"
+              data-focusvisible="false"
               data-index="0"
               style="left: 0%;"
             >
@@ -843,6 +844,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <span
               class="MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall MuiSlider-thumb css-14gf62f-MuiSlider-thumb"
+              data-focusvisible="false"
               data-index="0"
               style="left: 9.774680693120512%;"
             >

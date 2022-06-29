@@ -214,16 +214,26 @@ const stateModelFactory = (
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+        const {
+          color,
+          posColor,
+          negColor,
+          summaryScoreMode,
+          scaleType,
+          displayCrossHatches,
+          fill,
+        } = self
+
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            filled: self.fill,
-            scaleType: self.scaleType,
-            displayCrossHatches: self.displayCrossHatches,
-            summaryScoreMode: self.summaryScoreMode,
-            ...(self.color ? { color: self.color } : {}),
-            ...(self.negColor ? { negColor: self.negColor } : {}),
-            ...(self.posColor ? { posColor: self.posColor } : {}),
+            ...(scaleType ? { scaleType } : {}),
+            ...(fill ? { filled: fill } : {}),
+            ...(displayCrossHatches ? { displayCrossHatches } : {}),
+            ...(summaryScoreMode ? { summaryScoreMode } : {}),
+            ...(color ? { color } : {}),
+            ...(negColor ? { negColor } : {}),
+            ...(posColor ? { posColor } : {}),
           },
           getEnv(self),
         )
@@ -233,20 +243,18 @@ const stateModelFactory = (
       let oldDomain: [number, number] = [0, 0]
       return {
         get filled() {
-          return self.fill ?? readConfObject(self.rendererConfig, 'filled')
+          const { fill, rendererConfig: conf } = self
+          return fill ?? readConfObject(conf, 'filled')
         },
         get summaryScoreModeSetting() {
-          return (
-            self.summaryScoreMode ||
-            readConfObject(self.rendererConfig, 'summaryScoreMode')
-          )
+          const { summaryScoreMode, rendererConfig: conf } = self
+          return summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode')
         },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
-          const { scoreMin, scoreMax } = stats
 
           const ret = getNiceDomain({
-            domain: [scoreMin, scoreMax],
+            domain: [stats.scoreMin, stats.scoreMax],
             bounds: [minScore, maxScore],
             scaleType,
           })
@@ -285,14 +293,12 @@ const stateModelFactory = (
         },
 
         get autoscaleType() {
-          return self.autoscale || getConf(self, 'autoscale')
+          return self.autoscale ?? getConf(self, 'autoscale')
         },
 
         get displayCrossHatchesSetting() {
-          return (
-            self.displayCrossHatches ||
-            readConfObject(self.rendererConfig, 'displayCrossHatches')
-          )
+          const { displayCrossHatches: hatches, rendererConfig: conf } = self
+          return hatches ?? readConfObject(conf, 'displayCrossHatches')
         },
       }
     })
@@ -318,18 +324,19 @@ const stateModelFactory = (
       return {
         renderProps() {
           const superProps = superRenderProps()
+          const { filters, ticks, height, resolution, scaleOpts } = self
           return {
             ...superProps,
             notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
-            scaleOpts: self.scaleOpts,
-            resolution: self.resolution,
-            height: self.height,
-            ticks: self.ticks,
-            displayCrossHatches: self.displayCrossHatches,
-            filters: self.filters,
+            displayCrossHatches: self.displayCrossHatchesSetting,
+            scaleOpts,
+            resolution,
+            height,
+            ticks,
+            filters,
           }
         },
 
@@ -349,6 +356,7 @@ const stateModelFactory = (
     })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
+      const hasRenderings = getConf(self, 'defaultRendering')
       return {
         trackMenuItems() {
           return [
@@ -360,26 +368,20 @@ const stateModelFactory = (
                     subMenu: [
                       {
                         label: 'Finer resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution * 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution * 5),
                       },
                       {
                         label: 'Coarser resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution / 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution / 5),
                       },
                     ],
                   },
                   {
                     label: 'Summary score mode',
-                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
-                      return {
-                        label: elt,
-                        onClick: () => self.setSummaryScoreMode(elt),
-                      }
-                    }),
+                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
+                      label: elt,
+                      onClick: () => self.setSummaryScoreMode(elt),
+                    })),
                   },
                 ]
               : []),
@@ -389,33 +391,26 @@ const stateModelFactory = (
                     label: self.filled
                       ? 'Turn off histogram fill'
                       : 'Turn on histogram fill',
-                    onClick: () => {
-                      self.setFill(!self.filled)
-                    },
+                    onClick: () => self.setFill(!self.filled),
                   },
                 ]
               : []),
             {
               label:
                 self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-              onClick: () => {
-                self.toggleLogScale()
-              },
+              onClick: () => self.toggleLogScale(),
             },
             {
               type: 'checkbox',
               label: 'Draw cross hatches',
               checked: self.displayCrossHatchesSetting,
-              onClick: () => {
-                self.toggleCrossHatches()
-              },
+              onClick: () => self.toggleCrossHatches(),
             },
-
-            ...(Object.keys(getConf(self, 'renderers') || {}).length > 1
+            ...(hasRenderings
               ? [
                   {
                     label: 'Renderer type',
-                    subMenu: [...rendererTypes.keys()].map(key => ({
+                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
                       label: key,
                       onClick: () => self.setRendererType(key),
                     })),
@@ -433,30 +428,26 @@ const stateModelFactory = (
                     ]
                   : []),
                 ['localsd', 'Local ± 3σ'],
-              ].map(([val, label]) => {
-                return {
-                  label,
-                  onClick() {
-                    self.setAutoscale(val)
-                  },
-                }
-              }),
+              ].map(([val, label]) => ({
+                label,
+                onClick: () => self.setAutoscale(val),
+              })),
             },
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMinMaxDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetColorDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
@@ -552,9 +543,9 @@ const stateModelFactory = (
         async reload() {
           self.setError()
           const aborter = new AbortController()
-          let stats
+          self.setLoading(aborter)
           try {
-            stats = await getStats({
+            const stats = await getStats({
               signal: aborter.signal,
               ...self.renderProps(),
             })
@@ -572,9 +563,7 @@ const stateModelFactory = (
             autorun(
               async () => {
                 try {
-                  const aborter = new AbortController()
                   const view = getContainingView(self) as LGV
-                  self.setLoading(aborter)
 
                   if (!view.initialized) {
                     return
@@ -586,6 +575,8 @@ const stateModelFactory = (
                   if (self.regionTooLarge) {
                     return
                   }
+                  const aborter = new AbortController()
+                  self.setLoading(aborter)
 
                   const wiggleStats = await getStats({
                     signal: aborter.signal,
