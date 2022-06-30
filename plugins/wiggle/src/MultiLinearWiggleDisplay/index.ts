@@ -1,3 +1,20 @@
-export { default as configSchemaFactory } from './models/configSchema'
-export { default as modelFactory, YSCALEBAR_LABEL_OFFSET } from './models/model'
-export { default as ReactComponent } from './components/WiggleDisplayComponent'
+import PluginManager from '@jbrowse/core/PluginManager'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+
+import configSchemaFactory from './models/configSchema'
+import modelFactory from './models/model'
+import ReactComponent from './components/WiggleDisplayComponent'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    return new DisplayType({
+      name: 'MultiLinearWiggleDisplay',
+      configSchema,
+      stateModel: modelFactory(pluginManager, configSchema),
+      trackType: 'MultiQuantitativeTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent,
+    })
+  })
+}

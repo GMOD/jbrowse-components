@@ -10,10 +10,11 @@ import ConfigSchema from '../configSchema'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-export { default as ReactComponent } from '../WiggleRendering'
+import ReactComponent from '../WiggleRendering'
 
-export default class DensityRenderer extends WiggleBaseRenderer {
+class DensityRenderer extends WiggleBaseRenderer {
   async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
@@ -49,8 +50,20 @@ export default class DensityRenderer extends WiggleBaseRenderer {
     }
   }
 }
-export const configSchema = ConfigurationSchema(
+const configSchema = ConfigurationSchema(
   'DensityRenderer',
   {},
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addRendererType(
+    () =>
+      new DensityRenderer({
+        name: 'DensityRenderer',
+        ReactComponent,
+        configSchema,
+        pluginManager,
+      }),
+  )
+}

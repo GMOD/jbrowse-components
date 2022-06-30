@@ -1,10 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import ConfigSchema from '../configSchema'
 import { types } from 'mobx-state-tree'
-export { default as ReactComponent } from '../WiggleRendering'
-export { default } from './XYPlotRenderer'
+import ReactComponent from '../WiggleRendering'
+import PluginManager from '@jbrowse/core/PluginManager'
+import XYPlotRenderer from './XYPlotRenderer'
 
-export const configSchema = ConfigurationSchema(
+const configSchema = ConfigurationSchema(
   'XYPlotRenderer',
   {
     filled: {
@@ -26,3 +27,15 @@ export const configSchema = ConfigurationSchema(
   },
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addRendererType(
+    () =>
+      new XYPlotRenderer({
+        name: 'XYPlotRenderer',
+        ReactComponent,
+        configSchema,
+        pluginManager,
+      }),
+  )
+}

@@ -3,19 +3,25 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import ConfigSchema from '../configSchema'
 
 import ReactComponent from '../WiggleRendering'
-import MultiXYPlotRenderer from './MultiXYPlotRenderer'
+import LinePlotRenderer from './LinePlotRenderer'
 
 const configSchema = ConfigurationSchema(
-  'MultiXYPlotRenderer',
-  {},
+  'LinePlotRenderer',
+  {
+    displayCrossHatches: {
+      type: 'boolean',
+      description: 'choose to draw cross hatches (sideways lines)',
+      defaultValue: false,
+    },
+  },
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
-      new MultiXYPlotRenderer({
-        name: 'MultiXYPlotRenderer',
+      new LinePlotRenderer({
+        name: 'LinePlotRenderer',
         ReactComponent,
         configSchema,
         pluginManager,
