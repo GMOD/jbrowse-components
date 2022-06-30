@@ -42,7 +42,7 @@ export type TreeNode = {
 
 function filterTracks(
   tracks: AnyConfigurationModel[],
-  self: any,
+  self: { view: { type: string } },
   assemblyName: string,
 ) {
   const { assemblyManager } = getSession(self)

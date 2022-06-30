@@ -3,7 +3,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
-import { getOrigin, getScale, groupBy } from '../util'
+import { getOrigin, getScale, groupBy, ScaleOpts } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
@@ -60,7 +60,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       features: Feature[]
       bpPerPx: number
       regions: Region[]
-      scaleOpts: any
+      scaleOpts: ScaleOpts
       height: number
       ticks: { values: number[] }
       config: AnyConfigurationModel
@@ -132,7 +132,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         const feature = features[i]
         const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
         const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
-        let score = feature.get('score')
+        const score = feature.get('score')
         const lowClipping = score < niceMin
         const highClipping = score > niceMax
         if (highClipping) {

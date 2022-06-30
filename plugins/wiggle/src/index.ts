@@ -29,6 +29,17 @@ import {
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 
+import {
+  ReactComponent as LinearWiggleDisplayReactComponent,
+  modelFactory as linearWiggleDisplayModelFactory,
+  Tooltip,
+} from './LinearWiggleDisplay'
+import {
+  ReactComponent as XYPlotRendererReactComponent,
+  configSchema as xyPlotRendererConfigSchema,
+  XYPlotRenderer,
+} from './XYPlotRenderer'
+
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
 
@@ -100,17 +111,6 @@ export default class WigglePlugin extends Plugin {
 }
 
 export * from './util'
-
-import {
-  ReactComponent as LinearWiggleDisplayReactComponent,
-  modelFactory as linearWiggleDisplayModelFactory,
-  Tooltip,
-} from './LinearWiggleDisplay'
-import {
-  ReactComponent as XYPlotRendererReactComponent,
-  configSchema as xyPlotRendererConfigSchema,
-  XYPlotRenderer,
-} from './XYPlotRenderer'
 
 export {
   WiggleRendering,

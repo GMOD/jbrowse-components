@@ -15,6 +15,7 @@ interface WiggleOptions extends BaseOptions {
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private setupP?: Promise<{ bigwig: BigWig; header: any }>
 
   public static capabilities = [

@@ -14,7 +14,7 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // other
-import { TreeNode } from '../model'
+import { HierarchicalTrackSelectorModel, TreeNode } from '../model'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession } from '@jbrowse/core/util'
 
@@ -108,8 +108,8 @@ export default function Node(props: {
     name: string
     onChange: Function
     toggleCollapse: (arg: string) => void
-    tree: any
-    model: any
+    tree: TreeNode
+    model: HierarchicalTrackSelectorModel
   }
   isOpen: boolean
   style?: { height: number }
@@ -219,7 +219,8 @@ export default function Node(props: {
                   label: 'Add to group',
                   onClick: () => {
                     const subtree = treeToMap(tree).get(id)
-                    model.addToGroup(subtree?.children.map(t => t.conf) || [])
+                    const t = subtree?.children.map(t => t.conf) || []
+                    model.addToGroup(t as AnyConfigurationModel[])
                   },
                 },
               ]}

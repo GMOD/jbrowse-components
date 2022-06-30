@@ -87,6 +87,7 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   }, [])
 
   const { status: blockStatus } = model
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { message: displayStatus } = getParent<any>(model, 2)
   const status = displayStatus || blockStatus
   return (

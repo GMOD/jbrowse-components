@@ -5,7 +5,6 @@ import { makeStyles } from 'tss-react/mui'
 import AddIcon from '@mui/icons-material/Add'
 // other
 import AutoSizer from 'react-virtualized-auto-sizer'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -18,7 +17,7 @@ import { VariableSizeTree } from 'react-vtree'
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
 import Header from './Header'
-import Node, { MoreInfoArgs } from './Node'
+import Node from './Node'
 
 const useStyles = makeStyles()(theme => ({
   fab: {
@@ -76,7 +75,7 @@ const HierarchicalTree = observer(
         model,
         drawerPosition,
       }),
-      [view, model, drawerPosition],
+      [view, model, drawerPosition, tree],
     )
     const treeWalker = useCallback(
       function* treeWalker() {

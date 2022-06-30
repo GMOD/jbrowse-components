@@ -11,6 +11,7 @@ import { addDisposer, isAlive } from 'mobx-state-tree'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
+import { WiggleDisplayModel } from './LinearWiggleDisplay/models/model'
 
 type LGV = LinearGenomeViewModel
 
@@ -254,7 +255,7 @@ export async function getStats(
   throw new Error(`invalid autoscaleType '${autoscaleType}'`)
 }
 
-export function statsAutorun(self: any) {
+export function statsAutorun(self: WiggleDisplayModel) {
   addDisposer(
     self,
     autorun(

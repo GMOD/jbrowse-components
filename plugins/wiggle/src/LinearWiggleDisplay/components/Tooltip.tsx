@@ -163,6 +163,8 @@ const WiggleTooltip = observer(
     offsetMouseCoord: Coord
     clientMouseCoord: Coord
     clientRect?: DOMRect
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     TooltipContents?: React.FC<any>
   }) => {
     return <Tooltip TooltipContents={TooltipContents} {...props} />
