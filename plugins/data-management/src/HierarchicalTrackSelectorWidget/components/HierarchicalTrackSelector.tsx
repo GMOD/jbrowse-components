@@ -12,14 +12,13 @@ import {
   isSessionModelWithConnections,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
 import Header from './Header'
-import Node from './Node'
+import Node, { MoreInfoArgs } from './Node'
 
 const useStyles = makeStyles()(theme => ({
   fab: {
@@ -75,6 +74,8 @@ const HierarchicalTree = observer(
         onChange: (trackId: string) => view.toggleTrack(trackId),
         toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
         onMoreInfo: setMoreInfo,
+        tree,
+        model,
         drawerPosition,
       }),
       [view, model, drawerPosition],

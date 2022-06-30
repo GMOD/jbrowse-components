@@ -14,6 +14,8 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // other
+import { TreeNode } from '../model'
+import { getSession } from '@jbrowse/core/util'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 
 import {
@@ -72,26 +74,39 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface MoreInfoArgs {
+export interface MoreInfoArgs {
   target: HTMLElement
   id: string
   conf: AnyConfigurationModel
+}
+
+function treeToMap(tree: TreeNode, map = new Map<string, TreeNode>()) {
+  if (tree.id && tree.children.length) {
+    map.set(tree.id, tree)
+  }
+  for (let i = 0; i < tree.children.length; i++) {
+    const node = tree.children[i]
+    treeToMap(node, map)
+  }
+  return map
 }
 
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
 export default function Node(props: {
   data: {
-    isLeaf: boolean
     nestingLevel: number
     checked: boolean
+    conf: AnyConfigurationModel
+    drawerPosition: unknown
     id: string
+    isLeaf: boolean
     name: string
     onChange: Function
-    toggleCollapse: (arg: string) => void
-    conf: AnyConfigurationModel
     onMoreInfo: (arg: MoreInfoArgs) => void
-    drawerPosition: unknown
+    toggleCollapse: (arg: string) => void
+    tree: any
+    model: any
   }
   isOpen: boolean
   style?: { height: number }
@@ -99,16 +114,18 @@ export default function Node(props: {
 }) {
   const { data, isOpen, style, setOpen } = props
   const {
-    isLeaf,
-    nestingLevel,
     checked,
-    id,
-    name,
-    onChange,
-    toggleCollapse,
     conf,
-    onMoreInfo,
     drawerPosition,
+    id,
+    isLeaf,
+    model,
+    name,
+    nestingLevel,
+    onChange,
+    onMoreInfo,
+    toggleCollapse,
+    tree,
   } = data
 
   const { classes } = useStyles()
@@ -200,7 +217,34 @@ export default function Node(props: {
                 {
                   label: 'Toggle all tracks',
                   onClick: () => {
-                    console.log({ id })
+                    const subtree = treeToMap(tree).get(id)
+                    const tracks = subtree?.children.map(
+                      t => t.conf as AnyConfigurationModel,
+                    )
+                    if (!tracks?.length) {
+                      return
+                    }
+                    const subadapters = tracks
+                      .map(c => readConfObject(c, 'adapter'))
+                      .map((c, idx) => ({ ...c, source: 'idx-' + idx }))
+                    const assemblyNames = Array.from(
+                      new Set(
+                        tracks
+                          .map(c => readConfObject(c, 'assemblyNames'))
+                          .flat(),
+                      ),
+                    )
+                    const now = +Date.now()
+                    getSession(model).addTrackConf({
+                      type: 'MultiQuantitativeTrack',
+                      trackId: `multitrack-${now}-sessionTrack`,
+                      name: 'MultiWig - ' + Date.now(),
+                      assemblyNames,
+                      adapter: {
+                        type: 'MultiWiggleAdapter',
+                        subadapters,
+                      },
+                    })
                   },
                 },
               ]}

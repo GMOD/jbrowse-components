@@ -17,11 +17,11 @@ function passesFilter(filter: string, config: AnyConfigurationModel) {
   const filterLower = filter.toLowerCase()
   return (
     getTrackName(config).toLowerCase().includes(filterLower) ||
-    categories?.filter(c => c.toLowerCase().includes(filterLower)).length
+    !!categories?.filter(c => c.toLowerCase().includes(filterLower)).length
   )
 }
 
-function getTrackName(config: AnyConfigurationModel) {
+function getTrackName(config: AnyConfigurationModel): string {
   if (!config.trackId) {
     throw new Error('not a track')
   }
