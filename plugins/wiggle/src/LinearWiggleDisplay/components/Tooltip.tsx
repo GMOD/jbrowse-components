@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
 import { alpha, Portal } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 
 // locals
-import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
+import { YSCALEBAR_LABEL_OFFSET } from '../../util'
 import { usePopper } from 'react-popper'
 
 // convert to number, apply shortened precision, and render

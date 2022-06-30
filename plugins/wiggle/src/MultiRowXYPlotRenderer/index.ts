@@ -1,11 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
 import ConfigSchema from '../configSchema'
 
-export { default as ReactComponent } from '../WiggleRendering'
-export { default } from './MultiXYPlotRenderer'
+import ReactComponent from '../WiggleRendering'
+import MultiRowXYPlotRenderer from './MultiRowXYPlotRenderer'
 
-export const configSchema = ConfigurationSchema(
-  'MultiXYPlotRenderer',
+const configSchema = ConfigurationSchema(
+  'MultiRowXYPlotRenderer',
   {},
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addRendererType(
+    () =>
+      new MultiRowXYPlotRenderer({
+        name: 'MultiRowXYPlotRenderer',
+        ReactComponent,
+        configSchema,
+        pluginManager,
+      }),
+  )
+}

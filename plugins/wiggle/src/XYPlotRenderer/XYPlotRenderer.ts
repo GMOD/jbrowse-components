@@ -1,11 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { featureSpanPx } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util'
+import { featureSpanPx, Feature } from '@jbrowse/core/util'
 import { getOrigin, getScale } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
-import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
+import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 function fillRect(
   ctx: CanvasRenderingContext2D,

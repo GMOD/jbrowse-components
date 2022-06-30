@@ -5,6 +5,8 @@ import ReactComponent from '../WiggleRendering'
 import PluginManager from '@jbrowse/core/PluginManager'
 import XYPlotRenderer from './XYPlotRenderer'
 
+export { XYPlotRenderer, configSchema, ReactComponent }
+
 const configSchema = ConfigurationSchema(
   'XYPlotRenderer',
   {

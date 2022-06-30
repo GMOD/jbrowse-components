@@ -3,11 +3,10 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { featureSpanPx, Feature, Region } from '@jbrowse/core/util'
-import { getOrigin, getScale, groupBy } from '../util'
+import { getOrigin, getScale, groupBy, YSCALEBAR_LABEL_OFFSET } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
-import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 const colors = ['red', 'green', 'blue', 'orange']
 

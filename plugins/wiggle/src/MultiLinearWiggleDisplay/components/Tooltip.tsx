@@ -5,7 +5,7 @@ import { makeStyles } from 'tss-react/mui'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 // locals
-import { YSCALEBAR_LABEL_OFFSET } from '../models/model'
+import { YSCALEBAR_LABEL_OFFSET } from '../../util'
 import { usePopper } from 'react-popper'
 
 // convert to number, apply shortened precision, and render

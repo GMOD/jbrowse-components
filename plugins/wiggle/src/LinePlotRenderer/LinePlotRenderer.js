@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { featureSpanPx } from '@jbrowse/core/util'
 import { getScale } from '../util'
 import WiggleBaseRenderer from '../WiggleBaseRenderer'
-import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
+import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 export default class LinePlotRenderer extends WiggleBaseRenderer {
   async draw(ctx, props) {

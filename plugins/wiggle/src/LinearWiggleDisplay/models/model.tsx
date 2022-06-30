@@ -6,33 +6,33 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import {
-  isAbortException,
   getSession,
   getContainingView,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, when } from 'mobx'
-import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
+import { when } from 'mobx'
+import { isAlive, types, getEnv, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import { FeatureStats } from '@jbrowse/core/util/stats'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import { getNiceDomain, getScale } from '../../util'
+import {
+  getNiceDomain,
+  getScale,
+  getStats,
+  statsAutorun,
+  YSCALEBAR_LABEL_OFFSET,
+} from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
-
-// fudge factor for making all labels on the YScalebar visible
-export const YSCALEBAR_LABEL_OFFSET = 5
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -460,84 +460,6 @@ const stateModelFactory = (
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
-      async function getStats(opts: {
-        headers?: Record<string, string>
-        signal?: AbortSignal
-        filters?: string[]
-      }): Promise<FeatureStats> {
-        const { rpcManager } = getSession(self)
-        const nd = getConf(self, 'numStdDev') || 3
-        const { adapterConfig, autoscaleType } = self
-        const sessionId = getRpcSessionId(self)
-        const params = {
-          sessionId,
-          adapterConfig,
-          statusCallback: (message: string) => {
-            if (isAlive(self)) {
-              self.setMessage(message)
-            }
-          },
-          ...opts,
-        }
-
-        if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const results: FeatureStats = (await rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          )) as FeatureStats
-          const { scoreMin, scoreMean, scoreStdDev } = results
-          // globalsd uses heuristic to avoid unnecessary scoreMin<0
-          // if the scoreMin is never less than 0
-          // helps with most coverage bigwigs just being >0
-          return autoscaleType === 'globalsd'
-            ? {
-                ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
-              }
-            : results
-        }
-        if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
-          const results = (await rpcManager.call(
-            sessionId,
-            'WiggleGetMultiRegionStats',
-            {
-              ...params,
-              regions: dynamicBlocks.contentBlocks.map(region => {
-                const { start, end } = region
-                return {
-                  ...JSON.parse(JSON.stringify(region)),
-                  start: Math.floor(start),
-                  end: Math.ceil(end),
-                }
-              }),
-              bpPerPx,
-            },
-          )) as FeatureStats
-          const { scoreMin, scoreMean, scoreStdDev } = results
-
-          // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
-          // scoreMin is never less than 0 helps with most coverage bigwigs
-          // just being >0
-          return autoscaleType === 'localsd'
-            ? {
-                ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
-              }
-            : results
-        }
-        if (autoscaleType === 'zscale') {
-          return rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          ) as Promise<FeatureStats>
-        }
-        throw new Error(`invalid autoscaleType '${autoscaleType}'`)
-      }
       return {
         // re-runs stats and refresh whole display on reload
         async reload() {
@@ -545,7 +467,7 @@ const stateModelFactory = (
           const aborter = new AbortController()
           self.setLoading(aborter)
           try {
-            const stats = await getStats({
+            const stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
             })
@@ -558,41 +480,7 @@ const stateModelFactory = (
           }
         },
         afterAttach() {
-          addDisposer(
-            self,
-            autorun(async () => {
-              try {
-                const view = getContainingView(self) as LGV
-
-                if (!view.initialized) {
-                  return
-                }
-
-                if (!self.estimatedStatsReady) {
-                  return
-                }
-                if (self.regionTooLarge) {
-                  return
-                }
-                const aborter = new AbortController()
-                self.setLoading(aborter)
-
-                const wiggleStats = await getStats({
-                  signal: aborter.signal,
-                  ...self.renderProps(),
-                })
-
-                if (isAlive(self)) {
-                  self.updateStats(wiggleStats)
-                }
-              } catch (e) {
-                if (!isAbortException(e) && isAlive(self)) {
-                  console.error(e)
-                  self.setError(e)
-                }
-              }
-            }),
-          )
+          statsAutorun(self)
         },
         async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.statsReady && !!self.regionCannotBeRenderedText)

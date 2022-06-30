@@ -7,7 +7,6 @@ import { getOrigin, getScale, groupBy } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
-import { YSCALEBAR_LABEL_OFFSET } from '../LinearWiggleDisplay/models/model'
 
 const colors = ['red', 'green', 'blue', 'orange']
 
@@ -31,11 +30,29 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const { features } = props
+    const { bpPerPx, regions, features } = props
     const groups = groupBy([...features.values()], f => f.get('source'))
-    Object.values(groups).forEach((features, idx) => {
-      this.drawFeats(ctx, { ...props, features, color: colors[idx] })
+    const list = Object.values(groups)
+    const height = props.height / list.length
+    const [region] = regions
+    const width = (region.end - region.start) / bpPerPx
+    ctx.save()
+    list.forEach((features, idx) => {
+      this.drawFeats(ctx, {
+        ...props,
+        features,
+        height,
+        color: colors[idx],
+        idx,
+      })
+      ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+      ctx.beginPath()
+      ctx.moveTo(0, height)
+      ctx.lineTo(width, height)
+      ctx.stroke()
+      ctx.translate(0, height)
     })
+    ctx.restore()
   }
   drawFeats(
     ctx: CanvasRenderingContext2D,
@@ -50,6 +67,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       displayCrossHatches: boolean
       color: string
       exportSVG?: { rasterizeLayers?: boolean }
+      idx: number
     },
   ) {
     const {
@@ -57,21 +75,12 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       bpPerPx,
       regions,
       scaleOpts,
-      height: unadjustedHeight,
+      height,
       config,
-      ticks,
-      displayCrossHatches,
       color,
       exportSVG,
     } = props
     const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-
-    // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-    // wiggle display, and makes the height of the actual drawn area add
-    // "padding" to the top and bottom of the display
-    const offset = YSCALEBAR_LABEL_OFFSET
-    const height = unadjustedHeight - offset * 2
 
     const filled = false
     const clipColor = readConfObject(config, 'clipColor')
@@ -81,9 +90,10 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
 
-    const toY = (n: number) => height - (scale(n) || 0) + offset
+    const toY = (n: number) => height - (scale(n) || 0)
     const toHeight = (n: number) => toY(originY) - toY(n)
     ctx.fillStyle = color
+    console.log({ exportSVG })
 
     // first pass: uses path2d for faster rendering
     const path =
@@ -129,23 +139,12 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         if (highClipping) {
           fillRect(leftPx, 0, w, 4, ctx, path)
         } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-          fillRect(leftPx, unadjustedHeight - 4, w, 4, ctx, path)
+          fillRect(leftPx, height - 4, w, 4, ctx, path)
         }
       }
       if (path) {
         ctx.fill(path)
       }
-    }
-
-    if (displayCrossHatches) {
-      ctx.lineWidth = 1
-      ctx.strokeStyle = 'rgba(200,200,200,0.8)'
-      ticks.values.forEach(tick => {
-        ctx.beginPath()
-        ctx.moveTo(0, Math.round(toY(tick)))
-        ctx.lineTo(width, Math.round(toY(tick)))
-        ctx.stroke()
-      })
     }
   }
 }

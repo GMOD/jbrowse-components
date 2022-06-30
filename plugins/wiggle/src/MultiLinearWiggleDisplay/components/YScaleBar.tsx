@@ -12,7 +12,6 @@ const YScaleBar = observer(
     orientation?: string
   }) => {
     const { ticks } = model
-
     return ticks ? (
       <Axis
         {...ticks}

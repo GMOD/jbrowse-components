@@ -4,6 +4,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import configSchemaFactory from './models/configSchema'
 import modelFactory from './models/model'
 import ReactComponent from './components/WiggleDisplayComponent'
+import Tooltip from './components/Tooltip'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
@@ -18,3 +19,5 @@ export default (pluginManager: PluginManager) => {
     })
   })
 }
+
+export { ReactComponent, modelFactory, Tooltip }

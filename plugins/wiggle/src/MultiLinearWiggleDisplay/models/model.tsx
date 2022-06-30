@@ -6,7 +6,6 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import {
-  isAbortException,
   getSession,
   getContainingView,
   isSelectionContainer,
@@ -17,13 +16,18 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun, when } from 'mobx'
-import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
+import { addDisposer, getEnv, isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import { FeatureStats } from '@jbrowse/core/util/stats'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import { getNiceDomain, getScale } from '../../util'
+import {
+  getNiceDomain,
+  getScale,
+  getStats,
+  statsAutorun,
+  YSCALEBAR_LABEL_OFFSET,
+} from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
@@ -31,14 +35,11 @@ import { YScaleBar } from '../components/WiggleDisplayComponent'
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
-// fudge factor for making all labels on the YScalebar visible
-export const YSCALEBAR_LABEL_OFFSET = 5
-
 // using a map because it preserves order
 const rendererTypes = new Map([
   ['xyplot', 'MultiXYPlotRenderer'],
-  ['density', 'MultiDensityRenderer'],
-  ['line', 'MultiLinePlotRenderer'],
+  ['multirowxy', 'MultiRowXYPlotRenderer'],
+  ['multirowdensity', 'MultiDensityRenderer'],
 ])
 
 type LGV = LinearGenomeViewModel
@@ -57,6 +58,7 @@ const stateModelFactory = (
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
+        height: 200,
         color: types.maybe(types.string),
         posColor: types.maybe(types.string),
         negColor: types.maybe(types.string),
@@ -79,22 +81,21 @@ const stateModelFactory = (
       message: undefined as undefined | string,
       stats: { scoreMin: 0, scoreMax: 50 },
       statsFetchInProgress: undefined as undefined | AbortController,
+      numSources: undefined as number | undefined,
     }))
     .actions(self => ({
-      updateStats({
-        scoreMin,
-        scoreMax,
-      }: {
-        scoreMin: number
-        scoreMax: number
-      }) {
+      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+        const { scoreMin, scoreMax } = stats
         if (
           self.stats.scoreMin !== scoreMin ||
           self.stats.scoreMax !== scoreMax
         ) {
-          self.stats = { scoreMin, scoreMax }
+          self.stats = stats
         }
         self.statsReady = true
+      },
+      setNumSources(n: number) {
+        self.numSources = n
       },
       setColor(color: string) {
         self.color = color
@@ -265,10 +266,11 @@ const stateModelFactory = (
         },
 
         get needsScalebar() {
-          return (
-            self.rendererTypeName === 'XYPlotRenderer' ||
-            self.rendererTypeName === 'LinePlotRenderer'
-          )
+          return self.rendererTypeName === 'MultiXYPlotRenderer'
+        },
+
+        get needsScaleSmall() {
+          return self.rendererTypeName === 'MultiRowXYPlotRenderer'
         },
         get scaleOpts() {
           return {
@@ -299,7 +301,8 @@ const stateModelFactory = (
     .views(self => ({
       get ticks() {
         const { scaleType, domain, height } = self
-        const minimalTicks = getConf(self, 'minimalTicks')
+        const minimalTicks =
+          getConf(self, 'minimalTicks') || self.needsScaleSmall || height < 100
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
         const scale = getScale({
           scaleType,
@@ -415,10 +418,12 @@ const stateModelFactory = (
               ? [
                   {
                     label: 'Renderer type',
-                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
-                      label: key,
-                      onClick: () => self.setRendererType(key),
-                    })),
+                    subMenu: ['xyplot', 'multirowxy', 'multirowdensity'].map(
+                      key => ({
+                        label: key,
+                        onClick: () => self.setRendererType(key),
+                      }),
+                    ),
                   },
                 ]
               : []),
@@ -470,84 +475,6 @@ const stateModelFactory = (
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
-      async function getStats(opts: {
-        headers?: Record<string, string>
-        signal?: AbortSignal
-        filters?: string[]
-      }): Promise<FeatureStats> {
-        const { rpcManager } = getSession(self)
-        const nd = getConf(self, 'numStdDev') || 3
-        const { adapterConfig, autoscaleType } = self
-        const sessionId = getRpcSessionId(self)
-        const params = {
-          sessionId,
-          adapterConfig,
-          statusCallback: (message: string) => {
-            if (isAlive(self)) {
-              self.setMessage(message)
-            }
-          },
-          ...opts,
-        }
-
-        if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const results: FeatureStats = (await rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          )) as FeatureStats
-          const { scoreMin, scoreMean, scoreStdDev } = results
-          // globalsd uses heuristic to avoid unnecessary scoreMin<0
-          // if the scoreMin is never less than 0
-          // helps with most coverage bigwigs just being >0
-          return autoscaleType === 'globalsd'
-            ? {
-                ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
-              }
-            : results
-        }
-        if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
-          const results = (await rpcManager.call(
-            sessionId,
-            'WiggleGetMultiRegionStats',
-            {
-              ...params,
-              regions: dynamicBlocks.contentBlocks.map(region => {
-                const { start, end } = region
-                return {
-                  ...JSON.parse(JSON.stringify(region)),
-                  start: Math.floor(start),
-                  end: Math.ceil(end),
-                }
-              }),
-              bpPerPx,
-            },
-          )) as FeatureStats
-          const { scoreMin, scoreMean, scoreStdDev } = results
-
-          // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
-          // scoreMin is never less than 0 helps with most coverage bigwigs
-          // just being >0
-          return autoscaleType === 'localsd'
-            ? {
-                ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
-              }
-            : results
-        }
-        if (autoscaleType === 'zscale') {
-          return rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          ) as Promise<FeatureStats>
-        }
-        throw new Error(`invalid autoscaleType '${autoscaleType}'`)
-      }
       return {
         // re-runs stats and refresh whole display on reload
         async reload() {
@@ -555,7 +482,7 @@ const stateModelFactory = (
           const aborter = new AbortController()
           let stats
           try {
-            stats = await getStats({
+            stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
             })
@@ -568,43 +495,26 @@ const stateModelFactory = (
           }
         },
         afterAttach() {
+          statsAutorun(self)
           addDisposer(
             self,
-            autorun(
-              async () => {
-                try {
-                  const aborter = new AbortController()
-                  const view = getContainingView(self) as LGV
-                  self.setLoading(aborter)
+            autorun(async () => {
+              const { rpcManager } = getSession(self)
 
-                  if (!view.initialized) {
-                    return
-                  }
-
-                  if (!self.estimatedStatsReady) {
-                    return
-                  }
-                  if (self.regionTooLarge) {
-                    return
-                  }
-
-                  const wiggleStats = await getStats({
-                    signal: aborter.signal,
-                    ...self.renderProps(),
-                  })
-
-                  if (isAlive(self)) {
-                    self.updateStats(wiggleStats)
-                  }
-                } catch (e) {
-                  if (!isAbortException(e) && isAlive(self)) {
-                    console.error(e)
-                    self.setError(e)
-                  }
-                }
-              },
-              { delay: 1000 },
-            ),
+              const { adapterConfig } = self
+              const sessionId = getRpcSessionId(self)
+              const res = (await rpcManager.call(
+                sessionId,
+                'MultiWiggleGetNumSources',
+                {
+                  sessionId,
+                  adapterConfig,
+                },
+              )) as number
+              if (isAlive(self)) {
+                self.setNumSources(res)
+              }
+            }),
           )
         },
         async renderSvg(opts: ExportSvgOpts) {

@@ -111,3 +111,67 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     throw new Error('Data adapter not found')
   }
 }
+
+export class MultiWiggleGetNumSources extends RpcMethodType {
+  name = 'MultiWiggleGetNumSources'
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async deserializeArguments(args: any, rpcDriverClassName: string) {
+    const l = await super.deserializeArguments(args, rpcDriverClassName)
+    return {
+      ...l,
+      filters: args.filters
+        ? new SerializableFilterChain({
+            filters: args.filters,
+          })
+        : undefined,
+    }
+  }
+
+  async serializeArguments(
+    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    rpcDriverClassName: string,
+  ) {
+    const assemblyManager =
+      this.pluginManager.rootModel?.session?.assemblyManager
+    if (!assemblyManager) {
+      return args
+    }
+
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
+      ...args,
+      filters: args.filters && args.filters.toJSON().filters,
+    })
+
+    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+  }
+
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      sessionId: string
+      headers?: Record<string, string>
+      regions: Region[]
+      bpPerPx: number
+    },
+    rpcDriverClassName: string,
+  ) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
+    const { regions, adapterConfig, sessionId } = deserializedArgs
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+
+    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+      // @ts-ignore
+      return dataAdapter.getNumSources(regions, deserializedArgs)
+    }
+    throw new Error('Data adapter not found')
+  }
+}

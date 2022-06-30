@@ -78,5 +78,12 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return { featureDensity: 0 }
   }
 
+  // in another adapter type, this could be dynamic depending on region or
+  // something, but it is static depending on config here
+  async getNumSources() {
+    const subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
+    return subConfs.length
+  }
+
   public freeResources(): void {}
 }

@@ -13,13 +13,15 @@ import XYPlotRendererF from './XYPlotRenderer'
 import LinePlotRendererF from './LinePlotRenderer'
 import LinearWiggleDisplayF from './LinearWiggleDisplay'
 import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
-import MultiXYPlotRendererF './MultiXYPlotRenderer'
+import MultiXYPlotRendererF from './MultiXYPlotRenderer'
+import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
 
 import * as utils from './util'
 
 import {
   WiggleGetGlobalStats,
   WiggleGetMultiRegionStats,
+  MultiWiggleGetNumSources,
 } from './WiggleRPC/rpcMethods'
 import {
   AdapterGuesser,
@@ -30,19 +32,20 @@ import {
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
 
-  install(pluginManager: PluginManager) {
-    MultiWiggleAdapterF(pluginManager)
-    BigWigAdapterF(pluginManager)
-    QuantitativeTrackF(pluginManager)
-    MultiQuantitativeTrackF(pluginManager)
-    LinearWiggleDisplayF(pluginManager)
-    MultiLinearWiggleDisplayF(pluginManager)
-    LinePlotRendererF(pluginManager)
-    XYPlotRendererF(pluginManager)
-    DensityRendererF(pluginManager)
-    MultiXYPlotRendererF(pluginManager)
+  install(pm: PluginManager) {
+    MultiWiggleAdapterF(pm)
+    BigWigAdapterF(pm)
+    QuantitativeTrackF(pm)
+    MultiQuantitativeTrackF(pm)
+    LinearWiggleDisplayF(pm)
+    MultiLinearWiggleDisplayF(pm)
+    LinePlotRendererF(pm)
+    XYPlotRendererF(pm)
+    DensityRendererF(pm)
+    MultiXYPlotRendererF(pm)
+    MultiRowXYPlotRendererF(pm)
 
-    pluginManager.addToExtensionPoint(
+    pm.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -68,7 +71,7 @@ export default class WigglePlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pm.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -80,10 +83,9 @@ export default class WigglePlugin extends Plugin {
       },
     )
 
-    pluginManager.addRpcMethod(() => new WiggleGetGlobalStats(pluginManager))
-    pluginManager.addRpcMethod(
-      () => new WiggleGetMultiRegionStats(pluginManager),
-    )
+    pm.addRpcMethod(() => new WiggleGetGlobalStats(pm))
+    pm.addRpcMethod(() => new WiggleGetMultiRegionStats(pm))
+    pm.addRpcMethod(() => new MultiWiggleGetNumSources(pm))
   }
 
   exports = {
@@ -99,8 +101,21 @@ export default class WigglePlugin extends Plugin {
 
 export * from './util'
 
-export { WiggleRendering }
-export { WiggleBaseRenderer }
-export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
-export { Tooltip } from './LinearWiggleDisplay/components/Tooltip'
-export { YSCALEBAR_LABEL_OFFSET }
+import {
+  ReactComponent as LinearWiggleDisplayReactComponent,
+  modelFactory as linearWiggleDisplayModelFactory,
+  Tooltip,
+} from './LinearWiggleDisplay'
+import {
+  ReactComponent as XYPlotRendererReactComponent,
+  configSchema as xyPlotRendererConfigSchema,
+  XYPlotRenderer,
+} from './XYPlotRenderer'
+
+export {
+  WiggleRendering,
+  WiggleBaseRenderer,
+  LinearWiggleDisplayReactComponent,
+  linearWiggleDisplayModelFactory,
+  Tooltip,
+}
