@@ -38,6 +38,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     )
   }
 
+  // note: can't really have dis-agreeing refNames
   public async getRefNames(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
     return adapters[0].dataAdapter.getRefNames(opts)
@@ -45,8 +46,12 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   public async getGlobalStats(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
-    // @ts-ignore
-    const stats = adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts))
+    const stats = (
+      await Promise.all(
+        // @ts-ignore
+        adapters.map(adp => adp.dataAdapter.getGlobalStats?.(opts)),
+      )
+    ).filter(f => !!f)
     const scoreMin = Math.min(...stats.map(s => s.scoreMin))
     const scoreMax = Math.max(...stats.map(s => s.scoreMax))
     return { scoreMin, scoreMax }

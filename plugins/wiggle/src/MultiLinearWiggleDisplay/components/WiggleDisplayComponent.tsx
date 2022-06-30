@@ -40,7 +40,7 @@ function Wrapper({
           left,
           pointerEvents: 'none',
           height,
-          width: 200,
+          width: 1800,
         }}
       >
         {children}
