@@ -163,6 +163,7 @@ const WiggleTooltip = observer(
     offsetMouseCoord: Coord
     clientMouseCoord: Coord
     clientRect?: DOMRect
+    TooltipContents?: React.FC<any>
   }) => {
     return <Tooltip TooltipContents={TooltipContents} {...props} />
   },

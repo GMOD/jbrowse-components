@@ -2,7 +2,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { getOrigin, getScale, groupBy } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
@@ -90,10 +90,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const originY = getOrigin(scaleOpts.scaleType)
     const [niceMin, niceMax] = scale.domain()
 
-    const toY = (n: number) => height - (scale(n) || 0)
+    const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height)
     const toHeight = (n: number) => toY(originY) - toY(n)
     ctx.fillStyle = color
-    console.log({ exportSVG })
 
     // first pass: uses path2d for faster rendering
     const path =
@@ -104,7 +103,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       let score = feature.get('score')
 
-      hasClipping = score < niceMin || score > niceMax
+      hasClipping ||= score < niceMin || score > niceMax
       const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
 
       if (summaryScoreMode === 'max') {

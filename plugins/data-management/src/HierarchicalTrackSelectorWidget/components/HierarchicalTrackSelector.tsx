@@ -26,7 +26,7 @@ import AddIcon from '@mui/icons-material/Add'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MenuIcon from '@mui/icons-material/Menu'
-import MoreIcon from '@mui/icons-material/MoreHoriz'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
@@ -76,6 +76,10 @@ const useStyles = makeStyles()(theme => ({
     '&:hover': {
       backgroundColor: '#eee',
     },
+  },
+
+  contrastColor: {
+    color: theme.palette.secondary.contrastText,
   },
 
   // this accordionBase element's small padding is used to give a margin to
@@ -154,6 +158,7 @@ function Node(props: {
 
   const { classes } = useStyles()
   const width = 10
+  const [menu, setMenu] = useState<HTMLElement | null>(null)
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
   const unsupported =
     name?.endsWith('(Unsupported)') || name?.endsWith('(Unknown)')
@@ -171,8 +176,10 @@ function Node(props: {
       <div
         className={!isLeaf ? classes.accordionCard : undefined}
         onClick={() => {
-          toggleCollapse(id)
-          setOpen(!isOpen)
+          if (!menu) {
+            toggleCollapse(id)
+            setOpen(!isOpen)
+          }
         }}
         style={{
           marginLeft,
@@ -186,6 +193,15 @@ function Node(props: {
               <Typography>
                 {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
                 {name}
+                <IconButton
+                  onClick={event => {
+                    setMenu(event.target as HTMLElement)
+                    event.stopPropagation()
+                  }}
+                  className={classes.contrastColor}
+                >
+                  <MoreHorizIcon />
+                </IconButton>
               </Typography>
             </div>
           ) : (
@@ -218,10 +234,27 @@ function Node(props: {
                 color="secondary"
                 data-testid={`htsTrackEntryMenu-${id}`}
               >
-                <MoreIcon />
+                <MoreHorizIcon />
               </IconButton>
             </>
           )}
+          {menu ? (
+            <JBrowseMenu
+              anchorEl={menu}
+              menuItems={[
+                {
+                  label: 'Toggle all tracks',
+                  onClick: () => alert('hello'),
+                },
+              ]}
+              onMenuItemClick={(_event, callback) => {
+                callback()
+                setMenu(null)
+              }}
+              open={Boolean(menu)}
+              onClose={() => setMenu(null)}
+            />
+          ) : null}
         </div>
       </div>
     </div>

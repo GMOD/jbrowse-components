@@ -28,7 +28,7 @@ const stateModelFactory = (
         resolve: (token: string) => void,
         reject: (error: Error) => void,
       ) {
-        const { session } = getRoot(self)
+        const { session } = getRoot<any>(self)
         session.queueDialog((doneCallback: () => void) => [
           HTTPBasicLoginForm,
           {

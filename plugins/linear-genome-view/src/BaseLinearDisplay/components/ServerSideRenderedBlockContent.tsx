@@ -87,7 +87,7 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   }, [])
 
   const { status: blockStatus } = model
-  const { message: displayStatus } = getParent(model, 2)
+  const { message: displayStatus } = getParent<any>(model, 2)
   const status = displayStatus || blockStatus
   return (
     <>
