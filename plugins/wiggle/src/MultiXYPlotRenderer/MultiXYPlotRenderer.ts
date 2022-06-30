@@ -88,7 +88,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
 
     const toY = (n: number) => height - (scale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
-    ctx.fillStyle = color
+    if (color) {
+      ctx.fillStyle = color
+    }
 
     // first pass: uses path2d for faster rendering
     const path =

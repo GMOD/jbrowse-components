@@ -7,10 +7,12 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const MultiXYPlotRendererConfigSchema = pluginManager.getRendererType(
     'MultiXYPlotRenderer',
   ).configSchema
-  // const DensityRendererConfigSchema =
-  //   pluginManager.getRendererType('DensityRenderer').configSchema
-  // const LinePlotRendererConfigSchema =
-  //   pluginManager.getRendererType('LinePlotRenderer').configSchema
+  const MultiDensityRendererConfigSchema = pluginManager.getRendererType(
+    'MultiDensityRenderer',
+  ).configSchema
+  const MultiRowXYPlotRendererConfigSchema = pluginManager.getRendererType(
+    'MultiRowXYPlotRenderer',
+  ).configSchema
 
   return ConfigurationSchema(
     'MultiLinearWiggleDisplay',
@@ -70,8 +72,8 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
         MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
-        // DensityRenderer: DensityRendererConfigSchema,
-        // LinePlotRenderer: LinePlotRendererConfigSchema,
+        MultiDensityRenderer: MultiDensityRendererConfigSchema,
+        MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
       }),
     },
     { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },

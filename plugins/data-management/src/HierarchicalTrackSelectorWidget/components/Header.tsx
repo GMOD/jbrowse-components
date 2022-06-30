@@ -243,9 +243,10 @@ function HierarchicalTrackSelectorHeader({
             label: 'Create multi-wiggle track',
             onClick: () => {
               const tracks = model.group
+              const trackIds = tracks.map(c => c.trackId)
               const subadapters = tracks
                 .map(c => readConfObject(c, 'adapter'))
-                .map((c, idx) => ({ ...c, source: 'idx-' + idx }))
+                .map((c, idx) => ({ ...c, source: trackIds[idx] }))
               const assemblyNames = Array.from(
                 new Set(
                   tracks.map(c => readConfObject(c, 'assemblyNames')).flat(),
