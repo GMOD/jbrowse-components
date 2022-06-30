@@ -87,7 +87,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
         basesPerSpan: bpPerPx / resolution,
       })
 
-      feats.forEach(data => {
+      for (let i = 0; i < feats.length; i++) {
+        const data = feats[i]
         if (source) {
           // @ts-ignore
           data.source = source
@@ -101,7 +102,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
           id: () => `${source}-${uniqueId}`,
           toJSON: () => ({ ...data, uniqueId }),
         })
-      })
+      }
       observer.complete()
     }, signal)
   }
