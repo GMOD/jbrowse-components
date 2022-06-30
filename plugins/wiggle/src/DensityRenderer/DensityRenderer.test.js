@@ -1,6 +1,8 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import DensityRenderer, { configSchema, ReactComponent } from '.'
+import DensityRenderer from './DensityRenderer'
+import configSchema from './configSchema'
+import ReactComponent from '../WiggleRendering'
 
 import { Image, createCanvas } from 'canvas'
 
