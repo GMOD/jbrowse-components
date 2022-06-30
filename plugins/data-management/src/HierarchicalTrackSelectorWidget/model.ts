@@ -1,13 +1,12 @@
-import { types, getParent, Instance } from 'mobx-state-tree'
+import { types, getParent, getEnv, Instance } from 'mobx-state-tree'
 import {
-  AnyConfigurationModel,
   getConf,
   readConfObject,
+  AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractView } from 'react'
 
 function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   return !!a1.find(value => a2.includes(value))
@@ -39,6 +38,32 @@ export type TreeNode = {
   checked?: boolean
   isOpenByDefault?: boolean
   children: TreeNode[]
+}
+
+function filterTracks(
+  tracks: AnyConfigurationModel[],
+  self: any,
+  assemblyName: string,
+) {
+  const { assemblyManager } = getSession(self)
+  const { pluginManager } = getEnv(self)
+  const assembly = assemblyManager.get(assemblyName)
+
+  if (!assembly) {
+    return []
+  }
+  return tracks
+    .filter(c => {
+      const trackConfAssemblies = readConfObject(c, 'assemblyNames')
+      const { allAliases } = assembly
+      return hasAnyOverlap(allAliases, trackConfAssemblies)
+    })
+    .filter(c => {
+      const { displayTypes } = pluginManager.getViewType(self.view.type)
+      const compatDisplays = displayTypes.map((d: { name: string }) => d.name)
+      const trackDisplays = c.displays.map((d: { type: string }) => d.type)
+      return hasAnyOverlap(compatDisplays, trackDisplays)
+    })
 }
 
 export function generateHierarchy(
@@ -113,7 +138,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       ),
     })
     .actions(self => ({
-      setView(view: AbstractView) {
+      setView(view: unknown) {
         self.view = view
       },
       toggleCategory(pathName: string) {
@@ -156,20 +181,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // filter out tracks that don't match the current assembly (check all
         // assembly aliases) and display types
         return (refseq ? [refseq] : []).concat([
-          ...tracks
-            .filter(c => {
-              const trackConfAssemblies = readConfObject(c, 'assemblyNames')
-              const { allAliases } = assembly
-              return hasAnyOverlap(allAliases, trackConfAssemblies)
-            })
-            .filter(c => {
-              const { displayTypes } = pluginManager.getViewType(self.view.type)
-              const compatibleDisplays = displayTypes.map(d => d.name)
-              const trackDisplays = c.displays.map(
-                (d: { type: string }) => d.type,
-              )
-              return hasAnyOverlap(compatibleDisplays, trackDisplays)
-            }),
+          ...filterTracks(tracks, self, assemblyName),
         ])
       },
 
@@ -184,29 +196,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         if (!self.view) {
           return []
         }
-        const trackConfigurations = connection.tracks
-        const { assemblyManager } = getSession(self)
-        const assembly = assemblyManager.get(assemblyName)
-
-        if (!(assembly && assembly.initialized)) {
-          return []
-        }
 
         // filter out tracks that don't match the current display types
-        return trackConfigurations
-          .filter(c => {
-            const trackConfAssemblies = readConfObject(c, 'assemblyNames')
-            const { allAliases } = assembly
-            return hasAnyOverlap(allAliases, trackConfAssemblies)
-          })
-          .filter(c => {
-            const { displayTypes } = pluginManager.getViewType(self.view.type)
-            const compatibleDisplays = displayTypes.map(d => d.name)
-            const trackDisplays = c.displays.map(
-              (d: { type: string }) => d.type,
-            )
-            return hasAnyOverlap(compatibleDisplays, trackDisplays)
-          })
+        return filterTracks(connection.tracks, self, assemblyName)
       },
     }))
     .views(self => ({
