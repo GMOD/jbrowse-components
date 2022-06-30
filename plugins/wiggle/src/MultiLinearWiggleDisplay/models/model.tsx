@@ -81,7 +81,7 @@ const stateModelFactory = (
       message: undefined as undefined | string,
       stats: { scoreMin: 0, scoreMax: 50 },
       statsFetchInProgress: undefined as undefined | AbortController,
-      numSources: undefined as number | undefined,
+      sources: undefined as string[] | undefined,
     }))
     .actions(self => ({
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
@@ -94,8 +94,8 @@ const stateModelFactory = (
         }
         self.statsReady = true
       },
-      setNumSources(n: number) {
-        self.numSources = n
+      setSources(sources: string[]) {
+        self.sources = sources
       },
       setColor(color: string) {
         self.color = color
@@ -270,7 +270,10 @@ const stateModelFactory = (
         },
 
         get needsScaleSmall() {
-          return self.rendererTypeName === 'MultiRowXYPlotRenderer'
+          return (
+            self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiDensityRenderer'
+          )
         },
         get scaleOpts() {
           return {
@@ -500,19 +503,18 @@ const stateModelFactory = (
             self,
             autorun(async () => {
               const { rpcManager } = getSession(self)
-
               const { adapterConfig } = self
               const sessionId = getRpcSessionId(self)
-              const res = (await rpcManager.call(
+              const sources = (await rpcManager.call(
                 sessionId,
-                'MultiWiggleGetNumSources',
+                'MultiWiggleGetSources',
                 {
                   sessionId,
                   adapterConfig,
                 },
-              )) as number
+              )) as string[]
               if (isAlive(self)) {
-                self.setNumSources(res)
+                self.setSources(sources)
               }
             }),
           )

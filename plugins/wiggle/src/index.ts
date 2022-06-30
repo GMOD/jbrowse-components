@@ -22,7 +22,7 @@ import * as utils from './util'
 import {
   WiggleGetGlobalStats,
   WiggleGetMultiRegionStats,
-  MultiWiggleGetNumSources,
+  MultiWiggleGetSources,
 } from './WiggleRPC/rpcMethods'
 import {
   AdapterGuesser,
@@ -98,7 +98,7 @@ export default class WigglePlugin extends Plugin {
 
     pm.addRpcMethod(() => new WiggleGetGlobalStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionStats(pm))
-    pm.addRpcMethod(() => new MultiWiggleGetNumSources(pm))
+    pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
   }
 
   exports = {

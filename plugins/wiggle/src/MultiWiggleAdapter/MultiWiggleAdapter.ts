@@ -5,6 +5,7 @@ import {
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -80,9 +81,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
   // in another adapter type, this could be dynamic depending on region or
   // something, but it is static depending on config here
-  async getNumSources() {
+  async getSources() {
     const subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
-    return subConfs.length
+    return subConfs.map(conf => readConfObject(conf, 'source'))
   }
 
   public freeResources(): void {}

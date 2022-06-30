@@ -15,7 +15,7 @@ type LGV = LinearGenomeViewModel
 
 const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
   const { model } = props
-  const { stats, height, needsScalebar, needsScaleSmall, numSources, ticks } =
+  const { stats, height, needsScalebar, needsScaleSmall, sources, ticks } =
     model
   const { trackLabels } = getContainingView(model) as LGV
   const track = getContainingTrack(model)
@@ -43,7 +43,7 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
             </svg>
           ) : null}
 
-          {needsScaleSmall && numSources ? (
+          {needsScaleSmall && sources ? (
             <svg
               style={{
                 position: 'absolute',
@@ -54,13 +54,13 @@ const LinearWiggleDisplay = observer((props: { model: WiggleDisplayModel }) => {
                 width: 200,
               }}
             >
-              {new Array(numSources).fill(0).map((_, idx) => (
+              {sources.map((source, idx) => (
                 <text
                   key={JSON.stringify(ticks) + '-' + idx}
-                  y={(idx * height) / numSources + 12}
+                  y={(idx * height) / sources.length + 12}
                   x={0}
                 >
-                  [{ticks.values[0]}-{ticks.values[1]}]
+                  [{ticks.values[0]}-{ticks.values[1]}] {source}
                 </text>
               ))}
             </svg>

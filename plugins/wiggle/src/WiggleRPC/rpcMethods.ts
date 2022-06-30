@@ -112,8 +112,8 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
   }
 }
 
-export class MultiWiggleGetNumSources extends RpcMethodType {
-  name = 'MultiWiggleGetNumSources'
+export class MultiWiggleGetSources extends RpcMethodType {
+  name = 'MultiWiggleGetSources'
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async deserializeArguments(args: any, rpcDriverClassName: string) {
@@ -170,7 +170,7 @@ export class MultiWiggleGetNumSources extends RpcMethodType {
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       // @ts-ignore
-      return dataAdapter.getNumSources(regions, deserializedArgs)
+      return dataAdapter.getSources(regions, deserializedArgs)
     }
     throw new Error('Data adapter not found')
   }
