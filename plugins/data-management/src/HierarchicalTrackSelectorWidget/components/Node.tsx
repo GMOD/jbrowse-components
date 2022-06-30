@@ -15,8 +15,8 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // other
 import { TreeNode } from '../model'
-import { getSession } from '@jbrowse/core/util'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import { getSession } from '@jbrowse/core/util'
 
 import {
   AnyConfigurationModel,
@@ -74,7 +74,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export interface MoreInfoArgs {
+export interface InfoArgs {
   target: HTMLElement
   id: string
   conf: AnyConfigurationModel
@@ -91,6 +91,10 @@ function treeToMap(tree: TreeNode, map = new Map<string, TreeNode>()) {
   return map
 }
 
+function isUnsupported(name = '') {
+  return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
+}
+
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
 export default function Node(props: {
@@ -103,7 +107,6 @@ export default function Node(props: {
     isLeaf: boolean
     name: string
     onChange: Function
-    onMoreInfo: (arg: MoreInfoArgs) => void
     toggleCollapse: (arg: string) => void
     tree: any
     model: any
@@ -123,17 +126,15 @@ export default function Node(props: {
     name,
     nestingLevel,
     onChange,
-    onMoreInfo,
     toggleCollapse,
     tree,
   } = data
 
   const { classes } = useStyles()
   const width = 10
-  const [menu, setMenu] = useState<HTMLElement | null>(null)
+  const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
+  const [info, setInfo] = useState<InfoArgs>()
   const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
-  const unsupported =
-    name?.endsWith('(Unsupported)') || name?.endsWith('(Unknown)')
   const description = (conf && readConfObject(conf, ['description'])) || ''
 
   return (
@@ -148,7 +149,7 @@ export default function Node(props: {
       <div
         className={!isLeaf ? classes.accordionCard : undefined}
         onClick={() => {
-          if (!menu) {
+          if (!menuEl) {
             toggleCollapse(id)
             setOpen(!isOpen)
           }
@@ -167,7 +168,7 @@ export default function Node(props: {
                 {name}
                 <IconButton
                   onClick={event => {
-                    setMenu(event.target as HTMLElement)
+                    setMenuEl(event.currentTarget)
                     event.stopPropagation()
                   }}
                   className={classes.contrastColor}
@@ -190,7 +191,7 @@ export default function Node(props: {
                       checked={checked}
                       onChange={() => onChange(id)}
                       color="primary"
-                      disabled={unsupported}
+                      disabled={isUnsupported(name)}
                       inputProps={{
                         // @ts-ignore
                         'data-testid': `htsTrackEntry-${id}`,
@@ -201,7 +202,7 @@ export default function Node(props: {
                 />
               </Tooltip>
               <IconButton
-                onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
+                onClick={e => setInfo({ target: e.currentTarget, id, conf })}
                 style={{ padding: 0 }}
                 color="secondary"
                 data-testid={`htsTrackEntryMenu-${id}`}
@@ -210,50 +211,47 @@ export default function Node(props: {
               </IconButton>
             </>
           )}
-          {menu ? (
+          {menuEl ? (
             <JBrowseMenu
-              anchorEl={menu}
+              anchorEl={menuEl}
               menuItems={[
                 {
-                  label: 'Toggle all tracks',
+                  label: 'Add to group',
                   onClick: () => {
                     const subtree = treeToMap(tree).get(id)
-                    const tracks = subtree?.children.map(
-                      t => t.conf as AnyConfigurationModel,
-                    )
-                    if (!tracks?.length) {
-                      return
-                    }
-                    const subadapters = tracks
-                      .map(c => readConfObject(c, 'adapter'))
-                      .map((c, idx) => ({ ...c, source: 'idx-' + idx }))
-                    const assemblyNames = Array.from(
-                      new Set(
-                        tracks
-                          .map(c => readConfObject(c, 'assemblyNames'))
-                          .flat(),
-                      ),
-                    )
-                    const now = +Date.now()
-                    getSession(model).addTrackConf({
-                      type: 'MultiQuantitativeTrack',
-                      trackId: `multitrack-${now}-sessionTrack`,
-                      name: 'MultiWig - ' + Date.now(),
-                      assemblyNames,
-                      adapter: {
-                        type: 'MultiWiggleAdapter',
-                        subadapters,
-                      },
-                    })
+                    model.addToGroup(subtree?.children.map(t => t.conf) || [])
                   },
                 },
               ]}
               onMenuItemClick={(_event, callback) => {
                 callback()
-                setMenu(null)
+                setMenuEl(null)
               }}
-              open={Boolean(menu)}
-              onClose={() => setMenu(null)}
+              open={Boolean(menuEl)}
+              onClose={() => setMenuEl(null)}
+            />
+          ) : null}
+
+          {info ? (
+            <JBrowseMenu
+              anchorEl={info?.target}
+              menuItems={[
+                ...((info?.conf &&
+                  getSession(model).getTrackActionMenuItems?.(info?.conf)) ||
+                  []),
+                {
+                  label: 'Add to group',
+                  onClick: () => {
+                    model.addToGroup([info.conf])
+                  },
+                },
+              ]}
+              onMenuItemClick={(_event, callback) => {
+                callback()
+                setInfo(undefined)
+              }}
+              open={Boolean(info)}
+              onClose={() => setInfo(undefined)}
             />
           ) : null}
         </div>

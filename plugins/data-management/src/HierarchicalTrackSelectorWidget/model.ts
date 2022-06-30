@@ -137,7 +137,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
+    .volatile(() => ({
+      group: [] as AnyConfigurationModel[],
+    }))
     .actions(self => ({
+      addToGroup(elt: AnyConfigurationModel[]) {
+        self.group = [...self.group, ...elt]
+      },
+      clearGroup() {
+        self.group = []
+      },
       setView(view: unknown) {
         self.view = view
       },

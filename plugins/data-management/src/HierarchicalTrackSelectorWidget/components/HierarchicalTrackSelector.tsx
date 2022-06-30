@@ -65,7 +65,6 @@ const HierarchicalTree = observer(
   }) => {
     const { filterText, view } = model
     const treeRef = useRef<NodeData>(null)
-    const [info, setMoreInfo] = useState<MoreInfoArgs>()
     const session = getSession(model)
     const { drawerPosition } = session
 
@@ -73,7 +72,6 @@ const HierarchicalTree = observer(
       () => ({
         onChange: (trackId: string) => view.toggleTrack(trackId),
         toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
-        onMoreInfo: setMoreInfo,
         tree,
         model,
         drawerPosition,
@@ -100,9 +98,6 @@ const HierarchicalTree = observer(
       [tree, extra],
     )
 
-    const conf = info?.conf
-    const menuItems = (conf && session.getTrackActionMenuItems?.(conf)) || []
-
     useEffect(() => {
       // @ts-ignore
       treeRef.current.recomputeTree({
@@ -117,16 +112,6 @@ const HierarchicalTree = observer(
           {/* @ts-ignore */}
           {Node}
         </VariableSizeTree>
-        <JBrowseMenu
-          anchorEl={info?.target}
-          menuItems={menuItems}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMoreInfo(undefined)
-          }}
-          open={Boolean(info)}
-          onClose={() => setMoreInfo(undefined)}
-        />
       </>
     )
   },
