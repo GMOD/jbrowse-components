@@ -92,7 +92,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     } = props
     const [region] = regions
 
-    const filled = false
+    const filled = readConfObject(config, 'filled')
     const clipColor = readConfObject(config, 'clipColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
 
@@ -106,7 +106,6 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const color = sourceColors[source]
     const minColor = color && Color(color).darken(0.6).toString()
     const maxColor = color && Color(color).lighten(0.6).toString()
-    console.log({ color, minColor, maxColor })
 
     // first pass: uses path2d for faster rendering
 
@@ -116,7 +115,6 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const pathMax = usePath ? undefined : new Path2D()
 
     let hasClipping = false
-    console.log({ summaryScoreMode })
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)

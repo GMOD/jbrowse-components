@@ -233,12 +233,14 @@ const stateModelFactory = (
           {
             ...configBlob,
             ...(scaleType ? { scaleType } : {}),
-            ...(fill ? { filled: fill } : {}),
-            ...(displayCrossHatches ? { displayCrossHatches } : {}),
-            ...(summaryScoreMode ? { summaryScoreMode } : {}),
-            ...(color ? { color } : {}),
-            ...(negColor ? { negColor } : {}),
-            ...(posColor ? { posColor } : {}),
+            ...(fill !== undefined ? { filled: fill } : {}),
+            ...(displayCrossHatches !== undefined
+              ? { displayCrossHatches }
+              : {}),
+            ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
+            ...(color !== undefined ? { color: color } : {}),
+            ...(negColor !== undefined ? { negColor: negColor } : {}),
+            ...(posColor !== undefined ? { posColor: posColor } : {}),
           },
           getEnv(self),
         )

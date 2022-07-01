@@ -1,10 +1,9 @@
-import { types } from 'mobx-state-tree'
-
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from 'mobx-state-tree'
 import ConfigSchema from '../configSchema'
 
 const configSchema = ConfigurationSchema(
-  'MultiRowXYPlotRenderer',
+  'MultiXYPlotRenderer',
   {
     filled: {
       type: 'boolean',
@@ -20,5 +19,4 @@ const configSchema = ConfigurationSchema(
   },
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
-
 export default configSchema

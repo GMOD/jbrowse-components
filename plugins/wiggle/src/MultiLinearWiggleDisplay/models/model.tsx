@@ -206,7 +206,7 @@ const stateModelFactory = (
       },
 
       get scaleType() {
-        return self.scale || getConf(self, 'scaleType')
+        return self.scale || (getConf(self, 'scaleType') as string)
       },
 
       get maxScore() {
@@ -224,16 +224,28 @@ const stateModelFactory = (
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+        const {
+          color,
+          posColor,
+          negColor,
+          summaryScoreMode,
+          scaleType,
+          displayCrossHatches,
+          fill,
+        } = self
+
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            filled: self.fill,
-            scaleType: self.scaleType,
-            displayCrossHatches: self.displayCrossHatches,
-            summaryScoreMode: self.summaryScoreMode,
-            ...(self.color ? { color: self.color } : {}),
-            ...(self.negColor ? { negColor: self.negColor } : {}),
-            ...(self.posColor ? { posColor: self.posColor } : {}),
+            ...(scaleType ? { scaleType } : {}),
+            ...(fill !== undefined ? { filled: fill } : {}),
+            ...(displayCrossHatches !== undefined
+              ? { displayCrossHatches }
+              : {}),
+            ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
+            ...(color !== undefined ? { color: color } : {}),
+            ...(negColor !== undefined ? { negColor: negColor } : {}),
+            ...(posColor !== undefined ? { posColor: posColor } : {}),
           },
           getEnv(self),
         )
@@ -295,7 +307,10 @@ const stateModelFactory = (
         },
 
         get canHaveFill() {
-          return self.rendererTypeName === 'XYPlotRenderer'
+          return (
+            self.rendererTypeName === 'MultiXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiRowXYPlotRenderer'
+          )
         },
 
         get autoscaleType() {

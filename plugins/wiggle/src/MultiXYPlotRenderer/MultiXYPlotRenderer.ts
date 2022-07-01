@@ -88,7 +88,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const offset = YSCALEBAR_LABEL_OFFSET
     const height = unadjustedHeight - offset * 2
 
-    const filled = false
+    const filled = readConfObject(config, 'filled')
     const clipColor = readConfObject(config, 'clipColor')
     const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
 
