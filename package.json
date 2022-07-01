@@ -139,7 +139,7 @@
     "ts-loader": "^9.3.0",
     "ts-node": "^10.4.0",
     "tslib": "^2.0.1",
-    "typescript": "next",
+    "typescript": "^4.8.0-dev.20220701",
     "wait-on": "^6.0.0",
     "web-encoding": "^1.1.5",
     "webpack-cli": "^4.9.1",
