@@ -259,7 +259,7 @@ export function statsAutorun(self: {
   regionTooLarge: boolean
   setLoading: (aborter: AbortController) => void
   setError: (error: unknown) => void
-  updateStats: (stats: FeatureStats) => void
+  updateStats: (stats: FeatureStats, statsRegion: string) => void
   renderProps: () => Record<string, unknown>
   adapterConfig: AnyConfigurationModel
   autoscaleType: string
@@ -284,6 +284,7 @@ export function statsAutorun(self: {
           if (self.regionTooLarge) {
             return
           }
+          const statsRegion = JSON.stringify(view.dynamicBlocks)
 
           const wiggleStats = await getStats(self, {
             signal: aborter.signal,
@@ -291,7 +292,7 @@ export function statsAutorun(self: {
           })
 
           if (isAlive(self)) {
-            self.updateStats(wiggleStats)
+            self.updateStats(wiggleStats, statsRegion)
           }
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {

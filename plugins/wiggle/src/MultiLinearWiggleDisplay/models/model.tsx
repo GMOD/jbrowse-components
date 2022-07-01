@@ -31,6 +31,7 @@ import {
 
 import Tooltip from '../components/Tooltip'
 import { StatBars } from '../components/WiggleDisplayComponent'
+import deepEqual from 'fast-deep-equal'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
@@ -84,22 +85,27 @@ const stateModelFactory = (
       statsReady: false,
       message: undefined as undefined | string,
       stats: { scoreMin: 0, scoreMax: 50 },
+      statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
       sources: undefined as string[] | undefined,
     }))
     .actions(self => ({
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+      updateStats(
+        stats: { scoreMin: number; scoreMax: number },
+        statsRegion: string,
+      ) {
         const { scoreMin, scoreMax } = stats
-        if (
-          self.stats.scoreMin !== scoreMin ||
-          self.stats.scoreMax !== scoreMax
-        ) {
-          self.stats = stats
+        const obj = { scoreMin, scoreMax }
+        if (!deepEqual(obj, self.stats)) {
+          self.stats = obj
         }
         self.statsReady = true
+        self.statsRegion = statsRegion
       },
       setSources(sources: string[]) {
-        self.sources = sources
+        if (!deepEqual(sources, self.sources)) {
+          self.sources = sources
+        }
       },
       setColor(color: string) {
         self.color = color
@@ -325,8 +331,8 @@ const stateModelFactory = (
 
       get colors() {
         // generated from R
-        //library(scales)
-        //(hue_pal()(16))
+        // library(scales)
+        // (hue_pal()(16))
 
         return [
           'red',
@@ -342,7 +348,6 @@ const stateModelFactory = (
       },
 
       get sourceColors() {
-        console.log(self.sources)
         return self.sources
           ? Object.fromEntries(zip(self.sources, this.colors))
           : undefined
@@ -353,10 +358,15 @@ const stateModelFactory = (
       return {
         renderProps() {
           const superProps = superRenderProps()
-          console.log(self.sourceColors)
+          const view = getContainingView(self) as LGV
+          const statsRegion = JSON.stringify(view.dynamicBlocks)
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.sources || !self.statsReady,
+            notReady:
+              superProps.notReady ||
+              statsRegion !== self.statsRegion ||
+              !self.sources ||
+              !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -517,12 +527,14 @@ const stateModelFactory = (
           const aborter = new AbortController()
           let stats
           try {
+            const view = getContainingView(self) as LGV
+            const statsRegion = JSON.stringify(view.dynamicBlocks)
             stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
             })
             if (isAlive(self)) {
-              self.updateStats(stats)
+              self.updateStats(stats, statsRegion)
               superReload()
             }
           } catch (e) {
