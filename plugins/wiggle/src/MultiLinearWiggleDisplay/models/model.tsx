@@ -44,6 +44,10 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
+function zip<T>(a: T[], b: T[]) {
+  return a.map((k, i) => [k, b[i]])
+}
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
@@ -318,20 +322,48 @@ const stateModelFactory = (
           ? { ...ticks, values: domain }
           : ticks
       },
+
+      get colors() {
+        // generated from R
+        //library(scales)
+        //(hue_pal()(16))
+
+        return [
+          'red',
+          'blue',
+          'green',
+          'orange',
+          'purple',
+          'cyan',
+          'pink',
+          'darkblue',
+          'darkred',
+        ]
+      },
+
+      get sourceColors() {
+        console.log(self.sources)
+        return self.sources
+          ? Object.fromEntries(zip(self.sources, this.colors))
+          : undefined
+      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
         renderProps() {
           const superProps = superRenderProps()
+          console.log(self.sourceColors)
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.statsReady,
+            notReady: superProps.notReady || !self.sources || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
+            sourceColors: self.sourceColors,
+            sources: self.sources,
             height: self.height,
             ticks: self.ticks,
             displayCrossHatches: self.displayCrossHatches,

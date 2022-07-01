@@ -8,8 +8,6 @@ import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 
-const colors = ['red', 'green', 'blue', 'orange']
-
 function fillRect(
   x: number,
   y: number,
@@ -25,24 +23,26 @@ function fillRect(
   }
 }
 
+interface MultiArgs extends RenderArgsDeserializedWithFeatures {
+  sources: string[]
+  sourceColors: { [key: string]: string }
+}
+
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { bpPerPx, regions, features } = props
-    const groups = groupBy([...features.values()], f => f.get('source'))
-    const list = Object.values(groups)
-    const height = props.height / list.length
+  // @ts-ignore
+  async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
+    const { bpPerPx, sources, regions, features } = props
     const [region] = regions
+    const groups = groupBy([...features.values()], f => f.get('source'))
+    const height = props.height / Object.keys(groups).length
     const width = (region.end - region.start) / bpPerPx
     ctx.save()
-    list.forEach((features, idx) => {
+    sources.forEach((source, idx) => {
       this.drawFeats(ctx, {
         ...props,
-        features,
+        features: groups[source],
         height,
-        color: colors[idx],
+        source,
         idx,
       })
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'
@@ -65,9 +65,10 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       ticks: { values: number[] }
       config: AnyConfigurationModel
       displayCrossHatches: boolean
-      color: string
       exportSVG?: { rasterizeLayers?: boolean }
       idx: number
+      source: string
+      sourceColors: { [key: string]: string }
     },
   ) {
     const {
@@ -77,8 +78,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       scaleOpts,
       height,
       config,
-      color,
       exportSVG,
+      source,
+      sourceColors,
     } = props
     const [region] = regions
 
@@ -92,6 +94,8 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
 
     const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height)
     const toHeight = (n: number) => toY(originY) - toY(n)
+
+    const color = sourceColors[source]
     if (color) {
       ctx.fillStyle = color
     }

@@ -14,8 +14,6 @@ import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 
-const colors = ['red', 'green', 'blue', 'orange']
-
 function fillRect(
   x: number,
   y: number,
@@ -31,15 +29,18 @@ function fillRect(
   }
 }
 
+interface MultiRenderArgs extends RenderArgsDeserializedWithFeatures {
+  sources: string[]
+  sourceColors: { [key: string]: string }
+}
+
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { features } = props
+  // @ts-ignore
+  async draw(ctx: CanvasRenderingContext2D, props: MultiRenderArgs) {
+    const { sources, features } = props
     const groups = groupBy([...features.values()], f => f.get('source'))
-    Object.values(groups).forEach((features, idx) => {
-      this.drawFeats(ctx, { ...props, features, color: colors[idx] })
+    sources.forEach(source => {
+      this.drawFeats(ctx, { ...props, features: groups[source], source })
     })
   }
   drawFeats(
@@ -53,8 +54,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       ticks: { values: number[] }
       config: AnyConfigurationModel
       displayCrossHatches: boolean
-      color: string
       exportSVG?: { rasterizeLayers?: boolean }
+      source: string
+      sourceColors: { [key: string]: string }
     },
   ) {
     const {
@@ -66,8 +68,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       config,
       ticks,
       displayCrossHatches,
-      color,
       exportSVG,
+      source,
+      sourceColors,
     } = props
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
@@ -88,6 +91,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
 
     const toY = (n: number) => height - (scale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
+    const color = sourceColors[source]
     if (color) {
       ctx.fillStyle = color
     }
