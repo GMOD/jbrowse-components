@@ -9,6 +9,7 @@ import {
   getSession,
   getContainingView,
   isSelectionContainer,
+  Feature,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
@@ -18,8 +19,6 @@ import {
 import { autorun, when } from 'mobx'
 import { addDisposer, getEnv, isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import {
   getNiceDomain,

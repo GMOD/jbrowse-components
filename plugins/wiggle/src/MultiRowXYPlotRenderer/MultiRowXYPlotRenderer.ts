@@ -15,10 +15,14 @@ function fillRect(
   height: number,
   ctx: CanvasRenderingContext2D,
   path?: Path2D,
+  color?: string,
 ) {
   if (path) {
     path.rect(x, y, width, height)
   } else {
+    if (color) {
+      ctx.fillStyle = color
+    }
     ctx.fillRect(x, y, width, height)
   }
 }
@@ -36,6 +40,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const groups = groupBy([...features.values()], f => f.get('source'))
     const height = props.height / Object.keys(groups).length
     const width = (region.end - region.start) / bpPerPx
+    const Color = await import('color').then(f => f.default)
     ctx.save()
     sources.forEach((source, idx) => {
       this.drawFeats(ctx, {
@@ -44,6 +49,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         height,
         source,
         idx,
+        Color,
       })
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'
       ctx.beginPath()
@@ -69,6 +75,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       idx: number
       source: string
       sourceColors: { [key: string]: string }
+      Color: any
     },
   ) {
     const {
@@ -81,6 +88,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       exportSVG,
       source,
       sourceColors,
+      Color,
     } = props
     const [region] = regions
 
@@ -96,14 +104,19 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const toHeight = (n: number) => toY(originY) - toY(n)
 
     const color = sourceColors[source]
-    if (color) {
-      ctx.fillStyle = color
-    }
+    const minColor = color && Color(color).darken(0.6).toString()
+    const maxColor = color && Color(color).lighten(0.6).toString()
+    console.log({ color, minColor, maxColor })
 
     // first pass: uses path2d for faster rendering
-    const path =
-      exportSVG || typeof Path2D === 'undefined' ? undefined : new Path2D()
+
+    const usePath = exportSVG || typeof Path2D === 'undefined'
+    const path = usePath ? undefined : new Path2D()
+    const pathMin = usePath ? undefined : new Path2D()
+    const pathMax = usePath ? undefined : new Path2D()
+
     let hasClipping = false
+    console.log({ summaryScoreMode })
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -111,22 +124,39 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
 
       hasClipping ||= score < niceMin || score > niceMax
       const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
+      const h = filled ? toHeight(score) : 1
+      if (summaryScoreMode === 'whiskers') {
+        const summary = feature.get('summary')
 
-      if (summaryScoreMode === 'max') {
+        if (summary) {
+          const maxr = feature.get('maxScore')
+          const minr = feature.get('minScore')
+          const h1 = filled ? toHeight(maxr) : 1
+          fillRect(leftPx, toY(maxr), w, h1, ctx, pathMax, maxColor)
+          const h2 = filled ? toHeight(minr) : 1
+          fillRect(leftPx, toY(minr), w, h2, ctx, pathMin, minColor)
+        }
+        fillRect(leftPx, toY(score), w, h, ctx, path, color)
+      } else if (summaryScoreMode === 'max') {
         const maxr = feature.get('maxScore')
         const summary = feature.get('summary')
         score = summary ? maxr : score
-        fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1, ctx, path)
+        fillRect(leftPx, toY(score), w, h, ctx, path, color)
       } else if (summaryScoreMode === 'min') {
         const minr = feature.get('minScore')
         const summary = feature.get('summary')
         score = summary ? minr : score
-        fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1, ctx, path)
+        fillRect(leftPx, toY(score), w, h, ctx, path, color)
       } else {
-        fillRect(leftPx, toY(score), w, filled ? toHeight(score) : 1, ctx, path)
+        fillRect(leftPx, toY(score), w, h, ctx, path, color)
       }
     }
-    if (path) {
+    if (path && pathMin && pathMax) {
+      ctx.fillStyle = minColor
+      ctx.fill(pathMin)
+      ctx.fillStyle = maxColor
+      ctx.fill(pathMax)
+      ctx.fillStyle = color
       ctx.fill(path)
     }
 
