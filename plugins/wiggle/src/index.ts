@@ -1,7 +1,16 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-
+import { getSession } from '@jbrowse/core/util'
 import { FileLocation } from '@jbrowse/core/util/types'
+import { readConfObject } from '@jbrowse/core/configuration'
+import { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
+import {
+  AdapterGuesser,
+  getFileName,
+  TrackTypeGuesser,
+} from '@jbrowse/core/util/tracks'
+
+// locals
 import WiggleBaseRenderer from './WiggleBaseRenderer'
 import WiggleRendering from './WiggleRendering'
 import BigWigAdapterF from './BigWigAdapter'
@@ -25,11 +34,6 @@ import {
   WiggleGetMultiRegionStats,
   MultiWiggleGetSources,
 } from './WiggleRPC/rpcMethods'
-import {
-  AdapterGuesser,
-  getFileName,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 
 import {
   ReactComponent as LinearWiggleDisplayReactComponent,
@@ -101,6 +105,41 @@ export default class WigglePlugin extends Plugin {
     pm.addRpcMethod(() => new WiggleGetGlobalStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionStats(pm))
     pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
+
+    pm.addToExtensionPoint('TrackSelector-multiTrackMenuItems', () => {
+      return [
+        {
+          label: 'Create multi-wiggle track',
+          onClick: (model: HierarchicalTrackSelectorModel) => {
+            const tracks = model.group
+            const trackIds = tracks.map(c => readConfObject(c, 'name'))
+            const subadapters = tracks
+              .map(c => readConfObject(c, 'adapter'))
+              .map((c, idx) => ({ ...c, source: trackIds[idx] }))
+            const assemblyNames = [
+              ...new Set(
+                tracks.map(c => readConfObject(c, 'assemblyNames')).flat(),
+              ),
+            ]
+            const now = +Date.now()
+            const trackId = `multitrack-${now}-sessionTrack`
+
+            // @ts-ignore
+            getSession(model).addTrackConf({
+              type: 'MultiQuantitativeTrack',
+              trackId,
+              name: 'MultiWig - ' + Date.now(),
+              assemblyNames,
+              adapter: {
+                type: 'MultiWiggleAdapter',
+                subadapters,
+              },
+            })
+            model.view.showTrack(trackId)
+          },
+        },
+      ]
+    })
   }
 
   exports = {

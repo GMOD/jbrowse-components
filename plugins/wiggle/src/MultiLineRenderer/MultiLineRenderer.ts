@@ -14,25 +14,6 @@ import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 
-function fillRect(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  ctx: CanvasRenderingContext2D,
-  path?: Path2D,
-  color?: string,
-) {
-  if (path) {
-    path.rect(x, y, width, height)
-  } else {
-    if (color) {
-      ctx.fillStyle = color
-    }
-    ctx.fillRect(x, y, width, height)
-  }
-}
-
 interface MultiRenderArgs extends RenderArgsDeserializedWithFeatures {
   sources: string[]
   sourceColors: { [key: string]: string }

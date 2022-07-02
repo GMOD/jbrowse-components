@@ -37,7 +37,7 @@ function WiggleRendering(props: {
         const offsetY = event.clientX - rect.top
         const px = region.reversed ? width - offsetX : offsetX
         const coord = Math.floor(region.start + bpPerPx * px)
-        onMouseMove({ ...region, coord })
+        onMouseMove({ ...region, coord, offsetY })
       }}
       onMouseLeave={() => onMouseLeave()}
       style={{ height }}

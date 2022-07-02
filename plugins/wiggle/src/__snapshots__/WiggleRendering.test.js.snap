@@ -2,10 +2,8 @@
 
 exports[`one 1`] = `
 <div
-  class="WiggleRendering"
   data-testid="wiggle-rendering-test"
-  role="presentation"
-  style="overflow: visible; position: relative; height: 500px;"
+  style="height: 500px;"
 >
   <canvas
     data-testid="prerendered_canvas"

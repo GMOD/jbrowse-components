@@ -51,6 +51,7 @@
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
     "@jbrowse/plugin-linear-genome-view": "^1.0.0",
+    "@jbrowse/plugin-data-management": "^1.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",

@@ -8,7 +8,7 @@ import NotificationIcon from '@mui/icons-material/Notifications'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import JBrowseMenu, { MenuItem } from '@jbrowse/core/ui/Menu'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -20,6 +20,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../model'
@@ -113,11 +114,9 @@ function HierarchicalTrackSelectorHeader({
       label: 'Add connection',
       onClick: () => {
         if (isSessionModelWithWidgets(session)) {
-          const widget = session.addWidget(
-            'AddConnectionWidget',
-            'addConnectionWidget',
+          session.showWidget(
+            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
           )
-          session.showWidget(widget)
         }
       },
     })
@@ -146,10 +145,11 @@ function HierarchicalTrackSelectorHeader({
       label: 'Add track...',
       onClick: () => {
         if (isSessionModelWithWidgets(session)) {
-          const widget = session.addWidget('AddTrackWidget', 'addTrackWidget', {
-            view: model.view.id,
-          })
-          session.showWidget(widget)
+          session.showWidget(
+            session.addWidget('AddTrackWidget', 'addTrackWidget', {
+              view: model.view.id,
+            }),
+          )
         }
       },
     },
@@ -157,6 +157,9 @@ function HierarchicalTrackSelectorHeader({
     ...assemblyMenuItems,
   ]
 
+  const items = getEnv(model).pluginManager.evaluateExtensionPoint(
+    'TrackSelector-multiTrackMenuItems',
+  ) as MenuItem[]
   return (
     <div
       ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
@@ -239,34 +242,12 @@ function HierarchicalTrackSelectorHeader({
         onClose={() => setGroupEl(undefined)}
         menuItems={[
           { label: 'Clear', onClick: () => model.clearGroup() },
-          {
-            label: 'Create multi-wiggle track',
-            onClick: () => {
-              const tracks = model.group
-              const trackIds = tracks.map(c => readConfObject(c, 'name'))
-              const subadapters = tracks
-                .map(c => readConfObject(c, 'adapter'))
-                .map((c, idx) => ({ ...c, source: trackIds[idx] }))
-              const assemblyNames = Array.from(
-                new Set(
-                  tracks.map(c => readConfObject(c, 'assemblyNames')).flat(),
-                ),
-              )
-              const now = +Date.now()
-              const trackId = `multitrack-${now}-sessionTrack`
-              getSession(model).addTrackConf({
-                type: 'MultiQuantitativeTrack',
-                trackId,
-                name: 'MultiWig - ' + Date.now(),
-                assemblyNames,
-                adapter: {
-                  type: 'MultiWiggleAdapter',
-                  subadapters,
-                },
-              })
-              model.view.showTrack(trackId)
-            },
-          },
+          ...items.map(item => ({
+            ...item,
+            ...('onClick' in item
+              ? { onClick: () => item.onClick(model) }
+              : {}),
+          })),
         ]}
       />
       <Suspense fallback={<div />}>
@@ -275,7 +256,8 @@ function HierarchicalTrackSelectorHeader({
             modalInfo={modalInfo}
             setModalInfo={setModalInfo}
           />
-        ) : deleteDlgDetails ? (
+        ) : null}
+        {deleteDlgDetails ? (
           <DeleteConnectionDialog
             handleClose={() => setDeleteDlgDetails(undefined)}
             deleteDialogDetails={deleteDlgDetails}

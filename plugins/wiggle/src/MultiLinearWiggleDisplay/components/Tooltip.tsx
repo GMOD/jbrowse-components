@@ -64,7 +64,7 @@ const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
         <br />
         {Object.entries(sources).map(([source, data]) => {
           return (
-            <span style={{ display: 'block' }}>
+            <span key={source} style={{ display: 'block' }}>
               {source} {toP(data.score)}
             </span>
           )

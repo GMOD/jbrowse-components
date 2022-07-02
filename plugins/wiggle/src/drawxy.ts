@@ -73,7 +73,7 @@ export function drawFeats(
     offset?: number
     color?: string
     colorCallback?: (f: Feature, score: number) => string
-    Color: any
+    Color: typeof import('color')
   },
 ) {
   const {
@@ -127,7 +127,7 @@ export function drawFeats(
       const feature = features[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      let score = feature.get('score')
+      const score = feature.get('score')
       const c = colorCallback(feature, score)
       const minColor = Color(c).darken(0.6).toString()
       const maxColor = Color(c).lighten(0.6).toString()
@@ -140,24 +140,8 @@ export function drawFeats(
         if (summary) {
           const max = feature.get('maxScore')
           const min = feature.get('minScore')
-          fillRectCtx(
-            leftPx,
-            toY(max),
-            w,
-            getHeight(max),
-            ctx,
-
-            maxColor,
-          )
-          fillRectCtx(
-            leftPx,
-            toY(min),
-            w,
-            getHeight(min),
-            ctx,
-
-            minColor,
-          )
+          fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
+          fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
         }
         fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
       } else if (summaryScoreMode === 'max') {
@@ -177,7 +161,7 @@ export function drawFeats(
       const feature = features[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      let score = feature.get('score')
+      const score = feature.get('score')
       hasClipping = score < niceMin || score > niceMax
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
 
@@ -202,7 +186,7 @@ export function drawFeats(
         fillRect(leftPx, toY(score), w, getHeight(score), ctx, path, color)
       }
     }
-    if (path && pathMin && pathMax && color) {
+    if (path && pathMin && pathMax && color && minColor && maxColor) {
       ctx.fillStyle = minColor
       ctx.fill(pathMin)
       ctx.fillStyle = maxColor
