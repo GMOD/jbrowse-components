@@ -368,7 +368,9 @@ const stateModelFactory = (
             onMouseMove: (arg: { refName: string; coord: number }) => {
               self.setCurrMouseOverBp(arg)
             },
-            onMouseLeave: () => self.setCurrMouseOverBp(undefined),
+            onMouseLeave: () => {
+              self.setCurrMouseOverBp()
+            },
             scaleOpts,
             resolution,
             height,
@@ -519,6 +521,7 @@ const stateModelFactory = (
             autorun(async () => {
               const { mouseOverBp, adapterConfig } = self
               if (!mouseOverBp) {
+                self.setFeatureUnderMouse(undefined)
                 return
               }
               const { coord } = mouseOverBp

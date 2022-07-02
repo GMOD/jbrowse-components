@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import ReactComponent from '../WiggleRendering'
+import ReactComponent from '../MultiWiggleRendering'
 import MultiRowXYPlotRenderer from './MultiRowXYPlotRenderer'
 import configSchema from './configSchema'
 

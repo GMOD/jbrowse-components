@@ -10,6 +10,7 @@ import {
   getContainingView,
   isSelectionContainer,
   Feature,
+  SimpleFeature,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
@@ -88,6 +89,8 @@ const stateModelFactory = (
       statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
       sources: undefined as string[] | undefined,
+      featureUnderMouseVolatile: undefined as undefined | Feature,
+      mouseOverBp: undefined as { refName: string; coord: number } | undefined,
     }))
     .actions(self => ({
       updateStats(
@@ -181,6 +184,15 @@ const stateModelFactory = (
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
       },
+
+      setCurrMouseOverBp(arg?: { refName: string; coord: number }) {
+        if (!deepEqual(arg, self.mouseOverBp)) {
+          self.mouseOverBp = arg
+        }
+      },
+      setFeatureUnderMouse(feat?: Feature) {
+        self.featureUnderMouseVolatile = feat
+      },
     }))
     .views(self => ({
       get TooltipComponent() {
@@ -207,17 +219,17 @@ const stateModelFactory = (
       },
 
       get scaleType() {
-        return self.scale || (getConf(self, 'scaleType') as string)
+        return self.scale ?? (getConf(self, 'scaleType') as string)
       },
 
       get maxScore() {
         const { max } = self.constraints
-        return max ?? getConf(self, 'maxScore')
+        return max ?? (getConf(self, 'maxScore') as number)
       },
 
       get minScore() {
         const { min } = self.constraints
-        return min ?? getConf(self, 'minScore')
+        return min ?? (getConf(self, 'minScore') as number)
       },
     }))
     .views(self => ({
@@ -256,12 +268,15 @@ const stateModelFactory = (
       let oldDomain: [number, number] = [0, 0]
       return {
         get filled() {
-          return self.fill ?? readConfObject(self.rendererConfig, 'filled')
+          return (
+            self.fill ??
+            (readConfObject(self.rendererConfig, 'filled') as boolean)
+          )
         },
         get summaryScoreModeSetting() {
           return (
-            self.summaryScoreMode ||
-            readConfObject(self.rendererConfig, 'summaryScoreMode')
+            self.summaryScoreMode ??
+            (readConfObject(self.rendererConfig, 'summaryScoreMode') as string)
           )
         },
         get domain() {
@@ -280,7 +295,7 @@ const stateModelFactory = (
           }
 
           // avoid returning a new object if it matches the old value
-          if (JSON.stringify(oldDomain) !== JSON.stringify(ret)) {
+          if (!deepEqual(oldDomain, ret)) {
             oldDomain = ret
           }
 
@@ -318,13 +333,14 @@ const stateModelFactory = (
         },
 
         get autoscaleType() {
-          return self.autoscale || getConf(self, 'autoscale')
+          return self.autoscale ?? (getConf(self, 'autoscale') as string)
         },
 
         get displayCrossHatchesSetting() {
+          const { displayCrossHatches, rendererConfig } = self
           return (
-            self.displayCrossHatches ||
-            readConfObject(self.rendererConfig, 'displayCrossHatches')
+            displayCrossHatches ??
+            (readConfObject(rendererConfig, 'displayCrossHatches') as boolean)
           )
         },
       }
@@ -348,10 +364,6 @@ const stateModelFactory = (
       },
 
       get colors() {
-        // generated from R
-        // library(scales)
-        // (hue_pal()(16))
-
         return [
           'red',
           'blue',
@@ -391,6 +403,12 @@ const stateModelFactory = (
             scaleOpts: self.scaleOpts,
             resolution: self.resolution,
             sourceColors: self.sourceColors,
+            onMouseMove: (arg: { refName: string; coord: number }) => {
+              self.setCurrMouseOverBp(arg)
+            },
+            onMouseLeave: () => {
+              self.setCurrMouseOverBp()
+            },
             sources: self.sources,
             height: self.height,
             ticks: self.ticks,
@@ -402,6 +420,9 @@ const stateModelFactory = (
         get adapterCapabilities() {
           return pluginManager.getAdapterType(self.adapterTypeName)
             .adapterCapabilities
+        },
+        get featureUnderMouse() {
+          return self.featureUnderMouseVolatile
         },
 
         get hasResolution() {
@@ -580,6 +601,57 @@ const stateModelFactory = (
               )) as string[]
               if (isAlive(self)) {
                 self.setSources(sources)
+              }
+            }),
+          )
+          addDisposer(
+            self,
+            autorun(async () => {
+              const { mouseOverBp, adapterConfig } = self
+              if (!mouseOverBp) {
+                self.setFeatureUnderMouse(undefined)
+                return
+              }
+              const { coord } = mouseOverBp
+              const session = getSession(self)
+              const sessionId = getRpcSessionId(self)
+              const view = getContainingView(self) as LGV
+              const curr = JSON.stringify(mouseOverBp)
+              const region = {
+                ...self.mouseOverBp,
+                start: coord,
+                end: coord,
+              }
+              const features = (await session.rpcManager.call(
+                sessionId,
+                'CoreGetFeatures',
+                {
+                  regions: [region],
+                  sessionId,
+                  adapterConfig,
+                  layoutId: view.id,
+                },
+              )) as Feature[]
+
+              if (
+                features.length &&
+                JSON.stringify(self.mouseOverBp) === curr
+              ) {
+                // syntesize data for the multi-tooltip from multiple features
+                const obj = Object.fromEntries(
+                  features
+                    .map(f => f.toJSON())
+                    .map(f => {
+                      const { refName, start, end, source, ...rest } = f
+                      return [source, rest]
+                    }),
+                )
+                const f = new SimpleFeature({
+                  uniqueId: 'mouseoverfeat',
+                  sources: obj,
+                  ...region,
+                })
+                self.setFeatureUnderMouse(f)
               }
             }),
           )

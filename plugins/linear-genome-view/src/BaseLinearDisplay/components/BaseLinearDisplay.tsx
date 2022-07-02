@@ -104,7 +104,6 @@ const BaseLinearDisplay = observer(
           }
           style={{ zIndex: theme.zIndex.tooltip }}
           menuItems={contextMenuItems()}
-          data-testid="base_linear_display_context_menu"
         />
       </div>
     )

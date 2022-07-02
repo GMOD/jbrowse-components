@@ -52,26 +52,23 @@ const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
   ({ feature }: { feature: Feature }, ref) => {
     const start = feature.get('start')
     const end = feature.get('end')
-    const name = feature.get('refName')
-    const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
-      .filter(f => !!f)
-      .join(':')
+    const refName = feature.get('refName')
+    const coord = start === end ? en(start) : `${en(start)}..${en(end)}`
+    const sources = feature.get('sources') as {
+      [key: string]: { score: number }
+    }
 
-    return feature.get('summary') !== undefined ? (
+    return (
       <div ref={ref}>
-        {loc}
+        {[refName, coord].filter(f => !!f).join(':')}
         <br />
-        Max: {toP(feature.get('maxScore'))}
-        <br />
-        Avg: {toP(feature.get('score'))}
-        <br />
-        Min: {toP(feature.get('minScore'))}
-      </div>
-    ) : (
-      <div ref={ref}>
-        {loc}
-        <br />
-        {`${toP(feature.get('score'))}`}
+        {Object.entries(sources).map(([source, data]) => {
+          return (
+            <span style={{ display: 'block' }}>
+              {source} {toP(data.score)}
+            </span>
+          )
+        })}
       </div>
     )
   },

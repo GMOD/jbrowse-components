@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import ReactComponent from '../WiggleRendering'
+import ReactComponent from '../MultiWiggleRendering'
 import MultiLineRenderer from './MultiLineRenderer'
 import configSchema from './configSchema'
 
