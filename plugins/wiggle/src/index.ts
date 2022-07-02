@@ -16,6 +16,7 @@ import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
 import MultiXYPlotRendererF from './MultiXYPlotRenderer'
 import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
 import MultiDensityRendererF from './MultiDensityRenderer'
+import MultiLineRendererF from './MultiLineRenderer'
 
 import * as utils from './util'
 
@@ -57,6 +58,7 @@ export default class WigglePlugin extends Plugin {
     MultiXYPlotRendererF(pm)
     MultiRowXYPlotRendererF(pm)
     MultiDensityRendererF(pm)
+    MultiLineRendererF(pm)
 
     pm.addToExtensionPoint(
       'Core-guessAdapterForLocation',

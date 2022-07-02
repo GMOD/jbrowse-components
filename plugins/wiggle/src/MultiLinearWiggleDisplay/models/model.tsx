@@ -40,6 +40,7 @@ const rendererTypes = new Map([
   ['xyplot', 'MultiXYPlotRenderer'],
   ['multirowxy', 'MultiRowXYPlotRenderer'],
   ['multirowdensity', 'MultiDensityRenderer'],
+  ['multiline', 'MultiLineRenderer'],
 ])
 
 type LGV = LinearGenomeViewModel
@@ -287,7 +288,10 @@ const stateModelFactory = (
         },
 
         get needsScalebar() {
-          return self.rendererTypeName === 'MultiXYPlotRenderer'
+          return (
+            self.rendererTypeName === 'MultiXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiLineRenderer'
+          )
         },
 
         get needsScaleSmall() {
@@ -477,12 +481,15 @@ const stateModelFactory = (
               ? [
                   {
                     label: 'Renderer type',
-                    subMenu: ['xyplot', 'multirowxy', 'multirowdensity'].map(
-                      key => ({
-                        label: key,
-                        onClick: () => self.setRendererType(key),
-                      }),
-                    ),
+                    subMenu: [
+                      'xyplot',
+                      'multirowxy',
+                      'multirowdensity',
+                      'multiline',
+                    ].map(key => ({
+                      label: key,
+                      onClick: () => self.setRendererType(key),
+                    })),
                   },
                 ]
               : []),

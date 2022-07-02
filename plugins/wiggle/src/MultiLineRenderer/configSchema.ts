@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree'
 import ConfigSchema from '../configSchema'
 
 const configSchema = ConfigurationSchema(
-  'MultiXYPlotRenderer',
+  'MultiLineRenderer',
   {
     filled: {
       type: 'boolean',

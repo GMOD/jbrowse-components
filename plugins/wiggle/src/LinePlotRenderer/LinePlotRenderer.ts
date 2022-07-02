@@ -1,11 +1,18 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { featureSpanPx } from '@jbrowse/core/util'
+import { featureSpanPx, Feature } from '@jbrowse/core/util'
 import { getScale } from '../util'
-import WiggleBaseRenderer from '../WiggleBaseRenderer'
+
+import WiggleBaseRenderer, {
+  RenderArgsDeserializedWithFeatures,
+} from '../WiggleBaseRenderer'
+
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
 
 export default class LinePlotRenderer extends WiggleBaseRenderer {
-  async draw(ctx, props) {
+  async draw(
+    ctx: CanvasRenderingContext2D,
+    props: RenderArgsDeserializedWithFeatures,
+  ) {
     const {
       features,
       regions,
@@ -28,11 +35,11 @@ export default class LinePlotRenderer extends WiggleBaseRenderer {
     const highlightColor = readConfObject(config, 'highlightColor')
     const scale = getScale({ ...scaleOpts, range: [0, height] })
     const [niceMin, niceMax] = scale.domain()
-    const toY = rawscore => height - scale(rawscore) + offset
+    const toY = (n: number) => height - (scale(n) || 0) + offset
     const colorCallback =
       readConfObject(config, 'color') === '#f0f'
         ? () => 'grey'
-        : feature => readConfObject(config, 'color', { feature })
+        : (feature: Feature) => readConfObject(config, 'color', { feature })
 
     let lastVal
     for (const feature of features.values()) {
@@ -44,20 +51,15 @@ export default class LinePlotRenderer extends WiggleBaseRenderer {
 
       const c = colorCallback(feature)
 
-      ctx.strokeStyle = c
       ctx.beginPath()
+      ctx.strokeStyle = c
+      const startPos = typeof lastVal !== 'undefined' ? lastVal : score
       if (!region.reversed) {
-        ctx.moveTo(
-          leftPx,
-          toY(typeof lastVal !== 'undefined' ? lastVal : score),
-        )
+        ctx.moveTo(leftPx, toY(startPos))
         ctx.lineTo(leftPx, toY(score))
         ctx.lineTo(rightPx, toY(score))
       } else {
-        ctx.moveTo(
-          rightPx,
-          toY(typeof lastVal !== 'undefined' ? lastVal : score),
-        )
+        ctx.moveTo(rightPx, toY(startPos))
         ctx.lineTo(rightPx, toY(score))
         ctx.lineTo(leftPx, toY(score))
       }

@@ -13,41 +13,43 @@ import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-function Wrapper({
-  children,
-  model,
-  exportSVG,
-}: {
-  model: WiggleDisplayModel
-  children: React.ReactNode
-  exportSVG?: boolean
-}) {
-  if (exportSVG) {
-    return <>{children}</>
-  } else {
-    const { height } = model
-    const { trackLabels } = getContainingView(model) as LGV
-    const track = getContainingTrack(model)
-    const left =
-      trackLabels === 'overlapping'
-        ? measureText(getConf(track, 'name'), 12.8) + 100
-        : 10
-    return (
-      <svg
-        style={{
-          position: 'absolute',
-          top: 0,
-          left,
-          pointerEvents: 'none',
-          height,
-          width: 1800,
-        }}
-      >
-        {children}
-      </svg>
-    )
-  }
-}
+const Wrapper = observer(
+  ({
+    children,
+    model,
+    exportSVG,
+  }: {
+    model: WiggleDisplayModel
+    children: React.ReactNode
+    exportSVG?: boolean
+  }) => {
+    if (exportSVG) {
+      return <>{children}</>
+    } else {
+      const { height } = model
+      const { trackLabels } = getContainingView(model) as LGV
+      const track = getContainingTrack(model)
+      const left =
+        trackLabels === 'overlapping'
+          ? measureText(getConf(track, 'name'), 12.8) + 100
+          : 10
+      return (
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            left,
+            pointerEvents: 'none',
+            height,
+            width: 1800,
+          }}
+        >
+          {children}
+        </svg>
+      )
+    }
+  },
+)
 
 export const StatBars = observer(
   (props: {
