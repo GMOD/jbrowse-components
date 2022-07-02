@@ -46,15 +46,11 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
 
-    const res = await renderToAbstractCanvas(
-      width,
-      height,
-      renderProps,
-      (ctx: CanvasRenderingContext2D) =>
-        this.draw(ctx, {
-          ...renderProps,
-          features,
-        }),
+    const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+      this.draw(ctx, {
+        ...renderProps,
+        features,
+      }),
     )
 
     const results = await super.render({

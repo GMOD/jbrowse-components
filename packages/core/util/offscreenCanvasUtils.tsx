@@ -10,7 +10,7 @@ export async function renderToAbstractCanvas(
     exportSVG?: { rasterizeLayers?: boolean }
     highResolutionScaling: number
   },
-  cb: Function,
+  cb: (ctx: CanvasRenderingContext2D) => Promise<void> | void,
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
 

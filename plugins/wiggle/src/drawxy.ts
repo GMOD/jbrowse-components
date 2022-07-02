@@ -70,7 +70,7 @@ export function drawFeats(
     config: AnyConfigurationModel
     displayCrossHatches: boolean
     exportSVG?: { rasterizeLayers?: boolean }
-    offset: number
+    offset?: number
     color?: string
     colorCallback?: (f: Feature, score: number) => string
     Color: any
