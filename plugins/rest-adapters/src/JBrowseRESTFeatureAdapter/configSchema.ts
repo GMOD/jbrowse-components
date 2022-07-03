@@ -6,7 +6,7 @@ export default ConfigurationSchema(
     location: {
       type: 'fileLocation',
       defaultValue: {
-        uri: '/path/to/my/rest/endpoint',
+        uri: 'https://example.com/path/to/my/rest/endpoint',
         locationType: 'UriLocation',
       },
     },

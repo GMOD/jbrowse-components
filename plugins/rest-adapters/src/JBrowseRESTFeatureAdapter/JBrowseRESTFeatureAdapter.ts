@@ -84,16 +84,32 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  private async fetchFromRestApi(relativeUrl: string, signal?: AbortSignal) {
-    const fetcher = getFetcher(getConf(this, 'location'), this.pluginManager)
-
+  /** construct the full URL to fetch from */
+  private makeFetchUrl(relativeUrl: string) {
     let baseLocation = getConf(this, 'location') as FileLocation
     if (!isUriLocation(baseLocation)) {
       throw new Error('invalid location for REST API: ' + baseLocation)
     }
     baseLocation = resolveUriLocation(baseLocation)
 
-    const url = baseLocation.uri + '/' + relativeUrl
+    let url = baseLocation.uri + '/' + relativeUrl
+
+    // add the extra_query vars if present
+    const extra_query = Object.entries(getConf(this, 'extra_query') || {}) as [
+      string,
+      string,
+    ][]
+    if (extra_query.length) {
+      const p = new URL(url)
+      extra_query.forEach(q => p.searchParams.append(...q))
+      url = p.toString()
+    }
+    return url
+  }
+
+  private async fetchFromRestApi(relativeUrl: string, signal?: AbortSignal) {
+    const fetcher = getFetcher(getConf(this, 'location'), this.pluginManager)
+    const url = this.makeFetchUrl(relativeUrl)
     return this.fetch(fetcher, url, signal)
   }
 
@@ -112,7 +128,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  // this method is here so that tests can mock fetching
+  //* this method is here primarily to enable mocking fetch in tests */
   private async fetch(
     fetcher: ReturnType<typeof getFetcher>,
     url: RequestInfo,

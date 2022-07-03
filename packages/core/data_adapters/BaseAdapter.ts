@@ -223,6 +223,55 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
+
+    // adds two numbers that might be NaN or undefined, with undefined
+    // being the result if either of them is NaN or undefined
+    function undefinedAdd(a?: number, b?: number) {
+      if (a === undefined || isNaN(a)) {
+        if (b === undefined || isNaN(b)) {
+          return undefined
+        } else {
+          return b
+        }
+      } else {
+        if (b === undefined || isNaN(b)) {
+          return a
+        } else {
+          return a + b
+        }
+      }
+    }
+    function undefinedMax(a?: number, b?: number) {
+      if (a === undefined || isNaN(a)) {
+        if (b === undefined || isNaN(b)) {
+          return undefined
+        } else {
+          return b
+        }
+      } else {
+        if (b === undefined || isNaN(b)) {
+          return a
+        } else {
+          return Math.max(a, b)
+        }
+      }
+    }
+    function undefinedMin(a?: number, b?: number) {
+      if (a === undefined || isNaN(a)) {
+        if (b === undefined || isNaN(b)) {
+          return undefined
+        } else {
+          return b
+        }
+      } else {
+        if (b === undefined || isNaN(b)) {
+          return a
+        } else {
+          return Math.min(a, b)
+        }
+      }
+    }
+
     const regionStats = await Promise.all(
       regions.map(region => this.getRegionStats(region, opts)),
     )

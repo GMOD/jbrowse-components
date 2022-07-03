@@ -5,21 +5,20 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 const testFeatures = [{ start: 100, end: 200, refName: '21', uniqueId: 'foo' }]
 const mockResponses = {
-  '/mock/url/features/21?start=34960388&end=35960388': {
-    features: testFeatures,
-  },
-  '/mock/url/reference_sequences': ['21'],
+  'https://mock.url/mock/url/features/21?start=34960388&end=35960388&extra_query=42':
+    {
+      features: testFeatures,
+    },
+  'https://mock.url/mock/url/reference_sequences?extra_query=42': ['21'],
 }
 
-test('adapter can fetch features from mocked API', async () => {
+test('adapter can fetch features and stats from mocked API with no region stats', async () => {
   const stubManager = new PluginManager()
   const adapter = new Adapter(
     configSchema.create({
-      location: { uri: '/mock/url' },
+      location: { uri: 'https://mock.url/mock/url' },
       extra_query: { extra_query: 42 },
-      optional_resources: {
-        region_stats: true,
-      },
+      optional_resources: {},
     }),
     undefined,
     stubManager,
@@ -53,11 +52,18 @@ test('adapter can fetch features from mocked API', async () => {
   expect(featuresArray[0].id()).toBe('foo')
   // @ts-ignore
   expect(fetchMock.mock.calls[0][1]).toBe(
-    '/mock/url/features/21?start=34960388&end=35960388',
+    'https://mock.url/mock/url/features/21?start=34960388&end=35960388&extra_query=42',
   )
 
   expect(await adapter.hasDataForRefName('ctgA')).toBe(false)
   expect(await adapter.hasDataForRefName('21')).toBe(true)
-  // expect(await adapter.hasDataForRefName('21')).toBe(true)
-  // expect(await adapter.hasDataForRefName('20')).toBe(false)
+
+  expect(
+    await adapter.getRegionStats({
+      assemblyName: 'volvox',
+      refName: '21',
+      start: 34960388,
+      end: 35960388,
+    }),
+  ).toMatchSnapshot()
 })

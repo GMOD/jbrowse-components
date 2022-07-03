@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adapter can fetch features and stats from mocked API with no region stats 1`] = `
+Object {
+  "basesCovered": 1000001,
+  "featureCount": 1,
+  "featureDensity": 9.99999000001e-7,
+  "scoreMax": undefined,
+  "scoreMean": undefined,
+  "scoreMin": undefined,
+  "scoreStdDev": undefined,
+  "scoreSum": undefined,
+  "scoreSumSquares": 0,
+}
+`;

@@ -6,6 +6,7 @@ import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
 export interface UnrectifiedFeatureStats {
+  [key: string]: number | undefined
   scoreMin?: number
   scoreMax?: number
   scoreSum?: number
@@ -14,8 +15,8 @@ export interface UnrectifiedFeatureStats {
   basesCovered?: number
 }
 export interface FeatureStats extends UnrectifiedFeatureStats {
-  scoreSum: number
-  scoreSumSquares: number
+  scoreSum: number | undefined
+  scoreSumSquares: number | undefined
   featureCount?: number
   basesCovered: number
   featureDensity: number
@@ -69,11 +70,21 @@ export function calcStdFromSums(
  * @returns - a summary stats object with
  * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats) {
-  return {
+export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
+  // rectify scoreMean
+  let scoreMean: number | undefined = undefined
+  if (s.scoreSum) {
+    if (s.featureCount) {
+      scoreMean = s.scoreSum / s.featureCount
+    } else if (s.basesCovered) {
+      scoreMean = s.scoreSum / s.basesCovered
+    }
+  }
+
+  const stats: FeatureStats = {
     ...s,
-    scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
-    scoreSum: s.scoreSum || 0,
+    scoreMean,
+    scoreSum: s.scoreSum,
     scoreSumSquares: s.scoreSumSquares || 0,
     featureCount: s.featureCount,
     basesCovered: s.basesCovered || 0,
@@ -84,6 +95,14 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
     ),
     featureDensity: (s.featureCount || 1) / (s.basesCovered || 1),
   }
+
+  // replace any NaN or null with undefined
+  for (const k in stats) {
+    if (Number.isNaN(stats[k]) || stats[k] === null) {
+      stats[k] = undefined
+    }
+  }
+  return stats
 }
 
 /**
@@ -176,12 +195,12 @@ export async function scoresToStats(
 
 export function blankStats() {
   return {
-    scoreMin: 0,
-    scoreMax: 0,
-    scoreMean: 0,
-    scoreStdDev: 0,
-    scoreSum: 0,
-    scoreSumSquares: 0,
+    scoreMin: undefined,
+    scoreMax: undefined,
+    scoreMean: undefined,
+    scoreStdDev: undefined,
+    scoreSum: undefined,
+    scoreSumSquares: undefined,
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
