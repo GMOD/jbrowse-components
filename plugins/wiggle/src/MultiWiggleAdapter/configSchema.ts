@@ -7,6 +7,10 @@ export default ConfigurationSchema(
       type: 'frozen',
       defaultValue: [],
     },
+    bigWigUrls: {
+      type: 'stringArray',
+      defaultValue: [],
+    },
   },
   { explicitlyTyped: true },
 )

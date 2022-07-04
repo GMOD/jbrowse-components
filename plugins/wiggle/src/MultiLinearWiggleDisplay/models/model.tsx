@@ -206,9 +206,10 @@ const stateModelFactory = (
         return self.rendererTypeNameState || getConf(self, 'defaultRendering')
       },
       get rendererTypeName() {
-        const rendererType = rendererTypes.get(this.rendererTypeNameSimple)
+        const name = this.rendererTypeNameSimple
+        const rendererType = rendererTypes.get(name)
         if (!rendererType) {
-          throw new Error(`unknown alignments view name ${viewName}`)
+          throw new Error(`unknown renderer ${name}`)
         }
         return rendererType
       },

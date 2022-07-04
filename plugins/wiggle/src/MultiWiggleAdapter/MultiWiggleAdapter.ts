@@ -5,7 +5,6 @@ import {
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -26,7 +25,18 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     if (!getSubAdapter) {
       throw new Error('no getSubAdapter available')
     }
-    const subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
+    let subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
+    if (!subConfs?.length) {
+      const urls = this.getConf('bigWigUrls') as string[]
+      // @ts-ignore
+      subConfs = urls.map(uri => ({
+        type: 'BigWigAdapter',
+        source: uri.slice(uri.lastIndexOf('/') + 1),
+        bigWigLocation: {
+          uri,
+        },
+      }))
+    }
     return Promise.all(
       subConfs.map(async c => {
         const adapter = await getSubAdapter(c)
@@ -87,8 +97,9 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // in another adapter type, this could be dynamic depending on region or
   // something, but it is static depending on config here
   async getSources() {
-    const subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
-    return subConfs.map(conf => readConfObject(conf, 'source'))
+    const adapters = await this.getAdapters()
+    const sources = adapters.map(a => a.source)
+    return sources
   }
 
   public freeResources(): void {}

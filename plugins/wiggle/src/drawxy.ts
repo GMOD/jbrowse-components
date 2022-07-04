@@ -2,7 +2,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { getOrigin, getScale, ScaleOpts } from './util'
 
 function fillRect(
@@ -40,9 +40,6 @@ function fillRectCtx(
   ctx: CanvasRenderingContext2D,
   color?: string,
 ) {
-  if (color) {
-    ctx.fillStyle = String(color)
-  }
   if (width < 0) {
     x += width
     width = -width
@@ -107,7 +104,7 @@ export function drawFeats(
   const originY = getOrigin(scaleOpts.scaleType)
   const [niceMin, niceMax] = scale.domain()
 
-  const toY = (n: number) => height - (scale(n) || 0) + offset
+  const toY = (n: number) => clamp(height - (scale(n) || 0) + offset, 0, height)
   const toHeight = (n: number) => toY(originY) - toY(n)
 
   const useCb = !!colorCallback
@@ -145,12 +142,10 @@ export function drawFeats(
         }
         fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
       } else if (summaryScoreMode === 'max') {
-        const maxr = feature.get('maxScore')
-        const s = feature.get('summary') ? maxr : score
+        const s = feature.get('summary') ? feature.get('maxScore') : score
         fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
       } else if (summaryScoreMode === 'min') {
-        const minr = feature.get('minScore')
-        const s = feature.get('summary') ? minr : score
+        const s = feature.get('summary') ? feature.get('minScore') : score
         fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
       } else {
         fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
@@ -175,12 +170,10 @@ export function drawFeats(
         }
         fillRect(leftPx, toY(score), w, getHeight(score), ctx, path, color)
       } else if (summaryScoreMode === 'max') {
-        const maxr = feature.get('maxScore')
-        const s = feature.get('summary') ? maxr : score
+        const s = feature.get('summary') ? feature.get('maxScore') : score
         fillRect(leftPx, toY(s), w, getHeight(s), ctx, path, color)
       } else if (summaryScoreMode === 'min') {
-        const minr = feature.get('minScore')
-        const s = feature.get('summary') ? minr : score
+        const s = feature.get('summary') ? feature.get('minScore') : score
         fillRect(leftPx, toY(s), w, getHeight(s), ctx, path, color)
       } else {
         fillRect(leftPx, toY(score), w, getHeight(score), ctx, path, color)
@@ -203,7 +196,7 @@ export function drawFeats(
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const w = rightPx - leftPx + 0.4 // fudge factor for subpixel rendering
+      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       const score = feature.get('score')
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
