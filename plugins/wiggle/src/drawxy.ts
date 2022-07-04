@@ -94,7 +94,7 @@ export function drawFeats(
   // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
   // wiggle display, and makes the height of the actual drawn area add
   // "padding" to the top and bottom of the display
-  const height = unadjustedHeight - offset * 2
+  const height = unadjustedHeight - offset
 
   const filled = readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
@@ -104,7 +104,7 @@ export function drawFeats(
   const originY = getOrigin(scaleOpts.scaleType)
   const [niceMin, niceMax] = scale.domain()
 
-  const toY = (n: number) => clamp(height - (scale(n) || 0) + offset, 0, height)
+  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height)
   const toHeight = (n: number) => toY(originY) - toY(n)
 
   const useCb = !!colorCallback
@@ -203,7 +203,7 @@ export function drawFeats(
       if (highClipping) {
         fillRect(leftPx, 0, w, 4, ctx, path)
       } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        fillRect(leftPx, unadjustedHeight - 4, w, 4, ctx, path, clipColor)
+        fillRect(leftPx, unadjustedHeight, w, 4, ctx, path, clipColor)
       }
     }
     if (path) {
