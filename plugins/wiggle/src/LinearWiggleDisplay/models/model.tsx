@@ -15,8 +15,8 @@ import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, when } from 'mobx'
-import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
+import { when } from 'mobx'
+import { isAlive, types, getEnv, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -31,7 +31,6 @@ import {
 
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
@@ -82,8 +81,6 @@ const stateModelFactory = (
       stats: { scoreMin: 0, scoreMax: 50 },
       statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
-      featureUnderMouseVolatile: undefined as undefined | Feature,
-      mouseOverBp: undefined as { refName: string; coord: number } | undefined,
     }))
     .actions(self => ({
       updateStats(
@@ -178,14 +175,6 @@ const stateModelFactory = (
 
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
-      },
-      setCurrMouseOverBp(arg?: { refName: string; coord: number }) {
-        if (!deepEqual(arg, self.mouseOverBp)) {
-          self.mouseOverBp = arg
-        }
-      },
-      setFeatureUnderMouse(feat?: Feature) {
-        self.featureUnderMouseVolatile = feat
       },
     }))
     .views(self => ({
@@ -343,9 +332,6 @@ const stateModelFactory = (
         return pluginManager.getAdapterType(self.adapterTypeName)
           .adapterCapabilities
       },
-      get featureUnderMouse() {
-        return self.featureUnderMouseVolatile
-      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
@@ -365,12 +351,6 @@ const stateModelFactory = (
             displayModel: self,
             config: self.rendererConfig,
             displayCrossHatches: self.displayCrossHatchesSetting,
-            onMouseMove: (arg: { refName: string; coord: number }) => {
-              self.setCurrMouseOverBp(arg)
-            },
-            onMouseLeave: () => {
-              self.setCurrMouseOverBp()
-            },
             scaleOpts,
             resolution,
             height,
@@ -516,41 +496,6 @@ const stateModelFactory = (
         },
         afterAttach() {
           statsAutorun(self)
-          addDisposer(
-            self,
-            autorun(async () => {
-              const { mouseOverBp, adapterConfig } = self
-              if (!mouseOverBp) {
-                self.setFeatureUnderMouse(undefined)
-                return
-              }
-              const { coord } = mouseOverBp
-              const session = getSession(self)
-              const sessionId = getRpcSessionId(self)
-              const view = getContainingView(self) as LGV
-              const curr = JSON.stringify(mouseOverBp)
-              const features = (await session.rpcManager.call(
-                sessionId,
-                'CoreGetFeatures',
-                {
-                  regions: [
-                    {
-                      ...self.mouseOverBp,
-                      start: coord,
-                      end: coord + 1,
-                    },
-                  ],
-                  sessionId,
-                  adapterConfig,
-                  layoutId: view.id,
-                },
-              )) as Feature[]
-              const [feature] = features
-              if (feature && JSON.stringify(self.mouseOverBp) === curr) {
-                self.setFeatureUnderMouse(feature)
-              }
-            }),
-          )
         },
         async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.statsReady && !!self.regionCannotBeRenderedText)

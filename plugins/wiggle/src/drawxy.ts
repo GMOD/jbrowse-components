@@ -5,33 +5,6 @@ import {
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { getOrigin, getScale, ScaleOpts } from './util'
 
-function fillRect(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  ctx: CanvasRenderingContext2D,
-  path?: Path2D,
-  color?: string,
-) {
-  if (width < 0) {
-    x += width
-    width = -width
-  }
-  if (height < 0) {
-    y += height
-    height = -height
-  }
-  if (path) {
-    path.rect(x, y, width, height)
-  } else {
-    if (color) {
-      ctx.fillStyle = String(color)
-    }
-    ctx.fillRect(x, y, width, height)
-  }
-}
-
 function fillRectCtx(
   x: number,
   y: number,
@@ -101,15 +74,20 @@ export function drawFeats(
   const [niceMin, niceMax] = scale.domain()
 
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
-  const toHeight = (n: number) => toY(originY) - toY(n)
+  const toOrigin = (n: number) => toY(originY) - toY(n)
 
-  const getHeight = (n: number) => (filled ? toHeight(n) : 1)
+  const getHeight = (n: number) => (filled ? toOrigin(n) : 1)
   let hasClipping = false
 
-  // if (useCb) {
+  let prevLeftPx = 0
+  let reducedFeatures = []
   for (let i = 0; i < features.length; i++) {
     const feature = features[i]
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
 
     const score = feature.get('score')
     const c = colorCallback(feature, score)
@@ -167,4 +145,8 @@ export function drawFeats(
       ctx.stroke()
     })
   }
+
+  console.log({ reducedFeatures })
+
+  return { reducedFeatures }
 }

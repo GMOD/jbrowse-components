@@ -45,16 +45,21 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
 
-    const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
-      this.draw(ctx, {
-        ...renderProps,
-        features,
-      }),
+    // @ts-ignore
+    const { reducedFeatures, ...rest } = await renderToAbstractCanvas(
+      width,
+      height,
+      renderProps,
+      ctx =>
+        this.draw(ctx, {
+          ...renderProps,
+          features,
+        }),
     )
 
     const results = await super.render({
       ...renderProps,
-      ...res,
+      ...rest,
       features,
       height,
       width,
@@ -62,7 +67,9 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     return {
       ...results,
-      ...res,
+      ...rest,
+      // @ts-ignore
+      features: reducedFeatures || results.features,
       containsNoTransferables: true,
       height,
       width,
@@ -76,5 +83,5 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
     props: T,
-  ): Promise<void>
+  ): Promise<Record<string, unknown>>
 }

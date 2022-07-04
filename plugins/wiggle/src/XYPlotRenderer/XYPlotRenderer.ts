@@ -21,7 +21,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const posColor = readConfObject(config, 'posColor')
     const Color = await import('color').then(f => f.default)
 
-    drawFeats(ctx, {
+    return drawFeats(ctx, {
       ...props,
       colorCallback:
         readConfObject(config, 'color') === '#f0f'

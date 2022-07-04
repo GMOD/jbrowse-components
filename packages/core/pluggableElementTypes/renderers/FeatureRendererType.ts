@@ -140,11 +140,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
     const { signal, regions, sessionId, adapterConfig } = renderArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const dataAdapter = (
+      await getAdapter(this.pluginManager, sessionId, adapterConfig)
+    ).dataAdapter as BaseFeatureDataAdapter
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -168,16 +166,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
 
     const featureObservable =
       requestRegions.length === 1
-        ? (dataAdapter as BaseFeatureDataAdapter).getFeatures(
+        ? dataAdapter.getFeatures(
             this.getExpandedRegion(region, renderArgs),
-            // @ts-ignore
             renderArgs,
           )
-        : // @ts-ignore
-          (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
-            requestRegions,
-            renderArgs,
-          )
+        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     const feats = await featureObservable.pipe(toArray()).toPromise()
     checkAbortSignal(signal)
