@@ -202,11 +202,11 @@ const stateModelFactory = (
       get adapterTypeName() {
         return self.adapterConfig.type
       },
-
+      get rendererTypeNameSimple() {
+        return self.rendererTypeNameState || getConf(self, 'defaultRendering')
+      },
       get rendererTypeName() {
-        const viewName =
-          self.rendererTypeNameState || getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
+        const rendererType = rendererTypes.get(this.rendererTypeNameSimple)
         if (!rendererType) {
           throw new Error(`unknown alignments view name ${viewName}`)
         }
@@ -305,22 +305,39 @@ const stateModelFactory = (
         get needsScalebar() {
           return (
             self.rendererTypeName === 'MultiXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
             self.rendererTypeName === 'MultiLineRenderer'
           )
         },
 
-        get needsScaleSmall() {
+        get needsFullHeightScalebar() {
+          return (
+            self.rendererTypeName === 'MultiXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiLineRenderer'
+          )
+        },
+
+        get isMultiRow() {
           return (
             self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
             self.rendererTypeName === 'MultiDensityRenderer'
           )
         },
+        get needsCustomLegend() {
+          return self.rendererTypeName === 'MultiDensityRenderer'
+        },
+
+        get prefersOffset() {
+          return this.isMultiRow
+        },
+
         get scaleOpts() {
+          const { scaleType, stats } = self
           return {
-            domain: this.domain,
-            stats: self.stats,
             autoscaleType: this.autoscaleType,
-            scaleType: self.scaleType,
+            domain: this.domain,
+            stats,
+            scaleType,
             inverted: getConf(self, 'inverted'),
           }
         },
@@ -343,14 +360,30 @@ const stateModelFactory = (
             (readConfObject(rendererConfig, 'displayCrossHatches') as boolean)
           )
         },
+        get rowHeight() {
+          return this.isMultiRow
+            ? self.height / (self.sources?.length || 1)
+            : self.height
+        },
+
+        get rowHeightTooSmallForScalebar() {
+          return this.rowHeight < 100
+        },
+
+        get useMinimalTicks() {
+          return (
+            getConf(self, 'minimalTicks') || this.rowHeightTooSmallForScalebar
+          )
+        },
       }
     })
     .views(self => ({
       get ticks() {
-        const { scaleType, domain, height } = self
-        const minimalTicks =
-          getConf(self, 'minimalTicks') || self.needsScaleSmall || height < 100
-        const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
+        const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
+          self
+
+        const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
+        const range = [rowHeight - offset, offset]
         const scale = getScale({
           scaleType,
           domain,
@@ -358,9 +391,7 @@ const stateModelFactory = (
           inverted: getConf(self, 'inverted'),
         })
         const ticks = axisPropsFromTickScale(scale, 4)
-        return height < 100 || minimalTicks
-          ? { ...ticks, values: domain }
-          : ticks
+        return useMinimalTicks ? { ...ticks, values: domain } : ticks
       },
 
       get colors() {
@@ -374,13 +405,22 @@ const stateModelFactory = (
           'pink',
           'darkblue',
           'darkred',
+          'pink',
         ]
       },
 
       get sourceColors() {
-        return self.sources
-          ? Object.fromEntries(zip(self.sources, this.colors))
+        const { sources } = self
+        return sources
+          ? Object.fromEntries(zip(sources, this.colors))
           : undefined
+      },
+      get adapterCapabilities() {
+        const { adapterTypeName } = self
+        return pluginManager.getAdapterType(adapterTypeName).adapterCapabilities
+      },
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
       },
     }))
     .views(self => {
@@ -389,48 +429,52 @@ const stateModelFactory = (
         renderProps() {
           const superProps = superRenderProps()
           const view = getContainingView(self) as LGV
-          const statsRegion = JSON.stringify(view.dynamicBlocks)
+          const currRegion = JSON.stringify(view.dynamicBlocks)
+          const {
+            displayCrossHatches,
+            filters,
+            height,
+            resolution,
+            rpcDriverName,
+            rendererConfig: config,
+            scaleOpts,
+            sources,
+            sourceColors,
+            statsReady,
+            statsRegion,
+            ticks,
+          } = self
+          const regionMatches = currRegion !== statsRegion
           return {
             ...superProps,
             notReady:
-              superProps.notReady ||
-              statsRegion !== self.statsRegion ||
-              !self.sources ||
-              !self.statsReady,
-            rpcDriverName: self.rpcDriverName,
+              superProps.notReady || regionMatches || !sources || !statsReady,
             displayModel: self,
-            config: self.rendererConfig,
-            scaleOpts: self.scaleOpts,
-            resolution: self.resolution,
-            sourceColors: self.sourceColors,
+            config,
+            displayCrossHatches,
+            filters,
+            height,
+            resolution,
+            rpcDriverName,
+            scaleOpts,
+            sourceColors,
+            sources,
+            ticks,
             onMouseMove: (arg: { refName: string; coord: number }) => {
               self.setCurrMouseOverBp(arg)
             },
             onMouseLeave: () => {
               self.setCurrMouseOverBp()
             },
-            sources: self.sources,
-            height: self.height,
-            ticks: self.ticks,
-            displayCrossHatches: self.displayCrossHatches,
-            filters: self.filters,
           }
         },
 
-        get adapterCapabilities() {
-          return pluginManager.getAdapterType(self.adapterTypeName)
-            .adapterCapabilities
-        },
-        get featureUnderMouse() {
-          return self.featureUnderMouseVolatile
-        },
-
         get hasResolution() {
-          return this.adapterCapabilities.includes('hasResolution')
+          return self.adapterCapabilities.includes('hasResolution')
         },
 
         get hasGlobalStats() {
-          return this.adapterCapabilities.includes('hasGlobalStats')
+          return self.adapterCapabilities.includes('hasGlobalStats')
         },
       }
     })
@@ -509,6 +553,8 @@ const stateModelFactory = (
                       'multiline',
                     ].map(key => ({
                       label: key,
+                      type: 'radio',
+                      checked: self.rendererTypeNameSimple === key,
                       onClick: () => self.setRendererType(key),
                     })),
                   },
@@ -637,18 +683,17 @@ const stateModelFactory = (
                 features.length &&
                 JSON.stringify(self.mouseOverBp) === curr
               ) {
-                // syntesize data for the multi-tooltip from multiple features
-                const obj = Object.fromEntries(
-                  features
-                    .map(f => f.toJSON())
-                    .map(f => {
-                      const { refName, start, end, source, ...rest } = f
-                      return [source, rest]
-                    }),
-                )
+                // synthesize data for the multi-tooltip from multiple features
                 const f = new SimpleFeature({
                   uniqueId: 'mouseoverfeat',
-                  sources: obj,
+                  sources: Object.fromEntries(
+                    features
+                      .map(f => f.toJSON())
+                      .map(f => {
+                        const { refName, start, end, source, ...rest } = f
+                        return [source, rest]
+                      }),
+                  ),
                   ...region,
                 })
                 self.setFeatureUnderMouse(f)

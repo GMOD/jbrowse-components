@@ -5,13 +5,17 @@ import {
   getContainingTrack,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import {
+  LinearGenomeViewModel,
+  BaseLinearDisplayComponent,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 import { WiggleDisplayModel } from '../models/model'
 import YScaleBar from './YScaleBar'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+const trackLabelFontSize = 12.8
 
 const Wrapper = observer(
   ({
@@ -26,12 +30,13 @@ const Wrapper = observer(
     if (exportSVG) {
       return <>{children}</>
     } else {
-      const { height } = model
+      const { height, prefersOffset } = model
       const { trackLabels } = getContainingView(model) as LGV
       const track = getContainingTrack(model)
+      const trackName = getConf(track, 'name')
       const left =
-        trackLabels === 'overlapping'
-          ? measureText(getConf(track, 'name'), 12.8) + 100
+        trackLabels === 'overlapping' && !prefersOffset
+          ? measureText(trackName, trackLabelFontSize) + 100
           : 10
       return (
         <svg
@@ -51,6 +56,33 @@ const Wrapper = observer(
   },
 )
 
+const RectBg = (props: {
+  x: number
+  y: number
+  width: number
+  height: number
+}) => {
+  return <rect {...props} fill="rgb(255,255,255,0.8)" rx={3} />
+}
+
+const Legend = observer((props: { model: WiggleDisplayModel }) => {
+  const { model } = props
+  const { ticks } = model
+  const { width } = getContainingView(model) as LGV
+  const legend = `[${ticks.values[0]}-${ticks.values[1]}]`
+  const len = measureText(legend, 14)
+  const padding = 25
+  const xpos = width - len - padding
+  return (
+    <>
+      <RectBg y={0} x={xpos} width={len + 6} height={16} />
+      <text y={13} x={xpos}>
+        {legend}
+      </text>
+    </>
+  )
+})
+
 export const StatBars = observer(
   (props: {
     model: WiggleDisplayModel
@@ -58,46 +90,64 @@ export const StatBars = observer(
     exportSVG?: boolean
   }) => {
     const { model, orientation } = props
-    const { stats, height, needsScalebar, needsScaleSmall, sources, ticks } =
-      model
-
+    const {
+      stats,
+      height,
+      needsCustomLegend,
+      needsFullHeightScalebar,
+      rowHeightTooSmallForScalebar,
+      sources,
+      ticks,
+    } = model
     return (
-      <>
-        {stats ? (
+      <Wrapper {...props}>
+        {stats && sources ? (
           <>
-            {needsScalebar ? (
-              <Wrapper {...props}>
-                <YScaleBar model={model} orientation={orientation} />
-              </Wrapper>
-            ) : null}
-
-            {needsScaleSmall && sources ? (
-              <Wrapper {...props}>
+            {needsFullHeightScalebar ? (
+              <YScaleBar model={model} orientation={orientation} />
+            ) : (
+              <>
                 {sources.map((source, idx) => {
-                  const label = `[${ticks.values[0]}-${ticks.values[1]}] ${source}`
                   const smheight = height / sources.length
 
+                  // put the subtrack labels to the right of the scalebar
+                  const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
                   return (
                     <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
-                      <rect
+                      <RectBg
                         y={idx * smheight + 1}
-                        x={0}
-                        width={measureText(label, 14) + 6}
+                        x={extraOffset}
+                        width={measureText(source, 14) + 6}
                         height={16}
-                        fill="rgb(255,255,255,0.8)"
-                        rx={3}
                       />
-                      <text y={idx * smheight + 13} x={2}>
-                        {label}
+                      <text y={idx * smheight + 13} x={extraOffset + 2}>
+                        {source}
                       </text>
                     </React.Fragment>
                   )
                 })}
-              </Wrapper>
-            ) : null}
+
+                {rowHeightTooSmallForScalebar || needsCustomLegend ? (
+                  <Legend {...props} />
+                ) : (
+                  sources.map((_source, idx) => {
+                    const smheight = height / sources.length
+
+                    return (
+                      <g
+                        transform={`translate(0 ${smheight * idx})`}
+                        key={JSON.stringify(ticks) + '-' + idx}
+                      >
+                        <YScaleBar model={model} orientation={orientation} />
+                      </g>
+                    )
+                  })
+                )}
+              </>
+            )}
           </>
         ) : null}
-      </>
+      </Wrapper>
     )
   },
 )
