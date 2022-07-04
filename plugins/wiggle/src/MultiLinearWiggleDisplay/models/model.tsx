@@ -651,56 +651,56 @@ const stateModelFactory = (
               }
             }),
           )
-          addDisposer(
-            self,
-            autorun(async () => {
-              const { mouseOverBp, adapterConfig } = self
-              if (!mouseOverBp) {
-                self.setFeatureUnderMouse(undefined)
-                return
-              }
-              const { coord } = mouseOverBp
-              const session = getSession(self)
-              const sessionId = getRpcSessionId(self)
-              const view = getContainingView(self) as LGV
-              const curr = JSON.stringify(mouseOverBp)
-              const region = {
-                ...self.mouseOverBp,
-                start: coord,
-                end: coord,
-              }
-              const features = (await session.rpcManager.call(
-                sessionId,
-                'CoreGetFeatures',
-                {
-                  regions: [region],
-                  sessionId,
-                  adapterConfig,
-                  layoutId: view.id,
-                },
-              )) as Feature[]
+          // addDisposer(
+          //   self,
+          //   autorun(async () => {
+          //     const { mouseOverBp, adapterConfig } = self
+          //     if (!mouseOverBp) {
+          //       self.setFeatureUnderMouse(undefined)
+          //       return
+          //     }
+          //     const { coord } = mouseOverBp
+          //     const session = getSession(self)
+          //     const sessionId = getRpcSessionId(self)
+          //     const view = getContainingView(self) as LGV
+          //     const curr = JSON.stringify(mouseOverBp)
+          //     const region = {
+          //       ...self.mouseOverBp,
+          //       start: coord,
+          //       end: coord,
+          //     }
+          //     const features = (await session.rpcManager.call(
+          //       sessionId,
+          //       'CoreGetFeatures',
+          //       {
+          //         regions: [region],
+          //         sessionId,
+          //         adapterConfig,
+          //         layoutId: view.id,
+          //       },
+          //     )) as Feature[]
 
-              if (
-                features.length &&
-                JSON.stringify(self.mouseOverBp) === curr
-              ) {
-                // synthesize data for the multi-tooltip from multiple features
-                const f = new SimpleFeature({
-                  uniqueId: 'mouseoverfeat',
-                  sources: Object.fromEntries(
-                    features
-                      .map(f => f.toJSON())
-                      .map(f => {
-                        const { refName, start, end, source, ...rest } = f
-                        return [source, rest]
-                      }),
-                  ),
-                  ...region,
-                })
-                self.setFeatureUnderMouse(f)
-              }
-            }),
-          )
+          //     if (
+          //       features.length &&
+          //       JSON.stringify(self.mouseOverBp) === curr
+          //     ) {
+          //       // synthesize data for the multi-tooltip from multiple features
+          //       const f = new SimpleFeature({
+          //         uniqueId: 'mouseoverfeat',
+          //         sources: Object.fromEntries(
+          //           features
+          //             .map(f => f.toJSON())
+          //             .map(f => {
+          //               const { refName, start, end, source, ...rest } = f
+          //               return [source, rest]
+          //             }),
+          //         ),
+          //         ...region,
+          //       })
+          //       self.setFeatureUnderMouse(f)
+          //     }
+          //   }),
+          // )
         },
         async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.statsReady && !!self.regionCannotBeRenderedText)

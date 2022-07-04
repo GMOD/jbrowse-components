@@ -66,10 +66,8 @@ export function drawFeats(
     ticks: { values: number[] }
     config: AnyConfigurationModel
     displayCrossHatches: boolean
-    exportSVG?: { rasterizeLayers?: boolean }
     offset?: number
-    color?: string
-    colorCallback?: (f: Feature, score: number) => string
+    colorCallback: (f: Feature, score: number) => string
     Color: typeof import('color')
   },
 ) {
@@ -82,9 +80,7 @@ export function drawFeats(
     config,
     ticks,
     displayCrossHatches,
-    exportSVG,
     offset = 0,
-    color,
     colorCallback,
     Color,
   } = props
@@ -94,7 +90,7 @@ export function drawFeats(
   // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
   // wiggle display, and makes the height of the actual drawn area add
   // "padding" to the top and bottom of the display
-  const height = unadjustedHeight - offset
+  const height = unadjustedHeight - offset * 2
 
   const filled = readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
@@ -104,94 +100,47 @@ export function drawFeats(
   const originY = getOrigin(scaleOpts.scaleType)
   const [niceMin, niceMax] = scale.domain()
 
-  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height)
+  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
   const toHeight = (n: number) => toY(originY) - toY(n)
 
-  const useCb = !!colorCallback
-  const minColor = color && Color(color).darken(0.6).toString()
-  const maxColor = color && Color(color).lighten(0.6).toString()
-
-  // first pass: uses path2d for faster rendering
-  const usePath = exportSVG || typeof Path2D === 'undefined'
-  const path = usePath ? undefined : new Path2D()
-  const pathMin = usePath ? undefined : new Path2D()
-  const pathMax = usePath ? undefined : new Path2D()
   const getHeight = (n: number) => (filled ? toHeight(n) : 1)
   let hasClipping = false
 
-  if (useCb) {
-    for (let i = 0; i < features.length; i++) {
-      const feature = features[i]
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+  // if (useCb) {
+  for (let i = 0; i < features.length; i++) {
+    const feature = features[i]
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-      const score = feature.get('score')
-      const c = colorCallback(feature, score)
-      const minColor = Color(c).darken(0.6).toString()
-      const maxColor = Color(c).lighten(0.6).toString()
+    const score = feature.get('score')
+    const c = colorCallback(feature, score)
+    const minColor = Color(c).darken(0.6).toString()
+    const maxColor = Color(c).lighten(0.6).toString()
 
-      hasClipping = score < niceMin || score > niceMax
-      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+    hasClipping = score < niceMin || score > niceMax
+    const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
 
-      if (summaryScoreMode === 'whiskers') {
-        const summary = feature.get('summary')
-        if (summary) {
-          const max = feature.get('maxScore')
-          const min = feature.get('minScore')
-          fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
-          fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
-        }
-        fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
-      } else if (summaryScoreMode === 'max') {
-        const s = feature.get('summary') ? feature.get('maxScore') : score
-        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
-      } else if (summaryScoreMode === 'min') {
-        const s = feature.get('summary') ? feature.get('minScore') : score
-        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
-      } else {
-        fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+    if (summaryScoreMode === 'whiskers') {
+      const summary = feature.get('summary')
+      if (summary) {
+        const max = feature.get('maxScore')
+        const min = feature.get('minScore')
+        fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
+        fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
       }
-    }
-  } else {
-    for (let i = 0; i < features.length; i++) {
-      const feature = features[i]
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-
-      const score = feature.get('score')
-      hasClipping = score < niceMin || score > niceMax
-      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
-
-      if (summaryScoreMode === 'whiskers') {
-        const summary = feature.get('summary')
-        if (summary) {
-          const max = feature.get('maxScore')
-          const min = feature.get('minScore')
-          fillRect(leftPx, toY(max), w, getHeight(max), ctx, pathMax, maxColor)
-          fillRect(leftPx, toY(min), w, getHeight(min), ctx, pathMin, minColor)
-        }
-        fillRect(leftPx, toY(score), w, getHeight(score), ctx, path, color)
-      } else if (summaryScoreMode === 'max') {
-        const s = feature.get('summary') ? feature.get('maxScore') : score
-        fillRect(leftPx, toY(s), w, getHeight(s), ctx, path, color)
-      } else if (summaryScoreMode === 'min') {
-        const s = feature.get('summary') ? feature.get('minScore') : score
-        fillRect(leftPx, toY(s), w, getHeight(s), ctx, path, color)
-      } else {
-        fillRect(leftPx, toY(score), w, getHeight(score), ctx, path, color)
-      }
-    }
-    if (path && pathMin && pathMax && color && minColor && maxColor) {
-      ctx.fillStyle = minColor
-      ctx.fill(pathMin)
-      ctx.fillStyle = maxColor
-      ctx.fill(pathMax)
-      ctx.fillStyle = color
-      ctx.fill(path)
+      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+    } else if (summaryScoreMode === 'max') {
+      const s = feature.get('summary') ? feature.get('maxScore') : score
+      fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+    } else if (summaryScoreMode === 'min') {
+      const s = feature.get('summary') ? feature.get('minScore') : score
+      fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+    } else {
+      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
     }
   }
 
   // second pass: draw clipping
   if (hasClipping) {
-    const path = exportSVG ? undefined : new Path2D()
     ctx.fillStyle = clipColor
     for (let i = 0; i < features.length; i++) {
       const feature = features[i]
@@ -201,14 +150,10 @@ export function drawFeats(
       const lowClipping = score < niceMin
       const highClipping = score > niceMax
       if (highClipping) {
-        fillRect(leftPx, 0, w, 4, ctx, path)
+        fillRectCtx(leftPx, 0, w, 4, ctx)
       } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        fillRect(leftPx, unadjustedHeight, w, 4, ctx, path, clipColor)
+        fillRectCtx(leftPx, unadjustedHeight, w, 4, ctx)
       }
-    }
-    if (path) {
-      ctx.fillStyle = clipColor
-      ctx.fill(path)
     }
   }
 

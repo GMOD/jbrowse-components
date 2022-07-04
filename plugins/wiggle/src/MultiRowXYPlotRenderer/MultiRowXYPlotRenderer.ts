@@ -12,7 +12,7 @@ interface MultiArgs extends RenderArgsDeserializedWithFeatures {
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   // @ts-ignore
   async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
-    const { bpPerPx, sources, regions, sourceColors, features } = props
+    const { bpPerPx, sources, regions, features } = props
     const [region] = regions
     const groups = groupBy([...features.values()], f => f.get('source'))
     const height = props.height / Object.keys(groups).length
@@ -24,7 +24,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         ...props,
         features: groups[source],
         height,
-        color: sourceColors[source],
+        colorCallback: () => 'blue',
         Color,
       })
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'

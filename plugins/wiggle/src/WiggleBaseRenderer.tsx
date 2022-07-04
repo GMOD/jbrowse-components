@@ -1,4 +1,3 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
   RenderArgsSerialized,
@@ -7,7 +6,7 @@ import FeatureRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
 import { ThemeOptions } from '@mui/material'
 import { ScaleOpts } from './util'
 
@@ -64,7 +63,6 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     return {
       ...results,
       ...res,
-      features: new Map(),
       containsNoTransferables: true,
       height,
       width,

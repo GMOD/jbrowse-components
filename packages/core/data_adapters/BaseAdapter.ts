@@ -57,16 +57,15 @@ export interface SequenceAdapter
   extends BaseFeatureDataAdapter,
     RegionsAdapter {}
 
+const EmptyConfig = ConfigurationSchema('empty', {})
+
 export abstract class BaseAdapter {
   public id: string
 
   static capabilities = [] as string[]
 
   constructor(
-    public config: AnyConfigurationModel = ConfigurationSchema(
-      'empty',
-      {},
-    ).create(),
+    public config: AnyConfigurationModel = EmptyConfig.create(),
     public getSubAdapter?: getSubAdapterType,
     public pluginManager?: PluginManager,
   ) {
@@ -120,7 +119,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   /**
    * Get features from the data source that overlap a region
    * @param region - Region
-   * @param options - Feature adapter options
+   * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the region
    */
   public abstract getFeatures(

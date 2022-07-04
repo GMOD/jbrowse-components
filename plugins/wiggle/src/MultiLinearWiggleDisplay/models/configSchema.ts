@@ -13,6 +13,8 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const MultiRowXYPlotRendererConfigSchema = pluginManager.getRendererType(
     'MultiRowXYPlotRenderer',
   ).configSchema
+  const MultiLineRendererConfigSchema =
+    pluginManager.getRendererType('MultiLineRenderer').configSchema
 
   return ConfigurationSchema(
     'MultiLinearWiggleDisplay',
@@ -66,14 +68,20 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
 
       defaultRendering: {
         type: 'stringEnum',
-        model: types.enumeration('Rendering', ['density', 'xyplot', 'line']),
-        defaultValue: 'xyplot',
+        model: types.enumeration('Rendering', [
+          'multirowxy',
+          'xyplot',
+          'multirowdensity',
+          'multiline',
+        ]),
+        defaultValue: 'multirowxy',
       },
 
       renderers: ConfigurationSchema('RenderersConfiguration', {
         MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
         MultiDensityRenderer: MultiDensityRendererConfigSchema,
         MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
+        MultiLineRenderer: MultiLineRendererConfigSchema,
       }),
     },
     { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },

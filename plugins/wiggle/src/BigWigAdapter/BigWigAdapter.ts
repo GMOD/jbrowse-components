@@ -5,9 +5,8 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { updateStatus } from '@jbrowse/core/util'
+import { updateStatus, Feature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
 
 interface WiggleOptions extends BaseOptions {
