@@ -4,7 +4,7 @@ import { Badge, IconButton, InputAdornment, TextField } from '@mui/material'
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
 import MenuIcon from '@mui/icons-material/Menu'
-import NotificationIcon from '@mui/icons-material/Notifications'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
@@ -190,7 +190,7 @@ function HierarchicalTrackSelectorHeader({
             onClick={event => setGroupEl(event.currentTarget)}
           >
             <Badge badgeContent={model.group.length} color="primary">
-              <NotificationIcon />
+              <ShoppingCartIcon />
             </Badge>
           </IconButton>
         ) : null}

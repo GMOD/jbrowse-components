@@ -216,7 +216,7 @@ export default function Node(props: {
               anchorEl={menuEl}
               menuItems={[
                 {
-                  label: 'Add to group',
+                  label: 'Add to selection',
                   onClick: () => {
                     const subtree = treeToMap(tree).get(id)
                     const t = subtree?.children.map(t => t.conf) || []
@@ -237,14 +237,11 @@ export default function Node(props: {
             <JBrowseMenu
               anchorEl={info?.target}
               menuItems={[
-                ...((info?.conf &&
-                  getSession(model).getTrackActionMenuItems?.(info?.conf)) ||
+                ...(getSession(model).getTrackActionMenuItems?.(info.conf) ||
                   []),
                 {
-                  label: 'Add to group',
-                  onClick: () => {
-                    model.addToGroup([info.conf])
-                  },
+                  label: 'Add to selection',
+                  onClick: () => model.addToGroup([info.conf]),
                 },
               ]}
               onMenuItemClick={(_event, callback) => {
