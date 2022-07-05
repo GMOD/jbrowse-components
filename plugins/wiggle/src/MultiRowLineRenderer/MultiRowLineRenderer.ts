@@ -1,3 +1,4 @@
+import { Feature } from '@jbrowse/core/util'
 import { groupBy } from '../util'
 import { drawLine } from '../drawxy'
 import WiggleBaseRenderer, {
@@ -17,9 +18,10 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
     const groups = groupBy([...features.values()], f => f.get('source'))
     const height = props.height / Object.keys(groups).length
     const width = (region.end - region.start) / bpPerPx
+    let feats = [] as Feature[]
     ctx.save()
     sources.forEach(source => {
-      drawLine(ctx, {
+      const { reducedFeatures } = drawLine(ctx, {
         ...props,
         features: groups[source],
         height,
@@ -30,7 +32,9 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
       ctx.lineTo(width, height)
       ctx.stroke()
       ctx.translate(0, height)
+      feats = feats.concat(reducedFeatures)
     })
     ctx.restore()
+    return { reducedFeatures: feats }
   }
 }

@@ -93,8 +93,6 @@ export function drawXY(
 
     const score = feature.get('score')
     const c = colorCallback(feature, score)
-    const minColor = Color(c).darken(0.6).toString()
-    const maxColor = Color(c).lighten(0.6).toString()
 
     hasClipping = hasClipping || score < niceMin || score > niceMax
     const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
@@ -104,6 +102,8 @@ export function drawXY(
       if (summary) {
         const max = feature.get('maxScore')
         const min = feature.get('minScore')
+        const minColor = Color(c).darken(0.6).toString()
+        const maxColor = Color(c).lighten(0.6).toString()
         hasClipping = hasClipping || min < niceMin || max > niceMax
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
@@ -152,7 +152,7 @@ export function drawXY(
   return { reducedFeatures }
 }
 
-export async function drawLine(
+export function drawLine(
   ctx: CanvasRenderingContext2D,
   props: {
     features: Map<string, Feature> | Feature[]
@@ -185,7 +185,6 @@ export async function drawLine(
   // "padding" to the top and bottom of the display
   const height = unadjustedHeight - offset * 2
   const clipColor = readConfObject(config, 'clipColor')
-  const highlightColor = readConfObject(config, 'highlightColor')
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const [niceMin, niceMax] = scale.domain()
   const toY = (n: number) => height - (scale(n) || 0) + offset
@@ -235,10 +234,6 @@ export async function drawLine(
       ctx.fillStyle = clipColor
       ctx.fillRect(leftPx, height - 4, w, height)
     }
-    if (feature.get('highlighted')) {
-      ctx.fillStyle = highlightColor
-      ctx.fillRect(leftPx, 0, w, height)
-    }
   }
 
   if (displayCrossHatches) {
@@ -254,7 +249,7 @@ export async function drawLine(
   return { reducedFeatures }
 }
 
-export async function drawDensity(
+export function drawDensity(
   ctx: CanvasRenderingContext2D,
   props: {
     features: Map<string, Feature> | Feature[]
@@ -304,4 +299,5 @@ export async function drawDensity(
     ctx.fillStyle = colorCallback(feature)
     ctx.fillRect(leftPx, 0, w, height)
   }
+  return { reducedFeatures }
 }

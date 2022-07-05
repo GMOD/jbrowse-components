@@ -1,3 +1,4 @@
+import { Feature } from '@jbrowse/core/util'
 import { groupBy } from '../util'
 import { drawXY } from '../drawxy'
 import WiggleBaseRenderer, {
@@ -18,11 +19,16 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const height = props.height / Object.keys(groups).length
     const width = (region.end - region.start) / bpPerPx
     const Color = await import('color').then(f => f.default)
+    let feats = [] as Feature[]
     ctx.save()
     sources.forEach(source => {
-      drawXY(ctx, {
+      const features = groups[source]
+      if (!features) {
+        return
+      }
+      const { reducedFeatures } = drawXY(ctx, {
         ...props,
-        features: groups[source],
+        features,
         height,
         colorCallback: () => 'blue',
         Color,
@@ -33,7 +39,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       ctx.lineTo(width, height)
       ctx.stroke()
       ctx.translate(0, height)
+      feats = feats.concat(reducedFeatures)
     })
     ctx.restore()
+    return { reducedFeatures: feats }
   }
 }

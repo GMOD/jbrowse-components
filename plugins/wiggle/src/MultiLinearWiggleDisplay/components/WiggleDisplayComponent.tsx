@@ -96,9 +96,12 @@ export const StatBars = observer(
       needsCustomLegend,
       needsFullHeightScalebar,
       rowHeightTooSmallForScalebar,
+      rowHeight,
       sources,
       ticks,
     } = model
+
+    const canDisplayLabels = rowHeight > 10
     return (
       <Wrapper {...props}>
         {stats && sources ? (
@@ -107,35 +110,40 @@ export const StatBars = observer(
               <YScaleBar model={model} orientation={orientation} />
             ) : (
               <>
-                {sources.map((source, idx) => {
-                  const smheight = height / sources.length
-
-                  // put the subtrack labels to the right of the scalebar
-                  const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
-                  return (
-                    <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
-                      <RectBg
-                        y={idx * smheight + 1}
-                        x={extraOffset}
-                        width={measureText(source, 14) + 6}
-                        height={16}
-                      />
-                      <text y={idx * smheight + 13} x={extraOffset + 2}>
-                        {source}
-                      </text>
-                    </React.Fragment>
-                  )
-                })}
+                {canDisplayLabels
+                  ? sources.map((source, idx) => {
+                      // put the subtrack labels to the right of the scalebar
+                      const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
+                      const svgFontSize = Math.min(rowHeight, 12)
+                      return (
+                        <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
+                          <RectBg
+                            y={idx * rowHeight + 1}
+                            x={extraOffset}
+                            width={measureText(source, svgFontSize) + 6}
+                            height={Math.min(rowHeight, 16)}
+                          />
+                          <text
+                            y={idx * rowHeight + 13}
+                            x={extraOffset + 2}
+                            fontSize={svgFontSize}
+                          >
+                            {source}
+                          </text>
+                        </React.Fragment>
+                      )
+                    })
+                  : null}
 
                 {rowHeightTooSmallForScalebar || needsCustomLegend ? (
                   <Legend {...props} />
                 ) : (
                   sources.map((_source, idx) => {
-                    const smheight = height / sources.length
+                    const rowHeight = height / sources.length
 
                     return (
                       <g
-                        transform={`translate(0 ${smheight * idx})`}
+                        transform={`translate(0 ${rowHeight * idx})`}
                         key={JSON.stringify(ticks) + '-' + idx}
                       >
                         <YScaleBar model={model} orientation={orientation} />

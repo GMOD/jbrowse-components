@@ -1,23 +1,31 @@
+import { Feature } from '@jbrowse/core/util'
 import { groupBy } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 import { drawDensity } from '../drawxy'
 
+interface MultiArgs extends RenderArgsDeserializedWithFeatures {
+  sources: string[]
+  sourceColors: { [key: string]: string }
+}
+
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
-  async draw(
-    ctx: CanvasRenderingContext2D,
-    props: RenderArgsDeserializedWithFeatures,
-  ) {
-    const { bpPerPx, regions, features } = props
+  // @ts-ignore
+  async draw(ctx: CanvasRenderingContext2D, props: MultiArgs) {
+    const { bpPerPx, sources, regions, features } = props
     const [region] = regions
     const groups = groupBy([...features.values()], f => f.get('source'))
-    const list = Object.values(groups)
-    const height = props.height / list.length
+    const height = props.height / Object.keys(groups).length
     const width = (region.end - region.start) / bpPerPx
+    let feats = [] as Feature[]
     ctx.save()
-    list.forEach(features => {
-      drawDensity(ctx, {
+    sources.forEach(source => {
+      const features = groups[source]
+      if (!features) {
+        return
+      }
+      const { reducedFeatures } = drawDensity(ctx, {
         ...props,
         features,
         height,
@@ -28,7 +36,9 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       ctx.lineTo(width, height)
       ctx.stroke()
       ctx.translate(0, height)
+      feats = feats.concat(reducedFeatures)
     })
     ctx.restore()
+    return { reducedFeatures: feats }
   }
 }
