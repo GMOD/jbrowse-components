@@ -97,11 +97,14 @@ const stateModelFactory = (
         statsRegion: string,
       ) {
         const { scoreMin, scoreMax } = stats
-        const obj = { scoreMin, scoreMax }
-        if (!deepEqual(obj, self.stats)) {
-          self.stats = obj
+        const EPSILON = 0.000001
+        if (
+          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+        ) {
+          self.stats = { scoreMin, scoreMax }
+          self.statsReady = true
         }
-        self.statsReady = true
         self.statsRegion = statsRegion
       },
       setSources(sources: string[]) {

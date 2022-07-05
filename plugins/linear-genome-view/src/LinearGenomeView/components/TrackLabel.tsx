@@ -66,7 +66,7 @@ function getTrackName(
   track: BaseTrackModel,
   session: { assemblies: AnyConfigurationModel[] },
 ) {
-  let trackName = getConf(track, 'name')
+  const trackName = getConf(track, 'name')
   if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === track.configuration)
     return (

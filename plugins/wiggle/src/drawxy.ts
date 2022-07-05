@@ -81,7 +81,7 @@ export function drawXY(
   let hasClipping = false
 
   let prevLeftPx = 0
-  let reducedFeatures = []
+  const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
@@ -187,7 +187,8 @@ export function drawLine(
   const clipColor = readConfObject(config, 'clipColor')
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const [niceMin, niceMax] = scale.domain()
-  const toY = (n: number) => height - (scale(n) || 0) + offset
+  const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
+
   const colorCallback =
     readConfObject(config, 'color') === '#f0f'
       ? () => 'grey'
@@ -196,7 +197,7 @@ export function drawLine(
   let lastVal
 
   let prevLeftPx = 0
-  let reducedFeatures = []
+  const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
@@ -286,7 +287,7 @@ export function drawDensity(
   }
 
   let prevLeftPx = 0
-  let reducedFeatures = []
+  const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 

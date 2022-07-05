@@ -16,7 +16,7 @@ function WiggleRendering(props: {
   onFeatureClick: Function
   blockKey: string
   sources: string[]
-  displayModel: any
+  displayModel: { isMultiRow: boolean }
 }) {
   const {
     regions,
@@ -45,7 +45,6 @@ function WiggleRendering(props: {
     const px = region.reversed ? width - offsetX : offsetX
     const clientBp = region.start + bpPerPx * px
     let featureUnderMouse
-    // @ts-ignore
     if (displayModel.isMultiRow) {
       for (const feature of features.values()) {
         if (feature.get('source') !== source) {
@@ -60,7 +59,7 @@ function WiggleRendering(props: {
         }
       }
     } else {
-      let featuresUnderMouse = []
+      const featuresUnderMouse = []
       for (const feature of features.values()) {
         if (
           clientBp <= feature.get('end') + bpPerPx &&

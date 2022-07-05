@@ -1,5 +1,4 @@
 import React, { lazy } from 'react'
-import deepEqual from 'fast-deep-equal'
 import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
@@ -84,22 +83,18 @@ const stateModelFactory = (
     }))
     .actions(self => ({
       updateStats(
-        {
-          scoreMin,
-          scoreMax,
-        }: {
-          scoreMin: number
-          scoreMax: number
-        },
+        stats: { scoreMin: number; scoreMax: number },
         statsRegion: string,
       ) {
+        const { scoreMin, scoreMax } = stats
+        const EPSILON = 0.000001
         if (
-          self.stats.scoreMin !== scoreMin ||
-          self.stats.scoreMax !== scoreMax
+          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
           self.stats = { scoreMin, scoreMax }
+          self.statsReady = true
         }
-        self.statsReady = true
         self.statsRegion = statsRegion
       },
       setColor(color: string) {
