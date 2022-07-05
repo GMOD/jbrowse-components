@@ -92,10 +92,7 @@ const stateModelFactory = (
       sources: undefined as string[] | undefined,
     }))
     .actions(self => ({
-      updateStats(
-        stats: { scoreMin: number; scoreMax: number },
-        statsRegion: string,
-      ) {
+      updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (
@@ -105,7 +102,6 @@ const stateModelFactory = (
           self.stats = { scoreMin, scoreMax }
           self.statsReady = true
         }
-        self.statsRegion = statsRegion
       },
       setSources(sources: string[]) {
         if (!deepEqual(sources, self.sources)) {
@@ -428,8 +424,6 @@ const stateModelFactory = (
       return {
         renderProps() {
           const superProps = superRenderProps()
-          const view = getContainingView(self) as LGV
-          const currRegion = JSON.stringify(view.dynamicBlocks)
           const {
             displayCrossHatches,
             filters,
@@ -441,14 +435,11 @@ const stateModelFactory = (
             sources,
             sourceColors,
             statsReady,
-            statsRegion,
             ticks,
           } = self
-          const regionMatches = currRegion !== statsRegion
           return {
             ...superProps,
-            notReady:
-              superProps.notReady || regionMatches || !sources || !statsReady,
+            notReady: superProps.notReady || !sources || !statsReady,
             displayModel: self,
             onMouseMove: (_evt: unknown, f: Feature) =>
               self.setFeatureUnderMouse(f),
@@ -590,15 +581,6 @@ const stateModelFactory = (
                 ])
               },
             },
-            {
-              label: 'Set color',
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  SetColorDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
-            },
           ]
         },
       }
@@ -616,13 +598,12 @@ const stateModelFactory = (
           let stats
           try {
             const view = getContainingView(self) as LGV
-            const statsRegion = JSON.stringify(view.dynamicBlocks)
             stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
             })
             if (isAlive(self)) {
-              self.updateStats(stats, statsRegion)
+              self.updateStats(stats)
               superReload()
             }
           } catch (e) {

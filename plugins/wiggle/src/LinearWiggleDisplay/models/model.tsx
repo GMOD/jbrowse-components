@@ -78,14 +78,10 @@ const stateModelFactory = (
       statsReady: false,
       message: undefined as undefined | string,
       stats: { scoreMin: 0, scoreMax: 50 },
-      statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
-      updateStats(
-        stats: { scoreMin: number; scoreMax: number },
-        statsRegion: string,
-      ) {
+      updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (
@@ -95,7 +91,6 @@ const stateModelFactory = (
           self.stats = { scoreMin, scoreMax }
           self.statsReady = true
         }
-        self.statsRegion = statsRegion
       },
       setColor(color: string) {
         self.color = color
@@ -337,14 +332,9 @@ const stateModelFactory = (
         renderProps() {
           const superProps = superRenderProps()
           const { filters, ticks, height, resolution, scaleOpts } = self
-          const view = getContainingView(self) as LGV
-          const statsRegion = JSON.stringify(view.dynamicBlocks)
           return {
             ...superProps,
-            notReady:
-              superProps.notReady ||
-              self.statsRegion !== statsRegion ||
-              !self.statsReady,
+            notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -482,14 +472,12 @@ const stateModelFactory = (
           const aborter = new AbortController()
           self.setLoading(aborter)
           try {
-            const view = getContainingView(self) as LGV
-            const statsRegion = JSON.stringify(view.dynamicBlocks)
             const stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
             })
             if (isAlive(self)) {
-              self.updateStats(stats, statsRegion)
+              self.updateStats(stats)
               superReload()
             }
           } catch (e) {
