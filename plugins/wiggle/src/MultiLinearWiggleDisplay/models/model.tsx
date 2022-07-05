@@ -87,6 +87,7 @@ const stateModelFactory = (
       stats: { scoreMin: 0, scoreMax: 50 },
       statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
+      featureUnderMouseVolatile: undefined as Feature | undefined,
       sources: undefined as string[] | undefined,
     }))
     .actions(self => ({
@@ -133,6 +134,10 @@ const stateModelFactory = (
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
         }
+      },
+
+      setFeatureUnderMouse(f?: Feature) {
+        self.featureUnderMouseVolatile = f
       },
       setResolution(res: number) {
         self.resolution = res
@@ -183,6 +188,9 @@ const stateModelFactory = (
       },
     }))
     .views(self => ({
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
+      },
       get TooltipComponent() {
         return Tooltip as unknown as React.FC
       },
@@ -436,6 +444,9 @@ const stateModelFactory = (
             notReady:
               superProps.notReady || regionMatches || !sources || !statsReady,
             displayModel: self,
+            onMouseMove: (_evt: unknown, f: Feature) =>
+              self.setFeatureUnderMouse(f),
+            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
             config,
             displayCrossHatches,
             filters,

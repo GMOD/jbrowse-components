@@ -41,6 +41,7 @@ export function drawFeats(
     displayCrossHatches: boolean
     offset?: number
     colorCallback: (f: Feature, score: number) => string
+    clipHeight: number
     Color: typeof import('color')
   },
 ) {
@@ -52,6 +53,7 @@ export function drawFeats(
     height: unadjustedHeight,
     config,
     ticks,
+    clipHeight = 2,
     displayCrossHatches,
     offset = 0,
     colorCallback,
@@ -75,7 +77,6 @@ export function drawFeats(
 
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
   const toOrigin = (n: number) => toY(originY) - toY(n)
-
   const getHeight = (n: number) => (filled ? toOrigin(n) : 1)
   let hasClipping = false
 
@@ -94,7 +95,7 @@ export function drawFeats(
     const minColor = Color(c).darken(0.6).toString()
     const maxColor = Color(c).lighten(0.6).toString()
 
-    hasClipping = score < niceMin || score > niceMax
+    hasClipping = hasClipping || score < niceMin || score > niceMax
     const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
 
     if (summaryScoreMode === 'whiskers') {
@@ -102,6 +103,7 @@ export function drawFeats(
       if (summary) {
         const max = feature.get('maxScore')
         const min = feature.get('minScore')
+        hasClipping = hasClipping || min < niceMin || max > niceMax
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
       }
@@ -118,6 +120,8 @@ export function drawFeats(
   }
 
   // second pass: draw clipping
+  // avoid persisting the red fillstyle with save/restore
+  ctx.save()
   if (hasClipping) {
     ctx.fillStyle = clipColor
     for (let i = 0; i < features.length; i++) {
@@ -125,15 +129,14 @@ export function drawFeats(
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       const score = feature.get('score')
-      const lowClipping = score < niceMin
-      const highClipping = score > niceMax
-      if (highClipping) {
-        fillRectCtx(leftPx, 0, w, 4, ctx)
-      } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        fillRectCtx(leftPx, unadjustedHeight, w, 4, ctx)
+      if (score > niceMax) {
+        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
+      } else if (score < niceMin && scaleOpts.scaleType !== 'log') {
+        fillRectCtx(leftPx, unadjustedHeight, w, clipHeight, ctx)
       }
     }
   }
+  ctx.restore()
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1

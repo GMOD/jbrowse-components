@@ -24,7 +24,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         ...props,
         features,
         offset: YSCALEBAR_LABEL_OFFSET,
-        color: sourceColors[source],
+        colorCallback: () => sourceColors[source],
         Color,
       })
     })
