@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { Feature } from '@jbrowse/core/util'
-import { drawFeats } from '../drawxy'
+import { drawXY } from '../drawxy'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
@@ -21,7 +21,7 @@ export default class XYPlotRenderer extends WiggleBaseRenderer {
     const posColor = readConfObject(config, 'posColor')
     const Color = await import('color').then(f => f.default)
 
-    return drawFeats(ctx, {
+    return drawXY(ctx, {
       ...props,
       colorCallback:
         readConfObject(config, 'color') === '#f0f'

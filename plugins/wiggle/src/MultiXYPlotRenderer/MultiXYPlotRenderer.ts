@@ -1,4 +1,4 @@
-import { drawFeats } from '../drawxy'
+import { drawXY } from '../drawxy'
 import { groupBy, YSCALEBAR_LABEL_OFFSET } from '../util'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
@@ -20,7 +20,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
       if (!features) {
         return
       }
-      drawFeats(ctx, {
+      drawXY(ctx, {
         ...props,
         features,
         offset: YSCALEBAR_LABEL_OFFSET,

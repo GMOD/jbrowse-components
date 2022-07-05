@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 import React, { useRef } from 'react'
 
 import { Region } from '@jbrowse/core/util/types'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 
 function WiggleRendering(props: {

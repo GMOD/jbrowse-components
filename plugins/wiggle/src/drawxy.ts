@@ -28,10 +28,10 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-export function drawFeats(
+export function drawXY(
   ctx: CanvasRenderingContext2D,
   props: {
-    features: Feature[]
+    features: Map<string, Feature> | Feature[]
     bpPerPx: number
     regions: Region[]
     scaleOpts: ScaleOpts
@@ -41,7 +41,7 @@ export function drawFeats(
     displayCrossHatches: boolean
     offset?: number
     colorCallback: (f: Feature, score: number) => string
-    clipHeight: number
+    clipHeight?: number
     Color: typeof import('color')
   },
 ) {
@@ -82,9 +82,10 @@ export function drawFeats(
 
   let prevLeftPx = 0
   let reducedFeatures = []
-  for (let i = 0; i < features.length; i++) {
-    const feature = features[i]
+  for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+    // create reduced features, avoiding multiple features per px
     if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
@@ -124,8 +125,7 @@ export function drawFeats(
   ctx.save()
   if (hasClipping) {
     ctx.fillStyle = clipColor
-    for (let i = 0; i < features.length; i++) {
-      const feature = features[i]
+    for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
       const score = feature.get('score')
@@ -150,4 +150,158 @@ export function drawFeats(
   }
 
   return { reducedFeatures }
+}
+
+export async function drawLine(
+  ctx: CanvasRenderingContext2D,
+  props: {
+    features: Map<string, Feature> | Feature[]
+    regions: Region[]
+    bpPerPx: number
+    scaleOpts: ScaleOpts
+    height: number
+    ticks: { values: number[] }
+    displayCrossHatches: boolean
+    config: AnyConfigurationModel
+    offset: number
+  },
+) {
+  const {
+    features,
+    regions,
+    bpPerPx,
+    scaleOpts,
+    height: unadjustedHeight,
+    ticks: { values },
+    displayCrossHatches,
+    config,
+    offset = 0,
+  } = props
+  const [region] = regions
+  const width = (region.end - region.start) / bpPerPx
+
+  // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
+  // wiggle display, and makes the height of the actual drawn area add
+  // "padding" to the top and bottom of the display
+  const height = unadjustedHeight - offset * 2
+  const clipColor = readConfObject(config, 'clipColor')
+  const highlightColor = readConfObject(config, 'highlightColor')
+  const scale = getScale({ ...scaleOpts, range: [0, height] })
+  const [niceMin, niceMax] = scale.domain()
+  const toY = (n: number) => height - (scale(n) || 0) + offset
+  const colorCallback =
+    readConfObject(config, 'color') === '#f0f'
+      ? () => 'grey'
+      : (feature: Feature) => readConfObject(config, 'color', { feature })
+
+  let lastVal
+
+  let prevLeftPx = 0
+  let reducedFeatures = []
+  for (const feature of features.values()) {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+    // create reduced features, avoiding multiple features per px
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
+    const score = feature.get('score')
+    const lowClipping = score < niceMin
+    const highClipping = score > niceMax
+    const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+
+    const c = colorCallback(feature)
+
+    ctx.beginPath()
+    ctx.strokeStyle = c
+    const startPos = typeof lastVal !== 'undefined' ? lastVal : score
+    if (!region.reversed) {
+      ctx.moveTo(leftPx, toY(startPos))
+      ctx.lineTo(leftPx, toY(score))
+      ctx.lineTo(rightPx, toY(score))
+    } else {
+      ctx.moveTo(rightPx, toY(startPos))
+      ctx.lineTo(rightPx, toY(score))
+      ctx.lineTo(leftPx, toY(score))
+    }
+    ctx.stroke()
+    lastVal = score
+
+    if (highClipping) {
+      ctx.fillStyle = clipColor
+      ctx.fillRect(leftPx, 0, w, 4)
+    } else if (lowClipping && scaleOpts.scaleType !== 'log') {
+      ctx.fillStyle = clipColor
+      ctx.fillRect(leftPx, height - 4, w, height)
+    }
+    if (feature.get('highlighted')) {
+      ctx.fillStyle = highlightColor
+      ctx.fillRect(leftPx, 0, w, height)
+    }
+  }
+
+  if (displayCrossHatches) {
+    ctx.lineWidth = 1
+    ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+    values.forEach(tick => {
+      ctx.beginPath()
+      ctx.moveTo(0, Math.round(toY(tick)))
+      ctx.lineTo(width, Math.round(toY(tick)))
+      ctx.stroke()
+    })
+  }
+  return { reducedFeatures }
+}
+
+export async function drawDensity(
+  ctx: CanvasRenderingContext2D,
+  props: {
+    features: Map<string, Feature> | Feature[]
+    regions: Region[]
+    bpPerPx: number
+    scaleOpts: ScaleOpts
+    height: number
+    ticks: { values: number[] }
+    displayCrossHatches: boolean
+    config: AnyConfigurationModel
+  },
+) {
+  const { features, regions, bpPerPx, scaleOpts, height, config } = props
+  const [region] = regions
+  const pivot = readConfObject(config, 'bicolorPivot')
+  const pivotValue = readConfObject(config, 'bicolorPivotValue')
+  const negColor = readConfObject(config, 'negColor')
+  const posColor = readConfObject(config, 'posColor')
+  const color = readConfObject(config, 'color')
+  let colorCallback
+  if (color === '#f0f') {
+    const colorScale =
+      pivot !== 'none'
+        ? getScale({
+            ...scaleOpts,
+            pivotValue,
+            range: [negColor, 'white', posColor],
+          })
+        : getScale({ ...scaleOpts, range: ['white', posColor] })
+    colorCallback = (feature: Feature) => colorScale(feature.get('score'))
+  } else {
+    colorCallback = (feature: Feature) =>
+      readConfObject(config, 'color', { feature })
+  }
+
+  let prevLeftPx = 0
+  let reducedFeatures = []
+  for (const feature of features.values()) {
+    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+    // create reduced features, avoiding multiple features per px
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      reducedFeatures.push(feature)
+      prevLeftPx = leftPx
+    }
+    const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+    ctx.fillStyle = colorCallback(feature)
+    ctx.fillRect(leftPx, 0, w, height)
+  }
 }

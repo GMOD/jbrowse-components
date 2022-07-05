@@ -1,93 +1,15 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { featureSpanPx, Feature } from '@jbrowse/core/util'
-import { getScale } from '../util'
-
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
 
 import { YSCALEBAR_LABEL_OFFSET } from '../util'
+import { drawLine } from '../drawxy'
 
 export default class LinePlotRenderer extends WiggleBaseRenderer {
   async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
-    const {
-      features,
-      regions,
-      bpPerPx,
-      scaleOpts,
-      height: unadjustedHeight,
-      ticks: { values },
-      displayCrossHatches,
-      config,
-    } = props
-    const [region] = regions
-    const width = (region.end - region.start) / bpPerPx
-    const offset = YSCALEBAR_LABEL_OFFSET
-
-    // the adjusted height takes into account YSCALEBAR_LABEL_OFFSET from the
-    // wiggle display, and makes the height of the actual drawn area add
-    // "padding" to the top and bottom of the display
-    const height = unadjustedHeight - offset * 2
-    const clipColor = readConfObject(config, 'clipColor')
-    const highlightColor = readConfObject(config, 'highlightColor')
-    const scale = getScale({ ...scaleOpts, range: [0, height] })
-    const [niceMin, niceMax] = scale.domain()
-    const toY = (n: number) => height - (scale(n) || 0) + offset
-    const colorCallback =
-      readConfObject(config, 'color') === '#f0f'
-        ? () => 'grey'
-        : (feature: Feature) => readConfObject(config, 'color', { feature })
-
-    let lastVal
-    for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
-      const lowClipping = score < niceMin
-      const highClipping = score > niceMax
-      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
-
-      const c = colorCallback(feature)
-
-      ctx.beginPath()
-      ctx.strokeStyle = c
-      const startPos = typeof lastVal !== 'undefined' ? lastVal : score
-      if (!region.reversed) {
-        ctx.moveTo(leftPx, toY(startPos))
-        ctx.lineTo(leftPx, toY(score))
-        ctx.lineTo(rightPx, toY(score))
-      } else {
-        ctx.moveTo(rightPx, toY(startPos))
-        ctx.lineTo(rightPx, toY(score))
-        ctx.lineTo(leftPx, toY(score))
-      }
-      ctx.stroke()
-      lastVal = score
-
-      if (highClipping) {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, 0, w, 4)
-      } else if (lowClipping && scaleOpts.scaleType !== 'log') {
-        ctx.fillStyle = clipColor
-        ctx.fillRect(leftPx, height - 4, w, height)
-      }
-      if (feature.get('highlighted')) {
-        ctx.fillStyle = highlightColor
-        ctx.fillRect(leftPx, 0, w, height)
-      }
-    }
-
-    if (displayCrossHatches) {
-      ctx.lineWidth = 1
-      ctx.strokeStyle = 'rgba(200,200,200,0.8)'
-      values.forEach(tick => {
-        ctx.beginPath()
-        ctx.moveTo(0, Math.round(toY(tick)))
-        ctx.lineTo(width, Math.round(toY(tick)))
-        ctx.stroke()
-      })
-    }
+    return drawLine(ctx, { ...props, offset: YSCALEBAR_LABEL_OFFSET })
   }
 }

@@ -93,14 +93,16 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
           // @ts-ignore
           data.source = source
         }
+        const uniqueId = `${source}:${region.refName}:${data.start}-${data.end}`
         // @ts-ignore
         data.refName = refName
-        const uniqueId = `${region.refName}:${data.start}-${data.end}`
+        data.uniqueId = uniqueId
         observer.next({
           // @ts-ignore
           get: (str: string) => (data as Record<string, unknown>)[str],
-          id: () => `${source}-${uniqueId}`,
-          toJSON: () => ({ ...data, uniqueId }),
+          id: () => uniqueId,
+          // @ts-ignore
+          toJSON: () => data,
         })
       }
       observer.complete()

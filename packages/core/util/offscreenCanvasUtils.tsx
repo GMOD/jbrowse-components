@@ -1,6 +1,8 @@
 import React from 'react'
-import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { CanvasSequence } from 'canvas-sequencer'
+
+// locals
+import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './index'
 
 export type RenderReturn = Record<string, unknown>
@@ -12,7 +14,9 @@ export async function renderToAbstractCanvas(
     exportSVG?: { rasterizeLayers?: boolean }
     highResolutionScaling: number
   },
-  cb: (ctx: CanvasRenderingContext2D) => Promise<RenderReturn> | RenderReturn,
+  cb: (
+    ctx: CanvasRenderingContext2D,
+  ) => Promise<RenderReturn | void> | RenderReturn | void,
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
 

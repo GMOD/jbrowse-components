@@ -1,5 +1,5 @@
 import { groupBy } from '../util'
-import { drawFeats } from '../drawxy'
+import { drawXY } from '../drawxy'
 import WiggleBaseRenderer, {
   RenderArgsDeserializedWithFeatures,
 } from '../WiggleBaseRenderer'
@@ -20,7 +20,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     const Color = await import('color').then(f => f.default)
     ctx.save()
     sources.forEach(source => {
-      drawFeats(ctx, {
+      drawXY(ctx, {
         ...props,
         features: groups[source],
         height,
