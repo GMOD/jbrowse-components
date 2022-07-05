@@ -39,6 +39,12 @@ const useStyles = makeStyles()(theme => ({
 
 type Coord = [number, number]
 
+// React.forwardRef component for the tooltip, the ref is used for measuring
+// the size of the tooltip
+type TooltipContentsComponent = React.ForwardRefExoticComponent<
+  { feature: Feature } & React.RefAttributes<HTMLDivElement>
+>
+
 function Tooltip({
   model,
   height,
@@ -52,9 +58,7 @@ function Tooltip({
   clientMouseCoord: Coord
   offsetMouseCoord: Coord
   clientRect?: DOMRect
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TooltipContents: React.FC<any>
+  TooltipContents: TooltipContentsComponent
 }) {
   const { featureUnderMouse } = model
   const [width, setWidth] = useState(0)
@@ -95,9 +99,7 @@ function Tooltip({
           {...attributes.popper}
         >
           <TooltipContents
-            ref={(elt: HTMLDivElement) => {
-              setWidth(elt?.getBoundingClientRect().width || 0)
-            }}
+            ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
             feature={featureUnderMouse}
           />
         </div>
