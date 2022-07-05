@@ -163,7 +163,7 @@ export async function drawLine(
     ticks: { values: number[] }
     displayCrossHatches: boolean
     config: AnyConfigurationModel
-    offset: number
+    offset?: number
   },
 ) {
   const {

@@ -41,6 +41,7 @@ const rendererTypes = new Map([
   ['multirowxy', 'MultiRowXYPlotRenderer'],
   ['multirowdensity', 'MultiDensityRenderer'],
   ['multiline', 'MultiLineRenderer'],
+  ['multirowline', 'MultiRowLineRenderer'],
 ])
 
 type LGV = LinearGenomeViewModel
@@ -303,7 +304,8 @@ const stateModelFactory = (
           return (
             self.rendererTypeName === 'MultiXYPlotRenderer' ||
             self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiLineRenderer'
+            self.rendererTypeName === 'MultiLineRenderer' ||
+            self.rendererTypeName === 'MultiRowLineRenderer'
           )
         },
 
@@ -317,11 +319,19 @@ const stateModelFactory = (
         get isMultiRow() {
           return (
             self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiRowLineRenderer' ||
             self.rendererTypeName === 'MultiDensityRenderer'
           )
         },
         get needsCustomLegend() {
           return self.rendererTypeName === 'MultiDensityRenderer'
+        },
+
+        get canHaveFill() {
+          return (
+            self.rendererTypeName === 'MultiXYPlotRenderer' ||
+            self.rendererTypeName === 'MultiRowXYPlotRenderer'
+          )
         },
 
         get prefersOffset() {
@@ -337,13 +347,6 @@ const stateModelFactory = (
             scaleType,
             inverted: getConf(self, 'inverted'),
           }
-        },
-
-        get canHaveFill() {
-          return (
-            self.rendererTypeName === 'MultiXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiRowXYPlotRenderer'
-          )
         },
 
         get autoscaleType() {
@@ -364,7 +367,7 @@ const stateModelFactory = (
         },
 
         get rowHeightTooSmallForScalebar() {
-          return this.rowHeight < 100
+          return this.rowHeight < 70
         },
 
         get useMinimalTicks() {
@@ -542,6 +545,7 @@ const stateModelFactory = (
                       'multirowxy',
                       'multirowdensity',
                       'multiline',
+                      'multirowline',
                     ].map(key => ({
                       label: key,
                       type: 'radio',
@@ -566,6 +570,8 @@ const stateModelFactory = (
               ].map(([val, label]) => {
                 return {
                   label,
+                  type: 'radio',
+                  checked: self.autoscaleType === val,
                   onClick() {
                     self.setAutoscale(val)
                   },

@@ -15,6 +15,9 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
   ).configSchema
   const MultiLineRendererConfigSchema =
     pluginManager.getRendererType('MultiLineRenderer').configSchema
+  const MultiRowLineRendererConfigSchema = pluginManager.getRendererType(
+    'MultiRowLineRenderer',
+  ).configSchema
 
   return ConfigurationSchema(
     'MultiLinearWiggleDisplay',
@@ -73,6 +76,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
           'xyplot',
           'multirowdensity',
           'multiline',
+          'multirowline',
         ]),
         defaultValue: 'multirowxy',
       },
@@ -82,6 +86,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         MultiDensityRenderer: MultiDensityRendererConfigSchema,
         MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
         MultiLineRenderer: MultiLineRendererConfigSchema,
+        MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
       }),
     },
     { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },

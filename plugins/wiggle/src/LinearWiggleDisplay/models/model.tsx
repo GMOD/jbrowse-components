@@ -186,12 +186,15 @@ const stateModelFactory = (
         return self.adapterConfig.type
       },
 
+      get rendererTypeNameSimple() {
+        return self.rendererTypeNameState || getConf(self, 'defaultRendering')
+      },
+
       get rendererTypeName() {
-        const viewName =
-          self.rendererTypeNameState || getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
+        const name = this.rendererTypeNameSimple
+        const rendererType = rendererTypes.get(name)
         if (!rendererType) {
-          throw new Error(`unknown alignments view name ${viewName}`)
+          throw new Error(`unknown renderer ${name}`)
         }
         return rendererType
       },
@@ -425,6 +428,8 @@ const stateModelFactory = (
                     label: 'Renderer type',
                     subMenu: ['xyplot', 'density', 'line'].map(key => ({
                       label: key,
+                      type: 'radio',
+                      checked: self.rendererTypeNameSimple === key,
                       onClick: () => self.setRendererType(key),
                     })),
                   },
@@ -443,6 +448,8 @@ const stateModelFactory = (
                 ['localsd', 'Local ± 3σ'],
               ].map(([val, label]) => ({
                 label,
+                type: 'radio',
+                checked: self.autoscaleType === val,
                 onClick: () => self.setAutoscale(val),
               })),
             },
