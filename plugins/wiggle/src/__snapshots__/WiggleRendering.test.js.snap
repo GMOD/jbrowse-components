@@ -3,7 +3,7 @@
 exports[`one 1`] = `
 <div
   data-testid="wiggle-rendering-test"
-  style="height: 500px;"
+  style="overflow: visible; position: relative; height: 500px;"
 >
   <canvas
     data-testid="prerendered_canvas"

@@ -55,20 +55,12 @@ function WiggleRendering(props: {
     <div
       ref={ref}
       data-testid="wiggle-rendering-test"
-      onMouseMove={event => {
-        const featureUnderMouse = getFeatureUnderMouse(event.clientX)
-        onMouseMove(
-          event,
-          featureUnderMouse ? featureUnderMouse.id() : undefined,
-        )
-      }}
-      onClick={event => {
-        const featureUnderMouse = getFeatureUnderMouse(event.clientX)
-        onFeatureClick(
-          event,
-          featureUnderMouse ? featureUnderMouse.id() : undefined,
-        )
-      }}
+      onMouseMove={event =>
+        onMouseMove(event, getFeatureUnderMouse(event.clientX)?.id())
+      }
+      onClick={event =>
+        onFeatureClick(event, getFeatureUnderMouse(event.clientX)?.id())
+      }
       onMouseLeave={event => onMouseLeave(event)}
       style={{
         overflow: 'visible',
