@@ -477,7 +477,7 @@ export function compareLocStrings(
  * @param min -
  * @param  max -
  */
-export function clamp(num: number, min: number, max: number): number {
+export function clamp(num: number, min: number, max: number) {
   if (num < min) {
     return min
   }
@@ -487,7 +487,7 @@ export function clamp(num: number, min: number, max: number): number {
   return num
 }
 
-function roundToNearestPointOne(num: number): number {
+function roundToNearestPointOne(num: number) {
   return Math.round(num * 10) / 10
 }
 
@@ -520,8 +520,8 @@ export function degToRad(degrees: number) {
 /**
  * @returns [x, y]
  */
-export function polarToCartesian(rho: number, theta: number): [number, number] {
-  return [rho * Math.cos(theta), rho * Math.sin(theta)]
+export function polarToCartesian(rho: number, theta: number) {
+  return [rho * Math.cos(theta), rho * Math.sin(theta)] as [number, number]
 }
 
 /**
@@ -529,10 +529,10 @@ export function polarToCartesian(rho: number, theta: number): [number, number] {
  * @param y - the y
  * @returns [rho, theta]
  */
-export function cartesianToPolar(x: number, y: number): [number, number] {
+export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
   const theta = Math.atan(y / x)
-  return [rho, theta]
+  return [rho, theta] as [number, number]
 }
 
 export function featureSpanPx(

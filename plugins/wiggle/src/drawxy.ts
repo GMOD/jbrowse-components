@@ -146,7 +146,5 @@ export function drawFeats(
     })
   }
 
-  console.log({ reducedFeatures })
-
   return { reducedFeatures }
 }

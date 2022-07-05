@@ -305,3 +305,11 @@ export function statsAutorun(self: {
     ),
   )
 }
+
+export function toP(s = 0) {
+  return +(+s).toPrecision(6)
+}
+
+export function round(value: number) {
+  return Math.round(value * 1e5) / 1e5
+}

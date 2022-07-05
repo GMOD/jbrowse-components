@@ -10,7 +10,6 @@ import {
   getContainingView,
   isSelectionContainer,
   Feature,
-  SimpleFeature,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
@@ -89,8 +88,6 @@ const stateModelFactory = (
       statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
       sources: undefined as string[] | undefined,
-      featureUnderMouseVolatile: undefined as undefined | Feature,
-      mouseOverBp: undefined as { refName: string; coord: number } | undefined,
     }))
     .actions(self => ({
       updateStats(
@@ -183,15 +180,6 @@ const stateModelFactory = (
 
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
-      },
-
-      setCurrMouseOverBp(arg?: { refName: string; coord: number }) {
-        if (!deepEqual(arg, self.mouseOverBp)) {
-          self.mouseOverBp = arg
-        }
-      },
-      setFeatureUnderMouse(feat?: Feature) {
-        self.featureUnderMouseVolatile = feat
       },
     }))
     .views(self => ({
@@ -420,9 +408,6 @@ const stateModelFactory = (
         const { adapterTypeName } = self
         return pluginManager.getAdapterType(adapterTypeName).adapterCapabilities
       },
-      get featureUnderMouse() {
-        return self.featureUnderMouseVolatile
-      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
@@ -461,12 +446,6 @@ const stateModelFactory = (
             sourceColors,
             sources,
             ticks,
-            onMouseMove: (arg: { refName: string; coord: number }) => {
-              self.setCurrMouseOverBp(arg)
-            },
-            onMouseLeave: () => {
-              self.setCurrMouseOverBp()
-            },
           }
         },
 
@@ -651,56 +630,6 @@ const stateModelFactory = (
               }
             }),
           )
-          // addDisposer(
-          //   self,
-          //   autorun(async () => {
-          //     const { mouseOverBp, adapterConfig } = self
-          //     if (!mouseOverBp) {
-          //       self.setFeatureUnderMouse(undefined)
-          //       return
-          //     }
-          //     const { coord } = mouseOverBp
-          //     const session = getSession(self)
-          //     const sessionId = getRpcSessionId(self)
-          //     const view = getContainingView(self) as LGV
-          //     const curr = JSON.stringify(mouseOverBp)
-          //     const region = {
-          //       ...self.mouseOverBp,
-          //       start: coord,
-          //       end: coord,
-          //     }
-          //     const features = (await session.rpcManager.call(
-          //       sessionId,
-          //       'CoreGetFeatures',
-          //       {
-          //         regions: [region],
-          //         sessionId,
-          //         adapterConfig,
-          //         layoutId: view.id,
-          //       },
-          //     )) as Feature[]
-
-          //     if (
-          //       features.length &&
-          //       JSON.stringify(self.mouseOverBp) === curr
-          //     ) {
-          //       // synthesize data for the multi-tooltip from multiple features
-          //       const f = new SimpleFeature({
-          //         uniqueId: 'mouseoverfeat',
-          //         sources: Object.fromEntries(
-          //           features
-          //             .map(f => f.toJSON())
-          //             .map(f => {
-          //               const { refName, start, end, source, ...rest } = f
-          //               return [source, rest]
-          //             }),
-          //         ),
-          //         ...region,
-          //       })
-          //       self.setFeatureUnderMouse(f)
-          //     }
-          //   }),
-          // )
         },
         async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
