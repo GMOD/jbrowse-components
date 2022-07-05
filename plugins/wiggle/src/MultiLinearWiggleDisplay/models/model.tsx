@@ -440,9 +440,6 @@ const stateModelFactory = (
             ...superProps,
             notReady: superProps.notReady || !sources || !statsReady,
             displayModel: self,
-            onMouseMove: (_evt: unknown, f: Feature) =>
-              self.setFeatureUnderMouse(f),
-            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
             config,
             displayCrossHatches,
             filters,
@@ -453,6 +450,9 @@ const stateModelFactory = (
             sourceColors,
             sources,
             ticks,
+            onMouseMove: (_: unknown, f: Feature) =>
+              self.setFeatureUnderMouse(f),
+            onMouseLeave: () => self.setFeatureUnderMouse(undefined),
           }
         },
 
@@ -479,15 +479,11 @@ const stateModelFactory = (
                     subMenu: [
                       {
                         label: 'Finer resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution * 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution * 5),
                       },
                       {
                         label: 'Coarser resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution / 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution / 5),
                       },
                     ],
                   },
@@ -508,9 +504,7 @@ const stateModelFactory = (
                     label: self.filled
                       ? 'Turn off histogram fill'
                       : 'Turn on histogram fill',
-                    onClick: () => {
-                      self.setFill(!self.filled)
-                    },
+                    onClick: () => self.setFill(!self.filled),
                   },
                 ]
               : []),
@@ -525,9 +519,7 @@ const stateModelFactory = (
               type: 'checkbox',
               label: 'Draw cross hatches',
               checked: self.displayCrossHatchesSetting,
-              onClick: () => {
-                self.toggleCrossHatches()
-              },
+              onClick: () => self.toggleCrossHatches(),
             },
             ...(hasRenderings
               ? [
@@ -565,9 +557,7 @@ const stateModelFactory = (
                   label,
                   type: 'radio',
                   checked: self.autoscaleType === val,
-                  onClick() {
-                    self.setAutoscale(val)
-                  },
+                  onClick: () => self.setAutoscale(val),
                 }
               }),
             },
@@ -596,6 +586,7 @@ const stateModelFactory = (
           const aborter = new AbortController()
           let stats
           try {
+            self.setLoading(aborter)
             stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
