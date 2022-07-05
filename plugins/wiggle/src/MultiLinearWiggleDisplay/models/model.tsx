@@ -33,7 +33,6 @@ import { StatBars } from '../components/WiggleDisplayComponent'
 import deepEqual from 'fast-deep-equal'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
-const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -597,7 +596,6 @@ const stateModelFactory = (
           const aborter = new AbortController()
           let stats
           try {
-            const view = getContainingView(self) as LGV
             stats = await getStats(self, {
               signal: aborter.signal,
               ...self.renderProps(),
