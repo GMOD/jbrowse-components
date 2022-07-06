@@ -3,11 +3,16 @@ import { types, Instance } from 'mobx-state-tree'
 import { clamp, getSession, parseLocString } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import ExportSvgDlg from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ExportSvgDialog'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
+import LabelIcon from '@mui/icons-material/Label'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 export interface BpOffset {
   refName?: string
@@ -207,35 +212,136 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           }
         },
       }))
-      .views(self => {
-        // @ts-ignore
-        const { menuItems: superMenuItems } = self
+      .views(self => ({
+        menuItems(): MenuItem[] {
+          // @ts-ignore
+          const { canShowCytobands, showCytobands } = self
 
-        const superMenuItemsArray = superMenuItems()
-
-        const index = superMenuItemsArray.findIndex(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (item: any) => item.label === 'Return to import form',
-        )
-        superMenuItemsArray.splice(index, 1)
-
-        return {
-          menuItems(): MenuItem[] {
-            return [
-              ...superMenuItemsArray,
-              { type: 'divider' },
-              {
-                label: 'Show controls',
-                icon: VisibilityIcon,
-                type: 'checkbox',
-                checked: !self.hideControls,
-                onClick: self.toggleControls,
-                disabled: !self.isVisible || self.isAnchor,
+          const menuItems: MenuItem[] = [
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDlg,
+                  { model: self, handleClose },
+                ])
               },
-            ]
-          },
-        }
-      })
+            },
+            {
+              label: 'Open track selector',
+              // @ts-ignore
+              onClick: self.activateTrackSelector,
+              icon: TrackSelectorIcon,
+            },
+            {
+              label: 'Horizontally flip',
+              icon: SyncAltIcon,
+              // @ts-ignore
+              onClick: self.horizontallyFlip,
+            },
+            { type: 'divider' },
+            {
+              label: 'Show all regions in assembly',
+              icon: VisibilityIcon,
+              // @ts-ignore
+              onClick: self.showAllRegionsInAssembly,
+            },
+            {
+              label: 'Show center line',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              // @ts-ignore
+              checked: self.showCenterLine,
+              // @ts-ignore
+              onClick: self.toggleCenterLine,
+            },
+            {
+              label: 'Show header',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              // @ts-ignore
+              checked: !self.hideHeader,
+              // @ts-ignore
+              onClick: self.toggleHeader,
+            },
+            {
+              label: 'Show header overview',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              // @ts-ignore
+              checked: !self.hideHeaderOverview,
+              // @ts-ignore
+              onClick: self.toggleHeaderOverview,
+              // @ts-ignore
+              disabled: self.hideHeader,
+            },
+            {
+              label: 'Show no tracks active button',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              // @ts-ignore
+              checked: !self.hideNoTracksActive,
+              // @ts-ignore
+              onClick: self.toggleNoTracksActive,
+            },
+            {
+              label: 'Show controls',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: !self.hideControls,
+              onClick: self.toggleControls,
+              disabled: !self.isVisible || self.isAnchor,
+            },
+            {
+              label: 'Track labels',
+              icon: LabelIcon,
+              subMenu: [
+                {
+                  label: 'Overlapping',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  // @ts-ignore
+                  checked: self.trackLabels === 'overlapping',
+                  // @ts-ignore
+                  onClick: () => self.setTrackLabels('overlapping'),
+                },
+                {
+                  label: 'Offset',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  // @ts-ignore
+                  checked: self.trackLabels === 'offset',
+                  // @ts-ignore
+                  onClick: () => self.setTrackLabels('offset'),
+                },
+                {
+                  label: 'Hidden',
+                  icon: VisibilityIcon,
+                  type: 'radio',
+                  // @ts-ignore
+                  checked: self.trackLabels === 'hidden',
+                  // @ts-ignore
+                  onClick: () => self.setTrackLabels('hidden'),
+                },
+              ],
+            },
+            ...(canShowCytobands
+              ? [
+                  {
+                    label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
+                    onClick: () => {
+                      // @ts-ignore
+                      self.setShowCytobands(!showCytobands)
+                    },
+                  },
+                ]
+              : []),
+          ]
+
+          return menuItems
+        },
+      }))
       .views(self => {
         // @ts-ignore
         const { rubberBandMenuItems: superMenuItems } = self

@@ -300,6 +300,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           view.centerAt(center.coord, center.refName, center.index)
         })
       },
+      clearView() {
+        self.views = cast([])
+      },
     }))
     .views(self => ({
       menuItems() {
