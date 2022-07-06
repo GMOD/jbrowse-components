@@ -23,7 +23,7 @@ const mv = {
           refName: 'ctgA',
           start: 0,
           end: 186700647,
-          assemblyName: 'volMyt1',
+          assemblyNames: ['volMyt1'],
         },
       ],
       tracks: [
@@ -52,7 +52,7 @@ const mv = {
           refName: 'ctgA',
           start: 0,
           end: 186700647,
-          assemblyName: 'volMyt1',
+          assemblyNames: ['volMyt1'],
         },
       ],
       tracks: [
@@ -82,7 +82,7 @@ const mv = {
           refName: 'ctgA',
           start: 85313457,
           end: 85313457,
-          assemblyName: 'volMyt1',
+          assemblyNames: ['volMyt1'],
         },
       ],
       tracks: [
