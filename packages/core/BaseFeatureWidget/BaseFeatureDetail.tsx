@@ -273,20 +273,21 @@ function CoreDetails(props: BaseProps) {
     position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
-  const coreRenderedDetails = [
-    'Position',
-    'Description',
-    'Name',
-    'Length',
-    'Type',
-  ]
+  const coreRenderedDetails = {
+    position: 'Position',
+    description: 'Description',
+    name: 'Name',
+    length: 'Length',
+    type: 'Type',
+    assemblyName: 'Assembly name',
+  }
   return (
     <>
-      {coreRenderedDetails
-        .map(key => [key, displayedDetails[key.toLowerCase()]])
+      {Object.entries(coreRenderedDetails)
+        .map(([key, name]) => [name, displayedDetails[key]])
         .filter(([, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => (
-          <SimpleValue key={key} name={key} value={value} />
+        .map(([name, value]) => (
+          <SimpleValue key={name} name={name} value={value} />
         ))}
     </>
   )

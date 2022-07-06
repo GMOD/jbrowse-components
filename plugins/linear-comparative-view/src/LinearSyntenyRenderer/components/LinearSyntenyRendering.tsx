@@ -11,11 +11,10 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   getContainingView,
   getSession,
+  isSessionModelWithWidgets,
   viewBpToPx,
   ViewSnap,
   AssemblyManager,
-  isSessionModelWithWidgets,
-  getContainingTrack,
 } from '@jbrowse/core/util'
 
 // locals
@@ -394,7 +393,6 @@ function LinearSyntenyRendering({
     parsedCIGARs,
     visibleId,
   ])
-
   return (
     <div style={{ position: 'relative' }}>
       <canvas
@@ -412,7 +410,7 @@ function LinearSyntenyRendering({
           const x = event.clientX - rect.left
           const y = event.clientY - rect.top
 
-          var [r, g, b] = ctx.getImageData(x, y, 1, 1).data
+          const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
           setVisibleId(getId(r, g, b))
         }}
         onMouseLeave={() => setVisibleId(undefined)}
@@ -429,27 +427,17 @@ function LinearSyntenyRendering({
           const x = event.clientX - rect.left
           const y = event.clientY - rect.top
 
-          var [r, g, b] = ctx.getImageData(x, y, 1, 1).data
+          const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
           const match = matches[getId(r, g, b)]
           const session = getSession(displayModel)
-          if (!match) {
-            session.notify('unknown click')
-            return
-          }
-          // @ts-ignore
           if (isSessionModelWithWidgets(session)) {
             const featureWidget = session.addWidget(
-              'BaseFeatureWidget',
-              'baseFeature',
+              'SyntenyFeatureWidget',
+              'syntenyFeature',
               {
-                view: getContainingView(displayModel),
-                track: getContainingTrack(displayModel),
                 featureData: {
-                  start: 0,
-                  end: 0,
-                  refName: 0,
-                  f0: match[0].feature,
-                  f1: match[1].feature,
+                  feature1: match[0].feature,
+                  feature2: match[1].feature,
                 },
               },
             )
