@@ -1,4 +1,5 @@
-import React, { useRef, useMemo, useEffect } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
+import Color from 'color'
 import { observer } from 'mobx-react'
 import { getSnapshot, isAlive } from 'mobx-state-tree'
 import SimpleFeature, {
@@ -9,11 +10,15 @@ import { getConf } from '@jbrowse/core/configuration'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   getContainingView,
-  viewBpToPx,
   getSession,
+  viewBpToPx,
   ViewSnap,
   AssemblyManager,
+  isSessionModelWithWidgets,
+  getContainingTrack,
 } from '@jbrowse/core/util'
+
+// locals
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
@@ -31,6 +36,17 @@ const colorMap = {
   '=': '#f003',
 }
 
+const darkerColorMap = Object.fromEntries(
+  Object.entries(colorMap).map(([key, val]) => [
+    key,
+    Color(val).darken(0.6).toString(),
+  ]),
+)
+
+function getId(r: number, g: number, b: number) {
+  return r * 255 * 255 + g * 255 + b - 1
+}
+
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
   return viewBpToPx({ ...arg, self: view })?.offsetPx || 0
 }
@@ -43,8 +59,8 @@ function layoutMatches(
   for (let i = 0; i < features.length; i++) {
     for (let j = i; j < features.length; j++) {
       if (i !== j) {
-        for (const [f1, f2] of generateMatches(features[i], features[j], feat =>
-          feat.get('syntenyId'),
+        for (const [f1, f2] of generateMatches(features[i], features[j], f =>
+          f.get('syntenyId'),
         )) {
           let f1s = f1.get('start')
           let f1e = f1.get('end')
@@ -79,22 +95,18 @@ function layoutMatches(
   return matches
 }
 
-/**
- * A block whose content is rendered outside of the main thread and hydrated by
- * this component.
- */
-
-function getResources(displayModel: LinearComparativeDisplay) {
-  const worker = !('type' in displayModel)
-  if (!worker && isAlive(displayModel)) {
-    const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
-    const color = getConf(displayModel, ['renderer', 'color'])
-    const session = getSession(displayModel)
+function getResources(model: LinearComparativeDisplay) {
+  const worker = !('type' in model)
+  if (!worker && isAlive(model)) {
+    const parentView = getContainingView(model) as LinearSyntenyViewModel
+    const color = getConf(model, ['renderer', 'color'])
+    const session = getSession(model)
     const { assemblyManager } = session
     return { color, session, parentView, assemblyManager }
   }
   return {}
 }
+
 function LinearSyntenyRendering({
   height,
   width,
@@ -110,7 +122,9 @@ function LinearSyntenyRendering({
   features: SimpleFeatureSerialized[][]
   trackIds: string[]
 }) {
-  const ref = useRef<HTMLCanvasElement>(null)
+  const drawRef = useRef<HTMLCanvasElement>(null)
+  const clickMapRef = useRef<HTMLCanvasElement>(null)
+  const [visibleId, setVisibleId] = useState<number>()
   const { color, assemblyManager, parentView } = getResources(displayModel)
   const hydratedFeatures = useMemo(
     () =>
@@ -141,18 +155,26 @@ function LinearSyntenyRendering({
   const offsets = views?.map(view => view.offsetPx)
 
   useEffect(() => {
-    if (!ref.current || !offsets || !views || !isAlive(displayModel)) {
+    if (
+      !drawRef.current ||
+      !clickMapRef.current ||
+      !offsets ||
+      !views ||
+      !isAlive(displayModel)
+    ) {
       return
     }
-    const ctx = ref.current.getContext('2d')
-    if (!ctx) {
+    const ctx1 = drawRef.current.getContext('2d')
+    const ctx2 = clickMapRef.current.getContext('2d')
+    if (!ctx1 || !ctx2) {
       return
     }
-    ctx.resetTransform()
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.clearRect(0, 0, width, height)
-    ctx.fillStyle = color
-    ctx.strokeStyle = color
+    ctx1.resetTransform()
+    ctx1.scale(highResolutionScaling, highResolutionScaling)
+    ctx1.clearRect(0, 0, width, height)
+    ctx2.clearRect(0, 0, width, height)
+    // ctx1.fillStyle = color
+    // ctx1.strokeStyle = color
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
@@ -165,6 +187,17 @@ function LinearSyntenyRendering({
 
     for (let j = 0; j < matches.length; j++) {
       const m = matches[j]
+      const idx = j + 1
+
+      const r = Math.floor(idx / (255 * 255)) % 255
+      const g = Math.floor(idx / 255) % 255
+      const b = idx % 255
+      ctx2.fillStyle = `rgb(${r},${g},${b})`
+      const currentlyMousedOver = visibleId === j
+      const currPalette = currentlyMousedOver ? darkerColorMap : colorMap
+      ctx1.fillStyle = currPalette.M
+      ctx1.strokeStyle = currPalette.M
+
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
       for (let i = 0; i < m.length - 1; i += 1) {
@@ -210,14 +243,19 @@ function LinearSyntenyRendering({
         // drawing a line if the results are thin results in much less
         // pixellation than filling in a thin polygon
         if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
-          ctx.beginPath()
-          ctx.moveTo(x11, y1)
+          ctx1.beginPath()
+          ctx2.beginPath()
+          ctx1.moveTo(x11, y1)
+          ctx2.moveTo(x11, y1)
           if (drawCurves) {
-            ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+            ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+            ctx2.bezierCurveTo(x11, mid, x21, mid, x21, y2)
           } else {
-            ctx.lineTo(x21, y2)
+            ctx1.lineTo(x21, y2)
+            ctx2.lineTo(x21, y2)
           }
-          ctx.stroke()
+          ctx1.stroke()
+          ctx2.stroke()
         } else {
           let cx1 = x11
           let cx2 = x21
@@ -236,7 +274,7 @@ function LinearSyntenyRendering({
             let px2 = 0
             for (let j = 0; j < cigar.length; j += 2) {
               const len = +cigar[j]
-              const op = cigar[j + 1]
+              const op = cigar[j + 1] as keyof typeof currPalette
 
               if (!continuingFlag) {
                 px1 = cx1
@@ -279,48 +317,65 @@ function LinearSyntenyRendering({
                   // allow rendering the dominant color when using continuing
                   // flag if the last element of continuing was a large
                   // feature, else just use match
-                  ctx.fillStyle =
-                    colorMap[
-                      (continuingFlag && d1 > 1) || d2 > 1
-                        ? (op as keyof typeof colorMap)
-                        : 'M'
-                    ]
-                  ctx.beginPath()
-                  ctx.moveTo(px1, y1)
-                  ctx.lineTo(cx1, y1)
+                  ctx1.fillStyle =
+                    currPalette[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+
+                  ctx1.beginPath()
+                  ctx2.beginPath()
+                  ctx1.moveTo(px1, y1)
+                  ctx2.moveTo(px1, y1)
+                  ctx1.lineTo(cx1, y1)
+                  ctx2.lineTo(cx1, y1)
                   if (drawCurves) {
-                    ctx.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                    ctx1.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                    ctx2.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
                   } else {
-                    ctx.lineTo(cx2, y2)
+                    ctx1.lineTo(cx2, y2)
+                    ctx2.lineTo(cx2, y2)
                   }
-                  ctx.lineTo(px2, y2)
+                  ctx1.lineTo(px2, y2)
+                  ctx2.lineTo(px2, y2)
                   if (drawCurves) {
-                    ctx.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                    ctx1.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                    ctx2.bezierCurveTo(px2, mid, px1, mid, px1, y1)
                   } else {
-                    ctx.lineTo(px1, y1)
+                    ctx1.lineTo(px1, y1)
+                    ctx2.lineTo(px1, y1)
                   }
-                  ctx.closePath()
-                  ctx.fill()
+                  ctx1.closePath()
+                  ctx2.closePath()
+                  ctx1.fill()
+                  ctx2.fill()
                 }
               }
             }
           } else {
-            ctx.beginPath()
-            ctx.moveTo(x11, y1)
-            ctx.lineTo(x12, y1)
+            ctx1.beginPath()
+            ctx2.beginPath()
+            ctx1.moveTo(x11, y1)
+            ctx2.moveTo(x11, y1)
+            ctx1.lineTo(x12, y1)
+            ctx2.lineTo(x12, y1)
             if (drawCurves) {
-              ctx.bezierCurveTo(x12, mid, x22, mid, x22, y2)
+              ctx1.bezierCurveTo(x12, mid, x22, mid, x22, y2)
+              ctx2.bezierCurveTo(x12, mid, x22, mid, x22, y2)
             } else {
-              ctx.lineTo(x22, y2)
+              ctx1.lineTo(x22, y2)
+              ctx2.lineTo(x22, y2)
             }
-            ctx.lineTo(x21, y2)
+            ctx1.lineTo(x21, y2)
+            ctx2.lineTo(x21, y2)
             if (drawCurves) {
-              ctx.bezierCurveTo(x21, mid, x11, mid, x11, y1)
+              ctx1.bezierCurveTo(x21, mid, x11, mid, x11, y1)
+              ctx2.bezierCurveTo(x21, mid, x11, mid, x11, y1)
             } else {
-              ctx.lineTo(x11, y1)
+              ctx1.lineTo(x11, y1)
+              ctx2.lineTo(x11, y1)
             }
-            ctx.closePath()
-            ctx.fill()
+            ctx1.closePath()
+            ctx2.closePath()
+            ctx1.fill()
+            ctx2.fill()
           }
         }
       }
@@ -337,16 +392,88 @@ function LinearSyntenyRendering({
     height,
     matches,
     parsedCIGARs,
+    visibleId,
   ])
 
   return (
-    <canvas
-      ref={ref}
-      data-testid="synteny_canvas"
-      style={{ width, height }}
-      width={width * highResolutionScaling}
-      height={height * highResolutionScaling}
-    />
+    <div style={{ position: 'relative' }}>
+      <canvas
+        ref={drawRef}
+        onMouseMove={event => {
+          const ref = clickMapRef.current
+          if (!ref) {
+            return
+          }
+          const rect = ref.getBoundingClientRect()
+          const ctx = ref.getContext('2d')
+          if (!ctx) {
+            return
+          }
+          const x = event.clientX - rect.left
+          const y = event.clientY - rect.top
+
+          var [r, g, b] = ctx.getImageData(x, y, 1, 1).data
+          setVisibleId(getId(r, g, b))
+        }}
+        onMouseLeave={() => setVisibleId(undefined)}
+        onClick={event => {
+          const ref = clickMapRef.current
+          if (!ref) {
+            return
+          }
+          const rect = ref.getBoundingClientRect()
+          const ctx = ref.getContext('2d')
+          if (!ctx) {
+            return
+          }
+          const x = event.clientX - rect.left
+          const y = event.clientY - rect.top
+
+          var [r, g, b] = ctx.getImageData(x, y, 1, 1).data
+          const match = matches[getId(r, g, b)]
+          const session = getSession(displayModel)
+          if (!match) {
+            session.notify('unknown click')
+            return
+          }
+          // @ts-ignore
+          if (isSessionModelWithWidgets(session)) {
+            const featureWidget = session.addWidget(
+              'BaseFeatureWidget',
+              'baseFeature',
+              {
+                view: getContainingView(displayModel),
+                track: getContainingTrack(displayModel),
+                featureData: {
+                  start: 0,
+                  end: 0,
+                  refName: 0,
+                  f0: match[0].feature,
+                  f1: match[1].feature,
+                },
+              },
+            )
+
+            session.showWidget(featureWidget)
+          }
+        }}
+        data-testid="synteny_canvas"
+        style={{ width, height, position: 'absolute' }}
+        width={width * highResolutionScaling}
+        height={height * highResolutionScaling}
+      />
+      <canvas
+        ref={clickMapRef}
+        style={{
+          imageRendering: 'pixelated',
+          pointerEvents: 'none',
+          visibility: 'hidden',
+          position: 'absolute',
+        }}
+        width={width}
+        height={height}
+      />
+    </div>
   )
 }
 
