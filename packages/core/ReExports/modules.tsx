@@ -189,6 +189,8 @@ const MuiPrefixMUI = Object.fromEntries(
 )
 
 const Attributes = lazy(() => import('./Attributes'))
+const FeatureDetails = lazy(() => import('./FeatureDetails'))
+const BaseCard = lazy(() => import('./BaseCard'))
 
 // uses 'as any' because otherwise typescript gives warning Exported variable
 // 'libs' has or is using name 'DataGridComponent' from external module
@@ -202,6 +204,21 @@ const LazyAttributes = (props: any) => (
     <Attributes {...props} />
   </Suspense>
 )
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyFeatureDetails = (props: any) => (
+  <Suspense fallback={<div />}>
+    <FeatureDetails {...props} />
+  </Suspense>
+)
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const LazyBaseCard = (props: any) => (
+  <Suspense fallback={<div />}>
+    <BaseCard {...props} />
+  </Suspense>
+)
+
 const libs = {
   mobx,
   'mobx-state-tree': mst,
@@ -283,6 +300,8 @@ const libs = {
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': {
     Attributes: LazyAttributes,
+    FeatureDetails: LazyFeatureDetails,
+    BaseCard: LazyBaseCard,
   },
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
