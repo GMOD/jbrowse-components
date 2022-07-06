@@ -29,8 +29,6 @@ guide](DEVELOPER.md) for details
 
 ## Example usages
 
-This will show some example usages
-
 ### Use with local files
 
 We can call this script on local files, and it doesn't require a web browser,
@@ -56,7 +54,7 @@ If `--out` is not specified it writes to out.svg
 Supply a file with the png extension to `--out`, uses rsvg-convert so you will
 need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
 
-```
+```bash
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.png
 ```
 
@@ -65,7 +63,7 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 Supply a file with the pdf extension to `--out`, uses rsvg-convert so you will
 need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
 
-```
+```bash
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
 ```
 
@@ -76,8 +74,7 @@ This example shows using remote files, e.g. with human hg19 and several tracks
 Note the use of --aliases, which smoothes over refname differences e.g. fasta
 contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
 
-```
-
+```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt  \
   --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb \
@@ -158,7 +155,7 @@ If you use jbrowse-web, you can select File->Export session which produces a
 session.json file, and then use the --session parameter. Make sure to specify
 the assembly also, it currently does not infer the assembly from the session
 
-```
+```bash
 jb2export --config data/skbr3/config.json \
   --session session.json \
   --assembly hg19
@@ -210,7 +207,7 @@ Then you can call it like above
 
 ```bash
 jb2export --config data/volvox/config.json \
-  --assembly volvox
+  --assembly volvox \
   --configtracks volvox_sv \
   --loc ctgA:1-50,000
 ```
@@ -340,10 +337,6 @@ convert -size 2048x out.svg out.png
 
 ## Troubleshooting
 
-### I see the message 'useLayoutEffect does nothing on the server'
-
-This is a harmless warning, we are working on fixing it though
-
 ### I don't get any outputted svg and no message
 
 The error reporting from the app is not very good at the moment so often has
@@ -357,8 +350,3 @@ There are some new features in the latest NPM (2021, v7) related to
 peerDependencies that may produce some warnings. It should work even despite
 making warnings, but you can use yarn to install or use legacy peer
 dependencies if you want to avoid install time warningsvg
-
-### The program keeps running after saying it completed?
-
-We are looking into this still. The file should have been generated though, and
-the program will complete
