@@ -9,6 +9,7 @@ import SimpleFeature, {
 import { getConf } from '@jbrowse/core/configuration'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
+  assembleLocString,
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
@@ -21,6 +22,7 @@ import {
 import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
+import SyntenyTooltip from './SyntenyTooltip'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
@@ -121,9 +123,24 @@ function LinearSyntenyRendering({
   features: SimpleFeatureSerialized[][]
   trackIds: string[]
 }) {
+  // canvas used for drawing visible screen
   const drawRef = useRef<HTMLCanvasElement>(null)
+
+  // canvas used for drawing click map with feature ids
+  // this renders a unique color per alignment, so that it can be re-traced
+  // after a feature click with getImageData at that pixel
   const clickMapRef = useRef<HTMLCanvasElement>(null)
+
+  // canvas used for drawing click map with cigar data
+  // this can show if you are mousing over a insertion/deletion. it is similar
+  // in purpose to the clickMapRef but was not feasible to pack this into the
+  // clickMapRef
+  const cigarClickMapRef = useRef<HTMLCanvasElement>(null)
+
   const [visibleId, setVisibleId] = useState<number>()
+  const [visibleCigarOp, setVisibleCigarOp] = useState('')
+  const [currX, setCurrX] = useState<number>()
+  const [currY, setCurrY] = useState<number>()
   const { color, assemblyManager, parentView } = getResources(displayModel)
   const hydratedFeatures = useMemo(
     () =>
@@ -157,6 +174,7 @@ function LinearSyntenyRendering({
     if (
       !drawRef.current ||
       !clickMapRef.current ||
+      !cigarClickMapRef.current ||
       !offsets ||
       !views ||
       !isAlive(displayModel)
@@ -165,7 +183,8 @@ function LinearSyntenyRendering({
     }
     const ctx1 = drawRef.current.getContext('2d')
     const ctx2 = clickMapRef.current.getContext('2d')
-    if (!ctx1 || !ctx2) {
+    const ctx3 = cigarClickMapRef.current.getContext('2d')
+    if (!ctx1 || !ctx2 || !ctx3) {
       return
     }
     ctx1.resetTransform()
@@ -272,6 +291,12 @@ function LinearSyntenyRendering({
             let px1 = 0
             let px2 = 0
             for (let j = 0; j < cigar.length; j += 2) {
+              const idx = j + 1
+
+              const r = Math.floor(idx / (255 * 255)) % 255
+              const g = Math.floor(idx / 255) % 255
+              const b = idx % 255
+              ctx3.fillStyle = `rgb(${r},${g},${b})`
               const len = +cigar[j]
               const op = cigar[j + 1] as keyof typeof currPalette
 
@@ -321,30 +346,40 @@ function LinearSyntenyRendering({
 
                   ctx1.beginPath()
                   ctx2.beginPath()
+                  ctx3.beginPath()
                   ctx1.moveTo(px1, y1)
                   ctx2.moveTo(px1, y1)
+                  ctx3.moveTo(px1, y1)
                   ctx1.lineTo(cx1, y1)
                   ctx2.lineTo(cx1, y1)
+                  ctx3.lineTo(cx1, y1)
                   if (drawCurves) {
                     ctx1.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
                     ctx2.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                    ctx3.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
                   } else {
                     ctx1.lineTo(cx2, y2)
                     ctx2.lineTo(cx2, y2)
+                    ctx3.lineTo(cx2, y2)
                   }
                   ctx1.lineTo(px2, y2)
                   ctx2.lineTo(px2, y2)
+                  ctx3.lineTo(px2, y2)
                   if (drawCurves) {
                     ctx1.bezierCurveTo(px2, mid, px1, mid, px1, y1)
                     ctx2.bezierCurveTo(px2, mid, px1, mid, px1, y1)
+                    ctx3.bezierCurveTo(px2, mid, px1, mid, px1, y1)
                   } else {
                     ctx1.lineTo(px1, y1)
                     ctx2.lineTo(px1, y1)
+                    ctx3.lineTo(px1, y1)
                   }
                   ctx1.closePath()
                   ctx2.closePath()
+                  ctx3.closePath()
                   ctx1.fill()
                   ctx2.fill()
+                  ctx3.fill()
                 }
               }
             }
@@ -398,37 +433,65 @@ function LinearSyntenyRendering({
       <canvas
         ref={drawRef}
         onMouseMove={event => {
-          const ref = clickMapRef.current
-          if (!ref) {
+          const ref1 = clickMapRef.current
+          const ref2 = cigarClickMapRef.current
+          if (!ref1 || !ref2) {
             return
           }
-          const rect = ref.getBoundingClientRect()
-          const ctx = ref.getContext('2d')
-          if (!ctx) {
+          const rect = ref1.getBoundingClientRect()
+          const ctx1 = ref1.getContext('2d')
+          const ctx2 = ref2.getContext('2d')
+          if (!ctx1 || !ctx2) {
             return
           }
           const x = event.clientX - rect.left
           const y = event.clientY - rect.top
+          setCurrX(event.clientX)
+          setCurrY(event.clientY)
 
-          const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
-          setVisibleId(getId(r, g, b))
+          const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+          const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
+          const id = getId(r1, g1, b1)
+          const match1 = matches[id]
+          setVisibleId(id === -1 ? undefined : id)
+          if (!match1) {
+            setVisibleCigarOp('')
+            return
+          }
+          const cigar = parsedCIGARs.get(match1[0].feature.id())
+          const cigarIdx = getId(r2, g2, b2)
+          // @ts-ignore
+          const f1 = assembleLocString(match1[0].feature.toJSON())
+          // @ts-ignore
+          const f2 = assembleLocString(match1[1].feature.toJSON())
+          const tooltip = `${f1}<br/>${f2}`
+
+          if (cigar) {
+            setVisibleCigarOp(
+              `${tooltip}<br/>${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
+            )
+          } else {
+            setVisibleCigarOp(tooltip)
+          }
         }}
         onMouseLeave={() => setVisibleId(undefined)}
         onClick={event => {
-          const ref = clickMapRef.current
-          if (!ref) {
+          const ref1 = clickMapRef.current
+          const ref2 = cigarClickMapRef.current
+          if (!ref1 || !ref2) {
             return
           }
-          const rect = ref.getBoundingClientRect()
-          const ctx = ref.getContext('2d')
-          if (!ctx) {
+          const rect = ref1.getBoundingClientRect()
+          const ctx1 = ref1.getContext('2d')
+          const ctx2 = ref2.getContext('2d')
+          if (!ctx1 || !ctx2) {
             return
           }
           const x = event.clientX - rect.left
           const y = event.clientY - rect.top
 
-          const [r, g, b] = ctx.getImageData(x, y, 1, 1).data
-          const match = matches[getId(r, g, b)]
+          const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+          const match1 = matches[getId(r1, g1, b1)]
           const session = getSession(displayModel)
           if (isSessionModelWithWidgets(session)) {
             const featureWidget = session.addWidget(
@@ -436,8 +499,8 @@ function LinearSyntenyRendering({
               'syntenyFeature',
               {
                 featureData: {
-                  feature1: match[0].feature,
-                  feature2: match[1].feature,
+                  feature1: match1[0].feature,
+                  feature2: match1[1].feature,
                 },
               },
             )
@@ -461,6 +524,20 @@ function LinearSyntenyRendering({
         width={width}
         height={height}
       />
+      <canvas
+        ref={cigarClickMapRef}
+        style={{
+          imageRendering: 'pixelated',
+          pointerEvents: 'none',
+          visibility: 'hidden',
+          position: 'absolute',
+        }}
+        width={width}
+        height={height}
+      />
+      {visibleId !== undefined && currX && currY ? (
+        <SyntenyTooltip x={currX} y={currY} title={visibleCigarOp} />
+      ) : null}
     </div>
   )
 }
