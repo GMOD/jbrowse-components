@@ -267,7 +267,11 @@ function LinearSyntenyRendering({
                 // if it is a small feature and not the last element of the
                 // CIGAR (which could skip rendering it entire if we did turn
                 // it on), then turn on continuing flag
-                if (cx1 - px1 < 1 && cx2 - px2 < 1 && j < cigar.length - 2) {
+                if (
+                  Math.abs(cx1 - px1) < 1 &&
+                  Math.abs(cx2 - px2) < 1 &&
+                  j < cigar.length - 2
+                ) {
                   continuingFlag = true
                 } else {
                   continuingFlag = false
