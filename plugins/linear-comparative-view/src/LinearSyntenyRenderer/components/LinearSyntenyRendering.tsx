@@ -1,5 +1,4 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react'
-import Color from 'color'
 import { observer } from 'mobx-react'
 import { getSnapshot, isAlive } from 'mobx-state-tree'
 import SimpleFeature, {
@@ -36,13 +35,6 @@ const colorMap = {
   M: '#f003',
   '=': '#f003',
 }
-
-const darkerColorMap = Object.fromEntries(
-  Object.entries(colorMap).map(([key, val]) => [
-    key,
-    Color(val).darken(0.6).toString(),
-  ]),
-)
 
 function getId(r: number, g: number, b: number) {
   return r * 255 * 255 + g * 255 + b - 1
@@ -97,8 +89,8 @@ function layoutMatches(
 }
 
 function getResources(model: LinearComparativeDisplay) {
-  const worker = !('type' in model)
-  if (!worker && isAlive(model)) {
+  const inWorker = !('type' in model)
+  if (!inWorker && isAlive(model)) {
     const parentView = getContainingView(model) as LinearSyntenyViewModel
     const color = getConf(model, ['renderer', 'color'])
     const session = getSession(model)
@@ -137,7 +129,13 @@ function LinearSyntenyRendering({
   // clickMapRef
   const cigarClickMapRef = useRef<HTMLCanvasElement>(null)
 
-  const [visibleId, setVisibleId] = useState<number>()
+  // canvas for drawing mouseover shading
+  // this is separate from the other code for speed: don't have to redraw
+  // entire canvas to do a feature's mouseover shading
+  const mouseoverRef = useRef<HTMLCanvasElement>(null)
+
+  const [mouseoverId, setMouseoverId] = useState<number>()
+  const [clickId, setClickId] = useState<number>()
   const [visibleCigarOp, setVisibleCigarOp] = useState('')
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
@@ -184,15 +182,18 @@ function LinearSyntenyRendering({
     const ctx1 = drawRef.current.getContext('2d')
     const ctx2 = clickMapRef.current.getContext('2d')
     const ctx3 = cigarClickMapRef.current.getContext('2d')
+
     if (!ctx1 || !ctx2 || !ctx3) {
       return
     }
+
+    ctx2.imageSmoothingEnabled = false
+    ctx3.imageSmoothingEnabled = false
+
     ctx1.resetTransform()
     ctx1.scale(highResolutionScaling, highResolutionScaling)
     ctx1.clearRect(0, 0, width, height)
     ctx2.clearRect(0, 0, width, height)
-    // ctx1.fillStyle = color
-    // ctx1.strokeStyle = color
     const showIntraviewLinks = false
     const middle = true
     const hideTiny = false
@@ -211,10 +212,8 @@ function LinearSyntenyRendering({
       const g = Math.floor(idx / 255) % 255
       const b = idx % 255
       ctx2.fillStyle = `rgb(${r},${g},${b})`
-      const currentlyMousedOver = visibleId === j
-      const currPalette = currentlyMousedOver ? darkerColorMap : colorMap
-      ctx1.fillStyle = currPalette.M
-      ctx1.strokeStyle = currPalette.M
+      ctx1.fillStyle = colorMap.M
+      ctx1.strokeStyle = colorMap.M
 
       // we follow a path in the list of chunks, not from top to bottom, just
       // in series following x1,y1 -> x2,y2
@@ -298,7 +297,7 @@ function LinearSyntenyRendering({
               const b = idx % 255
               ctx3.fillStyle = `rgb(${r},${g},${b})`
               const len = +cigar[j]
-              const op = cigar[j + 1] as keyof typeof currPalette
+              const op = cigar[j + 1] as keyof typeof colorMap
 
               if (!continuingFlag) {
                 px1 = cx1
@@ -342,7 +341,7 @@ function LinearSyntenyRendering({
                   // flag if the last element of continuing was a large
                   // feature, else just use match
                   ctx1.fillStyle =
-                    currPalette[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+                    colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
 
                   ctx1.beginPath()
                   ctx2.beginPath()
@@ -426,10 +425,146 @@ function LinearSyntenyRendering({
     height,
     matches,
     parsedCIGARs,
-    visibleId,
   ])
+
+  // draw mouseover shading on the mouseover'd ID
+  useEffect(() => {
+    if (!mouseoverRef.current || !offsets || !views || !isAlive(displayModel)) {
+      return
+    }
+    const ctx = mouseoverRef.current.getContext('2d')
+    if (!ctx) {
+      return
+    }
+    ctx.resetTransform()
+    ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.clearRect(0, 0, width, height)
+    const showIntraviewLinks = false
+    const middle = true
+    const hideTiny = false
+    const viewSnaps = views.map(view => ({
+      ...getSnapshot(view),
+      width: view.width,
+      interRegionPaddingWidth: view.interRegionPaddingWidth,
+      minimumBlockWidth: view.minimumBlockWidth,
+    }))
+
+    function drawMouseoverOrClick(
+      m: any,
+      ctx: CanvasRenderingContext2D,
+      offsets: number[],
+      cb: (ctx: CanvasRenderingContext2D) => void,
+    ) {
+      // we follow a path in the list of chunks, not from top to bottom, just
+      // in series following x1,y1 -> x2,y2
+      for (let i = 0; i < m.length - 1; i += 1) {
+        const { layout: c1, feature: f1, level: l1, refName: ref1 } = m[i]
+        const { layout: c2, feature: f2, level: l2, refName: ref2 } = m[i + 1]
+        const v1 = viewSnaps[l1]
+        const v2 = viewSnaps[l2]
+
+        if (!c1 || !c2) {
+          console.warn('received null layout for a overlay feature')
+          return
+        }
+
+        // disable rendering connections in a single level
+        if (!showIntraviewLinks && l1 === l2) {
+          continue
+        }
+        const length1 = f1.get('end') - f1.get('start')
+        const length2 = f2.get('end') - f2.get('start')
+
+        if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
+          continue
+        }
+
+        const x11 = px(v1, { refName: ref1, coord: c1[LEFT] }) - offsets[l1]
+        const x12 = px(v1, { refName: ref1, coord: c1[RIGHT] }) - offsets[l1]
+        const x21 = px(v2, { refName: ref2, coord: c2[LEFT] }) - offsets[l2]
+        const x22 = px(v2, { refName: ref2, coord: c2[RIGHT] }) - offsets[l2]
+
+        const y1 = middle
+          ? interstitialYPos(l1 < l2, height)
+          : // prettier-ignore
+            // @ts-ignore
+            overlayYPos(trackIds[0], l1, viewSnaps, c1, l1 < l2)
+        const y2 = middle
+          ? interstitialYPos(l2 < l1, height)
+          : // prettier-ignore
+            // @ts-ignore
+            overlayYPos(trackIds[1], l2, viewSnaps, c2, l2 < l1)
+
+        const mid = (y2 - y1) / 2
+
+        // drawing a line if the results are thin results in much less
+        // pixellation than filling in a thin polygon
+        if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+          ctx.beginPath()
+          ctx.moveTo(x11, y1)
+          if (drawCurves) {
+            ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+          } else {
+            ctx.lineTo(x21, y2)
+          }
+          ctx.stroke()
+        } else {
+          // for now, not highlighting individual CIGAR entries
+          ctx.beginPath()
+          ctx.moveTo(x11, y1)
+          ctx.lineTo(x12, y1)
+          if (drawCurves) {
+            ctx.bezierCurveTo(x12, mid, x22, mid, x22, y2)
+          } else {
+            ctx.lineTo(x22, y2)
+          }
+          ctx.lineTo(x21, y2)
+          if (drawCurves) {
+            ctx.bezierCurveTo(x21, mid, x11, mid, x11, y1)
+          } else {
+            ctx.lineTo(x11, y1)
+          }
+          ctx.closePath()
+          cb(ctx)
+        }
+      }
+    }
+
+    if (mouseoverId !== undefined && matches[mouseoverId]) {
+      const m = matches[mouseoverId]
+      ctx.fillStyle = 'rgb(0,0,0,0.1)'
+      drawMouseoverOrClick(m, ctx, offsets, ctx => ctx.fill())
+    }
+
+    if (clickId !== undefined && matches[clickId]) {
+      const m = matches[clickId]
+      ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
+      drawMouseoverOrClick(m, ctx, offsets, ctx => ctx.stroke())
+    }
+  }, [
+    displayModel,
+    highResolutionScaling,
+    trackIds,
+    width,
+    views,
+    offsets,
+    drawCurves,
+    color,
+    height,
+    matches,
+    parsedCIGARs,
+    mouseoverId,
+    clickId,
+  ])
+
   return (
     <div style={{ position: 'relative' }}>
+      <canvas
+        ref={mouseoverRef}
+        width={width}
+        height={height}
+        style={{ width, height, position: 'absolute', pointerEvents: 'none' }}
+      />
       <canvas
         ref={drawRef}
         onMouseMove={event => {
@@ -439,6 +574,7 @@ function LinearSyntenyRendering({
             return
           }
           const rect = ref1.getBoundingClientRect()
+
           const ctx1 = ref1.getContext('2d')
           const ctx2 = ref2.getContext('2d')
           if (!ctx1 || !ctx2) {
@@ -453,7 +589,7 @@ function LinearSyntenyRendering({
           const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
           const id = getId(r1, g1, b1)
           const match1 = matches[id]
-          setVisibleId(id === -1 ? undefined : id)
+          setMouseoverId(id === -1 ? undefined : id)
           if (!match1) {
             setVisibleCigarOp('')
             return
@@ -474,7 +610,7 @@ function LinearSyntenyRendering({
             setVisibleCigarOp(tooltip)
           }
         }}
-        onMouseLeave={() => setVisibleId(undefined)}
+        onMouseLeave={() => setMouseoverId(undefined)}
         onClick={event => {
           const ref1 = clickMapRef.current
           const ref2 = cigarClickMapRef.current
@@ -482,6 +618,7 @@ function LinearSyntenyRendering({
             return
           }
           const rect = ref1.getBoundingClientRect()
+
           const ctx1 = ref1.getContext('2d')
           const ctx2 = ref2.getContext('2d')
           if (!ctx1 || !ctx2) {
@@ -491,21 +628,19 @@ function LinearSyntenyRendering({
           const y = event.clientY - rect.top
 
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-          const match1 = matches[getId(r1, g1, b1)]
+          const id = getId(r1, g1, b1)
+          const match1 = matches[id]
           const session = getSession(displayModel)
-          if (isSessionModelWithWidgets(session)) {
-            const featureWidget = session.addWidget(
-              'SyntenyFeatureWidget',
-              'syntenyFeature',
-              {
+          setClickId(id === -1 ? undefined : id)
+          if (match1 && isSessionModelWithWidgets(session)) {
+            session.showWidget(
+              session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
                 featureData: {
                   feature1: match1[0].feature,
                   feature2: match1[1].feature,
                 },
-              },
+              }),
             )
-
-            session.showWidget(featureWidget)
           }
         }}
         data-testid="synteny_canvas"
@@ -535,7 +670,7 @@ function LinearSyntenyRendering({
         width={width}
         height={height}
       />
-      {visibleId !== undefined && currX && currY ? (
+      {mouseoverId !== undefined && currX && currY ? (
         <SyntenyTooltip x={currX} y={currY} title={visibleCigarOp} />
       ) : null}
     </div>
