@@ -596,19 +596,29 @@ function LinearSyntenyRendering({
           }
           const cigar = parsedCIGARs.get(match1[0].feature.id())
           const cigarIdx = getId(r2, g2, b2)
-          // @ts-ignore
-          const f1 = assembleLocString(match1[0].feature.toJSON())
-          // @ts-ignore
-          const f2 = assembleLocString(match1[1].feature.toJSON())
-          const tooltip = `${f1}<br/>${f2}`
+          const f1 = match1[0].feature
+          const f2 = match1[1].feature
+          console.log(f1)
+          const l1 = f1.get('end') - f1.get('start')
+          const l2 = f2.get('end') - f2.get('start')
+          const identity = f1.get('identity')
+          const n1 = f1.get('name')
+          const n2 = f2.get('name')
+          const tooltip = [`Query len: ${l1}<br/>Target len: ${l2}`]
+          if (identity) {
+            tooltip.push(`Identity: ${identity}`)
+          }
 
           if (cigar && cigar[cigarIdx]) {
-            setVisibleCigarOp(
-              `${tooltip}<br/>${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
+            tooltip.push(
+              `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
             )
-          } else {
-            setVisibleCigarOp(tooltip)
           }
+          if (n1 && n2) {
+            tooltip.push(`Name 1: ${n1}`)
+            tooltip.push(`Name 2: ${n2}`)
+          }
+          setVisibleCigarOp(tooltip.join('<br/>'))
         }}
         onMouseLeave={() => setMouseoverId(undefined)}
         onClick={event => {
