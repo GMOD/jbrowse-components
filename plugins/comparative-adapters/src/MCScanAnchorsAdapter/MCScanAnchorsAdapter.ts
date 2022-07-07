@@ -10,6 +10,7 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readFile, parseBed } from '../util'
 
 interface BareFeature {
+  strand: number
   refName: string
   start: number
   end: number
@@ -100,6 +101,9 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
                 ...f1,
                 uniqueId: `${index}-${rowNum}`,
                 syntenyId: rowNum,
+                // note: strand would be -1 if the two features are on opposite strands,
+                // indicating inverted alignment
+                strand: f1.strand * f2.strand,
                 score,
                 mate: f2 as BareFeature,
               }),
