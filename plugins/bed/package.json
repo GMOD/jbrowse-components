@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-bed",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 bed adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -45,11 +45,11 @@
     "@gmod/tabix": "^1.5.2"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "rxjs": "^6.0.0",
+    "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0"
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
+    "rxjs": "^6.0.0"
   },
   "publishConfig": {
     "access": "public"

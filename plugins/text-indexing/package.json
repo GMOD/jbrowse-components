@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-text-indexing",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 text indexing rpc method",
   "keywords": [
     "jbrowse",
@@ -38,10 +38,10 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/text-indexing": "^1.7.11"
+    "@jbrowse/text-indexing": "^2.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

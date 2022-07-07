@@ -41,9 +41,10 @@ export default observer(
   }) => {
     const totalWidth = featureWidth + allowedWidthExpansion
     const measuredTextWidth = measureText(text, fontHeight)
-    const params = isStateTreeNode(displayModel)
-      ? getViewParams(displayModel)
-      : viewParams
+    const params =
+      isStateTreeNode(displayModel) && isAlive(displayModel)
+        ? getViewParams(displayModel)
+        : viewParams
 
     const viewLeft = reversed ? params.end : params.start
 

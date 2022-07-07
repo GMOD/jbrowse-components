@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trix",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 trix text search adapter",
   "keywords": [
     "jbrowse",
@@ -37,8 +37,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@mui/material": "^4.9.13",
+    "@jbrowse/core": "^2.0.0",
+    "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
