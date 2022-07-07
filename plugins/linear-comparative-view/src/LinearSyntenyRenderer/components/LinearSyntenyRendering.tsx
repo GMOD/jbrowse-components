@@ -450,7 +450,7 @@ function LinearSyntenyRendering({
     }))
 
     function drawMouseoverOrClick(
-      m: any,
+      m: typeof matches[0],
       ctx: CanvasRenderingContext2D,
       offsets: number[],
       cb: (ctx: CanvasRenderingContext2D) => void,
@@ -602,7 +602,7 @@ function LinearSyntenyRendering({
           const f2 = assembleLocString(match1[1].feature.toJSON())
           const tooltip = `${f1}<br/>${f2}`
 
-          if (cigar) {
+          if (cigar && cigar[cigarIdx]) {
             setVisibleCigarOp(
               `${tooltip}<br/>${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
             )
