@@ -365,20 +365,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ],
               }
             })
+
+          const { id: _unused1, ...rest1 } = getSnapshot(d1)
+          const { id: _unused2, ...rest2 } = getSnapshot(d2)
           const viewSnapshot = {
             type: 'LinearSyntenyView',
             views: [
               {
                 type: 'LinearGenomeView',
-                ...getSnapshot(d1),
                 tracks: [],
                 hideHeader: true,
+                ...rest1,
               },
               {
                 type: 'LinearGenomeView',
-                ...getSnapshot(d2),
                 tracks: [],
                 hideHeader: true,
+                ...rest2,
               },
             ],
             tracks,
