@@ -42,7 +42,7 @@
     "@mui/icons-material": "^5.0.1"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "dompurify": "^2.0.11",
     "mobx": "^6.0.0",

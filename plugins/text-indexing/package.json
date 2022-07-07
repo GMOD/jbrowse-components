@@ -41,7 +41,7 @@
     "@jbrowse/text-indexing": "^2.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
