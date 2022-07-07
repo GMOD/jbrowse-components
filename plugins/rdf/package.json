@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-rdf",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 RDF resources",
   "keywords": [
     "jbrowse",
@@ -42,10 +42,10 @@
   },
   "peerDependencies": {
     "@jbrowse/core": "^1.0.0",
-    "mobx-state-tree": "^5.0.0",
-    "rxjs": "^6.0.0",
     "mobx": "^6.0.0",
-    "mobx-react": "^7.0.0"
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
+    "rxjs": "^6.0.0"
   },
   "private": true,
   "distModule": "esm/index.js",

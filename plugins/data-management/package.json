@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-data-management",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -49,12 +49,12 @@
     "@jbrowse/core": "^1.0.0",
     "@jbrowse/plugin-config": "^1.0.0",
     "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
-    "tss-react": "^3.0.0",
-    "mobx": "^6.0.0"
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

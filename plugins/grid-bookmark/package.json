@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-grid-bookmark",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 grid bookmark widget",
   "keywords": [
     "jbrowse",
@@ -47,12 +47,12 @@
     "@jbrowse/plugin-linear-genome-view": "^1.4.4",
     "@mui/material": "^5.0.0",
     "@mui/x-data-grid": "^5.0.1",
+    "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
-    "tss-react": "^3.0.0",
-    "mobx": "^6.0.0"
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
