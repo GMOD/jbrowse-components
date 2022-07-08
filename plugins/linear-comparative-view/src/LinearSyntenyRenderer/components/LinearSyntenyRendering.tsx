@@ -41,7 +41,11 @@ function getId(r: number, g: number, b: number) {
 }
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
-  return viewBpToPx({ ...arg, self: view })?.offsetPx || 0
+  const r = viewBpToPx({ ...arg, self: view })?.offsetPx
+  if (r === undefined) {
+    console.warn('unknown coord', arg)
+  }
+  return r
 }
 
 function layoutMatches(
@@ -239,10 +243,23 @@ function LinearSyntenyRendering({
           continue
         }
 
-        const x11 = px(v1, { refName: ref1, coord: c1[LEFT] }) - offsets[l1]
-        const x12 = px(v1, { refName: ref1, coord: c1[RIGHT] }) - offsets[l1]
-        const x21 = px(v2, { refName: ref2, coord: c2[LEFT] }) - offsets[l2]
-        const x22 = px(v2, { refName: ref2, coord: c2[RIGHT] }) - offsets[l2]
+        const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
+        const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
+        const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
+        const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+        if (
+          px11 === undefined ||
+          px12 === undefined ||
+          px21 === undefined ||
+          px22 === undefined
+        ) {
+          continue
+        }
+
+        const x11 = px11 - offsets[l1]
+        const x12 = px12 - offsets[l1]
+        const x21 = px21 - offsets[l2]
+        const x22 = px22 - offsets[l2]
 
         const y1 = middle
           ? interstitialYPos(l1 < l2, height)
@@ -310,11 +327,11 @@ function LinearSyntenyRendering({
                 cx1 += d1 * rev1
                 cx2 += d2 * rev2
               } else if (op === 'D') {
-                cx2 += d2 * rev2
-              } else if (op === 'N') {
-                cx2 += d2 * rev2
-              } else if (op === 'I') {
                 cx1 += d1 * rev1
+              } else if (op === 'N') {
+                cx1 += d1 * rev1
+              } else if (op === 'I') {
+                cx2 += d2 * rev2
               }
 
               // check that we are even drawing in view here, e.g. that all
@@ -418,13 +435,14 @@ function LinearSyntenyRendering({
     highResolutionScaling,
     trackIds,
     width,
-    views,
-    offsets,
     drawCurves,
     color,
     height,
     matches,
     parsedCIGARs,
+    // these are checked with a stringify to avoid the reference being checked
+    JSON.stringify(views),
+    JSON.stringify(offsets),
   ])
 
   // draw mouseover shading on the mouseover'd ID
@@ -479,10 +497,23 @@ function LinearSyntenyRendering({
           continue
         }
 
-        const x11 = px(v1, { refName: ref1, coord: c1[LEFT] }) - offsets[l1]
-        const x12 = px(v1, { refName: ref1, coord: c1[RIGHT] }) - offsets[l1]
-        const x21 = px(v2, { refName: ref2, coord: c2[LEFT] }) - offsets[l2]
-        const x22 = px(v2, { refName: ref2, coord: c2[RIGHT] }) - offsets[l2]
+        const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
+        const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
+        const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
+        const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+        if (
+          px11 === undefined ||
+          px12 === undefined ||
+          px21 === undefined ||
+          px22 === undefined
+        ) {
+          continue
+        }
+
+        const x11 = px11 - offsets[l1]
+        const x12 = px12 - offsets[l1]
+        const x21 = px21 - offsets[l2]
+        const x22 = px22 - offsets[l2]
 
         const y1 = middle
           ? interstitialYPos(l1 < l2, height)
@@ -546,8 +577,6 @@ function LinearSyntenyRendering({
     highResolutionScaling,
     trackIds,
     width,
-    views,
-    offsets,
     drawCurves,
     color,
     height,
@@ -555,6 +584,9 @@ function LinearSyntenyRendering({
     parsedCIGARs,
     mouseoverId,
     clickId,
+    // these are checked with a stringify to avoid the reference being checked
+    JSON.stringify(views),
+    JSON.stringify(offsets),
   ])
 
   return (
@@ -580,10 +612,11 @@ function LinearSyntenyRendering({
           if (!ctx1 || !ctx2) {
             return
           }
-          const x = event.clientX - rect.left
-          const y = event.clientY - rect.top
-          setCurrX(event.clientX)
-          setCurrY(event.clientY)
+          const { clientX, clientY } = event
+          const x = clientX - rect.left
+          const y = clientY - rect.top
+          setCurrX(clientX)
+          setCurrY(clientY)
 
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
           const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
@@ -598,7 +631,6 @@ function LinearSyntenyRendering({
           const cigarIdx = getId(r2, g2, b2)
           const f1 = match1[0].feature
           const f2 = match1[1].feature
-          console.log(f1)
           const l1 = f1.get('end') - f1.get('start')
           const l2 = f2.get('end') - f2.get('start')
           const identity = f1.get('identity')
@@ -607,6 +639,12 @@ function LinearSyntenyRendering({
           const tooltip = [`Query len: ${l1}<br/>Target len: ${l2}`]
           if (identity) {
             tooltip.push(`Identity: ${identity}`)
+          }
+          if (identity) {
+            // @ts-ignore
+            tooltip.push(`Loc1: ${assembleLocString(f1.toJSON())}`)
+            // @ts-ignore
+            tooltip.push(`Loc2: ${assembleLocString(f2.toJSON())}`)
           }
 
           if (cigar && cigar[cigarIdx]) {
