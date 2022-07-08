@@ -25,6 +25,8 @@ import SyntenyTooltip from './SyntenyTooltip'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
+const MAX_COLOR_RANGE = 255 * 255 * 255 //max color range
+
 type RectTuple = [number, number, number, number]
 
 const colorMap = {
@@ -36,8 +38,8 @@ const colorMap = {
   '=': '#f003',
 }
 
-function getId(r: number, g: number, b: number) {
-  return r * 255 * 255 + g * 255 + b - 1
+function getId(r: number, g: number, b: number, unitMultiplier: number) {
+  return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
@@ -207,10 +209,10 @@ function LinearSyntenyRendering({
       interRegionPaddingWidth: view.interRegionPaddingWidth,
       minimumBlockWidth: view.minimumBlockWidth,
     }))
-
+    const unitMultiplier = Math.floor(MAX_COLOR_RANGE / matches.length)
     for (let j = 0; j < matches.length; j++) {
       const m = matches[j]
-      const idx = j + 1
+      const idx = j * unitMultiplier + 1
 
       const r = Math.floor(idx / (255 * 255)) % 255
       const g = Math.floor(idx / 255) % 255
@@ -306,9 +308,11 @@ function LinearSyntenyRendering({
             let continuingFlag = false
             let px1 = 0
             let px2 = 0
+            const unitMultiplier2 = Math.floor(
+              MAX_COLOR_RANGE / (cigar.length / 2),
+            )
             for (let j = 0; j < cigar.length; j += 2) {
-              const idx = j + 1
-
+              const idx = j * unitMultiplier2 + 1
               const r = Math.floor(idx / (255 * 255)) % 255
               const g = Math.floor(idx / 255) % 255
               const b = idx % 255
@@ -620,15 +624,19 @@ function LinearSyntenyRendering({
 
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
           const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
-          const id = getId(r1, g1, b1)
+          const unitMultiplier = Math.floor(MAX_COLOR_RANGE / matches.length)
+          const id = getId(r1, g1, b1, unitMultiplier)
           const match1 = matches[id]
-          setMouseoverId(id === -1 ? undefined : id)
+          setMouseoverId(id < 0 ? undefined : id)
           if (!match1) {
             setVisibleCigarOp('')
             return
           }
-          const cigar = parsedCIGARs.get(match1[0].feature.id())
-          const cigarIdx = getId(r2, g2, b2)
+          const cigar = parsedCIGARs.get(match1[0].feature.id()) || []
+          const unitMultiplier2 = Math.floor(
+            MAX_COLOR_RANGE / (cigar.length / 2),
+          )
+          const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
           const f1 = match1[0].feature
           const f2 = match1[1].feature
           const l1 = f1.get('end') - f1.get('start')
@@ -647,7 +655,7 @@ function LinearSyntenyRendering({
             tooltip.push(`Loc2: ${assembleLocString(f2.toJSON())}`)
           }
 
-          if (cigar && cigar[cigarIdx]) {
+          if (cigar[cigarIdx]) {
             tooltip.push(
               `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
             )
@@ -676,10 +684,12 @@ function LinearSyntenyRendering({
           const y = event.clientY - rect.top
 
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-          const id = getId(r1, g1, b1)
+          const unitMultiplier = Math.floor(MAX_COLOR_RANGE / matches.length)
+          const id = getId(r1, g1, b1, unitMultiplier)
+          console.log({ id })
           const match1 = matches[id]
           const session = getSession(displayModel)
-          setClickId(id === -1 ? undefined : id)
+          setClickId(id < 0 ? undefined : id)
           if (match1 && isSessionModelWithWidgets(session)) {
             session.showWidget(
               session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
