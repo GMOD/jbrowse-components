@@ -1,10 +1,10 @@
-import React from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { observer } from 'mobx-react'
-
-// locals
+import ReactPropTypes from 'prop-types'
+import React from 'react'
 import aminoAcids from '../aminoAcids'
 import nucleotides from '../nucleotides'
 import { featuresConsensusSequence } from '../util'
@@ -157,6 +157,17 @@ function Rendering(props) {
       />
     </svg>
   )
+}
+Rendering.propTypes = {
+  config: CommonPropTypes.ConfigSchema.isRequired,
+  bpPerPx: ReactPropTypes.number.isRequired,
+  regions: ReactPropTypes.arrayOf(
+    ReactPropTypes.shape({
+      end: ReactPropTypes.number.isRequired,
+      start: ReactPropTypes.number.isRequired,
+    }),
+  ).isRequired,
+  features: ReactPropTypes.instanceOf(Map).isRequired,
 }
 
 export default observer(Rendering)
