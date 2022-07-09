@@ -199,6 +199,7 @@ export const SequencePanel = React.forwardRef<
           style={{
             fontFamily: 'monospace',
             wordWrap: 'break-word',
+            fontSize: 12,
             maxWidth: 600,
           }}
         >

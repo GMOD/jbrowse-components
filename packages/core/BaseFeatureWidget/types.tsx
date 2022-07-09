@@ -5,6 +5,7 @@ import { AbstractViewModel } from '../util'
 
 export interface BaseProps extends BaseCardProps {
   feature: SimpleFeatureSerialized
+  formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   model?: IAnyStateTreeNode & {
     view?: AbstractViewModel & {
