@@ -1,27 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react'
-import { observer } from 'mobx-react'
+import { observer, PropTypes } from 'mobx-react'
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'
 
 /**
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-function ServerSideSyntenyRendering(props: {
-  model: {
-    imageData: unknown
-    style: Record<string, string>
-    renderProps: {
-      width: number
-      height: number
-      highResolutionScaling?: number
-    }
-  }
-}) {
+function ServerSideSyntenyRendering(props) {
   const { model } = props
   const { imageData, style, renderProps } = model
   const { width, height, highResolutionScaling = 1 } = renderProps
 
-  const featureCanvas = useRef<HTMLCanvasElement>(null)
+  const featureCanvas = useRef()
   const [done, setDone] = useState(false)
 
   useEffect(() => {
@@ -29,9 +19,6 @@ function ServerSideSyntenyRendering(props: {
       return
     }
     const canvas = featureCanvas.current
-    if (!canvas) {
-      return
-    }
     const context = canvas.getContext('2d')
     drawImageOntoCanvasContext(imageData, context)
     setDone(true)
@@ -46,6 +33,10 @@ function ServerSideSyntenyRendering(props: {
       style={{ width, height, ...style }}
     />
   )
+}
+
+ServerSideSyntenyRendering.propTypes = {
+  model: PropTypes.observableObject.isRequired,
 }
 
 export default observer(ServerSideSyntenyRendering)

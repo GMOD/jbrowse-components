@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/core/util'
 
 // locals
-import { interstitialYPos, overlayYPos, generateMatches } from '../../util'
+import { interstitialYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
 import SyntenyTooltip from './SyntenyTooltip'
@@ -48,6 +48,112 @@ function px(view: ViewSnap, arg: { refName: string; coord: number }) {
     console.warn('unknown coord', arg)
   }
   return r
+}
+
+function drawMatchSimple({
+  match,
+  ctx,
+  offsets,
+  cb,
+  viewSnaps,
+  showIntraviewLinks,
+  hideTiny,
+  height,
+  drawCurves,
+}: {
+  match: {
+    layout: RectTuple
+    feature: Feature
+    level: number
+    refName: string
+  }[]
+  ctx: CanvasRenderingContext2D
+  offsets: number[]
+  cb: (ctx: CanvasRenderingContext2D) => void
+  viewSnaps: ViewSnap[]
+  showIntraviewLinks: boolean
+  hideTiny: boolean
+  height: number
+  drawCurves?: boolean
+}) {
+  // we follow a path in the list of chunks, not from top to bottom, just
+  // in series following x1,y1 -> x2,y2
+  for (let i = 0; i < match.length - 1; i += 1) {
+    const { layout: c1, feature: f1, level: l1, refName: ref1 } = match[i]
+    const { layout: c2, feature: f2, level: l2, refName: ref2 } = match[i + 1]
+    const v1 = viewSnaps[l1]
+    const v2 = viewSnaps[l2]
+
+    if (!c1 || !c2) {
+      console.warn('received null layout for a overlay feature')
+      return
+    }
+
+    // disable rendering connections in a single level
+    if (!showIntraviewLinks && l1 === l2) {
+      continue
+    }
+    const length1 = f1.get('end') - f1.get('start')
+    const length2 = f2.get('end') - f2.get('start')
+
+    if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
+      continue
+    }
+
+    const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
+    const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
+    const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
+    const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+    if (
+      px11 === undefined ||
+      px12 === undefined ||
+      px21 === undefined ||
+      px22 === undefined
+    ) {
+      continue
+    }
+
+    const x11 = px11 - offsets[l1]
+    const x12 = px12 - offsets[l1]
+    const x21 = px21 - offsets[l2]
+    const x22 = px22 - offsets[l2]
+
+    const y1 = interstitialYPos(l1 < l2, height)
+
+    const y2 = interstitialYPos(l2 < l1, height)
+
+    const mid = (y2 - y1) / 2
+
+    // drawing a line if the results are thin: drawing a line results in much
+    // less pixellation than filling in a thin polygon
+    if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+      ctx.beginPath()
+      ctx.moveTo(x11, y1)
+      if (drawCurves) {
+        ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      } else {
+        ctx.lineTo(x21, y2)
+      }
+      ctx.stroke()
+    } else {
+      ctx.beginPath()
+      ctx.moveTo(x11, y1)
+      ctx.lineTo(x12, y1)
+      if (drawCurves) {
+        ctx.bezierCurveTo(x12, mid, x22, mid, x22, y2)
+      } else {
+        ctx.lineTo(x22, y2)
+      }
+      ctx.lineTo(x21, y2)
+      if (drawCurves) {
+        ctx.bezierCurveTo(x21, mid, x11, mid, x11, y1)
+      } else {
+        ctx.lineTo(x11, y1)
+      }
+      ctx.closePath()
+      cb(ctx)
+    }
+  }
 }
 
 function layoutMatches(
@@ -202,7 +308,6 @@ function LinearSyntenyRendering({
       ctx1.clearRect(0, 0, width, height)
       ctx2.clearRect(0, 0, width, height)
       const showIntraviewLinks = false
-      const middle = true
       const hideTiny = false
       const viewSnaps = views.map(view => ({
         ...getSnapshot(view),
@@ -218,9 +323,20 @@ function LinearSyntenyRendering({
         const r = Math.floor(idx / (255 * 255)) % 255
         const g = Math.floor(idx / 255) % 255
         const b = idx % 255
-        ctx2.fillStyle = `rgb(${r},${g},${b})`
         ctx1.fillStyle = colorMap.M
         ctx1.strokeStyle = colorMap.M
+        ctx2.fillStyle = `rgb(${r},${g},${b})`
+        drawMatchSimple({
+          cb: ctx => ctx.fill(),
+          match: m,
+          ctx: ctx2,
+          drawCurves,
+          offsets,
+          hideTiny,
+          height,
+          viewSnaps,
+          showIntraviewLinks,
+        })
 
         // we follow a path in the list of chunks, not from top to bottom, just
         // in series following x1,y1 -> x2,y2
@@ -264,16 +380,8 @@ function LinearSyntenyRendering({
           const x21 = px21 - offsets[l2]
           const x22 = px22 - offsets[l2]
 
-          const y1 = middle
-            ? interstitialYPos(l1 < l2, height)
-            : // prettier-ignore
-              // @ts-ignore
-              overlayYPos(trackIds[0], l1, viewSnaps, c1, l1 < l2)
-          const y2 = middle
-            ? interstitialYPos(l2 < l1, height)
-            : // prettier-ignore
-              // @ts-ignore
-              overlayYPos(trackIds[1], l2, viewSnaps, c2, l2 < l1)
+          const y1 = interstitialYPos(l1 < l2, height)
+          const y2 = interstitialYPos(l2 < l1, height)
 
           const mid = (y2 - y1) / 2
 
@@ -281,18 +389,13 @@ function LinearSyntenyRendering({
           // pixellation than filling in a thin polygon
           if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
             ctx1.beginPath()
-            ctx2.beginPath()
             ctx1.moveTo(x11, y1)
-            ctx2.moveTo(x11, y1)
             if (drawCurves) {
               ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-              ctx2.bezierCurveTo(x11, mid, x21, mid, x21, y2)
             } else {
               ctx1.lineTo(x21, y2)
-              ctx2.lineTo(x21, y2)
             }
             ctx1.stroke()
-            ctx2.stroke()
           } else {
             let cx1 = x11
             let cx2 = x21
@@ -366,71 +469,51 @@ function LinearSyntenyRendering({
                       colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
 
                     ctx1.beginPath()
-                    ctx2.beginPath()
                     ctx3.beginPath()
                     ctx1.moveTo(px1, y1)
-                    ctx2.moveTo(px1, y1)
                     ctx3.moveTo(px1, y1)
                     ctx1.lineTo(cx1, y1)
-                    ctx2.lineTo(cx1, y1)
                     ctx3.lineTo(cx1, y1)
                     if (drawCurves) {
                       ctx1.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
-                      ctx2.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
                       ctx3.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
                     } else {
                       ctx1.lineTo(cx2, y2)
-                      ctx2.lineTo(cx2, y2)
                       ctx3.lineTo(cx2, y2)
                     }
                     ctx1.lineTo(px2, y2)
-                    ctx2.lineTo(px2, y2)
                     ctx3.lineTo(px2, y2)
                     if (drawCurves) {
                       ctx1.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                      ctx2.bezierCurveTo(px2, mid, px1, mid, px1, y1)
                       ctx3.bezierCurveTo(px2, mid, px1, mid, px1, y1)
                     } else {
                       ctx1.lineTo(px1, y1)
-                      ctx2.lineTo(px1, y1)
                       ctx3.lineTo(px1, y1)
                     }
                     ctx1.closePath()
-                    ctx2.closePath()
                     ctx3.closePath()
                     ctx1.fill()
-                    ctx2.fill()
                     ctx3.fill()
                   }
                 }
               }
             } else {
               ctx1.beginPath()
-              ctx2.beginPath()
               ctx1.moveTo(x11, y1)
-              ctx2.moveTo(x11, y1)
               ctx1.lineTo(x12, y1)
-              ctx2.lineTo(x12, y1)
               if (drawCurves) {
                 ctx1.bezierCurveTo(x12, mid, x22, mid, x22, y2)
-                ctx2.bezierCurveTo(x12, mid, x22, mid, x22, y2)
               } else {
                 ctx1.lineTo(x22, y2)
-                ctx2.lineTo(x22, y2)
               }
               ctx1.lineTo(x21, y2)
-              ctx2.lineTo(x21, y2)
               if (drawCurves) {
                 ctx1.bezierCurveTo(x21, mid, x11, mid, x11, y1)
-                ctx2.bezierCurveTo(x21, mid, x11, mid, x11, y1)
               } else {
                 ctx1.lineTo(x11, y1)
-                ctx2.lineTo(x11, y1)
               }
               ctx1.closePath()
-              ctx2.closePath()
               ctx1.fill()
-              ctx2.fill()
             }
           }
         }
@@ -472,7 +555,6 @@ function LinearSyntenyRendering({
       ctx.scale(highResolutionScaling, highResolutionScaling)
       ctx.clearRect(0, 0, width, height)
       const showIntraviewLinks = false
-      const middle = true
       const hideTiny = false
       const viewSnaps = views.map(view => ({
         ...getSnapshot(view),
@@ -481,110 +563,36 @@ function LinearSyntenyRendering({
         minimumBlockWidth: view.minimumBlockWidth,
       }))
 
-      function drawMouseoverOrClick(
-        m: typeof matches[0],
-        ctx: CanvasRenderingContext2D,
-        offsets: number[],
-        cb: (ctx: CanvasRenderingContext2D) => void,
-      ) {
-        // we follow a path in the list of chunks, not from top to bottom, just
-        // in series following x1,y1 -> x2,y2
-        for (let i = 0; i < m.length - 1; i += 1) {
-          const { layout: c1, feature: f1, level: l1, refName: ref1 } = m[i]
-          const { layout: c2, feature: f2, level: l2, refName: ref2 } = m[i + 1]
-          const v1 = viewSnaps[l1]
-          const v2 = viewSnaps[l2]
-
-          if (!c1 || !c2) {
-            console.warn('received null layout for a overlay feature')
-            return
-          }
-
-          // disable rendering connections in a single level
-          if (!showIntraviewLinks && l1 === l2) {
-            continue
-          }
-          const length1 = f1.get('end') - f1.get('start')
-          const length2 = f2.get('end') - f2.get('start')
-
-          if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
-            continue
-          }
-
-          const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
-          const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
-          const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
-          const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
-          if (
-            px11 === undefined ||
-            px12 === undefined ||
-            px21 === undefined ||
-            px22 === undefined
-          ) {
-            continue
-          }
-
-          const x11 = px11 - offsets[l1]
-          const x12 = px12 - offsets[l1]
-          const x21 = px21 - offsets[l2]
-          const x22 = px22 - offsets[l2]
-
-          const y1 = middle
-            ? interstitialYPos(l1 < l2, height)
-            : // prettier-ignore
-              // @ts-ignore
-              overlayYPos(trackIds[0], l1, viewSnaps, c1, l1 < l2)
-          const y2 = middle
-            ? interstitialYPos(l2 < l1, height)
-            : // prettier-ignore
-              // @ts-ignore
-              overlayYPos(trackIds[1], l2, viewSnaps, c2, l2 < l1)
-
-          const mid = (y2 - y1) / 2
-
-          // drawing a line if the results are thin results in much less
-          // pixellation than filling in a thin polygon
-          if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
-            ctx.beginPath()
-            ctx.moveTo(x11, y1)
-            if (drawCurves) {
-              ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-            } else {
-              ctx.lineTo(x21, y2)
-            }
-            ctx.stroke()
-          } else {
-            // for now, not highlighting individual CIGAR entries
-            ctx.beginPath()
-            ctx.moveTo(x11, y1)
-            ctx.lineTo(x12, y1)
-            if (drawCurves) {
-              ctx.bezierCurveTo(x12, mid, x22, mid, x22, y2)
-            } else {
-              ctx.lineTo(x22, y2)
-            }
-            ctx.lineTo(x21, y2)
-            if (drawCurves) {
-              ctx.bezierCurveTo(x21, mid, x11, mid, x11, y1)
-            } else {
-              ctx.lineTo(x11, y1)
-            }
-            ctx.closePath()
-            cb(ctx)
-          }
-        }
-      }
-
       if (mouseoverId !== undefined && matches[mouseoverId]) {
         const m = matches[mouseoverId]
         ctx.fillStyle = 'rgb(0,0,0,0.1)'
-        drawMouseoverOrClick(m, ctx, offsets, ctx => ctx.fill())
+        drawMatchSimple({
+          match: m,
+          ctx,
+          offsets,
+          cb: ctx => ctx.fill(),
+          showIntraviewLinks,
+          height,
+          hideTiny,
+          viewSnaps,
+          drawCurves,
+        })
       }
 
       if (clickId !== undefined && matches[clickId]) {
         const m = matches[clickId]
         ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-        drawMouseoverOrClick(m, ctx, offsets, ctx => ctx.stroke())
+        drawMatchSimple({
+          match: m,
+          ctx,
+          offsets,
+          cb: ctx => ctx.stroke(),
+          showIntraviewLinks,
+          height,
+          hideTiny,
+          viewSnaps,
+          drawCurves,
+        })
       }
     },
 

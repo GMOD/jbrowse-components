@@ -40,10 +40,10 @@ beforeEach(() => {
   fetch.resetMocks()
   // @ts-ignore
   fetch.mockResponse(
-    generateReadBuffer(url => {
-      const n = path.basename(url)
-      return new LocalFile(require.resolve(`../../test_data/${n}`))
-    }),
+    generateReadBuffer(
+      url =>
+        new LocalFile(require.resolve(`../../test_data/${path.basename(url)}`)),
+    ),
   )
 })
 
