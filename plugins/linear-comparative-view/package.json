@@ -40,6 +40,7 @@
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
     "clone": "^2.1.2",
+    "copy-to-clipboard": "^3.3.1",
     "react-popper": "^2.0.0"
   },
   "peerDependencies": {
