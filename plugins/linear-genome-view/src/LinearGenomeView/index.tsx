@@ -144,6 +144,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const setting = localStorageGetItem('lgv-showCytobands')
           return setting !== undefined && setting !== null ? !!+setting : true
         }),
+        showGridlines: true,
       }),
     )
     .volatile(() => ({
@@ -465,6 +466,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleNoTracksActive() {
         self.hideNoTracksActive = !self.hideNoTracksActive
+      },
+      toggleShowGridlines() {
+        self.showGridlines = !self.showGridlines
       },
 
       scrollTo(offsetPx: number) {
@@ -1219,6 +1223,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
             type: 'checkbox',
             checked: !self.hideNoTracksActive,
             onClick: self.toggleNoTracksActive,
+          },
+          {
+            label: 'Show gridlines',
+            icon: VisibilityIcon,
+            type: 'checkbox',
+            checked: self.showGridlines,
+            onClick: self.toggleShowGridlines,
           },
           {
             label: 'Track labels',
