@@ -326,6 +326,9 @@ function LinearSyntenyRendering({
         ctx1.fillStyle = colorMap.M
         ctx1.strokeStyle = colorMap.M
         ctx2.fillStyle = `rgb(${r},${g},${b})`
+
+        // too many click map false positives with colored stroked lines
+        // ctx2.strokeStyle = `rgb(${r},${g},${b})`
         drawMatchSimple({
           cb: ctx => ctx.fill(),
           match: m,
@@ -415,9 +418,7 @@ function LinearSyntenyRendering({
               let continuingFlag = false
               let px1 = 0
               let px2 = 0
-              const unitMultiplier2 = Math.floor(
-                MAX_COLOR_RANGE / (cigar.length / 2),
-              )
+              const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
               for (
                 let j = f1flipped ? cigar.length - 2 : 0;
                 f1flipped ? j >= 0 : j < cigar.length;
@@ -663,9 +664,7 @@ function LinearSyntenyRendering({
             return
           }
           const cigar = parsedCIGARs.get(match1[0].feature.id()) || []
-          const unitMultiplier2 = Math.floor(
-            MAX_COLOR_RANGE / (cigar.length / 2),
-          )
+          const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
           const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
           const f1 = match1[0].feature
           const f2 = match1[1].feature
