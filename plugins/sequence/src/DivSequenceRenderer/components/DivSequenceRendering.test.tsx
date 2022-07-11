@@ -1,43 +1,23 @@
 import React from 'react'
-import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import DivSequenceRendering from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 
-function Rendering(props) {
+function Rendering(props: any) {
   return (
     <ThemeProvider theme={createJBrowseTheme()}>
       <DivSequenceRendering {...props} />
     </ThemeProvider>
   )
 }
-
-class ErrorCatcher extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false, errorText: '' }
-  }
-
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true, errorText: String(error) }
-  }
-
-  render() {
-    const { hasError, errorText } = this.state
-    if (hasError) {
-      // You can render any custom fallback UI
-      return <h1 className="error">{errorText}</h1>
-    }
-    const { children } = this.props
-    return children
-  }
+function Fallback(props: FallbackProps) {
+  return <h1 className="error">{String(props.error)}</h1>
 }
-ErrorCatcher.propTypes = { children: ReactPropTypes.node.isRequired }
 
 describe('<DivSequenceRendering />', () => {
   // This just keeps our testing logs clean by not displaying `console.error`s
@@ -109,7 +89,7 @@ describe('<DivSequenceRendering />', () => {
 
   it('renders with one feature with no seq, zoomed in, should throw', () => {
     const { container } = render(
-      <ErrorCatcher>
+      <ErrorBoundary FallbackComponent={Fallback}>
         <Rendering
           width={500}
           height={500}
@@ -122,7 +102,7 @@ describe('<DivSequenceRendering />', () => {
           config={DivRenderingConfigSchema.create({})}
           bpPerPx={0.05}
         />
-      </ErrorCatcher>,
+      </ErrorBoundary>,
     )
 
     expect(container).toMatchSnapshot()
@@ -130,7 +110,7 @@ describe('<DivSequenceRendering />', () => {
 
   it('renders with one feature with an incorrect seq, zoomed in, should throw', () => {
     const { container } = render(
-      <ErrorCatcher>
+      <ErrorBoundary FallbackComponent={Fallback}>
         <Rendering
           width={500}
           height={500}
@@ -151,7 +131,7 @@ describe('<DivSequenceRendering />', () => {
           config={DivRenderingConfigSchema.create({})}
           bpPerPx={0.05}
         />
-      </ErrorCatcher>,
+      </ErrorBoundary>,
     )
 
     expect(container).toMatchSnapshot()
