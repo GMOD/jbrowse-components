@@ -296,7 +296,7 @@ test('can navToMultiple', () => {
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(2799)
+  expect(model.offsetPx).toBe(2793)
   expect(model.bpPerPx).toBeCloseTo(12.531)
 })
 
@@ -423,7 +423,8 @@ describe('Zoom to selected displayed regions', () => {
       },
     )
     // offsetPx is still 0 since we are starting from the first coord
-    expect(model.offsetPx).toBe(0)
+    // needed Math.abs since it was giving negative-zero (-0)
+    expect(Math.abs(model.offsetPx)).toEqual(0)
     // endOffset 19000 - (-1) = 19001 /  800 = zoomTo(23.75)
     expect(model.bpPerPx).toBeCloseTo(23.75)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
@@ -533,7 +534,7 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.offsetPx).toEqual(10000 / model.bpPerPx + 2)
+  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
   expect(model.displayedRegionsTotalPx).toEqual(30000 / model.bpPerPx)
   model.showAllRegions()
   expect(model.offsetPx).toEqual(-40)
