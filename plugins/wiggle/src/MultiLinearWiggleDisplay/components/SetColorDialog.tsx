@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
-import { CompactPicker, Color, RGBColor } from 'react-color'
+import Picker from './SwatchesPicker'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -47,6 +47,7 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const [posneg, setPosNeg] = useState(false)
+  const presetColors = ['red', 'blue', 'orange', 'green']
 
   return (
     <Dialog open onClose={handleClose}>
@@ -78,17 +79,21 @@ export default function SetColorDialog({
         {posneg ? (
           <>
             <Typography>Positive color</Typography>
-            <CompactPicker
+            <Picker
+              color="red"
+              presetColors={presetColors}
               onChange={event => {
-                model.setPosColor(serialize(event.rgb))
+                model.setPosColor(serialize(event))
                 model.setColor(undefined)
               }}
             />
             <Typography>Negative color</Typography>
 
-            <CompactPicker
+            <Picker
+              color="red"
+              presetColors={presetColors}
               onChange={event => {
-                model.setNegColor(serialize(event.rgb))
+                model.setNegColor(serialize(event))
                 model.setColor(undefined)
               }}
             />
@@ -96,8 +101,10 @@ export default function SetColorDialog({
         ) : (
           <>
             <Typography>Overall color</Typography>
-            <CompactPicker
-              onChange={event => model.setColor(serialize(event.rgb))}
+            <Picker
+              color="red"
+              presetColors={presetColors}
+              onChange={event => model.setColor(serialize(event))}
             />
           </>
         )}

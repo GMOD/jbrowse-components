@@ -33,6 +33,7 @@ import { StatBars } from '../components/WiggleDisplayComponent'
 import deepEqual from 'fast-deep-equal'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
+const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -564,9 +565,19 @@ const stateModelFactory = (
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                const session = getSession(self)
+                session.queueDialog(handleClose => [
                   SetMinMaxDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            {
+              label: 'Set color palette',
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  SetColorDlg,
+                  { model: self, handleClose },
                 ])
               },
             },
