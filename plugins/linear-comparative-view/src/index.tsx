@@ -18,6 +18,7 @@ import LinearSyntenyRendererF from './LinearSyntenyRenderer'
 import LinearSyntenyViewF from './LinearSyntenyView'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import SyntenyTrackF from './SyntenyTrack'
+import SyntenyFeatureWidgetF from './SyntenyFeatureDetail'
 import { WindowSizeDlg } from './ReadVsRef'
 
 function isDisplay(elt: { name: string }): elt is DisplayType {
@@ -38,6 +39,7 @@ export default class extends Plugin {
     LinearSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
+    SyntenyFeatureWidgetF(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',

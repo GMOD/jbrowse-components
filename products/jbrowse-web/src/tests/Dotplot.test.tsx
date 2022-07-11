@@ -4,7 +4,7 @@ import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { TextEncoder, TextDecoder } from 'web-encoding'
-
+import path from 'path'
 import dotplotConfig from '../../test_data/config_dotplot.json'
 import {
   setup,
@@ -41,7 +41,8 @@ beforeEach(() => {
   // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/${url}`)),
+      url =>
+        new LocalFile(require.resolve(`../../test_data/${path.basename(url)}`)),
     ),
   )
 })

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sv-inspector",
-  "version": "1.7.11",
+  "version": "2.0.0",
   "description": "JBrowse 2 SV inspector view",
   "keywords": [
     "jbrowse",
@@ -42,9 +42,9 @@
     "clone": "^2.1.2"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-circular-view": "^1.0.0",
-    "@jbrowse/plugin-spreadsheet-view": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-circular-view": "^2.0.0",
+    "@jbrowse/plugin-spreadsheet-view": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
