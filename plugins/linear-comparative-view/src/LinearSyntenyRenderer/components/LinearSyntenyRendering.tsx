@@ -252,7 +252,7 @@ function LinearSyntenyRendering({
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
   const { color, assemblyManager, parentView } = getResources(displayModel)
-  const hydratedFeatures = useMemo(
+  const es = useMemo(
     () =>
       features.map(level =>
         level
@@ -262,19 +262,19 @@ function LinearSyntenyRendering({
     [features],
   )
   const matches = useMemo(
-    () => layoutMatches(hydratedFeatures, assemblyManager),
-    [hydratedFeatures, assemblyManager],
+    () => layoutMatches(es, assemblyManager),
+    [es, assemblyManager],
   )
 
   const parsedCIGARs = useMemo(
     () =>
       new Map(
-        hydratedFeatures.flat().map(f => {
+        es.flat().map(f => {
           const cigar = f.get('cg') || f.get('CIGAR')
           return [f.id(), cigar ? MismatchParser.parseCigar(cigar) : undefined]
         }),
       ),
-    [hydratedFeatures],
+    [es],
   )
   const drawCurves = parentView?.drawCurves
   const views = parentView?.views
@@ -326,6 +326,9 @@ function LinearSyntenyRendering({
         ctx1.fillStyle = colorMap.M
         ctx1.strokeStyle = colorMap.M
         ctx2.fillStyle = `rgb(${r},${g},${b})`
+
+        // too many click map false positives with colored stroked lines
+        // ctx2.strokeStyle = `rgb(${r},${g},${b})`
         drawMatchSimple({
           cb: ctx => ctx.fill(),
           match: m,
@@ -400,6 +403,9 @@ function LinearSyntenyRendering({
             let cx1 = x11
             let cx2 = x21
 
+            // we have to read the CIGAR backwards when looking at negative strand features
+            const f1flipped = f1.get('revCigar') && f1.get('strand') === -1
+
             // flip the direction of the CIGAR drawing in horizontally flipped
             // modes
             const rev1 = x11 < x12 ? 1 : -1
@@ -412,10 +418,12 @@ function LinearSyntenyRendering({
               let continuingFlag = false
               let px1 = 0
               let px2 = 0
-              const unitMultiplier2 = Math.floor(
-                MAX_COLOR_RANGE / (cigar.length / 2),
-              )
-              for (let j = 0; j < cigar.length; j += 2) {
+              const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+              for (
+                let j = f1flipped ? cigar.length - 2 : 0;
+                f1flipped ? j >= 0 : j < cigar.length;
+                j += f1flipped ? -2 : 2
+              ) {
                 const idx = j * unitMultiplier2 + 1
                 const r = Math.floor(idx / (255 * 255)) % 255
                 const g = Math.floor(idx / 255) % 255
@@ -453,10 +461,11 @@ function LinearSyntenyRendering({
                   // if it is a small feature and not the last element of the
                   // CIGAR (which could skip rendering it entire if we did turn
                   // it on), then turn on continuing flag
+                  const isNotLast = f1flipped ? j > 2 : j < cigar.length - 2
                   if (
                     Math.abs(cx1 - px1) < 1 &&
                     Math.abs(cx2 - px2) < 1 &&
-                    j < cigar.length - 2
+                    isNotLast
                   ) {
                     continuingFlag = true
                   } else {
@@ -655,9 +664,7 @@ function LinearSyntenyRendering({
             return
           }
           const cigar = parsedCIGARs.get(match1[0].feature.id()) || []
-          const unitMultiplier2 = Math.floor(
-            MAX_COLOR_RANGE / (cigar.length / 2),
-          )
+          const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
           const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
           const f1 = match1[0].feature
           const f2 = match1[1].feature
