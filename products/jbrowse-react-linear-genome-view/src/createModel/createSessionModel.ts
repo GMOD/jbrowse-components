@@ -7,7 +7,7 @@ import {
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, defaultCodonTable } from '@jbrowse/core/util'
 import {
   readConfObject,
   AnyConfigurationModel,
@@ -48,6 +48,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.array(
         pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
+      codonTable: types.optional(types.string, defaultCodonTable),
     })
     .volatile((/* self */) => ({
       /**

@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { getConf } from '../configuration'
 import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+// locals
+import { getConf } from '../configuration'
 import { AbstractSessionModel, useLocalStorage } from '../util'
+
 const useStyles = makeStyles()(() => ({
   importFormEntry: {
     minWidth: 180,
@@ -20,7 +23,7 @@ const AssemblySelector = observer(
   }: {
     session: AbstractSessionModel
     onChange: (arg: string) => void
-    selected: string | undefined
+    selected?: string
     InputProps?: IIP
     extra?: unknown
   }) => {
