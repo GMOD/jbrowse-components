@@ -7,7 +7,7 @@ import normalizeWheel from 'normalize-wheel'
 import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
-import VerticalGuides from './VerticalGuides'
+import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 
 const useStyles = makeStyles()({
@@ -168,7 +168,7 @@ function TracksContainer({
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
     >
-      <VerticalGuides model={model} />
+      {model.showGridlines ? <Gridlines model={model} /> : null}
       {model.showCenterLine ? <CenterLine model={model} /> : null}
 
       <RubberBand

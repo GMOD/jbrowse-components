@@ -70,6 +70,7 @@
     "rxjs": "^6.5.2",
     "shortid": "^2.2.15",
     "tss-react": "^3.7.0",
+    "query-string": "^7.0.0",
     "use-query-params": "1.2.3",
     "webpack": "^5.72.0"
   },

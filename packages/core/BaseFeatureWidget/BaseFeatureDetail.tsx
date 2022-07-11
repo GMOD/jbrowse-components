@@ -273,20 +273,21 @@ function CoreDetails(props: BaseProps) {
     position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
-  const coreRenderedDetails = [
-    'Position',
-    'Description',
-    'Name',
-    'Length',
-    'Type',
-  ]
+  const coreRenderedDetails = {
+    position: 'Position',
+    description: 'Description',
+    name: 'Name',
+    length: 'Length',
+    type: 'Type',
+    assemblyName: 'Assembly name',
+  }
   return (
     <>
-      {coreRenderedDetails
-        .map(key => [key, displayedDetails[key.toLowerCase()]])
+      {Object.entries(coreRenderedDetails)
+        .map(([key, name]) => [name, displayedDetails[key]])
         .filter(([, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => (
-          <SimpleValue key={key} name={key} value={value} />
+        .map(([name, value]) => (
+          <SimpleValue key={name} name={name} value={value} />
         ))}
     </>
   )
@@ -303,7 +304,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown, key: string) => React.ReactElement
+  formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
 }
@@ -502,6 +503,7 @@ export function Attributes(props: AttributeProps) {
               />
             ) : (
               <Attributes
+                {...props}
                 omit={omits}
                 key={key}
                 attributes={value}
@@ -539,7 +541,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown, key: string) => React.ReactElement
+  formatter?: (val: unknown, key: string) => React.ReactNode
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -557,7 +559,7 @@ export const FeatureDetails = (props: {
   feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
-  formatter?: (val: unknown, key: string) => React.ReactElement
+  formatter?: (val: unknown, key: string) => React.ReactNode
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
