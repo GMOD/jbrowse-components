@@ -119,6 +119,9 @@ function SequenceDialog({
             regionsSelected,
             controller.signal,
           )
+          if (!chunks.length) {
+            throw new Error('Adapter does not support getting sequences')
+          }
           if (active) {
             setSequence(
               formatSeqFasta(
@@ -248,7 +251,7 @@ function SequenceDialog({
         >
           Download FASTA
         </Button>
-        <Button onClick={handleClose} color="primary" autoFocus>
+        <Button onClick={handleClose} variant="contained">
           Close
         </Button>
       </DialogActions>
