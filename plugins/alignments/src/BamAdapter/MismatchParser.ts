@@ -11,7 +11,7 @@ export interface Mismatch {
 }
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
-export function parseCigar(cigar: string = '') {
+export function parseCigar(cigar = '') {
   return cigar.split(/([MIDNSHPX=])/).slice(0, -1)
 }
 export function cigarToMismatches(
