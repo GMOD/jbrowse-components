@@ -22,6 +22,7 @@ import {
   TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import { BaseBlock } from './blockTypes'
 
 export type { Feature }
 export * from './types'
@@ -1061,63 +1062,13 @@ export type ViewSnap = {
   interRegionPaddingWidth: number
   minimumBlockWidth: number
   width: number
+  staticBlocks: { blocks: BaseBlock[] }
   displayedRegions: {
     start: number
     end: number
     refName: string
     reversed: boolean
   }[]
-}
-export function viewBpToPx({
-  refName,
-  coord,
-  regionNumber,
-  self,
-}: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: ViewSnap
-}) {
-  let offsetBp = 0
-
-  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-  const index = self.displayedRegions.findIndex((region, idx) => {
-    const len = region.end - region.start
-    if (
-      refName === region.refName &&
-      coord >= region.start &&
-      coord <= region.end
-    ) {
-      if (regionNumber ? regionNumber === idx : true) {
-        offsetBp += region.reversed ? region.end - coord : coord - region.start
-        return true
-      }
-    }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen
-    // e.g. offset>=0 && offset<width
-    if (
-      len > minimumBlockBp &&
-      offsetBp / self.bpPerPx >= 0 &&
-      offsetBp / self.bpPerPx < self.width
-    ) {
-      offsetBp += len + interRegionPaddingBp
-    } else {
-      offsetBp += len
-    }
-    return false
-  })
-  const found = self.displayedRegions[index]
-  if (found) {
-    return {
-      index,
-      offsetPx: Math.round(offsetBp / self.bpPerPx),
-    }
-  }
-
-  return undefined
 }
 
 // supported adapter types by text indexer

@@ -6,7 +6,8 @@ import {
   createCanvas,
   createImageBitmap,
 } from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { viewBpToPx, renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
+import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
   RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
@@ -103,10 +104,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     const hvsnap = {
       ...getSnapshot(hview),
+      staticBlocks: hview.staticBlocks,
       width: hview.width,
     }
     const vvsnap = {
       ...getSnapshot(vview),
+      staticBlocks: vview.staticBlocks,
       width: vview.width,
     }
     hview.features?.forEach(feature => {
@@ -147,22 +150,22 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       ctx.fillStyle = r
       ctx.strokeStyle = r
 
-      const b10 = viewBpToPx({
+      const b10 = bpToPx({
         self: hvsnap,
         refName,
         coord: start,
       })?.offsetPx
-      const b20 = viewBpToPx({
+      const b20 = bpToPx({
         self: hvsnap,
         refName,
         coord: end,
       })?.offsetPx
-      const e10 = viewBpToPx({
+      const e10 = bpToPx({
         self: vvsnap,
         refName: mateRef,
         coord: mate.start,
       })?.offsetPx
-      const e20 = viewBpToPx({
+      const e20 = bpToPx({
         self: vvsnap,
         refName: mateRef,
         coord: mate.end,

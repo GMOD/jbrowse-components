@@ -1,18 +1,11 @@
 import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
-import { clamp, viewBpToPx } from './index'
+import { clamp } from './index'
 import { Feature } from './simpleFeature'
 import { Region, ElementId } from './types/mst'
 import { Region as IRegion } from './types'
 import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
-
-export interface BpOffset {
-  refName?: string
-  index: number
-  offset: number
-  start?: number
-  end?: number
-}
+import { moveTo, pxToBp, bpToPx, BpOffset } from './Base1DUtils'
 
 const Base1DView = types
   .model('Base1DView', {
@@ -160,7 +153,8 @@ const Base1DView = types
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
-
+  }))
+  .views(self => ({
     bpToPx({
       refName,
       coord,
@@ -170,48 +164,12 @@ const Base1DView = types
       coord: number
       regionNumber?: number
     }) {
-      return viewBpToPx({ refName, coord, regionNumber, self })?.offsetPx
+      return bpToPx({ refName, coord, regionNumber, self })?.offsetPx
     },
   }))
   .actions(self => ({
     setFeatures(features: Feature[]) {
       self.features = features
-    },
-
-    zoomToDisplayedRegions(
-      leftPx: BpOffset | undefined,
-      rightPx: BpOffset | undefined,
-    ) {
-      if (leftPx === undefined || rightPx === undefined) {
-        return
-      }
-
-      const singleRefSeq =
-        leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
-      // zooming into one displayed Region
-      if (
-        (singleRefSeq && rightPx.offset < leftPx.offset) ||
-        leftPx.index > rightPx.index
-      ) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
-      }
-      const startOffset = {
-        start: leftPx.start,
-        end: leftPx.end,
-        index: leftPx.index,
-        offset: leftPx.offset,
-      }
-      const endOffset = {
-        start: rightPx.start,
-        end: rightPx.end,
-        index: rightPx.index,
-        offset: rightPx.offset,
-      }
-      if (startOffset && endOffset) {
-        this.moveTo(startOffset, endOffset)
-      } else {
-        throw new Error('regions not found')
-      }
     },
 
     // this makes a zoomed out view that shows all displayedRegions
@@ -227,42 +185,8 @@ const Base1DView = types
      * @param start - object as `{start, end, offset, index}`
      * @param end - object as `{start, end, offset, index}`
      */
-    moveTo(start: BpOffset, end: BpOffset) {
-      // find locations in the modellist
-      let bpSoFar = 0
-
-      if (start.index === end.index) {
-        bpSoFar += end.offset - start.offset
-      } else {
-        const s = self.displayedRegions[start.index]
-        bpSoFar += s.end - s.start - start.offset
-        if (end.index - start.index >= 2) {
-          for (let i = start.index + 1; i < end.index; i += 1) {
-            bpSoFar +=
-              self.displayedRegions[i].end - self.displayedRegions[i].start
-          }
-        }
-        bpSoFar += end.offset
-      }
-      this.zoomTo(
-        bpSoFar /
-          (self.width -
-            self.interRegionPaddingWidth * (end.index - start.index)),
-      )
-
-      let bpToStart = 0
-      for (let i = 0; i < self.displayedRegions.length; i += 1) {
-        const region = self.displayedRegions[i]
-        if (start.index === i) {
-          bpToStart += start.offset
-          break
-        } else {
-          bpToStart += region.end - region.start
-        }
-      }
-      self.offsetPx =
-        Math.round(bpToStart / self.bpPerPx) +
-        self.interRegionPaddingWidth * start.index
+    moveTo(start?: BpOffset, end?: BpOffset) {
+      moveTo(self, start, end)
     },
 
     zoomOut() {

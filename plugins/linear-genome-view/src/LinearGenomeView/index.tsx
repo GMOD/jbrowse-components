@@ -14,7 +14,6 @@ import {
   measureText,
   parseLocString,
   springAnimate,
-  viewBpToPx,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -33,9 +32,10 @@ import {
 } from 'mobx-state-tree'
 
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
-import PluginManager from '@jbrowse/core/PluginManager'
-import clone from 'clone'
+import { moveTo, pxToBp, bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { saveAs } from 'file-saver'
+import clone from 'clone'
+import PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -289,105 +289,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
-      bpToPx({
-        refName,
-        coord,
-        regionNumber,
-      }: {
-        refName: string
-        coord: number
-        regionNumber?: number
-      }) {
-        return viewBpToPx({ refName, coord, regionNumber, self })
-      },
-      /**
-       *
-       * @param px - px in the view area, return value is the displayed regions
-       * @returns BpOffset of the displayed region that it lands in
-       */
-      pxToBp(px: number) {
-        let bpSoFar = 0
-        const bp = (self.offsetPx + px) * self.bpPerPx
-        const n = self.displayedRegions.length
-        if (bp < 0) {
-          const region = self.displayedRegions[0]
-          const offset = bp
-          const snap = getSnapshot(region)
-          return {
-            // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-            ...(snap as Omit<typeof snap, symbol>),
-            oob: true,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            offset,
-            index: 0,
-          }
-        }
-
-        const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-        const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-
-        for (let index = 0; index < self.displayedRegions.length; index += 1) {
-          const region = self.displayedRegions[index]
-          const len = region.end - region.start
-          const offset = bp - bpSoFar
-          if (len + bpSoFar > bp && bpSoFar <= bp) {
-            const snap = getSnapshot(region)
-            return {
-              // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-              ...(snap as Omit<typeof snap, symbol>),
-              oob: false,
-              offset,
-              coord: region.reversed
-                ? Math.floor(region.end - offset) + 1
-                : Math.floor(region.start + offset) + 1,
-              index,
-            }
-          }
-
-          // add the interRegionPaddingWidth if the boundary is in the screen
-          // e.g. offset>0 && offset<width
-          if (
-            region.end - region.start > minimumBlockBp &&
-            offset / self.bpPerPx > 0 &&
-            offset / self.bpPerPx < self.width
-          ) {
-            bpSoFar += len + interRegionPaddingBp
-          } else {
-            bpSoFar += len
-          }
-        }
-
-        if (bp >= bpSoFar) {
-          const region = self.displayedRegions[n - 1]
-          const len = region.end - region.start
-          const offset = bp - bpSoFar + len
-          const snap = getSnapshot(region)
-          return {
-            // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-            ...(snap as Omit<typeof snap, symbol>),
-            oob: true,
-            offset,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            index: n - 1,
-          }
-        }
-        return {
-          coord: 0,
-          index: 0,
-          refName: '',
-          oob: true,
-          assemblyName: '',
-          offset: 0,
-          start: 0,
-          end: 0,
-          reversed: false,
-        }
-      },
-
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
@@ -443,6 +344,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return self.displayedRegions.length
           ? this.pxToBp(self.width / 2)
           : undefined
+      },
+
+      pxToBp(px: number) {
+        return pxToBp(self, px)
       },
     }))
     .actions(self => ({
@@ -950,7 +855,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         })
 
         simView.setVolatileWidth(self.width)
-        simView.zoomToDisplayedRegions(leftOffset, rightOffset)
+        simView.moveTo(leftOffset, rightOffset)
 
         return simView.dynamicBlocks.contentBlocks.map(region => ({
           ...region,
@@ -971,45 +876,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param end - object as `{start, end, offset, index}`
        */
       moveTo(start: BpOffset, end: BpOffset) {
-        // find locations in the modellist
-        let bpSoFar = 0
-
-        if (start.index === end.index) {
-          bpSoFar += end.offset - start.offset
-        } else {
-          const s = self.displayedRegions[start.index]
-          bpSoFar += s.end - s.start - start.offset
-          if (end.index - start.index >= 2) {
-            for (let i = start.index + 1; i < end.index; i += 1) {
-              bpSoFar +=
-                self.displayedRegions[i].end - self.displayedRegions[i].start
-            }
-          }
-          bpSoFar += end.offset
-        }
-        const targetBpPerPx =
-          bpSoFar /
-          (self.width -
-            self.interRegionPaddingWidth * (end.index - start.index))
-        const newBpPerPx = self.zoomTo(targetBpPerPx)
-        // If our target bpPerPx was smaller than the allowed minBpPerPx, adjust
-        // the scroll so the requested range is in the middle of the screen
-        let extraBp = 0
-        if (targetBpPerPx < newBpPerPx) {
-          extraBp = ((newBpPerPx - targetBpPerPx) * self.width) / 2
-        }
-
-        let bpToStart = -extraBp
-        for (let i = 0; i < self.displayedRegions.length; i += 1) {
-          const region = self.displayedRegions[i]
-          if (start.index === i) {
-            bpToStart += start.offset
-            break
-          } else {
-            bpToStart += region.end - region.start
-          }
-        }
-        self.offsetPx = Math.round(bpToStart / self.bpPerPx)
+        moveTo(self, start, end)
       },
 
       horizontalScroll(distance: number) {
@@ -1017,24 +884,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // newOffsetPx is the actual offset after the scroll is clamped
         const newOffsetPx = self.scrollTo(self.offsetPx + distance)
         return newOffsetPx - oldOffsetPx
-      },
-
-      /**
-       * scrolls the view to center on the given bp. if that is not in any
-       * of the displayed regions, does nothing
-       * @param bp - basepair at which you want to center the view
-       * @param refName - refName of the displayedRegion you are centering at
-       * @param regionIndex - index of the displayedRegion
-       */
-      centerAt(bp: number, refName: string, regionIndex: number) {
-        const centerPx = self.bpToPx({
-          refName,
-          coord: bp,
-          regionNumber: regionIndex,
-        })
-        if (centerPx) {
-          self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
-        }
       },
 
       center() {
@@ -1376,6 +1225,36 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
           },
         ]
+      },
+
+      bpToPx({
+        refName,
+        coord,
+        regionNumber,
+      }: {
+        refName: string
+        coord: number
+        regionNumber?: number
+      }) {
+        return bpToPx({ refName, coord, regionNumber, self })
+      },
+
+      /**
+       * scrolls the view to center on the given bp. if that is not in any
+       * of the displayed regions, does nothing
+       * @param bp - basepair at which you want to center the view
+       * @param refName - refName of the displayedRegion you are centering at
+       * @param regionIndex - index of the displayedRegion
+       */
+      centerAt(bp: number, refName: string, regionIndex: number) {
+        const centerPx = this.bpToPx({
+          refName,
+          coord: bp,
+          regionNumber: regionIndex,
+        })
+        if (centerPx) {
+          self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))
+        }
       },
     }))
 }
