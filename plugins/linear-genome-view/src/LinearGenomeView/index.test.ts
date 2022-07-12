@@ -290,7 +290,7 @@ test('can navToMultiple', () => {
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
   expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.157)
+  expect(model.bpPerPx).toBeCloseTo(25.125)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
@@ -330,7 +330,7 @@ describe('Zoom to selected displayed regions', () => {
     // 'ctgA' 15000  bp+ 'ctgA' 10000 bp+ 'ctgB' 3000 bp = 28000 totalbp
     expect(model.totalBp).toEqual(28000)
 
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -354,32 +354,8 @@ describe('Zoom to selected displayed regions', () => {
     expect(model.bpPerPx).toBeCloseTo(31.408)
   })
 
-  it('can select if start and end object are swapped', () => {
-    // should be same results as above test
-    model.zoomToDisplayedRegions(
-      {
-        start: 0,
-        index: 2,
-        coord: 1,
-        end: 3000,
-        offset: 1,
-        refName: 'ctgB',
-      },
-      {
-        start: 5000,
-        index: 0,
-        end: 20000,
-        coord: 5001,
-        offset: 0,
-        refName: 'ctgA',
-      },
-    )
-    expect(model.offsetPx).toEqual(0)
-    expect(model.bpPerPx).toBeCloseTo(31.408)
-  })
-
   it('can select over one refSeq', () => {
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -404,7 +380,7 @@ describe('Zoom to selected displayed regions', () => {
   })
 
   it('can select one region with start or end outside of displayed region', () => {
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -435,7 +411,7 @@ describe('Zoom to selected displayed regions', () => {
     model.showAllRegions()
     expect(model.bpPerPx).toBeCloseTo(38.8888)
     // totalBp = 28000 / 1000 = 28 as maxBpPerPx
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -454,7 +430,7 @@ describe('Zoom to selected displayed regions', () => {
     // 22000 / 792 (width - interRegionPadding) = 27.78
     expect(model.bpPerPx).toBeCloseTo(27.78, 0)
     // offset 5000 / bpPerPx (because that is the starting) = 180.5
-    expect(model.offsetPx).toBe(180)
+    expect(model.offsetPx).toBe(181)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
@@ -469,7 +445,7 @@ describe('Zoom to selected displayed regions', () => {
     // totalBp 15000 + 3000 + 35000 = 53000
     // then 53000 / (width*0.9) = 73.6111
     expect(model.bpPerPx).toBeCloseTo(73.61111)
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         coord: 15000,
@@ -487,7 +463,7 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(344)
+    expect(model.offsetPx).toBe(346)
     // 5000 + 3000 + 15000 / 792
     expect(model.bpPerPx).toBeCloseTo(29.04, 0)
     expect(model.bpPerPx).toBeLessThan(53)
@@ -822,12 +798,12 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0].start).toEqual(201)
+    expect(overlapping[0].start).toEqual(200)
     expect(overlapping[0].end).toEqual(500)
     expect(overlapping[1].start).toEqual(0)
     expect(overlapping[1].end).toEqual(3000)
     expect(overlapping[2].start).toEqual(0)
-    expect(overlapping[2].end).toEqual(112)
+    expect(overlapping[2].end).toEqual(110)
   })
 
   it('can select over two regions in diff reference sequence', () => {

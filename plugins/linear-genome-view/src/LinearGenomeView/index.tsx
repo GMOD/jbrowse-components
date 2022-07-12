@@ -794,48 +794,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * Navigate to a location based on user clicking and dragging on the
-       * overview scale bar to select a region to zoom into.
-       * Can handle if there are multiple displayedRegions from same refName.
-       * Only navigates to a location if it is entirely within a displayedRegion.
-       *
-       * @param leftPx- `object as {start, end, index, offset}`, offset = start of user drag
-       * @param rightPx- `object as {start, end, index, offset}`, offset = end of user drag
-       */
-      zoomToDisplayedRegions(leftPx: BpOffset, rightPx: BpOffset) {
-        if (leftPx === undefined || rightPx === undefined) {
-          return
-        }
-
-        const singleRefSeq =
-          leftPx.refName === rightPx.refName && leftPx.index === rightPx.index
-        // zooming into one displayed Region
-        if (
-          (singleRefSeq && rightPx.offset < leftPx.offset) ||
-          leftPx.index > rightPx.index
-        ) {
-          ;[leftPx, rightPx] = [rightPx, leftPx]
-        }
-        const startOffset = {
-          start: leftPx.start,
-          end: leftPx.end,
-          index: leftPx.index,
-          offset: leftPx.offset,
-        }
-        const endOffset = {
-          start: rightPx.start,
-          end: rightPx.end,
-          index: rightPx.index,
-          offset: rightPx.offset,
-        }
-        if (startOffset && endOffset) {
-          this.moveTo(startOffset, endOffset)
-        } else {
-          const session = getSession(self)
-          session.notify('No regions found to navigate to', 'warning')
-        }
-      },
-      /**
        * Helper method for the fetchSequence.
        * Retrieves the corresponding regions that were selected by the rubberband
        *
@@ -843,10 +801,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param rightOffset - `object as {start, end, index, offset}`, offset = end of user drag
        * @returns array of Region[]
        */
-      getSelectedRegions(
-        leftOffset: BpOffset | undefined,
-        rightOffset: BpOffset | undefined,
-      ) {
+      getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
         const snap = getSnapshot(self)
         const simView = Base1DView.create({
           // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
@@ -875,7 +830,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * @param start - object as `{start, end, offset, index}`
        * @param end - object as `{start, end, offset, index}`
        */
-      moveTo(start: BpOffset, end: BpOffset) {
+      moveTo(start?: BpOffset, end?: BpOffset) {
         moveTo(self, start, end)
       },
 
@@ -888,7 +843,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       center() {
         const centerBp = self.totalBp / 2
-        self.scrollTo(Math.round(centerBp / self.bpPerPx - self.width / 2))
+        const centerPx = centerBp / self.bpPerPx
+        self.scrollTo(Math.round(centerPx - self.width / 2))
       },
 
       showAllRegions() {
@@ -1212,9 +1168,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             icon: ZoomInIcon,
             onClick: () => {
               const { leftOffset, rightOffset } = self
-              if (leftOffset && rightOffset) {
-                self.moveTo(leftOffset, rightOffset)
-              }
+              self.moveTo(leftOffset, rightOffset)
             },
           },
           {
@@ -1242,15 +1196,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
-       * @param bp - basepair at which you want to center the view
+       * @param coord - basepair at which you want to center the view
        * @param refName - refName of the displayedRegion you are centering at
-       * @param regionIndex - index of the displayedRegion
+       * @param regionNumber - index of the displayedRegion
        */
-      centerAt(bp: number, refName: string, regionIndex: number) {
+      centerAt(coord: number, refName: string, regionNumber: number) {
         const centerPx = this.bpToPx({
           refName,
-          coord: bp,
-          regionNumber: regionIndex,
+          coord,
+          regionNumber,
         })
         if (centerPx) {
           self.scrollTo(Math.round(centerPx.offsetPx - self.width / 2))

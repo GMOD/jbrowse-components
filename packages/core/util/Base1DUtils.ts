@@ -11,19 +11,17 @@ export interface BpOffset {
 
 function lengthBetween(self: any, start: BpOffset, end: BpOffset) {
   let bpSoFar = 0
-
-  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-
+  const { displayedRegions } = self
   if (start.index === end.index) {
     bpSoFar += end.offset - start.offset
   } else {
-    const s = self.displayedRegions[start.index]
+    const s = displayedRegions[start.index]
     bpSoFar += s.end - s.start - start.offset
     if (end.index - start.index >= 2) {
       for (let i = start.index + 1; i < end.index; i++) {
-        const region = self.displayedRegions[i]
+        const region = displayedRegions[i]
         const len = region.end - region.start
-        bpSoFar += len + interRegionPaddingBp
+        bpSoFar += len
       }
     }
     bpSoFar += end.offset
