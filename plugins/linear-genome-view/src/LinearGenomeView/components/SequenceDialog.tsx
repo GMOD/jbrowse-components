@@ -119,9 +119,6 @@ function SequenceDialog({
             regionsSelected,
             controller.signal,
           )
-          if (!chunks.length) {
-            throw new Error('Adapter does not support getting sequences')
-          }
           if (active) {
             setSequence(
               formatSeqFasta(
