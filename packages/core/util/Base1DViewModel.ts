@@ -1,4 +1,4 @@
-import { types, cast, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, cast, Instance } from 'mobx-state-tree'
 import { clamp } from './index'
 import { Feature } from './simpleFeature'
 import { Region, ElementId } from './types/mst'
@@ -63,82 +63,7 @@ const Base1DView = types
     },
 
     pxToBp(px: number) {
-      let bpSoFar = 0
-      const bp = (self.offsetPx + px) * self.bpPerPx
-      const n = self.displayedRegions.length
-      if (bp < 0) {
-        const region = self.displayedRegions[0]
-        const offset = bp
-        const snap = getSnapshot(region)
-        return {
-          ...(snap as Omit<typeof snap, symbol>),
-          oob: true,
-          coord: region.reversed
-            ? Math.floor(region.end - offset) + 1
-            : Math.floor(region.start + offset) + 1,
-          offset,
-          index: 0,
-        }
-      }
-
-      const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-      const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-
-      for (let index = 0; index < self.displayedRegions.length; index += 1) {
-        const region = self.displayedRegions[index]
-        const len = region.end - region.start
-        const offset = bp - bpSoFar
-        if (len + bpSoFar > bp && bpSoFar <= bp) {
-          const snap = getSnapshot(region)
-          return {
-            ...(snap as Omit<typeof snap, symbol>),
-            oob: false,
-            offset,
-            coord: region.reversed
-              ? Math.floor(region.end - offset) + 1
-              : Math.floor(region.start + offset) + 1,
-            index,
-          }
-        }
-
-        // add the interRegionPaddingWidth if the boundary is in the screen
-        // e.g. offset>0 && offset<width
-        if (
-          region.end - region.start > minimumBlockBp &&
-          offset / self.bpPerPx > 0 &&
-          offset / self.bpPerPx < this.width
-        ) {
-          bpSoFar += len + interRegionPaddingBp
-        } else {
-          bpSoFar += len
-        }
-      }
-
-      if (bp >= bpSoFar) {
-        const region = self.displayedRegions[n - 1]
-        const len = region.end - region.start
-        const offset = bp - bpSoFar + len
-        const snap = getSnapshot(region)
-        return {
-          ...(snap as Omit<typeof snap, symbol>),
-          oob: true,
-          offset,
-          coord: region.reversed
-            ? Math.floor(region.end - offset) + 1
-            : Math.floor(region.start + offset) + 1,
-          index: n - 1,
-        }
-      }
-      return {
-        coord: 0,
-        index: 0,
-        start: 0,
-        refName: '',
-        oob: true,
-        assemblyName: '',
-        offset: 0,
-        reversed: false,
-      }
+      return pxToBp(self, px)
     },
   }))
   .views(self => ({

@@ -71,8 +71,9 @@ export function pxToBp(self: any, px: number) {
     offsetPx,
     displayedRegions,
     interRegionPaddingWidth,
-    staticBlocks: { blocks },
+    staticBlocks,
   } = self
+  const blocks = staticBlocks.contentBlocks
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const region = displayedRegions[0]
@@ -90,8 +91,7 @@ export function pxToBp(self: any, px: number) {
   }
 
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let firstBlock = true
-  let currStaticBlock = blocks[0]?.regionNumber
+  let currBlock = 0
   for (let i = 0; i < displayedRegions.length; i++) {
     const region = displayedRegions[i]
     const len = region.end - region.start
@@ -112,10 +112,9 @@ export function pxToBp(self: any, px: number) {
 
     // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
     // a static block
-    if (currStaticBlock === i) {
-      bpSoFar += len + (firstBlock ? 0 : interRegionPaddingBp)
-      currStaticBlock++
-      firstBlock = false
+    if (blocks[currBlock]?.regionNumber === i) {
+      bpSoFar += len + interRegionPaddingBp
+      currBlock++
     } else {
       bpSoFar += len
     }

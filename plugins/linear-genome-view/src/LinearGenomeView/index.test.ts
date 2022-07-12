@@ -655,13 +655,13 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   expect(model.pxToBp(0).oob).toBeTruthy()
   // chr10 in the middle, tests a specific coord but should just be probably
   // somewhat around here
-  expect(model.pxToBp(800).coord).toBe(35027079)
-  expect(model.pxToBp(800).refName).toBe('11')
+  expect(model.pxToBp(800).coord).toBe(111057351)
+  expect(model.pxToBp(800).refName).toBe('10')
 
   // chrX after an ellided block, this tests a specific coord but should just be
   // probably somewhat around here
-  expect(model.pxToBp(1228).coord).toBe(8033717)
-  expect(model.pxToBp(1228).refName).toBe('Y_KI270740v1_random')
+  expect(model.pxToBp(1228).coord).toBe(118604872)
+  expect(model.pxToBp(1228).refName).toBe('X')
 
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
