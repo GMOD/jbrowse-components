@@ -159,7 +159,7 @@ export class CoreGetFeatures extends RpcMethodType {
       adapterConfig,
     )
     if (!isFeatureAdapter(dataAdapter)) {
-      return []
+      throw new Error('Adapter does not support retrieving features')
     }
     const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
       ...opts,

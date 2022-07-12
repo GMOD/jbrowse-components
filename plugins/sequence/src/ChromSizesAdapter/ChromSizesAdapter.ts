@@ -59,10 +59,6 @@ export default class extends BaseAdapter implements RegionsAdapter {
     }))
   }
 
-  public getFeatures() {
-    throw new Error('sequence not available')
-  }
-
   public getHeader() {
     return {}
   }
