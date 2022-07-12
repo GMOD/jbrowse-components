@@ -50,14 +50,20 @@ export default observer(
 
     const viewLeft = reversed ? params.end : params.start
 
-    if (isStateTreeNode(region) && !isAlive(region)) {
-      return null
-    }
     const [labelVisible, setLabelVisible] = useState(exportSVG)
 
+    // we use an effect to set the label visible because there can be a
+    // mismatch between the server and the client after hydration due to the
+    // floating labels. if we are exporting an SVG we allow it as is though and
+    // do not use the effetct
     useEffect(() => {
       setLabelVisible(true)
     }, [])
+
+    if (isStateTreeNode(region) && !isAlive(region)) {
+      return null
+    }
+
     const rstart = region.start
     const rend = region.end
     const fstart = feature.get('start')
