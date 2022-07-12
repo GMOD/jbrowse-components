@@ -1009,10 +1009,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             bpToStart += region.end - region.start
           }
         }
-        self.scrollTo(
-          Math.round(bpToStart / self.bpPerPx) +
-            self.interRegionPaddingWidth * start.index,
-        )
+        self.offsetPx = Math.round(bpToStart / self.bpPerPx)
       },
 
       horizontalScroll(distance: number) {
