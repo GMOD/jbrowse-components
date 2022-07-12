@@ -290,7 +290,7 @@ test('can navToMultiple', () => {
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
   expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.126)
+  expect(model.bpPerPx).toBeCloseTo(25.157)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
@@ -454,7 +454,7 @@ describe('Zoom to selected displayed regions', () => {
     // 22000 / 792 (width - interRegionPadding) = 27.78
     expect(model.bpPerPx).toBeCloseTo(27.78, 0)
     // offset 5000 / bpPerPx (because that is the starting) = 180.5
-    expect(model.offsetPx).toBe(181)
+    expect(model.offsetPx).toBe(180)
     expect(model.bpPerPx).toBeLessThan(largestBpPerPx)
   })
 
@@ -487,7 +487,7 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(346)
+    expect(model.offsetPx).toBe(344)
     // 5000 + 3000 + 15000 / 792
     expect(model.bpPerPx).toBeCloseTo(29.04, 0)
     expect(model.bpPerPx).toBeLessThan(53)
@@ -546,7 +546,7 @@ test('can instantiate a model that >2 regions', () => {
 
   expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
     index: 1,
-    offsetPx: Math.round(10100 / model.bpPerPx) + model.interRegionPaddingWidth,
+    offsetPx: Math.round(10100 / model.bpPerPx),
   })
 })
 
@@ -655,13 +655,13 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
   expect(model.pxToBp(0).oob).toBeTruthy()
   // chr10 in the middle, tests a specific coord but should just be probably
   // somewhat around here
-  expect(model.pxToBp(800).coord).toBe(111057351)
-  expect(model.pxToBp(800).refName).toBe('10')
+  expect(model.pxToBp(800).coord).toBe(35027079)
+  expect(model.pxToBp(800).refName).toBe('11')
 
   // chrX after an ellided block, this tests a specific coord but should just be
   // probably somewhat around here
-  expect(model.pxToBp(1228).coord).toBe(99349155)
-  expect(model.pxToBp(1228).refName).toBe('X')
+  expect(model.pxToBp(1228).coord).toBe(8033717)
+  expect(model.pxToBp(1228).refName).toBe('Y_KI270740v1_random')
 
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
@@ -689,7 +689,7 @@ test('can showAllRegionsInAssembly', async () => {
   ])
 })
 
-describe('Get Sequence for selected displayed regions', () => {
+describe('get sequence for selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   /* the start of all the results should be +1
   the sequence dialog then handles converting from 1-based closed to interbase
@@ -779,7 +779,7 @@ describe('Get Sequence for selected displayed regions', () => {
       model.rightOffset,
     )
 
-    expect(outOfBounds.length).toEqual(0)
+    expect(outOfBounds.length).toEqual(1)
   })
 
   it('selects multiple regions with a region in between', () => {
@@ -822,12 +822,12 @@ describe('Get Sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0].start).toEqual(200)
+    expect(overlapping[0].start).toEqual(201)
     expect(overlapping[0].end).toEqual(500)
     expect(overlapping[1].start).toEqual(0)
     expect(overlapping[1].end).toEqual(3000)
     expect(overlapping[2].start).toEqual(0)
-    expect(overlapping[2].end).toEqual(110)
+    expect(overlapping[2].end).toEqual(112)
   })
 
   it('can select over two regions in diff reference sequence', () => {
