@@ -290,7 +290,7 @@ test('can navToMultiple', () => {
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
   expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.126)
+  expect(model.bpPerPx).toBeCloseTo(25.125)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
@@ -330,7 +330,7 @@ describe('Zoom to selected displayed regions', () => {
     // 'ctgA' 15000  bp+ 'ctgA' 10000 bp+ 'ctgB' 3000 bp = 28000 totalbp
     expect(model.totalBp).toEqual(28000)
 
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -354,32 +354,8 @@ describe('Zoom to selected displayed regions', () => {
     expect(model.bpPerPx).toBeCloseTo(31.408)
   })
 
-  it('can select if start and end object are swapped', () => {
-    // should be same results as above test
-    model.zoomToDisplayedRegions(
-      {
-        start: 0,
-        index: 2,
-        coord: 1,
-        end: 3000,
-        offset: 1,
-        refName: 'ctgB',
-      },
-      {
-        start: 5000,
-        index: 0,
-        end: 20000,
-        coord: 5001,
-        offset: 0,
-        refName: 'ctgA',
-      },
-    )
-    expect(model.offsetPx).toEqual(0)
-    expect(model.bpPerPx).toBeCloseTo(31.408)
-  })
-
   it('can select over one refSeq', () => {
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -404,7 +380,7 @@ describe('Zoom to selected displayed regions', () => {
   })
 
   it('can select one region with start or end outside of displayed region', () => {
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -435,7 +411,7 @@ describe('Zoom to selected displayed regions', () => {
     model.showAllRegions()
     expect(model.bpPerPx).toBeCloseTo(38.8888)
     // totalBp = 28000 / 1000 = 28 as maxBpPerPx
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         index: 0,
@@ -469,7 +445,7 @@ describe('Zoom to selected displayed regions', () => {
     // totalBp 15000 + 3000 + 35000 = 53000
     // then 53000 / (width*0.9) = 73.6111
     expect(model.bpPerPx).toBeCloseTo(73.61111)
-    model.zoomToDisplayedRegions(
+    model.moveTo(
       {
         start: 5000,
         coord: 15000,
@@ -660,7 +636,7 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
 
   // chrX after an ellided block, this tests a specific coord but should just be
   // probably somewhat around here
-  expect(model.pxToBp(1228).coord).toBe(99349155)
+  expect(model.pxToBp(1228).coord).toBe(118604872)
   expect(model.pxToBp(1228).refName).toBe('X')
 
   // chrY_random at the end
@@ -689,7 +665,7 @@ test('can showAllRegionsInAssembly', async () => {
   ])
 })
 
-describe('Get Sequence for selected displayed regions', () => {
+describe('get sequence for selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   /* the start of all the results should be +1
   the sequence dialog then handles converting from 1-based closed to interbase
@@ -779,7 +755,7 @@ describe('Get Sequence for selected displayed regions', () => {
       model.rightOffset,
     )
 
-    expect(outOfBounds.length).toEqual(0)
+    expect(outOfBounds.length).toEqual(1)
   })
 
   it('selects multiple regions with a region in between', () => {

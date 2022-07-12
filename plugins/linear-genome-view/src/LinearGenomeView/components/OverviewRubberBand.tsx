@@ -107,7 +107,7 @@ function OverviewRubberBand({
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberBandRef = useRef(null)
+  const rubberBandRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
@@ -121,30 +121,25 @@ function OverviewRubberBand({
     }
 
     function globalMouseUp() {
-      if (
-        controlsRef.current &&
-        startX !== undefined &&
-        currentX !== undefined
-      ) {
+      // click and drag
+      if (startX !== undefined && currentX !== undefined) {
         if (Math.abs(currentX - startX) > 3) {
-          model.zoomToDisplayedRegions(
+          model.moveTo(
             overview.pxToBp(startX - cytobandOffset),
             overview.pxToBp(currentX - cytobandOffset),
           )
         }
       }
-      /* handling clicking and centering at a specific Bp */
-      if (
-        controlsRef.current &&
-        startX !== undefined &&
-        currentX === undefined
-      ) {
-        const clickedAt = overview.pxToBp(startX - cytobandOffset)
-        model.centerAt(
-          Math.round(clickedAt.coord),
-          clickedAt.refName,
-          clickedAt.index,
-        )
+
+      // just a click
+      if (startX !== undefined && currentX === undefined) {
+        const click = overview.pxToBp(startX - cytobandOffset)
+        if (!click.refName) {
+          getSession(model).notify('unknown position clicked')
+          console.error('unknown position clicked', click)
+        } else {
+          model.centerAt(Math.round(click.coord), click.refName, click.index)
+        }
       }
       setStartX(undefined)
       setCurrentX(undefined)
