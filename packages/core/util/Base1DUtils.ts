@@ -9,7 +9,7 @@ export interface BpOffset {
   end?: number
 }
 
-function lengthBetween(self: any, start: BpOffset, end: BpOffset) {
+function lengthBetween(self: ViewSnap, start: BpOffset, end: BpOffset) {
   let bpSoFar = 0
   const { displayedRegions } = self
   if (start.index === end.index) {
@@ -29,7 +29,14 @@ function lengthBetween(self: any, start: BpOffset, end: BpOffset) {
   return bpSoFar
 }
 
-export function moveTo(self: any, start?: BpOffset, end?: BpOffset) {
+export function moveTo(
+  self: ViewSnap & {
+    zoomTo: (arg: number) => number
+    scrollTo: (arg: number) => void
+  },
+  start?: BpOffset,
+  end?: BpOffset,
+) {
   if (!start || !end) {
     return
   }
@@ -62,7 +69,21 @@ export function moveTo(self: any, start?: BpOffset, end?: BpOffset) {
   self.scrollTo(Math.round(bpToStart / self.bpPerPx))
 }
 
-export function pxToBp(self: any, px: number) {
+// manual return type since getSnapshot hard to infer here
+export function pxToBp(
+  self: ViewSnap,
+  px: number,
+): {
+  coord: number
+  index: number
+  refName: string
+  oob: boolean
+  assemblyName: string
+  offset: number
+  start: number
+  end: number
+  reversed: boolean
+} {
   let bpSoFar = 0
   const {
     bpPerPx,
@@ -76,6 +97,7 @@ export function pxToBp(self: any, px: number) {
   if (bp < 0) {
     const region = displayedRegions[0]
     const snap = getSnapshot(region)
+    // @ts-ignore
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
@@ -96,6 +118,7 @@ export function pxToBp(self: any, px: number) {
     const offset = bp - bpSoFar
     if (len + bpSoFar > bp && bpSoFar <= bp) {
       const snap = getSnapshot(region)
+      // @ts-ignore
       return {
         // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
         ...(snap as Omit<typeof snap, symbol>),
@@ -122,7 +145,9 @@ export function pxToBp(self: any, px: number) {
     const region = displayedRegions[displayedRegions.length - 1]
     const len = region.end - region.start
     const offset = bp - bpSoFar + len
+
     const snap = getSnapshot(region)
+    // @ts-ignore
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       ...(snap as Omit<typeof snap, symbol>),
@@ -160,44 +185,40 @@ export function bpToPx({
 }) {
   let bpSoFar = 0
 
-  const {
-    interRegionPaddingWidth,
-    bpPerPx,
-    displayedRegions,
-    staticBlocks: { blocks },
-  } = self
+  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
+    self
+  const blocks = staticBlocks.contentBlocks
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
-  let firstBlock = true
-  let currStaticBlock = blocks[0]?.regionNumber
+  let currBlock = 0
 
-  const index = displayedRegions.findIndex((region, idx) => {
+  let i = 0
+  for (; i < displayedRegions.length; i++) {
+    const region = displayedRegions[i]
     const len = region.end - region.start
     if (
       refName === region.refName &&
       coord >= region.start &&
       coord <= region.end
     ) {
-      if (regionNumber ? regionNumber === idx : true) {
+      if (regionNumber ? regionNumber === i : true) {
         bpSoFar += region.reversed ? region.end - coord : coord - region.start
-        return true
+        break
       }
     }
 
     // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
     // a static block
-    if (currStaticBlock === idx) {
-      bpSoFar += len + (firstBlock ? 0 : interRegionPaddingBp)
-      currStaticBlock++
-      firstBlock = false
+    if (blocks[currBlock]?.regionNumber === i) {
+      bpSoFar += len + interRegionPaddingBp
+      currBlock++
     } else {
       bpSoFar += len
     }
-    return false
-  })
-  const found = displayedRegions[index]
+  }
+  const found = displayedRegions[i]
   if (found) {
     return {
-      index,
+      index: i,
       offsetPx: Math.round(bpSoFar / bpPerPx),
     }
   }

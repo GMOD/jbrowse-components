@@ -61,10 +61,6 @@ const Base1DView = types
         .map(a => a.end - a.start)
         .reduce((a, b) => a + b, 0)
     },
-
-    pxToBp(px: number) {
-      return pxToBp(self, px)
-    },
   }))
   .views(self => ({
     get dynamicBlocks() {
@@ -80,6 +76,9 @@ const Base1DView = types
     },
   }))
   .views(self => ({
+    pxToBp(px: number) {
+      return pxToBp(self, px)
+    },
     bpToPx({
       refName,
       coord,
@@ -103,16 +102,6 @@ const Base1DView = types
       self.bpPerPx = self.totalBp / self.width
       self.offsetPx = 0
     },
-    /**
-     * offset is the base-pair-offset in the displayed region, index is the index of the
-     * displayed region in the linear genome view
-     *
-     * @param start - object as `{start, end, offset, index}`
-     * @param end - object as `{start, end, offset, index}`
-     */
-    moveTo(start?: BpOffset, end?: BpOffset) {
-      moveTo(self, start, end)
-    },
 
     zoomOut() {
       this.zoomTo(self.bpPerPx * 2)
@@ -125,7 +114,7 @@ const Base1DView = types
     zoomTo(newBpPerPx: number, offset = self.width / 2) {
       const bpPerPx = newBpPerPx
       if (bpPerPx === self.bpPerPx) {
-        return
+        return self.bpPerPx
       }
       const oldBpPerPx = self.bpPerPx
       self.bpPerPx = bpPerPx
@@ -136,6 +125,7 @@ const Base1DView = types
         self.minOffset,
         self.maxOffset,
       )
+      return self.bpPerPx
     },
 
     scrollTo(offsetPx: number) {
@@ -143,7 +133,10 @@ const Base1DView = types
       self.offsetPx = newOffsetPx
       return newOffsetPx
     },
-    centerAt(coord: number, refName: string, regionNumber: number) {
+    centerAt(coord: number, refName: string | undefined, regionNumber: number) {
+      if (!refName) {
+        return
+      }
       const centerPx = self.bpToPx({
         refName,
         coord,
@@ -164,6 +157,18 @@ const Base1DView = types
       )
       self.offsetPx = newOffsetPx
       return newOffsetPx - oldOffsetPx
+    },
+  }))
+  .actions(self => ({
+    /**
+     * offset is the base-pair-offset in the displayed region, index is the index of the
+     * displayed region in the linear genome view
+     *
+     * @param start - object as `{start, end, offset, index}`
+     * @param end - object as `{start, end, offset, index}`
+     */
+    moveTo(start?: BpOffset, end?: BpOffset) {
+      moveTo(self, start, end)
     },
   }))
 

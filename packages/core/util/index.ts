@@ -8,6 +8,7 @@ import {
   isStateTreeNode,
   hasParent,
   IAnyStateTreeNode,
+  IStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
 import merge from 'deepmerge'
@@ -794,9 +795,11 @@ export function stringify({
   refName?: string
   oob?: boolean
 }) {
-  return `${refName}:${coord.toLocaleString('en-US')}${
-    oob ? ' (out of bounds)' : ''
-  }`
+  return refName
+    ? `${refName}:${coord.toLocaleString('en-US')}${
+        oob ? ' (out of bounds)' : ''
+      }`
+    : ''
 }
 
 // this is recommended in a later comment in https://github.com/electron/electron/issues/2288
@@ -1062,13 +1065,15 @@ export type ViewSnap = {
   interRegionPaddingWidth: number
   minimumBlockWidth: number
   width: number
-  staticBlocks: { blocks: BaseBlock[] }
-  displayedRegions: {
+  offsetPx: number
+  staticBlocks: { contentBlocks: BaseBlock[]; blocks: BaseBlock[] }
+  displayedRegions: (IStateTreeNode & {
     start: number
     end: number
     refName: string
     reversed: boolean
-  }[]
+    assemblyName: string
+  })[]
 }
 
 // supported adapter types by text indexer
