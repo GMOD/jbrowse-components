@@ -250,10 +250,10 @@ export class CoreEstimateRegionStats extends RpcMethodType {
       adapterConfig,
     )
 
-    if (isFeatureAdapter(dataAdapter)) {
-      return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Adapter does not support retrieving features')
     }
-    return {}
+    return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
   }
 }
 
