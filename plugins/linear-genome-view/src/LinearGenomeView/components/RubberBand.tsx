@@ -103,7 +103,6 @@ function RubberBand({
       }
       let leftPx = startX
       let rightPx = offsetX
-      // handles clicking and draging to the left
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }

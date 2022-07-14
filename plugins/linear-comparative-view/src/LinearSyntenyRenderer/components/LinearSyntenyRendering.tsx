@@ -12,10 +12,10 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
-  viewBpToPx,
   ViewSnap,
   AssemblyManager,
 } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 
 // locals
 import { interstitialYPos, generateMatches } from '../../util'
@@ -43,7 +43,7 @@ function getId(r: number, g: number, b: number, unitMultiplier: number) {
 }
 
 function px(view: ViewSnap, arg: { refName: string; coord: number }) {
-  const r = viewBpToPx({ ...arg, self: view })?.offsetPx
+  const r = bpToPx({ ...arg, self: view })?.offsetPx
   if (r === undefined) {
     console.warn('unknown coord', arg)
   }
@@ -312,6 +312,7 @@ function LinearSyntenyRendering({
       const viewSnaps = views.map(view => ({
         ...getSnapshot(view),
         width: view.width,
+        staticBlocks: view.staticBlocks,
         interRegionPaddingWidth: view.interRegionPaddingWidth,
         minimumBlockWidth: view.minimumBlockWidth,
       }))
@@ -567,6 +568,7 @@ function LinearSyntenyRendering({
       const hideTiny = false
       const viewSnaps = views.map(view => ({
         ...getSnapshot(view),
+        staticBlocks: view.staticBlocks,
         width: view.width,
         interRegionPaddingWidth: view.interRegionPaddingWidth,
         minimumBlockWidth: view.minimumBlockWidth,

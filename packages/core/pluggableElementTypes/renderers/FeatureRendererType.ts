@@ -14,7 +14,7 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -140,9 +140,14 @@ export default class FeatureRendererType extends ServerSideRendererType {
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
     const { signal, regions, sessionId, adapterConfig } = renderArgs
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const { dataAdapter } = await getAdapter(
+      this.pluginManager,
+      sessionId,
+      adapterConfig,
+    )
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Adapter does not support retrieving features')
+    }
     const features = new Map()
 
     if (!regions || regions.length === 0) {

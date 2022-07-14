@@ -32,6 +32,7 @@ function RenderedFeatureGlyph(props: {
   layout: BaseLayout<unknown>
   extraGlyphs: ExtraGlyphValidator[]
   displayMode: string
+  exportSVG: unknown
   displayModel: DisplayModel
   viewParams: {
     start: number
@@ -145,6 +146,7 @@ const RenderedFeatures = observer(
     displayMode: string
     displayModel: DisplayModel
     region: Region
+    exportSVG: unknown
     extraGlyphs: ExtraGlyphValidator[]
     layout: BaseLayout<unknown>
     viewParams: {

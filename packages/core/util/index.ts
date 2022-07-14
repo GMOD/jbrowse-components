@@ -8,8 +8,10 @@ import {
   isStateTreeNode,
   hasParent,
   IAnyStateTreeNode,
+  IStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
+import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
   isSessionModel,
@@ -21,6 +23,7 @@ import {
   TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import { BaseBlock } from './blockTypes'
 
 export type { Feature }
 export * from './types'
@@ -767,9 +770,11 @@ export function stringify({
   refName?: string
   oob?: boolean
 }) {
-  return `${refName}:${coord.toLocaleString('en-US')}${
-    oob ? ' (out of bounds)' : ''
-  }`
+  return refName
+    ? `${refName}:${coord.toLocaleString('en-US')}${
+        oob ? ' (out of bounds)' : ''
+      }`
+    : ''
 }
 
 // this is recommended in a later comment in https://github.com/electron/electron/issues/2288
@@ -856,17 +861,19 @@ export const rIC =
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
 
+// prettier-ignore
+const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: unknown, fontSize = 10) {
-  // prettier-ignore
-  const w = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
   const avg = 0.5279276315789471
-  return (
-    String(str)
-      .split('')
-      .map(c => (c.charCodeAt(0) < w.length ? w[c.charCodeAt(0)] : avg))
-      .reduce((cur, acc) => acc + cur, 0) * fontSize
-  )
+  const s = String(str)
+  let total = 0
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i)
+    total += widths[code] ?? avg
+  }
+  return total * fontSize
 }
 
 export const defaultStarts = ['ATG']
@@ -1033,63 +1040,15 @@ export type ViewSnap = {
   interRegionPaddingWidth: number
   minimumBlockWidth: number
   width: number
-  displayedRegions: {
+  offsetPx: number
+  staticBlocks: { contentBlocks: BaseBlock[]; blocks: BaseBlock[] }
+  displayedRegions: (IStateTreeNode & {
     start: number
     end: number
     refName: string
     reversed: boolean
-  }[]
-}
-export function viewBpToPx({
-  refName,
-  coord,
-  regionNumber,
-  self,
-}: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: ViewSnap
-}) {
-  let offsetBp = 0
-
-  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-  const index = self.displayedRegions.findIndex((region, idx) => {
-    const len = region.end - region.start
-    if (
-      refName === region.refName &&
-      coord >= region.start &&
-      coord <= region.end
-    ) {
-      if (regionNumber ? regionNumber === idx : true) {
-        offsetBp += region.reversed ? region.end - coord : coord - region.start
-        return true
-      }
-    }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen
-    // e.g. offset>=0 && offset<width
-    if (
-      len > minimumBlockBp &&
-      offsetBp / self.bpPerPx >= 0 &&
-      offsetBp / self.bpPerPx < self.width
-    ) {
-      offsetBp += len + interRegionPaddingBp
-    } else {
-      offsetBp += len
-    }
-    return false
-  })
-  const found = self.displayedRegions[index]
-  if (found) {
-    return {
-      index,
-      offsetPx: Math.round(offsetBp / self.bpPerPx),
-    }
-  }
-
-  return undefined
+    assemblyName: string
+  })[]
 }
 
 // supported adapter types by text indexer

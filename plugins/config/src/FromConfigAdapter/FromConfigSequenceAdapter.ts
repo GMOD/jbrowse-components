@@ -3,8 +3,12 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { toArray } from 'rxjs/operators'
 import FromConfigAdapter from './FromConfigAdapter'
+import { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
-export default class FromConfigSequenceAdapter extends FromConfigAdapter {
+export default class FromConfigSequenceAdapter
+  extends FromConfigAdapter
+  implements RegionsAdapter
+{
   /**
    * Fetch features for a certain region
    * @param region - Region
