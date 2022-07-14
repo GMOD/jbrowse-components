@@ -25,8 +25,7 @@
     "clean": "rimraf dist tsconfig.build.tsbuildinfo",
     "prebuild": "yarn clean",
     "prepack": "yarn build",
-    "build": "babel . --root-mode upward --out-dir dist --extensions '.ts,.js,.tsx,.jsx' && cp package.json README.md ../../LICENSE dist/",
-    "postbuild": "tsc -b tsconfig.build.json"
+    "build": "tsc -b tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",

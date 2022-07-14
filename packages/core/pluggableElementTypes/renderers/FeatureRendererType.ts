@@ -211,5 +211,3 @@ export default class FeatureRendererType extends ServerSideRendererType {
     return { ...result, features }
   }
 }
-
-export class NewFeatureRendererType extends ServerSideRendererType {}
