@@ -5,14 +5,18 @@ import {
   DialogContent,
   DialogActions,
   DialogTitle,
-  FormControlLabel,
   IconButton,
-  Radio,
+  MenuItem,
+  Select,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
+import { hcl } from 'd3-color'
 import Picker from './SwatchesPicker'
+
+// icons
+import CloseIcon from '@mui/icons-material/Close'
+import { Source } from '../../util'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -33,6 +37,16 @@ function serialize(color: any) {
   return color
 }
 
+function ggplotColours(n: number, h = [15, 375]) {
+  const colors = []
+  const diff = h[1] - h[0]
+  for (let i = 0; i < n; i++) {
+    const k = h[0] + (diff / n) * i
+    colors.push(hcl(k, 150, 65).hex())
+  }
+  return colors
+}
+
 export default function SetColorDialog({
   model,
   handleClose,
@@ -42,18 +56,25 @@ export default function SetColorDialog({
     setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
+    sources: Source[]
+    setSources: (s: Source[]) => void
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const [posneg, setPosNeg] = useState(false)
-  const presetColors = ['red', 'blue', 'orange', 'green']
+  const { sources } = model
+  const colors = ggplotColours(sources.length)
+  const palettes = ['ggplot2', 'set1', 'set2', 'category10']
+  const [val, setVal] = useState('ggplot2')
 
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
-        Select either an overall color, or the positive/negative colors. Note
-        that density renderers only work properly with positive/negative colors
+        <Typography>
+          Select either an overall color, or the positive/negative colors. Note
+          that density renderers only work properly with positive/negative
+          colors
+        </Typography>
         <IconButton
           aria-label="close"
           className={classes.closeButton}
@@ -63,70 +84,40 @@ export default function SetColorDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <FormControlLabel
-          checked={!posneg}
-          onClick={() => setPosNeg(false)}
-          control={<Radio />}
-          label={'Overall color'}
-        />
-        <FormControlLabel
-          checked={posneg}
-          onClick={() => setPosNeg(true)}
-          control={<Radio />}
-          label={'Positive/negative color'}
-        />
+        <Select value={val} onChange={event => setVal(event.target.value)}>
+          {palettes.map(p => (
+            <MenuItem key={p}>{p}</MenuItem>
+          ))}
+        </Select>
 
-        {posneg ? (
-          <>
-            <Typography>Positive color</Typography>
-            <Picker
-              color="red"
-              presetColors={presetColors}
-              onChange={event => {
-                model.setPosColor(serialize(event))
-                model.setColor(undefined)
-              }}
-            />
-            <Typography>Negative color</Typography>
-
-            <Picker
-              color="red"
-              presetColors={presetColors}
-              onChange={event => {
-                model.setNegColor(serialize(event))
-                model.setColor(undefined)
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <Typography>Overall color</Typography>
-            <Picker
-              color="red"
-              presetColors={presetColors}
-              onChange={event => model.setColor(serialize(event))}
-            />
-          </>
-        )}
+        <table>
+          <thead>
+            <tr>
+              <th>color</th>
+              <th>source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sources.map((source, i) => (
+              <tr key={JSON.stringify(source)}>
+                <td style={{ background: colors[i] }}> </td>
+                <td>{source.name}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={() => {
-            model.setPosColor(undefined)
-            model.setNegColor(undefined)
-            model.setColor(undefined)
-          }}
-          color="secondary"
-          variant="contained"
-        >
-          Restore default
-        </Button>
-
         <Button
           variant="contained"
           color="primary"
           type="submit"
-          onClick={() => handleClose()}
+          onClick={() => {
+            model.setSources(
+              sources.map((source, i) => ({ ...source, color: colors[i] })),
+            )
+            handleClose()
+          }}
         >
           Submit
         </Button>

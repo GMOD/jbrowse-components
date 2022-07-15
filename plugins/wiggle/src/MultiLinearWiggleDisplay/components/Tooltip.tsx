@@ -27,13 +27,17 @@ const TooltipContents = React.forwardRef<
       {sources ? (
         <table>
           <thead>
-            <td>source</td>
-            <td>score</td>
+            <tr>
+              <th>color</th>
+              <th>source</th>
+              <th>score</th>
+            </tr>
           </thead>
           <tbody>
             {Object.entries(sources).map(([source, data]) => (
               <tr>
-                <td style={{ background: obj[source]?.color }}>{source}</td>
+                <td style={{ background: obj[source]?.color }}> </td>
+                <td>{source}</td>
                 <td>{toP(data.score)}</td>
               </tr>
             ))}

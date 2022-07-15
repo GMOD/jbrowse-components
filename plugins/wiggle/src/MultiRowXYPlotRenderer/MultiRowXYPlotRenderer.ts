@@ -26,7 +26,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
         ...props,
         features,
         height,
-        colorCallback: () => 'blue',
+        colorCallback: () => source.color || 'blue',
         Color,
       })
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'

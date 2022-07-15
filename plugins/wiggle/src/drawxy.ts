@@ -162,6 +162,7 @@ export function drawLine(
     height: number
     ticks: { values: number[] }
     displayCrossHatches: boolean
+    colorCallback: (f: Feature, score: number) => string
     config: AnyConfigurationModel
     offset?: number
   },
@@ -174,6 +175,7 @@ export function drawLine(
     height: unadjustedHeight,
     ticks: { values },
     displayCrossHatches,
+    colorCallback,
     config,
     offset = 0,
   } = props
@@ -188,11 +190,6 @@ export function drawLine(
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const [niceMin, niceMax] = scale.domain()
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
-
-  const colorCallback =
-    readConfObject(config, 'color') === '#f0f'
-      ? () => 'grey'
-      : (feature: Feature) => readConfObject(config, 'color', { feature })
 
   let lastVal
 
@@ -211,7 +208,7 @@ export function drawLine(
     const highClipping = score > niceMax
     const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
 
-    const c = colorCallback(feature)
+    const c = colorCallback(feature, score)
 
     ctx.beginPath()
     ctx.strokeStyle = c
