@@ -43,6 +43,8 @@ const paletteColors = {
   tableau10,
 }
 
+type PaletteType = keyof typeof paletteColors
+
 export const PopoverPicker = ({
   color,
   onChange,
@@ -53,11 +55,6 @@ export const PopoverPicker = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
 
-  type PaletteType = keyof typeof paletteColors
-  const [val, setVal] = useState<PaletteType>('ggplot2')
-  const presetColors = paletteColors[val]
-  const palettes = Object.keys(paletteColors)
-
   const { classes } = useStyles()
 
   return (
@@ -67,44 +64,61 @@ export const PopoverPicker = ({
         style={{ backgroundColor: color }}
         onClick={event => setAnchorEl(event.currentTarget)}
       />
+      <ColorPopover
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        color={color}
+        onChange={onChange}
+      />
+    </div>
+  )
+}
 
-      {anchorEl && (
-        <Popover
-          open
-          anchorEl={anchorEl}
-          onClose={() => {
-            setAnchorEl(null)
+export function ColorPopover({
+  anchorEl,
+  onChange,
+  onClose,
+  color,
+}: {
+  color: string
+  anchorEl: HTMLElement | null
+  onChange: (val: string) => void
+  onClose: () => void
+}) {
+  const { classes } = useStyles()
+  const [val, setVal] = useState<PaletteType>('ggplot2')
+  const presetColors = paletteColors[val]
+  const palettes = Object.keys(paletteColors)
+
+  return (
+    <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
+      <div style={{ padding: 10 }}>
+        <HexColorPicker color={color} onChange={onChange} />
+        <Select
+          value={val}
+          onChange={event => {
+            const pal = event.target.value as PaletteType
+            setVal(pal)
           }}
         >
-          <div style={{ padding: 10 }}>
-            <HexColorPicker color={color} onChange={onChange} />
-            <Select
-              value={val}
-              onChange={event => {
-                const pal = event.target.value as PaletteType
-                setVal(pal)
-              }}
-            >
-              {palettes.map(p => (
-                <MenuItem value={p} key={p}>
-                  {p}
-                </MenuItem>
-              ))}
-            </Select>
-            <div className={classes.swatches}>
-              {presetColors.map((presetColor, idx) => (
-                <button
-                  key={presetColor + '-' + idx}
-                  className={classes.swatch}
-                  style={{ background: presetColor }}
-                  onClick={() => onChange(presetColor)}
-                />
-              ))}
-            </div>
-          </div>
-        </Popover>
-      )}
-    </div>
+          {palettes.map(p => (
+            <MenuItem value={p} key={p}>
+              {p}
+            </MenuItem>
+          ))}
+        </Select>
+        <div className={classes.swatches}>
+          {presetColors.map((presetColor, idx) => (
+            <button
+              key={presetColor + '-' + idx}
+              className={classes.swatch}
+              style={{ background: presetColor }}
+              onClick={() => onChange(presetColor)}
+            />
+          ))}
+        </div>
+      </div>
+    </Popover>
   )
 }
 

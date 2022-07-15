@@ -28,6 +28,9 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
+const fudgeFactor = 0.3
+const clipHeight = 2
+
 export function drawXY(
   ctx: CanvasRenderingContext2D,
   props: {
@@ -41,7 +44,6 @@ export function drawXY(
     displayCrossHatches: boolean
     offset?: number
     colorCallback: (f: Feature, score: number) => string
-    clipHeight?: number
     Color: typeof import('color')
   },
 ) {
@@ -53,7 +55,6 @@ export function drawXY(
     height: unadjustedHeight,
     config,
     ticks,
-    clipHeight = 2,
     displayCrossHatches,
     offset = 0,
     colorCallback,
@@ -82,41 +83,68 @@ export function drawXY(
 
   let prevLeftPx = 0
   const reducedFeatures = []
-  for (const feature of features.values()) {
-    const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
-    // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
-      reducedFeatures.push(feature)
-      prevLeftPx = leftPx
-    }
-
-    const score = feature.get('score')
-    const c = colorCallback(feature, score)
-
-    hasClipping = hasClipping || score < niceMin || score > niceMax
-    const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
-
-    if (summaryScoreMode === 'whiskers') {
+  if (summaryScoreMode === 'whiskers') {
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const score = feature.get('score')
       const summary = feature.get('summary')
+      const c = colorCallback(feature, score)
+      const w = rightPx - leftPx + fudgeFactor
       if (summary) {
         const max = feature.get('maxScore')
-        const min = feature.get('minScore')
-        const minColor = Color(c).darken(0.6).toString()
-        const maxColor = Color(c).lighten(0.6).toString()
-        hasClipping = hasClipping || min < niceMin || max > niceMax
+        const maxColor = Color(c).lighten(0.4).toString()
+        hasClipping = hasClipping || max > niceMax
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
+      }
+    }
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const score = feature.get('score')
+      const c = colorCallback(feature, score)
+      const w = rightPx - leftPx + fudgeFactor
+
+      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+    }
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const score = feature.get('score')
+      const summary = feature.get('summary')
+      const c = colorCallback(feature, score)
+      const w = rightPx - leftPx + fudgeFactor
+
+      if (summary) {
+        const min = feature.get('minScore')
+        const minColor = Color(c).darken(0.4).toString()
+        hasClipping = hasClipping || min < niceMin
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
       }
-      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
-    } else if (summaryScoreMode === 'max') {
-      const s = feature.get('summary') ? feature.get('maxScore') : score
-      fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
-    } else if (summaryScoreMode === 'min') {
-      const s = feature.get('summary') ? feature.get('minScore') : score
-      fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
-    } else {
-      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+    }
+  } else {
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+
+      // create reduced features, avoiding multiple features per px
+      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
+      }
+
+      const score = feature.get('score')
+      const c = colorCallback(feature, score)
+
+      hasClipping = hasClipping || score < niceMin || score > niceMax
+      const w = rightPx - leftPx + fudgeFactor
+
+      if (summaryScoreMode === 'max') {
+        const s = feature.get('summary') ? feature.get('maxScore') : score
+        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+      } else if (summaryScoreMode === 'min') {
+        const s = feature.get('summary') ? feature.get('minScore') : score
+        fillRectCtx(leftPx, toY(s), w, getHeight(s), ctx, c)
+      } else {
+        fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+      }
     }
   }
 
@@ -127,7 +155,7 @@ export function drawXY(
     ctx.fillStyle = clipColor
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+      const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
       if (score > niceMax) {
         fillRectCtx(leftPx, 0, w, clipHeight, ctx)
@@ -206,7 +234,7 @@ export function drawLine(
     const score = feature.get('score')
     const lowClipping = score < niceMin
     const highClipping = score > niceMax
-    const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+    const w = rightPx - leftPx + fudgeFactor
 
     const c = colorCallback(feature, score)
 
@@ -227,10 +255,10 @@ export function drawLine(
 
     if (highClipping) {
       ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, 0, w, 4)
+      ctx.fillRect(leftPx, 0, w, clipHeight)
     } else if (lowClipping && scaleOpts.scaleType !== 'log') {
       ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, height - 4, w, height)
+      ctx.fillRect(leftPx, height - clipHeight, w, height)
     }
   }
 
@@ -293,7 +321,7 @@ export function drawDensity(
       reducedFeatures.push(feature)
       prevLeftPx = leftPx
     }
-    const w = rightPx - leftPx + 0.3 // fudge factor for subpixel rendering
+    const w = rightPx - leftPx + fudgeFactor
     ctx.fillStyle = colorCallback(feature)
     ctx.fillRect(leftPx, 0, w, height)
   }

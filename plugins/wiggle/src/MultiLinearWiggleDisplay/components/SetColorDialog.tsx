@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import ColorPicker from './ColorPicker'
+import ColorPicker, { ColorPopover } from './ColorPicker'
 import { useShiftSelected } from './useShiftSelected'
 import { useSelected } from './useSelected'
 
@@ -43,6 +43,7 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const { sources } = model
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [colors, setColors] = useState(sources || [])
   const { selected, add, clear, change } = useSelected([] as Source[])
   const onChange = useShiftSelected(sources, change)
@@ -69,8 +70,16 @@ export default function SetColorDialog({
           <div style={{ position: 'sticky', top: 0, right: 0 }}>
             <div style={{ display: 'flex' }}>
               <div style={{ flexGrow: 1 }} />
-              <Typography>Change color of selected items</Typography>
-              <ColorPicker
+              <Button
+                variant="contained"
+                onClick={event => {
+                  setAnchorEl(event.currentTarget)
+                }}
+              >
+                Change color of selected items
+              </Button>
+              <ColorPopover
+                anchorEl={anchorEl}
                 color="blue"
                 onChange={c => {
                   selected.forEach(s => {
@@ -78,6 +87,7 @@ export default function SetColorDialog({
                   })
                   setColors([...colors])
                 }}
+                onClose={() => setAnchorEl(null)}
               />
             </div>
           </div>
@@ -100,7 +110,15 @@ export default function SetColorDialog({
                     onChange={event => onChange(event, source)}
                   />
                 </td>
-                <td style={{ background: source.color }}> </td>
+                <td>
+                  <ColorPicker
+                    color={source.color || 'blue'}
+                    onChange={c => {
+                      source.color = c
+                      setColors([...sources])
+                    }}
+                  />
+                </td>
                 <td>{source.name}</td>
               </tr>
             ))}
