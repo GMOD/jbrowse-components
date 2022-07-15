@@ -42,6 +42,7 @@ type Coord = [number, number]
 // React.forwardRef component for the tooltip, the ref is used for measuring
 // the size of the tooltip
 export type TooltipContentsComponent = React.ForwardRefExoticComponent<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >
 
@@ -86,7 +87,7 @@ function Tooltip({
         }
       },
     }),
-    [clientRect?.top, clientMouseCoord, width],
+    [clientRect?.top, clientMouseCoord, width, useClientY],
   )
   const { styles, attributes } = usePopper(virtElement, anchorEl)
 

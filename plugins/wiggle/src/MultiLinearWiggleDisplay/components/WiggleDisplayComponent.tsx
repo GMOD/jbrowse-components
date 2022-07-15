@@ -115,6 +115,7 @@ export const StatBars = observer(
                   const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
                   const svgFontSize = Math.min(rowHeight, 12)
                   const canDisplayLabel = rowHeight > 11
+
                   return (
                     <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
                       <RectBg
@@ -122,11 +123,11 @@ export const StatBars = observer(
                         x={extraOffset}
                         width={
                           canDisplayLabel
-                            ? measureText(source, svgFontSize) + 10
+                            ? measureText(source.name, svgFontSize) + 10
                             : 20
                         }
                         height={rowHeight}
-                        color={source.color}
+                        color={needsCustomLegend ? source.color : undefined}
                       />
                       {canDisplayLabel ? (
                         <text
@@ -134,7 +135,9 @@ export const StatBars = observer(
                           x={extraOffset + 2}
                           fontSize={svgFontSize}
                           fill={
-                            source.color && contrastingTextColor(source.color)
+                            needsCustomLegend && source.color
+                              ? contrastingTextColor(source.color)
+                              : undefined
                           }
                         >
                           {source.name}

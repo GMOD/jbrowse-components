@@ -43,6 +43,7 @@
     "@popperjs/core": "^2.11.0",
     "color": "^3.1.1",
     "d3-scale": "^3.0.2",
+    "d3-color": "^3.0.2",
     "fast-deep-equal": "^3.1.3",
     "react-color": "^2.19.3",
     "react-d3-axis-mod": "^0.1.3",
@@ -52,7 +53,9 @@
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
+    "@jbrowse/plugin-data-management": "^2.0.0",
     "@mui/material": "^5.0.0",
+    "@mui/x-data-grid": "^5.0.1",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

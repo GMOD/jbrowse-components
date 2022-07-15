@@ -115,14 +115,12 @@ function SourcesGrid({
       headerName: 'Color',
       renderCell: (params: GridCellParams) => {
         const { value, id } = params
-        console.log({ value, params })
         return (
           <ColorPicker
             color={value || 'blue'}
             onChange={c => {
-              console.log('here')
-              // source.color = c
-              // setColors([...sources])
+              entries[id].color = c
+              onChange(Object.values(entries))
             }}
           />
         )
@@ -134,7 +132,10 @@ function SourcesGrid({
       flex: 0.7,
     },
   ]
-  console.log({ sources })
+
+  // this helps keep track of the selection, even though it is not used
+  // anywhere except inside the picker
+  const [widgetColor, setWidgetColor] = useState('blue')
 
   return (
     <div>
@@ -147,8 +148,9 @@ function SourcesGrid({
       </Button>
       <ColorPopover
         anchorEl={anchorEl}
-        color="blue"
+        color={widgetColor}
         onChange={c => {
+          setWidgetColor(c)
           selected.forEach(s => {
             entries[s].color = c
           })

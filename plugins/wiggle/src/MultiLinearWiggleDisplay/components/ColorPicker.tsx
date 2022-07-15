@@ -51,10 +51,8 @@ export const PopoverPicker = ({
 }: {
   color: string
   onChange: (color: string) => void
-  onClose?: (color: string) => void
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
-
   const { classes } = useStyles()
 
   return (

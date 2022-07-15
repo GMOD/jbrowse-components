@@ -46,10 +46,6 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
-function zip<T>(a: T[], b: T[]) {
-  return a.map((k, i) => [k, b[i]])
-}
-
 interface Source {
   name: string
   color?: string
@@ -239,7 +235,6 @@ const stateModelFactory = (
     }))
     .views(self => ({
       get sources() {
-        console.log(self.customColors)
         return self.sourcesVolatile?.map(s => ({
           ...s,
           color: self.customColors[s.name] || s.color,
