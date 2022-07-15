@@ -49,6 +49,7 @@ export const PopoverPicker = ({
 }: {
   color: string
   onChange: (color: string) => void
+  onClose?: (color: string) => void
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
 
@@ -68,7 +69,13 @@ export const PopoverPicker = ({
       />
 
       {anchorEl && (
-        <Popover open anchorEl={anchorEl} onClose={() => setAnchorEl(null)}>
+        <Popover
+          open
+          anchorEl={anchorEl}
+          onClose={() => {
+            setAnchorEl(null)
+          }}
+        >
           <div style={{ padding: 10 }}>
             <HexColorPicker color={color} onChange={onChange} />
             <Select

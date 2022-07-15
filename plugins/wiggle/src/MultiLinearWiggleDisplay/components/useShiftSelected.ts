@@ -1,3 +1,4 @@
+// from https://stereobooster.com/posts/react-hook-to-select-multiple-items-with-a-shift/
 import { ChangeEvent, useCallback, useState } from 'react'
 
 /**

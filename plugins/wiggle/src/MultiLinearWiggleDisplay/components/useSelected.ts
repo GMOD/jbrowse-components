@@ -1,3 +1,4 @@
+// from https://stereobooster.com/posts/react-hook-to-select-multiple-items-with-a-shift/
 import { useCallback, useState } from 'react'
 import uniq from 'lodash/uniq'
 import difference from 'lodash/difference'

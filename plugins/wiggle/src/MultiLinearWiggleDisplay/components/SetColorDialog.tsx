@@ -6,8 +6,6 @@ import {
   DialogActions,
   DialogTitle,
   IconButton,
-  MenuItem,
-  Select,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -18,7 +16,6 @@ import { useSelected } from './useSelected'
 // icons
 import CloseIcon from '@mui/icons-material/Close'
 import { Source } from '../../util'
-import Delete from '@mui/icons-material/Delete'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -47,49 +44,45 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [colors, setColors] = useState(sources || {})
-  const { selected, change } = useSelected([] as Source[])
+  const { selected, add, clear, change } = useSelected([] as Source[])
   const onChange = useShiftSelected(sources, change)
 
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
-        <Typography>
-          Select either an overall color, or the positive/negative colors. Note
-          that density renderers only work properly with positive/negative
-          colors
-        </Typography>
+        Multi-wiggle color select
         <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <div style={{ display: 'flex' }}>
-          <div style={{ flexGrow: 1 }} />
-          {selected.length ? (
-            <div>
-              <Typography>Change color of selected items</Typography>
-              <ColorPicker
-                color="blue"
-                onChange={c => {
-                  selected.forEach(s => {
-                    s.color = c
-                  })
-                  setColors([...colors])
-                }}
-              />
-            </div>
-          ) : null}
+        <Typography>
+          You can select rows in the table with the checkbox to change the color
+          on multiple subtracks at a time. Multi-select is enabled with
+          shift-click.
+        </Typography>
+        <div style={{ marginTop: 10 }}>
+          <button onClick={() => add(sources)}>Select all</button>
+          <button onClick={clear}>Select none</button>
         </div>
-
+        {selected.length ? (
+          <div style={{ float: 'right' }}>
+            <Typography>Change color of selected items</Typography>
+            <ColorPicker
+              color="blue"
+              onChange={c => {
+                selected.forEach(s => {
+                  s.color = c
+                })
+                setColors([...colors])
+              }}
+            />
+          </div>
+        ) : null}
         <table>
           <thead>
             <tr>
-              <th>
-                selected{' '}
-                <IconButton onClick={() => change(false, [])}>
-                  <Delete />
-                </IconButton>
-              </th>
+              <th>selected ({selected.length}) </th>
               <th>color</th>
               <th>source</th>
             </tr>
@@ -112,6 +105,14 @@ export default function SetColorDialog({
         </table>
       </DialogContent>
       <DialogActions>
+        <Button
+          variant="contained"
+          color="secondary"
+          type="submit"
+          onClick={() => handleClose()}
+        >
+          Cancel
+        </Button>
         <Button
           variant="contained"
           color="primary"
