@@ -274,9 +274,9 @@ export function drawDensity(
         ? getScale({
             ...scaleOpts,
             pivotValue,
-            range: [negColor, 'white', posColor],
+            range: [negColor, '#ccc', posColor],
           })
-        : getScale({ ...scaleOpts, range: ['white', posColor] })
+        : getScale({ ...scaleOpts, range: ['#ccc', posColor] })
     colorCallback = (feature: Feature) => colorScale(feature.get('score'))
   } else {
     colorCallback = (feature: Feature) =>

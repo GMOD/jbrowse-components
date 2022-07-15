@@ -79,6 +79,7 @@ const stateModelFactory = (
         scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
         displayCrossHatches: types.maybe(types.boolean),
+        customColors: types.optional(types.frozen(), {}),
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -98,6 +99,9 @@ const stateModelFactory = (
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
+      setCustomColors(customColors: Record<string, string>) {
+        self.customColors = customColors
+      },
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
@@ -235,7 +239,11 @@ const stateModelFactory = (
     }))
     .views(self => ({
       get sources() {
-        return self.sourcesVolatile
+        console.log(self.customColors)
+        return self.sourcesVolatile?.map(s => ({
+          ...s,
+          color: self.customColors[s.name] || s.color,
+        }))
       },
       get rendererConfig() {
         const configBlob =

@@ -61,8 +61,10 @@ const RectBg = (props: {
   y: number
   width: number
   height: number
+  color?: string
 }) => {
-  return <rect {...props} fill="rgb(255,255,255,0.8)" rx={3} />
+  const { color = 'rgb(255,255,255,0.8)' } = props
+  return <rect {...props} fill={color} />
 }
 
 const Legend = observer(({ model }: { model: WiggleDisplayModel }) => {
@@ -99,7 +101,6 @@ export const StatBars = observer(
       ticks,
     } = model
 
-    const canDisplayLabels = rowHeight > 10
     return (
       <Wrapper {...props}>
         {stats && sources ? (
@@ -108,30 +109,36 @@ export const StatBars = observer(
               <YScaleBar model={model} orientation={orientation} />
             ) : (
               <>
-                {canDisplayLabels
-                  ? sources.map((source, idx) => {
-                      // put the subtrack labels to the right of the scalebar
-                      const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
-                      const svgFontSize = Math.min(rowHeight, 12)
-                      return (
-                        <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
-                          <RectBg
-                            y={idx * rowHeight + 1}
-                            x={extraOffset}
-                            width={measureText(source, svgFontSize) + 6}
-                            height={Math.min(rowHeight, 16)}
-                          />
-                          <text
-                            y={idx * rowHeight + 13}
-                            x={extraOffset + 2}
-                            fontSize={svgFontSize}
-                          >
-                            {source.name}
-                          </text>
-                        </React.Fragment>
-                      )
-                    })
-                  : null}
+                {sources.map((source, idx) => {
+                  // put the subtrack labels to the right of the scalebar
+                  const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
+                  const svgFontSize = Math.min(rowHeight, 12)
+                  const canDisplayLabel = rowHeight > 11
+                  return (
+                    <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
+                      <RectBg
+                        y={idx * rowHeight + 1}
+                        x={extraOffset}
+                        width={
+                          canDisplayLabel
+                            ? measureText(source, svgFontSize) + 10
+                            : 20
+                        }
+                        height={rowHeight}
+                        color={source.color}
+                      />
+                      {canDisplayLabel ? (
+                        <text
+                          y={idx * rowHeight + 13}
+                          x={extraOffset + 2}
+                          fontSize={svgFontSize}
+                        >
+                          {source.name}
+                        </text>
+                      ) : null}
+                    </React.Fragment>
+                  )
+                })}
 
                 {rowHeightTooSmallForScalebar || needsCustomLegend ? (
                   <Legend {...props} />

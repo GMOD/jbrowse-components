@@ -11,12 +11,14 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { hcl } from 'd3-color'
-import Picker from './SwatchesPicker'
+import ColorPicker from './ColorPicker'
+import { useShiftSelected } from './useShiftSelected'
+import { useSelected } from './useSelected'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
 import { Source } from '../../util'
+import Delete from '@mui/icons-material/Delete'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -26,26 +28,6 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.grey[500],
   },
 }))
-
-// this is needed because passing a entire color object into the react-color
-// for alpha, can't pass in an rgba string for example
-function serialize(color: any) {
-  if (color instanceof Object) {
-    const { r, g, b } = color as any
-    return `rgb(${r},${g},${b})`
-  }
-  return color
-}
-
-function ggplotColours(n: number, h = [15, 375]) {
-  const colors = []
-  const diff = h[1] - h[0]
-  for (let i = 0; i < n; i++) {
-    const k = h[0] + (diff / n) * i
-    colors.push(hcl(k, 150, 65).hex())
-  }
-  return colors
-}
 
 export default function SetColorDialog({
   model,
@@ -58,14 +40,15 @@ export default function SetColorDialog({
     setNegColor: (arg?: string) => void
     sources: Source[]
     setSources: (s: Source[]) => void
+    setCustomColors: (s: Record<string, string>) => void
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const colors = ggplotColours(sources.length)
-  const palettes = ['ggplot2', 'set1', 'set2', 'category10']
-  const [val, setVal] = useState('ggplot2')
+  const [colors, setColors] = useState(sources || {})
+  const { selected, change } = useSelected([] as Source[])
+  const onChange = useShiftSelected(sources, change)
 
   return (
     <Dialog open onClose={handleClose}>
@@ -75,32 +58,53 @@ export default function SetColorDialog({
           that density renderers only work properly with positive/negative
           colors
         </Typography>
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
+        <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Select value={val} onChange={event => setVal(event.target.value)}>
-          {palettes.map(p => (
-            <MenuItem key={p}>{p}</MenuItem>
-          ))}
-        </Select>
+        <div style={{ display: 'flex' }}>
+          <div style={{ flexGrow: 1 }} />
+          {selected.length ? (
+            <div>
+              <Typography>Change color of selected items</Typography>
+              <ColorPicker
+                color="blue"
+                onChange={c => {
+                  selected.forEach(s => {
+                    s.color = c
+                  })
+                  setColors([...colors])
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
 
         <table>
           <thead>
             <tr>
+              <th>
+                selected{' '}
+                <IconButton onClick={() => change(false, [])}>
+                  <Delete />
+                </IconButton>
+              </th>
               <th>color</th>
               <th>source</th>
             </tr>
           </thead>
           <tbody>
-            {sources.map((source, i) => (
+            {sources.map(source => (
               <tr key={JSON.stringify(source)}>
-                <td style={{ background: colors[i] }}> </td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(source)}
+                    onChange={event => onChange(event, source)}
+                  />
+                </td>
+                <td style={{ background: source.color }}> </td>
                 <td>{source.name}</td>
               </tr>
             ))}
@@ -113,8 +117,10 @@ export default function SetColorDialog({
           color="primary"
           type="submit"
           onClick={() => {
-            model.setSources(
-              sources.map((source, i) => ({ ...source, color: colors[i] })),
+            model.setCustomColors(
+              Object.fromEntries(
+                sources.map((s, i) => [s.name, colors[i].color || 'blue']),
+              ),
             )
             handleClose()
           }}
