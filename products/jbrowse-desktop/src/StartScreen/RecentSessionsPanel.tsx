@@ -159,9 +159,7 @@ function RecentSessionsList({
         checkboxSelection
         disableSelectionOnClick
         onSelectionModelChange={args => {
-          setSelectedSessions(
-            sessions.filter(session => args.includes(session.path)),
-          )
+          setSelectedSessions(sessions.filter(s => args.includes(s.path)))
         }}
         rows={sessions.map(session => ({
           id: session.path,

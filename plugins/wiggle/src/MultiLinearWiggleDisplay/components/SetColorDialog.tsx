@@ -9,9 +9,10 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+
+// locals
 import ColorPicker, { ColorPopover } from './ColorPicker'
-import { useShiftSelected } from './useShiftSelected'
-import { useSelected } from './useSelected'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
@@ -43,10 +44,7 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [colors, setColors] = useState(sources || [])
-  const { selected, add, clear, change } = useSelected([] as Source[])
-  const onChange = useShiftSelected(sources, change)
 
   return (
     <Dialog open onClose={handleClose}>
@@ -62,68 +60,7 @@ export default function SetColorDialog({
           on multiple subtracks at a time. Multi-select is enabled with
           shift-click.
         </Typography>
-        <div style={{ marginTop: 10 }}>
-          <button onClick={() => add(sources)}>Select all</button>
-          <button onClick={clear}>Select none</button>
-        </div>
-        {selected.length ? (
-          <div style={{ position: 'sticky', top: 0, right: 0 }}>
-            <div style={{ display: 'flex' }}>
-              <div style={{ flexGrow: 1 }} />
-              <Button
-                variant="contained"
-                onClick={event => {
-                  setAnchorEl(event.currentTarget)
-                }}
-              >
-                Change color of selected items
-              </Button>
-              <ColorPopover
-                anchorEl={anchorEl}
-                color="blue"
-                onChange={c => {
-                  selected.forEach(s => {
-                    s.color = c
-                  })
-                  setColors([...colors])
-                }}
-                onClose={() => setAnchorEl(null)}
-              />
-            </div>
-          </div>
-        ) : null}
-        <table>
-          <thead>
-            <tr>
-              <th>selected ({selected.length}) </th>
-              <th>color</th>
-              <th>source</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sources.map(source => (
-              <tr key={JSON.stringify(source)}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(source)}
-                    onChange={event => onChange(event, source)}
-                  />
-                </td>
-                <td>
-                  <ColorPicker
-                    color={source.color || 'blue'}
-                    onChange={c => {
-                      source.color = c
-                      setColors([...sources])
-                    }}
-                  />
-                </td>
-                <td>{source.name}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <SourcesGrid sources={colors} onChange={setColors} />
       </DialogContent>
       <DialogActions>
         <Button
@@ -159,5 +96,78 @@ export default function SetColorDialog({
         </Button>
       </DialogActions>
     </Dialog>
+  )
+}
+
+function SourcesGrid({
+  sources,
+  onChange,
+}: {
+  sources: Source[]
+  onChange: (arg: Source[]) => void
+}) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+  const [selected, setSelected] = useState([] as string[])
+  const entries = Object.fromEntries(sources.map(s => [s.name, s]))
+  const columns = [
+    {
+      field: 'color',
+      headerName: 'Color',
+      renderCell: (params: GridCellParams) => {
+        const { value, id } = params
+        console.log({ value, params })
+        return (
+          <ColorPicker
+            color={value || 'blue'}
+            onChange={c => {
+              console.log('here')
+              // source.color = c
+              // setColors([...sources])
+            }}
+          />
+        )
+      },
+    },
+    {
+      field: 'name',
+      headerName: 'Name',
+      flex: 0.7,
+    },
+  ]
+  console.log({ sources })
+
+  return (
+    <div>
+      <Button
+        variant="contained"
+        disabled={!selected.length}
+        onClick={event => setAnchorEl(event.currentTarget)}
+      >
+        Change color of selected items
+      </Button>
+      <ColorPopover
+        anchorEl={anchorEl}
+        color="blue"
+        onChange={c => {
+          selected.forEach(s => {
+            entries[s].color = c
+          })
+          onChange(Object.values(entries))
+        }}
+        onClose={() => setAnchorEl(null)}
+      />
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          getRowId={row => row.name}
+          checkboxSelection
+          disableSelectionOnClick
+          onSelectionModelChange={args => setSelected(args as string[])}
+          rows={sources}
+          rowHeight={25}
+          headerHeight={33}
+          columns={columns}
+        />
+      </div>
+    </div>
   )
 }
