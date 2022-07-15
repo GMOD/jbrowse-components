@@ -48,22 +48,24 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
                 uri,
               },
             }))
-          : entries.map((entry: BigWigEntry) => ({
+          : entries.map(({ uri, ...rest }: BigWigEntry) => ({
               type: 'BigWigAdapter',
-              source: entry.name || getFilename(entry.uri),
+              ...rest,
+              source: rest.name || getFilename(uri),
               bigWigLocation: {
-                uri: entry.uri,
+                uri,
               },
             }))
     }
+
     return Promise.all(
-      subConfs.map(async c => {
+      subConfs.map(async (c, i) => {
         const adapter = await getSubAdapter(c)
         return {
           dataAdapter: adapter.dataAdapter as BaseFeatureDataAdapter,
-          source: c.source as string,
-          color: c.color,
-          group: c.group,
+          source: subConfs[i].source,
+          color: subConfs[i].color,
+          group: subConfs[i].group,
         }
       }),
     )
@@ -116,13 +118,12 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   }
 
   // in another adapter type, this could be dynamic depending on region or
-  // something, but it is static depending on config here
+  // something, but it is static for this particular multi-wiggle adapter type
   async getSources() {
     const adapters = await this.getAdapters()
-    return adapters.map(a => ({
-      name: a.source,
-      color: a.color,
-      group: a.group,
+    return adapters.map(({ dataAdapter, source, ...rest }) => ({
+      name: source,
+      ...rest,
     }))
   }
 

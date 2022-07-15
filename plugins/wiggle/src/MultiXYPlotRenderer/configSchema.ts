@@ -7,7 +7,7 @@ const configSchema = ConfigurationSchema(
   {
     filled: {
       type: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
     summaryScoreMode: {
       type: 'stringEnum',
