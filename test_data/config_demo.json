@@ -3931,7 +3931,7 @@
       "assemblyNames": ["hg19"],
       "adapter": {
         "type": "MultiWiggleAdapter",
-        "bigWigUrls": [
+        "bigWigs": [
           "https://www.encodeproject.org/files/ENCFF055ZII/@@download/ENCFF055ZII.bigWig",
           "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig",
           "https://www.encodeproject.org/files/ENCFF858LIM/@@download/ENCFF858LIM.bigWig",

@@ -43,7 +43,7 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const [colors, setColors] = useState(sources || {})
+  const [colors, setColors] = useState(sources || [])
   const { selected, add, clear, change } = useSelected([] as Source[])
   const onChange = useShiftSelected(sources, change)
 
@@ -66,17 +66,20 @@ export default function SetColorDialog({
           <button onClick={clear}>Select none</button>
         </div>
         {selected.length ? (
-          <div style={{ float: 'right' }}>
-            <Typography>Change color of selected items</Typography>
-            <ColorPicker
-              color="blue"
-              onChange={c => {
-                selected.forEach(s => {
-                  s.color = c
-                })
-                setColors([...colors])
-              }}
-            />
+          <div style={{ position: 'sticky', top: 0, right: 0 }}>
+            <div style={{ display: 'flex' }}>
+              <div style={{ flexGrow: 1 }} />
+              <Typography>Change color of selected items</Typography>
+              <ColorPicker
+                color="blue"
+                onChange={c => {
+                  selected.forEach(s => {
+                    s.color = c
+                  })
+                  setColors([...colors])
+                }}
+              />
+            </div>
           </div>
         ) : null}
         <table>
@@ -105,6 +108,14 @@ export default function SetColorDialog({
         </table>
       </DialogContent>
       <DialogActions>
+        <Button
+          variant="contained"
+          type="submit"
+          color="inherit"
+          onClick={() => setColors([])}
+        >
+          Clear custom colors
+        </Button>
         <Button
           variant="contained"
           color="secondary"

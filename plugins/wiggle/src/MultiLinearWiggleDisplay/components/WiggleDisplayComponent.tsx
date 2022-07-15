@@ -5,6 +5,7 @@ import {
   getContainingTrack,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
+import { contrastingTextColor } from '@jbrowse/core/util/color'
 import {
   LinearGenomeViewModel,
   BaseLinearDisplayComponent,
@@ -132,6 +133,9 @@ export const StatBars = observer(
                           y={idx * rowHeight + 13}
                           x={extraOffset + 2}
                           fontSize={svgFontSize}
+                          fill={
+                            source.color && contrastingTextColor(source.color)
+                          }
                         >
                           {source.name}
                         </text>
