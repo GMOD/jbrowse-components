@@ -84,6 +84,8 @@ export function drawXY(
   let prevLeftPx = 0
   const reducedFeatures = []
 
+  // we handle whiskers separately to render max row, min row, and avg in three
+  // passes. this reduces subpixel rendering issues
   if (summaryScoreMode === 'whiskers') {
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)

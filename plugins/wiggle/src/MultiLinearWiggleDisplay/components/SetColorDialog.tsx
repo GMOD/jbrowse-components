@@ -39,6 +39,7 @@ export default function SetColorDialog({
     sources: Source[]
     setSources: (s: Source[]) => void
     setCustomColors: (s: Record<string, string>) => void
+    clearCustomColors: () => void
   }
   handleClose: () => void
 }) {
@@ -67,7 +68,10 @@ export default function SetColorDialog({
           variant="contained"
           type="submit"
           color="inherit"
-          onClick={() => setColors([])}
+          onClick={() => {
+            model.clearCustomColors()
+            setColors(model.sources)
+          }}
         >
           Clear custom colors
         </Button>

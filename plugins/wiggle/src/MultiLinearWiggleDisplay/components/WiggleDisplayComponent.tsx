@@ -115,8 +115,9 @@ export const StatBars = observer(
                   const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
                   const svgFontSize = Math.min(rowHeight, 12)
                   const canDisplayLabel = rowHeight > 11
+                  const renderBox = needsCustomLegend || canDisplayLabel
 
-                  return (
+                  return renderBox ? (
                     <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
                       <RectBg
                         y={idx * rowHeight + 1}
@@ -144,7 +145,7 @@ export const StatBars = observer(
                         </text>
                       ) : null}
                     </React.Fragment>
-                  )
+                  ) : null
                 })}
 
                 {rowHeightTooSmallForScalebar || needsCustomLegend ? (

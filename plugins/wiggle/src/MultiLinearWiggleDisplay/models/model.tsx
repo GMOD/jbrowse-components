@@ -98,6 +98,9 @@ const stateModelFactory = (
       setCustomColors(customColors: Record<string, string>) {
         self.customColors = customColors
       },
+      clearCustomColors() {
+        self.customColors = {}
+      },
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
