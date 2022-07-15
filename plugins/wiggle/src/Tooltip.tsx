@@ -42,7 +42,7 @@ type Coord = [number, number]
 // React.forwardRef component for the tooltip, the ref is used for measuring
 // the size of the tooltip
 export type TooltipContentsComponent = React.ForwardRefExoticComponent<
-  { feature: Feature } & React.RefAttributes<HTMLDivElement>
+  { feature: Feature; model: any } & React.RefAttributes<HTMLDivElement>
 >
 
 function Tooltip({
@@ -102,6 +102,7 @@ function Tooltip({
         >
           <TooltipContents
             ref={elt => setWidth(elt?.getBoundingClientRect().width || 0)}
+            model={model}
             feature={featureUnderMouse}
           />
         </div>
