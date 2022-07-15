@@ -253,6 +253,14 @@ export default function Node(props: {
                   label: 'Add to selection',
                   onClick: () => model.addToSelection([info.conf]),
                 },
+                ...(selected
+                  ? [
+                      {
+                        label: 'Remove from selection',
+                        onClick: () => model.removeFromSelection(info.conf),
+                      },
+                    ]
+                  : []),
               ]}
               onMenuItemClick={(_event, callback) => {
                 callback()

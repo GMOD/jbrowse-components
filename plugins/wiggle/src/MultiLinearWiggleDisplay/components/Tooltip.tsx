@@ -18,6 +18,7 @@ const TooltipContents = React.forwardRef<
   const coord = start === end ? en(start) : `${en(start)}..${en(end)}`
   const sources = feature.get('sources') as Record<string, { score: number }>
   const source = feature.get('source')
+  const summary = feature.get('summary')
   const obj = Object.fromEntries(model.sources.map(ent => [ent.name, ent]))
 
   return (
@@ -45,7 +46,12 @@ const TooltipContents = React.forwardRef<
         </table>
       ) : (
         <span>
-          {source} {toP(feature.get('score'))}
+          {source}{' '}
+          {summary
+            ? `min:${toP(feature.get('minScore'))} avg:${toP(
+                feature.get('score'),
+              )} max:${toP(feature.get('maxScore'))}`
+            : toP(feature.get('score'))}
         </span>
       )}
     </div>

@@ -69,9 +69,11 @@ const RectBg = (props: {
 }
 
 const Legend = observer(({ model }: { model: WiggleDisplayModel }) => {
-  const { ticks } = model
+  const { ticks, scaleType } = model
   const { width } = getContainingView(model) as LGV
-  const legend = `[${ticks.values[0]}-${ticks.values[1]}]`
+  const legend =
+    `[${ticks.values[0]}-${ticks.values[1]}]` +
+    (scaleType === 'log' ? ' (log scale)' : '')
   const len = measureText(legend, 14)
   const padding = 25
   const xpos = width - len - padding
@@ -101,13 +103,13 @@ export const StatBars = observer(
       sources,
       ticks,
     } = model
-
+    const svgFontSize = Math.min(rowHeight, 12)
+    const canDisplayLabel = rowHeight > 11
+    const minWidth = 20
     const w = Math.max(
-      ...(sources?.map(source => {
-        const svgFontSize = Math.min(rowHeight, 12)
-        const canDisplayLabel = rowHeight > 11
-        return canDisplayLabel ? measureText(source.name, svgFontSize) + 10 : 20
-      }) || [0]),
+      ...(sources?.map(s =>
+        canDisplayLabel ? measureText(s.name, svgFontSize) : minWidth,
+      ) || [0]),
     )
 
     return (
@@ -121,8 +123,6 @@ export const StatBars = observer(
                 {sources.map((source, idx) => {
                   // put the subtrack labels to the right of the scalebar
                   const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
-                  const svgFontSize = Math.min(rowHeight, 12)
-                  const canDisplayLabel = rowHeight > 11
                   const renderBox = needsCustomLegend || canDisplayLabel
 
                   return renderBox ? (

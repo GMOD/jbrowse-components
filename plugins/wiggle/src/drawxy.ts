@@ -105,6 +105,11 @@ export function drawXY(
       const score = feature.get('score')
       const c = colorCallback(feature, score)
       const w = rightPx - leftPx + fudgeFactor
+      // create reduced features, avoiding multiple features per px
+      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+        reducedFeatures.push(feature)
+        prevLeftPx = leftPx
+      }
 
       fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
     }
@@ -304,9 +309,9 @@ export function drawDensity(
         ? getScale({
             ...scaleOpts,
             pivotValue,
-            range: [negColor, '#ccc', posColor],
+            range: [negColor, 'white', posColor],
           })
-        : getScale({ ...scaleOpts, range: ['#ccc', posColor] })
+        : getScale({ ...scaleOpts, range: ['white', posColor] })
     colorCallback = (feature: Feature) => colorScale(feature.get('score'))
   } else {
     colorCallback = (feature: Feature) =>
