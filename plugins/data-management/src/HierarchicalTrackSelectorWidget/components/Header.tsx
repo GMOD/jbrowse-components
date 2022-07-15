@@ -67,7 +67,7 @@ function HierarchicalTrackSelectorHeader({
   const { classes } = useStyles()
   const session = getSession(model)
   const [connectionEl, setConnectionEl] = useState<HTMLButtonElement>()
-  const [groupEl, setGroupEl] = useState<HTMLButtonElement>()
+  const [selectionEl, setSelectionEl] = useState<HTMLButtonElement>()
   const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
   const [modalInfo, setModalInfo] = useState<ModalArgs>()
   const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
@@ -184,12 +184,12 @@ function HierarchicalTrackSelectorHeader({
           </IconButton>
         )}
 
-        {model.group.length ? (
+        {model.selection.length ? (
           <IconButton
             className={classes.menuIcon}
-            onClick={event => setGroupEl(event.currentTarget)}
+            onClick={event => setSelectionEl(event.currentTarget)}
           >
-            <Badge badgeContent={model.group.length} color="primary">
+            <Badge badgeContent={model.selection.length} color="primary">
               <ShoppingCartIcon />
             </Badge>
           </IconButton>
@@ -233,15 +233,15 @@ function HierarchicalTrackSelectorHeader({
         menuItems={menuItems}
       />
       <JBrowseMenu
-        anchorEl={groupEl}
-        open={Boolean(groupEl)}
+        anchorEl={selectionEl}
+        open={Boolean(selectionEl)}
         onMenuItemClick={(_, callback) => {
           callback()
-          setGroupEl(undefined)
+          setSelectionEl(undefined)
         }}
-        onClose={() => setGroupEl(undefined)}
+        onClose={() => setSelectionEl(undefined)}
         menuItems={[
-          { label: 'Clear', onClick: () => model.clearGroup() },
+          { label: 'Clear', onClick: () => model.clearSelection() },
           ...items.map(item => ({
             ...item,
             ...('onClick' in item

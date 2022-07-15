@@ -114,7 +114,7 @@ export default class WigglePlugin extends Plugin {
         {
           label: 'Create multi-wiggle track',
           onClick: (model: HierarchicalTrackSelectorModel) => {
-            const tracks = model.group
+            const tracks = model.selection
             const trackIds = tracks.map(c => readConfObject(c, 'name'))
             const subadapters = tracks
               .map(c => readConfObject(c, 'adapter'))

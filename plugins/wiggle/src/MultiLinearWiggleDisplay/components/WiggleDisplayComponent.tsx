@@ -131,7 +131,11 @@ export const StatBars = observer(
                         y={idx * rowHeight + 1}
                         x={extraOffset}
                         width={w}
-                        height={rowHeight}
+                        height={
+                          needsCustomLegend
+                            ? rowHeight
+                            : Math.min(20, rowHeight)
+                        }
                         color={needsCustomLegend ? source.color : undefined}
                       />
                       {canDisplayLabel ? (

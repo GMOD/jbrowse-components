@@ -138,14 +138,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       ),
     })
     .volatile(() => ({
-      group: [] as AnyConfigurationModel[],
+      selection: [] as AnyConfigurationModel[],
     }))
     .actions(self => ({
-      addToGroup(elt: AnyConfigurationModel[]) {
-        self.group = [...self.group, ...elt]
+      addToSelection(elt: AnyConfigurationModel[]) {
+        self.selection = [...self.selection, ...elt]
       },
-      clearGroup() {
-        self.group = []
+      clearSelection() {
+        self.selection = []
       },
       setView(view: unknown) {
         self.view = view

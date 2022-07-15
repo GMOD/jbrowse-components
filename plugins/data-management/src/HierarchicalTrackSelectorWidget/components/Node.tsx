@@ -220,7 +220,7 @@ export default function Node(props: {
                   onClick: () => {
                     const subtree = treeToMap(tree).get(id)
                     const t = subtree?.children.map(t => t.conf) || []
-                    model.addToGroup(t as AnyConfigurationModel[])
+                    model.addToSelection(t as AnyConfigurationModel[])
                   },
                 },
               ]}
@@ -241,7 +241,7 @@ export default function Node(props: {
                   []),
                 {
                   label: 'Add to selection',
-                  onClick: () => model.addToGroup([info.conf]),
+                  onClick: () => model.addToSelection([info.conf]),
                 },
               ]}
               onMenuItemClick={(_event, callback) => {
