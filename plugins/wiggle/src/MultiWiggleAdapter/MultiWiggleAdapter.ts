@@ -13,6 +13,17 @@ interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
 
+interface BigWigEntry {
+  uri: string
+  color?: string
+  name?: string
+}
+
+function getFilename(uri: string) {
+  const filename = uri.slice(uri.lastIndexOf('/') + 1)
+  return filename.slice(0, filename.lastIndexOf('.'))
+}
+
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
     'hasResolution',
@@ -27,15 +38,23 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
     let subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
     if (!subConfs?.length) {
-      const urls = this.getConf('bigWigUrls') as string[]
-      // @ts-ignore
-      subConfs = urls.map(uri => ({
-        type: 'BigWigAdapter',
-        source: uri.slice(uri.lastIndexOf('/') + 1),
-        bigWigLocation: {
-          uri,
-        },
-      }))
+      const entries = this.getConf('bigWigs')
+      subConfs =
+        typeof entries[0] === 'string'
+          ? entries.map((uri: string) => ({
+              type: 'BigWigAdapter',
+              source: getFilename(uri),
+              bigWigLocation: {
+                uri,
+              },
+            }))
+          : entries.map((entry: BigWigEntry) => ({
+              type: 'BigWigAdapter',
+              source: entry.name || getFilename(entry.uri),
+              bigWigLocation: {
+                uri: entry.uri,
+              },
+            }))
     }
     return Promise.all(
       subConfs.map(async c => {
@@ -43,6 +62,8 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         return {
           dataAdapter: adapter.dataAdapter as BaseFeatureDataAdapter,
           source: c.source as string,
+          color: c.color,
+          group: c.group,
         }
       }),
     )
@@ -98,8 +119,11 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static depending on config here
   async getSources() {
     const adapters = await this.getAdapters()
-    const sources = adapters.map(a => a.source)
-    return sources
+    return adapters.map(a => ({
+      name: a.source,
+      color: a.color,
+      group: a.group,
+    }))
   }
 
   public freeResources(): void {}

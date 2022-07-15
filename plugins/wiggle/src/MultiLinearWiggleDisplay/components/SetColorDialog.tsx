@@ -25,9 +25,9 @@ const useStyles = makeStyles()(theme => ({
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
-function serialize(color: Color) {
+function serialize(color: any) {
   if (color instanceof Object) {
-    const { r, g, b } = color as RGBColor
+    const { r, g, b } = color as any
     return `rgb(${r},${g},${b})`
   }
   return color

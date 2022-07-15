@@ -199,13 +199,11 @@ const stateModelFactory = (
       },
 
       get maxScore() {
-        const { max } = self.constraints
-        return max ?? getConf(self, 'maxScore')
+        return self.constraints.max ?? getConf(self, 'maxScore')
       },
 
       get minScore() {
-        const { min } = self.constraints
-        return min ?? getConf(self, 'minScore')
+        return self.constraints.min ?? getConf(self, 'minScore')
       },
     }))
     .views(self => ({

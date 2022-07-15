@@ -4,6 +4,7 @@ import React, { useRef } from 'react'
 import { Region } from '@jbrowse/core/util/types'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
+import { Source } from './util'
 
 function WiggleRendering(props: {
   regions: Region[]
@@ -15,7 +16,7 @@ function WiggleRendering(props: {
   onMouseMove: Function
   onFeatureClick: Function
   blockKey: string
-  sources: string[]
+  sources: Source[]
   displayModel: { isMultiRow: boolean }
 }) {
   const {
@@ -41,18 +42,17 @@ function WiggleRendering(props: {
     const offsetX = eventClientX - rect.left
     const offsetY = eventClientY - rect.top
     const source = sources[Math.floor((offsetY / height) * sources.length)]
-
     const px = region.reversed ? width - offsetX : offsetX
-    const clientBp = region.start + bpPerPx * px
+    const mouseoverBp = region.start + bpPerPx * px
     let featureUnderMouse
     if (displayModel.isMultiRow) {
       for (const feature of features.values()) {
-        if (feature.get('source') !== source) {
+        if (feature.get('source') !== source.name) {
           continue
         }
         if (
-          clientBp <= feature.get('end') + bpPerPx &&
-          clientBp >= feature.get('start')
+          mouseoverBp <= feature.get('end') + bpPerPx &&
+          mouseoverBp >= feature.get('start')
         ) {
           featureUnderMouse = feature
           break
@@ -62,15 +62,15 @@ function WiggleRendering(props: {
       const featuresUnderMouse = []
       for (const feature of features.values()) {
         if (
-          clientBp <= feature.get('end') + bpPerPx &&
-          clientBp >= feature.get('start')
+          mouseoverBp <= feature.get('end') + bpPerPx &&
+          mouseoverBp >= feature.get('start')
         ) {
           featuresUnderMouse.push(feature)
         }
       }
 
       if (featuresUnderMouse.length) {
-        const pos = Math.floor(clientBp)
+        const pos = Math.floor(mouseoverBp)
         featureUnderMouse = new SimpleFeature({
           uniqueId: 'mouseoverfeat',
           sources: Object.fromEntries(

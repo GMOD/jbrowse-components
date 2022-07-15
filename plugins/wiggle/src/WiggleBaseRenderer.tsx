@@ -8,7 +8,7 @@ import FeatureRendererType, {
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
 import { ThemeOptions } from '@mui/material'
-import { ScaleOpts } from './util'
+import { ScaleOpts, Source } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {
   scaleOpts: ScaleOpts
@@ -27,6 +27,11 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
+}
+
+export interface MultiRenderArgsDeserialized
+  extends RenderArgsDeserializedWithFeatures {
+  sources: Source[]
 }
 
 export type {

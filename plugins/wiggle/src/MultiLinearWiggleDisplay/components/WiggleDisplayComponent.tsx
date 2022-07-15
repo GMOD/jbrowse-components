@@ -65,8 +65,7 @@ const RectBg = (props: {
   return <rect {...props} fill="rgb(255,255,255,0.8)" rx={3} />
 }
 
-const Legend = observer((props: { model: WiggleDisplayModel }) => {
-  const { model } = props
+const Legend = observer(({ model }: { model: WiggleDisplayModel }) => {
   const { ticks } = model
   const { width } = getContainingView(model) as LGV
   const legend = `[${ticks.values[0]}-${ticks.values[1]}]`
@@ -92,7 +91,6 @@ export const StatBars = observer(
     const { model, orientation } = props
     const {
       stats,
-      height,
       needsCustomLegend,
       needsFullHeightScalebar,
       rowHeightTooSmallForScalebar,
@@ -128,7 +126,7 @@ export const StatBars = observer(
                             x={extraOffset + 2}
                             fontSize={svgFontSize}
                           >
-                            {source}
+                            {source.name}
                           </text>
                         </React.Fragment>
                       )
@@ -138,18 +136,14 @@ export const StatBars = observer(
                 {rowHeightTooSmallForScalebar || needsCustomLegend ? (
                   <Legend {...props} />
                 ) : (
-                  sources.map((_source, idx) => {
-                    const rowHeight = height / sources.length
-
-                    return (
-                      <g
-                        transform={`translate(0 ${rowHeight * idx})`}
-                        key={JSON.stringify(ticks) + '-' + idx}
-                      >
-                        <YScaleBar model={model} orientation={orientation} />
-                      </g>
-                    )
-                  })
+                  sources.map((_source, idx) => (
+                    <g
+                      transform={`translate(0 ${rowHeight * idx})`}
+                      key={JSON.stringify(ticks) + '-' + idx}
+                    >
+                      <YScaleBar model={model} orientation={orientation} />
+                    </g>
+                  ))
                 )}
               </>
             )}

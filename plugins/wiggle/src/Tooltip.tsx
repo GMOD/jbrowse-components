@@ -41,7 +41,7 @@ type Coord = [number, number]
 
 // React.forwardRef component for the tooltip, the ref is used for measuring
 // the size of the tooltip
-type TooltipContentsComponent = React.ForwardRefExoticComponent<
+export type TooltipContentsComponent = React.ForwardRefExoticComponent<
   { feature: Feature } & React.RefAttributes<HTMLDivElement>
 >
 

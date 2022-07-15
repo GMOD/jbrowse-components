@@ -9,10 +9,11 @@ import Tooltip from './components/Tooltip'
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaFactory(pluginManager)
+    const stateModel = modelFactory(pluginManager, configSchema)
     return new DisplayType({
       name: 'LinearWiggleDisplay',
       configSchema,
-      stateModel: modelFactory(pluginManager, configSchema),
+      stateModel,
       trackType: 'QuantitativeTrack',
       viewType: 'LinearGenomeView',
       ReactComponent,

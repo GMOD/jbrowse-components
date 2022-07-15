@@ -3,13 +3,13 @@ import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util'
 
 // locals
-import Tooltip from '../../Tooltip'
+import Tooltip, { TooltipContentsComponent } from '../../Tooltip'
 import { toP } from '../../util'
 
 const en = (n: number) => n.toLocaleString('en-US')
 
 const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
-  ({ feature }: { feature: Feature }, ref) => {
+  ({ feature }, ref) => {
     const start = feature.get('start')
     const end = feature.get('end')
     const name = feature.get('refName')
@@ -46,9 +46,7 @@ const WiggleTooltip = observer(
     offsetMouseCoord: Coord
     clientMouseCoord: Coord
     clientRect?: DOMRect
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TooltipContents?: React.FC<any>
+    TooltipContents?: TooltipContentsComponent
   }) => {
     return <Tooltip TooltipContents={TooltipContents} {...props} />
   },

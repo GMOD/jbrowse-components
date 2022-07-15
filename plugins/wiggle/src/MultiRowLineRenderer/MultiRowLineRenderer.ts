@@ -2,13 +2,8 @@ import { Feature } from '@jbrowse/core/util'
 import { groupBy } from '../util'
 import { drawLine } from '../drawxy'
 import WiggleBaseRenderer, {
-  RenderArgsDeserializedWithFeatures,
+  MultiRenderArgsDeserialized as MultiArgs,
 } from '../WiggleBaseRenderer'
-
-interface MultiArgs extends RenderArgsDeserializedWithFeatures {
-  sources: string[]
-  sourceColors: { [key: string]: string }
-}
 
 export default class MultiRowLineRenderer extends WiggleBaseRenderer {
   // @ts-ignore
@@ -23,7 +18,7 @@ export default class MultiRowLineRenderer extends WiggleBaseRenderer {
     sources.forEach(source => {
       const { reducedFeatures } = drawLine(ctx, {
         ...props,
-        features: groups[source],
+        features: groups[source.name],
         height,
       })
       ctx.strokeStyle = 'rgba(200,200,200,0.8)'

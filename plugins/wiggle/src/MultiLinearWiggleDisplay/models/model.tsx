@@ -50,6 +50,12 @@ function zip<T>(a: T[], b: T[]) {
   return a.map((k, i) => [k, b[i]])
 }
 
+interface Source {
+  name: string
+  color?: string
+  group?: string
+}
+
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
@@ -89,7 +95,7 @@ const stateModelFactory = (
       statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
       featureUnderMouseVolatile: undefined as Feature | undefined,
-      sources: undefined as string[] | undefined,
+      sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
@@ -103,9 +109,9 @@ const stateModelFactory = (
           self.statsReady = true
         }
       },
-      setSources(sources: string[]) {
-        if (!deepEqual(sources, self.sources)) {
-          self.sources = sources
+      setSources(sources: Source[]) {
+        if (!deepEqual(sources, self.sourcesVolatile)) {
+          self.sourcesVolatile = sources
         }
       },
       setColor(color: string) {
@@ -220,16 +226,17 @@ const stateModelFactory = (
       },
 
       get maxScore() {
-        const { max } = self.constraints
-        return max ?? (getConf(self, 'maxScore') as number)
+        return self.constraints.max ?? (getConf(self, 'maxScore') as number)
       },
 
       get minScore() {
-        const { min } = self.constraints
-        return min ?? (getConf(self, 'minScore') as number)
+        return self.constraints.min ?? (getConf(self, 'minScore') as number)
       },
     }))
     .views(self => ({
+      get sources() {
+        return self.sourcesVolatile
+      },
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -408,12 +415,6 @@ const stateModelFactory = (
         ]
       },
 
-      get sourceColors() {
-        const { sources } = self
-        return sources
-          ? Object.fromEntries(zip(sources, this.colors))
-          : undefined
-      },
       get adapterCapabilities() {
         const { adapterTypeName } = self
         return pluginManager.getAdapterType(adapterTypeName).adapterCapabilities
@@ -430,12 +431,11 @@ const stateModelFactory = (
             height,
             resolution,
             rpcDriverName,
-            rendererConfig: config,
             scaleOpts,
             sources,
-            sourceColors,
             statsReady,
             ticks,
+            rendererConfig: config,
           } = self
           return {
             ...superProps,
@@ -448,7 +448,6 @@ const stateModelFactory = (
             resolution,
             rpcDriverName,
             scaleOpts,
-            sourceColors,
             sources,
             ticks,
             onMouseMove: (_: unknown, f: Feature) =>
@@ -625,7 +624,7 @@ const stateModelFactory = (
                   sessionId,
                   adapterConfig,
                 },
-              )) as string[]
+              )) as Source[]
               if (isAlive(self)) {
                 self.setSources(sources)
               }

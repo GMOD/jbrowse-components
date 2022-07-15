@@ -41,6 +41,7 @@ import {
   modelFactory as linearWiggleDisplayModelFactory,
   Tooltip,
 } from './LinearWiggleDisplay'
+import { TooltipContentsComponent } from './Tooltip'
 import {
   ReactComponent as XYPlotRendererReactComponent,
   configSchema as xyPlotRendererConfigSchema,
@@ -126,7 +127,6 @@ export default class WigglePlugin extends Plugin {
             const now = +Date.now()
             const trackId = `multitrack-${now}-sessionTrack`
 
-            // @ts-ignore
             getSession(model).addTrackConf({
               type: 'MultiQuantitativeTrack',
               trackId,
@@ -164,3 +164,5 @@ export {
   linearWiggleDisplayModelFactory,
   Tooltip,
 }
+
+export type { TooltipContentsComponent }

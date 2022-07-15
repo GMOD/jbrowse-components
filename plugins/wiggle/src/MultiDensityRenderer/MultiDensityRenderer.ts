@@ -1,14 +1,9 @@
 import { Feature } from '@jbrowse/core/util'
 import { groupBy } from '../util'
 import WiggleBaseRenderer, {
-  RenderArgsDeserializedWithFeatures,
+  MultiRenderArgsDeserialized as MultiArgs,
 } from '../WiggleBaseRenderer'
 import { drawDensity } from '../drawxy'
-
-interface MultiArgs extends RenderArgsDeserializedWithFeatures {
-  sources: string[]
-  sourceColors: { [key: string]: string }
-}
 
 export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
   // @ts-ignore
@@ -21,7 +16,7 @@ export default class MultiXYPlotRenderer extends WiggleBaseRenderer {
     let feats = [] as Feature[]
     ctx.save()
     sources.forEach(source => {
-      const features = groups[source]
+      const features = groups[source.name]
       if (!features) {
         return
       }

@@ -1,11 +1,10 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
+import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { FeatureStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
@@ -33,16 +32,13 @@ export class WiggleGetGlobalStats extends RpcMethodType {
     },
     rpcDriverClassName: string,
   ): Promise<FeatureStats> {
+    const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
     const { adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     // @ts-ignore
     return dataAdapter.getGlobalStats(deserializedArgs)
@@ -69,15 +65,15 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
     rpcDriverClassName: string,
   ) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       return args
     }
 
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
       ...args,
-      filters: args.filters && args.filters.toJSON().filters,
+      filters: args.filters?.toJSON().filters,
     })
 
     return super.serializeArguments(renamedArgs, rpcDriverClassName)
@@ -94,16 +90,13 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
     },
     rpcDriverClassName: string,
   ) {
+    const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (dataAdapter instanceof BaseFeatureDataAdapter) {
       return dataAdapter.getMultiRegionStats(regions, deserializedArgs)
@@ -132,15 +125,15 @@ export class MultiWiggleGetSources extends RpcMethodType {
     args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
     rpcDriverClassName: string,
   ) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
     if (!assemblyManager) {
       return args
     }
 
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, {
       ...args,
-      filters: args.filters && args.filters.toJSON().filters,
+      filters: args.filters?.toJSON().filters,
     })
 
     return super.serializeArguments(renamedArgs, rpcDriverClassName)
@@ -157,21 +150,15 @@ export class MultiWiggleGetSources extends RpcMethodType {
     },
     rpcDriverClassName: string,
   ) {
+    const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,
       rpcDriverClassName,
     )
     const { regions, adapterConfig, sessionId } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      // @ts-ignore
-      return dataAdapter.getSources(regions, deserializedArgs)
-    }
-    throw new Error('Data adapter not found')
+    // @ts-ignore
+    return dataAdapter.getSources(regions, deserializedArgs)
   }
 }

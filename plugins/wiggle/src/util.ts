@@ -23,6 +23,13 @@ export interface ScaleOpts {
   pivotValue?: number
   inverted: boolean
 }
+
+export interface Source {
+  name: string
+  color?: string
+  group?: string
+}
+
 /**
  * produces a d3-scale from arguments. applies a "nice domain" adjustment
  *
@@ -274,14 +281,11 @@ export function statsAutorun(self: {
           const view = getContainingView(self) as LGV
           self.setLoading(aborter)
 
-          if (!view.initialized) {
-            return
-          }
-
-          if (!self.estimatedStatsReady) {
-            return
-          }
-          if (self.regionTooLarge) {
+          if (
+            !view.initialized ||
+            !self.estimatedStatsReady ||
+            self.regionTooLarge
+          ) {
             return
           }
           const statsRegion = JSON.stringify(view.dynamicBlocks)

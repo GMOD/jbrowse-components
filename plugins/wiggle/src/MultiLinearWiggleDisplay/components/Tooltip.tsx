@@ -4,7 +4,7 @@ import { Feature } from '@jbrowse/core/util'
 
 // locals
 import { toP } from '../../util'
-import Tooltip from '../../Tooltip'
+import Tooltip, { TooltipContentsComponent } from '../../Tooltip'
 
 const en = (n: number) => n.toLocaleString('en-US')
 
@@ -16,19 +16,18 @@ const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
     const coord = start === end ? en(start) : `${en(start)}..${en(end)}`
     const sources = feature.get('sources') as Record<string, { score: number }>
     const source = feature.get('source')
+    console.log({ sources })
 
     return (
       <div ref={ref}>
         {[refName, coord].filter(f => !!f).join(':')}
         <br />
         {sources ? (
-          Object.entries(sources).map(([source, data]) => {
-            return (
-              <span key={source} style={{ display: 'block' }}>
-                {source} {toP(data.score)}
-              </span>
-            )
-          })
+          Object.entries(sources).map(([source, data]) => (
+            <span key={source} style={{ display: 'block' }}>
+              {source} {toP(data.score)}
+            </span>
+          ))
         ) : (
           <span>
             {source} {toP(feature.get('score'))}
@@ -48,9 +47,7 @@ const WiggleTooltip = observer(
     offsetMouseCoord: Coord
     clientMouseCoord: Coord
     clientRect?: DOMRect
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    TooltipContents?: React.FC<any>
+    TooltipContents?: TooltipContentsComponent
   }) => {
     return <Tooltip TooltipContents={TooltipContents} {...props} />
   },

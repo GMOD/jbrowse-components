@@ -7,8 +7,8 @@ export default ConfigurationSchema(
       type: 'frozen',
       defaultValue: [],
     },
-    bigWigUrls: {
-      type: 'stringArray',
+    bigWigs: {
+      type: 'frozen',
       defaultValue: [],
     },
   },
