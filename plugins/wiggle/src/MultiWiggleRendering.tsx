@@ -42,6 +42,9 @@ function WiggleRendering(props: {
     const offsetX = eventClientX - rect.left
     const offsetY = eventClientY - rect.top
     const source = sources[Math.floor((offsetY / height) * sources.length)]
+    if (!source) {
+      return
+    }
     const px = region.reversed ? width - offsetX : offsetX
     const mouseoverBp = region.start + bpPerPx * px
     let featureUnderMouse

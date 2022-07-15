@@ -52,8 +52,10 @@ function Tooltip({
   offsetMouseCoord,
   clientRect,
   TooltipContents,
+  useClientY,
 }: {
   model: { featureUnderMouse: Feature }
+  useClientY?: boolean
   height: number
   clientMouseCoord: Coord
   offsetMouseCoord: Coord
@@ -70,7 +72,7 @@ function Tooltip({
     () => ({
       getBoundingClientRect: () => {
         const x = clientMouseCoord[0] + width / 2 + 20
-        const y = clientRect?.top || 0
+        const y = useClientY ? clientMouseCoord[1] : clientRect?.top || 0
         return {
           top: y,
           left: x,
