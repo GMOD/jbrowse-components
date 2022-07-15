@@ -102,9 +102,17 @@ export const StatBars = observer(
       ticks,
     } = model
 
+    const w = Math.max(
+      ...(sources?.map(source => {
+        const svgFontSize = Math.min(rowHeight, 12)
+        const canDisplayLabel = rowHeight > 11
+        return canDisplayLabel ? measureText(source.name, svgFontSize) + 10 : 20
+      }) || [0]),
+    )
+
     return (
       <Wrapper {...props}>
-        {stats && sources ? (
+        {stats && sources && w ? (
           <>
             {needsFullHeightScalebar ? (
               <YScaleBar model={model} orientation={orientation} />
@@ -122,11 +130,7 @@ export const StatBars = observer(
                       <RectBg
                         y={idx * rowHeight + 1}
                         x={extraOffset}
-                        width={
-                          canDisplayLabel
-                            ? measureText(source.name, svgFontSize) + 10
-                            : 20
-                        }
+                        width={w}
                         height={rowHeight}
                         color={needsCustomLegend ? source.color : undefined}
                       />
