@@ -300,7 +300,7 @@ export function drawDensity(
   let colorCallback
   if (color === '#f0f') {
     const colorScale =
-      pivot !== 'none'
+      pivot !== 'none' && scaleOpts.scaleType !== 'log'
         ? getScale({
             ...scaleOpts,
             pivotValue,
