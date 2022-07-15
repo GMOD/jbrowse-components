@@ -31,14 +31,17 @@ function getNodeData(
   node: TreeNode,
   nestingLevel: number,
   extra: Record<string, unknown>,
+  selection: Record<string, unknown>,
 ) {
   const isLeaf = !!node.conf
+  const selected = !!selection[node.id]
   return {
     data: {
       defaultHeight: isLeaf ? 22 : 40,
       isLeaf,
       isOpenByDefault: true,
       nestingLevel,
+      selected,
       ...node,
       ...extra,
     },
@@ -62,10 +65,14 @@ const HierarchicalTree = observer(
     tree: TreeNode
     model: HierarchicalTrackSelectorModel
   }) => {
-    const { filterText, view } = model
+    const { filterText, selection, view } = model
     const treeRef = useRef<NodeData>(null)
     const session = getSession(model)
     const { drawerPosition } = session
+    const obj = useMemo(
+      () => Object.fromEntries(selection.map(s => [s.trackId, s])),
+      [selection],
+    )
 
     const extra = useMemo(
       () => ({
@@ -81,7 +88,7 @@ const HierarchicalTree = observer(
       function* treeWalker() {
         for (let i = 0; i < tree.children.length; i++) {
           const r = tree.children[i]
-          yield getNodeData(r, 0, extra)
+          yield getNodeData(r, 0, extra, obj)
         }
 
         while (true) {
@@ -90,11 +97,11 @@ const HierarchicalTree = observer(
 
           for (let i = 0; i < parentMeta.node.children.length; i++) {
             const curr = parentMeta.node.children[i]
-            yield getNodeData(curr, parentMeta.nestingLevel + 1, extra)
+            yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
           }
         }
       },
-      [tree, extra],
+      [tree, extra, obj],
     )
 
     useEffect(() => {

@@ -109,6 +109,7 @@ export default function Node(props: {
     onChange: Function
     toggleCollapse: (arg: string) => void
     tree: TreeNode
+    selected: boolean
     model: HierarchicalTrackSelectorModel
   }
   isOpen: boolean
@@ -126,6 +127,7 @@ export default function Node(props: {
     name,
     nestingLevel,
     onChange,
+    selected,
     toggleCollapse,
     tree,
   } = data
@@ -180,7 +182,7 @@ export default function Node(props: {
           ) : (
             <>
               <Tooltip
-                title={description}
+                title={description + (selected ? ' (in selection)' : '')}
                 placement={drawerPosition === 'left' ? 'right' : 'left'}
               >
                 <FormControlLabel
@@ -190,7 +192,6 @@ export default function Node(props: {
                       className={classes.compactCheckbox}
                       checked={checked}
                       onChange={() => onChange(id)}
-                      color="primary"
                       disabled={isUnsupported(name)}
                       inputProps={{
                         // @ts-ignore
@@ -198,7 +199,16 @@ export default function Node(props: {
                       }}
                     />
                   }
-                  label={name}
+                  label={
+                    <div
+                      style={{
+                        background: selected ? '#cccc' : undefined,
+                        padding: 1,
+                      }}
+                    >
+                      {name}
+                    </div>
+                  }
                 />
               </Tooltip>
               <IconButton
