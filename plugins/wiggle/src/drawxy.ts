@@ -81,7 +81,7 @@ export function drawXY(
   const getHeight = (n: number) => (filled ? toOrigin(n) : 1)
   let hasClipping = false
 
-  let prevLeftPx = 0
+  let prevLeftPx
   const reducedFeatures = []
 
   // we handle whiskers separately to render max row, min row, and avg in three
@@ -106,9 +106,9 @@ export function drawXY(
       const c = colorCallback(feature, score)
       const w = rightPx - leftPx + fudgeFactor
       // create reduced features, avoiding multiple features per px
-      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      if (Math.floor(leftPx) !== prevLeftPx) {
         reducedFeatures.push(feature)
-        prevLeftPx = leftPx
+        prevLeftPx = Math.floor(leftPx)
       }
 
       fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
@@ -132,9 +132,9 @@ export function drawXY(
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       // create reduced features, avoiding multiple features per px
-      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+      if (Math.floor(leftPx) !== prevLeftPx) {
         reducedFeatures.push(feature)
-        prevLeftPx = leftPx
+        prevLeftPx = Math.floor(leftPx)
       }
 
       const score = feature.get('score')
@@ -228,15 +228,15 @@ export function drawLine(
 
   let lastVal
 
-  let prevLeftPx = 0
+  let prevLeftPx
   const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+    if (Math.floor(leftPx) !== prevLeftPx) {
       reducedFeatures.push(feature)
-      prevLeftPx = leftPx
+      prevLeftPx = Math.floor(leftPx)
     }
     const score = feature.get('score')
     const lowClipping = score < niceMin
@@ -318,15 +318,15 @@ export function drawDensity(
       readConfObject(config, 'color', { feature })
   }
 
-  let prevLeftPx = 0
+  let prevLeftPx
   const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
+    if (Math.floor(leftPx) !== prevLeftPx) {
       reducedFeatures.push(feature)
-      prevLeftPx = leftPx
+      prevLeftPx = Math.floor(leftPx)
     }
     const w = rightPx - leftPx + fudgeFactor
     ctx.fillStyle = colorCallback(feature)
