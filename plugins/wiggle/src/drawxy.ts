@@ -81,11 +81,12 @@ export function drawXY(
   const getHeight = (n: number) => (filled ? toOrigin(n) : 1)
   let hasClipping = false
 
-  let prevLeftPx
+  let prevLeftPx = 0
   const reducedFeatures = []
 
   // we handle whiskers separately to render max row, min row, and avg in three
-  // passes. this reduces subpixel rendering issues
+  // passes. this reduces subpixel rendering issues. note: for stylistic
+  // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -96,7 +97,6 @@ export function drawXY(
       if (summary) {
         const max = feature.get('maxScore')
         const maxColor = Color(c).lighten(0.4).toString()
-        hasClipping = hasClipping || max > niceMax
         fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
       }
     }
@@ -106,10 +106,11 @@ export function drawXY(
       const c = colorCallback(feature, score)
       const w = rightPx - leftPx + fudgeFactor
       // create reduced features, avoiding multiple features per px
-      if (Math.floor(leftPx) !== prevLeftPx) {
+      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
         reducedFeatures.push(feature)
-        prevLeftPx = Math.floor(leftPx)
+        prevLeftPx = leftPx
       }
+      hasClipping = hasClipping || score < niceMin || score > niceMax
 
       fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
     }
@@ -123,7 +124,6 @@ export function drawXY(
       if (summary) {
         const min = feature.get('minScore')
         const minColor = Color(c).darken(0.4).toString()
-        hasClipping = hasClipping || min < niceMin
         fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
       }
     }
@@ -132,9 +132,9 @@ export function drawXY(
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
       // create reduced features, avoiding multiple features per px
-      if (Math.floor(leftPx) !== prevLeftPx) {
+      if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
         reducedFeatures.push(feature)
-        prevLeftPx = Math.floor(leftPx)
+        prevLeftPx = leftPx
       }
 
       const score = feature.get('score')
@@ -228,15 +228,15 @@ export function drawLine(
 
   let lastVal
 
-  let prevLeftPx
+  let prevLeftPx = 0
   const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== prevLeftPx) {
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
       reducedFeatures.push(feature)
-      prevLeftPx = Math.floor(leftPx)
+      prevLeftPx = leftPx
     }
     const score = feature.get('score')
     const lowClipping = score < niceMin
@@ -302,35 +302,59 @@ export function drawDensity(
   const negColor = readConfObject(config, 'negColor')
   const posColor = readConfObject(config, 'posColor')
   const color = readConfObject(config, 'color')
-  let colorCallback
-  if (color === '#f0f') {
-    const colorScale =
-      pivot !== 'none' && scaleOpts.scaleType !== 'log'
-        ? getScale({
-            ...scaleOpts,
-            pivotValue,
-            range: [negColor, 'white', posColor],
-          })
-        : getScale({ ...scaleOpts, range: ['white', posColor] })
-    colorCallback = (feature: Feature) => colorScale(feature.get('score'))
-  } else {
-    colorCallback = (feature: Feature) =>
-      readConfObject(config, 'color', { feature })
-  }
+  const clipColor = readConfObject(config, 'clipColor')
+  const crossing = pivot !== 'none' && scaleOpts.scaleType !== 'log'
 
-  let prevLeftPx
+  const scale = getScale({
+    ...scaleOpts,
+    pivotValue,
+    range: crossing ? [negColor, 'white', posColor] : ['white', posColor],
+  })
+  const scale2 = getScale({ ...scaleOpts, range: [0, height] })
+  let cb
+  if (color === '#f0f') {
+    cb = (_feature: Feature, score: number) => scale(score)
+  } else {
+    cb = (feature: Feature, score: number) =>
+      readConfObject(config, 'color', { feature, score })
+  }
+  const [niceMin, niceMax] = scale2.domain()
+
+  let prevLeftPx = 0
+  let hasClipping = false
   const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
     // create reduced features, avoiding multiple features per px
-    if (Math.floor(leftPx) !== prevLeftPx) {
+    if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
       reducedFeatures.push(feature)
-      prevLeftPx = Math.floor(leftPx)
+      prevLeftPx = leftPx
     }
+    const score = feature.get('score')
+    hasClipping = hasClipping || score > niceMax || score < niceMin
     const w = rightPx - leftPx + fudgeFactor
-    ctx.fillStyle = colorCallback(feature)
+    ctx.fillStyle = cb(feature, score)
     ctx.fillRect(leftPx, 0, w, height)
   }
+
+  // second pass: draw clipping
+  // avoid persisting the red fillstyle with save/restore
+  ctx.save()
+  if (hasClipping) {
+    ctx.fillStyle = clipColor
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      const w = rightPx - leftPx + fudgeFactor
+      const score = feature.get('score')
+      if (score > niceMax) {
+        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
+      } else if (score < niceMin && scaleOpts.scaleType !== 'log') {
+        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
+      }
+    }
+  }
+  ctx.restore()
+
   return { reducedFeatures }
 }
