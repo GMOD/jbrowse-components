@@ -112,20 +112,17 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
           if (textIndexTrack && supportedIndexingAdapters(trackAdapter.type)) {
             const attr = textIndexingConf || textSearchingDefault
             const indexName = trackName + '-index'
-            const indexingParams = {
-              ...attr,
-              assemblies: [assembly],
-              tracks: [trackId],
-              indexType: 'perTrack',
-              name: indexName,
-              timestamp: new Date().toISOString(),
-            }
             const newEntry = {
-              indexingParams: indexingParams,
-              name: indexName,
-              cancelCallback: () => {
-                jobsManager.abortJob()
+              indexingParams: {
+                ...attr,
+                assemblies: [assembly],
+                tracks: [trackId],
+                indexType: 'perTrack',
+                name: indexName,
+                timestamp: new Date().toISOString(),
               },
+              name: indexName,
+              cancelCallback: () => jobsManager.abortJob(),
             }
             jobsManager.queueJob(newEntry)
           }
