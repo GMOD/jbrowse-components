@@ -88,6 +88,9 @@ export function drawXY(
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
+    let lastCol
+    let lastDarken
+    let lastLighten
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
@@ -96,9 +99,18 @@ export function drawXY(
       const w = rightPx - leftPx + fudgeFactor
       if (summary) {
         const max = feature.get('maxScore')
-        const maxColor = Color(c).lighten(0.4).toString()
-        fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, maxColor)
+        fillRectCtx(
+          leftPx,
+          toY(max),
+          w,
+          getHeight(max),
+          ctx,
+          c === lastCol
+            ? lastLighten
+            : (lastLighten = Color(c).lighten(0.4).toString()),
+        )
       }
+      lastCol = c
     }
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -111,7 +123,6 @@ export function drawXY(
         prevLeftPx = leftPx
       }
       hasClipping = hasClipping || score < niceMin || score > niceMax
-
       fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
     }
     for (const feature of features.values()) {
@@ -123,9 +134,19 @@ export function drawXY(
 
       if (summary) {
         const min = feature.get('minScore')
-        const minColor = Color(c).darken(0.4).toString()
-        fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, minColor)
+
+        fillRectCtx(
+          leftPx,
+          toY(min),
+          w,
+          getHeight(min),
+          ctx,
+          c === lastCol
+            ? lastDarken
+            : (lastDarken = Color(c).darken(0.4).toString()),
+        )
       }
+      lastCol = c
     }
   } else {
     for (const feature of features.values()) {
