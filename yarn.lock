@@ -1524,12 +1524,12 @@
   integrity sha512-aSMpHRcJaJ19dA5pzOlVykr3cNthBAR5JFiLUtWik1/+RqsO3co8V/34C4EegBJ+77IjW7AcnOYJJuBPSjQddg==
 
 "@gmod/bgzf-filehandle@^1.3.3", "@gmod/bgzf-filehandle@^1.4.0", "@gmod/bgzf-filehandle@^1.4.3", "@gmod/bgzf-filehandle@^1.4.4":
-  version "1.4.4"
-  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-1.4.4.tgz#dd7e8169c039a93a719d927ed0692a0f2ddf265e"
-  integrity sha512-E477y9Mg6zKvH6k5rXa2OjuOKAZ0XgcwP6IYDP3OfqnaUntPLUP59I/VxdRV3jEMsFUgbmoPjNW0IX11q18t1A==
+  version "1.4.5"
+  resolved "https://registry.yarnpkg.com/@gmod/bgzf-filehandle/-/bgzf-filehandle-1.4.5.tgz#a4749bff7b52cb3dd3f39d03e3a5a8a3853ef946"
+  integrity sha512-33HAh5PGxT15XfB3n/ZvUXxkghZ/+aPAcfYn7oaueyObQsPmHU6IS0MzYnOQiQANyXDW1GpJc/lCB5DhHEmhtg==
   dependencies:
     es6-promisify "^7.0.0"
-    generic-filehandle "^2.2.1"
+    generic-filehandle "^3.0.0"
     long "^5.1.0"
     pako "^1.0.11"
 
@@ -1594,14 +1594,14 @@
     quick-lru "^4.0.0"
 
 "@gmod/tabix@^1.5.2":
-  version "1.5.3"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.3.tgz#099b95f309a196978aba9ce44ece62956b40f778"
-  integrity sha512-9CPXLXQPvZKDHocyIgQ5ggsb2+47s2n+8TgF1+y7PqeKHo8q060bmoSlBwIyQKdU/Y9J+QujY0cK/bCEE/Fd3Q==
+  version "1.5.4"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.4.tgz#62fa8f598aaeed3eac8b0889b29b352b7e3fc59d"
+  integrity sha512-mgJYVkEemd4CCWIb+Y9epqV2jU3Ocvfq/zBtu+tF+dlBCQJtv5f6iglyH321QbMKNgEoof0pZIQX3qLetSkAHw==
   dependencies:
     "@gmod/bgzf-filehandle" "^1.3.3"
     abortable-promise-cache "^1.4.1"
     es6-promisify "^6.0.1"
-    generic-filehandle "^2.0.1"
+    generic-filehandle "^3.0.0"
     long "^4.0.0"
     quick-lru "^4.0.0"
 
@@ -9451,9 +9451,9 @@ electron-publish@23.0.9:
     mime "^2.5.2"
 
 electron-to-chromium@^1.4.188:
-  version "1.4.192"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.192.tgz#fac050058b3e0713b401a1088cc579e14c2ab165"
-  integrity sha512-8nCXyIQY9An88NXAp+PuPy5h3/w5ZY7Iu2lag65Q0XREprcat5F8gKhoHsBUnQcFuCRnmevpR8yEBYRU3d2HDw==
+  version "1.4.193"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.193.tgz#8e760b9d9a7b92fe472664fd61811b307f3de39b"
+  integrity sha512-tBqbgRv0yFIYBLBQKW6kHzI81rjvO1CRy+K8+XHTZtkVPkAZayI/CxTqBiy6Q1+tYAxby8bq/6yOiuNkTvfxmw==
 
 electron-updater@^5.0.1:
   version "5.0.5"
@@ -10454,7 +10454,7 @@ file-uri-to-path@1.0.0:
   resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
   integrity sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==
 
-file-uri-to-path@2, file-uri-to-path@^2.0.0:
+file-uri-to-path@2:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-2.0.0.tgz#7b415aeba227d575851e0a5b0c640d7656403fba"
   integrity sha512-hjPFI8oE/2iQPVe4gbrJ73Pp+Xfub2+WI2LlXDbsaJBwT5wuMh35WNWVYYTpnz895shtwfyutMFLFywpQAFdLg==
@@ -10873,14 +10873,6 @@ gauge@^4.0.3:
     string-width "^4.2.3"
     strip-ansi "^6.0.1"
     wide-align "^1.1.5"
-
-generic-filehandle@^2.0.0, generic-filehandle@^2.0.1, generic-filehandle@^2.2.1, generic-filehandle@^2.2.2:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/generic-filehandle/-/generic-filehandle-2.2.3.tgz#1383c72721ff7d0887508e770fe2aef41d15d0b7"
-  integrity sha512-sF8SglBUoWnYp+4ZhTbNczHmwd8ybxSj/xe2veXlmd+UM0W9VRd16alg7haoyvSfqseQcNx8wFt8zBmfR8wLhQ==
-  dependencies:
-    es6-promisify "^6.1.1"
-    file-uri-to-path "^2.0.0"
 
 generic-filehandle@^3.0.0:
   version "3.0.0"
@@ -20043,15 +20035,10 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
-typescript@^4.5.2:
+typescript@^4.5.2, typescript@^4.7.0:
   version "4.7.4"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.4.tgz#1a88596d1cf47d59507a1bcdfb5b9dfe4d488235"
   integrity sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==
-
-typescript@^4.8.0-dev.20220701:
-  version "4.8.0-dev.20220718"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.0-dev.20220718.tgz#361858e13b396f81e15af913c7888e33a074a062"
-  integrity sha512-B2TGSCNm1UToV38TnZVxcprJJSmakj3DG0ASbRO3MMl19ezUwMzf7oEM7dRYde2wR6cCrNXC6wpZME1vJYPK3g==
 
 uglify-js@^3.1.4:
   version "3.16.2"

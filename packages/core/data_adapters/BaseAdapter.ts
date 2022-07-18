@@ -79,6 +79,10 @@ export abstract class BaseAdapter {
     }
   }
 
+  getConf(arg: string | string[]) {
+    return readConfObject(this.config, arg)
+  }
+
   /**
    * Called to provide a hint that data tied to a certain region will not be
    * needed for the forseeable future and can be purged from caches, etc
@@ -112,9 +116,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   //   return refNames
   // }
   //
-  getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg)
-  }
 
   /**
    * Get features from the data source that overlap a region

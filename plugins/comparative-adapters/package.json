@@ -39,7 +39,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "generic-filehandle": "^2.0.0"
+    "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
