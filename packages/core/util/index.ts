@@ -1110,3 +1110,18 @@ export function getLayoutId({
 }) {
   return sessionId + '-' + layoutId
 }
+
+// similar to https://blog.logrocket.com/using-localstorage-react-hooks/
+export const useLocalStorage = (key: string, defaultValue: string) => {
+  const [value, setValue] = useState(
+    () => localStorage.getItem(key) || defaultValue,
+  )
+
+  useEffect(() => {
+    localStorage.setItem(key, value)
+  }, [key, value])
+
+  // without this cast, tsc complained that the type of setValue could be a
+  // string or a callback
+  return [value, setValue] as [string, (arg: string) => void]
+}

@@ -16,6 +16,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { format } from 'timeago.js'
 
 // icons
@@ -28,7 +29,7 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
 import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
-import { useLocalStorage, loadPluginManager } from './util'
+import { loadPluginManager } from './util'
 import SessionCard from './SessionCard'
 
 const { ipcRenderer } = window.require('electron')

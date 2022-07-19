@@ -6,9 +6,9 @@ import {
   DialogActions,
   DialogTitle,
   IconButton,
-  Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 
 // locals
@@ -18,7 +18,8 @@ import { Source } from '../../util'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
-import { ArrowDownward, ArrowUpward } from '@mui/icons-material'
+import ArrowDownward from '@mui/icons-material/ArrowUpward'
+import ArrowUpward from '@mui/icons-material/ArrowDownward'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -26,6 +27,9 @@ const useStyles = makeStyles()(theme => ({
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
+  },
+  content: {
+    minWidth: 800,
   },
 }))
 
@@ -47,21 +51,42 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [currLayout, setCurrLayout] = useState(sources || [])
-
+  const [showTips, setShowTips] = useLocalStorage(
+    'multiwiggle-showTips',
+    'true',
+  )
   return (
-    <Dialog open onClose={handleClose}>
+    <Dialog open onClose={handleClose} maxWidth="xl">
       <DialogTitle>
-        Multi-wiggle color/arrangement editor
+        Multi-wiggle color/arrangement editor{' '}
         <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <Typography>
-          You can select rows in the table with the checkbox to change the color
-          on multiple subtracks at a time. Multi-select is enabled with
-          shift-click.
-        </Typography>
+      <DialogContent className={classes.content}>
+        <Button
+          variant="contained"
+          onClick={() => setShowTips(showTips === 'true' ? 'false' : 'true')}
+        >
+          {showTips === 'true' ? 'Hide tips' : 'Show tips'}
+        </Button>
+        <br />
+        {showTips ? (
+          <>
+            Helpful tips
+            <ul>
+              <li>You can select rows in the table with the checkboxes</li>
+              <li>Multi-select is enabled with shift-click</li>
+              <li>
+                The "Move selected items up/down" can re-arrange subtracks
+              </li>
+              <li>
+                Sorting the data grid itself can also re-arrange subtracks
+              </li>
+              <li>Changes are applied when you hit Submit</li>
+            </ul>
+          </>
+        ) : null}
         <SourcesGrid rows={currLayout} onChange={setCurrLayout} />
       </DialogContent>
       <DialogActions>
@@ -142,19 +167,25 @@ function SourcesGrid({
   return (
     <div>
       <Button
-        variant="contained"
         disabled={!selected.length}
         onClick={event => setAnchorEl(event.currentTarget)}
       >
         Change color of selected items
       </Button>
-
-      <IconButton onClick={() => onChange(moveUp([...rows], selected))}>
+      <Button
+        onClick={() => onChange(moveUp([...rows], selected))}
+        disabled={!selected.length}
+      >
         <ArrowUpward />
-      </IconButton>
-      <IconButton onClick={() => onChange(moveDown([...rows], selected))}>
+        Move selected items up
+      </Button>
+      <Button
+        onClick={() => onChange(moveDown([...rows], selected))}
+        disabled={!selected.length}
+      >
         <ArrowDownward />
-      </IconButton>
+        Move selected items down
+      </Button>
       <ColorPopover
         anchorEl={anchorEl}
         color={widgetColor}
