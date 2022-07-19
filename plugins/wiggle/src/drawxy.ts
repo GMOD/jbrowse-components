@@ -325,12 +325,12 @@ export function drawDensity(
   const color = readConfObject(config, 'color')
   const clipColor = readConfObject(config, 'clipColor')
   const crossing = pivot !== 'none' && scaleOpts.scaleType !== 'log'
-
   const scale = getScale({
     ...scaleOpts,
-    pivotValue,
+    pivotValue: crossing ? pivotValue : undefined,
     range: crossing ? [negColor, 'white', posColor] : ['white', posColor],
   })
+
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
   let cb
   if (color === '#f0f') {
