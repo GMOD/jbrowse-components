@@ -39,33 +39,40 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     let subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
     if (!subConfs?.length) {
       const entries = this.getConf('bigWigs')
-      subConfs =
-        typeof entries[0] === 'string'
-          ? entries.map((uri: string) => ({
-              type: 'BigWigAdapter',
-              source: getFilename(uri),
-              bigWigLocation: {
-                uri,
-              },
-            }))
-          : entries.map(({ uri, ...rest }: BigWigEntry) => ({
-              type: 'BigWigAdapter',
-              ...rest,
-              source: rest.name || getFilename(uri),
-              bigWigLocation: {
-                uri,
-              },
-            }))
+      subConfs = entries.map((entry: string | BigWigEntry) => {
+        if (typeof entry === 'string') {
+          return {
+            type: 'BigWigAdapter',
+            source: getFilename(entry),
+            bigWigLocation: {
+              uri: entry,
+            },
+          }
+        } else {
+          const { uri, ...rest } = entry
+          return {
+            type: 'BigWigAdapter',
+            ...rest,
+            source: rest.name || getFilename(uri),
+            bigWigLocation: {
+              uri,
+            },
+          }
+        }
+      })
     }
 
     return Promise.all(
       subConfs.map(async (c, i) => {
         const adapter = await getSubAdapter(c)
         return {
-          dataAdapter: adapter.dataAdapter as BaseFeatureDataAdapter,
+          ...subConfs[i],
           source: subConfs[i].source,
-          color: subConfs[i].color,
-          group: subConfs[i].group,
+          dataAdapter: adapter.dataAdapter,
+        } as {
+          source: string
+          dataAdapter: BaseFeatureDataAdapter
+          [key: string]: unknown
         }
       }),
     )

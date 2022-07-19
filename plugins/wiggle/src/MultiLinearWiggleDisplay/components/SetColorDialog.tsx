@@ -13,10 +13,12 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 
 // locals
 import ColorPicker, { ColorPopover } from './ColorPicker'
+import { moveUp, moveDown } from './util'
+import { Source } from '../../util'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
-import { Source } from '../../util'
+import { ArrowDownward, ArrowUpward } from '@mui/icons-material'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -37,15 +39,14 @@ export default function SetColorDialog({
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
     sources: Source[]
-    setSources: (s: Source[]) => void
-    setCustomColors: (s: Record<string, string>) => void
-    clearCustomColors: () => void
+    setLayout: (s: Source[]) => void
+    clearLayout: () => void
   }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const [colors, setColors] = useState(sources || [])
+  const [currLayout, setCurrLayout] = useState(sources || [])
 
   return (
     <Dialog open onClose={handleClose}>
@@ -61,7 +62,7 @@ export default function SetColorDialog({
           on multiple subtracks at a time. Multi-select is enabled with
           shift-click.
         </Typography>
-        <SourcesGrid sources={colors} onChange={setColors} />
+        <SourcesGrid rows={currLayout} onChange={setCurrLayout} />
       </DialogContent>
       <DialogActions>
         <Button
@@ -69,8 +70,8 @@ export default function SetColorDialog({
           type="submit"
           color="inherit"
           onClick={() => {
-            model.clearCustomColors()
-            setColors(model.sources)
+            model.clearLayout()
+            setCurrLayout(model.sources)
           }}
         >
           Clear custom colors
@@ -88,11 +89,7 @@ export default function SetColorDialog({
           color="primary"
           type="submit"
           onClick={() => {
-            model.setCustomColors(
-              Object.fromEntries(
-                sources.map((s, i) => [s.name, colors[i].color || 'blue']),
-              ),
-            )
+            model.setLayout(currLayout)
             handleClose()
           }}
         >
@@ -104,15 +101,16 @@ export default function SetColorDialog({
 }
 
 function SourcesGrid({
-  sources,
+  rows,
   onChange,
 }: {
-  sources: Source[]
+  rows: Source[]
   onChange: (arg: Source[]) => void
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
-  const entries = Object.fromEntries(sources.map(s => [s.name, s]))
+
+  const entries = Object.fromEntries(rows.map(s => [s.name, s]))
   const columns = [
     {
       field: 'color',
@@ -150,6 +148,13 @@ function SourcesGrid({
       >
         Change color of selected items
       </Button>
+
+      <IconButton onClick={() => onChange(moveUp([...rows], selected))}>
+        <ArrowUpward />
+      </IconButton>
+      <IconButton onClick={() => onChange(moveDown([...rows], selected))}>
+        <ArrowDownward />
+      </IconButton>
       <ColorPopover
         anchorEl={anchorEl}
         color={widgetColor}
@@ -167,11 +172,27 @@ function SourcesGrid({
           getRowId={row => row.name}
           checkboxSelection
           disableSelectionOnClick
-          onSelectionModelChange={args => setSelected(args as string[])}
-          rows={sources}
+          onSelectionModelChange={arg => setSelected(arg as string[])}
+          rows={rows}
           rowHeight={25}
           headerHeight={33}
           columns={columns}
+          onSortModelChange={args => {
+            const sort = args[0]
+            onChange(
+              sort
+                ? [...rows].sort((a, b) => {
+                    // @ts-ignore
+                    const aa = a[sort.field]
+                    // @ts-ignore
+                    const bb = b[sort.field]
+                    return sort.sort === 'asc'
+                      ? aa.localeCompare(bb)
+                      : bb.localeCompare(aa)
+                  })
+                : rows,
+            )
+          }}
         />
       </div>
     </div>

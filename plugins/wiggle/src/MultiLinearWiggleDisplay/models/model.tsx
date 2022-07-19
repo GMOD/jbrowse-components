@@ -75,7 +75,7 @@ const stateModelFactory = (
         scale: types.maybe(types.string),
         autoscale: types.maybe(types.string),
         displayCrossHatches: types.maybe(types.boolean),
-        customColors: types.optional(types.frozen(), {}),
+        layout: types.optional(types.frozen<Source[]>(), []),
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -95,11 +95,11 @@ const stateModelFactory = (
       sourcesVolatile: undefined as Source[] | undefined,
     }))
     .actions(self => ({
-      setCustomColors(customColors: Record<string, string>) {
-        self.customColors = customColors
+      setLayout(layout: Source[]) {
+        self.layout = layout
       },
-      clearCustomColors() {
-        self.customColors = {}
+      clearLayout() {
+        self.layout = []
       },
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
@@ -238,9 +238,13 @@ const stateModelFactory = (
     }))
     .views(self => ({
       get sources() {
-        return self.sourcesVolatile?.map(s => ({
+        const sources = Object.fromEntries(
+          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+        )
+        const iter = self.layout.length ? self.layout : self.sourcesVolatile
+        return iter?.map(s => ({
+          ...sources[s.name],
           ...s,
-          color: self.customColors[s.name] || s.color,
         }))
       },
       get rendererConfig() {
