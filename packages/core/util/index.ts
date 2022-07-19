@@ -1112,7 +1112,7 @@ export function getLayoutId({
 }
 
 // similar to https://blog.logrocket.com/using-localstorage-react-hooks/
-export const useLocalStorage = (key: string, defaultValue: string) => {
+export const useLocalStorage = (key: string, defaultValue = '') => {
   const [value, setValue] = useState(
     () => localStorage.getItem(key) || defaultValue,
   )

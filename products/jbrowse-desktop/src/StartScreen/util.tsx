@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import PluginLoader, { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 import { readConfObject } from '@jbrowse/core/configuration'

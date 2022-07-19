@@ -18,8 +18,8 @@ import { Source } from '../../util'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
-import ArrowDownward from '@mui/icons-material/ArrowUpward'
-import ArrowUpward from '@mui/icons-material/ArrowDownward'
+import ArrowUpward from '@mui/icons-material/ArrowUpward'
+import ArrowDownward from '@mui/icons-material/ArrowDownward'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -66,12 +66,13 @@ export default function SetColorDialog({
       <DialogContent className={classes.content}>
         <Button
           variant="contained"
+          style={{ float: 'right' }}
           onClick={() => setShowTips(showTips === 'true' ? 'false' : 'true')}
         >
           {showTips === 'true' ? 'Hide tips' : 'Show tips'}
         </Button>
         <br />
-        {showTips ? (
+        {showTips === 'true' ? (
           <>
             Helpful tips
             <ul>
