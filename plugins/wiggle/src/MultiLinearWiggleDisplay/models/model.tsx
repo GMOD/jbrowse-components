@@ -572,7 +572,7 @@ const stateModelFactory = (
               }),
             },
             {
-              label: 'Set min/max score',
+              label: 'Set min/max score...',
               onClick: () => {
                 const session = getSession(self)
                 session.queueDialog(handleClose => [
@@ -582,7 +582,7 @@ const stateModelFactory = (
               },
             },
             {
-              label: 'Set color palette',
+              label: 'Edit colors/arrangement...',
               onClick: () => {
                 getSession(self).queueDialog(handleClose => [
                   SetColorDlg,

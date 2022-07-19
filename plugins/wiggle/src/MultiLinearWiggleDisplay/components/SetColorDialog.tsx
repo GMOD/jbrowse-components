@@ -51,7 +51,7 @@ export default function SetColorDialog({
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
-        Multi-wiggle color select
+        Multi-wiggle color/arrangement editor
         <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
         </IconButton>
