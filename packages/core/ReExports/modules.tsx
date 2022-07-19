@@ -14,6 +14,8 @@ import {
   useGridApiContext,
   useGridApiRef,
   useGridRootProps,
+  GridToolbar,
+  GridActionsCellItem,
 } from '@mui/x-data-grid'
 
 // material-ui lab
@@ -230,6 +232,8 @@ const libs = {
     useGridApiContext,
     useGridApiRef,
     useGridRootProps,
+    GridToolbar,
+    GridActionsCellItem,
   },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
