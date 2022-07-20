@@ -27,6 +27,7 @@ import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
 import MultiDensityRendererF from './MultiDensityRenderer'
 import MultiLineRendererF from './MultiLineRenderer'
 import MultiRowLineRendererF from './MultiRowLineRenderer'
+import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
 
 import * as utils from './util'
 
@@ -66,6 +67,7 @@ export default class WigglePlugin extends Plugin {
     MultiDensityRendererF(pm)
     MultiLineRendererF(pm)
     MultiRowLineRendererF(pm)
+    CreateMultiWiggleExtensionF(pm)
 
     pm.addToExtensionPoint(
       'Core-guessAdapterForLocation',
@@ -108,40 +110,6 @@ export default class WigglePlugin extends Plugin {
     pm.addRpcMethod(() => new WiggleGetGlobalStats(pm))
     pm.addRpcMethod(() => new WiggleGetMultiRegionStats(pm))
     pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
-
-    pm.addToExtensionPoint('TrackSelector-multiTrackMenuItems', () => {
-      return [
-        {
-          label: 'Create multi-wiggle track',
-          onClick: (model: HierarchicalTrackSelectorModel) => {
-            const tracks = model.selection
-            const trackIds = tracks.map(c => readConfObject(c, 'name'))
-            const subadapters = tracks
-              .map(c => readConfObject(c, 'adapter'))
-              .map((c, idx) => ({ ...c, source: trackIds[idx] }))
-            const assemblyNames = [
-              ...new Set(
-                tracks.map(c => readConfObject(c, 'assemblyNames')).flat(),
-              ),
-            ]
-            const now = +Date.now()
-            const trackId = `multitrack-${now}-sessionTrack`
-
-            getSession(model).addTrackConf({
-              type: 'MultiQuantitativeTrack',
-              trackId,
-              name: 'MultiWig - ' + Date.now(),
-              assemblyNames,
-              adapter: {
-                type: 'MultiWiggleAdapter',
-                subadapters,
-              },
-            })
-            model.view.showTrack(trackId)
-          },
-        },
-      ]
-    })
   }
 
   exports = {

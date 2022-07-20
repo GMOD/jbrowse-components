@@ -22,6 +22,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { getAllChildren } from './util'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
@@ -227,11 +228,10 @@ export default function Node(props: {
               menuItems={[
                 {
                   label: 'Add to selection',
-                  onClick: () => {
-                    const subtree = treeToMap(tree).get(id)
-                    const t = subtree?.children.map(t => t.conf) || []
-                    model.addToSelection(t as AnyConfigurationModel[])
-                  },
+                  onClick: () =>
+                    model.addToSelection(
+                      getAllChildren(treeToMap(tree).get(id)),
+                    ),
                 },
               ]}
               onMenuItemClick={(_event, callback) => {
