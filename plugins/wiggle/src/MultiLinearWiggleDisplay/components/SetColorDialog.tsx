@@ -10,6 +10,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { useLocalStorage } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import clone from 'clone'
 
 // locals
 import ColorPicker, { ColorPopover } from './ColorPicker'
@@ -39,10 +40,6 @@ export default function SetColorDialog({
   handleClose,
 }: {
   model: {
-    color: number
-    setColor: (arg?: string) => void
-    setPosColor: (arg?: string) => void
-    setNegColor: (arg?: string) => void
     sources: Source[]
     setLayout: (s: Source[]) => void
     clearLayout: () => void
@@ -51,7 +48,7 @@ export default function SetColorDialog({
 }) {
   const { classes } = useStyles()
   const { sources } = model
-  const [currLayout, setCurrLayout] = useState(sources || [])
+  const [currLayout, setCurrLayout] = useState(clone(sources || []))
   const [showTipsTmp, setShowTips] = useLocalStorage(
     'multiwiggle-showTips',
     'true',
@@ -111,8 +108,10 @@ export default function SetColorDialog({
         <Button
           variant="contained"
           color="secondary"
-          type="submit"
-          onClick={() => handleClose()}
+          onClick={() => {
+            handleClose()
+            setCurrLayout([...model.sources])
+          }}
         >
           Cancel
         </Button>
