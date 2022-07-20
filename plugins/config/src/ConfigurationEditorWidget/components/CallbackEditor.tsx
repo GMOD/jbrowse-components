@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
+import { Tooltip, IconButton, TextField } from '@mui/material'
 import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import { Tooltip, IconButton, TextField } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+// icons
+import HelpIcon from '@mui/icons-material/Help'
 
 // Optimize by using system default fonts:
 // https://css-tricks.com/snippets/css/font-stacks/

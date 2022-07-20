@@ -40,6 +40,10 @@ const useStyles = makeStyles()(theme => ({
   accordion: {
     border: `1px solid ${theme.palette.text.primary}`,
   },
+  noOverflow: {
+    width: '100%',
+    overflowX: 'auto',
+  },
 }))
 
 const Member = observer(
@@ -92,7 +96,7 @@ const Member = observer(
           </AccordionSummary>
           <AccordionDetails className={classes.expansionPanelDetails}>
             {typeSelector}
-            <FormGroup>
+            <FormGroup className={classes.noOverflow}>
               <Schema schema={slot} path={[...path, slotName]} />
             </FormGroup>
           </AccordionDetails>

@@ -1,6 +1,5 @@
 import React, { lazy, useEffect, useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util'
-import { FormControl, FormHelperText, InputLabel } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
