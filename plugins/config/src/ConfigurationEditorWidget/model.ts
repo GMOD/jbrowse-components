@@ -1,7 +1,8 @@
 import { types } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-export default pluginManager =>
+export default (pluginManager: PluginManager) =>
   types
     .model('ConfigurationEditorWidget', {
       id: ElementId,
@@ -13,7 +14,8 @@ export default pluginManager =>
       ),
     })
     .actions(self => ({
-      setTarget(newTarget) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setTarget(newTarget: any) {
         self.target = newTarget
       },
     }))

@@ -13,9 +13,13 @@ const useStyles = makeStyles()(theme => ({
     fontFamily,
     fontSize,
     background: theme.palette.background.default,
-    overflowX: 'auto',
+    width: 800,
     marginTop: '16px',
     border: '1px solid rgba(0,0,0,0.42)',
+  },
+  callbackContainer: {
+    width: '100%',
+    overflowX: 'auto',
   },
   textAreaFont: {
     fontFamily,
@@ -36,24 +40,28 @@ export default function CodeEditor({
     try {
       JSON.parse(contents)
       setCodeError(undefined)
-      setContents(JSON.stringify(val, null, 2))
+      setContents(val)
     } catch (e) {
       console.error({ e })
       setCodeError(e)
     }
   }, [val, contents, setContents])
 
+  console.log({ val, contents })
   return (
-    <TextField
-      className={classes.callbackEditor}
-      value={contents}
-      onChange={event => setVal(event.target.value)}
-      style={{ background: error ? '#fdd' : undefined }}
-      InputProps={{
-        classes: {
-          input: classes.textAreaFont,
-        },
-      }}
-    />
+    <div className={classes.callbackContainer}>
+      <TextField
+        className={classes.callbackEditor}
+        value={contents}
+        multiline
+        onChange={event => setVal(event.target.value)}
+        style={{ background: error ? '#fdd' : undefined }}
+        InputProps={{
+          classes: {
+            input: classes.textAreaFont,
+          },
+        }}
+      />
+    </div>
   )
 }

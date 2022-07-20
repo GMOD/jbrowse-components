@@ -1,14 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  Tooltip,
-  IconButton,
-  TextField,
-} from '@mui/material'
+import { Tooltip, IconButton, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
@@ -27,6 +20,11 @@ const useStyles = makeStyles()(theme => ({
   },
   textAreaFont: {
     fontFamily,
+  },
+
+  error: {
+    color: 'red',
+    fontSize: '0.8em',
   },
 }))
 
@@ -72,29 +70,21 @@ function CallbackEditor({
   // do this last
   return (
     <>
-      <FormControl>
-        <InputLabel shrink htmlFor="callback-editor">
-          {slot.name}
-        </InputLabel>
-        <TextField
-          multiline
-          className={classes.callbackEditor}
-          value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-          onChange={event => setCode(event.target.value)}
-          style={{ background: error ? '#fdd' : undefined }}
-          InputProps={{
-            classes: {
-              input: classes.textAreaFont,
-            },
-          }}
-        />
-        {error ? (
-          <FormHelperText
-            style={{ color: '#f00' }}
-          >{`${error}`}</FormHelperText>
-        ) : null}
-        <FormHelperText>{slot.description}</FormHelperText>
-      </FormControl>
+      {error ? <p className={classes.error}>{`${error}`}</p> : null}
+      <TextField
+        multiline
+        className={classes.callbackEditor}
+        value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
+        onChange={event => setCode(event.target.value)}
+        style={{ background: error ? '#fdd' : undefined }}
+        InputProps={{
+          classes: {
+            input: classes.textAreaFont,
+          },
+        }}
+      />
+
+      <p>{slot.description}</p>
       <Tooltip
         title={
           <div>
