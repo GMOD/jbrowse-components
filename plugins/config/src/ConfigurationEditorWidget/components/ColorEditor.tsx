@@ -37,7 +37,7 @@ export const ColorSlot = (props: {
         {...TextFieldProps}
       />
       <div style={{ marginTop: 10 }}>
-        <React.Suspense>
+        <React.Suspense fallback={<div />}>
           <ColorPicker
             color={value}
             onChange={event => onChange(serializeColor(event))}

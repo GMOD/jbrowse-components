@@ -1,13 +1,16 @@
-import React, { useState, useMemo } from 'react'
-import { Popover, Select, MenuItem, TextField } from '@mui/material'
-import { HexColorPicker } from 'react-colorful'
+import React, { useState } from 'react'
+import { Popover, Select, MenuItem } from '@mui/material'
+
+
 import { makeStyles } from 'tss-react/mui'
 import { hcl } from 'd3-color'
 import { category10, set1, set2, tableau10, dark2 } from './colors'
-import { colord, extend } from 'colord'
-import namesPlugin from 'colord/plugins/names'
 
-extend([namesPlugin])
+
+// we are using a vendored copy of react-colorful because the default uses
+// pure-ESM which is difficult to make pass with jest e.g.
+// https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
+import { HexColorPicker } from './react-colorful'
 
 const useStyles = makeStyles()({
   picker: { position: 'relative' },
@@ -91,11 +94,6 @@ export function ColorPopover({
   const [val, setVal] = useState<PaletteType>('ggplot2')
   const presetColors = paletteColors[val]
   const palettes = Object.keys(paletteColors)
-
-  // const rgbaString = useMemo(() => {
-  //   return color.startsWith('rgba') ? color : colord(color).toRgbString()
-  // }, [color])
-  // console.log({ rgbaString, color })
 
   return (
     <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
