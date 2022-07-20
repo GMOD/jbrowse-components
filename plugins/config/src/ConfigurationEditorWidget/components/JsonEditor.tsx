@@ -1,16 +1,36 @@
-import React, { lazy, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { TextField } from '@mui/material'
 import { useDebounce } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles()({
+// fontSize and fontFamily have to match between Editor and SyntaxHighlighter
+const fontSize = '12px'
+// Optimize by using system default fonts: https://css-tricks.com/snippets/css/font-stacks/
+const fontFamily =
+  'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
+
+const useStyles = makeStyles()(theme => ({
   error: {
     color: 'red',
     fontSize: '0.8em',
   },
-})
-
-const CodeEditor = lazy(() => import('./CodeEditor'))
+  callbackEditor: {
+    fontFamily,
+    fontSize,
+    background: theme.palette.background.default,
+    width: 800,
+    marginTop: '16px',
+    border: '1px solid rgba(0,0,0,0.42)',
+  },
+  callbackContainer: {
+    width: '100%',
+    overflowX: 'auto',
+  },
+  textAreaFont: {
+    fontFamily,
+  },
+}))
 
 function JsonEditor({
   slot,
@@ -25,23 +45,35 @@ function JsonEditor({
   const { classes } = useStyles()
   const [contents, setContents] = useState(JSON.stringify(slot.value, null, 2))
   const [error, setError] = useState<unknown>()
-  const debouncedJson = useDebounce(contents, 400)
 
   useEffect(() => {
     try {
-      slot.set(JSON.parse(debouncedJson))
       setError(undefined)
+      slot.set(JSON.parse(contents))
     } catch (e) {
+      console.error({ e })
       setError(e)
     }
-  }, [debouncedJson, slot])
+  }, [contents])
 
   return (
     <>
       {error ? <p className={classes.error}>{`${error}`}</p> : null}
-      <React.Suspense fallback={<div />}>
-        <CodeEditor contents={contents} setContents={setContents} />
-      </React.Suspense>
+      <div className={classes.callbackContainer}>
+        <TextField
+          className={classes.callbackEditor}
+          value={contents}
+          helperText={slot.description}
+          multiline
+          onChange={event => setContents(event.target.value)}
+          style={{ background: error ? '#fdd' : undefined }}
+          InputProps={{
+            classes: {
+              input: classes.textAreaFont,
+            },
+          }}
+        />
+      </div>
     </>
   )
 }
