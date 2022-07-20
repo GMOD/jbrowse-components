@@ -53,7 +53,7 @@ function JsonEditor({
       console.error({ e })
       setError(e)
     }
-  }, [contents])
+  }, [contents, slot])
 
   return (
     <>

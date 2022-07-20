@@ -1,3 +1,4 @@
+/* eslint-disable */
 // vendored (e.g. copied into our source tree) because the tooling picks up "import" statements that confuse jest, could confuse other consumers of our modules
 // copy of react-colorful/dist/index.js
 var e = require('react')
@@ -11,19 +12,24 @@ function o() {
     function (e) {
       for (var r = 1; r < arguments.length; r++) {
         var t = arguments[r]
-        for (var o in t)
+        for (var o in t) {
           Object.prototype.hasOwnProperty.call(t, o) && (e[o] = t[o])
+        }
       }
       return e
     }).apply(this, arguments)
 }
 function n(e, r) {
-  if (null == e) return {}
+  if (null == e) {
+    return {}
+  }
   var t,
     o,
     n = {},
     a = Object.keys(e)
-  for (o = 0; o < a.length; o++) r.indexOf((t = a[o])) >= 0 || (n[t] = e[t])
+  for (o = 0; o < a.length; o++) {
+    r.indexOf((t = a[o])) >= 0 || (n[t] = e[t])
+  }
   return n
 }
 function a(r) {
@@ -50,8 +56,11 @@ var l = function (e, r, t) {
     var o = e.getBoundingClientRect(),
       n = u(r)
         ? (function (e, r) {
-            for (var t = 0; t < e.length; t++)
-              if (e[t].identifier === r) return e[t]
+            for (var t = 0; t < e.length; t++) {
+              if (e[t].identifier === r) {
+                return e[t]
+              }
+            }
             return e[0]
           })(r.touches, t)
         : r
@@ -379,8 +388,14 @@ var l = function (e, r, t) {
     )
   }),
   O = function (e, r) {
-    if (e === r) return !0
-    for (var t in e) if (e[t] !== r[t]) return !1
+    if (e === r) {
+      return !0
+    }
+    for (var t in e) {
+      if (e[t] !== r[t]) {
+        return !1
+      }
+    }
     return !0
   },
   j = function (e, r) {

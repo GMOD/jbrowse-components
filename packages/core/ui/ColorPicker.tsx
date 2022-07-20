@@ -69,43 +69,56 @@ export function ColorPopover({
   onChange: (val: string) => void
   onClose: () => void
 }) {
+  return (
+    <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
+      <ColorPicker color={color} onChange={onChange} />
+    </Popover>
+  )
+}
+
+export function ColorPicker({
+  onChange,
+  color,
+}: {
+  color: string
+  onChange: (val: string) => void
+}) {
   const { classes } = useStyles()
   const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
   const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
-
   return (
-    <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
-      <div style={{ padding: 10, display: 'flex' }}>
+    <div style={{ padding: 10, display: 'flex' }}>
+      <div style={{ width: 200 }}>
         <HexColorPicker color={color} onChange={onChange} />
-        <div>
-          <Select
-            value={val}
-            onChange={event => {
-              const pal = event.target.value as PaletteType
-              setVal(pal)
-            }}
-          >
-            {palettes.map(p => (
-              <MenuItem value={p} key={p}>
-                {p}
-              </MenuItem>
-            ))}
-          </Select>
+      </div>
+      <div style={{ width: 200 }}>
+        <Select
+          value={val}
+          onChange={event => {
+            const pal = event.target.value as PaletteType
+            setVal(pal)
+          }}
+        >
+          {palettes.map(p => (
+            <MenuItem value={p} key={p}>
+              {p}
+            </MenuItem>
+          ))}
+        </Select>
 
-          <div className={classes.swatches}>
-            {presetColors.map((presetColor, idx) => (
-              <button
-                key={presetColor + '-' + idx}
-                className={classes.swatch}
-                style={{ background: presetColor }}
-                onClick={() => onChange(presetColor)}
-              />
-            ))}
-          </div>
+        <div className={classes.swatches}>
+          {presetColors.map((presetColor, idx) => (
+            <button
+              key={presetColor + '-' + idx}
+              className={classes.swatch}
+              style={{ background: presetColor }}
+              onClick={() => onChange(presetColor)}
+            />
+          ))}
         </div>
       </div>
-    </Popover>
+    </div>
   )
 }
 

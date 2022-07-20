@@ -352,6 +352,7 @@ const BooleanEditor = observer(
 )
 
 const StringEnumEditor = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ slot, slotSchema }: { slot: any; slotSchema: IAnyType }) => {
     const p = getPropertyMembers(getSubType(slotSchema))
     const choices = getUnionSubTypes(
@@ -434,6 +435,7 @@ export const useSlotEditorStyles = makeStyles()(theme => ({
 }))
 
 const SlotEditor = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ slot, slotSchema }: { slot: any; slotSchema: IAnyType }) => {
     const { classes } = useSlotEditorStyles()
     const { type } = slot
