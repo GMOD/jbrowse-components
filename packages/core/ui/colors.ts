@@ -54,4 +54,27 @@ const tableau10 = [
   '#bab0ab',
 ]
 
-export { set1, set2, tableau10, dark2, category10 }
+const ggplot2Colors6 = [
+  '#F8766D',
+  '#B79F00',
+  '#00BA38',
+  '#00BFC4',
+  '#619CFF',
+  '#F564E3',
+]
+
+const ggplot2Colors5 = ['#F8766D', '#A3A500', '#00BF7D', '#00B0F6', '#E76BF3']
+const ggplot2Colors4 = ['#F8766D', '#7CAE00', '#00BFC4', '#C77CFF']
+const ggplot2Colors3 = ['#F8766D', '#00BA38', '#619CFF']
+
+export {
+  set1,
+  set2,
+  tableau10,
+  dark2,
+  category10,
+  ggplot2Colors6,
+  ggplot2Colors5,
+  ggplot2Colors4,
+  ggplot2Colors3,
+}

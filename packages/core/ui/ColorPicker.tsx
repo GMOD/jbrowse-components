@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
 import { Popover, Select, MenuItem } from '@mui/material'
 
-
 import { makeStyles } from 'tss-react/mui'
-import { hcl } from 'd3-color'
-import { category10, set1, set2, tableau10, dark2 } from './colors'
-
+import * as paletteColors from './colors'
+import { useLocalStorage } from '../util'
 
 // we are using a vendored copy of react-colorful because the default uses
 // pure-ESM which is difficult to make pass with jest e.g.
@@ -30,25 +28,6 @@ const useStyles = makeStyles()({
     outline: 'none',
   },
 })
-
-function ggplotColours(n: number, h = [15, 400]) {
-  const colors = []
-  const diff = h[1] - h[0]
-  for (let i = 0; i < n; i++) {
-    const k = h[0] + (diff / n) * i
-    colors.push(hcl(k, 150, 65).hex() as string)
-  }
-  return colors
-}
-
-const paletteColors = {
-  ggplot2: ggplotColours(4),
-  set1,
-  set2,
-  dark2,
-  category10,
-  tableau10,
-}
 
 type PaletteType = keyof typeof paletteColors
 
@@ -91,8 +70,8 @@ export function ColorPopover({
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const [val, setVal] = useState<PaletteType>('ggplot2')
-  const presetColors = paletteColors[val]
+  const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
+  const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
 
   return (
