@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Color from 'color'
-import { Popover, Select, MenuItem } from '@mui/material'
+import { Popover, Select, MenuItem, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
@@ -89,13 +89,20 @@ export function ColorPicker({
   const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
   const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
+  const [text, setText] = useState(color)
   const rgb = Color(color).rgb().toString()
+  const handleChange = (val: string) => {
+    setText(val)
+    try {
+      onChange(Color(val).rgb().toString())
+    } catch (e) {}
+  }
   return (
-    <div style={{ padding: 10, display: 'flex' }}>
-      <div style={{ width: 200 }}>
-        <RgbaStringColorPicker color={rgb} onChange={onChange} />
+    <div style={{ display: 'flex', padding: 10 }}>
+      <div style={{ width: 200, margin: 5 }}>
+        <RgbaStringColorPicker color={rgb} onChange={handleChange} />
       </div>
-      <div style={{ width: 200 }}>
+      <div style={{ width: 200, margin: 5 }}>
         <Select
           value={val}
           onChange={event => {
@@ -116,10 +123,15 @@ export function ColorPicker({
               key={presetColor + '-' + idx}
               className={classes.swatch}
               style={{ background: presetColor }}
-              onClick={() => onChange(presetColor)}
+              onClick={() => handleChange(presetColor)}
             />
           ))}
         </div>
+        <TextField
+          helperText={'Manually set color (hex, rgb, or css color name)'}
+          value={text}
+          onChange={event => handleChange(event.target.value)}
+        />
       </div>
     </div>
   )
