@@ -1,9 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { getSession } from '@jbrowse/core/util'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 import {
   AdapterGuesser,
   getFileName,

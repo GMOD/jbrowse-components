@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  TextField,
   Typography,
 } from '@mui/material'
 
@@ -13,15 +14,19 @@ const ConfirmDialog = ({
   onClose,
 }: {
   tracks: { trackId: string; type: string }[]
-  onClose: (arg: boolean) => void
+  onClose: (arg: boolean, arg1?: { name: string }) => void
 }) => {
+  const [val, setVal] = useState('MultiWiggle ' + Date.now())
+  const allQuant = tracks.every(t => t.type === 'QuantitativeTrack')
   return (
     <Dialog open onClose={() => onClose(false)}>
       <DialogTitle>Confirm multi-wiggle track create</DialogTitle>
       <DialogContent>
         <Typography>
-          Not every track composing this multi-wiggle track is a
-          QuantitativeTrack. Listing:
+          {!allQuant
+            ? 'Not every track looks like a QuantitativeTrack. This could have unexpected behavior, confirm if it looks ok.'
+            : null}
+          Listing:
         </Typography>
         <ul>
           {tracks.map(track => (
@@ -30,6 +35,11 @@ const ConfirmDialog = ({
             </li>
           ))}
         </ul>
+        <TextField
+          value={val}
+          onChange={event => setVal(event.target.value)}
+          helperText="Track name"
+        />
         <Typography>Confirm creation of track?</Typography>
       </DialogContent>
       <DialogActions>
@@ -37,7 +47,7 @@ const ConfirmDialog = ({
           Cancel
         </Button>
         <Button
-          onClick={() => onClose(true)}
+          onClick={() => onClose(true, { name: val })}
           color="primary"
           variant="contained"
           autoFocus

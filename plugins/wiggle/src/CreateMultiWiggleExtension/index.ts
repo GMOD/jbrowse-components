@@ -14,7 +14,7 @@ export default function (pm: PluginManager) {
         onClick: (model: HierarchicalTrackSelectorModel) => {
           const tracks = model.selection
           const trackIds = tracks.map(c => readConfObject(c, 'name'))
-          function makeTrack() {
+          function makeTrack(arg: { name: string }) {
             const subadapters = tracks
               .map(c => readConfObject(c, 'adapter'))
               .map((c, idx) => ({ ...c, source: trackIds[idx] }))
@@ -29,7 +29,7 @@ export default function (pm: PluginManager) {
             getSession(model).addTrackConf({
               type: 'MultiQuantitativeTrack',
               trackId,
-              name: 'MultiWig - ' + Date.now(),
+              name: arg.name,
               assemblyNames,
               adapter: {
                 type: 'MultiWiggleAdapter',
@@ -38,22 +38,18 @@ export default function (pm: PluginManager) {
             })
             model.view.showTrack(trackId)
           }
-          if (!tracks.every(t => t.type === 'QuantitativeTrack')) {
-            getSession(model).queueDialog(handleClose => [
-              ConfirmDialog,
-              {
-                tracks,
-                onClose: (arg: boolean) => {
-                  if (arg) {
-                    makeTrack()
-                  }
-                  handleClose()
-                },
+          getSession(model).queueDialog(handleClose => [
+            ConfirmDialog,
+            {
+              tracks,
+              onClose: (arg: boolean, arg1: { name: string }) => {
+                if (arg) {
+                  makeTrack(arg1)
+                }
+                handleClose()
               },
-            ])
-          } else {
-            makeTrack()
-          }
+            },
+          ])
         },
       },
     ]
