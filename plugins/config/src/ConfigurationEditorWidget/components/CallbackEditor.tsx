@@ -18,10 +18,15 @@ const useStyles = makeStyles()(theme => ({
   callbackEditor: {
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
+    width: '100%',
     fontFamily,
   },
   textAreaFont: {
     fontFamily,
+  },
+  callbackContainer: {
+    width: '100%',
+    overflowX: 'auto',
   },
 
   error: {
@@ -73,45 +78,47 @@ function CallbackEditor({
   return (
     <>
       {error ? <p className={classes.error}>{`${error}`}</p> : null}
-      <TextField
-        multiline
-        className={classes.callbackEditor}
-        value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
-        onChange={event => setCode(event.target.value)}
-        style={{ background: error ? '#fdd' : undefined }}
-        InputProps={{
-          classes: {
-            input: classes.textAreaFont,
-          },
-        }}
-      />
-
-      <p>{slot.description}</p>
-      <Tooltip
-        title={
-          <div>
-            Callbacks are written in Jexl format. Click to learn more.
-            <br /> Names of available context items: {slot.contextVariable}
-          </div>
-        }
-        arrow
-      >
-        <IconButton
-          color="primary"
-          onClick={() => {
-            const newWindow = window.open(
-              'https://github.com/TomFrost/Jexl',
-              '_blank',
-              'noopener,noreferrer',
-            )
-            if (newWindow) {
-              newWindow.opener = null
-            }
+      <div className={classes.callbackContainer}>
+        <TextField
+          multiline
+          className={classes.callbackEditor}
+          value={code.startsWith('jexl:') ? code.split('jexl:')[1] : code}
+          onChange={event => setCode(event.target.value)}
+          style={{ background: error ? '#fdd' : undefined }}
+          InputProps={{
+            classes: {
+              input: classes.textAreaFont,
+            },
           }}
+        />
+
+        <p>{slot.description}</p>
+        <Tooltip
+          title={
+            <div>
+              Callbacks are written in Jexl format. Click to learn more.
+              <br /> Names of available context items: {slot.contextVariable}
+            </div>
+          }
+          arrow
         >
-          <HelpIcon />
-        </IconButton>
-      </Tooltip>
+          <IconButton
+            color="primary"
+            onClick={() => {
+              const newWindow = window.open(
+                'https://github.com/TomFrost/Jexl',
+                '_blank',
+                'noopener,noreferrer',
+              )
+              if (newWindow) {
+                newWindow.opener = null
+              }
+            }}
+          >
+            <HelpIcon />
+          </IconButton>
+        </Tooltip>
+      </div>
     </>
   )
 }

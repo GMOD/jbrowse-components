@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { TextField } from '@mui/material'
-import { useDebounce } from '@jbrowse/core/util'
+import { InputLabel, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
@@ -60,7 +59,11 @@ function JsonEditor({
     <>
       {error ? <p className={classes.error}>{`${error}`}</p> : null}
       <div className={classes.callbackContainer}>
+        <InputLabel shrink htmlFor="json-editor">
+          {slot.name}
+        </InputLabel>
         <TextField
+          id="json-editor"
           className={classes.callbackEditor}
           value={contents}
           helperText={slot.description}
