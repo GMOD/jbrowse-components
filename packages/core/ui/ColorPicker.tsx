@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
-import { Popover, Select, MenuItem } from '@mui/material'
-
+import Color from 'color'
+import { Popover, Select, MenuItem, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+// locals
 import * as paletteColors from './colors'
 import { useLocalStorage } from '../util'
 
 // we are using a vendored copy of react-colorful because the default uses
 // pure-ESM which is difficult to make pass with jest e.g.
 // https://stackoverflow.com/questions/58613492/how-to-resolve-cannot-use-import-statement-outside-a-module-in-jest
-import { HexColorPicker } from './react-colorful'
+import { RgbaStringColorPicker } from './react-colorful'
 
 const useStyles = makeStyles()({
   picker: { position: 'relative' },
@@ -87,10 +89,11 @@ export function ColorPicker({
   const [val, setVal] = useLocalStorage('colorPickerPalette', 'set1')
   const presetColors = paletteColors[val as keyof typeof paletteColors]
   const palettes = Object.keys(paletteColors)
+  const rgb = Color(color).rgb().toString()
   return (
     <div style={{ padding: 10, display: 'flex' }}>
       <div style={{ width: 200 }}>
-        <HexColorPicker color={color} onChange={onChange} />
+        <RgbaStringColorPicker color={rgb} onChange={onChange} />
       </div>
       <div style={{ width: 200 }}>
         <Select
