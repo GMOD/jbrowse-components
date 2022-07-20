@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 import { TextField } from '@mui/material'
 import { Color, RGBColor } from 'react-color'
 
-const ColorPicker = lazy(() => import('./ColorPicker'))
+const ColorPicker = lazy(() => import('@jbrowse/core/ui/ColorPicker'))
 
 // this is needed because passing a entire color object into the react-color
 // for alpha, can't pass in an rgba string for example
@@ -28,31 +28,23 @@ export const ColorSlot = (props: {
   const [displayed, setDisplayed] = useState(false)
 
   return (
-    <>
+    <div style={{ display: 'flex' }}>
       <TextField
         value={value}
         label={label}
-        InputProps={{
-          style: {
-            color: value,
-            borderRightWidth: '25px',
-            borderRightStyle: 'solid',
-            borderRightColor: value,
-          },
-        }}
         onClick={() => setDisplayed(!displayed)}
         onChange={event => onChange(event.target.value)}
         {...TextFieldProps}
       />
-      {displayed ? (
-        <React.Suspense fallback={<div />}>
+      <div style={{ marginTop: 10 }}>
+        <React.Suspense>
           <ColorPicker
             color={value}
-            onChange={event => onChange(serializeColor(event.rgb))}
+            onChange={event => onChange(serializeColor(event))}
           />
         </React.Suspense>
-      ) : null}
-    </>
+      </div>
+    </div>
   )
 }
 

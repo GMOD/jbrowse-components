@@ -36,7 +36,7 @@ export default function CodeEditor({
     try {
       JSON.parse(contents)
       setCodeError(undefined)
-      setContents(val)
+      setContents(JSON.stringify(val, null, 2))
     } catch (e) {
       console.error({ e })
       setCodeError(e)

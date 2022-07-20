@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
-import { Popover, Select, MenuItem } from '@mui/material'
+import React, { useState, useMemo } from 'react'
+import { Popover, Select, MenuItem, TextField } from '@mui/material'
 import { HexColorPicker } from 'react-colorful'
 import { makeStyles } from 'tss-react/mui'
 import { hcl } from 'd3-color'
 import { category10, set1, set2, tableau10, dark2 } from './colors'
+import { colord, extend } from 'colord'
+import namesPlugin from 'colord/plugins/names'
+
+extend([namesPlugin])
 
 const useStyles = makeStyles()({
   picker: { position: 'relative' },
@@ -24,7 +28,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function ggplotColours(n: number, h = [15, 375]) {
+function ggplotColours(n: number, h = [15, 400]) {
   const colors = []
   const diff = h[1] - h[0]
   for (let i = 0; i < n; i++) {
@@ -88,32 +92,40 @@ export function ColorPopover({
   const presetColors = paletteColors[val]
   const palettes = Object.keys(paletteColors)
 
+  // const rgbaString = useMemo(() => {
+  //   return color.startsWith('rgba') ? color : colord(color).toRgbString()
+  // }, [color])
+  // console.log({ rgbaString, color })
+
   return (
     <Popover open={!!anchorEl} anchorEl={anchorEl} onClose={onClose}>
-      <div style={{ padding: 10 }}>
+      <div style={{ padding: 10, display: 'flex' }}>
         <HexColorPicker color={color} onChange={onChange} />
-        <Select
-          value={val}
-          onChange={event => {
-            const pal = event.target.value as PaletteType
-            setVal(pal)
-          }}
-        >
-          {palettes.map(p => (
-            <MenuItem value={p} key={p}>
-              {p}
-            </MenuItem>
-          ))}
-        </Select>
-        <div className={classes.swatches}>
-          {presetColors.map((presetColor, idx) => (
-            <button
-              key={presetColor + '-' + idx}
-              className={classes.swatch}
-              style={{ background: presetColor }}
-              onClick={() => onChange(presetColor)}
-            />
-          ))}
+        <div>
+          <Select
+            value={val}
+            onChange={event => {
+              const pal = event.target.value as PaletteType
+              setVal(pal)
+            }}
+          >
+            {palettes.map(p => (
+              <MenuItem value={p} key={p}>
+                {p}
+              </MenuItem>
+            ))}
+          </Select>
+
+          <div className={classes.swatches}>
+            {presetColors.map((presetColor, idx) => (
+              <button
+                key={presetColor + '-' + idx}
+                className={classes.swatch}
+                style={{ background: presetColor }}
+                onClick={() => onChange(presetColor)}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </Popover>

@@ -51,6 +51,7 @@
     "load-script2": "^2.0.5",
     "material-ui-popup-state": "^3.0.0",
     "rbush": "^3.0.1",
+    "react-colorful": "^5.0.0",
     "react-error-boundary": "^3.0.0",
     "react-intersection-observer": "^9.3.0",
     "react-use-measure": "^2.1.1",
