@@ -18,9 +18,10 @@ import { Source } from '../../util'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
-import ArrowUpward from '@mui/icons-material/ArrowUpward'
-import ArrowDownward from '@mui/icons-material/ArrowDownward'
-
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
@@ -51,10 +52,11 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [currLayout, setCurrLayout] = useState(sources || [])
-  const [showTips, setShowTips] = useLocalStorage(
+  const [showTipsTmp, setShowTips] = useLocalStorage(
     'multiwiggle-showTips',
     'true',
   )
+  const showTips = showTipsTmp === 'true'
   return (
     <Dialog open onClose={handleClose} maxWidth="xl">
       <DialogTitle>
@@ -67,12 +69,12 @@ export default function SetColorDialog({
         <Button
           variant="contained"
           style={{ float: 'right' }}
-          onClick={() => setShowTips(showTips === 'true' ? 'false' : 'true')}
+          onClick={() => setShowTips(showTips ? 'false' : 'true')}
         >
-          {showTips === 'true' ? 'Hide tips' : 'Show tips'}
+          {showTips ? 'Hide tips' : 'Show tips'}
         </Button>
         <br />
-        {showTips === 'true' ? (
+        {showTips ? (
           <>
             Helpful tips
             <ul>
@@ -88,7 +90,11 @@ export default function SetColorDialog({
             </ul>
           </>
         ) : null}
-        <SourcesGrid rows={currLayout} onChange={setCurrLayout} />
+        <SourcesGrid
+          rows={currLayout}
+          onChange={setCurrLayout}
+          showTips={showTips}
+        />
       </DialogContent>
       <DialogActions>
         <Button
@@ -129,9 +135,11 @@ export default function SetColorDialog({
 function SourcesGrid({
   rows,
   onChange,
+  showTips,
 }: {
   rows: Source[]
   onChange: (arg: Source[]) => void
+  showTips: boolean
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
@@ -177,15 +185,29 @@ function SourcesGrid({
         onClick={() => onChange(moveUp([...rows], selected))}
         disabled={!selected.length}
       >
-        <ArrowUpward />
-        Move selected items up
+        <KeyboardArrowUpIcon />
+        {showTips ? 'Move selected items up' : null}
       </Button>
       <Button
         onClick={() => onChange(moveDown([...rows], selected))}
         disabled={!selected.length}
       >
-        <ArrowDownward />
-        Move selected items down
+        <KeyboardArrowDownIcon />
+        {showTips ? 'Move selected items down' : null}
+      </Button>
+      <Button
+        onClick={() => onChange(moveUp([...rows], selected, rows.length))}
+        disabled={!selected.length}
+      >
+        <KeyboardDoubleArrowUpIcon />
+        {showTips ? 'Move selected items to top' : null}
+      </Button>
+      <Button
+        onClick={() => onChange(moveDown([...rows], selected, rows.length))}
+        disabled={!selected.length}
+      >
+        <KeyboardDoubleArrowDownIcon />
+        {showTips ? 'Move selected items to bottom' : null}
       </Button>
       <ColorPopover
         anchorEl={anchorEl}
