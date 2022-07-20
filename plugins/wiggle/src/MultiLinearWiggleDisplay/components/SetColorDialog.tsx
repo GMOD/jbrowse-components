@@ -13,7 +13,7 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import clone from 'clone'
 
 // locals
-import ColorPicker, { ColorPopover } from './ColorPicker'
+import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { moveUp, moveDown } from './util'
 import { Source } from '../../util'
 
