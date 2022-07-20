@@ -46,7 +46,7 @@ import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
 import * as mstTypes from '../util/types/mst'
 
-import ReExportsList from './list'
+import reExportsList from './list'
 
 const Entries = {
   Accordion: lazy(() => import('@mui/material/Accordion')),
@@ -586,12 +586,25 @@ const libs = {
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
-// make sure that all the items in the ReExports/list array (used by build systems and such)
-// are included here. it's OK if there are some additional ones that are not in the list
-ReExportsList.forEach(name => {
-  if (!(name in libs)) {
-    throw new Error(`ReExports/modules is missing ${name}`)
-  }
-})
+const libsList = Array.from(Object.keys(libs))
+
+// make sure that all the items in the ReExports/list array (used by build
+// systems and such) are included here, and vice versa
+const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
+if (inLibsOnly.length) {
+  throw new Error(
+    `The following modules are in the re-exports list, but not the modules libs: ${inLibsOnly.join(
+      ', ',
+    )}`,
+  )
+}
+const inReExportsOnly = reExportsList.filter(mod => !libsList.includes(mod))
+if (inReExportsOnly.length) {
+  throw new Error(
+    `The following modules are in the modules libs, but not the re-exports list: ${inReExportsOnly.join(
+      ', ',
+    )}`,
+  )
+}
 
 export default libs
