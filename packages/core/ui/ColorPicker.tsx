@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Color from 'color'
-import { Popover, Select, MenuItem, TextField } from '@mui/material'
+import { Popover, Select, MenuItem } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
