@@ -52,7 +52,7 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
+const AddTrackWorkflow = observer(({ model }: { model: AddTrackModel }) => {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
@@ -162,7 +162,6 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
         return true
     }
   }
-  console.log('t11')
 
   return (
     <div className={classes.root}>
@@ -206,7 +205,7 @@ function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
       </Stepper>
     </div>
   )
-}
+})
 
 function AddTrackSelector({ model }: { model: AddTrackModel }) {
   const [val, setVal] = useLocalStorage('trackSelector-choice', 'Default')
@@ -222,7 +221,6 @@ function AddTrackSelector({ model }: { model: AddTrackModel }) {
   // make sure it is in the list
   const effectiveVal = ComponentMap[val] ? val : 'Default'
   const Component = ComponentMap[effectiveVal]
-  console.log({ effectiveVal, val, Component })
   return (
     <>
       <Select
