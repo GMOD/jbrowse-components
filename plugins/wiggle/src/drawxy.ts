@@ -186,7 +186,7 @@ export function drawXY(
       const w = rightPx - leftPx + fudgeFactor
       const score = feature.get('score')
       if (score > niceMax) {
-        fillRectCtx(leftPx, 0, w, clipHeight, ctx)
+        fillRectCtx(leftPx, offset, w, clipHeight, ctx)
       } else if (score < niceMin && scaleOpts.scaleType !== 'log') {
         fillRectCtx(leftPx, unadjustedHeight, w, clipHeight, ctx)
       }
@@ -283,7 +283,7 @@ export function drawLine(
 
     if (highClipping) {
       ctx.fillStyle = clipColor
-      ctx.fillRect(leftPx, 0, w, clipHeight)
+      ctx.fillRect(leftPx, offset, w, clipHeight)
     } else if (lowClipping && scaleOpts.scaleType !== 'log') {
       ctx.fillStyle = clipColor
       ctx.fillRect(leftPx, height - clipHeight, w, height)

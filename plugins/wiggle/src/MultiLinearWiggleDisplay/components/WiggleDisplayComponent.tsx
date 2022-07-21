@@ -5,7 +5,6 @@ import {
   getContainingTrack,
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
-import { contrastingTextColor } from '@jbrowse/core/util/color'
 import {
   LinearGenomeViewModel,
   BaseLinearDisplayComponent,

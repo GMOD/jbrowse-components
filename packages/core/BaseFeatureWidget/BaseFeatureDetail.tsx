@@ -309,7 +309,11 @@ interface AttributeProps {
   prefix?: string[]
 }
 
-function UriLink({ value }: { value: { uri: string; baseUri?: string } }) {
+export function UriLink({
+  value,
+}: {
+  value: { uri: string; baseUri?: string }
+}) {
   const { uri, baseUri = '' } = value
   let href
   try {

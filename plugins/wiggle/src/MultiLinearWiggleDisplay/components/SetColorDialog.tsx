@@ -8,12 +8,14 @@ import {
   IconButton,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage, measureText, isUriLocation } from '@jbrowse/core/util'
+import isObject from 'is-object'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import clone from 'clone'
 
 // locals
 import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
+import { UriLink } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { moveUp, moveDown } from './util'
 import { Source } from '../../util'
 
@@ -77,7 +79,9 @@ export default function SetColorDialog({
             Helpful tips
             <ul>
               <li>You can select rows in the table with the checkboxes</li>
-              <li>Multi-select is enabled with shift-click</li>
+              <li>
+                Multi-select is enabled with shift-click and control-click
+              </li>
               <li>
                 The "Move selected items up/down" can re-arrange subtracks
               </li>
@@ -145,6 +149,14 @@ function SourcesGrid({
   const [selected, setSelected] = useState([] as string[])
 
   const entries = Object.fromEntries(rows.map(s => [s.name, s]))
+
+  const getStr = (obj: unknown) =>
+    isObject(obj) ? JSON.stringify(obj) : String(obj)
+
+  // @ts-ignore
+  const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
+
+  // similar to BaseFeatureDetail data-grid for auto-measuring columns
   const columns = [
     {
       field: 'color',
@@ -165,8 +177,21 @@ function SourcesGrid({
     {
       field: 'name',
       headerName: 'Name',
-      flex: 0.7,
+      flex: 0.5,
     },
+    ...Object.keys(rest).map(val => ({
+      field: val,
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
+      },
+      width: Math.max(
+        ...rows.map(row =>
+          // @ts-ignore
+          Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
+        ),
+      ),
+    })),
   ]
 
   // this helps keep track of the selection, even though it is not used
