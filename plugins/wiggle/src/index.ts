@@ -25,6 +25,7 @@ import MultiDensityRendererF from './MultiDensityRenderer'
 import MultiLineRendererF from './MultiLineRenderer'
 import MultiRowLineRendererF from './MultiRowLineRenderer'
 import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
+import MultiWiggleAddTrackWidgetF from './MultiWiggleAddTrackWidget'
 
 import * as utils from './util'
 
@@ -64,16 +65,13 @@ export default class WigglePlugin extends Plugin {
     MultiDensityRendererF(pm)
     MultiLineRendererF(pm)
     MultiRowLineRendererF(pm)
+    MultiWiggleAddTrackWidgetF(pm)
     CreateMultiWiggleExtensionF(pm)
 
     pm.addToExtensionPoint(
       'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
-        return (
-          file: FileLocation,
-          index?: FileLocation,
-          adapterHint?: string,
-        ) => {
+      (cb: AdapterGuesser) => {
+        return (file: FileLocation, index?: FileLocation, hint?: string) => {
           const regexGuess = /\.(bw|bigwig)$/i
           const adapterName = 'BigWigAdapter'
           const fileName = getFileName(file)
@@ -82,13 +80,13 @@ export default class WigglePlugin extends Plugin {
             bigWigLocation: file,
           }
 
-          if (regexGuess.test(fileName) && !adapterHint) {
+          if (regexGuess.test(fileName) && !hint) {
             return obj
-          } else if (adapterHint === adapterName) {
+          } else if (hint === adapterName) {
             return obj
           }
 
-          return adapterGuesser(file, index, adapterHint)
+          return cb(file, index, hint)
         }
       },
     )
@@ -113,9 +111,10 @@ export default class WigglePlugin extends Plugin {
     LinearWiggleDisplayReactComponent,
     XYPlotRendererReactComponent,
     XYPlotRenderer,
+    WiggleBaseRenderer,
+
     xyPlotRendererConfigSchema,
     utils,
-    WiggleBaseRenderer,
     linearWiggleDisplayModelFactory,
   }
 }
@@ -123,11 +122,11 @@ export default class WigglePlugin extends Plugin {
 export * from './util'
 
 export {
+  LinearWiggleDisplayReactComponent,
+  Tooltip,
   WiggleRendering,
   WiggleBaseRenderer,
-  LinearWiggleDisplayReactComponent,
   linearWiggleDisplayModelFactory,
-  Tooltip,
 }
 
 export type { TooltipContentsComponent }

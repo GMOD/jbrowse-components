@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import {
   Alert,
   Button,
+  MenuItem,
+  Select,
   Step,
   StepContent,
   StepLabel,
@@ -9,6 +11,8 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+import { useLocalStorage } from '@jbrowse/core/util'
 import {
   getSession,
   isElectron,
@@ -22,6 +26,7 @@ import { getEnv } from 'mobx-state-tree'
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
 import { AddTrackModel } from '../model'
+import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -47,13 +52,13 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Enter track data', 'Confirm track type']
 
-function AddTrackWidget({ model }: { model: AddTrackModel }) {
+function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
-  const session = getSession(model)
-  const { pluginManager } = getEnv(session)
+  const { pluginManager } = getEnv(model)
   const { rootModel } = pluginManager
   const { jobsManager } = rootModel
+  const session = getSession(model)
   const {
     assembly,
     trackAdapter,
@@ -82,11 +87,10 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
       return
     }
 
-    const trackId = `${trackName
-      .toLowerCase()
-      .replace(/ /g, '_')}-${Date.now()}${
-      session.adminMode ? '' : '-sessionTrack'
-    }`
+    const trackId = [
+      `${trackName.toLowerCase().replace(/ /g, '_')}-${Date.now()}`,
+      `${session.adminMode ? '' : '-sessionTrack'}`,
+    ].join('')
 
     const assemblyInstance = session.assemblyManager.get(assembly)
 
@@ -106,25 +110,27 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         exclude: ['CDS', 'exon'],
       }
       if (model.view) {
-        model.view.showTrack(trackId)
-        if (isElectron) {
-          if (textIndexTrack && supportedIndexingAdapters(trackAdapter.type)) {
-            const attr = textIndexingConf || textSearchingDefault
-            const indexName = trackName + '-index'
-            const newEntry = {
-              indexingParams: {
-                ...attr,
-                assemblies: [assembly],
-                tracks: [trackId],
-                indexType: 'perTrack',
-                name: indexName,
-                timestamp: new Date().toISOString(),
-              },
+        model.view?.showTrack(trackId)
+        if (
+          isElectron &&
+          textIndexTrack &&
+          supportedIndexingAdapters(trackAdapter.type)
+        ) {
+          const attr = textIndexingConf || textSearchingDefault
+          const indexName = trackName + '-index'
+          const newEntry = {
+            indexingParams: {
+              ...attr,
+              assemblies: [assembly],
+              tracks: [trackId],
+              indexType: 'perTrack',
               name: indexName,
-              cancelCallback: () => jobsManager.abortJob(),
-            }
-            jobsManager.queueJob(newEntry)
+              timestamp: new Date().toISOString(),
+            },
+            name: indexName,
+            cancelCallback: () => jobsManager.abortJob(),
           }
+          jobsManager.queueJob(newEntry)
         }
       } else {
         session.notify(
@@ -156,6 +162,7 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         return true
     }
   }
+  console.log('t11')
 
   return (
     <div className={classes.root}>
@@ -201,4 +208,37 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
   )
 }
 
-export default observer(AddTrackWidget)
+function AddTrackSelector({ model }: { model: AddTrackModel }) {
+  const [val, setVal] = useLocalStorage('trackSelector-choice', 'Default')
+  const { pluginManager } = getEnv(model)
+  const widgets = pluginManager.getElementTypesInGroup(
+    'add track workflow',
+  ) as AddTrackWorkflowType[]
+  const ComponentMap = {
+    Default: AddTrackWorkflow,
+    ...Object.fromEntries(widgets.map(w => [w.name, w.ReactComponent])),
+  } as { [key: string]: React.FC<{ model: AddTrackModel }> }
+
+  // make sure it is in the list
+  const effectiveVal = ComponentMap[val] ? val : 'Default'
+  const Component = ComponentMap[effectiveVal]
+  console.log({ effectiveVal, val, Component })
+  return (
+    <>
+      <Select
+        value={effectiveVal}
+        onChange={event => setVal(event.target.value)}
+      >
+        {Object.keys(ComponentMap).map(e => (
+          <MenuItem key={e} value={e}>
+            {e}
+          </MenuItem>
+        ))}
+      </Select>
+      <br />
+      <Component model={model} />
+    </>
+  )
+}
+
+export default observer(AddTrackSelector)
