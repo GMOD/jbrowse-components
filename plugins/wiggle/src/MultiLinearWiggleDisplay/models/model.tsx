@@ -37,6 +37,9 @@ import {
 import Tooltip from '../components/Tooltip'
 import { StatBars } from '../components/WiggleDisplayComponent'
 
+const randomColor = () =>
+  '#000000'.replace(/0/g, () => (~~(Math.random() * 16)).toString(16))
+
 // lazt components
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
@@ -342,7 +345,7 @@ const stateModelFactory = (
             ...s,
             color:
               s.color ||
-              (!this.isMultiRow ? colors[i % colors.length] : 'blue'),
+              (!this.isMultiRow ? colors[i] || randomColor() : 'blue'),
           }))
       },
     }))
