@@ -70,7 +70,7 @@ export const useStyles = makeStyles()(theme => ({
   },
   fieldName: {
     wordBreak: 'break-all',
-    minWidth: '90px',
+    minWidth: 90,
     borderBottom: '1px solid #0003',
     fontSize: 12,
     background: theme.palette.grey[200],
@@ -309,6 +309,20 @@ interface AttributeProps {
   prefix?: string[]
 }
 
+export function UriLink({
+  value,
+}: {
+  value: { uri: string; baseUri?: string }
+}) {
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
+}
 const DataGridDetails = ({
   value,
   prefix,
@@ -347,7 +361,10 @@ const DataGridDetails = ({
 
     const columns = colNames.map(val => ({
       field: val,
-      renderCell: (val: GridCellParams) => getStr(val.formattedValue),
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
+      },
       width: Math.max(
         ...rows.map(row =>
           Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),

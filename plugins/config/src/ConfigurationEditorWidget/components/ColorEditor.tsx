@@ -1,19 +1,8 @@
 import React, { lazy, useState } from 'react'
 import { observer } from 'mobx-react'
 import { TextField } from '@mui/material'
-import { Color, RGBColor } from 'react-color'
 
-const ColorPicker = lazy(() => import('./ColorPicker'))
-
-// this is needed because passing a entire color object into the react-color
-// for alpha, can't pass in an rgba string for example
-function serializeColor(color: Color) {
-  if (color instanceof Object) {
-    const { r, g, b, a } = color as RGBColor
-    return a === undefined ? `rgb(${r},${g},${b})` : `rgba(${r},${g},${b},${a})`
-  }
-  return color
-}
+const ColorPicker = lazy(() => import('@jbrowse/core/ui/ColorPicker'))
 
 export const ColorSlot = (props: {
   value: string
@@ -28,31 +17,20 @@ export const ColorSlot = (props: {
   const [displayed, setDisplayed] = useState(false)
 
   return (
-    <>
+    <div style={{ display: 'flex' }}>
       <TextField
         value={value}
         label={label}
-        InputProps={{
-          style: {
-            color: value,
-            borderRightWidth: '25px',
-            borderRightStyle: 'solid',
-            borderRightColor: value,
-          },
-        }}
         onClick={() => setDisplayed(!displayed)}
         onChange={event => onChange(event.target.value)}
         {...TextFieldProps}
       />
-      {displayed ? (
+      <div style={{ marginTop: 10 }}>
         <React.Suspense fallback={<div />}>
-          <ColorPicker
-            color={value}
-            onChange={event => onChange(serializeColor(event.rgb))}
-          />
+          <ColorPicker color={value} onChange={event => onChange(event)} />
         </React.Suspense>
-      ) : null}
-    </>
+      </div>
+    </div>
   )
 }
 

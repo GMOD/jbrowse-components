@@ -1,98 +1,72 @@
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { FileLocation } from '@jbrowse/core/util/types'
-import WiggleBaseRenderer from './WiggleBaseRenderer'
-import WiggleRendering from './WiggleRendering'
-import { configSchema as bigWigAdapterConfigSchema } from './BigWigAdapter'
-import DensityRenderer, {
-  configSchema as densityRendererConfigSchema,
-  ReactComponent as DensityRendererReactComponent,
-} from './DensityRenderer'
-import * as utils from './util'
-import {
-  configSchemaFactory as linearWiggleDisplayConfigSchemaFactory,
-  modelFactory as linearWiggleDisplayModelFactory,
-  ReactComponent as LinearWiggleDisplayReactComponent,
-  YSCALEBAR_LABEL_OFFSET,
-} from './LinearWiggleDisplay'
-import XYPlotRenderer, {
-  configSchema as xyPlotRendererConfigSchema,
-  ReactComponent as XYPlotRendererReactComponent,
-} from './XYPlotRenderer'
-import LinePlotRenderer, {
-  configSchema as linePlotRendererConfigSchema,
-  ReactComponent as LinePlotRendererReactComponent,
-} from './LinePlotRenderer'
-import {
-  WiggleGetGlobalStats,
-  WiggleGetMultiRegionStats,
-} from './WiggleRPC/rpcMethods'
 import {
   AdapterGuesser,
   getFileName,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
 
+// locals
+import WiggleBaseRenderer from './WiggleBaseRenderer'
+import WiggleRendering from './WiggleRendering'
+import BigWigAdapterF from './BigWigAdapter'
+import QuantitativeTrackF from './QuantitativeTrack'
+import MultiQuantitativeTrackF from './MultiQuantitativeTrack'
+import MultiWiggleAdapterF from './MultiWiggleAdapter'
+import DensityRendererF from './DensityRenderer'
+import XYPlotRendererF from './XYPlotRenderer'
+import LinePlotRendererF from './LinePlotRenderer'
+import LinearWiggleDisplayF from './LinearWiggleDisplay'
+import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay'
+import MultiXYPlotRendererF from './MultiXYPlotRenderer'
+import MultiRowXYPlotRendererF from './MultiRowXYPlotRenderer'
+import MultiDensityRendererF from './MultiDensityRenderer'
+import MultiLineRendererF from './MultiLineRenderer'
+import MultiRowLineRendererF from './MultiRowLineRenderer'
+import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension'
+
+import * as utils from './util'
+
+import {
+  WiggleGetGlobalStats,
+  WiggleGetMultiRegionStats,
+  MultiWiggleGetSources,
+} from './WiggleRPC/rpcMethods'
+
+import {
+  ReactComponent as LinearWiggleDisplayReactComponent,
+  modelFactory as linearWiggleDisplayModelFactory,
+  Tooltip,
+} from './LinearWiggleDisplay'
+import { TooltipContentsComponent } from './Tooltip'
+import {
+  ReactComponent as XYPlotRendererReactComponent,
+  configSchema as xyPlotRendererConfigSchema,
+  XYPlotRenderer,
+} from './XYPlotRenderer'
+
 export default class WigglePlugin extends Plugin {
   name = 'WigglePlugin'
 
-  install(pluginManager: PluginManager) {
-    pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'QuantitativeTrack',
-        {},
-        { baseConfiguration: createBaseTrackConfig(pluginManager) },
-      )
-      return new TrackType({
-        name: 'QuantitativeTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'QuantitativeTrack',
-          configSchema,
-        ),
-      })
-    })
+  install(pm: PluginManager) {
+    MultiWiggleAdapterF(pm)
+    BigWigAdapterF(pm)
+    QuantitativeTrackF(pm)
+    MultiQuantitativeTrackF(pm)
+    LinearWiggleDisplayF(pm)
+    MultiLinearWiggleDisplayF(pm)
+    LinePlotRendererF(pm)
+    XYPlotRendererF(pm)
+    DensityRendererF(pm)
+    MultiXYPlotRendererF(pm)
+    MultiRowXYPlotRendererF(pm)
+    MultiDensityRendererF(pm)
+    MultiLineRendererF(pm)
+    MultiRowLineRendererF(pm)
+    CreateMultiWiggleExtensionF(pm)
 
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearWiggleDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearWiggleDisplay',
-        configSchema,
-        stateModel: linearWiggleDisplayModelFactory(
-          pluginManager,
-          configSchema,
-        ),
-        trackType: 'QuantitativeTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: LinearWiggleDisplayReactComponent,
-      })
-    })
-
-    pluginManager.addAdapterType(
-      () =>
-        new AdapterType({
-          name: 'BigWigAdapter',
-          configSchema: bigWigAdapterConfigSchema,
-          adapterCapabilities: [
-            'hasResolution',
-            'hasLocalStats',
-            'hasGlobalStats',
-          ],
-          getAdapterClass: () =>
-            import('./BigWigAdapter/BigWigAdapter').then(r => r.default),
-        }),
-    )
-    pluginManager.addToExtensionPoint(
+    pm.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
         return (
@@ -118,7 +92,7 @@ export default class WigglePlugin extends Plugin {
         }
       },
     )
-    pluginManager.addToExtensionPoint(
+    pm.addToExtensionPoint(
       'Core-guessTrackTypeForLocation',
       (trackTypeGuesser: TrackTypeGuesser) => {
         return (adapterName: string) => {
@@ -130,40 +104,9 @@ export default class WigglePlugin extends Plugin {
       },
     )
 
-    pluginManager.addRendererType(
-      () =>
-        new DensityRenderer({
-          name: 'DensityRenderer',
-          ReactComponent: DensityRendererReactComponent,
-          configSchema: densityRendererConfigSchema,
-          pluginManager,
-        }),
-    )
-
-    pluginManager.addRendererType(
-      () =>
-        new LinePlotRenderer({
-          name: 'LinePlotRenderer',
-          ReactComponent: LinePlotRendererReactComponent,
-          configSchema: linePlotRendererConfigSchema,
-          pluginManager,
-        }),
-    )
-
-    pluginManager.addRendererType(
-      () =>
-        new XYPlotRenderer({
-          name: 'XYPlotRenderer',
-          ReactComponent: XYPlotRendererReactComponent,
-          configSchema: xyPlotRendererConfigSchema,
-          pluginManager,
-        }),
-    )
-
-    pluginManager.addRpcMethod(() => new WiggleGetGlobalStats(pluginManager))
-    pluginManager.addRpcMethod(
-      () => new WiggleGetMultiRegionStats(pluginManager),
-    )
+    pm.addRpcMethod(() => new WiggleGetGlobalStats(pm))
+    pm.addRpcMethod(() => new WiggleGetMultiRegionStats(pm))
+    pm.addRpcMethod(() => new MultiWiggleGetSources(pm))
   }
 
   exports = {
@@ -179,8 +122,12 @@ export default class WigglePlugin extends Plugin {
 
 export * from './util'
 
-export { WiggleRendering }
-export { WiggleBaseRenderer }
-export { LinearWiggleDisplayReactComponent, linearWiggleDisplayModelFactory }
-export { Tooltip } from './LinearWiggleDisplay/components/Tooltip'
-export { YSCALEBAR_LABEL_OFFSET }
+export {
+  WiggleRendering,
+  WiggleBaseRenderer,
+  LinearWiggleDisplayReactComponent,
+  linearWiggleDisplayModelFactory,
+  Tooltip,
+}
+
+export type { TooltipContentsComponent }

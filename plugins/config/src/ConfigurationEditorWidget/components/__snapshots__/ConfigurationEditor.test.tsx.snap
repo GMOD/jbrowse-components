@@ -414,6 +414,11 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                   <div
                     class="MuiCardContent-root css-46bh2p-MuiCardContent-root"
                   >
+                    <label
+                      class="MuiInputLabel-root MuiInputLabel-animated MuiFormLabel-root MuiFormLabel-colorPrimary css-9npbnl-MuiFormLabel-root-MuiInputLabel-root"
+                    >
+                      stringArrayMapTest
+                    </label>
                     <ul
                       class="MuiList-root css-1mk9mw3-MuiList-root"
                     >
@@ -741,47 +746,55 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                 class="tss-1962tgi-paperContent"
               >
                 <div
-                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                  style="display: flex;"
                 >
-                  <label
-                    class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
-                    data-shrink="true"
-                    for="mui-11"
-                    id="mui-11-label"
-                  >
-                    colorTest
-                  </label>
                   <div
-                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
-                    style="color: rgb(57, 100, 148); border-right-width: 25px; border-right-style: solid; border-right-color: #396494;"
+                    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                   >
-                    <input
-                      aria-describedby="mui-11-helper-text"
-                      aria-invalid="false"
-                      class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                      id="mui-11"
-                      type="text"
-                      value="#396494"
-                    />
-                    <fieldset
-                      aria-hidden="true"
-                      class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                    <label
+                      class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
+                      data-shrink="true"
+                      for="mui-11"
+                      id="mui-11-label"
                     >
-                      <legend
-                        class="css-1in441m"
+                      colorTest
+                    </label>
+                    <div
+                      class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
+                    >
+                      <input
+                        aria-describedby="mui-11-helper-text"
+                        aria-invalid="false"
+                        class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                        id="mui-11"
+                        type="text"
+                        value="#396494"
+                      />
+                      <fieldset
+                        aria-hidden="true"
+                        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                       >
-                        <span>
-                          colorTest
-                        </span>
-                      </legend>
-                    </fieldset>
+                        <legend
+                          class="css-1in441m"
+                        >
+                          <span>
+                            colorTest
+                          </span>
+                        </legend>
+                      </fieldset>
+                    </div>
+                    <p
+                      class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
+                      id="mui-11-helper-text"
+                    >
+                      colorTest
+                    </p>
                   </div>
-                  <p
-                    class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
-                    id="mui-11-helper-text"
+                  <div
+                    style="margin-top: 10px;"
                   >
-                    colorTest
-                  </p>
+                    <div />
+                  </div>
                 </div>
               </div>
               <div
@@ -1019,17 +1032,10 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                 class="tss-1962tgi-paperContent"
               >
                 <div
-                  class="MuiFormControl-root css-1nrlq1o-MuiFormControl-root"
+                  class="tss-15g9652-callbackContainer"
                 >
-                  <label
-                    class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
-                    data-shrink="true"
-                    for="callback-editor"
-                  >
-                    mouseover
-                  </label>
                   <div
-                    class="MuiFormControl-root MuiTextField-root tss-1gornm3-callbackEditor css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
+                    class="MuiFormControl-root MuiTextField-root tss-46fzrl-callbackEditor css-1u3bzj6-MuiFormControl-root-MuiTextField-root"
                   >
                     <div
                       class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-multiline css-dpjnhs-MuiInputBase-root-MuiOutlinedInput-root"
@@ -1065,33 +1071,31 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       </fieldset>
                     </div>
                   </div>
-                  <p
-                    class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained css-1wc848c-MuiFormHelperText-root"
-                  >
+                  <p>
                     what to display in a given mouseover
                   </p>
-                </div>
-                <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium css-1kuq5xv-MuiButtonBase-root-MuiIconButton-root"
-                  data-mui-internal-clone-element="true"
-                  tabindex="0"
-                  type="button"
-                >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
-                    data-testid="HelpIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeMedium css-1kuq5xv-MuiButtonBase-root-MuiIconButton-root"
+                    data-mui-internal-clone-element="true"
+                    tabindex="0"
+                    type="button"
                   >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      data-testid="HelpIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+                      />
+                    </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
                     />
-                  </svg>
-                  <span
-                    class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
-                  />
-                </button>
+                  </button>
+                </div>
               </div>
               <div
                 class="tss-8lz2mt-slotModeSwitch"
@@ -1242,7 +1246,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                           </div>
                         </div>
                         <div
-                          class="MuiFormGroup-root css-dmmspl-MuiFormGroup-root"
+                          class="MuiFormGroup-root tss-vdq470-noOverflow css-dmmspl-MuiFormGroup-root"
                         >
                           <div
                             class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-en0npb-paper css-1ps6pg7-MuiPaper-root"
@@ -1251,47 +1255,62 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               class="tss-1962tgi-paperContent"
                             >
                               <div
-                                class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+                                style="display: flex;"
                               >
-                                <label
-                                  class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
-                                  data-shrink="true"
-                                  for="mui-17"
-                                  id="mui-17-label"
-                                >
-                                  color
-                                </label>
                                 <div
-                                  class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
-                                  style="color: rgb(255, 0, 255); border-right-width: 25px; border-right-style: solid; border-right-color: #f0f;"
+                                  class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                                 >
-                                  <input
-                                    aria-describedby="mui-17-helper-text"
-                                    aria-invalid="false"
-                                    class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
-                                    id="mui-17"
-                                    type="text"
-                                    value="#f0f"
-                                  />
-                                  <fieldset
-                                    aria-hidden="true"
-                                    class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                                  <label
+                                    class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
+                                    data-shrink="true"
+                                    for="mui-17"
+                                    id="mui-17-label"
                                   >
-                                    <legend
-                                      class="css-1in441m"
+                                    color
+                                  </label>
+                                  <div
+                                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
+                                  >
+                                    <input
+                                      aria-describedby="mui-17-helper-text"
+                                      aria-invalid="false"
+                                      class="MuiOutlinedInput-input MuiInputBase-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
+                                      id="mui-17"
+                                      type="text"
+                                      value="#f0f"
+                                    />
+                                    <fieldset
+                                      aria-hidden="true"
+                                      class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                     >
-                                      <span>
-                                        color
-                                      </span>
-                                    </legend>
-                                  </fieldset>
+                                      <legend
+                                        class="css-1in441m"
+                                      >
+                                        <span>
+                                          color
+                                        </span>
+                                      </legend>
+                                    </fieldset>
+                                  </div>
+                                  <p
+                                    class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
+                                    id="mui-17-helper-text"
+                                  >
+                                    the color of each feature in a pileup alignment
+                                  </p>
                                 </div>
-                                <p
-                                  class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
-                                  id="mui-17-helper-text"
+                                <div
+                                  style="margin-top: 10px;"
                                 >
-                                  the color of each feature in a pileup alignment
-                                </p>
+                                  <div
+                                    class="tss-7h64ut-picker"
+                                  >
+                                    <div
+                                      class="tss-hl2wx9-swatch"
+                                      style="background-color: rgb(255, 0, 255);"
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             </div>
                             <div

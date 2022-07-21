@@ -106,7 +106,7 @@ export default class VCFFeature implements Feature {
     alt: string[],
   ): [string, string] | [undefined, undefined] {
     // it's just a remark if there are no alternate alleles
-    if (!alt || alt === []) {
+    if (!alt || alt.length === 0) {
       return ['remark', 'no alternative alleles']
     }
 

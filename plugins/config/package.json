@@ -39,8 +39,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
-    "pluralize": "^8.0.0",
-    "react-color": "^2.19.3"
+    "pluralize": "^8.0.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

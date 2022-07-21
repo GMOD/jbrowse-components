@@ -1,10 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import ConfigSchema from '../configSchema'
 
-export { default as ReactComponent } from '../WiggleRendering'
-export { default } from './LinePlotRenderer'
-
-export const configSchema = ConfigurationSchema(
+const configSchema = ConfigurationSchema(
   'LinePlotRenderer',
   {
     displayCrossHatches: {
@@ -15,3 +12,5 @@ export const configSchema = ConfigurationSchema(
   },
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )
+
+export default configSchema

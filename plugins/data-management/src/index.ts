@@ -18,6 +18,7 @@ import {
 import {
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
+  HierarchicalTrackSelectorModel,
 } from './HierarchicalTrackSelectorWidget'
 import {
   stateModelFactory as PluginStoreStateModelFactory,
@@ -101,7 +102,8 @@ export default class extends Plugin {
     })
   }
 
-  configure(pluginManager: PluginManager) {}
+  configure(_pluginManager: PluginManager) {}
 }
 
 export { AssemblyManager, SetDefaultSession }
+export type { HierarchicalTrackSelectorModel }

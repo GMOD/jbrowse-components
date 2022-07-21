@@ -1068,6 +1068,53 @@ Object {
     },
     Object {
       "adapter": Object {
+        "subadapters": Array [
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v1.cram.bw",
+            },
+            "source": "k1",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v2.cram.bw",
+            },
+            "source": "k2",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v3.cram.bw",
+            },
+            "source": "k3",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v4.cram.bw",
+            },
+            "source": "k4",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_microarray_multi-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig",
+      "trackId": "volvox_microarray_multi",
+      "type": "MultiQuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
         "bigWigLocation": Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,

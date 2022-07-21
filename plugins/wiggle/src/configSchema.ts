@@ -19,11 +19,6 @@ export default ConfigurationSchema(
       description: 'the color to use when the score is negative',
       defaultValue: 'red',
     },
-    highlightColor: {
-      type: 'color',
-      description: 'the color of highlights over the wiggle track',
-      defaultValue: 'rgba(255,255,0,0.5)',
-    },
     clipColor: {
       type: 'color',
       description: 'the color of the clipping marker',

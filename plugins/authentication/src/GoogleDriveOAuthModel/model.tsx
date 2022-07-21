@@ -9,6 +9,8 @@ import {
   Stats,
   PolyfilledResponse,
 } from 'generic-filehandle'
+
+// locals
 import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'

@@ -1,28 +1,23 @@
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import path from 'path'
 import Adapter from './TrixTextSearchAdapter'
+import path from 'path'
 import configSchema from './configSchema'
 
 test('adapter can fetch output files', async () => {
-  const rootTemplate = path
-    .join(__dirname, '..', '..', '..', '..', 'test_data', 'volvox', 'trix')
-    .replace(/\\/g, '\\\\')
-
-  const urlPath = decodeURI(new URL(`file://${rootTemplate}`).href)
   const args = {
     type: 'TrixTextSearchAdapter',
     textSearchAdapterId: 'TrixTextSearchAdapterTest',
     ixFilePath: {
-      uri: `${urlPath}/volvox.ix`,
-      locationType: 'UriLocation',
+      localPath: path.resolve(__dirname, `test_data/volvox.ix`),
+      locationType: 'LocalPathLocation',
     },
     ixxFilePath: {
-      uri: `${urlPath}/volvox.ixx`,
-      locationType: 'UriLocation',
+      localPath: path.resolve(__dirname, `test_data/volvox.ixx`),
+      locationType: 'LocalPathLocation',
     },
     metaFilePath: {
-      uri: `${urlPath}/volvox_meta.json`,
-      locationType: 'UriLocation',
+      localPath: path.resolve(__dirname, `test_data/volvox_meta.json`),
+      locationType: 'LocalPathLocation',
     },
   }
   // create adapter
