@@ -399,12 +399,18 @@ const stateModelFactory = (
                 self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
               onClick: () => self.toggleLogScale(),
             },
-            {
-              type: 'checkbox',
-              label: 'Draw cross hatches',
-              checked: self.displayCrossHatchesSetting,
-              onClick: () => self.toggleCrossHatches(),
-            },
+
+            ...(self.needsScalebar
+              ? [
+                  {
+                    type: 'checkbox',
+                    label: 'Draw cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => self.toggleCrossHatches(),
+                  },
+                ]
+              : []),
+
             ...(hasRenderings
               ? [
                   {

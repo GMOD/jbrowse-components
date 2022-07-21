@@ -11,6 +11,8 @@ import {
   BaseLinearDisplayComponent,
 } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
+
+// locals
 import { WiggleDisplayModel } from '../models/model'
 import YScaleBar from './YScaleBar'
 
@@ -68,7 +70,7 @@ const RectBg = (props: {
   return <rect {...props} fill={color} />
 }
 
-const Legend = observer(({ model }: { model: WiggleDisplayModel }) => {
+const ScoreLegend = observer(({ model }: { model: WiggleDisplayModel }) => {
   const { ticks, scaleType } = model
   const { width } = getContainingView(model) as LGV
   const legend =
@@ -86,6 +88,70 @@ const Legend = observer(({ model }: { model: WiggleDisplayModel }) => {
     </>
   )
 })
+
+const ColorLegend = observer(
+  ({
+    model,
+    rowHeight,
+    labelWidth,
+  }: {
+    model: WiggleDisplayModel
+    rowHeight: number
+    labelWidth: number
+  }) => {
+    const {
+      needsCustomLegend,
+      needsScalebar,
+      rowHeightTooSmallForScalebar,
+      renderColorBoxes,
+      sources,
+    } = model
+    const svgFontSize = Math.min(rowHeight, 12)
+    const canDisplayLabel = rowHeight > 11
+
+    return sources ? (
+      <>
+        {sources.map((source, idx) => {
+          // put the subtrack labels to the right of the scalebar
+          const extraOffset =
+            needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0
+          const colorBoxWidth = renderColorBoxes ? 15 : 0
+          const legendWidth = labelWidth + colorBoxWidth + 5
+          const boxHeight = Math.min(20, rowHeight)
+
+          return (
+            <React.Fragment key={source.name + '-' + idx}>
+              <RectBg
+                y={idx * rowHeight + 1}
+                x={extraOffset}
+                width={legendWidth}
+                height={boxHeight}
+              />
+              {source.color ? (
+                <RectBg
+                  y={idx * rowHeight + 1}
+                  x={extraOffset}
+                  width={colorBoxWidth}
+                  height={needsCustomLegend ? rowHeight : boxHeight}
+                  color={source.color}
+                />
+              ) : null}
+              {canDisplayLabel ? (
+                <text
+                  y={idx * rowHeight + 13}
+                  x={extraOffset + colorBoxWidth + 2}
+                  fontSize={svgFontSize}
+                >
+                  {source.name}
+                </text>
+              ) : null}
+            </React.Fragment>
+          )
+        })}
+      </>
+    ) : null
+  },
+)
 
 export const StatBars = observer(
   (props: {
@@ -105,73 +171,55 @@ export const StatBars = observer(
     } = model
     const svgFontSize = Math.min(rowHeight, 12)
     const canDisplayLabel = rowHeight > 11
+    const { width: viewWidth } = getContainingView(model) as LGV
     const minWidth = 20
-    const w = Math.max(
-      ...(sources?.map(s =>
-        canDisplayLabel ? measureText(s.name, svgFontSize) : minWidth,
-      ) || [0]),
+
+    const ready = stats && sources
+    if (!ready) {
+      return null
+    }
+
+    const labelWidth = Math.max(
+      ...(sources
+        .map(s => measureText(s.name, svgFontSize))
+        .map(width => (canDisplayLabel ? width : minWidth)) || [0]),
     )
 
     return (
       <Wrapper {...props}>
-        {stats && sources && w ? (
+        {needsFullHeightScalebar ? (
           <>
-            {needsFullHeightScalebar ? (
-              <YScaleBar model={model} orientation={orientation} />
+            <YScaleBar model={model} orientation={orientation} />
+            <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
+              <ColorLegend
+                model={model}
+                rowHeight={12}
+                labelWidth={labelWidth}
+              />
+            </g>
+          </>
+        ) : (
+          <>
+            <ColorLegend
+              model={model}
+              rowHeight={model.rowHeight}
+              labelWidth={labelWidth}
+            />
+
+            {rowHeightTooSmallForScalebar || needsCustomLegend ? (
+              <ScoreLegend {...props} />
             ) : (
-              <>
-                {sources.map((source, idx) => {
-                  // put the subtrack labels to the right of the scalebar
-                  const extraOffset = rowHeightTooSmallForScalebar ? 0 : 50
-                  const renderBox = needsCustomLegend || canDisplayLabel
-
-                  return renderBox ? (
-                    <React.Fragment key={JSON.stringify(ticks) + '-' + idx}>
-                      <RectBg
-                        y={idx * rowHeight + 1}
-                        x={extraOffset}
-                        width={w}
-                        height={
-                          needsCustomLegend
-                            ? rowHeight
-                            : Math.min(20, rowHeight)
-                        }
-                        color={needsCustomLegend ? source.color : undefined}
-                      />
-                      {canDisplayLabel ? (
-                        <text
-                          y={idx * rowHeight + 13}
-                          x={extraOffset + 2}
-                          fontSize={svgFontSize}
-                          fill={
-                            needsCustomLegend && source.color
-                              ? contrastingTextColor(source.color)
-                              : undefined
-                          }
-                        >
-                          {source.name}
-                        </text>
-                      ) : null}
-                    </React.Fragment>
-                  ) : null
-                })}
-
-                {rowHeightTooSmallForScalebar || needsCustomLegend ? (
-                  <Legend {...props} />
-                ) : (
-                  sources.map((_source, idx) => (
-                    <g
-                      transform={`translate(0 ${rowHeight * idx})`}
-                      key={JSON.stringify(ticks) + '-' + idx}
-                    >
-                      <YScaleBar model={model} orientation={orientation} />
-                    </g>
-                  ))
-                )}
-              </>
+              sources.map((_source, idx) => (
+                <g
+                  transform={`translate(0 ${rowHeight * idx})`}
+                  key={JSON.stringify(ticks) + '-' + idx}
+                >
+                  <YScaleBar model={model} orientation={orientation} />
+                </g>
+              ))
             )}
           </>
-        ) : null}
+        )}
       </Wrapper>
     )
   },

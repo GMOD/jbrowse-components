@@ -1,4 +1,10 @@
 import React, { lazy } from 'react'
+import { addDisposer, getEnv, isAlive, types, Instance } from 'mobx-state-tree'
+import { autorun, when } from 'mobx'
+import { axisPropsFromTickScale } from 'react-d3-axis-mod'
+import deepEqual from 'fast-deep-equal'
+
+// jbrowse imports
 import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
@@ -12,14 +18,14 @@ import {
   Feature,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { set1 as colors } from '@jbrowse/core/ui/colors'
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, when } from 'mobx'
-import { addDisposer, getEnv, isAlive, types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { axisPropsFromTickScale } from 'react-d3-axis-mod'
+
+// locals
 import {
   getNiceDomain,
   getScale,
@@ -30,8 +36,8 @@ import {
 
 import Tooltip from '../components/Tooltip'
 import { StatBars } from '../components/WiggleDisplayComponent'
-import deepEqual from 'fast-deep-equal'
 
+// lazt components
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
@@ -237,16 +243,6 @@ const stateModelFactory = (
       },
     }))
     .views(self => ({
-      get sources() {
-        const sources = Object.fromEntries(
-          self.sourcesVolatile?.map(s => [s.name, s]) || [],
-        )
-        const iter = self.layout.length ? self.layout : self.sourcesVolatile
-        return iter?.map(s => ({
-          ...sources[s.name],
-          ...s,
-        }))
-      },
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -278,20 +274,89 @@ const stateModelFactory = (
         )
       },
     }))
+    .views(self => ({
+      // everything except density gets a numerical scalebar
+      get needsScalebar() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiLineRenderer' ||
+          self.rendererTypeName === 'MultiRowLineRenderer'
+        )
+      },
+
+      get needsFullHeightScalebar() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiLineRenderer'
+        )
+      },
+
+      get isMultiRow() {
+        return (
+          self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowLineRenderer' ||
+          self.rendererTypeName === 'MultiDensityRenderer'
+        )
+      },
+
+      // can be used to give it a "color scale" like a R heatmap, not
+      // implemented like this yet but flag can be used for this
+      get needsCustomLegend() {
+        return self.rendererTypeName === 'MultiDensityRenderer'
+      },
+
+      get canHaveFill() {
+        return (
+          self.rendererTypeName === 'MultiXYPlotRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
+        )
+      },
+
+      // the multirowxy and multiline don't need to use colors on the legend
+      // boxes since their track is drawn with the color. sort of a stylistic choice
+      get renderColorBoxes() {
+        return !(
+          self.rendererTypeName === 'MultiRowLineRenderer' ||
+          self.rendererTypeName === 'MultiRowXYPlotRenderer'
+        )
+      },
+
+      // positions multi-row below the tracklabel even if using overlap
+      // tracklabels for everything else
+      get prefersOffset() {
+        return this.isMultiRow
+      },
+
+      get sources() {
+        const sources = Object.fromEntries(
+          self.sourcesVolatile?.map(s => [s.name, s]) || [],
+        )
+        const iter = self.layout.length ? self.layout : self.sourcesVolatile
+        return iter
+          ?.map(s => ({
+            ...sources[s.name],
+            ...s,
+          }))
+          .map((s, i) => ({
+            ...s,
+            color:
+              s.color ||
+              (!this.isMultiRow ? colors[i % colors.length] : 'blue'),
+          }))
+      },
+    }))
+
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
-        get filled() {
-          return (
-            self.fill ??
-            (readConfObject(self.rendererConfig, 'filled') as boolean)
-          )
+        get filled(): boolean {
+          const { fill, rendererConfig } = self
+          return fill ?? readConfObject(rendererConfig, 'filled')
         },
-        get summaryScoreModeSetting() {
-          return (
-            self.summaryScoreMode ??
-            (readConfObject(self.rendererConfig, 'summaryScoreMode') as string)
-          )
+        get summaryScoreModeSetting(): string {
+          const { summaryScoreMode: scoreMode, rendererConfig } = self
+          return scoreMode ?? readConfObject(rendererConfig, 'summaryScoreMode')
         },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
@@ -314,44 +379,6 @@ const stateModelFactory = (
           }
 
           return oldDomain
-        },
-
-        get needsScalebar() {
-          return (
-            self.rendererTypeName === 'MultiXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiLineRenderer' ||
-            self.rendererTypeName === 'MultiRowLineRenderer'
-          )
-        },
-
-        get needsFullHeightScalebar() {
-          return (
-            self.rendererTypeName === 'MultiXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiLineRenderer'
-          )
-        },
-
-        get isMultiRow() {
-          return (
-            self.rendererTypeName === 'MultiRowXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiRowLineRenderer' ||
-            self.rendererTypeName === 'MultiDensityRenderer'
-          )
-        },
-        get needsCustomLegend() {
-          return self.rendererTypeName === 'MultiDensityRenderer'
-        },
-
-        get canHaveFill() {
-          return (
-            self.rendererTypeName === 'MultiXYPlotRenderer' ||
-            self.rendererTypeName === 'MultiRowXYPlotRenderer'
-          )
-        },
-
-        get prefersOffset() {
-          return this.isMultiRow
         },
 
         get scaleOpts() {
@@ -377,9 +404,8 @@ const stateModelFactory = (
           )
         },
         get rowHeight() {
-          return this.isMultiRow
-            ? self.height / (self.sources?.length || 1)
-            : self.height
+          const { sources, height, isMultiRow } = self
+          return isMultiRow ? height / (sources?.length || 1) : height
         },
 
         get rowHeightTooSmallForScalebar() {
@@ -399,14 +425,15 @@ const stateModelFactory = (
           self
 
         const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
-        const range = [rowHeight - offset, offset]
-        const scale = getScale({
-          scaleType,
-          domain,
-          range,
-          inverted: getConf(self, 'inverted'),
-        })
-        const ticks = axisPropsFromTickScale(scale, 4)
+        const ticks = axisPropsFromTickScale(
+          getScale({
+            scaleType,
+            domain,
+            range: [rowHeight - offset, offset],
+            inverted: getConf(self, 'inverted'),
+          }),
+          4,
+        )
         return useMinimalTicks ? { ...ticks, values: domain } : ticks
       },
 
@@ -521,16 +548,18 @@ const stateModelFactory = (
             {
               label:
                 self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-              onClick: () => {
-                self.toggleLogScale()
-              },
+              onClick: () => self.toggleLogScale(),
             },
-            {
-              type: 'checkbox',
-              label: 'Draw cross hatches',
-              checked: self.displayCrossHatchesSetting,
-              onClick: () => self.toggleCrossHatches(),
-            },
+            ...(self.needsScalebar
+              ? [
+                  {
+                    type: 'checkbox',
+                    label: 'Draw cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => self.toggleCrossHatches(),
+                  },
+                ]
+              : []),
             ...(hasRenderings
               ? [
                   {
