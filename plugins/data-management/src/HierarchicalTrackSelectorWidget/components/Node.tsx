@@ -233,6 +233,13 @@ export default function Node(props: {
                       getAllChildren(treeToMap(tree).get(id)),
                     ),
                 },
+                {
+                  label: 'Remove from selection',
+                  onClick: () =>
+                    model.removeFromSelection(
+                      getAllChildren(treeToMap(tree).get(id)),
+                    ),
+                },
               ]}
               onMenuItemClick={(_event, callback) => {
                 callback()
@@ -257,7 +264,7 @@ export default function Node(props: {
                   ? [
                       {
                         label: 'Remove from selection',
-                        onClick: () => model.removeFromSelection(info.conf),
+                        onClick: () => model.removeFromSelection([info.conf]),
                       },
                     ]
                   : []),

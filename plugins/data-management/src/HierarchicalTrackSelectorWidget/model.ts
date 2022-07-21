@@ -144,8 +144,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       addToSelection(elt: AnyConfigurationModel[]) {
         self.selection = [...self.selection, ...elt]
       },
-      removeFromSelection(elt: AnyConfigurationModel) {
-        self.selection = self.selection.filter(f => f !== elt)
+      removeFromSelection(elt: AnyConfigurationModel[]) {
+        self.selection = self.selection.filter(f => !elt.includes(f))
       },
       clearSelection() {
         self.selection = []
