@@ -92,7 +92,7 @@ export default function AboutDialog({
       : info || {}
 
   return (
-    <Dialog open onClose={handleClose}>
+    <Dialog open onClose={handleClose} maxWidth="xl">
       <DialogTitle>
         {trackName}
         <IconButton

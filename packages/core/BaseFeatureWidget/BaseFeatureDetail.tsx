@@ -70,7 +70,7 @@ export const useStyles = makeStyles()(theme => ({
   },
   fieldName: {
     wordBreak: 'break-all',
-    minWidth: '90px',
+    minWidth: 90,
     borderBottom: '1px solid #0003',
     fontSize: 12,
     background: theme.palette.grey[200],
