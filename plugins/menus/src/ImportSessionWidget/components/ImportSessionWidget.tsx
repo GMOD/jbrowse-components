@@ -1,11 +1,10 @@
 import React, { useState } from 'react'
+import { Button, Paper, Typography, alpha } from '@mui/material'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
-import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { alpha } from '@mui/material/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 
 // icons
@@ -14,10 +13,11 @@ import ErrorIcon from '@mui/icons-material/Error'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
-function styledBy(property, mapping) {
-  return props => mapping[props[property]]
+function styledBy(property: string, mapping: { [key: string]: string }) {
+  return (props: { [key: string]: string }) => mapping[props[property]]
 }
 
+// @ts-ignore
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
@@ -76,14 +76,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ImportSession(props) {
+function ImportSession({ model }: { model: any }) {
   const [errorMessage, setErrorMessage] = useState('')
-  const { model } = props
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: 'application/json',
+    accept: { 'application/json': [] },
     maxSize: MAX_FILE_SIZE,
     multiple: false,
     onDrop: async (acceptedFiles, rejectedFiles) => {
+      console.log({ acceptedFiles, rejectedFiles })
       if (rejectedFiles.length) {
         if (acceptedFiles.length || rejectedFiles.length > 1) {
           setErrorMessage('Only one session at a time may be imported')
@@ -126,7 +126,9 @@ function ImportSession(props) {
       }
     },
   })
-  const { classes } = useStyles({ isDragActive })
+
+  // @ts-ignore
+  const { classes } = useStyles({ isDragActive }) as any
 
   return (
     <div className={classes.root}>
@@ -162,10 +164,6 @@ function ImportSession(props) {
       ) : null}
     </div>
   )
-}
-
-ImportSession.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(ImportSession)
