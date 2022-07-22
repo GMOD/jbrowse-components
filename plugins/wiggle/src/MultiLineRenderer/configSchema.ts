@@ -5,10 +5,12 @@ import ConfigSchema from '../configSchema'
 const configSchema = ConfigurationSchema(
   'MultiLineRenderer',
   {
-    filled: {
+    displayCrossHatches: {
       type: 'boolean',
+      description: 'choose to draw cross hatches (sideways lines)',
       defaultValue: false,
     },
+
     summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),

@@ -64,17 +64,13 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       {model.seqDialogDisplayed ? (
         <SequenceDialog
           model={model}
-          handleClose={() => {
-            model.setSequenceDialogOpen(false)
-          }}
+          handleClose={() => model.setSequenceDialogOpen(false)}
         />
       ) : null}
       {model.isSearchDialogDisplayed ? (
         <SearchResultsDialog
           model={model}
-          handleClose={() => {
-            model.setSearchResults(undefined, undefined)
-          }}
+          handleClose={() => model.setSearchResults(undefined, undefined)}
         />
       ) : null}
       {!hideHeader ? (

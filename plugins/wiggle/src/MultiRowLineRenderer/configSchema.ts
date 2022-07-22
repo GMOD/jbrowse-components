@@ -4,11 +4,12 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import ConfigSchema from '../configSchema'
 
 const configSchema = ConfigurationSchema(
-  'MultiRowXYPlotRenderer',
+  'MultiRowLineRenderer',
   {
-    filled: {
+    displayCrossHatches: {
       type: 'boolean',
-      defaultValue: true,
+      description: 'choose to draw cross hatches (sideways lines)',
+      defaultValue: false,
     },
     summaryScoreMode: {
       type: 'stringEnum',
