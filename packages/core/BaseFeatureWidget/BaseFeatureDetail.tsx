@@ -372,6 +372,9 @@ const DataGridDetails = ({
       ),
     }))
 
+    const rowHeight = 25
+    const hideFooter = rows.length < 100
+    const headerHeight = 80
     // disableSelection on click helps avoid
     // https://github.com/mui-org/material-ui-x/issues/1197
     return (
@@ -380,20 +383,20 @@ const DataGridDetails = ({
         <div
           style={{
             height:
-              Math.min(rows.length, 100) * 20 +
-              50 +
-              (rows.length < 100 ? 0 : 50),
+              Math.min(rows.length, 100) * rowHeight +
+              headerHeight +
+              (hideFooter ? 0 : 50),
             width: '100%',
           }}
         >
           <DataGrid
             disableSelectionOnClick
-            rowHeight={25}
+            rowHeight={rowHeight}
             rows={rows}
             rowsPerPageOptions={[]}
             hideFooterSelectedRowCount
             columns={columns}
-            hideFooter={rows.length < 100}
+            hideFooter={hideFooter}
           />
         </div>
       </>

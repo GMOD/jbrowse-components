@@ -3973,120 +3973,140 @@
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF858LIM/@@download/ENCFF858LIM.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF425TNW/@@download/ENCFF425TNW.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF207RBY/@@download/ENCFF207RBY.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF289CTN/@@download/ENCFF289CTN.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF884IEG/@@download/ENCFF884IEG.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF495SBQ/@@download/ENCFF495SBQ.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF959EZF/@@download/ENCFF959EZF.bigWig"
             },
             "group": "group1"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF926YZX/@@download/ENCFF926YZX.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF269CHA/@@download/ENCFF269CHA.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF857KTJ/@@download/ENCFF857KTJ.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF109KCQ/@@download/ENCFF109KCQ.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF942TZX/@@download/ENCFF942TZX.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF140HPM/@@download/ENCFF140HPM.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF305JRR/@@download/ENCFF305JRR.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF739FDJ/@@download/ENCFF739FDJ.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF518OJP/@@download/ENCFF518OJP.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF810HHS/@@download/ENCFF810HHS.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF939JSB/@@download/ENCFF939JSB.bigWig"
             },
             "group": "group2"
           },
           {
+            "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "https://www.encodeproject.org/files/ENCFF041TAK/@@download/ENCFF041TAK.bigWig"
             },
