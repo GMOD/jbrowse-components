@@ -24,6 +24,11 @@ function getFilename(uri: string) {
   return filename.slice(0, filename.lastIndexOf('.'))
 }
 
+interface AdapterEntry {
+  dataAdapter: BaseFeatureDataAdapter
+  [key: string]: unknown
+}
+
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   public static capabilities = [
     'hasResolution',
@@ -31,48 +36,31 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     'hasGlobalStats',
   ]
 
-  public async getAdapters() {
+  public async getAdapters(): Promise<AdapterEntry[]> {
     const getSubAdapter = this.getSubAdapter
     if (!getSubAdapter) {
       throw new Error('no getSubAdapter available')
     }
-    let subConfs = this.getConf('subadapters') as AnyConfigurationModel[]
+    let subConfs = this.getConf('subadapters')
     if (!subConfs?.length) {
-      const entries = this.getConf('bigWigs')
-      subConfs = entries.map((entry: string | BigWigEntry) => {
-        if (typeof entry === 'string') {
-          return {
-            type: 'BigWigAdapter',
-            source: getFilename(entry),
-            bigWigLocation: {
-              uri: entry,
-            },
-          }
-        } else {
-          const { uri, ...rest } = entry
-          return {
-            type: 'BigWigAdapter',
-            ...rest,
-            source: rest.name || getFilename(uri),
-            bigWigLocation: {
-              uri,
-            },
-          }
-        }
-      })
+      const entries = this.getConf('bigWigs') as string[]
+      subConfs = entries.map(entry => ({
+        type: 'BigWigAdapter',
+        source: getFilename(entry),
+        bigWigLocation: {
+          uri: entry,
+        },
+      }))
     }
 
     return Promise.all(
-      subConfs.map(async (c, i) => {
-        const adapter = await getSubAdapter(c)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      subConfs.map(async (conf: any) => {
+        const dataAdapter = (await getSubAdapter(conf))
+          .dataAdapter as BaseFeatureDataAdapter
         return {
-          ...subConfs[i],
-          source: subConfs[i].source,
-          dataAdapter: adapter.dataAdapter,
-        } as {
-          source: string
-          dataAdapter: BaseFeatureDataAdapter
-          [key: string]: unknown
+          ...conf,
+          dataAdapter,
         }
       }),
     )
@@ -128,6 +116,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources() {
     const adapters = await this.getAdapters()
+    console.log({ adapters })
     return adapters.map(({ dataAdapter, source, ...rest }) => ({
       name: source,
       ...rest,

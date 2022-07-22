@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { Button, Paper, Typography, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
-import { AddTrackModel } from '@jbrowse/plugin-data-management'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
+import { AddTrackModel } from '@jbrowse/plugin-data-management'
 
 // locals
 import Dropzone from './Dropzone'
@@ -40,9 +40,11 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       />
       <Dropzone
         setAcceptedFiles={acceptedFiles => {
-          const res = acceptedFiles.map(file =>
-            storeBlobLocation({ blob: file }),
-          )
+          const res = acceptedFiles.map(file => ({
+            type: 'BigWigAdapter',
+            bigWigLocation: storeBlobLocation({ blob: file }),
+            source: file.name,
+          }))
           setVal(JSON.stringify(res))
         }}
       />
@@ -64,6 +66,11 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           } catch (e) {
             bigWigs = val.split('\n')
           }
+          const obj =
+            typeof bigWigs[0] === 'string'
+              ? { bigWigs }
+              : { subadapters: bigWigs }
+
           session.addTrackConf({
             trackId,
             type: 'MultiQuantitativeTrack',
@@ -71,7 +78,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
             assemblyNames: [model.assembly],
             adapter: {
               type: 'MultiWiggleAdapter',
-              bigWigs,
+              ...obj,
             },
           })
           model.view?.showTrack(trackId)
