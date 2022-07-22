@@ -1,10 +1,10 @@
 ---
-id: quickstart_gui
-title: Config editing quick start — graphical interface
+id: userguide_gui
+title: Config editing via graphical interface
 toplevel: true
 ---
 
-import Figure from './figure'
+import Figure from '../figure'
 
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that

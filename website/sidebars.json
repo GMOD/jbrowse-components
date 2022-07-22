@@ -1,16 +1,22 @@
 {
   "sidebar": [
     "introduction",
-    "combined",
     {
       "type": "category",
       "label": "Quickstart guides",
       "items": [
-        "superquickstart_web",
-        "quickstart_web",
-        "quickstart_cli",
-        "quickstart_gui",
-        "quickstart_desktop"
+        "quickstarts/quickstart_desktop",
+        "quickstarts/quickstart_web",
+        "quickstarts/quickstart_cli"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "User guides",
+      "items": [
+        "userguides/userguide_cli",
+        "userguides/userguide_gui",
+        "userguides/userguide_genome"
       ]
     },
     "user_guide",
@@ -71,6 +77,7 @@
         }
       ]
     },
+    "combined",
     "faq"
   ]
 }

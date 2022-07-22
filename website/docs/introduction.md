@@ -7,27 +7,32 @@ toplevel: true
 
 Welcome to the JBrowse 2 documentation.
 
-- [Quick-start for JBrowse desktop](quickstart_desktop) - a quick-start guide
+- [Quick start for JBrowse desktop](/docs/quickstarts/quickstart_desktop) - a quick start guide
   to getting JBrowse desktop running on your machine
-- [Quick-start for JBrowse web](quickstart_web) - a quick-start guide to help
-  admins setting up JBrowse 2 on their website
-- [Super quick-start guide for JBrowse web](superquickstart_web) - list of
-  helpful commands for admins familiar with the CLI
-- [Configuration guide](config_guide) - for detailed configuration settings
+- [Quick start for JBrowse web](/docs/quickstarts/quickstart_web) - a quick start guide to running JBrowse 2 in a browser
+- [Quick start for JBrowse web via CLI](/docs/quickstarts/quickstart_cli) - a quick start guide to intalling the JBrowse 2 CLI and getting JBrowse web running locally on a browser
+
+### User and developer guides
+
+- [Config editing via command-line interface](/docs/userguides/userguide_cli) - a guide for configuring JBrowse via CLI
+- [Config editing via graphical interface](/docs/userguides/userguide_gui) - a guide for configuring JBrowse via the GUI
+- [Configuring a genome in JBrowse](/docs/userguides/userguide_genome) - a guide for admins configuring their first genome via the CLI
+- [Comprehensive configuration guide](config_guide) - for detailed configuration settings
+- [Comprehensive user guide](user_guide) - for general usage, guided by screenshots and descriptions
 - [Developer guide](developer_guide) - for developers of plugins
-- [User guide](user_guide) - screenshots of the app and general usage
 
-Other resources
+### Other resources
 
-- [FAQ](faq) - Some Q&A for troubleshooting or other topics
+- [FAQ](faq) - some Q&A for troubleshooting or other topics
 - [@jbrowse/cli](cli) - docs for our CLI tools for loading tracks, assemblies,
   text indexing, and more
-- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - Docs for our
+- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - docs for our
   command line image generator
-- [Embedded components](embedded_components) - Docs for our reusable React
+- [Embedded components](embedded_components) - docs for our reusable React
   components
+- [JBrowse Jupyter](/docs) - docs for JBrowse Jupyter usage
 
-We also keep a log of our previous training classes in the sidebar
+We also keep a log of our previous training classes, checkout our [tutorials](/docs/tutorials/).
 
 ### Contact information
 

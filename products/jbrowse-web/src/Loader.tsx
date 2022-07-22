@@ -53,14 +53,6 @@ function NoConfigMessage() {
         Configuration not found. You may have arrived here if you requested a
         config that does not exist or you have not set up your JBrowse yet.
       </h4>
-
-      <p>
-        If you want to complete your setup, visit our{' '}
-        <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-          Quick start guide
-        </a>
-      </p>
-
       {inDevelopment ? (
         <>
           <div>Sample JBrowse configs:</div>
@@ -192,9 +184,10 @@ const ErrMessage = ({ err }: { err: unknown }) => {
         >
           No config.json found. If you want to learn how to complete your setup,
           visit our{' '}
-          <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-            Quick start guide
+          <a href="https://jbrowse.org/jb2/docs/quickstarts/quickstart_web/">
+            quick start guide
           </a>
+          .
         </div>
       ) : (
         <Suspense fallback={<div>Loading...</div>}>

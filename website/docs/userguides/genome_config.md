@@ -1,7 +1,8 @@
 ---
-id: superquickstart_web
-title: Super-quick start guide for JBrowse web
+id: userguide_genome
+title: Configuring a genome in JBrowse
 toplevel: true
+# Used to be superquickstart_web
 ---
 
 This is a quick overview to get started running JBrowse 2 from scratch using
