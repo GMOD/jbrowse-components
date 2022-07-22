@@ -57,6 +57,7 @@ const stateModelFactory = (
         selectedRendering: types.optional(types.string, ''),
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
+        minSize: types.maybe(types.number),
         color: types.maybe(types.string),
         posColor: types.maybe(types.string),
         negColor: types.maybe(types.string),
@@ -123,8 +124,17 @@ const stateModelFactory = (
         self.resolution = res
       },
 
-      setFill(fill: boolean) {
-        self.fill = fill
+      setFill(fill: number) {
+        if (fill === 0) {
+          self.fill = true
+          self.minSize = 0
+        } else if (fill === 1) {
+          self.fill = false
+          self.minSize = 1
+        } else if (fill === 2) {
+          self.fill = false
+          self.minSize = 2
+        }
       },
 
       toggleLogScale() {
@@ -213,12 +223,13 @@ const stateModelFactory = (
 
         const {
           color,
-          posColor,
-          negColor,
-          summaryScoreMode,
-          scaleType,
           displayCrossHatches,
           fill,
+          minSize,
+          negColor,
+          posColor,
+          summaryScoreMode,
+          scaleType,
         } = self
 
         return self.rendererType.configSchema.create(
@@ -230,9 +241,10 @@ const stateModelFactory = (
               ? { displayCrossHatches }
               : {}),
             ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
-            ...(color !== undefined ? { color: color } : {}),
-            ...(negColor !== undefined ? { negColor: negColor } : {}),
-            ...(posColor !== undefined ? { posColor: posColor } : {}),
+            ...(color !== undefined ? { color } : {}),
+            ...(negColor !== undefined ? { negColor } : {}),
+            ...(posColor !== undefined ? { posColor } : {}),
+            ...(minSize !== undefined ? { minSize } : {}),
           },
           getEnv(self),
         )
@@ -351,6 +363,16 @@ const stateModelFactory = (
         get hasGlobalStats() {
           return self.adapterCapabilities.includes('hasGlobalStats')
         },
+
+        get fillSetting() {
+          if (self.filled) {
+            return 0
+          } else if (!self.filled && self.minSize === 1) {
+            return 1
+          } else {
+            return 2
+          }
+        },
       }
     })
     .views(self => {
@@ -379,18 +401,26 @@ const stateModelFactory = (
                     label: 'Summary score mode',
                     subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
                       label: elt,
+                      type: 'radio',
+                      checked: self.summaryScoreModeSetting === elt,
                       onClick: () => self.setSummaryScoreMode(elt),
                     })),
                   },
                 ]
               : []),
+
             ...(self.canHaveFill
               ? [
                   {
-                    label: self.filled
-                      ? 'Turn off histogram fill'
-                      : 'Turn on histogram fill',
-                    onClick: () => self.setFill(!self.filled),
+                    label: 'Fill mode',
+                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
+                      (elt, idx) => ({
+                        label: elt,
+                        type: 'radio',
+                        checked: self.fillSetting === idx,
+                        onClick: () => self.setFill(idx),
+                      }),
+                    ),
                   },
                 ]
               : []),

@@ -83,12 +83,12 @@ test(
   'click and drag to reorder tracks',
   async () => {
     const { view, findByTestId } = createView()
-    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
+    fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
     fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
 
     const trackId1 = view.tracks[1].id
     const dragHandle0 = await findByTestId(
-      'dragHandle-integration_test-volvox_alignments',
+      'dragHandle-integration_test-bigbed_genes',
       {},
       delay,
     )
@@ -131,9 +131,9 @@ test(
   'opens track selector',
   async () => {
     const { view, findByTestId } = createView()
-    await findByTestId(hts('volvox_alignments'), {}, delay)
+    await findByTestId(hts('bigbed_genes'), {}, delay)
     expect(view.tracks.length).toBe(0)
-    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
+    fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
     expect(view.tracks.length).toBe(1)
   },
   total,
@@ -159,8 +159,7 @@ test(
   'click to display center line with correct value',
   async () => {
     const { view, findByTestId, findByText } = createView()
-    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
-    await findByTestId('display-volvox_alignments_alignments', {}, delay)
+    fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
 
     // opens the view menu and selects show center line
     fireEvent.click(await findByTestId('view_menu_icon'))
@@ -186,9 +185,9 @@ test(
     expect(view.displayedRegions[0].refName).toEqual('ctgA')
     fireEvent.click(await findByText('Help'))
     // need this to complete before we can try to search
-    fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
+    fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
     await findByTestId(
-      'trackRenderingContainer-integration_test-volvox_alignments',
+      'trackRenderingContainer-integration_test-bigbed_genes',
       {},
       delay,
     )
@@ -202,8 +201,7 @@ test(
     autocomplete.focus()
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
     fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-    const option = (await screen.findAllByText('ctgB'))[0]
-    fireEvent.click(option)
+    fireEvent.click((await screen.findAllByText('ctgB'))[0])
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
     await waitFor(
