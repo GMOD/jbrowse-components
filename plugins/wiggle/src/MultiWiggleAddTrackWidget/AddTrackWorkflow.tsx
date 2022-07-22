@@ -17,7 +17,7 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(),
   },
   submit: {
-    marginTop: 100,
+    marginTop: 25,
     marginBottom: 100,
   },
 }))
@@ -25,6 +25,7 @@ const useStyles = makeStyles()(theme => ({
 export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
   const [val, setVal] = useState('')
+  const [trackName, setTrackName] = useState('MultiWiggle ' + Date.now())
   return (
     <Paper className={classes.paper}>
       <ul>
@@ -53,12 +54,17 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
         }}
       />
 
+      <TextField
+        value={trackName}
+        onChange={event => setTrackName(event.target.value)}
+        helperText="Track name"
+      />
+
       <Button
         variant="contained"
         className={classes.submit}
         onClick={() => {
           const session = getSession(model)
-          const trackName = 'Hello'
 
           const trackId = [
             `${trackName.toLowerCase().replace(/ /g, '_')}-${Date.now()}`,
