@@ -3,8 +3,10 @@ import { Button, Paper, Typography, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
-import Dropzone from './Dropzone'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
+
+// locals
+import Dropzone from './Dropzone'
 
 const useStyles = makeStyles()(theme => ({
   textbox: {
