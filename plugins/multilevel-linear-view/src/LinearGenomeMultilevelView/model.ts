@@ -1,9 +1,15 @@
 import { types, Instance } from 'mobx-state-tree'
 
-import { clamp, getSession, parseLocString } from '@jbrowse/core/util'
+import {
+  clamp,
+  getSession,
+  parseLocString,
+  getContainingView,
+} from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import ExportSvgDlg from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ExportSvgDialog'
+import { AcknowledgeCloseDialog } from '@jbrowse/core/ui'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -12,6 +18,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import LabelIcon from '@mui/icons-material/Label'
+import CloseIcon from '@mui/icons-material/Close'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 export interface BpOffset {
@@ -211,6 +218,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             self.moveTo(leftOffset, rightOffset)
           }
         },
+        closeView() {
+          const session = getSession(self)
+          session.queueDialog
+          const parent = getContainingView(self)
+          parent.removeView(self)
+        },
       }))
       .views(self => ({
         menuItems(): MenuItem[] {
@@ -240,6 +253,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               // @ts-ignore
               onClick: self.horizontallyFlip,
             },
+            !self.isAnchor && !self.isOverview
+              ? {
+                  label: 'Remove view',
+                  icon: CloseIcon,
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      AcknowledgeCloseDialog,
+                      { closeOperation: self.closeView, handleClose },
+                    ])
+                  },
+                }
+              : {
+                  label: 'This view cannot be removed',
+                  icon: CloseIcon,
+                  disabled: true,
+                  onClick: () => {},
+                },
             { type: 'divider' },
             {
               label: 'Show all regions in assembly',

@@ -303,6 +303,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       clearView() {
         self.views = cast([])
       },
+      removeView(target: any) {
+        // cannot remove the anchor or the overview -- needs to have minimum these two views
+        if (target.isAnchor === false && target.isOverview === false) {
+          self.views.remove(target)
+        }
+      },
     }))
     .views(self => ({
       menuItems() {
