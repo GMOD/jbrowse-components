@@ -28,7 +28,7 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-const fudgeFactor = 0.3
+const fudgeFactor = 0.4
 const clipHeight = 2
 
 export function drawXY(
@@ -202,7 +202,7 @@ export function drawXY(
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
     ticks.values.forEach(tick => {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))
@@ -298,7 +298,7 @@ export function drawLine(
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
     values.forEach(tick => {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))
