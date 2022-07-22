@@ -28,7 +28,8 @@ const stateModelFactory = (
         resolve: (token: string) => void,
         reject: (error: Error) => void,
       ) {
-        const { session } = getRoot(self)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { session } = getRoot<any>(self)
         session.queueDialog((doneCallback: () => void) => [
           HTTPBasicLoginForm,
           {

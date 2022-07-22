@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-variants",
-  "version": "1.7.11",
+  "version": "2.0.1",
   "description": "JBrowse 2 variant adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -44,21 +44,21 @@
     "@gmod/vcf": "^5.0.5",
     "@mui/icons-material": "^5.0.2",
     "@mui/x-data-grid": "^5.0.1",
-    "generic-filehandle": "^2.2.2"
+    "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-alignments": "^1.0.0",
-    "@jbrowse/plugin-circular-view": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-alignments": "^2.0.0",
+    "@jbrowse/plugin-circular-view": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
     "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
     "rxjs": "^6.0.0",
-    "tss-react": "^3.0.0",
-    "mobx": "^6.0.0"
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

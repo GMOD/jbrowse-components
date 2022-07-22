@@ -1,245 +1,47 @@
-import React, {
-  Suspense,
-  lazy,
-  useCallback,
-  useMemo,
-  useState,
-  useRef,
-  useEffect,
-} from 'react'
-import {
-  Checkbox,
-  Fab,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  Menu,
-  MenuItem,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react'
+import { Fab, Menu, MenuItem } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 // icons
-import ClearIcon from '@mui/icons-material/Clear'
 import AddIcon from '@mui/icons-material/Add'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import ArrowRightIcon from '@mui/icons-material/ArrowRight'
-import MenuIcon from '@mui/icons-material/Menu'
-import MoreIcon from '@mui/icons-material/MoreHoriz'
-import { Cable } from '@jbrowse/core/ui/Icons'
-
 // other
 import AutoSizer from 'react-virtualized-auto-sizer'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import {
   getSession,
   isSessionModelWithWidgets,
   isSessionModelWithConnections,
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
 
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
-
-// lazy components
-const CloseConnectionDialog = lazy(() => import('./CloseConnectionDialog'))
-const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
-const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
-const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
+import Header from './Header'
+import Node from './Node'
 
 const useStyles = makeStyles()(theme => ({
-  searchBox: {
-    margin: theme.spacing(2),
-  },
-  menuIcon: {
-    marginRight: theme.spacing(1),
-    marginBottom: 0,
-  },
   fab: {
     position: 'absolute',
     bottom: theme.spacing(6),
     right: theme.spacing(6),
   },
-  compactCheckbox: {
-    padding: 0,
-  },
-
-  checkboxLabel: {
-    marginRight: 0,
-    '&:hover': {
-      backgroundColor: '#eee',
-    },
-  },
-
-  // this accordionBase element's small padding is used to give a margin to
-  // accordionColor it a "margin" because the virtualized elements can't really
-  // use margin in a conventional way (it doesn't affect layout)
-  accordionBase: {
-    display: 'flex',
-  },
-
-  accordionCard: {
-    padding: 3,
-    cursor: 'pointer',
-    display: 'flex',
-  },
-
-  nestingLevelMarker: {
-    position: 'absolute',
-    borderLeft: '1.5px solid #555',
-  },
-  // accordionColor set's display:flex so that the child accordionText use
-  // vertically centered text
-  accordionColor: {
-    // @ts-ignore
-    background: theme.palette.tertiary?.main,
-    // @ts-ignore
-    color: theme.palette.tertiary?.contrastText,
-    width: '100%',
-    display: 'flex',
-    paddingLeft: 5,
-  },
-
-  // margin:auto 0 to center text vertically
-  accordionText: {
-    margin: 'auto 0',
-  },
 }))
-
-interface MoreInfoArgs {
-  target: HTMLElement
-  id: string
-  conf: AnyConfigurationModel
-}
-
-// An individual node in the track selector. Note: manually sets cursor:
-// pointer improves usability for what can be clicked
-function Node(props: {
-  data: {
-    isLeaf: boolean
-    nestingLevel: number
-    checked: boolean
-    id: string
-    name: string
-    onChange: Function
-    toggleCollapse: (arg: string) => void
-    conf: AnyConfigurationModel
-    onMoreInfo: (arg: MoreInfoArgs) => void
-    drawerPosition: unknown
-  }
-  isOpen: boolean
-  style?: { height: number }
-  setOpen: (arg: boolean) => void
-}) {
-  const { data, isOpen, style, setOpen } = props
-  const {
-    isLeaf,
-    nestingLevel,
-    checked,
-    id,
-    name,
-    onChange,
-    toggleCollapse,
-    conf,
-    onMoreInfo,
-    drawerPosition,
-  } = data
-
-  const { classes } = useStyles()
-  const width = 10
-  const marginLeft = nestingLevel * width + (isLeaf ? width : 0)
-  const unsupported =
-    name?.endsWith('(Unsupported)') || name?.endsWith('(Unknown)')
-  const description = (conf && readConfObject(conf, ['description'])) || ''
-
-  return (
-    <div style={style} className={!isLeaf ? classes.accordionBase : undefined}>
-      {new Array(nestingLevel).fill(0).map((_, idx) => (
-        <div
-          key={`mark-${idx}`}
-          style={{ left: idx * width + 4, height: style?.height }}
-          className={classes.nestingLevelMarker}
-        />
-      ))}
-      <div
-        className={!isLeaf ? classes.accordionCard : undefined}
-        onClick={() => {
-          toggleCollapse(id)
-          setOpen(!isOpen)
-        }}
-        style={{
-          marginLeft,
-          whiteSpace: 'nowrap',
-          width: '100%',
-        }}
-      >
-        <div className={!isLeaf ? classes.accordionColor : undefined}>
-          {!isLeaf ? (
-            <div className={classes.accordionText}>
-              <Typography>
-                {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
-                {name}
-              </Typography>
-            </div>
-          ) : (
-            <>
-              <Tooltip
-                title={description}
-                placement={drawerPosition === 'left' ? 'right' : 'left'}
-              >
-                <FormControlLabel
-                  className={classes.checkboxLabel}
-                  control={
-                    <Checkbox
-                      className={classes.compactCheckbox}
-                      checked={checked}
-                      onChange={() => onChange(id)}
-                      color="primary"
-                      disabled={unsupported}
-                      inputProps={{
-                        // @ts-ignore
-                        'data-testid': `htsTrackEntry-${id}`,
-                      }}
-                    />
-                  }
-                  label={name}
-                />
-              </Tooltip>
-              <IconButton
-                onClick={e => onMoreInfo({ target: e.currentTarget, id, conf })}
-                style={{ padding: 0 }}
-                color="secondary"
-                data-testid={`htsTrackEntryMenu-${id}`}
-              >
-                <MoreIcon />
-              </IconButton>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function getNodeData(
   node: TreeNode,
   nestingLevel: number,
   extra: Record<string, unknown>,
+  selection: Record<string, unknown>,
 ) {
   const isLeaf = !!node.conf
+  const selected = !!selection[node.id]
   return {
     data: {
       defaultHeight: isLeaf ? 22 : 40,
       isLeaf,
       isOpenByDefault: true,
       nestingLevel,
+      selected,
       ...node,
       ...extra,
     },
@@ -263,26 +65,30 @@ const HierarchicalTree = observer(
     tree: TreeNode
     model: HierarchicalTrackSelectorModel
   }) => {
-    const { filterText, view } = model
+    const { filterText, selection, view } = model
     const treeRef = useRef<NodeData>(null)
-    const [info, setMoreInfo] = useState<MoreInfoArgs>()
     const session = getSession(model)
     const { drawerPosition } = session
+    const obj = useMemo(
+      () => Object.fromEntries(selection.map(s => [s.trackId, s])),
+      [selection],
+    )
 
     const extra = useMemo(
       () => ({
         onChange: (trackId: string) => view.toggleTrack(trackId),
         toggleCollapse: (pathName: string) => model.toggleCategory(pathName),
-        onMoreInfo: setMoreInfo,
+        tree,
+        model,
         drawerPosition,
       }),
-      [view, model, drawerPosition],
+      [view, model, drawerPosition, tree],
     )
     const treeWalker = useCallback(
       function* treeWalker() {
         for (let i = 0; i < tree.children.length; i++) {
           const r = tree.children[i]
-          yield getNodeData(r, 0, extra)
+          yield getNodeData(r, 0, extra, obj)
         }
 
         while (true) {
@@ -291,15 +97,12 @@ const HierarchicalTree = observer(
 
           for (let i = 0; i < parentMeta.node.children.length; i++) {
             const curr = parentMeta.node.children[i]
-            yield getNodeData(curr, parentMeta.nestingLevel + 1, extra)
+            yield getNodeData(curr, parentMeta.nestingLevel + 1, extra, obj)
           }
         }
       },
-      [tree, extra],
+      [tree, extra, obj],
     )
-
-    const conf = info?.conf
-    const menuItems = (conf && session.getTrackActionMenuItems?.(conf)) || []
 
     useEffect(() => {
       // @ts-ignore
@@ -315,16 +118,6 @@ const HierarchicalTree = observer(
           {/* @ts-ignore */}
           {Node}
         </VariableSizeTree>
-        <JBrowseMenu
-          anchorEl={info?.target}
-          menuItems={menuItems}
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setMoreInfo(undefined)
-          }}
-          open={Boolean(info)}
-          onClose={() => setMoreInfo(undefined)}
-        />
       </>
     )
   },
@@ -451,218 +244,6 @@ const HierarchicalTrackSelectorContainer = observer(
   },
 )
 
-const HierarchicalTrackSelectorHeader = observer(
-  ({
-    model,
-    setHeaderHeight,
-    setAssemblyIdx,
-    assemblyIdx,
-  }: {
-    model: HierarchicalTrackSelectorModel
-    setHeaderHeight: (n: number) => void
-    setAssemblyIdx: (n: number) => void
-    assemblyIdx: number
-  }) => {
-    const { classes } = useStyles()
-    const session = getSession(model)
-    const [connectionAnchorEl, setConnectionAnchorEl] =
-      useState<HTMLButtonElement>()
-    const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLButtonElement>()
-    const [modalInfo, setModalInfo] = useState<{
-      connectionConf: AnyConfigurationModel
-      safelyBreakConnection: Function
-      dereferenceTypeCount: { [key: string]: number }
-      name: string
-    }>()
-    const [deleteDialogDetails, setDeleteDialogDetails] = useState<{
-      name: string
-      connectionConf: AnyConfigurationModel
-    }>()
-    const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
-    const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
-    const { assemblyNames } = model
-    const assemblyName = assemblyNames[assemblyIdx]
-
-    function breakConnection(
-      connectionConf: AnyConfigurationModel,
-      deletingConnection?: boolean,
-    ) {
-      const name = readConfObject(connectionConf, 'name')
-
-      // @ts-ignore
-      const result = session.prepareToBreakConnection(connectionConf)
-      if (result) {
-        const [safelyBreakConnection, dereferenceTypeCount] = result
-        if (Object.keys(dereferenceTypeCount).length > 0) {
-          setModalInfo({
-            connectionConf,
-            safelyBreakConnection,
-            dereferenceTypeCount,
-            name,
-          })
-        } else {
-          safelyBreakConnection()
-        }
-      }
-      if (deletingConnection) {
-        setDeleteDialogDetails({ name, connectionConf })
-      }
-    }
-
-    const connectionMenuItems = [
-      {
-        label: 'Turn on/off connections...',
-        onClick: () => setConnectionToggleOpen(true),
-      },
-    ]
-
-    if (isSessionModelWithConnections(session)) {
-      connectionMenuItems.unshift({
-        label: 'Add connection',
-        onClick: () => {
-          if (isSessionModelWithWidgets(session)) {
-            const widget = session.addWidget(
-              'AddConnectionWidget',
-              'addConnectionWidget',
-            )
-            session.showWidget(widget)
-          }
-        },
-      })
-
-      connectionMenuItems.push({
-        label: 'Delete connections...',
-        onClick: () => setConnectionManagerOpen(true),
-      })
-    }
-
-    const assemblyMenuItems =
-      assemblyNames.length > 1
-        ? [
-            {
-              label: 'Select assembly...',
-              subMenu: assemblyNames.map((name, idx) => ({
-                label: name,
-                onClick: () => setAssemblyIdx(idx),
-              })),
-            },
-          ]
-        : []
-
-    const menuItems = [
-      {
-        label: 'Add track...',
-        onClick: () => {
-          if (isSessionModelWithWidgets(session)) {
-            const widget = session.addWidget(
-              'AddTrackWidget',
-              'addTrackWidget',
-              {
-                view: model.view.id,
-              },
-            )
-            session.showWidget(widget)
-          }
-        },
-      },
-
-      ...assemblyMenuItems,
-    ]
-
-    return (
-      <div
-        ref={ref => setHeaderHeight(ref?.getBoundingClientRect().height || 0)}
-        data-testid="hierarchical_track_selector"
-      >
-        <div style={{ display: 'flex' }}>
-          {isSessionWithAddTracks(session) && (
-            <IconButton
-              className={classes.menuIcon}
-              onClick={event => setMenuAnchorEl(event.currentTarget)}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-
-          {session.makeConnection && (
-            <IconButton
-              className={classes.menuIcon}
-              onClick={event => setConnectionAnchorEl(event.currentTarget)}
-            >
-              <Cable />
-            </IconButton>
-          )}
-
-          <TextField
-            className={classes.searchBox}
-            label="Filter tracks"
-            value={model.filterText}
-            onChange={event => model.setFilterText(event.target.value)}
-            fullWidth
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton color="secondary" onClick={model.clearFilterText}>
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </div>
-        <JBrowseMenu
-          anchorEl={connectionAnchorEl}
-          open={Boolean(connectionAnchorEl)}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setConnectionAnchorEl(undefined)
-          }}
-          onClose={() => setConnectionAnchorEl(undefined)}
-          menuItems={connectionMenuItems}
-        />
-        <JBrowseMenu
-          anchorEl={menuAnchorEl}
-          open={Boolean(menuAnchorEl)}
-          onMenuItemClick={(_, callback) => {
-            callback()
-            setMenuAnchorEl(undefined)
-          }}
-          onClose={() => setMenuAnchorEl(undefined)}
-          menuItems={menuItems}
-        />
-        <Suspense fallback={<div />}>
-          {modalInfo ? (
-            <CloseConnectionDialog
-              modalInfo={modalInfo}
-              setModalInfo={setModalInfo}
-            />
-          ) : deleteDialogDetails ? (
-            <DeleteConnectionDialog
-              handleClose={() => setDeleteDialogDetails(undefined)}
-              deleteDialogDetails={deleteDialogDetails}
-              session={session}
-            />
-          ) : null}
-          {connectionManagerOpen ? (
-            <ManageConnectionsDialog
-              handleClose={() => setConnectionManagerOpen(false)}
-              breakConnection={breakConnection}
-              session={session}
-            />
-          ) : null}
-          {connectionToggleOpen ? (
-            <ToggleConnectionsDialog
-              handleClose={() => setConnectionToggleOpen(false)}
-              session={session}
-              breakConnection={breakConnection}
-              assemblyName={assemblyName}
-            />
-          ) : null}
-        </Suspense>
-      </div>
-    )
-  },
-)
 const HierarchicalTrackSelector = observer(
   ({
     model,
@@ -678,7 +259,7 @@ const HierarchicalTrackSelector = observer(
     const assemblyName = assemblyNames[assemblyIdx]
     return assemblyName ? (
       <>
-        <HierarchicalTrackSelectorHeader
+        <Header
           model={model}
           setHeaderHeight={setHeaderHeight}
           setAssemblyIdx={setAssemblyIdx}

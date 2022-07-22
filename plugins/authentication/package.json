@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "1.7.11",
+  "version": "2.0.1",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -40,11 +40,11 @@
     "@babel/runtime": "^7.17.9"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@mui/material": "^4.9.13",
+    "@jbrowse/core": "^2.0.0",
+    "@mui/material": "^5.0.0",
     "crypto-js": "^3.0.0",
     "electron": "^15.0.0",
-    "generic-filehandle": "^2.0.0",
+    "generic-filehandle": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

@@ -5,8 +5,8 @@
   "dependencies": {
     "@craco/craco": "^6.4.3",
     "@fontsource/roboto": "^4.5.5",
-    "@jbrowse/plugin-linear-genome-view": "^1.6.9",
-    "@jbrowse/react-circular-genome-view": "^1.6.9",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
+    "@jbrowse/react-circular-genome-view": "^2.0.0",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
     "@testing-library/user-event": "^13.5.0",

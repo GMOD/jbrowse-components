@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
@@ -12,6 +12,7 @@ export default observer(
     region,
     reversed,
     bpPerPx,
+    exportSVG,
     feature,
     viewParams,
     color = 'black',
@@ -32,6 +33,7 @@ export default observer(
     reversed?: boolean
     displayModel: DisplayModel
     region: Region
+    exportSVG: unknown
     viewParams: {
       start: number
       end: number
@@ -48,9 +50,20 @@ export default observer(
 
     const viewLeft = reversed ? params.end : params.start
 
+    const [labelVisible, setLabelVisible] = useState(exportSVG)
+
+    // we use an effect to set the label visible because there can be a
+    // mismatch between the server and the client after hydration due to the
+    // floating labels. if we are exporting an SVG we allow it as is though and
+    // do not use the effetct
+    useEffect(() => {
+      setLabelVisible(true)
+    }, [])
+
     if (isStateTreeNode(region) && !isAlive(region)) {
       return null
     }
+
     const rstart = region.start
     const rend = region.end
     const fstart = feature.get('start')
@@ -74,12 +87,12 @@ export default observer(
       x = params.offsetPx1
     }
 
-    return (
+    return labelVisible ? (
       <text x={x} y={y + fontHeight} fill={color} fontSize={fontHeight}>
         {measuredTextWidth > totalWidth
           ? `${text.slice(0, totalWidth / (fontHeight * 0.6))}...`
           : text}
       </text>
-    )
+    ) : null
   },
 )

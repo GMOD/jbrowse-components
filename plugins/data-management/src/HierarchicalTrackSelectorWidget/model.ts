@@ -1,13 +1,12 @@
-import { types, getParent, Instance } from 'mobx-state-tree'
+import { types, getParent, getEnv, Instance } from 'mobx-state-tree'
 import {
-  AnyConfigurationModel,
   getConf,
   readConfObject,
+  AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AbstractView } from 'react'
 
 function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   return !!a1.find(value => a2.includes(value))
@@ -18,11 +17,11 @@ function passesFilter(filter: string, config: AnyConfigurationModel) {
   const filterLower = filter.toLowerCase()
   return (
     getTrackName(config).toLowerCase().includes(filterLower) ||
-    categories?.filter(c => c.toLowerCase().includes(filterLower)).length
+    !!categories?.filter(c => c.toLowerCase().includes(filterLower)).length
   )
 }
 
-function getTrackName(config: AnyConfigurationModel) {
+function getTrackName(config: AnyConfigurationModel): string {
   if (!config.trackId) {
     throw new Error('not a track')
   }
@@ -39,6 +38,32 @@ export type TreeNode = {
   checked?: boolean
   isOpenByDefault?: boolean
   children: TreeNode[]
+}
+
+function filterTracks(
+  tracks: AnyConfigurationModel[],
+  self: { view: { type: string } },
+  assemblyName: string,
+) {
+  const { assemblyManager } = getSession(self)
+  const { pluginManager } = getEnv(self)
+  const assembly = assemblyManager.get(assemblyName)
+
+  if (!assembly) {
+    return []
+  }
+  return tracks
+    .filter(c => {
+      const trackConfAssemblies = readConfObject(c, 'assemblyNames')
+      const { allAliases } = assembly
+      return hasAnyOverlap(allAliases, trackConfAssemblies)
+    })
+    .filter(c => {
+      const { displayTypes } = pluginManager.getViewType(self.view.type)
+      const compatDisplays = displayTypes.map((d: { name: string }) => d.name)
+      const trackDisplays = c.displays.map((d: { type: string }) => d.type)
+      return hasAnyOverlap(compatDisplays, trackDisplays)
+    })
 }
 
 export function generateHierarchy(
@@ -112,8 +137,20 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
+    .volatile(() => ({
+      selection: [] as AnyConfigurationModel[],
+    }))
     .actions(self => ({
-      setView(view: AbstractView) {
+      addToSelection(elt: AnyConfigurationModel[]) {
+        self.selection = [...self.selection, ...elt]
+      },
+      removeFromSelection(elt: AnyConfigurationModel[]) {
+        self.selection = self.selection.filter(f => !elt.includes(f))
+      },
+      clearSelection() {
+        self.selection = []
+      },
+      setView(view: unknown) {
         self.view = view
       },
       toggleCategory(pathName: string) {
@@ -156,20 +193,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         // filter out tracks that don't match the current assembly (check all
         // assembly aliases) and display types
         return (refseq ? [refseq] : []).concat([
-          ...tracks
-            .filter(c => {
-              const trackConfAssemblies = readConfObject(c, 'assemblyNames')
-              const { allAliases } = assembly
-              return hasAnyOverlap(allAliases, trackConfAssemblies)
-            })
-            .filter(c => {
-              const { displayTypes } = pluginManager.getViewType(self.view.type)
-              const compatibleDisplays = displayTypes.map(d => d.name)
-              const trackDisplays = c.displays.map(
-                (d: { type: string }) => d.type,
-              )
-              return hasAnyOverlap(compatibleDisplays, trackDisplays)
-            }),
+          ...filterTracks(tracks, self, assemblyName),
         ])
       },
 
@@ -184,29 +208,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         if (!self.view) {
           return []
         }
-        const trackConfigurations = connection.tracks
-        const { assemblyManager } = getSession(self)
-        const assembly = assemblyManager.get(assemblyName)
-
-        if (!(assembly && assembly.initialized)) {
-          return []
-        }
 
         // filter out tracks that don't match the current display types
-        return trackConfigurations
-          .filter(c => {
-            const trackConfAssemblies = readConfObject(c, 'assemblyNames')
-            const { allAliases } = assembly
-            return hasAnyOverlap(allAliases, trackConfAssemblies)
-          })
-          .filter(c => {
-            const { displayTypes } = pluginManager.getViewType(self.view.type)
-            const compatibleDisplays = displayTypes.map(d => d.name)
-            const trackDisplays = c.displays.map(
-              (d: { type: string }) => d.type,
-            )
-            return hasAnyOverlap(compatibleDisplays, trackDisplays)
-          })
+        return filterTracks(connection.tracks, self, assemblyName)
       },
     }))
     .views(self => ({

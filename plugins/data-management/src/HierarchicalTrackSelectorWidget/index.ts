@@ -1,7 +1,5 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import stateModelFactory, { HierarchicalTrackSelectorModel } from './model'
+import configSchema from './configSchema'
 
-export { default as stateModelFactory } from './model'
-export const configSchema = ConfigurationSchema(
-  'HierarchicalTrackSelectorWidget',
-  {},
-)
+export { stateModelFactory, configSchema }
+export type { HierarchicalTrackSelectorModel }

@@ -97,7 +97,6 @@
     "canvas": "^2.9.1",
     "chai": "^4.3.4",
     "concurrently": "^7.2.1",
-    "core-js": "^3.19.3",
     "cross-env": "^7.0.2",
     "cross-spawn": "^7.0.1",
     "dependency-graph": "^0.11.0",

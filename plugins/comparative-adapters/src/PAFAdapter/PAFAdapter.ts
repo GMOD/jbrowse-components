@@ -288,6 +288,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
             refName === region.refName &&
             doesIntersect2(region.start, region.end, start, end)
           ) {
+            const { numMatches, blockLen } = extra
             observer.next(
               new SimpleFeature({
                 uniqueId: `${i}`,
@@ -296,7 +297,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName,
                 strand,
                 assemblyName,
+                revCigar: true,
                 syntenyId: i,
+                ...(numMatches && blockLen
+                  ? { identity: numMatches / blockLen }
+                  : {}),
                 mate: { start: mateStart, end: mateEnd, refName: mateName },
                 ...extra,
               }),

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-circular-view",
-  "version": "1.7.11",
+  "version": "2.0.1",
   "description": "JBrowse 2 circular view",
   "keywords": [
     "jbrowse",
@@ -41,7 +41,7 @@
     "@mui/icons-material": "^5.0.1"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",

@@ -92,8 +92,7 @@ describe('create', () => {
       'fails if user selects a directory that already has existing files, no force flag',
     )
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://example.com', mockWrongSite as any)
+    .nock('https://example.com', mockWrongSite)
     .command([
       'create',
       'jbrowse',
@@ -103,10 +102,8 @@ describe('create', () => {
     .exit(2)
     .it('fails if the fetch does not return the right file')
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://api.github.com', mockReleases as any)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://example.com', mockZip as any)
+    .nock('https://api.github.com', mockReleases)
+    .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
     .it('download and unzips JBrowse 2 to new directory', async ctx => {
       expect(await readdir(path.join(ctx.dir, 'jbrowse'))).toContain(
@@ -114,8 +111,8 @@ describe('create', () => {
       )
     })
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://example.com', mockZip as any)
+
+    .nock('https://example.com', mockZip)
     .command([
       'create',
       'jbrowse',
@@ -128,10 +125,10 @@ describe('create', () => {
       )
     })
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://api.github.com', mockTagSuccess as any)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://example.com', mockZip as any)
+
+    .nock('https://api.github.com', mockTagSuccess)
+
+    .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse', '--tag', 'v0.0.1', '--force'])
     .it(
       'overwrites and succeeds in downloading JBrowse in a non-empty directory with version #',
@@ -142,23 +139,23 @@ describe('create', () => {
       },
     )
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://api.github.com', mockTagFail as any)
+
+    .nock('https://api.github.com', mockTagFail)
     .command(['create', 'jbrowse', '--tag', 'v999.999.999', '--force'])
     .catch(/Could not find version/)
     .it('fails to download a version that does not exist')
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://api.github.com', mockReleases as any)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://example.com', mockZip as any)
+
+    .nock('https://api.github.com', mockReleases)
+
+    .nock('https://example.com', mockZip)
     .command(['create', 'jbrowse'])
     .command(['create', 'jbrowse'])
     .exit(120)
     .it('fails because this directory is already set up')
   setup
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .nock('https://api.github.com', mockReleasesListVersions as any)
+
+    .nock('https://api.github.com', mockReleasesListVersions)
     .command(['create', '--listVersions'])
     .catch(/0/)
     .it('lists versions', ctx => {

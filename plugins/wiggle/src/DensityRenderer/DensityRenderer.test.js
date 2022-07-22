@@ -1,6 +1,8 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import DensityRenderer, { configSchema, ReactComponent } from '.'
+import DensityRenderer from './DensityRenderer'
+import configSchema from './configSchema'
+import ReactComponent from '../WiggleRendering'
 
 import { Image, createCanvas } from 'canvas'
 
@@ -32,12 +34,16 @@ test('inverted mode and reversed', async () => {
     ],
     scaleOpts: {
       domain: [0, 100],
+      range: [0, 200],
       inverted: true,
       scaleType: 'linear',
     },
+    config: {
+      posColor: 'red',
+      negColor: 'blue',
+    },
     bpPerPx: 3,
     highResolutionScaling: 1,
-    config: {},
     height: 100,
   }
 

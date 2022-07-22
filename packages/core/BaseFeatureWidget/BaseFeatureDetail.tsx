@@ -70,7 +70,7 @@ export const useStyles = makeStyles()(theme => ({
   },
   fieldName: {
     wordBreak: 'break-all',
-    minWidth: '90px',
+    minWidth: 90,
     borderBottom: '1px solid #0003',
     fontSize: 12,
     background: theme.palette.grey[200],
@@ -273,20 +273,21 @@ function CoreDetails(props: BaseProps) {
     position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
-  const coreRenderedDetails = [
-    'Position',
-    'Description',
-    'Name',
-    'Length',
-    'Type',
-  ]
+  const coreRenderedDetails = {
+    position: 'Position',
+    description: 'Description',
+    name: 'Name',
+    length: 'Length',
+    type: 'Type',
+    assemblyName: 'Assembly name',
+  }
   return (
     <>
-      {coreRenderedDetails
-        .map(key => [key, displayedDetails[key.toLowerCase()]])
+      {Object.entries(coreRenderedDetails)
+        .map(([key, name]) => [name, displayedDetails[key]])
         .filter(([, value]) => value !== null && value !== undefined)
-        .map(([key, value]) => (
-          <SimpleValue key={key} name={key} value={value} />
+        .map(([name, value]) => (
+          <SimpleValue key={name} name={name} value={value} />
         ))}
     </>
   )
@@ -303,11 +304,25 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
-  formatter?: (val: unknown, key: string) => React.ReactElement
+  formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
 }
 
+export function UriLink({
+  value,
+}: {
+  value: { uri: string; baseUri?: string }
+}) {
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
+}
 const DataGridDetails = ({
   value,
   prefix,
@@ -346,7 +361,10 @@ const DataGridDetails = ({
 
     const columns = colNames.map(val => ({
       field: val,
-      renderCell: (val: GridCellParams) => getStr(val.formattedValue),
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
+      },
       width: Math.max(
         ...rows.map(row =>
           Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
@@ -489,6 +507,7 @@ export function Attributes(props: AttributeProps) {
               />
             ) : (
               <Attributes
+                {...props}
                 omit={omits}
                 key={key}
                 attributes={value}
@@ -526,7 +545,7 @@ export interface BaseInputProps extends BaseCardProps {
   omit?: string[]
   model: any
   descriptions?: Record<string, React.ReactNode>
-  formatter?: (val: unknown, key: string) => React.ReactElement
+  formatter?: (val: unknown, key: string) => React.ReactNode
 }
 
 function isEmpty(obj: Record<string, unknown>) {
@@ -544,7 +563,7 @@ export const FeatureDetails = (props: {
   feature: SimpleFeatureSerialized
   depth?: number
   omit?: string[]
-  formatter?: (val: unknown, key: string) => React.ReactElement
+  formatter?: (val: unknown, key: string) => React.ReactNode
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature

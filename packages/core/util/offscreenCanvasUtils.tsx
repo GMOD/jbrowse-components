@@ -1,7 +1,11 @@
 import React from 'react'
-import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { CanvasSequence } from 'canvas-sequencer'
+
+// locals
+import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './index'
+
+export type RenderReturn = Record<string, unknown>
 
 export async function renderToAbstractCanvas(
   width: number,
@@ -10,15 +14,18 @@ export async function renderToAbstractCanvas(
     exportSVG?: { rasterizeLayers?: boolean }
     highResolutionScaling: number
   },
-  cb: Function,
+  cb: (
+    ctx: CanvasRenderingContext2D,
+  ) => Promise<RenderReturn | void> | RenderReturn | void,
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
       const fakeCtx = new CanvasSequence()
-      await cb(fakeCtx)
+      const result = await cb(fakeCtx)
       return {
+        ...result,
         canvasRecordedData: fakeCtx.toJSON(),
       }
     } else {
@@ -29,11 +36,12 @@ export async function renderToAbstractCanvas(
         throw new Error('2d canvas rendering not supported on this platform')
       }
       ctx.scale(scale, scale)
-      await cb(ctx)
+      const result = await cb(ctx)
 
       // two methods needed for converting canvas to PNG, one for webworker
       // offscreen canvas, one for main thread
       return {
+        ...result,
         reactElement: (
           <image
             width={width}
@@ -61,8 +69,8 @@ export async function renderToAbstractCanvas(
       throw new Error('2d canvas rendering not supported on this platform')
     }
     ctx.scale(highResolutionScaling, highResolutionScaling)
-    await cb(ctx)
+    const result = await cb(ctx)
 
-    return { imageData: await createImageBitmap(canvas) }
+    return { ...result, imageData: await createImageBitmap(canvas) }
   }
 }

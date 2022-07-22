@@ -116,16 +116,11 @@ export default class HicRenderer extends ServerSideRendererType {
     const height = readConfObject(config, 'maxHeight')
     const features = await this.getFeatures(renderProps)
 
-    const res = await renderToAbstractCanvas(
-      width,
-      height,
-      renderProps,
-      (ctx: CanvasRenderingContext2D) => {
-        return this.makeImageData(ctx, {
-          ...renderProps,
-          features,
-        })
-      },
+    const res = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+      this.makeImageData(ctx, {
+        ...renderProps,
+        features,
+      }),
     )
     const results = await super.render({
       ...renderProps,

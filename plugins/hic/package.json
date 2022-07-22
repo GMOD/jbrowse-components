@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-hic",
-  "version": "1.7.11",
+  "version": "2.0.1",
   "description": "JBrowse 2 hic adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -42,8 +42,8 @@
     "hic-straw": "^2.0.3"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",

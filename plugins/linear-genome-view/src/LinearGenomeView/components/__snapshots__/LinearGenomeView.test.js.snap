@@ -500,7 +500,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       <div
         class="tss-1ql7uaq-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
-        role="presentation"
         style="height: 100px;"
       >
         <div
@@ -1361,7 +1360,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <div
         class="tss-1ql7uaq-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
-        role="presentation"
         style="height: 100px;"
       >
         <div
@@ -1498,7 +1496,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       <div
         class="tss-1ql7uaq-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig2"
-        role="presentation"
         style="height: 100px;"
       >
         <div

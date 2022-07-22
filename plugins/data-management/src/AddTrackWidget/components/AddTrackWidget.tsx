@@ -91,7 +91,6 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
     const assemblyInstance = session.assemblyManager.get(assembly)
 
     if (trackAdapter && trackAdapter.type !== 'UNKNOWN') {
-      // @ts-ignore
       session.addTrackConf({
         trackId,
         type: trackType,
@@ -112,20 +111,17 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
           if (textIndexTrack && supportedIndexingAdapters(trackAdapter.type)) {
             const attr = textIndexingConf || textSearchingDefault
             const indexName = trackName + '-index'
-            const indexingParams = {
-              ...attr,
-              assemblies: [assembly],
-              tracks: [trackId],
-              indexType: 'perTrack',
-              name: indexName,
-              timestamp: new Date().toISOString(),
-            }
             const newEntry = {
-              indexingParams: indexingParams,
-              name: indexName,
-              cancelCallback: () => {
-                jobsManager.abortJob()
+              indexingParams: {
+                ...attr,
+                assemblies: [assembly],
+                tracks: [trackId],
+                indexType: 'perTrack',
+                name: indexName,
+                timestamp: new Date().toISOString(),
               },
+              name: indexName,
+              cancelCallback: () => jobsManager.abortJob(),
             }
             jobsManager.queueJob(newEntry)
           }
@@ -137,7 +133,6 @@ function AddTrackWidget({ model }: { model: AddTrackModel }) {
         )
       }
       model.clearData()
-      // @ts-ignore
       session.hideWidget(model)
     } else {
       setTrackErrorMessage(

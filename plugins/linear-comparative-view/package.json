@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-comparative-view",
-  "version": "1.7.11",
+  "version": "2.0.1",
   "description": "JBrowse 2 linear comparative view",
   "keywords": [
     "jbrowse",
@@ -39,12 +39,14 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
-    "clone": "^2.1.2"
+    "clone": "^2.1.2",
+    "copy-to-clipboard": "^3.3.1",
+    "react-popper": "^2.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-alignments": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-alignments": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",

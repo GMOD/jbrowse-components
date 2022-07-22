@@ -5,23 +5,17 @@ import {
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { AugmentedRegion as Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { updateStatus } from '@jbrowse/core/util'
+import { updateStatus, Feature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { map, mergeAll } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
-import PluginManager from '@jbrowse/core/PluginManager'
-
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
 }
 
 export default class BigWigAdapter extends BaseFeatureDataAdapter {
-  private bigwig: BigWig
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private setupP?: Promise<{ bigwig: BigWig; header: any }>
 
   public static capabilities = [
     'hasResolution',
@@ -29,39 +23,50 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     'hasGlobalStats',
   ]
 
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    this.bigwig = new BigWig({
+  private async setupPre(opts?: BaseOptions) {
+    const { statusCallback = () => {} } = opts || {}
+    const bigwig = new BigWig({
       filehandle: openLocation(
-        readConfObject(config, 'bigWigLocation'),
+        this.getConf('bigWigLocation'),
         this.pluginManager,
       ),
     })
+    const header = await updateStatus(
+      'Downloading bigwig header',
+      statusCallback,
+      () => bigwig.getHeader(opts),
+    )
+    return { bigwig, header }
   }
 
-  private async setup(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
-    return updateStatus('Downloading bigwig header', statusCallback, () =>
-      this.bigwig.getHeader(opts),
-    )
+  async setup(opts?: BaseOptions) {
+    if (!this.setupP) {
+      this.setupP = this.setupPre(opts).catch(e => {
+        this.setupP = undefined
+        throw e
+      })
+    }
+    return this.setupP
   }
 
   public async getRefNames(opts?: BaseOptions) {
-    const { refsByName } = await this.setup(opts)
+    const {
+      header: { refsByName },
+    } = await this.setup(opts)
     return Object.keys(refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const { refsByNumber } = await this.setup()
+    const {
+      header: { refsByNumber },
+    } = await this.setup()
     return refsByNumber[refId]?.name
   }
 
   public async getGlobalStats(opts?: BaseOptions) {
-    const { totalSummary } = await this.setup(opts)
+    const {
+      header: { totalSummary },
+    } = await this.setup(opts)
     return rectifyStats(totalSummary as UnrectifiedFeatureStats)
   }
 
@@ -75,19 +80,32 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     } = opts
     return ObservableCreate<Feature>(async observer => {
       statusCallback('Downloading bigwig data')
-      const ob = await this.bigwig.getFeatureStream(refName, start, end, {
+      const source = this.getConf('source')
+      const { bigwig } = await this.setup(opts)
+      const feats = await bigwig.getFeatures(refName, start, end, {
         ...opts,
         basesPerSpan: bpPerPx / resolution,
       })
-      ob.pipe(
-        mergeAll(),
-        map(record => {
-          return new SimpleFeature({
-            id: `${refName}:${record.start}-${record.end}`,
-            data: { ...record, refName },
-          })
-        }),
-      ).subscribe(observer)
+
+      for (let i = 0; i < feats.length; i++) {
+        const data = feats[i]
+        if (source) {
+          // @ts-ignore
+          data.source = source
+        }
+        const uniqueId = `${source}:${region.refName}:${data.start}-${data.end}`
+        // @ts-ignore
+        data.refName = refName
+        data.uniqueId = uniqueId
+        observer.next({
+          // @ts-ignore
+          get: (str: string) => (data as Record<string, unknown>)[str],
+          id: () => uniqueId,
+          // @ts-ignore
+          toJSON: () => data,
+        })
+      }
+      observer.complete()
     }, signal)
   }
 

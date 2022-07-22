@@ -11,10 +11,7 @@ import ServerSideRendererType, {
   ResultsSerialized,
 } from '../pluggableElementTypes/renderers/ServerSideRendererType'
 import { RemoteAbortSignal } from './remoteAbortSignals'
-import {
-  BaseFeatureDataAdapter,
-  isFeatureAdapter,
-} from '../data_adapters/BaseAdapter'
+import { isFeatureAdapter } from '../data_adapters/BaseAdapter'
 import {
   checkAbortSignal,
   renameRegionsIfNeeded,
@@ -45,7 +42,7 @@ export class CoreGetRefNames extends RpcMethodType {
       adapterConfig,
     )
 
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
+    if (isFeatureAdapter(dataAdapter)) {
       return dataAdapter.getRefNames(deserializedArgs)
     }
     return []
@@ -159,7 +156,7 @@ export class CoreGetFeatures extends RpcMethodType {
       adapterConfig,
     )
     if (!isFeatureAdapter(dataAdapter)) {
-      return []
+      throw new Error('Adapter does not support retrieving features')
     }
     const ret = dataAdapter.getFeaturesInMultipleRegions(regions, {
       ...opts,
@@ -253,10 +250,10 @@ export class CoreEstimateRegionStats extends RpcMethodType {
       adapterConfig,
     )
 
-    if (dataAdapter instanceof BaseFeatureDataAdapter) {
-      return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Adapter does not support retrieving features')
     }
-    throw new Error('Data adapter not found')
+    return dataAdapter.estimateRegionsStats(regions, deserializedArgs)
   }
 }
 

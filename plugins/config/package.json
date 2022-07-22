@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-config",
-  "version": "1.7.11",
+  "version": "2.0.1",
   "description": "JBrowse 2 config utilities",
   "keywords": [
     "jbrowse",
@@ -39,11 +39,10 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
-    "pluralize": "^8.0.0",
-    "react-color": "^2.19.3"
+    "pluralize": "^8.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
+    "@jbrowse/core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -31,8 +30,8 @@ const en = (n: number) => n.toLocaleString('en-US')
 const toP = (s = 0) => +(+s).toFixed(1)
 const pct = (n: number, total: number) => `${toP((n / (total || 1)) * 100)}%`
 
-const TooltipContents = React.forwardRef(
-  ({ feature }: { feature: Feature }, reactRef: any) => {
+const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
+  ({ feature }, reactRef) => {
     const start = feature.get('start')
     const end = feature.get('end')
     const name = feature.get('refName')
@@ -109,7 +108,7 @@ type Coord = [number, number]
 
 const SNPCoverageTooltip = observer(
   (props: {
-    model: any
+    model: { featureUnderMouse: Feature }
     height: number
     offsetMouseCoord: Coord
     clientMouseCoord: Coord

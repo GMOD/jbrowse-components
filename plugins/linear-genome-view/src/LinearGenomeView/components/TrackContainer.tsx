@@ -8,6 +8,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
 
+// locals
 import { LinearGenomeViewModel } from '..'
 import TrackLabel from './TrackLabel'
 
@@ -42,7 +43,7 @@ const useStyles = makeStyles()({
     height: '100%',
     width: '100%',
   },
-  trackLabelInline: {
+  trackLabelOffset: {
     position: 'relative',
     display: 'inline-block',
   },
@@ -64,15 +65,15 @@ type LGV = LinearGenomeViewModel
 const TrackContainerLabel = observer(
   ({ model, view }: { model: BaseTrackModel; view: LGV }) => {
     const { classes, cx } = useStyles()
+    const display = model.displays[0]
+    const { trackLabel, trackLabelOverlap, trackLabelOffset } = classes
     const labelStyle =
-      view.trackLabels === 'overlapping'
-        ? classes.trackLabelOverlap
-        : classes.trackLabelInline
+      view.trackLabels !== 'overlapping' || display.prefersOffset
+        ? trackLabelOffset
+        : trackLabelOverlap
+
     return view.trackLabels !== 'hidden' ? (
-      <TrackLabel
-        track={model}
-        className={cx(classes.trackLabel, labelStyle)}
-      />
+      <TrackLabel track={model} className={cx(trackLabel, labelStyle)} />
     ) : null
   },
 )
@@ -81,16 +82,21 @@ function TrackContainer({
   model,
   track,
 }: {
-  model: LinearGenomeViewModel
+  model: LGV
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
   const display = track.displays[0]
   const { horizontalScroll, draggingTrackId, moveTrack } = model
-  const { height } = display
+  const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
-
+  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
+  const debouncedOnDragEnter = useDebouncedCallback(() => {
+    if (isAlive(display) && dimmed) {
+      moveTrack(draggingTrackId, track.id)
+    }
+  }, 100)
   useEffect(() => {
     if (ref.current) {
       model.trackRefs[trackId] = ref.current
@@ -99,18 +105,6 @@ function TrackContainer({
       delete model.trackRefs[trackId]
     }
   }, [model.trackRefs, trackId])
-  function onDragEnter() {
-    if (
-      draggingTrackId !== undefined &&
-      isAlive(display) &&
-      draggingTrackId !== display.id
-    ) {
-      moveTrack(draggingTrackId, track.id)
-    }
-  }
-  const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-  const { RenderingComponent, DisplayBlurb } = display
-  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
 
   return (
     <Paper className={classes.root} variant="outlined">
@@ -118,13 +112,9 @@ function TrackContainer({
       <div
         className={classes.trackRenderingContainer}
         style={{ height }}
-        onScroll={event => {
-          const target = event.target as HTMLDivElement
-          display.setScrollTop(target.scrollTop)
-        }}
+        onScroll={event => display.setScrollTop(event.currentTarget.scrollTop)}
         onDragEnter={debouncedOnDragEnter}
         data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
-        role="presentation"
       >
         <div
           ref={ref}
