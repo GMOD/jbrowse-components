@@ -3,6 +3,8 @@ import { Button, Paper, Typography, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
 import { AddTrackModel } from '@jbrowse/plugin-data-management'
+import Dropzone from './Dropzone'
+import { storeBlobLocation } from '@jbrowse/core/util/tracks'
 
 const useStyles = makeStyles()(theme => ({
   textbox: {
@@ -33,6 +35,14 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
         onChange={event => setVal(event.target.value)}
         variant="outlined"
         className={classes.textbox}
+      />
+      <Dropzone
+        setAcceptedFiles={acceptedFiles => {
+          const res = acceptedFiles.map(file =>
+            storeBlobLocation({ blob: file }),
+          )
+          setVal(JSON.stringify(res))
+        }}
       />
       <Button
         variant="contained"
