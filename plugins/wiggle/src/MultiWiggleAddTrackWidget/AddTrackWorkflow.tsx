@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Paper, Typography, TextField } from '@mui/material'
+import { Button, Paper, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'
@@ -16,6 +16,10 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(),
     padding: theme.spacing(),
   },
+  submit: {
+    marginTop: 100,
+    marginBottom: 100,
+  },
 }))
 
 export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
@@ -23,14 +27,14 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
   const [val, setVal] = useState('')
   return (
     <Paper className={classes.paper}>
-      <Typography>
-        Enter list of bigwig files, one per line or as a JSON array. The JSON
-        array can be just an array of filenames or a list like{' '}
-        <code>{`[{uri:'http://host/file.bw', color:'green',source:'name for subtrack'}]`}</code>{' '}
-        to apply e.g. the color attribute to the view
-      </Typography>
+      <ul>
+        <li>Enter list of URLs for bigwig files in the textbox</li>
+        <li>
+          Or, drag and drop local files from your filesystem to the drop box
+        </li>
+      </ul>
+
       <TextField
-        helperText="Enter list of bigwig files"
         multiline
         rows={10}
         value={val}
@@ -48,8 +52,10 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
           setVal(JSON.stringify(res, null, 2))
         }}
       />
+
       <Button
         variant="contained"
+        className={classes.submit}
         onClick={() => {
           const session = getSession(model)
           const trackName = 'Hello'
@@ -89,6 +95,21 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       >
         Submit
       </Button>
+
+      <p>Additional notes: </p>
+      <ul>
+        <li>
+          The list of bigwig files in the text box can be a list of URLs, one
+          per line or the JSON array, consisting of an array of filenames or a
+          list of elements like{' '}
+          <code>{`[{bigWigLocation:{uri:'http://host/file.bw'}, color:'green',source:'name for subtrack'}]`}</code>{' '}
+          to apply e.g. the color attribute to the view
+        </li>
+        <li>
+          Dragging the local files to the drop box it will update the textbox
+          with contents that are ready to submit.
+        </li>
+      </ul>
     </Paper>
   )
 }

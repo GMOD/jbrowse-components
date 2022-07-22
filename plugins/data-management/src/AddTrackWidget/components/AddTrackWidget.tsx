@@ -105,18 +105,17 @@ const AddTrackWorkflow = observer(({ model }: { model: AddTrackModel }) => {
           sequenceAdapter: getConf(assemblyInstance, ['sequence', 'adapter']),
         },
       })
-      const textSearchingDefault = {
-        attributes: ['Name', 'ID'],
-        exclude: ['CDS', 'exon'],
-      }
       if (model.view) {
-        model.view?.showTrack(trackId)
+        model.view.showTrack(trackId)
         if (
           isElectron &&
           textIndexTrack &&
           supportedIndexingAdapters(trackAdapter.type)
         ) {
-          const attr = textIndexingConf || textSearchingDefault
+          const attr = textIndexingConf || {
+            attributes: ['Name', 'ID'],
+            exclude: ['CDS', 'exon'],
+          }
           const indexName = trackName + '-index'
           const newEntry = {
             indexingParams: {
