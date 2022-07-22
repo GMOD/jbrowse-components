@@ -71,6 +71,7 @@ export function drawXY(
   const filled = readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
   const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+  const pivotValue = readConfObject(config, 'bicolorPivotValue')
 
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const originY = getOrigin(scaleOpts.scaleType)
@@ -83,39 +84,44 @@ export function drawXY(
 
   let prevLeftPx = 0
   const reducedFeatures = []
+  const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
   // we handle whiskers separately to render max row, min row, and avg in three
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
     let lastCol
-    let lastDarken
-    let lastLighten
+    let lastMix
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
-      const summary = feature.get('summary')
-      const c = colorCallback(feature, score)
-      const w = rightPx - leftPx + fudgeFactor
-      if (summary) {
+      if (feature.get('summary')) {
+        const w = rightPx - leftPx + fudgeFactor
         const max = feature.get('maxScore')
-        fillRectCtx(
-          leftPx,
-          toY(max),
-          w,
-          getHeight(max),
-          ctx,
-          c === lastCol
-            ? lastLighten
-            : (lastLighten = Color(c).lighten(0.4).toString()),
-        )
+        const c = colorCallback(feature, max)
+        const effectiveC = crossingOrigin
+          ? c
+          : c === lastCol
+          ? lastMix
+          : (lastMix = Color(c).lighten(0.4).toString())
+        fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
+        lastCol = c
       }
-      lastCol = c
     }
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
+      const max = feature.get('maxScore')
+      const min = feature.get('minScore')
+      const summary = feature.get('summary')
       const c = colorCallback(feature, score)
+      const effectiveC =
+        crossingOrigin && summary
+          ? c === lastCol
+            ? lastMix
+            : (lastMix = Color(colorCallback(feature, max))
+                .mix(Color(colorCallback(feature, min)))
+                .toString())
+          : c
       const w = rightPx - leftPx + fudgeFactor
       // create reduced features, avoiding multiple features per px
       if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
@@ -123,30 +129,25 @@ export function drawXY(
         prevLeftPx = leftPx
       }
       hasClipping = hasClipping || score < niceMin || score > niceMax
-      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, effectiveC)
+      lastCol = c
     }
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
-      const summary = feature.get('summary')
-      const c = colorCallback(feature, score)
-      const w = rightPx - leftPx + fudgeFactor
 
-      if (summary) {
+      if (feature.get('summary')) {
         const min = feature.get('minScore')
+        const c = colorCallback(feature, min)
+        const w = rightPx - leftPx + fudgeFactor
+        const effectiveC = crossingOrigin
+          ? c
+          : c === lastCol
+          ? lastMix
+          : (lastMix = Color(c).darken(0.4).toString())
 
-        fillRectCtx(
-          leftPx,
-          toY(min),
-          w,
-          getHeight(min),
-          ctx,
-          c === lastCol
-            ? lastDarken
-            : (lastDarken = Color(c).darken(0.4).toString()),
-        )
+        fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
+        lastCol = c
       }
-      lastCol = c
     }
   } else {
     for (const feature of features.values()) {
