@@ -7,6 +7,7 @@ import {
   Grid,
   TextField,
   MenuItem,
+  Tooltip,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
@@ -65,7 +66,11 @@ const ImportForm = observer(
       const num = parseInt(numViews, 10)
       if (!Number.isNaN(num)) {
         if (num > 1) {
-          setSelected(Array(num).fill(assemblyNames[0]))
+          if (num <= 10) {
+            setSelected(Array(num).fill(assemblyNames[0]))
+          } else {
+            setNumViews('10')
+          }
         } else {
           setNumViews('2')
         }
@@ -272,15 +277,17 @@ const ImportForm = observer(
             ) : null}
           </Grid>
           <Grid item>
-            <TextField
-              value={numViews}
-              type="number"
-              variant="outlined"
-              margin="normal"
-              onChange={event => setNumViews(event.target.value)}
-              style={{ width: '8rem', verticalAlign: 'baseline' }}
-              helperText="Number of views"
-            />
+            <Tooltip title="Views are limited between 2 and 10">
+              <TextField
+                value={numViews}
+                type="number"
+                variant="outlined"
+                margin="normal"
+                onChange={event => setNumViews(event.target.value)}
+                style={{ width: '8rem', verticalAlign: 'baseline' }}
+                helperText="Number of views"
+              />
+            </Tooltip>
           </Grid>
           <Grid item>
             <TextField
