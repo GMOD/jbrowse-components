@@ -7,16 +7,9 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { merge } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface WiggleOptions extends BaseOptions {
   resolution?: number
-}
-
-interface BigWigEntry {
-  uri: string
-  color?: string
-  name?: string
 }
 
 function getFilename(uri: string) {
@@ -116,7 +109,6 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources() {
     const adapters = await this.getAdapters()
-    console.log({ adapters })
     return adapters.map(({ dataAdapter, source, ...rest }) => ({
       name: source,
       ...rest,

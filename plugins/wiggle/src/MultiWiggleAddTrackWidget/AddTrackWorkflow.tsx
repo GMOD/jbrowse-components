@@ -45,7 +45,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
             bigWigLocation: storeBlobLocation({ blob: file }),
             source: file.name,
           }))
-          setVal(JSON.stringify(res))
+          setVal(JSON.stringify(res, null, 2))
         }}
       />
       <Button

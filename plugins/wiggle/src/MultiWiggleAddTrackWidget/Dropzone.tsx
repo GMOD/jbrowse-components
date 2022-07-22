@@ -8,10 +8,12 @@ import { useDropzone } from 'react-dropzone'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import ErrorIcon from '@mui/icons-material/Error'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function styledBy(property: string, mapping: { [key: string]: any }) {
   return (props: { [key: string]: string }) => mapping[props[property]]
 }
 
+// @ts-ignore
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
@@ -100,6 +102,7 @@ function Dropzone({
   })
 
   // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { classes } = useStyles({ isDragActive }) as any
 
   return (

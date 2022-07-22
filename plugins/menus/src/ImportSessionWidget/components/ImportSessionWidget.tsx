@@ -88,6 +88,7 @@ export function readBlobAsText(blob: Blob): Promise<string> {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ImportSession({ model }: { model: any }) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -112,6 +113,7 @@ function ImportSession({ model }: { model: any }) {
   })
 
   // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { classes } = useStyles({ isDragActive }) as any
 
   return (
