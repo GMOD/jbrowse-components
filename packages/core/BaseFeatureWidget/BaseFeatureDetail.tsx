@@ -18,7 +18,7 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../configuration'
-import { measureText, getSession, isUriLocation } from '../util'
+import { measureText, getSession, getStr, isUriLocation } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
@@ -355,9 +355,6 @@ const DataGridDetails = ({
     } else {
       colNames = [...unionKeys]
     }
-
-    const getStr = (obj: unknown) =>
-      isObject(obj) ? JSON.stringify(obj) : String(obj)
 
     const columns = colNames.map(val => ({
       field: val,
