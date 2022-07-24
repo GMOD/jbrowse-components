@@ -14,7 +14,7 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class BedTabixAdapter extends BaseFeatureDataAdapter {
-  private parser: any
+  private parser: BED
 
   protected bed: TabixIndexedFile
 

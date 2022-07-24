@@ -17,20 +17,8 @@ function isUCSC(f: Feature) {
   return f.get('thickStart') && f.get('blockCount') && f.get('strand') !== 0
 }
 
-interface BEDFeature {
-  chrom: string
-  chromStart: number
-  chromEnd: number
-  [key: string]: any
-}
-
-interface Parser {
-  parseLine: (line: string, opts: { uniqueId: string | number }) => BEDFeature
-  autoSql: { fields: { name: string; comment: string }[] }
-}
-
 export default class BigBedAdapter extends BaseFeatureDataAdapter {
-  private cached?: Promise<{ bigbed: BigBed; header: any; parser: Parser }>
+  private cached?: Promise<{ bigbed: BigBed; header: any; parser: BED }>
 
   public async configurePre(opts?: BaseOptions) {
     const bigbed = new BigBed({
@@ -40,7 +28,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       ),
     })
     const header = await bigbed.getHeader(opts)
-    const parser = new BED({ autoSql: header.autoSql }) as Parser
+    const parser = new BED({ autoSql: header.autoSql })
     return { bigbed, header, parser }
   }
 
