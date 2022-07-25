@@ -59,6 +59,7 @@
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",
+    "mst-middlewares": "^5.1.5",
     "node-polyfill-webpack-plugin": "^1.1.4",
     "pako": "^1.0.10",
     "prop-types": "^15.7.2",

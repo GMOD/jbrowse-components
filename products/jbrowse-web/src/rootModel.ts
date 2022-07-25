@@ -3,17 +3,9 @@ import {
   cast,
   getSnapshot,
   getType,
-  getPropertyMembers,
-  getChildType,
-  isArrayType,
-  isModelType,
-  isReferenceType,
-  isValidReference,
-  isMapType,
   resolveIdentifier,
   types,
   IAnyStateTreeNode,
-  IAnyType,
   Instance,
   SnapshotIn,
   IAnyModelType,
@@ -30,6 +22,7 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
+import { UndoManager } from 'mst-middlewares'
 import { MenuItem } from '@jbrowse/core/ui'
 
 // icons
@@ -49,62 +42,16 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
-
-// attempts to remove undefined references from the given MST model. can only actually
-// remove them from arrays and maps. throws MST undefined ref error if it encounters
-// undefined refs in model properties
-function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
-  type MSTArray = Instance<ReturnType<typeof types.array>>
-  type MSTMap = Instance<ReturnType<typeof types.map>>
-
-  // makes it work with session sharing
-  if (node === undefined) {
-    return
-  }
-  if (isArrayType(nodeType)) {
-    const array = node as MSTArray
-    const childType = getChildType(node)
-    if (isReferenceType(childType)) {
-      // filter array elements
-      for (let i = 0; i < array.length; ) {
-        if (!isValidReference(() => array[i])) {
-          array.splice(i, 1)
-        } else {
-          i += 1
-        }
-      }
-    }
-    array.forEach(el => {
-      filterSessionInPlace(el, childType)
-    })
-  } else if (isMapType(nodeType)) {
-    const map = node as MSTMap
-    const childType = getChildType(map)
-    if (isReferenceType(childType)) {
-      // filter the map members
-      for (const key in map.keys()) {
-        if (!isValidReference(() => map.get(key))) {
-          map.delete(key)
-        }
-      }
-    }
-    map.forEach(child => {
-      filterSessionInPlace(child, childType)
-    })
-  } else if (isModelType(nodeType)) {
-    // iterate over children
-    const { properties } = getPropertyMembers(node)
-
-    Object.entries(properties).forEach(([pname, ptype]) => {
-      // @ts-ignore
-      filterSessionInPlace(node[pname], ptype)
-    })
-  }
-}
+import { filterSessionInPlace } from './util'
 
 interface Menu {
   label: string
   menuItems: MenuItem[]
+}
+
+export let undoManager = {} as Instance<typeof UndoManager>
+export const setUndoManager = (targetStore: unknown) => {
+  undoManager = UndoManager.create({}, { targetStore })
 }
 
 export default function RootModel(
@@ -171,6 +118,10 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
     }))
+    .actions(self => {
+      setUndoManager(self)
+      return {}
+    })
     .actions(self => ({
       afterCreate() {
         Object.entries(localStorage)
@@ -561,6 +512,17 @@ export default function RootModel(
         {
           label: 'Add',
           menuItems: [],
+        },
+        {
+          label: 'Edit',
+          menuItems: [
+            {
+              label: 'Undo',
+              onClick: () => {
+                undoManager.undo()
+              },
+            },
+          ],
         },
         {
           label: 'Tools',
