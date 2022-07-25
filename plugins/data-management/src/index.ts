@@ -11,6 +11,7 @@ import {
   stateModelFactory as AddTrackStateModelFactory,
   configSchema as AddTrackConfigSchema,
 } from './AddTrackWidget'
+import { AddTrackModel } from './AddTrackWidget/model'
 import {
   stateModel as AddConnectionStateModel,
   configSchema as AddConnectionConfigSchema,
@@ -106,4 +107,4 @@ export default class extends Plugin {
 }
 
 export { AssemblyManager, SetDefaultSession }
-export type { HierarchicalTrackSelectorModel }
+export type { HierarchicalTrackSelectorModel, AddTrackModel }
