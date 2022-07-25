@@ -203,26 +203,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(() => {
-            if (self.session) {
-              // this is needed to get MST to start tracking itself
-              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
-              self.history.initialize()
-            }
-          }),
-        )
-        addDisposer(
-          self,
-          autorun(() => {
-            self.jbrowse.internetAccounts.forEach(account => {
-              this.initializeInternetAccount(account.internetAccountId)
-            })
-          }),
-        )
-      },
     }))
     .volatile(self => ({
       menus: [
@@ -545,9 +525,15 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
       },
+      stopTrackingUndo() {
+        self.history.resumeTrackingUndo()
+      },
+      resumeTrackingUndo() {
+        self.history.resumeTrackingUndo()
+      },
 
       afterCreate() {
-        document.addEventListener('keydown', function (event) {
+        document.addEventListener('keydown', event => {
           if (
             (event.ctrlKey && event.key === 'z') ||
             (event.metaKey && event.key === 'z')
@@ -557,6 +543,24 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             }
           }
         })
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.session) {
+              // this is needed to get MST to start tracking itself
+              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
+              self.history.initialize()
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              self.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
         addDisposer(
           self,
           autorun(

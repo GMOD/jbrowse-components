@@ -26,12 +26,15 @@ const TimeTraveller = types
     undoIdx: -1,
     targetPath: '',
   })
+  .volatile(() => ({
+    notTrackingUndo: false,
+  }))
   .views(self => ({
     get canUndo() {
-      return self.undoIdx > 0
+      return self.undoIdx > 0 && !self.notTrackingUndo
     },
     get canRedo() {
-      return self.undoIdx < self.history.length - 1
+      return self.undoIdx < self.history.length - 1 && !self.notTrackingUndo
     },
   }))
   .actions(self => {
@@ -40,7 +43,18 @@ const TimeTraveller = types
     let skipNextUndoState = false
 
     return {
+      // allows user code to (temporarily) stop tracking undo states
+      stopTrackingUndo() {
+        self.notTrackingUndo = true
+      },
+      // allows user code to resume tracking undo states
+      resumeTrackingUndo() {
+        self.notTrackingUndo = false
+      },
       addUndoState(todos: unknown) {
+        if (self.notTrackingUndo) {
+          return
+        }
         if (skipNextUndoState) {
           // skip recording if this state was caused by undo / redo
           skipNextUndoState = false

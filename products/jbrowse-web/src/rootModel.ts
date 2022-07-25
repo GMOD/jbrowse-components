@@ -115,8 +115,14 @@ export default function RootModel(
     }))
 
     .actions(self => ({
+      stopTrackingUndo() {
+        self.history.resumeTrackingUndo()
+      },
+      resumeTrackingUndo() {
+        self.history.resumeTrackingUndo()
+      },
       afterCreate() {
-        document.addEventListener('keydown', function (event) {
+        document.addEventListener('keydown', event => {
           if (
             (event.ctrlKey && event.key === 'z') ||
             (event.metaKey && event.key === 'z')
