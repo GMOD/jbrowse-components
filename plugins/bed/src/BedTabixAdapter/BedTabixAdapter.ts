@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import BED from '@gmod/bed'
 import {
   BaseFeatureDataAdapter,
