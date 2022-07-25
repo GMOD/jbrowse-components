@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   IconButton,
   Typography,
 } from '@mui/material'
@@ -32,14 +33,19 @@ export default function AcknowledgeCloseDialog({
   return (
     <Dialog open onClose={handleClose}>
       <DialogTitle>
-        Closing view
-        <IconButton className={classes.closeButton} onClick={handleClose}>
+        Are you sure you want to close this view?
+        <IconButton
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+        >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
+      <Divider />
       <DialogContent>
         <Typography>
-          Note that closing a view is irreversible and you will lose your work.
+          Closing a view is irreversible and you will lose your work.
         </Typography>
       </DialogContent>
       <DialogActions>

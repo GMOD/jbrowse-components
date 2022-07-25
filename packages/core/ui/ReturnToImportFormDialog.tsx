@@ -33,7 +33,7 @@ function ReturnToImportFormDialog({
   return (
     <Dialog maxWidth="xl" open onClose={handleClose}>
       <DialogTitle>
-        Reference sequence
+        Are you sure you want to return to the import form?
         {handleClose ? (
           <IconButton
             className={classes.closeButton}
@@ -48,11 +48,18 @@ function ReturnToImportFormDialog({
 
       <DialogContent>
         <Typography>
-          Are you sure you want to return to the import form? This will lose
-          your current view
+          Upon returning to the import form you will lose your work on your
+          current view.
         </Typography>
       </DialogContent>
       <DialogActions>
+        <Button
+          onClick={() => handleClose()}
+          color="secondary"
+          variant="contained"
+        >
+          Cancel
+        </Button>
         <Button
           onClick={() => {
             model.clearView()
@@ -62,14 +69,7 @@ function ReturnToImportFormDialog({
           color="primary"
           autoFocus
         >
-          OK
-        </Button>
-        <Button
-          onClick={() => handleClose()}
-          color="secondary"
-          variant="contained"
-        >
-          Cancel
+          Confirm
         </Button>
       </DialogActions>
     </Dialog>

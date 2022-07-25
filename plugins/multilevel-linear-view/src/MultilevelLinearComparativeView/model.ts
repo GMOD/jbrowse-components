@@ -8,6 +8,7 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -300,9 +301,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           view.centerAt(center.coord, center.refName, center.index)
         })
       },
+
       clearView() {
         self.views = cast([])
       },
+
       removeView(target: any) {
         // cannot remove the anchor or the overview -- needs to have minimum these two views
         if (target.isAnchor === false && target.isOverview === false) {
@@ -310,19 +313,50 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
       },
     }))
+    .actions(self => ({
+      async addView() {
+        const { assemblyManager } = getSession(self)
+        const assembly = await assemblyManager.waitForAssembly(
+          self.assemblyNames[0],
+        )
+        if (assembly) {
+          const newView = {
+            type: 'LinearGenomeMultilevelView' as const,
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: assembly.regions,
+            width: self.width,
+          }
+          const temp = [...self.views]
+          // @ts-ignore
+          temp.splice(1, 0, newView)
+          self.setViews(temp)
+          self.setLimitBpPerPx()
+        }
+      },
+    }))
     .views(self => ({
       menuItems() {
         const menuItems: MenuItem[] = []
-        menuItems.push({
-          label: 'Return to import form',
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              ReturnToImportFormDialog,
-              { model: self, handleClose },
-            ])
+        menuItems.push(
+          {
+            label: 'Return to import form',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                { model: self, handleClose },
+              ])
+            },
+            icon: FolderOpenIcon,
           },
-          icon: FolderOpenIcon,
-        })
+          {
+            label: 'Add a view',
+            icon: AddIcon,
+            onClick: () => {
+              self.addView()
+            },
+          },
+        )
         const subMenuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
           if (view.menuItems?.()) {

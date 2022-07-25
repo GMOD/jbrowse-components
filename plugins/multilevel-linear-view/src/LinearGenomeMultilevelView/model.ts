@@ -219,8 +219,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           }
         },
         closeView() {
-          const session = getSession(self)
-          session.queueDialog
           const parent = getContainingView(self)
           parent.removeView(self)
         },
