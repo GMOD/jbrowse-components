@@ -7,7 +7,7 @@ import resolve, {
 } from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
 import path from 'path'
-import { defineConfig, Plugin, RollupOptions } from 'rollup'
+import { defineConfig, OutputOptions, Plugin, RollupOptions } from 'rollup'
 import externalGlobals from 'rollup-plugin-external-globals'
 import builtins from 'rollup-plugin-node-builtins'
 import globals from 'rollup-plugin-node-globals'
@@ -33,6 +33,8 @@ const umdName = `JBrowsePlugin${packageJson.config?.jbrowse?.plugin?.name}`
 
 const distPath = path.join(appPath, 'dist')
 const srcPath = path.join(appPath, 'src')
+
+const nodeEnv = process.env.NODE_ENV || 'production'
 
 function createGlobalMap(jbrowseGlobals: string[], dotSyntax = false) {
   const globalMap: Record<string, string> = {}
@@ -150,7 +152,7 @@ export function createRollupConfig(
           sourcemap: true,
           exports: 'named',
         },
-        {
+        nodeEnv === 'production' && {
           file: path.join(distPath, `${packageName}.cjs.production.min.js`),
           format: 'cjs',
           freeze: false,
@@ -166,7 +168,7 @@ export function createRollupConfig(
             }),
           ],
         },
-      ],
+      ].filter(Boolean) as OutputOptions[],
     })
   const umdConfig =
     includeUMD &&
@@ -195,7 +197,7 @@ export function createRollupConfig(
           inlineDynamicImports: true,
           globals: createGlobalMap(jbrowseGlobals, true),
         },
-        {
+        nodeEnv === 'production' && {
           file: path.join(distPath, `${packageName}.umd.production.min.js`),
           format: 'umd',
           name: umdName,
@@ -214,7 +216,7 @@ export function createRollupConfig(
             }),
           ],
         },
-      ],
+      ].filter(Boolean) as OutputOptions[],
       watch: { clearScreen: false },
     })
   const esmBundleConfig =

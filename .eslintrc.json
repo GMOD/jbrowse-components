@@ -116,6 +116,18 @@
         },
         "project": "./component_test/cypress/tsconfig.json"
       }
+    },
+    {
+      "files": [
+        "./plugin-development-tools/**/*.[t,j]s",
+        "./plugin-development-tools/**/*.[t,j]sx"
+      ],
+      "parserOptions": {
+        "ecmaFeatures": {
+          "jsx": true
+        },
+        "project": "./plugin-development-tools/tsconfig.json"
+      }
     }
   ]
 }
