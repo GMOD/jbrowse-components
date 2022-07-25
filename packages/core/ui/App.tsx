@@ -13,7 +13,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv, getSnapshot } from 'mobx-state-tree'
 
 // locals
 import { readConfObject, AnyConfigurationModel } from '../configuration'
@@ -216,7 +216,23 @@ const App = observer(
                   <ViewContainer
                     key={`view-${view.id}`}
                     view={view}
-                    onClose={() => session.removeView(view)}
+                    onClose={() => {
+                      const snapshot = JSON.parse(
+                        // @ts-ignore
+                        JSON.stringify(getSnapshot(view)),
+                      )
+                      session.removeView(view)
+                      session.notify(
+                        `View ${view.id} has been closed`,
+                        'warning',
+                        {
+                          name: 'undo',
+                          onClick: () => {
+                            session.addView(view.type, snapshot)
+                          },
+                        },
+                      )
+                    }}
                   >
                     <Suspense fallback={<div>Loading...</div>}>
                       <ReactComponent
