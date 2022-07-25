@@ -4,10 +4,10 @@
     "noEmit": false,
     "declaration": true,
     "outDir": "dist/",
-    // node 12 target: https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-10
-    "lib": ["ES2019"],
+    // node 14 target: https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-14
+    "lib": ["ES2020"],
     "module": "commonjs",
-    "target": "ES2019"
+    "target": "ES2020"
   },
   "include": ["src"],
   "exclude": []
