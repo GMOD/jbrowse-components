@@ -115,15 +115,14 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
       <p>Additional notes: </p>
       <ul>
         <li>
-          The list of bigwig files in the text box can be a list of URLs, one
-          per line or a JSON array, consisting of an array of filenames or a
+          The list of bigwig files in the text box can be a list of URLs, or a
           list of elements like{' '}
           <code>{`[{bigWigLocation:{uri:'http://host/file.bw'}, color:'green',source:'name for subtrack'}]`}</code>{' '}
           to apply e.g. the color attribute to the view
         </li>
         <li>
-          Dragging the local files to the drop box it will update the textbox
-          with contents that are ready to submit.
+          Adding local files will update the textbox with JSON contents that are
+          ready to submit with the "Submit" button
         </li>
       </ul>
     </Paper>
