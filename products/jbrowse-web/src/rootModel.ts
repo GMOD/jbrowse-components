@@ -6,7 +6,6 @@ import {
   resolveIdentifier,
   types,
   IAnyStateTreeNode,
-  Instance,
   SnapshotIn,
   IAnyModelType,
 } from 'mobx-state-tree'
@@ -22,7 +21,6 @@ import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
-import { UndoManager } from 'mst-middlewares'
 import { MenuItem } from '@jbrowse/core/ui'
 
 // icons
@@ -39,6 +37,7 @@ import SaveIcon from '@mui/icons-material/Save'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
+import TimeTraveller from './TimeTraveller'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -47,11 +46,6 @@ import { filterSessionInPlace } from './util'
 interface Menu {
   label: string
   menuItems: MenuItem[]
-}
-
-export let undoManager = {} as Instance<typeof UndoManager>
-export const setUndoManager = (targetStore: unknown) => {
-  undoManager = UndoManager.create({}, { targetStore })
 }
 
 export default function RootModel(
@@ -74,10 +68,11 @@ export default function RootModel(
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
-      isAssemblyEditing: false,
-      isDefaultSessionEditing: false,
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({
+      isAssemblyEditing: false,
+      isDefaultSessionEditing: false,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
@@ -118,10 +113,7 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
     }))
-    .actions(self => {
-      setUndoManager(self)
-      return {}
-    })
+
     .actions(self => ({
       afterCreate() {
         document.addEventListener('keydown', function (event) {
@@ -129,7 +121,8 @@ export default function RootModel(
             (event.ctrlKey && event.key === 'z') ||
             (event.metaKey && event.key === 'z')
           ) {
-            undoManager.undo()
+            console.log(self.history)
+            self.history.undo()
           }
         })
 
@@ -161,6 +154,15 @@ export default function RootModel(
                   )
                 }
               }
+            }
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.session) {
+              self.history.initialize()
             }
           }),
         )
@@ -385,7 +387,6 @@ export default function RootModel(
       },
     }))
     .volatile(self => ({
-      history: {},
       menus: [
         {
           label: 'File',
@@ -528,7 +529,8 @@ export default function RootModel(
             {
               label: 'Undo',
               onClick: () => {
-                undoManager.undo()
+                console.log(self.history)
+                self.history.undo()
               },
             },
           ],
@@ -555,10 +557,6 @@ export default function RootModel(
       adminMode,
     }))
     .actions(self => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setHistory(history: any) {
-        self.history = history
-      },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
       },
