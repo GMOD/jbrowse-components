@@ -117,7 +117,7 @@ export default function MultiWiggleWidget({ model }: { model: AddTrackModel }) {
         <li>
           The list of bigwig files in the text box can be a list of URLs, or a
           list of elements like{' '}
-          <code>{`[{bigWigLocation:{uri:'http://host/file.bw'}, color:'green',source:'name for subtrack'}]`}</code>{' '}
+          <code>{`[{"type":"BigWigAdapter","bigWigLocation":{"uri":"http://host/file.bw"}, "color":"green","source":"name for subtrack"}]`}</code>{' '}
           to apply e.g. the color attribute to the view
         </li>
         <li>
