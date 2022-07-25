@@ -121,8 +121,9 @@ export default function RootModel(
             (event.ctrlKey && event.key === 'z') ||
             (event.metaKey && event.key === 'z')
           ) {
-            console.log(self.history)
-            self.history.undo()
+            if (self.history.canUndo) {
+              self.history.undo()
+            }
           }
         })
 
@@ -162,6 +163,8 @@ export default function RootModel(
           self,
           autorun(() => {
             if (self.session) {
+              // this is needed to get MST to start tracking itself
+              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
               self.history.initialize()
             }
           }),
@@ -528,8 +531,8 @@ export default function RootModel(
           menuItems: [
             {
               label: 'Undo',
+              disabled: self.history.canUndo,
               onClick: () => {
-                console.log(self.history)
                 self.history.undo()
               },
             },

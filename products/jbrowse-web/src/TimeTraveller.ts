@@ -45,12 +45,23 @@ const TimeTraveller = types
         }
         self.history.splice(self.undoIdx + 1)
         self.history.push(todos)
+        if (self.history.length > 20) {
+          self.history.shift()
+        }
         self.undoIdx = self.history.length - 1
       },
-      afterCreate() {
+
+      beforeDestroy() {
+        snapshotDisposer()
+      },
+      initialize() {
+        // this is needed to get MST to start tracking itself
+        // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
         targetStore = self.targetPath
           ? resolvePath(self, self.targetPath)
           : getEnv(self).targetStore
+
+        console.log(targetStore, self.targetPath)
         if (!targetStore)
           throw new Error(
             'Failed to find target store for TimeTraveller. Please provide `targetPath` property, or a `targetStore` in the environment',
@@ -66,13 +77,6 @@ const TimeTraveller = types
         if (self.history.length === 0) {
           this.addUndoState(getSnapshot(targetStore))
         }
-      },
-      beforeDestroy() {
-        snapshotDisposer()
-      },
-      initialize() {
-        // this is needed to get MST to start tracking itself
-        // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
       },
       undo() {
         self.undoIdx--
