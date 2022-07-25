@@ -527,7 +527,7 @@ export default function RootModel(
           menuItems: [],
         },
         {
-          label: 'Edit',
+          label: 'Tools',
           menuItems: [
             {
               label: 'Undo',
@@ -536,11 +536,6 @@ export default function RootModel(
                 self.history.undo()
               },
             },
-          ],
-        },
-        {
-          label: 'Tools',
-          menuItems: [
             {
               label: 'Plugin store',
               icon: ExtensionIcon,
