@@ -77,12 +77,12 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
     const { highResolutionScaling = 1, width, height, config, views } = props
-    console.log({ highResolutionScaling })
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
       height * highResolutionScaling,
     )
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
@@ -90,8 +90,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const lineWidth = readConfObject(config, 'lineWidth')
     const thresholds = readConfObject(config, 'thresholds')
     const palette = readConfObject(config, 'thresholdsPalette')
-
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const isCallback = config.color.isCallback
     ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
     const [hview, vview] = views
@@ -101,11 +100,19 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     // we operate on snapshots of these attributes of the hview/vview because
     // it is significantly faster than accessing the mobx objects
-    const { bpPerPx: hBpPerPx, width: hw, staticBlocks: hBlocks } = hview
-    const { bpPerPx: vBpPerPx, width: vw, staticBlocks: vBlocks } = vview
-    const hsnap = { ...getSnapshot(hview), staticBlocks: hBlocks, width: hw }
-    const vsnap = { ...getSnapshot(hview), staticBlocks: vBlocks, width: vw }
+    const { bpPerPx: hBpPerPx } = hview
+    const { bpPerPx: vBpPerPx } = vview
 
+    const hsnap = {
+      ...getSnapshot(hview),
+      staticBlocks: hview.staticBlocks,
+      width: hview.width,
+    }
+    const vsnap = {
+      ...getSnapshot(vview),
+      staticBlocks: vview.staticBlocks,
+      width: vview.width,
+    }
     hview.features?.forEach(feature => {
       const strand = feature.get('strand') || 1
       const start = strand === 1 ? feature.get('start') : feature.get('end')
@@ -116,8 +123,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
       let r
       if (colorBy === 'identity') {
+        const identity = feature.get('identity')
         for (let i = 0; i < thresholds.length; i++) {
-          if (feature.get('identity') > +thresholds[i]) {
+          if (identity > +thresholds[i]) {
             r = palette[i]
             break
           }
@@ -129,9 +137,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
-        r = config.color.isCallback
-          ? readConfObject(config, 'color', { feature })
-          : color
+        r = isCallback ? readConfObject(config, 'color', { feature }) : color
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
@@ -202,20 +208,20 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       view: { hview, vview },
     } = renderProps
     const dimensions = [width, height]
-    const views = [hview, vview].map((snap, idx) => {
+    const realizedViews = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view
     })
-    const target = views[0]
+    const target = realizedViews[0]
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
     })
     target.setFeatures(feats)
-    const { imageData, warnings } = await this.makeImageData({
+    const { warnings, imageData } = await this.makeImageData({
       ...renderProps,
-      views,
+      views: realizedViews,
     })
 
     const results = await super.render({
@@ -231,8 +237,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       warnings,
       height,
       width,
-      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
-      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
+      offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
     }
   }
 }

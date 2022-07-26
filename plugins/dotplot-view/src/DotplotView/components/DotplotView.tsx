@@ -291,14 +291,16 @@ const DotplotViewInternal = observer(
                   className={classes.popover}
                   style={{
                     left:
+                      6 +
                       mouserect[0] -
                       (mousedown && mouserect[0] - mousedown[0] < 0
-                        ? lrect.width
+                        ? lrect.width + 12
                         : 0),
                     top:
+                      6 +
                       mouserect[1] -
                       (mousedown && mouserect[1] - mousedown[1] < 0
-                        ? lrect.height
+                        ? lrect.height + 12
                         : 0),
                   }}
                 >
