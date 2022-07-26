@@ -77,26 +77,27 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
     const { highResolutionScaling = 1, width, height, config, views } = props
+    console.log({ highResolutionScaling })
 
     const canvas = createCanvas(
       Math.ceil(width * highResolutionScaling),
       height * highResolutionScaling,
     )
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const color = readConfObject(config, 'color')
-    const isCallback = config.color.isCallback
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
     const thresholds = readConfObject(config, 'thresholds')
     const palette = readConfObject(config, 'thresholdsPalette')
+
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
-    const unableToDraw = [] as string[]
+    const warnings = [] as string[]
 
     // we operate on snapshots of these attributes of the hview/vview because
     // it is significantly faster than accessing the mobx objects
@@ -128,7 +129,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
-        r = isCallback ? readConfObject(config, 'color', { feature }) : color
+        r = config.color.isCallback
+          ? readConfObject(config, 'color', { feature })
+          : color
       }
       ctx.fillStyle = r
       ctx.strokeStyle = r
@@ -181,22 +184,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           }
         }
       } else {
-        if (unableToDraw.length <= 5) {
-          unableToDraw.push(
+        if (warnings.length <= 5) {
+          warnings.push(
             `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
           )
         }
       }
     })
-    if (unableToDraw.length) {
-      console.warn(
-        (unableToDraw.length > 5
-          ? 'Many features fell outside the boundaries of the contigs.....sample of features: '
-          : 'Some features fell outside the boundaries of the contigs: ') +
-          unableToDraw.slice(0, 5).join('\n'),
-      )
-    }
-    return createImageBitmap(canvas)
+
+    return { warnings, imageData: await createImageBitmap(canvas) }
   }
 
   async render(renderProps: DotplotRenderArgsDeserialized) {
@@ -206,20 +202,20 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       view: { hview, vview },
     } = renderProps
     const dimensions = [width, height]
-    const realizedViews = [hview, vview].map((snap, idx) => {
+    const views = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view
     })
-    const target = realizedViews[0]
+    const target = views[0]
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
     })
     target.setFeatures(feats)
-    const imageData = await this.makeImageData({
+    const { imageData, warnings } = await this.makeImageData({
       ...renderProps,
-      views: realizedViews,
+      views,
     })
 
     const results = await super.render({
@@ -232,10 +228,11 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     return {
       ...results,
       imageData,
+      warnings,
       height,
       width,
-      offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
-      offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
+      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
     }
   }
 }
