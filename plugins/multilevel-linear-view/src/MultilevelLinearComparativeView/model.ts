@@ -8,7 +8,7 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import AddIcon from '@mui/icons-material/Add'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import MenuIcon from '@mui/icons-material/Menu'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -389,6 +389,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           },
           {
             label: 'Reverse views direction',
+            icon: SwapVertIcon,
             onClick: self.reverseViewsDirection,
           },
         )
