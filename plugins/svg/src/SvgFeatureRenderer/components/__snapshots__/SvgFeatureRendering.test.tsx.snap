@@ -1,5 +1,47 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`click on one feature, and do not re-render 1`] = `
+<svg
+  data-testid="svgfeatures"
+  height="130"
+  width="333.3333333333333"
+>
+  <g>
+    <rect
+      data-testid="box-one"
+      fill="goldenrod"
+      height="10"
+      stroke=""
+      width="2"
+      x="0.3"
+      y="0"
+    />
+  </g>
+  <g>
+    <rect
+      data-testid="box-two"
+      fill="goldenrod"
+      height="10"
+      stroke=""
+      width="2"
+      x="0.3"
+      y="10"
+    />
+  </g>
+  <g>
+    <rect
+      data-testid="box-three"
+      fill="goldenrod"
+      height="10"
+      stroke=""
+      width="2"
+      x="0.3"
+      y="20"
+    />
+  </g>
+</svg>
+`;
+
 exports[`no features 1`] = `
 <svg
   data-testid="svgfeatures"

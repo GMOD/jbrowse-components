@@ -5,9 +5,10 @@ import { Region } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 
 type LayoutRecord = [number, number, number, number]
+
 interface SvgOverlayProps {
   region: Region
-  displayModel: {
+  displayModel?: {
     getFeatureByID?: (arg0: string, arg1: string) => LayoutRecord
     selectedFeatureId?: string
     featureIdUnderMouse?: string
@@ -15,7 +16,7 @@ interface SvgOverlayProps {
   }
   bpPerPx: number
   blockKey: string
-  movedDuringLastMouseDown: boolean
+  movedDuringLastMouseDown?: boolean
   onFeatureMouseDown?(
     event: React.MouseEvent<SVGRectElement, MouseEvent>,
     featureId: string,
