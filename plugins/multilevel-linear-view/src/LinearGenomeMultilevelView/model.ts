@@ -9,7 +9,6 @@ import {
 import { MenuItem } from '@jbrowse/core/ui'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 import ExportSvgDlg from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ExportSvgDialog'
-import { AcknowledgeCloseDialog } from '@jbrowse/core/ui'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -256,10 +255,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   label: 'Remove view',
                   icon: CloseIcon,
                   onClick: () => {
-                    getSession(self).queueDialog(handleClose => [
-                      AcknowledgeCloseDialog,
-                      { closeOperation: self.closeView, handleClose },
-                    ])
+                    self.closeView
                   },
                 }
               : {

@@ -23,7 +23,6 @@ import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import AcknowledgeCloseDialog from './AcknowledgeCloseDialog'
 import {
   NotificationLevel,
   SessionWithDrawerWidgets,
@@ -218,15 +217,7 @@ const App = observer(
                     key={`view-${view.id}`}
                     view={view}
                     onClose={() => {
-                      session.queueDialog((handleClose: any) => [
-                        AcknowledgeCloseDialog,
-                        {
-                          closeOperation: () => {
-                            session.removeView(view)
-                          },
-                          handleClose,
-                        },
-                      ])
+                      session.removeView(view)
                     }}
                   >
                     <Suspense fallback={<div>Loading...</div>}>
