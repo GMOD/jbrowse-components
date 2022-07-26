@@ -8,6 +8,7 @@ import ViewType from './ViewType'
 import RpcMethodType from './RpcMethodType'
 import InternetAccountType from './InternetAccountType'
 import TextSearchAdapterType from './TextSearchAdapterType'
+import AddTrackWorkflowType from './AddTrackWorkflowType'
 
 export * from './renderers'
 export * from './models'
@@ -23,6 +24,7 @@ export {
   RpcMethodType,
   InternetAccountType,
   TextSearchAdapterType,
+  AddTrackWorkflowType,
 }
 
 export type PluggableElementType =
@@ -36,6 +38,7 @@ export type PluggableElementType =
   | RpcMethodType
   | InternetAccountType
   | TextSearchAdapterType
+  | AddTrackWorkflowType
 
 export type PluggableElementMember =
   | keyof AdapterType
@@ -48,3 +51,4 @@ export type PluggableElementMember =
   | keyof RpcMethodType
   | keyof InternetAccountType
   | keyof TextSearchAdapterType
+  | keyof AddTrackWorkflowType

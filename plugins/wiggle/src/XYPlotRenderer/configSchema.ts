@@ -21,6 +21,10 @@ const configSchema = ConfigurationSchema(
         'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
       defaultValue: 'whiskers',
     },
+    minSize: {
+      type: 'number',
+      defaultValue: 0,
+    },
   },
   { baseConfiguration: ConfigSchema, explicitlyTyped: true },
 )

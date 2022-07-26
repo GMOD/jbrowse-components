@@ -28,7 +28,7 @@ function fillRectCtx(
   ctx.fillRect(x, y, width, height)
 }
 
-const fudgeFactor = 0.3
+const fudgeFactor = 0.4
 const clipHeight = 2
 
 export function drawXY(
@@ -71,6 +71,8 @@ export function drawXY(
   const filled = readConfObject(config, 'filled')
   const clipColor = readConfObject(config, 'clipColor')
   const summaryScoreMode = readConfObject(config, 'summaryScoreMode')
+  const pivotValue = readConfObject(config, 'bicolorPivotValue')
+  const minSize = readConfObject(config, 'minSize')
 
   const scale = getScale({ ...scaleOpts, range: [0, height] })
   const originY = getOrigin(scaleOpts.scaleType)
@@ -78,75 +80,79 @@ export function drawXY(
 
   const toY = (n: number) => clamp(height - (scale(n) || 0), 0, height) + offset
   const toOrigin = (n: number) => toY(originY) - toY(n)
-  const getHeight = (n: number) => (filled ? toOrigin(n) : 1)
+  const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
   let hasClipping = false
 
   let prevLeftPx = 0
   const reducedFeatures = []
+  const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
   // we handle whiskers separately to render max row, min row, and avg in three
   // passes. this reduces subpixel rendering issues. note: for stylistic
   // reasons, clipping indicator is only drawn for score, not min/max score
   if (summaryScoreMode === 'whiskers') {
     let lastCol
-    let lastDarken
-    let lastLighten
+    let lastMix
+    for (const feature of features.values()) {
+      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
+      if (feature.get('summary')) {
+        const w = rightPx - leftPx + fudgeFactor
+        const max = feature.get('maxScore')
+        const c = colorCallback(feature, max)
+        const effectiveC = crossingOrigin
+          ? c
+          : c === lastCol
+          ? lastMix
+          : (lastMix = Color(c).lighten(0.4).toString())
+        fillRectCtx(leftPx, toY(max), w, getHeight(max), ctx, effectiveC)
+        lastCol = c
+      }
+    }
+    lastMix = undefined
+    lastCol = undefined
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       const score = feature.get('score')
+      const max = feature.get('maxScore')
+      const min = feature.get('minScore')
       const summary = feature.get('summary')
       const c = colorCallback(feature, score)
-      const w = rightPx - leftPx + fudgeFactor
-      if (summary) {
-        const max = feature.get('maxScore')
-        fillRectCtx(
-          leftPx,
-          toY(max),
-          w,
-          getHeight(max),
-          ctx,
-          c === lastCol
-            ? lastLighten
-            : (lastLighten = Color(c).lighten(0.4).toString()),
-        )
-      }
-      lastCol = c
-    }
-    for (const feature of features.values()) {
-      const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
-      const c = colorCallback(feature, score)
-      const w = rightPx - leftPx + fudgeFactor
+      const effectiveC =
+        crossingOrigin && summary
+          ? c === lastCol
+            ? lastMix
+            : (lastMix = Color(colorCallback(feature, max))
+                .mix(Color(colorCallback(feature, min)))
+                .toString())
+          : c
+      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
       // create reduced features, avoiding multiple features per px
       if (Math.floor(leftPx) !== Math.floor(prevLeftPx)) {
         reducedFeatures.push(feature)
         prevLeftPx = leftPx
       }
       hasClipping = hasClipping || score < niceMin || score > niceMax
-      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, c)
+      fillRectCtx(leftPx, toY(score), w, getHeight(score), ctx, effectiveC)
+      lastCol = c
     }
+    lastMix = undefined
+    lastCol = undefined
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
-      const score = feature.get('score')
-      const summary = feature.get('summary')
-      const c = colorCallback(feature, score)
-      const w = rightPx - leftPx + fudgeFactor
 
-      if (summary) {
+      if (feature.get('summary')) {
         const min = feature.get('minScore')
+        const c = colorCallback(feature, min)
+        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
+        const effectiveC = crossingOrigin
+          ? c
+          : c === lastCol
+          ? lastMix
+          : (lastMix = Color(c).darken(0.4).toString())
 
-        fillRectCtx(
-          leftPx,
-          toY(min),
-          w,
-          getHeight(min),
-          ctx,
-          c === lastCol
-            ? lastDarken
-            : (lastDarken = Color(c).darken(0.4).toString()),
-        )
+        fillRectCtx(leftPx, toY(min), w, getHeight(min), ctx, effectiveC)
+        lastCol = c
       }
-      lastCol = c
     }
   } else {
     for (const feature of features.values()) {
@@ -162,7 +168,7 @@ export function drawXY(
       const c = colorCallback(feature, score)
 
       hasClipping = hasClipping || score < niceMin || score > niceMax
-      const w = rightPx - leftPx + fudgeFactor
+      const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
 
       if (summaryScoreMode === 'max') {
         const s = feature.get('summary') ? feature.get('maxScore') : score
@@ -196,7 +202,7 @@ export function drawXY(
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
     ticks.values.forEach(tick => {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))
@@ -292,7 +298,7 @@ export function drawLine(
 
   if (displayCrossHatches) {
     ctx.lineWidth = 1
-    ctx.strokeStyle = 'rgba(200,200,200,0.8)'
+    ctx.strokeStyle = 'rgba(200,200,200,0.5)'
     values.forEach(tick => {
       ctx.beginPath()
       ctx.moveTo(0, Math.round(toY(tick)))

@@ -101,31 +101,41 @@ const ColorLegend = observer(
     const {
       needsCustomLegend,
       needsScalebar,
+      needsFullHeightScalebar,
       rowHeightTooSmallForScalebar,
       renderColorBoxes,
       sources,
     } = model
     const svgFontSize = Math.min(rowHeight, 12)
     const canDisplayLabel = rowHeight > 11
-
+    const colorBoxWidth = renderColorBoxes ? 15 : 0
+    const legendWidth = labelWidth + colorBoxWidth + 5
+    const extraOffset = needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0
     return sources ? (
       <>
+        {
+          /* 0.25 for hanging letters like g */
+          needsFullHeightScalebar ? (
+            <RectBg
+              y={0}
+              x={extraOffset}
+              width={legendWidth}
+              height={(sources.length + 0.25) * rowHeight}
+            />
+          ) : null
+        }
         {sources.map((source, idx) => {
-          // put the subtrack labels to the right of the scalebar
-          const extraOffset =
-            needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0
-          const colorBoxWidth = renderColorBoxes ? 15 : 0
-          const legendWidth = labelWidth + colorBoxWidth + 5
           const boxHeight = Math.min(20, rowHeight)
-
           return (
             <React.Fragment key={source.name + '-' + idx}>
-              <RectBg
-                y={idx * rowHeight + 1}
-                x={extraOffset}
-                width={legendWidth}
-                height={boxHeight}
-              />
+              {!needsFullHeightScalebar ? (
+                <RectBg
+                  y={idx * rowHeight + 1}
+                  x={extraOffset}
+                  width={legendWidth}
+                  height={boxHeight}
+                />
+              ) : null}
               {source.color ? (
                 <RectBg
                   y={idx * rowHeight + 1}

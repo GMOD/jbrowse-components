@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react'
+import isObject from 'is-object'
 import {
   addDisposer,
   getParent,
@@ -23,6 +24,7 @@ import {
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
+import { isUriLocation } from './types'
 
 export type { Feature }
 export * from './types'
@@ -1124,4 +1126,21 @@ export const useLocalStorage = (key: string, defaultValue = '') => {
   // without this cast, tsc complained that the type of setValue could be a
   // string or a callback
   return [value, setValue] as [string, (arg: string) => void]
+}
+
+export function getStr(obj: unknown) {
+  return isObject(obj)
+    ? isUriLocation(obj)
+      ? obj.uri
+      : JSON.stringify(obj)
+    : String(obj)
+}
+
+// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
+export function measureGridWidth(elements: string[]) {
+  return Math.max(
+    ...elements.map(element =>
+      Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
+    ),
+  )
 }

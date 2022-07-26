@@ -22,6 +22,7 @@ import ViewListIcon from '@mui/icons-material/ViewList'
 
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -32,11 +33,25 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const AutosaveEntry = observer(({ session }) => {
+interface SessionSnap {
+  name: string
+  views: { tracks: unknown[] }[]
+  [key: string]: unknown
+}
+
+interface SessionModel extends AbstractSessionModel {
+  savedSessions: SessionSnap[]
+  removeSavedSession: (arg: SessionSnap) => void
+  activateSession: (arg: string) => void
+  loadAutosaveSession: () => void
+  previousAutosaveId: string
+}
+
+const AutosaveEntry = observer(({ session }: { session: SessionModel }) => {
   const { classes } = useStyles()
   const autosavedSession = JSON.parse(
     localStorage.getItem(session.previousAutosaveId) || '{}',
-  ).session
+  ).session as SessionSnap
 
   const { views = [] } = autosavedSession || {}
   const totalTracks = views
@@ -68,18 +83,20 @@ const AutosaveEntry = observer(({ session }) => {
   ) : null
 })
 
-const SessionManager = observer(({ session }) => {
+const SessionManager = observer(({ session }: { session: SessionModel }) => {
   const { classes } = useStyles()
-  const [sessionIndexToDelete, setSessionIndexToDelete] = useState(null)
+  const [sessionIndexToDelete, setSessionIndexToDelete] = useState<
+    number | null
+  >(null)
   const [open, setOpen] = useState(false)
 
-  function handleDialogOpen(idx) {
+  function handleDialogOpen(idx: number) {
     setSessionIndexToDelete(idx)
     setOpen(true)
   }
 
   function handleDialogClose(deleteSession = false) {
-    if (deleteSession) {
+    if (deleteSession && sessionIndexToDelete !== null) {
       session.removeSavedSession(session.savedSessions[sessionIndexToDelete])
     }
     setSessionIndexToDelete(null)
