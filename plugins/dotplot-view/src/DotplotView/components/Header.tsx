@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { lazy, useState } from 'react'
 
-import { IconButton, Typography } from '@mui/material'
+import { Alert, Button, IconButton, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
@@ -15,6 +15,7 @@ import ArrowRight from '@mui/icons-material/KeyboardArrowRight'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+const WarningDialog = lazy(() => import('./WarningDialog'))
 
 import { observer } from 'mobx-react'
 import { DotplotViewModel } from '../model'
@@ -42,9 +43,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   return (
     <div>
       <IconButton
-        onClick={() => {
-          model.hview.scroll(-100)
-        }}
+        onClick={() => model.hview.scroll(-100)}
         className={classes.iconButton}
         title="left"
         color="secondary"
@@ -53,9 +52,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
       </IconButton>
 
       <IconButton
-        onClick={() => {
-          model.hview.scroll(100)
-        }}
+        onClick={() => model.hview.scroll(100)}
         className={classes.iconButton}
         title="left"
         color="secondary"
@@ -63,9 +60,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         <ArrowRight />
       </IconButton>
       <IconButton
-        onClick={() => {
-          model.vview.scroll(100)
-        }}
+        onClick={() => model.vview.scroll(100)}
         className={classes.iconButton}
         title="left"
         color="secondary"
@@ -73,9 +68,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         <ArrowDown />
       </IconButton>
       <IconButton
-        onClick={() => {
-          model.vview.scroll(-100)
-        }}
+        onClick={() => model.vview.scroll(-100)}
         className={classes.iconButton}
         title="left"
         color="secondary"
@@ -145,6 +138,24 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
     </div>
   )
 })
+const Warnings = observer(({ model }: { model: DotplotViewModel }) => {
+  const tracksWithWarnings = model.tracks.filter(
+    t => t.displays[0].warnings.length,
+  )
+  const [shown, setShown] = useState(false)
+  return tracksWithWarnings.length ? (
+    <Alert severity="warning">
+      Some tracks had warnings{' '}
+      <Button onClick={() => setShown(true)}>More info</Button>
+      {shown ? (
+        <WarningDialog
+          warnings={tracksWithWarnings}
+          handleClose={() => setShown(false)}
+        />
+      ) : null}
+    </Alert>
+  ) : null
+})
 
 const Header = observer(
   ({
@@ -179,6 +190,7 @@ const Header = observer(
           </Typography>
         ) : null}
         <div className={classes.spacer} />
+        <Warnings model={model} />
       </div>
     )
   },

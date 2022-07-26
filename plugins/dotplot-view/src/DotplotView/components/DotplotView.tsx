@@ -160,6 +160,7 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
   )
 })
 
+
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const { hview, vview, viewHeight } = model

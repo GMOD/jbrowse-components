@@ -6,7 +6,6 @@ import { observer } from 'mobx-react'
 import { DotplotRenderArgsDeserialized } from '../DotplotRenderer'
 
 function DotplotRendering(props: DotplotRenderArgsDeserialized) {
-  console.log({ props })
   return <PrerenderedCanvas {...props} />
 }
 

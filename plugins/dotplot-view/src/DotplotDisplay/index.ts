@@ -64,6 +64,7 @@ export function stateModelFactory(configSchema: any) {
           configuration: ConfigurationReference(configSchema),
         })
         .volatile(() => ({
+          warnings: [] as string[],
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
           data: undefined as any,
@@ -139,6 +140,7 @@ export function stateModelFactory(configSchema: any) {
             return
           }
           const { data, reactElement, renderingComponent } = args
+          self.warnings = data.warnings
           self.filled = true
           self.message = undefined
           self.reactElement = reactElement
