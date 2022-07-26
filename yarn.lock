@@ -17422,9 +17422,9 @@ react-app-polyfill@^3.0.0:
     whatwg-fetch "^3.6.2"
 
 react-d3-axis-mod@^0.1.3:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/react-d3-axis-mod/-/react-d3-axis-mod-0.1.5.tgz#60fd6da429f53a0639f65be78fce46c23b2f6ad3"
-  integrity sha512-N5Vm9NyW3MrtTHZgnuE8imdBhqpUCLUBiBnSZ37m1f6cNjOPIQoZYy+RXtLXSfG0bTfHq0PJXU/uGLBImuGmZQ==
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/react-d3-axis-mod/-/react-d3-axis-mod-0.1.6.tgz#ff9cf6e39e863d40b59d4d087cdbd18758d5a040"
+  integrity sha512-HxeeyqE4m+bCNFPoT4LUNjOtQs0qlrZp3GRGXfk9wPZznOmzf/UpMvUKsQqh/phonLJi7IaP8v5rpblC/5ujvA==
 
 react-dev-utils@^12.0.1:
   version "12.0.1"
