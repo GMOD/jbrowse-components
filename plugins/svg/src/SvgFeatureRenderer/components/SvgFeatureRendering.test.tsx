@@ -1,8 +1,10 @@
+import React from 'react'
+import { render, fireEvent } from '@testing-library/react'
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import React from 'react'
-import { render } from '@testing-library/react'
+
+// locals
 import SvgRendererConfigSchema from '../configSchema'
 import Rendering from './SvgFeatureRendering'
 import SvgOverlay from './SvgOverlay'
@@ -12,12 +14,21 @@ import '@testing-library/jest-dom/extend-expect'
 test('no features', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 300 }]}
-      layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
-      config={{}}
+      blockKey="hello"
+      features={new Map()}
+      regions={[
+        { refName: 'zonk', start: 0, end: 300, assemblyName: 'volvox' },
+      ]}
+      layout={
+        new PrecomputedLayout({
+          rectangles: {},
+          totalHeight: 20,
+          containsNoTransferables: true,
+          maxHeightReached: false,
+        })
+      }
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
+      config={SvgRendererConfigSchema.create({})}
       bpPerPx={3}
     />,
   )
@@ -28,11 +39,12 @@ test('no features', () => {
 test('one feature', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      blockKey="hello"
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -46,16 +58,45 @@ test('one feature', () => {
   expect(container.firstChild).toMatchSnapshot()
 })
 
+test('click on one feature, and do not re-render', () => {
+  let counter = 0
+  const { container, getByTestId } = render(
+    <Rendering
+      blockKey="hello"
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
+      layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
+      features={
+        new Map([
+          ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
+          ['two', new SimpleFeature({ uniqueId: 'two', start: 1, end: 3 })],
+          ['three', new SimpleFeature({ uniqueId: 'three', start: 1, end: 3 })],
+        ])
+      }
+      config={SvgRendererConfigSchema.create({})}
+      bpPerPx={3}
+      detectRerender={() => counter++}
+    />,
+  )
+  fireEvent.click(getByTestId('box-one'))
+  expect(counter).toBe(3)
+
+  expect(container.firstChild).toMatchSnapshot()
+})
+
 test('one feature (compact mode)', () => {
   const config = SvgRendererConfigSchema.create({ displayMode: 'compact' })
 
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      blockKey="hello"
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -213,11 +254,12 @@ test('processed transcript (reducedRepresentation mode)', () => {
   })
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      blockKey="hello"
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           ['one', new SimpleFeature({ uniqueId: 'one', start: 1, end: 3 })],
@@ -234,11 +276,12 @@ test('processed transcript (reducedRepresentation mode)', () => {
 test('processed transcript', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      blockKey="hello"
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -392,11 +435,12 @@ test('processed transcript', () => {
 test('processed transcript (exons + impliedUTR)', () => {
   const { container } = render(
     <Rendering
-      width={500}
-      height={500}
-      regions={[{ refName: 'zonk', start: 0, end: 1000 }]}
+      blockKey="hello"
+      regions={[
+        { refName: 'zonk', start: 0, end: 1000, assemblyName: 'volvox' },
+      ]}
       layout={new GranularRectLayout({ pitchX: 1, pitchY: 1 })}
-      viewParams={{ offsetPx: 0, start: 0, end: 50000 }}
+      viewParams={{ offsetPx: 0, start: 0, end: 50000, offsetPx1: 5000 }}
       features={
         new Map([
           [
@@ -1026,10 +1070,13 @@ test('svg selected', () => {
   const { container } = render(
     <svg>
       <SvgOverlay
-        width={500}
-        height={500}
         blockKey="block1"
-        region={{ refName: 'zonk', start: 0, end: 1000 }}
+        region={{
+          refName: 'zonk',
+          start: 0,
+          end: 1000,
+          assemblyName: 'volvox',
+        }}
         displayModel={{
           getFeatureByID: () => {
             return [0, 0, 10, 10]
@@ -1037,7 +1084,6 @@ test('svg selected', () => {
           featureIdUnderMouse: 'one',
           selectedFeatureId: 'one',
         }}
-        config={SvgRendererConfigSchema.create({})}
         bpPerPx={3}
       />
     </svg>,
