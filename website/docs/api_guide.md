@@ -242,6 +242,11 @@ workflow
 (sync) used to infer a track type given a location type from the "Add track
 workflow"
 
+### TrackSelector-multiTrackMenuItems
+
+(sync) used to add new menu items to the "shopping cart" in the header of the
+hierarchical track menu when tracks are added to the selection
+
 ### LaunchView-LinearGenomeView
 
 (async) launches a linear genome view given parameters
