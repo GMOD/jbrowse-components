@@ -34,7 +34,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         type: types.literal('MultilevelLinearComparativeView'),
         height: defaultHeight,
         trackSelectorType: 'hierarchical',
-        showIntraviewLinks: true,
         linkViews: false,
         interactToggled: false,
         isDescending: true,
@@ -65,6 +64,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get assemblyNames() {
         return [...new Set(self.views.map(v => v.assemblyNames).flat())]
       },
+
+      get numViews() {
+        return self.views.length
+      },
     }))
     .actions(self => ({
       setLimitBpPerPx() {
@@ -91,6 +94,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           prev++
           next++
         })
+      },
+      setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
+        self.views = cast(views)
       },
     }))
     .actions(self => ({
@@ -274,8 +280,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.height = newHeight
       },
 
-      setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
-        self.views = cast(views)
+      insertView(location: number, view: any) {
+        self.views.spliceWithArray(location, 0, [view])
       },
 
       setHeaderHeight(height: number) {
@@ -314,23 +320,55 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async addView() {
+      reverseViewsDirection() {
+        self.setIsDescending(!self.isDescending)
+        self.views.reverse()
+      },
+
+      async addView(isAbove: boolean, neighbour: any) {
         const { assemblyManager } = getSession(self)
         const assembly = await assemblyManager.waitForAssembly(
           self.assemblyNames[0],
         )
         if (assembly) {
+          const loc = isAbove
+            ? self.views.findIndex(view => view.id === neighbour.id)
+            : self.views.findIndex(view => view.id === neighbour.id) + 1
+          let bp = isAbove
+            ? neighbour.bpPerPx * (loc + 2)
+            : neighbour.bpPerPx / (loc - 1)
+          // @ts-ignore
+          const anchor = self.views.find(view => view.isAnchor)
+
+          // @ts-ignore
+          if (bp < anchor?.bpPerPx) {
+            // @ts-ignore
+            bp = anchor.bpPerPx
+          }
+
+          if (
+            (loc === 0 && self.isDescending) ||
+            (loc === self.numViews && !self.isDescending)
+          ) {
+            // new overview
+          }
+          if (
+            (loc === self.numViews && self.isDescending) ||
+            (loc === 0 && !self.isDescending)
+          ) {
+            // new anchor
+          }
+
           const newView = {
             type: 'LinearGenomeMultilevelView' as const,
-            bpPerPx: 1,
+            bpPerPx: bp,
             offsetPx: 0,
             displayedRegions: assembly.regions,
-            width: self.width,
           }
-          const temp = [...self.views]
-          // @ts-ignore
-          temp.splice(1, 0, newView)
-          self.setViews(temp)
+
+          self.insertView(loc, newView)
+          self.setWidth(self.width)
+          self.alignViews()
           self.setLimitBpPerPx()
         }
       },
@@ -350,11 +388,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             icon: FolderOpenIcon,
           },
           {
-            label: 'Add a view',
-            icon: AddIcon,
-            onClick: () => {
-              self.addView()
-            },
+            label: 'Reverse views direction',
+            onClick: self.reverseViewsDirection,
           },
         )
         const subMenuItems: MenuItem[] = []

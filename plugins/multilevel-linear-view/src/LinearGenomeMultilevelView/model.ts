@@ -18,6 +18,9 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import LabelIcon from '@mui/icons-material/Label'
 import CloseIcon from '@mui/icons-material/Close'
+import AddIcon from '@mui/icons-material/Add'
+import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
+import VerticalAlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 export interface BpOffset {
@@ -221,6 +224,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           const parent = getContainingView(self)
           parent.removeView(self)
         },
+        addView(isAbove: boolean) {
+          const parent = getContainingView(self)
+          parent.addView(isAbove, self)
+        },
       }))
       .views(self => ({
         menuItems(): MenuItem[] {
@@ -254,9 +261,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               ? {
                   label: 'Remove view',
                   icon: CloseIcon,
-                  onClick: () => {
-                    self.closeView
-                  },
+                  onClick: self.closeView,
                 }
               : {
                   label: 'This view cannot be removed',
@@ -264,6 +269,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   disabled: true,
                   onClick: () => {},
                 },
+            {
+              label: 'Add neighbouring view',
+              icon: AddIcon,
+              subMenu: [
+                {
+                  label: 'Add view above',
+                  icon: VerticalAlignTopIcon,
+                  onClick: () => {
+                    self.addView(true)
+                  },
+                },
+                {
+                  label: 'Add view below',
+                  icon: VerticalAlignBottomIcon,
+                  onClick: () => {
+                    self.addView(false)
+                  },
+                },
+              ],
+            },
             { type: 'divider' },
             {
               label: 'Show all regions in assembly',

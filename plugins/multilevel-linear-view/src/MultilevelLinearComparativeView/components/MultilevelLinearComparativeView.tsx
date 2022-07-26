@@ -99,10 +99,10 @@ const setPolygonPoints = (model: any, view: any) => {
   return polygonPoints
 }
 
-const OverlayComparativeView = observer(
-  ({ model, ExtraButtons }: { model: LCV; ExtraButtons?: React.ReactNode }) => {
+const MultilevelLinearComparativeView = observer(
+  (props: { model: LCV; ExtraButtons?: React.ReactNode }) => {
     const { classes } = useStyles()
-    const { views } = model
+    const { model, ExtraButtons } = props
     const { pluginManager } = getEnv(model)
 
     return (
@@ -111,7 +111,7 @@ const OverlayComparativeView = observer(
         <div className={classes.container}>
           <div className={classes.content}>
             <div className={classes.relative}>
-              {views.map(view => {
+              {model.views.map(view => {
                 const { ReactComponent } = pluginManager.getViewType(view.type)
 
                 if (!model.initialized || !view.initialized) {
@@ -167,12 +167,6 @@ const OverlayComparativeView = observer(
         </div>
       </div>
     )
-  },
-)
-
-const MultilevelLinearComparativeView = observer(
-  (props: { model: LCV; ExtraButtons?: React.ReactNode }) => {
-    return <OverlayComparativeView {...props} />
   },
 )
 
