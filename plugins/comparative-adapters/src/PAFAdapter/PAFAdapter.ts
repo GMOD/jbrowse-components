@@ -149,10 +149,8 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions) {
-    const pafLocation = openLocation(
-      this.getConf('pafLocation'),
-      this.pluginManager,
-    )
+    const pm = this.pluginManager
+    const pafLocation = openLocation(this.getConf('pafLocation'), pm)
     const buffer = (await pafLocation.readFile(opts)) as Buffer
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     // 512MB  max chrome string length is 512MB

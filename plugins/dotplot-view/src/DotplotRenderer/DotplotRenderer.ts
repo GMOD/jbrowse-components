@@ -54,24 +54,23 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const assemblyManager =
       this.pluginManager.rootModel?.session?.assemblyManager
 
-    if (!assemblyManager) {
-      throw new Error('No assembly manager provided')
+    const { view, sessionId, adapterConfig } = args
+
+    async function process(regions?: Region[]) {
+      if (!assemblyManager) {
+        throw new Error('No assembly manager provided')
+      }
+      const result = await renameRegionsIfNeeded(assemblyManager, {
+        sessionId,
+        adapterConfig,
+        regions,
+      })
+      return result.regions
     }
 
-    args.view.hview.displayedRegions = (
-      await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        regions: args.view.hview.displayedRegions,
-        adapterConfig: args.adapterConfig,
-      })
-    ).regions
-    args.view.vview.displayedRegions = (
-      await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        regions: args.view.vview.displayedRegions,
-        adapterConfig: args.adapterConfig,
-      })
-    ).regions
+    view.hview.displayedRegions = await process(view.hview.displayedRegions)
+    view.vview.displayedRegions = await process(view.vview.displayedRegions)
+
     return args
   }
   async makeImageData(
@@ -90,6 +89,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
+    const thresholds = readConfObject(config, 'thresholds')
+    const palette = readConfObject(config, 'thresholdsPalette')
     ctx.lineWidth = lineWidth
     ctx.scale(highResolutionScaling, highResolutionScaling)
     const [hview, vview] = views
@@ -99,49 +100,31 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     // we operate on snapshots of these attributes of the hview/vview because
     // it is significantly faster than accessing the mobx objects
-    const { bpPerPx: hBpPerPx } = hview
-    const { bpPerPx: vBpPerPx } = vview
+    const { bpPerPx: hBpPerPx, width: hw, staticBlocks: hBlocks } = hview
+    const { bpPerPx: vBpPerPx, width: vw, staticBlocks: vBlocks } = vview
+    const hsnap = { ...getSnapshot(hview), staticBlocks: hBlocks, width: hw }
+    const vsnap = { ...getSnapshot(hview), staticBlocks: vBlocks, width: vw }
 
-    const hvsnap = {
-      ...getSnapshot(hview),
-      staticBlocks: hview.staticBlocks,
-      width: hview.width,
-    }
-    const vvsnap = {
-      ...getSnapshot(vview),
-      staticBlocks: vview.staticBlocks,
-      width: vview.width,
-    }
     hview.features?.forEach(feature => {
-      let start = feature.get('start')
-      let end = feature.get('end')
       const strand = feature.get('strand') || 1
+      const start = strand === 1 ? feature.get('start') : feature.get('end')
+      const end = strand === 1 ? feature.get('end') : feature.get('start')
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      if (strand === -1) {
-        ;[end, start] = [start, end]
-      }
 
       let r
       if (colorBy === 'identity') {
-        const numMatches = feature.get('numMatches')
-        const blockLen = feature.get('blockLen')
-        const identity = numMatches / blockLen
-        const thresholds = readConfObject(config, 'thresholds')
-        const palette = readConfObject(config, 'thresholdsPalette')
         for (let i = 0; i < thresholds.length; i++) {
-          if (identity > +thresholds[i]) {
+          if (feature.get('identity') > +thresholds[i]) {
             r = palette[i]
             break
           }
         }
       } else if (colorBy === 'meanQueryIdentity') {
-        const identity = feature.get('meanScore')
-        r = `hsl(${identity * 200},100%,40%)`
+        r = `hsl(${feature.get('meanScore') * 200},100%,40%)`
       } else if (colorBy === 'mappingQuality') {
-        const mq = feature.get('mappingQual')
-        r = `hsl(${mq},100%,40%)`
+        r = `hsl(${feature.get('mappingQual')},100%,40%)`
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
@@ -150,36 +133,20 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       ctx.fillStyle = r
       ctx.strokeStyle = r
 
-      const b10 = bpToPx({
-        self: hvsnap,
-        refName,
-        coord: start,
-      })?.offsetPx
-      const b20 = bpToPx({
-        self: hvsnap,
-        refName,
-        coord: end,
-      })?.offsetPx
-      const e10 = bpToPx({
-        self: vvsnap,
-        refName: mateRef,
-        coord: mate.start,
-      })?.offsetPx
-      const e20 = bpToPx({
-        self: vvsnap,
-        refName: mateRef,
-        coord: mate.end,
-      })?.offsetPx
+      const b10 = bpToPx({ self: hsnap, refName, coord: start })
+      const b20 = bpToPx({ self: hsnap, refName, coord: end })
+      const e10 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.start })
+      const e20 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.end })
       if (
         b10 !== undefined &&
         b20 !== undefined &&
         e10 !== undefined &&
         e20 !== undefined
       ) {
-        const b1 = b10 - db1
-        const b2 = b20 - db1
-        const e1 = e10 - db2
-        const e2 = e20 - db2
+        const b1 = b10.offsetPx - db1
+        const b2 = b20.offsetPx - db1
+        const e1 = e10.offsetPx - db2
+        const e2 = e20.offsetPx - db2
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
           drawCir(ctx, b1, height - e1, true, lineWidth)
         } else {
