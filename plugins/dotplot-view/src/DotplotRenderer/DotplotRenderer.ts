@@ -51,8 +51,8 @@ function drawCir(
 }
 export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
 
     const { view, sessionId, adapterConfig } = args
 
@@ -76,12 +76,15 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
   async makeImageData(
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
-    const { highResolutionScaling = 1, width, height, config, views } = props
+    const {
+      highResolutionScaling: scaling = 1,
+      width,
+      height,
+      config,
+      views,
+    } = props
 
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
+    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
@@ -92,7 +95,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const palette = readConfObject(config, 'thresholdsPalette')
     const isCallback = config.color.isCallback
     ctx.lineWidth = lineWidth
-    ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.scale(scaling, scaling)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx

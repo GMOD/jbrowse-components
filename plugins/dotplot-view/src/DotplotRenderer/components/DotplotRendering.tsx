@@ -1,9 +1,12 @@
+import React from 'react'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
-import React from 'react'
+
+// locals
 import { DotplotRenderArgsDeserialized } from '../DotplotRenderer'
 
 function DotplotRendering(props: DotplotRenderArgsDeserialized) {
+  console.log({ props })
   return <PrerenderedCanvas {...props} />
 }
 
