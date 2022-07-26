@@ -17421,10 +17421,10 @@ react-app-polyfill@^3.0.0:
     regenerator-runtime "^0.13.9"
     whatwg-fetch "^3.6.2"
 
-react-d3-axis-mod@^0.1.3:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/react-d3-axis-mod/-/react-d3-axis-mod-0.1.6.tgz#ff9cf6e39e863d40b59d4d087cdbd18758d5a040"
-  integrity sha512-HxeeyqE4m+bCNFPoT4LUNjOtQs0qlrZp3GRGXfk9wPZznOmzf/UpMvUKsQqh/phonLJi7IaP8v5rpblC/5ujvA==
+react-d3-axis-mod@^0.1.7:
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/react-d3-axis-mod/-/react-d3-axis-mod-0.1.7.tgz#4d8e7a6e696abaf7c6c959d93186f5484637d3f7"
+  integrity sha512-S7fOXPSdVoDJoyYs6GMrhe5ZxLHMI5e7vm5KmLT8Mzn1Oo8shJjYrQfSrTWgGRloFz+zSxnVdMDSsdCn4FuYjQ==
 
 react-dev-utils@^12.0.1:
   version "12.0.1"
