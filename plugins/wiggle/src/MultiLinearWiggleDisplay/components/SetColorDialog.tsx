@@ -7,13 +7,14 @@ import {
   DialogTitle,
   IconButton,
   Paper,
+  PaperProps,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
-  useLocalStorage,
-  measureGridWidth,
   getStr,
   isUriLocation,
+  measureGridWidth,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import Draggable from 'react-draggable'
@@ -44,7 +45,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const PaperComponent = props => {
+// draggable dialog demo https://mui.com/material-ui/react-dialog/#draggable-dialog
+function PaperComponent(props: PaperProps) {
   return (
     <Draggable
       handle="#draggable-dialog-title"
@@ -54,7 +56,6 @@ const PaperComponent = props => {
     </Draggable>
   )
 }
-
 export default function SetColorDialog({
   model,
   handleClose,
@@ -75,92 +76,87 @@ export default function SetColorDialog({
   )
   const showTips = showTipsTmp === 'true'
   return (
-    <Draggable
-      handle={'[class*="MuiDialog-root"]'}
-      cancel={'[class*="MuiDialogContent-root"]'}
+    <Dialog
+      PaperComponent={PaperComponent}
+      open
+      onClose={handleClose}
+      maxWidth="xl"
+      aria-labelledby="draggable-dialog-title" // this area is important for the draggable functionality
     >
-      <Dialog
-        PaperComponent={PaperComponent}
-        open
-        hideBackdrop
-        onClose={handleClose}
-        maxWidth="xl"
-      >
-        <DialogTitle>
-          Multi-wiggle color/arrangement editor{' '}
-          <IconButton className={classes.closeButton} onClick={handleClose}>
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent className={classes.content}>
-          <Button
-            variant="contained"
-            style={{ float: 'right' }}
-            onClick={() => setShowTips(showTips ? 'false' : 'true')}
-          >
-            {showTips ? 'Hide tips' : 'Show tips'}
-          </Button>
-          <br />
-          {showTips ? (
-            <>
-              Helpful tips
-              <ul>
-                <li>You can select rows in the table with the checkboxes</li>
-                <li>
-                  Multi-select is enabled with shift-click and control-click
-                </li>
-                <li>
-                  The "Move selected items up/down" can re-arrange subtracks
-                </li>
-                <li>
-                  Sorting the data grid itself can also re-arrange subtracks
-                </li>
-                <li>Changes are applied when you hit Submit</li>
-              </ul>
-            </>
-          ) : null}
-          <SourcesGrid
-            rows={currLayout}
-            onChange={setCurrLayout}
-            showTips={showTips}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="contained"
-            type="submit"
-            color="inherit"
-            onClick={() => {
-              model.clearLayout()
-              setCurrLayout(model.sources)
-            }}
-          >
-            Clear custom colors
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              handleClose()
-              setCurrLayout([...model.sources])
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            type="submit"
-            onClick={() => {
-              model.setLayout(currLayout)
-              handleClose()
-            }}
-          >
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Draggable>
+      <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+        Multi-wiggle color/arrangement editor{' '}
+        <IconButton className={classes.closeButton} onClick={handleClose}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent className={classes.content}>
+        <Button
+          variant="contained"
+          style={{ float: 'right' }}
+          onClick={() => setShowTips(showTips ? 'false' : 'true')}
+        >
+          {showTips ? 'Hide tips' : 'Show tips'}
+        </Button>
+        <br />
+        {showTips ? (
+          <>
+            Helpful tips
+            <ul>
+              <li>You can select rows in the table with the checkboxes</li>
+              <li>
+                Multi-select is enabled with shift-click and control-click
+              </li>
+              <li>
+                The "Move selected items up/down" can re-arrange subtracks
+              </li>
+              <li>
+                Sorting the data grid itself can also re-arrange subtracks
+              </li>
+              <li>Changes are applied when you hit Submit</li>
+            </ul>
+          </>
+        ) : null}
+        <SourcesGrid
+          rows={currLayout}
+          onChange={setCurrLayout}
+          showTips={showTips}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          type="submit"
+          color="inherit"
+          onClick={() => {
+            model.clearLayout()
+            setCurrLayout(model.sources)
+          }}
+        >
+          Clear custom settings
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            handleClose()
+            setCurrLayout([...model.sources])
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          onClick={() => {
+            model.setLayout(currLayout)
+            handleClose()
+          }}
+        >
+          Submit
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 
@@ -202,11 +198,13 @@ function SourcesGrid({
     },
     {
       field: 'name',
+      sortingOrder: [null],
       headerName: 'Name',
       width: measureGridWidth(rows.map(r => r.name)),
     },
     ...Object.keys(rest).map(val => ({
       field: val,
+      sortingOrder: [null],
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
@@ -219,6 +217,10 @@ function SourcesGrid({
   // this helps keep track of the selection, even though it is not used
   // anywhere except inside the picker
   const [widgetColor, setWidgetColor] = useState('blue')
+  const [currSort, setCurrSort] = useState<{
+    idx: number
+    field: string | null
+  }>({ idx: 0, field: null })
 
   return (
     <div>
@@ -284,14 +286,18 @@ function SourcesGrid({
           columns={columns}
           onSortModelChange={args => {
             const sort = args[0]
+            const idx = (currSort.idx + 1) % 2
+            const field = sort?.field || currSort.field
+            setCurrSort({ idx, field })
+            console.log({ idx, field })
             onChange(
-              sort
+              field
                 ? [...rows].sort((a, b) => {
                     // @ts-ignore
-                    const aa = a[sort.field]
+                    const aa = getStr(a[field])
                     // @ts-ignore
-                    const bb = b[sort.field]
-                    return sort.sort === 'asc'
+                    const bb = getStr(b[field])
+                    return idx === 1
                       ? aa.localeCompare(bb)
                       : bb.localeCompare(aa)
                   })

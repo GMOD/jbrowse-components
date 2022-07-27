@@ -407,7 +407,7 @@ track colors are not modified. For the overlapping (xyplot, multiline), the
 tracks will be autoassigned a color from the palette. You can manually
 customize the subtrack colors from the track menu as well
 
-<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types" src="/img/multiwig/multi_colorselect.png" />
+<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts" src="/img/multiwig/multi_colorselect.png" />
 
 Oftentimes, one of the outliers on one of the subtracks may affect the
 Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
