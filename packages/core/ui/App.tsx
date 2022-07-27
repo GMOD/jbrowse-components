@@ -216,7 +216,15 @@ const App = observer(
                   <ViewContainer
                     key={`view-${view.id}`}
                     view={view}
-                    onClose={() => session.removeView(view)}
+                    onClose={() => {
+                      session.removeView(view)
+                      session.notify(`A view has been closed`, 'info', {
+                        name: 'undo',
+                        onClick: () => {
+                          pluginManager.rootModel.history.undo()
+                        },
+                      })
+                    }}
                   >
                     <Suspense fallback={<div>Loading...</div>}>
                       <ReactComponent
