@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogTitle,
   IconButton,
+  Paper,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
@@ -15,6 +16,7 @@ import {
   isUriLocation,
 } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import Draggable from 'react-draggable'
 import clone from 'clone'
 
 // locals
@@ -42,6 +44,17 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const PaperComponent = props => {
+  return (
+    <Draggable
+      handle="#draggable-dialog-title"
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Paper {...props} />
+    </Draggable>
+  )
+}
+
 export default function SetColorDialog({
   model,
   handleClose,
@@ -62,81 +75,92 @@ export default function SetColorDialog({
   )
   const showTips = showTipsTmp === 'true'
   return (
-    <Dialog open onClose={handleClose} maxWidth="xl">
-      <DialogTitle>
-        Multi-wiggle color/arrangement editor{' '}
-        <IconButton className={classes.closeButton} onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent className={classes.content}>
-        <Button
-          variant="contained"
-          style={{ float: 'right' }}
-          onClick={() => setShowTips(showTips ? 'false' : 'true')}
-        >
-          {showTips ? 'Hide tips' : 'Show tips'}
-        </Button>
-        <br />
-        {showTips ? (
-          <>
-            Helpful tips
-            <ul>
-              <li>You can select rows in the table with the checkboxes</li>
-              <li>
-                Multi-select is enabled with shift-click and control-click
-              </li>
-              <li>
-                The "Move selected items up/down" can re-arrange subtracks
-              </li>
-              <li>
-                Sorting the data grid itself can also re-arrange subtracks
-              </li>
-              <li>Changes are applied when you hit Submit</li>
-            </ul>
-          </>
-        ) : null}
-        <SourcesGrid
-          rows={currLayout}
-          onChange={setCurrLayout}
-          showTips={showTips}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          type="submit"
-          color="inherit"
-          onClick={() => {
-            model.clearLayout()
-            setCurrLayout(model.sources)
-          }}
-        >
-          Clear custom colors
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-            setCurrLayout([...model.sources])
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={() => {
-            model.setLayout(currLayout)
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+    <Draggable
+      handle={'[class*="MuiDialog-root"]'}
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Dialog
+        PaperComponent={PaperComponent}
+        open
+        hideBackdrop
+        onClose={handleClose}
+        maxWidth="xl"
+      >
+        <DialogTitle>
+          Multi-wiggle color/arrangement editor{' '}
+          <IconButton className={classes.closeButton} onClick={handleClose}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className={classes.content}>
+          <Button
+            variant="contained"
+            style={{ float: 'right' }}
+            onClick={() => setShowTips(showTips ? 'false' : 'true')}
+          >
+            {showTips ? 'Hide tips' : 'Show tips'}
+          </Button>
+          <br />
+          {showTips ? (
+            <>
+              Helpful tips
+              <ul>
+                <li>You can select rows in the table with the checkboxes</li>
+                <li>
+                  Multi-select is enabled with shift-click and control-click
+                </li>
+                <li>
+                  The "Move selected items up/down" can re-arrange subtracks
+                </li>
+                <li>
+                  Sorting the data grid itself can also re-arrange subtracks
+                </li>
+                <li>Changes are applied when you hit Submit</li>
+              </ul>
+            </>
+          ) : null}
+          <SourcesGrid
+            rows={currLayout}
+            onChange={setCurrLayout}
+            showTips={showTips}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            type="submit"
+            color="inherit"
+            onClick={() => {
+              model.clearLayout()
+              setCurrLayout(model.sources)
+            }}
+          >
+            Clear custom colors
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              handleClose()
+              setCurrLayout([...model.sources])
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            onClick={() => {
+              model.setLayout(currLayout)
+              handleClose()
+            }}
+          >
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Draggable>
   )
 }
 
