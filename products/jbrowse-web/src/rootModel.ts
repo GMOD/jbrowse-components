@@ -121,10 +121,9 @@ export default function RootModel(
         document.addEventListener('keydown', event => {
           if (event.shiftKey || event.key === 'y') {
             if (
-              event.ctrlKey ||
-              (event.ctrlKey && event.key === 'z') ||
-              event.metaKey ||
-              (event.ctrlKey && event.key === 'z')
+              (event.shiftKey && event.ctrlKey && event.key === 'z') ||
+              (event.shiftKey && event.metaKey && event.key === 'z') ||
+              (event.ctrlKey && event.key === 'y')
             ) {
               if (self.history.canRedo) {
                 self.history.redo()
