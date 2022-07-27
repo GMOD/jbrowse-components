@@ -34,6 +34,8 @@ import PublishIcon from '@mui/icons-material/Publish'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import StorageIcon from '@mui/icons-material/Storage'
 import SaveIcon from '@mui/icons-material/Save'
+import UndoIcon from '@mui/icons-material/Undo'
+import RedoIcon from '@mui/icons-material/Redo'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
@@ -123,12 +125,23 @@ export default function RootModel(
       },
       afterCreate() {
         document.addEventListener('keydown', event => {
-          if (
-            (event.ctrlKey && event.key === 'z') ||
-            (event.metaKey && event.key === 'z')
-          ) {
-            if (self.history.canUndo) {
-              self.history.undo()
+          if (event.shiftKey) {
+            if (
+              (event.ctrlKey && event.key === 'z') ||
+              (event.metaKey && event.key === 'z')
+            ) {
+              if (self.history.canRedo) {
+                self.history.redo()
+              }
+            }
+          } else {
+            if (
+              (event.ctrlKey && event.key === 'z') ||
+              (event.metaKey && event.key === 'z')
+            ) {
+              if (self.history.canUndo) {
+                self.history.undo()
+              }
             }
           }
         })
@@ -538,10 +551,20 @@ export default function RootModel(
             {
               label: 'Undo',
               disabled: self.history.canUndo,
+              icon: UndoIcon,
               onClick: () => {
                 self.history.undo()
               },
             },
+            {
+              label: 'Redo',
+              disabled: self.history.canRedo,
+              icon: RedoIcon,
+              onClick: () => {
+                self.history.redo()
+              },
+            },
+            { type: 'divider' },
             {
               label: 'Plugin store',
               icon: ExtensionIcon,

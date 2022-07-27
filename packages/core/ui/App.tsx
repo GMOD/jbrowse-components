@@ -13,7 +13,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import LaunchIcon from '@mui/icons-material/Launch'
 import { observer } from 'mobx-react'
-import { getEnv, getSnapshot } from 'mobx-state-tree'
+import { getEnv } from 'mobx-state-tree'
 
 // locals
 import { readConfObject, AnyConfigurationModel } from '../configuration'

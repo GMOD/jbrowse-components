@@ -26,6 +26,8 @@ import AppsIcon from '@mui/icons-material/Apps'
 import StorageIcon from '@mui/icons-material/Storage'
 import SettingsIcon from '@mui/icons-material/Settings'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
+import UndoIcon from '@mui/icons-material/Undo'
+import RedoIcon from '@mui/icons-material/Redo'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -346,10 +348,20 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'Undo',
               disabled: self.history.canUndo,
+              icon: UndoIcon,
               onClick: () => {
                 self.history.undo()
               },
             },
+            {
+              label: 'Redo',
+              disabled: self.history.canRedo,
+              icon: RedoIcon,
+              onClick: () => {
+                self.history.redo()
+              },
+            },
+            { type: 'divider' },
             {
               label: 'Plugin store',
               icon: ExtensionIcon,
@@ -534,12 +546,23 @@ export default function rootModelFactory(pluginManager: PluginManager) {
 
       afterCreate() {
         document.addEventListener('keydown', event => {
-          if (
-            (event.ctrlKey && event.key === 'z') ||
-            (event.metaKey && event.key === 'z')
-          ) {
-            if (self.history.canUndo) {
-              self.history.undo()
+          if (event.shiftKey) {
+            if (
+              (event.ctrlKey && event.key === 'z') ||
+              (event.metaKey && event.key === 'z')
+            ) {
+              if (self.history.canRedo) {
+                self.history.redo()
+              }
+            }
+          } else {
+            if (
+              (event.ctrlKey && event.key === 'z') ||
+              (event.metaKey && event.key === 'z')
+            ) {
+              if (self.history.canUndo) {
+                self.history.undo()
+              }
             }
           }
         })
