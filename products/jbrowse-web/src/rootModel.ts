@@ -19,6 +19,7 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -39,7 +40,6 @@ import RedoIcon from '@mui/icons-material/Redo'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
-import TimeTraveller from './TimeTraveller'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
