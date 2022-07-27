@@ -537,12 +537,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
       },
-      stopTrackingUndo() {
-        self.history.resumeTrackingUndo()
-      },
-      resumeTrackingUndo() {
-        self.history.resumeTrackingUndo()
-      },
 
       afterCreate() {
         document.addEventListener('keydown', event => {

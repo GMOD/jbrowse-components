@@ -117,12 +117,6 @@ export default function RootModel(
     }))
 
     .actions(self => ({
-      stopTrackingUndo() {
-        self.history.resumeTrackingUndo()
-      },
-      resumeTrackingUndo() {
-        self.history.resumeTrackingUndo()
-      },
       afterCreate() {
         document.addEventListener('keydown', event => {
           if (event.shiftKey) {
