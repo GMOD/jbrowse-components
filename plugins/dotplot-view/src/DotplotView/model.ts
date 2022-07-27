@@ -1,21 +1,21 @@
 import {
+  addDisposer,
+  cast,
+  getParent,
+  getRoot,
+  getSnapshot,
+  resolveIdentifier,
+  types,
   Instance,
   SnapshotIn,
-  cast,
-  types,
-  getParent,
-  getSnapshot,
-  addDisposer,
-  resolveIdentifier,
-  getRoot,
 } from 'mobx-state-tree'
 
 import { makeTicks } from './components/util'
-import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { observable, autorun, transaction } from 'mobx'
-import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import {
@@ -75,7 +75,7 @@ const DotplotVView = Dotplot1DView.extend(self => ({
   },
 }))
 
-export default function stateModelFactory(pluginManager: PluginManager) {
+export default function stateModelFactory(pm: PluginManager) {
   return types
     .compose(
       BaseViewModel,
@@ -91,22 +91,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         fontSize: 15,
         trackSelectorType: 'hierarchical',
         assemblyNames: types.array(types.string),
+        drawCigar: true,
         hview: types.optional(DotplotHView, {}),
         vview: types.optional(DotplotVView, {}),
 
         tracks: types.array(
-          pluginManager.pluggableMstType(
-            'track',
-            'stateModel',
-          ) as BaseTrackStateModel,
+          pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
         ),
 
         // this represents tracks specific to this view specifically used for
         // read vs ref dotplots where this track would not really apply
         // elsewhere
-        viewTrackConfigs: types.array(
-          pluginManager.pluggableConfigSchemaType('track'),
-        ),
+        viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
 
         // this represents assemblies in the specialized read vs ref dotplot
         // view
@@ -185,6 +181,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       renderProps() {
         return {
           ...getParentRenderProps(self),
+          drawCigar: self.drawCigar,
           highResolutionScaling: getConf(
             getSession(self),
             'highResolutionScaling',
@@ -193,6 +190,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      setDrawCigar(flag: boolean) {
+        self.drawCigar = flag
+      },
       clearView() {
         self.hview.setDisplayedRegions([])
         self.vview.setDisplayedRegions([])
@@ -250,13 +250,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const trackType = pluginManager.getTrackType(conf.type)
+        const trackType = pm.getTrackType(conf.type)
         if (!trackType) {
           throw new Error(`unknown track type ${conf.type}`)
         }
-        const viewType = pluginManager.getViewType(self.type)
+        const viewType = pm.getViewType(self.type)
         const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
           viewType.displayTypes.find(type => type.name === d.type),
         )
@@ -275,7 +275,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
 
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
+        const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
         const t = self.tracks.filter(t => t.configuration === conf)
         transaction(() => t.forEach(t => self.tracks.remove(t)))

@@ -19,6 +19,7 @@ const WarningDialog = lazy(() => import('./WarningDialog'))
 
 import { observer } from 'mobx-react'
 import { DotplotViewModel } from '../model'
+import MoreVert from '@mui/icons-material/MoreVert'
 
 const useStyles = makeStyles()({
   iconButton: {
@@ -105,10 +106,9 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
       <IconButton
         onClick={event => setMenuAnchorEl(event.currentTarget)}
         className={classes.iconButton}
-        title="Square view"
         color="secondary"
       >
-        <CropFreeIcon />
+        <MoreVert />
       </IconButton>
 
       {menuAnchorEl ? (
@@ -129,10 +129,14 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
               onClick: () => model.squareViewProportional(),
               label: 'Rectanglular view - same total bp',
             },
+            {
+              onClick: () => model.setDrawCigar(!model.drawCigar),
+              type: 'checkbox',
+              label: 'Draw CIGAR',
+              checked: model.drawCigar,
+            },
           ]}
-          onClose={() => {
-            setMenuAnchorEl(null)
-          }}
+          onClose={() => setMenuAnchorEl(null)}
         />
       ) : null}
     </div>
@@ -140,7 +144,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
 })
 const Warnings = observer(({ model }: { model: DotplotViewModel }) => {
   const tracksWithWarnings = model.tracks.filter(
-    t => t.displays[0].warnings.length,
+    t => t.displays[0].warnings?.length,
   )
   const [shown, setShown] = useState(false)
   return tracksWithWarnings.length ? (

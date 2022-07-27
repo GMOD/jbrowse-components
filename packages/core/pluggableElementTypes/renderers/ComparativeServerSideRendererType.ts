@@ -99,12 +99,9 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
   }
 
   async getFeatures(renderArgs: any) {
+    const pm = this.pluginManager
     const { sessionId, adapterConfig } = renderArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     let regions = [] as Region[]
 

@@ -1,8 +1,11 @@
 import React from 'react'
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
+
+// icons
+import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {

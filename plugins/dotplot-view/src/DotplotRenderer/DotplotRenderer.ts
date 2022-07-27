@@ -3,10 +3,10 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import {
-  createCanvas,
-  createImageBitmap,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
+  renameRegionsIfNeeded,
+  renderToAbstractCanvas,
+  Region,
+} from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { getSnapshot } from 'mobx-state-tree'
 import ComparativeServerSideRendererType, {
@@ -73,19 +73,13 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
 
     return args
   }
-  async makeImageData(
+
+  async drawDotplot(
+    ctx: CanvasRenderingContext2D,
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
-    const {
-      highResolutionScaling: scaling = 1,
-      width,
-      height,
-      config,
-      views,
-    } = props
-
-    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    console.log({ props })
+    const { config, views, height, drawCigar } = props
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
@@ -95,7 +89,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const palette = readConfObject(config, 'thresholdsPalette')
     const isCallback = config.color.isCallback
     ctx.lineWidth = lineWidth
-    ctx.scale(scaling, scaling)
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
@@ -149,6 +142,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const b20 = bpToPx({ self: hsnap, refName, coord: end })
       const e10 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.start })
       const e20 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.end })
+      console.log({ e10, e20, b10, b20 })
       if (
         b10 !== undefined &&
         b20 !== undefined &&
@@ -159,6 +153,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const b2 = b20.offsetPx - db1
         const e1 = e10.offsetPx - db2
         const e2 = e20.offsetPx - db2
+        console.log({ b1, b2, e1, e2 })
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
           drawCir(ctx, b1, height - e1, true, lineWidth)
         } else {
@@ -166,7 +161,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
 
-          if (cigar) {
+          if (drawCigar && cigar) {
             const cigarOps = parseCigar(cigar)
 
             ctx.beginPath()
@@ -201,7 +196,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       }
     })
 
-    return { warnings, imageData: await createImageBitmap(canvas) }
+    return { warnings }
   }
 
   async render(renderProps: DotplotRenderArgsDeserialized) {
@@ -211,37 +206,36 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       view: { hview, vview },
     } = renderProps
     const dimensions = [width, height]
-    const realizedViews = [hview, vview].map((snap, idx) => {
+    const views = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view
     })
-    const target = realizedViews[0]
+    const target = views[0]
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
     })
     target.setFeatures(feats)
-    const { warnings, imageData } = await this.makeImageData({
-      ...renderProps,
-      views: realizedViews,
-    })
+
+    const ret = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+      this.drawDotplot(ctx, { ...renderProps, views }),
+    )
 
     const results = await super.render({
       ...renderProps,
+      ...ret,
       height,
       width,
-      imageData,
     })
 
     return {
       ...results,
-      imageData,
-      warnings,
+      ...ret,
       height,
       width,
-      offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
-      offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
+      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
     }
   }
 }
