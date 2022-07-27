@@ -12,7 +12,6 @@ import ArrowUp from '@mui/icons-material/KeyboardArrowUp'
 import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
 import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft'
 import ArrowRight from '@mui/icons-material/KeyboardArrowRight'
-import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 const WarningDialog = lazy(() => import('./WarningDialog'))
@@ -149,11 +148,11 @@ const Warnings = observer(({ model }: { model: DotplotViewModel }) => {
   const [shown, setShown] = useState(false)
   return tracksWithWarnings.length ? (
     <Alert severity="warning">
-      Some tracks had warnings{' '}
+      Warnings during render{' '}
       <Button onClick={() => setShown(true)}>More info</Button>
       {shown ? (
         <WarningDialog
-          warnings={tracksWithWarnings}
+          tracksWithWarnings={tracksWithWarnings}
           handleClose={() => setShown(false)}
         />
       ) : null}

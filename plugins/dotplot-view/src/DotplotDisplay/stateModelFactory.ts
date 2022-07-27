@@ -24,7 +24,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           configuration: ConfigurationReference(configSchema),
         })
         .volatile(() => ({
-          warnings: [] as string[],
+          warnings: [] as { message: string; effect: string }[],
           renderInProgress: undefined as AbortController | undefined,
           filled: false,
           data: undefined as any,

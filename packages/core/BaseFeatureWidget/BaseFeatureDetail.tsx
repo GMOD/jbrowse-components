@@ -18,7 +18,13 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../configuration'
-import { measureText, getSession, getStr, isUriLocation } from '../util'
+import {
+  measureText,
+  measureGridWidth,
+  getSession,
+  getStr,
+  isUriLocation,
+} from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
@@ -362,11 +368,7 @@ const DataGridDetails = ({
         const { value } = params
         return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
       },
-      width: Math.max(
-        ...rows.map(row =>
-          Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
-        ),
-      ),
+      width: measureGridWidth(rows.map(r => r[val])),
     }))
 
     const rowHeight = 25

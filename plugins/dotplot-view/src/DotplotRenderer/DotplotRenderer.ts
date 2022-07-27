@@ -6,20 +6,22 @@ import {
   renameRegionsIfNeeded,
   renderToAbstractCanvas,
   Region,
+  Feature,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { getSnapshot } from 'mobx-state-tree'
-import ComparativeServerSideRendererType, {
-  RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
-  RenderArgs as ComparativeRenderArgs,
+import ComparativeRenderer, {
+  RenderArgsDeserialized,
+  RenderArgs,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
+
+// locals
 import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
 
 const { parseCigar } = MismatchParser
 
-export interface DotplotRenderArgsDeserialized
-  extends ComparativeRenderArgsDeserialized {
+export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   height: number
   width: number
   highResolutionScaling: number
@@ -29,7 +31,7 @@ export interface DotplotRenderArgsDeserialized
   }
 }
 
-interface DotplotRenderArgs extends ComparativeRenderArgs {
+interface DotplotRenderArgs extends RenderArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   view: {
@@ -38,18 +40,17 @@ interface DotplotRenderArgs extends ComparativeRenderArgs {
   }
 }
 
-function drawCir(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  fill = true,
-  r = 1,
-) {
+const r = 'fell outside of range due to CIGAR string'
+const lt = '(less than min coordinate of feature)'
+const gt = '(greater than max coordinate of feature)'
+const fudgeFactor = 1 // allow 1px fuzzyness before warn
+
+function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
   ctx.beginPath()
   ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
-  fill ? ctx.fill() : ctx.stroke()
+  ctx.fill()
 }
-export default class DotplotRenderer extends ComparativeServerSideRendererType {
+export default class DotplotRenderer extends ComparativeRenderer {
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
     const pm = this.pluginManager
     const assemblyManager = pm.rootModel?.session?.assemblyManager
@@ -88,16 +89,77 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
     const thresholds = readConfObject(config, 'thresholds')
     const palette = readConfObject(config, 'thresholdsPalette')
     const isCallback = config.color.isCallback
-    ctx.lineWidth = lineWidth
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
-    const warnings = [] as string[]
+    const warnings = [] as { message: string; effect: string }[]
+    ctx.lineWidth = lineWidth
 
     // we operate on snapshots of these attributes of the hview/vview because
     // it is significantly faster than accessing the mobx objects
     const { bpPerPx: hBpPerPx } = hview
     const { bpPerPx: vBpPerPx } = vview
+
+    function clampWithWarnX(
+      num: number,
+      min: number,
+      max: number,
+      feature: Feature,
+    ) {
+      if (num < min - fudgeFactor) {
+        const strand = feature.get('strand') || 1
+        const start = strand === 1 ? feature.get('start') : feature.get('end')
+        const end = strand === 1 ? feature.get('end') : feature.get('start')
+        const refName = feature.get('refName')
+
+        warnings.push({
+          message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
+          effect: 'clipped the feature',
+        })
+        return min
+      }
+      if (num > max + fudgeFactor) {
+        const strand = feature.get('strand') || 1
+        const start = strand === 1 ? feature.get('start') : feature.get('end')
+        const end = strand === 1 ? feature.get('end') : feature.get('start')
+        const refName = feature.get('refName')
+
+        warnings.push({
+          message: `feature at (X ${refName}:${start}-${end}) ${r} ${gt}`,
+          effect: 'clipped the feature',
+        })
+        return max
+      }
+      return num
+    }
+
+    function clampWithWarnY(
+      num: number,
+      min: number,
+      max: number,
+      feature: Feature,
+    ) {
+      if (num < min - fudgeFactor) {
+        const mate = feature.get('mate')
+        const { refName, start, end } = mate
+        warnings.push({
+          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${lt}`,
+          effect: 'clipped the feature',
+        })
+        return min
+      }
+      if (num > max + fudgeFactor) {
+        const mate = feature.get('mate')
+        const { refName, start, end } = mate
+
+        warnings.push({
+          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${gt}`,
+          effect: 'clipped the feature',
+        })
+        return max
+      }
+      return num
+    }
 
     const hsnap = {
       ...getSnapshot(hview),
@@ -142,7 +204,6 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       const b20 = bpToPx({ self: hsnap, refName, coord: end })
       const e10 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.start })
       const e20 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.end })
-      console.log({ e10, e20, b10, b20 })
       if (
         b10 !== undefined &&
         b20 !== undefined &&
@@ -155,7 +216,7 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         const e2 = e20.offsetPx - db2
         console.log({ b1, b2, e1, e2 })
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
-          drawCir(ctx, b1, height - e1, true, lineWidth)
+          drawCir(ctx, b1, height - e1, lineWidth)
         } else {
           let currX = b1
           let currY = e1
@@ -177,6 +238,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               } else if (op === 'I') {
                 currY += val / vBpPerPx
               }
+              currX = clampWithWarnX(currX, b1, b2, feature)
+              currY = clampWithWarnY(currY, e1, e2, feature)
               ctx.lineTo(currX, height - currY)
             }
             ctx.stroke()
@@ -189,9 +252,17 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
         }
       } else {
         if (warnings.length <= 5) {
-          warnings.push(
-            `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
-          )
+          if (b10 === undefined || b20 === undefined) {
+            warnings.push({
+              message: `feature at (X ${refName}:${start}-${end}) not plotted, fell outside of range`,
+              effect: 'feature not rendered',
+            })
+          } else {
+            warnings.push({
+              message: `feature at (Y ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
+              effect: 'feature not rendered',
+            })
+          }
         }
       }
     })
