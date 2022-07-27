@@ -79,7 +79,6 @@ export default class DotplotRenderer extends ComparativeRenderer {
     ctx: CanvasRenderingContext2D,
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
-    console.log({ props })
     const { config, views, height, drawCigar } = props
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
@@ -214,7 +213,6 @@ export default class DotplotRenderer extends ComparativeRenderer {
         const b2 = b20.offsetPx - db1
         const e1 = e10.offsetPx - db2
         const e2 = e20.offsetPx - db2
-        console.log({ b1, b2, e1, e2 })
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
           drawCir(ctx, b1, height - e1, lineWidth)
         } else {

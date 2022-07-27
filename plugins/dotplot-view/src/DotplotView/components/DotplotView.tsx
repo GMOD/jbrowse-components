@@ -8,9 +8,10 @@ import normalizeWheel from 'normalize-wheel'
 
 // locals
 import { DotplotViewModel } from '../model'
+import { locstr } from './util'
 import ImportForm from './ImportForm'
 import Header from './Header'
-import { locstr } from './util'
+import Grid from './Grid'
 import { HorizontalAxis, VerticalAxis } from './Axes'
 
 const useStyles = makeStyles()(theme => ({
@@ -63,78 +64,6 @@ const useStyles = makeStyles()(theme => ({
 type Coord = [number, number] | undefined
 type Rect = { left: number; top: number }
 
-const Grid = observer(
-  ({
-    model,
-    children,
-    stroke = '#0003',
-  }: {
-    model: DotplotViewModel
-    children: React.ReactNode
-    stroke?: string
-  }) => {
-    const { viewWidth, viewHeight, hview, vview } = model
-    const hblocks = hview.dynamicBlocks.contentBlocks
-    const vblocks = vview.dynamicBlocks.contentBlocks
-    const htop = hview.displayedRegionsTotalPx - hview.offsetPx
-    const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
-    const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
-    const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
-
-    return (
-      <svg
-        style={{ background: 'rgba(0,0,0,0.12)' }}
-        width={viewWidth}
-        height={viewHeight}
-      >
-        <rect
-          x={hbottom}
-          y={viewHeight - vtop}
-          width={htop - hbottom}
-          height={vtop - vbottom}
-          fill="#fff"
-        />
-        <g>
-          {hblocks.map(region => {
-            const x = region.offsetPx - hview.offsetPx
-            return (
-              <line
-                key={JSON.stringify(region)}
-                x1={x}
-                y1={0}
-                x2={x}
-                y2={viewHeight}
-                stroke={stroke}
-              />
-            )
-          })}
-          {vblocks.map(region => {
-            const y = viewHeight - (region.offsetPx - vview.offsetPx)
-            return (
-              <line
-                key={JSON.stringify(region)}
-                x1={0}
-                y1={y}
-                x2={viewWidth}
-                y2={y}
-                stroke={stroke}
-              />
-            )
-          })}
-          <line x1={htop} y1={0} x2={htop} y2={viewHeight} stroke={stroke} />
-          <line
-            x1={0}
-            y1={viewHeight - vtop}
-            x2={viewWidth}
-            y2={viewHeight - vtop}
-            stroke={stroke}
-          />
-        </g>
-        {children}
-      </svg>
-    )
-  },
-)
 // produces offsetX/offsetY coordinates from a clientX and an element's
 // getBoundingClientRect
 function getOffset(coord: Coord, rect: Rect) {
@@ -160,11 +89,11 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
   )
 })
 
-
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
     const { hview, vview, viewHeight } = model
     const { classes } = useStyles()
+    const [cursorMode, setCursorMode] = useState('select')
     const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
     const [mousedownClient, setMouseDownClient] = useState<Coord>()
     const [mouseOvered, setMouseOvered] = useState(false)
@@ -185,16 +114,10 @@ const DotplotViewInternal = observer(
     const mouseup = getOffset(mouseupClient, svg)
     const mouserect = mouseup || mousecurr
     let selection
-    if (mousedown && mousecurr) {
+    if (mousedown && mouserect) {
       selection = {
-        width: Math.abs(mousedown[0] - mousecurr[0]),
-        height: Math.abs(mousedown[1] - mousecurr[1]),
-      }
-    }
-    if (mouseup && mousedown) {
-      selection = {
-        width: Math.abs(mouseup[0] - mousedown[0]),
-        height: Math.abs(mouseup[1] - mousedown[1]),
+        width: xdistanceabs(),
+        height: ydistanceabs(),
       }
     }
 
@@ -247,12 +170,7 @@ const DotplotViewInternal = observer(
       let cleanup = () => {}
 
       function globalMouseUp(event: MouseEvent) {
-        if (
-          mousedown &&
-          mousecurr &&
-          Math.abs(mousedown[0] - mousecurr[0]) > 3 &&
-          Math.abs(mousedown[1] - mousecurr[1]) > 3
-        ) {
+        if (xdistanceabs() > 3 && ydistanceabs() > 3) {
           setMouseUpClient([event.clientX, event.clientY])
         } else {
           setMouseDownClient(undefined)
@@ -268,9 +186,34 @@ const DotplotViewInternal = observer(
       return cleanup
     }, [mousedown, mousecurr, mouseup])
 
+    function xdistance() {
+      if (mousedown && mouserect) {
+        return mouserect[0] - mousedown[0]
+      }
+      return 0
+    }
+
+    function ydistance() {
+      if (mousedown && mouserect) {
+        return mouserect[1] - mousedown[1]
+      }
+      return 0
+    }
+
+    function xdistanceabs() {
+      return Math.abs(xdistance())
+    }
+    function ydistanceabs() {
+      return Math.abs(ydistance())
+    }
+
     return (
       <div>
-        <Header model={model} selection={selection} />
+        <Header
+          model={model}
+          selection={selection}
+          setCursorMode={setCursorMode}
+        />
         <div
           ref={root}
           className={classes.root}
@@ -294,15 +237,11 @@ const DotplotViewInternal = observer(
                     left:
                       6 +
                       mouserect[0] -
-                      (mousedown && mouserect[0] - mousedown[0] < 0
-                        ? lrect.width + 12
-                        : 0),
+                      (xdistance() < 0 ? lrect.width + 12 : 0),
                     top:
                       6 +
                       mouserect[1] -
-                      (mousedown && mouserect[1] - mousedown[1] < 0
-                        ? lrect.height + 12
-                        : 0),
+                      (ydistance() < 0 ? lrect.height + 12 : 0),
                   }}
                 >
                   {`x - ${locstr(mouserect[0], hview)}`}
@@ -311,20 +250,13 @@ const DotplotViewInternal = observer(
                   <br />
                 </div>
               ) : null}
-              {mousedown &&
-              mouserect &&
-              Math.abs(mousedown[0] - mouserect[0]) > 3 &&
-              Math.abs(mousedown[1] - mouserect[1]) > 3 ? (
+              {mousedown && xdistanceabs() > 3 && ydistanceabs() > 3 ? (
                 <div
                   ref={rref}
                   className={classes.popover}
                   style={{
-                    left:
-                      mousedown[0] -
-                      (mouserect[0] - mousedown[0] < 0 ? 0 : rrect.width),
-                    top:
-                      mousedown[1] -
-                      (mouserect[1] - mousedown[1] < 0 ? 0 : rrect.height),
+                    left: mousedown[0] - (xdistance() < 0 ? 0 : rrect.width),
+                    top: mousedown[1] - (ydistance() < 0 ? 0 : rrect.height),
                   }}
                 >
                   {`x - ${locstr(mousedown[0], hview)}`}
@@ -336,7 +268,7 @@ const DotplotViewInternal = observer(
 
               <div
                 role="presentation"
-                style={{ cursor: 'crosshair' }}
+                style={{ cursor: cursorMode === 'move' ? 'move' : 'crosshair' }}
                 onMouseDown={event => {
                   if (event.button === 0) {
                     setMouseDownClient([event.clientX, event.clientY])
@@ -350,8 +282,8 @@ const DotplotViewInternal = observer(
                       fill="rgba(255,0,0,0.3)"
                       x={Math.min(mouserect[0], mousedown[0])}
                       y={Math.min(mouserect[1], mousedown[1])}
-                      width={Math.abs(mouserect[0] - mousedown[0])}
-                      height={Math.abs(mouserect[1] - mousedown[1])}
+                      width={xdistanceabs()}
+                      height={ydistanceabs()}
                     />
                   ) : null}
                 </Grid>

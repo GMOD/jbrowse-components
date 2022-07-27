@@ -346,13 +346,12 @@ export default function stateModelFactory(pm: PluginManager) {
           // note: scales the bpPerPx by scaling proportional of the dotplot
           // width to the eventual lgv width
           const tracks = self.tracks
-            .map(track => {
-              const trackConf = track.configuration
-              return trackConf.displays.find(
+            .map(track =>
+              track.configuration.displays.find(
                 (display: { type: string }) =>
                   display.type === 'LinearSyntenyDisplay',
-              )
-            })
+              ),
+            )
             .filter(f => !!f)
             .map(displayConf => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
