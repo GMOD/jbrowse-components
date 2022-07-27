@@ -315,17 +315,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: self.toggleHeader,
             },
             {
-              label: 'Show header overview',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              // @ts-ignore
-              checked: !self.hideHeaderOverview,
-              // @ts-ignore
-              onClick: self.toggleHeaderOverview,
-              // @ts-ignore
-              disabled: self.hideHeader,
-            },
-            {
               label: 'Show no tracks active button',
               icon: VisibilityIcon,
               type: 'checkbox',
@@ -341,6 +330,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: !self.hideControls,
               onClick: self.toggleControls,
               disabled: !self.isVisible || self.isAnchor,
+            },
+            {
+              label: 'Hide view',
+              icon: VisibilityIcon,
+              type: 'checkbox',
+              checked: !self.isVisible,
+              onClick: self.toggleVisible,
             },
             {
               label: 'Track labels',

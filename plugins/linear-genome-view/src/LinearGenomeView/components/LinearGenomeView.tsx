@@ -80,7 +80,8 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
       ) : null}
 
       {!hideHeader ? <Header model={model} /> : null}
-      {hideHeader ? (
+      {/* @ts-ignore */}
+      {hideHeader && !model.hasCustomMiniControls ? (
         <div className={classes.miniControls}>
           <MiniControls model={model} />
         </div>

@@ -5,37 +5,54 @@ import IconButton from '@mui/material/IconButton'
 import Paper from '@mui/material/Paper'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
-import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
-import Menu from '@jbrowse/core/ui/Menu'
+import MenuIcon from '@mui/icons-material/Menu'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
 
+import {
+  bindTrigger,
+  bindPopover,
+  usePopupState,
+} from 'material-ui-popup-state/hooks'
+
 import LabelField from './LabelField'
+import { RegionWidth } from './Controls'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   const { model } = props
   const { bpPerPx, maxBpPerPx, minBpPerPx, scaleFactor } = model
-  const [anchorEl, setAnchorEl] = useState<HTMLElement>()
+
+  const popupState = usePopupState({
+    popupId: 'mllvViewMenu',
+    variant: 'popover',
+  })
 
   return (
     <div style={{ position: 'absolute', right: '0px', zIndex: '1001' }}>
       <Paper
         style={{ background: '#aaa7', display: 'flex', alignItems: 'center' }}
       >
-        {model.hideHeader ? (
-          <div>
-            <IconButton
-              color="secondary"
-              datatest-id="mllv-minicontrols-menu"
-              onClick={event => {
-                setAnchorEl(event.currentTarget)
-              }}
-            >
-              <ArrowDown />
-            </IconButton>
-            {/* @ts-ignore */}
-            <LabelField model={model} />
-          </div>
-        ) : null}
+        <div>
+          <IconButton
+            {...bindTrigger(popupState)}
+            color="secondary"
+            datatest-id="mllv-minicontrols-menu"
+          >
+            <MenuIcon />
+          </IconButton>
+          <CascadingMenu
+            {...bindPopover(popupState)}
+            onMenuItemClick={(_: unknown, callback: Function) => callback()}
+            menuItems={model.menuItems()}
+            popupState={popupState}
+          />
+          {/* @ts-ignore */}
+          <LabelField model={model} />
+        </div>
+        <div>
+          {/* @ts-ignore */}
+          <RegionWidth model={model} />
+        </div>
         <div data-testid="mllv-minicontrols">
           {
             // @ts-ignore
@@ -95,18 +112,6 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           }
         </div>
       </Paper>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setAnchorEl(undefined)
-        }}
-        onClose={() => {
-          setAnchorEl(undefined)
-        }}
-        menuItems={model.menuItems()}
-      />
     </div>
   )
 })

@@ -9,6 +9,7 @@ import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
 import { MultilevelLinearComparativeViewModel } from '../model'
+import MiniControls from './MiniControls'
 
 type LCV = MultilevelLinearComparativeViewModel
 type LGV = LinearGenomeMultilevelViewModel
@@ -156,8 +157,6 @@ const Controls = observer(
             <Polygon view={view} polygonPoints={polygonPoints} />
           </svg>
         ) : null}
-        {ExtraButtons}
-        {view.hideControls ? <RegionWidth model={view} /> : null}
         <div className={classes.spacer} />
         {view.isVisible && !view.hideControls && !view.isAnchor ? (
           <>
@@ -170,6 +169,7 @@ const Controls = observer(
           </>
         ) : null}
         <div className={classes.spacer} />
+        {!view.isVisible ? <MiniControls model={view} /> : null}
       </div>
     )
   },

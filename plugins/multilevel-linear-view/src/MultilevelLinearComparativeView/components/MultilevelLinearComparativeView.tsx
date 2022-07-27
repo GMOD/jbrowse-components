@@ -123,7 +123,7 @@ const MultilevelLinearComparativeView = observer(
                 return (
                   <div key={view.id}>
                     <>
-                      {!view.hideHeader ? (
+                      {!view.hideHeader && view.id !== model.views[0].id ? (
                         <Subheader
                           // @ts-ignore
                           view={view}
