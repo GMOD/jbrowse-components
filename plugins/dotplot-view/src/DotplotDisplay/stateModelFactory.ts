@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { types, Instance } from 'mobx-state-tree'
 import {
@@ -56,9 +57,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           makeAbortableReaction(
             self as any,
             () => renderBlockData(self as any),
-            (blockData): any => {
-              return blockData ? renderBlockEffect(blockData) : undefined
-            },
+            (blockData): any =>
+              blockData ? renderBlockEffect(blockData) : undefined,
             {
               name: `${self.type} ${self.id} rendering`,
               delay: 1000,

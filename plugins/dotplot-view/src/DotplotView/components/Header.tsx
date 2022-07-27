@@ -12,11 +12,11 @@ import MoreVert from '@mui/icons-material/MoreVert'
 import { CursorMouse, CursorMove } from './CursorIcon'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
-// lazy components
-const WarningDialog = lazy(() => import('./WarningDialog'))
-
 // locals
 import { DotplotViewModel } from '../model'
+
+// lazy components
+const WarningDialog = lazy(() => import('./WarningDialog'))
 
 const useStyles = makeStyles()({
   iconButton: {

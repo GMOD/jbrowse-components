@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { LinearProgress } from '@mui/material'
+import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
-import { LinearProgress } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { Menu, ResizeHandle } from '@jbrowse/core/ui'
 import normalizeWheel from 'normalize-wheel'
 
 // locals
@@ -13,7 +13,8 @@ import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
 import { HorizontalAxis, VerticalAxis } from './Axes'
-import { CursorMove } from './CursorIcon'
+
+const blank = { left: 0, top: 0, width: 0, height: 0 }
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -78,7 +79,6 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
       {model.tracks.map(track => {
         const [display] = track.displays
         const { RenderingComponent } = display
-
         return RenderingComponent ? (
           <RenderingComponent
             key={track.configuration.trackId}
@@ -90,9 +90,91 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
   )
 })
 
+const TooltipWhereMouseovered = observer(
+  ({
+    model,
+    mouserect,
+    xdistance,
+    ydistance,
+  }: {
+    model: DotplotViewModel
+    mouserect: Coord
+    xdistance: number
+    ydistance: number
+  }) => {
+    const { classes } = useStyles()
+    const { hview, vview, viewHeight } = model
+    const ref = useRef<HTMLDivElement>(null)
+    const rect = ref.current?.getBoundingClientRect() || blank
+    const offset = 6
+    return (
+      <>
+        {mouserect ? (
+          <div
+            ref={ref}
+            className={classes.popover}
+            style={{
+              left:
+                offset +
+                mouserect[0] -
+                (xdistance < 0 ? rect.width + offset * 2 : 0),
+              top:
+                offset +
+                mouserect[1] -
+                (ydistance < 0 ? rect.height + offset * 2 : 0),
+            }}
+          >
+            {`x - ${locstr(mouserect[0], hview)}`}
+            <br />
+            {`y - ${locstr(viewHeight - mouserect[1], vview)}`}
+            <br />
+          </div>
+        ) : null}
+      </>
+    )
+  },
+)
+const TooltipWhereClicked = observer(
+  ({
+    model,
+    mousedown,
+    xdistance,
+    ydistance,
+  }: {
+    model: DotplotViewModel
+    mousedown: Coord
+    xdistance: number
+    ydistance: number
+  }) => {
+    const { classes } = useStyles()
+    const { hview, vview, viewHeight } = model
+    const ref = useRef<HTMLDivElement>(null)
+    const rect = ref.current?.getBoundingClientRect() || blank
+    return (
+      <>
+        {mousedown && Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 ? (
+          <div
+            ref={ref}
+            className={classes.popover}
+            style={{
+              left: mousedown[0] - (xdistance < 0 ? 0 : rect.width),
+              top: mousedown[1] - (ydistance < 0 ? 0 : rect.height),
+            }}
+          >
+            {`x - ${locstr(mousedown[0], hview)}`}
+            <br />
+            {`y - ${locstr(viewHeight - mousedown[1], vview)}`}
+            <br />
+          </div>
+        ) : null}
+      </>
+    )
+  },
+)
+
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
-    const { hview, vview, viewHeight, cursorMode } = model
+    const { cursorMode } = model
     const { classes } = useStyles()
     const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
     const [mousedownClient, setMouseDownClient] = useState<Coord>()
@@ -102,24 +184,14 @@ const DotplotViewInternal = observer(
     const root = useRef<HTMLDivElement>(null)
     const distanceX = useRef(0)
     const distanceY = useRef(0)
-    const lref = useRef<HTMLDivElement>(null)
-    const rref = useRef<HTMLDivElement>(null)
     const scheduled = useRef(false)
-    const blank = { left: 0, top: 0, width: 0, height: 0 }
     const svg = ref.current?.getBoundingClientRect() || blank
-    const rrect = rref.current?.getBoundingClientRect() || blank
-    const lrect = lref.current?.getBoundingClientRect() || blank
     const mousedown = getOffset(mousedownClient, svg)
     const mousecurr = getOffset(mousecurrClient, svg)
     const mouseup = getOffset(mouseupClient, svg)
     const mouserect = mouseup || mousecurr
-    let selection
-    if (mousedown && mouserect) {
-      selection = {
-        width: xdistanceabs(),
-        height: ydistanceabs(),
-      }
-    }
+    const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
+    const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
 
     // use non-React wheel handler to properly prevent body scrolling
     useEffect(() => {
@@ -146,9 +218,7 @@ const DotplotViewInternal = observer(
       if (ref.current) {
         const curr = ref.current
         curr.addEventListener('wheel', onWheel)
-        return () => {
-          curr.removeEventListener('wheel', onWheel)
-        }
+        return () => curr.removeEventListener('wheel', onWheel)
       }
       return () => {}
     }, [model.hview, model.vview])
@@ -164,10 +234,8 @@ const DotplotViewInternal = observer(
       }
 
       window.addEventListener('mousemove', globalMouseMove)
-      return () => {
-        window.removeEventListener('mousemove', globalMouseMove)
-      }
-    }, [mousecurrClient, mousedownClient, cursorMode])
+      return () => window.removeEventListener('mousemove', globalMouseMove)
+    }, [mousecurrClient, mousedownClient, cursorMode, model.hview, model.vview])
 
     // detect a mouseup after a mousedown was submitted, autoremoves mouseup
     // once that single mouseup is set
@@ -176,8 +244,8 @@ const DotplotViewInternal = observer(
 
       function globalMouseUp(event: MouseEvent) {
         if (
-          xdistanceabs() > 3 &&
-          ydistanceabs() > 3 &&
+          Math.abs(xdistance) > 3 &&
+          Math.abs(ydistance) > 3 &&
           cursorMode === 'crosshair'
         ) {
           setMouseUpClient([event.clientX, event.clientY])
@@ -188,39 +256,24 @@ const DotplotViewInternal = observer(
 
       if (mousedown && !mouseup) {
         window.addEventListener('mouseup', globalMouseUp, true)
-        cleanup = () => {
+        cleanup = () =>
           window.removeEventListener('mouseup', globalMouseUp, true)
-        }
       }
       return cleanup
-    }, [mousedown, mousecurr, mouseup])
-
-    function xdistance() {
-      if (mousedown && mouserect) {
-        return mouserect[0] - mousedown[0]
-      }
-      return 0
-    }
-
-    function ydistance() {
-      if (mousedown && mouserect) {
-        return mouserect[1] - mousedown[1]
-      }
-      return 0
-    }
-
-    function xdistanceabs() {
-      return Math.abs(xdistance())
-    }
-    function ydistanceabs() {
-      return Math.abs(ydistance())
-    }
+    }, [mousedown, mousecurr, mouseup, xdistance, ydistance, cursorMode])
 
     return (
       <div>
         <Header
           model={model}
-          selection={cursorMode === 'move' ? undefined : selection}
+          selection={
+            cursorMode === 'move' || !(mousedown && mouserect)
+              ? undefined
+              : {
+                  width: Math.abs(xdistance),
+                  height: Math.abs(ydistance),
+                }
+          }
         />
         <div
           ref={root}
@@ -237,46 +290,22 @@ const DotplotViewInternal = observer(
             <VerticalAxis model={model} />
             <HorizontalAxis model={model} />
             <div ref={ref} className={classes.content}>
-              {cursorMode === 'crosshair' && mouseOvered && mouserect ? (
-                <div
-                  ref={lref}
-                  className={classes.popover}
-                  style={{
-                    left:
-                      6 +
-                      mouserect[0] -
-                      (xdistance() < 0 ? lrect.width + 12 : 0),
-                    top:
-                      6 +
-                      mouserect[1] -
-                      (ydistance() < 0 ? lrect.height + 12 : 0),
-                  }}
-                >
-                  {`x - ${locstr(mouserect[0], hview)}`}
-                  <br />
-                  {`y - ${locstr(viewHeight - mouserect[1], vview)}`}
-                  <br />
-                </div>
+              {mouseOvered && cursorMode === 'crosshair' ? (
+                <TooltipWhereMouseovered
+                  model={model}
+                  mouserect={mouserect}
+                  xdistance={xdistance}
+                  ydistance={ydistance}
+                />
               ) : null}
-              {cursorMode === 'crosshair' &&
-              mousedown &&
-              xdistanceabs() > 3 &&
-              ydistanceabs() > 3 ? (
-                <div
-                  ref={rref}
-                  className={classes.popover}
-                  style={{
-                    left: mousedown[0] - (xdistance() < 0 ? 0 : rrect.width),
-                    top: mousedown[1] - (ydistance() < 0 ? 0 : rrect.height),
-                  }}
-                >
-                  {`x - ${locstr(mousedown[0], hview)}`}
-                  <br />
-                  {`y - ${locstr(viewHeight - mousedown[1], vview)}`}
-                  <br />
-                </div>
+              {cursorMode === 'crosshair' ? (
+                <TooltipWhereClicked
+                  model={model}
+                  mousedown={mousedown}
+                  xdistance={xdistance}
+                  ydistance={ydistance}
+                />
               ) : null}
-
               <div
                 style={{ cursor: cursorMode }}
                 onMouseDown={event => {
@@ -292,8 +321,8 @@ const DotplotViewInternal = observer(
                       fill="rgba(255,0,0,0.3)"
                       x={Math.min(mouserect[0], mousedown[0])}
                       y={Math.min(mouserect[1], mousedown[1])}
-                      width={xdistanceabs()}
-                      height={ydistanceabs()}
+                      width={Math.abs(xdistance)}
+                      height={Math.abs(ydistance)}
                     />
                   ) : null}
                 </Grid>
