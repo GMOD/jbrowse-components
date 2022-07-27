@@ -18,7 +18,7 @@ export async function renderToAbstractCanvas(
     ctx: CanvasRenderingContext2D,
   ) => Promise<RenderReturn | void> | RenderReturn | void,
 ) {
-  const { exportSVG, highResolutionScaling = 1 } = opts
+  const { exportSVG, highResolutionScaling: scaling = 1 } = opts
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
@@ -60,17 +60,13 @@ export async function renderToAbstractCanvas(
       }
     }
   } else {
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
+    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('2d canvas rendering not supported on this platform')
     }
-    ctx.scale(highResolutionScaling, highResolutionScaling)
+    ctx.scale(scaling, scaling)
     const result = await cb(ctx)
-
     return { ...result, imageData: await createImageBitmap(canvas) }
   }
 }

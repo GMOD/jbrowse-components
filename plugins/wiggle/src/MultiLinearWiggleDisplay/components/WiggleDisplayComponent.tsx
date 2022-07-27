@@ -93,10 +93,12 @@ const ColorLegend = observer(
     model,
     rowHeight,
     labelWidth,
+    exportSVG,
   }: {
     model: WiggleDisplayModel
     rowHeight: number
     labelWidth: number
+    exportSVG?: boolean
   }) => {
     const {
       needsCustomLegend,
@@ -110,7 +112,9 @@ const ColorLegend = observer(
     const canDisplayLabel = rowHeight > 11
     const colorBoxWidth = renderColorBoxes ? 15 : 0
     const legendWidth = labelWidth + colorBoxWidth + 5
-    const extraOffset = needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0
+    const svgOffset = exportSVG ? 10 : 0
+    const extraOffset =
+      svgOffset || (needsScalebar && !rowHeightTooSmallForScalebar ? 50 : 0)
     return sources ? (
       <>
         {
@@ -168,7 +172,7 @@ export const StatBars = observer(
     orientation?: string
     exportSVG?: boolean
   }) => {
-    const { model, orientation } = props
+    const { model, orientation, exportSVG } = props
     const {
       stats,
       needsCustomLegend,
@@ -201,6 +205,7 @@ export const StatBars = observer(
             <YScaleBar model={model} orientation={orientation} />
             <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
               <ColorLegend
+                exportSVG={exportSVG}
                 model={model}
                 rowHeight={12}
                 labelWidth={labelWidth}
@@ -210,6 +215,7 @@ export const StatBars = observer(
         ) : (
           <>
             <ColorLegend
+              exportSVG={exportSVG}
               model={model}
               rowHeight={model.rowHeight}
               labelWidth={labelWidth}
