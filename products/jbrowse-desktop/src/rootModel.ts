@@ -15,6 +15,7 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
@@ -31,7 +32,6 @@ import RedoIcon from '@mui/icons-material/Redo'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
-import TimeTraveller from './TimeTraveller'
 import sessionModelFactory from './sessionModelFactory'
 import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
@@ -537,12 +537,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         subMenu.splice(position, 0, menuItem)
         return subMenu.length
       },
-      stopTrackingUndo() {
-        self.history.resumeTrackingUndo()
-      },
-      resumeTrackingUndo() {
-        self.history.resumeTrackingUndo()
-      },
 
       afterCreate() {
         document.addEventListener('keydown', event => {
@@ -572,7 +566,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             if (self.session) {
-              // this is needed to get MST to start tracking itself
+              // we use a specific initialization routine after session is
+              // created to get it to start tracking itself sort of related
+              // issue here
               // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
               self.history.initialize()
             }

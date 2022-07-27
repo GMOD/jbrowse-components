@@ -22,11 +22,11 @@ function debounce(func: (...args: unknown[]) => void, timeout = 300) {
 
 const TimeTraveller = types
   .model('TimeTraveller', {
-    history: types.array(types.frozen()),
     undoIdx: -1,
     targetPath: '',
   })
   .volatile(() => ({
+    history: [] as unknown[],
     notTrackingUndo: false,
   }))
   .views(self => ({
@@ -72,8 +72,6 @@ const TimeTraveller = types
         snapshotDisposer()
       },
       initialize() {
-        // this is needed to get MST to start tracking itself
-        // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
         targetStore = self.targetPath
           ? resolvePath(self, self.targetPath)
           : getEnv(self).targetStore
@@ -83,14 +81,11 @@ const TimeTraveller = types
             'Failed to find target store for TimeTraveller. Please provide `targetPath` property, or a `targetStore` in the environment',
           )
         }
-        // TODO: check if targetStore doesn't contain self
-        // if (contains(targetStore, self)) throw new Error("TimeTraveller shouldn't be recording itself. Please specify a sibling as taret, not some parent")
-        // start listening to changes
+
         snapshotDisposer = onSnapshot(
           targetStore,
           debounce((snapshot: unknown) => this.addUndoState(snapshot), 300),
         )
-        // record an initial state if no known
         if (self.history.length === 0) {
           this.addUndoState(getSnapshot(targetStore))
         }
