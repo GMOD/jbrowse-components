@@ -23,6 +23,7 @@ import {
   measureGridWidth,
   getSession,
   getStr,
+  getUriLink,
   isUriLocation,
 } from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
@@ -320,13 +321,7 @@ export function UriLink({
 }: {
   value: { uri: string; baseUri?: string }
 }) {
-  const { uri, baseUri = '' } = value
-  let href
-  try {
-    href = new URL(uri, baseUri).href
-  } catch (e) {
-    href = uri
-  }
+  const href = getUriLink(value)
   return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
 }
 const DataGridDetails = ({
