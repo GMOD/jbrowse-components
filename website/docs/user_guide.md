@@ -20,8 +20,9 @@ File->Add->Linear genome view
 - Enter syntax chr1:1-100 or chr1:1..100 (e.g. colon or dash is allowed)
 - You can also specify an assembly name with the locstring {hg19}chr1:1-100
 - Discontinuous regions can be specified with a space-separated loc string like
-  chr1:1-100 chr2:1-100- You can make a region horizontally flipped by using
-  [rev] after the string e.g. chr1:1-100[rev]
+  chr1:1-100 chr2:1-100
+- You can make a region horizontally flipped by using [rev] after the string
+  e.g. chr1:1-100[rev]
 - You can also space-separate a single locstring e.g. "chr1 1 100" and it will
   attempt to resolve this
 
@@ -413,6 +414,17 @@ Oftentimes, one of the outliers on one of the subtracks may affect the
 Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
 +/- 3SD" setting (3 standard deviations are displayed). Manually configuring
 the min or max scores is available via the track menu also.
+
+### Adding multi-quantitative tracks via the UI
+
+There are several ways to create multi-quantitative tracks from scratch
+
+1. Using the add track panel to open up a list of URLs for bigwig files, or from several local tracks from your machine
+2. Using the track selector to add multiple tracks to your current selection, and then creating a multi-wiggle track from the tracks in your selection
+3. Hardcoding the multiwiggle track in your config file (see [multi-quantitative track configuration](../config_guide#multiquantitativetrack-config) for more info)
+
+<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer" src="/img/multiwig/addtrack.png" />
+<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection" src="/img/multiwig/trackselector.png" />
 
 ## Variant tracks
 

@@ -113,6 +113,13 @@ export default function SetColorDialog({
                 Sorting the data grid itself can also re-arrange subtracks
               </li>
               <li>Changes are applied when you hit Submit</li>
+              <li>
+                You can click and drag the dialog box to move it on the screen
+              </li>
+              <li>
+                Columns in the table can be hidden using a vertical '...' menu
+                on the right side of each column
+              </li>
             </ul>
           </>
         ) : null}
@@ -284,12 +291,16 @@ function SourcesGrid({
           rowHeight={25}
           headerHeight={33}
           columns={columns}
+          sortModel={
+            [
+              /* we control the sort as a controlled component using onSortModelChange */
+            ]
+          }
           onSortModelChange={args => {
             const sort = args[0]
             const idx = (currSort.idx + 1) % 2
             const field = sort?.field || currSort.field
             setCurrSort({ idx, field })
-            console.log({ idx, field })
             onChange(
               field
                 ? [...rows].sort((a, b) => {
