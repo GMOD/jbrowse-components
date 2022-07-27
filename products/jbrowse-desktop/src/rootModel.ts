@@ -546,10 +546,12 @@ export default function rootModelFactory(pluginManager: PluginManager) {
 
       afterCreate() {
         document.addEventListener('keydown', event => {
-          if (event.shiftKey) {
+          if (event.shiftKey || event.key === 'y') {
             if (
+              event.ctrlKey ||
               (event.ctrlKey && event.key === 'z') ||
-              (event.metaKey && event.key === 'z')
+              event.metaKey ||
+              (event.ctrlKey && event.key === 'z')
             ) {
               if (self.history.canRedo) {
                 self.history.redo()
