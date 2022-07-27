@@ -217,21 +217,13 @@ const App = observer(
                     key={`view-${view.id}`}
                     view={view}
                     onClose={() => {
-                      const snapshot = JSON.parse(
-                        // @ts-ignore
-                        JSON.stringify(getSnapshot(view)),
-                      )
                       session.removeView(view)
-                      session.notify(
-                        `View ${view.id} has been closed`,
-                        'warning',
-                        {
-                          name: 'undo',
-                          onClick: () => {
-                            session.addView(view.type, snapshot)
-                          },
+                      session.notify(`A view has been closed`, 'info', {
+                        name: 'undo',
+                        onClick: () => {
+                          pluginManager.rootModel.history.undo()
                         },
-                      )
+                      })
                     }}
                   >
                     <Suspense fallback={<div>Loading...</div>}>
