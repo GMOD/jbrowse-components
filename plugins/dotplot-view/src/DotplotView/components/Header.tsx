@@ -35,117 +35,111 @@ const useStyles = makeStyles()({
   },
 })
 
-const DotplotControls = observer(
-  ({
-    model,
-    setCursorMode,
-  }: {
-    model: DotplotViewModel
-    setCursorMode: (arg: string) => void
-  }) => {
-    const { classes } = useStyles()
-    const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
-    const [cursorAnchorEl, setCursorAnchorEl] = useState<null | HTMLElement>(
-      null,
-    )
-    return (
-      <div>
-        <IconButton
-          onClick={event => setCursorAnchorEl(event.currentTarget)}
-          className={classes.iconButton}
-          color="secondary"
-        >
-          <CursorMouse />
-        </IconButton>
-        <IconButton
-          onClick={model.zoomOutButton}
-          className={classes.iconButton}
-          color="secondary"
-        >
-          <ZoomOut />
-        </IconButton>
+const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
+  const { classes } = useStyles()
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
+  const [cursorAnchorEl, setCursorAnchorEl] = useState<null | HTMLElement>(null)
+  return (
+    <div>
+      <IconButton
+        onClick={event => setCursorAnchorEl(event.currentTarget)}
+        className={classes.iconButton}
+        color="secondary"
+      >
+        <CursorMouse />
+      </IconButton>
+      <IconButton
+        onClick={model.zoomOutButton}
+        className={classes.iconButton}
+        color="secondary"
+      >
+        <ZoomOut />
+      </IconButton>
 
-        <IconButton
-          onClick={model.zoomInButton}
-          className={classes.iconButton}
-          title="zoom in"
-          color="secondary"
-        >
-          <ZoomIn />
-        </IconButton>
+      <IconButton
+        onClick={model.zoomInButton}
+        className={classes.iconButton}
+        title="zoom in"
+        color="secondary"
+      >
+        <ZoomIn />
+      </IconButton>
 
-        <IconButton
-          onClick={model.activateTrackSelector}
-          className={classes.iconButton}
-          title="Open track selector"
-          data-testid="circular_track_select"
-          color="secondary"
-        >
-          <TrackSelectorIcon />
-        </IconButton>
+      <IconButton
+        onClick={model.activateTrackSelector}
+        className={classes.iconButton}
+        title="Open track selector"
+        data-testid="circular_track_select"
+        color="secondary"
+      >
+        <TrackSelectorIcon />
+      </IconButton>
 
-        <IconButton
-          onClick={event => setMenuAnchorEl(event.currentTarget)}
-          className={classes.iconButton}
-          color="secondary"
-        >
-          <MoreVert />
-        </IconButton>
+      <IconButton
+        onClick={event => setMenuAnchorEl(event.currentTarget)}
+        className={classes.iconButton}
+        color="secondary"
+      >
+        <MoreVert />
+      </IconButton>
 
-        {menuAnchorEl ? (
-          <Menu
-            anchorEl={menuAnchorEl}
-            open
-            onMenuItemClick={(_event, callback) => {
-              callback()
-              setMenuAnchorEl(null)
-            }}
-            menuItems={[
-              {
-                onClick: () => model.squareView(),
-                label: 'Square view - same base pairs per pixel',
-              },
-              {
-                onClick: () => model.squareViewProportional(),
-                label: 'Rectanglular view - same total bp',
-              },
-              {
-                onClick: () => model.setDrawCigar(!model.drawCigar),
-                type: 'checkbox',
-                label: 'Draw CIGAR',
-                checked: model.drawCigar,
-              },
-            ]}
-            onClose={() => setMenuAnchorEl(null)}
-          />
-        ) : null}
+      {menuAnchorEl ? (
+        <Menu
+          anchorEl={menuAnchorEl}
+          open
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setMenuAnchorEl(null)
+          }}
+          menuItems={[
+            {
+              onClick: () => model.squareView(),
+              label: 'Square view - same base pairs per pixel',
+            },
+            {
+              onClick: () => model.squareViewProportional(),
+              label: 'Rectanglular view - same total bp',
+            },
+            {
+              onClick: () => model.setDrawCigar(!model.drawCigar),
+              type: 'checkbox',
+              label: 'Draw CIGAR',
+              checked: model.drawCigar,
+            },
+          ]}
+          onClose={() => setMenuAnchorEl(null)}
+        />
+      ) : null}
 
-        {cursorAnchorEl ? (
-          <Menu
-            anchorEl={cursorAnchorEl}
-            open
-            onMenuItemClick={(_event, callback) => {
-              callback()
-              setCursorAnchorEl(null)
-            }}
-            menuItems={[
-              {
-                onClick: () => setCursorMode('move'),
-                label: 'Cursor mode - click and drag to move',
-                icon: CursorMove,
-              },
-              {
-                onClick: () => setCursorMode('select'),
-                label: 'Cursor mode - select region',
-              },
-            ]}
-            onClose={() => setCursorAnchorEl(null)}
-          />
-        ) : null}
-      </div>
-    )
-  },
-)
+      {cursorAnchorEl ? (
+        <Menu
+          anchorEl={cursorAnchorEl}
+          open
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setCursorAnchorEl(null)
+          }}
+          menuItems={[
+            {
+              onClick: () => model.setCursorMode('move'),
+              label: 'Cursor mode - click and drag to move',
+              icon: CursorMove,
+              type: 'radio',
+              checked: model.cursorMode === 'move',
+            },
+            {
+              onClick: () => model.setCursorMode('crosshair'),
+              label: 'Cursor mode - select region',
+              type: 'radio',
+              checked: model.cursorMode === 'crosshair',
+            },
+          ]}
+          onClose={() => setCursorAnchorEl(null)}
+        />
+      ) : null}
+    </div>
+  )
+})
 const Warnings = observer(({ model }: { model: DotplotViewModel }) => {
   const tracksWithWarnings = model.tracks.filter(
     t => t.displays[0].warnings?.length,
@@ -169,17 +163,15 @@ const Header = observer(
   ({
     model,
     selection,
-    setCursorMode,
   }: {
     model: DotplotViewModel
     selection?: { width: number; height: number }
-    setCursorMode: (arg: string) => void
   }) => {
     const { classes } = useStyles()
     const { hview, vview } = model
     return (
       <div className={classes.headerBar}>
-        <DotplotControls model={model} setCursorMode={setCursorMode} />
+        <DotplotControls model={model} />
         <Typography
           className={classes.bp}
           variant="body2"

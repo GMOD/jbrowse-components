@@ -94,6 +94,7 @@ export default function stateModelFactory(pm: PluginManager) {
         drawCigar: true,
         hview: types.optional(DotplotHView, {}),
         vview: types.optional(DotplotVView, {}),
+        cursorMode: 'crosshair',
 
         tracks: types.array(
           pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
@@ -190,6 +191,9 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .actions(self => ({
+      setCursorMode(str: string) {
+        self.cursorMode = str
+      },
       setDrawCigar(flag: boolean) {
         self.drawCigar = flag
       },

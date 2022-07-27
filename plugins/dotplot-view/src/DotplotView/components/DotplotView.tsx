@@ -13,6 +13,7 @@ import ImportForm from './ImportForm'
 import Header from './Header'
 import Grid from './Grid'
 import { HorizontalAxis, VerticalAxis } from './Axes'
+import { CursorMove } from './CursorIcon'
 
 const useStyles = makeStyles()(theme => ({
   spacer: {
@@ -91,9 +92,8 @@ const RenderedComponent = observer(({ model }: { model: DotplotViewModel }) => {
 
 const DotplotViewInternal = observer(
   ({ model }: { model: DotplotViewModel }) => {
-    const { hview, vview, viewHeight } = model
+    const { hview, vview, viewHeight, cursorMode } = model
     const { classes } = useStyles()
-    const [cursorMode, setCursorMode] = useState('select')
     const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
     const [mousedownClient, setMouseDownClient] = useState<Coord>()
     const [mouseOvered, setMouseOvered] = useState(false)
@@ -156,13 +156,18 @@ const DotplotViewInternal = observer(
     useEffect(() => {
       function globalMouseMove(event: MouseEvent) {
         setMouseCurrClient([event.clientX, event.clientY])
+
+        if (mousecurrClient && mousedownClient && cursorMode === 'move') {
+          model.hview.scroll(-event.clientX + mousecurrClient[0])
+          model.vview.scroll(event.clientY - mousecurrClient[1])
+        }
       }
 
       window.addEventListener('mousemove', globalMouseMove)
       return () => {
         window.removeEventListener('mousemove', globalMouseMove)
       }
-    }, [])
+    }, [mousecurrClient, mousedownClient, cursorMode])
 
     // detect a mouseup after a mousedown was submitted, autoremoves mouseup
     // once that single mouseup is set
@@ -170,7 +175,11 @@ const DotplotViewInternal = observer(
       let cleanup = () => {}
 
       function globalMouseUp(event: MouseEvent) {
-        if (xdistanceabs() > 3 && ydistanceabs() > 3) {
+        if (
+          xdistanceabs() > 3 &&
+          ydistanceabs() > 3 &&
+          cursorMode === 'crosshair'
+        ) {
           setMouseUpClient([event.clientX, event.clientY])
         } else {
           setMouseDownClient(undefined)
@@ -211,8 +220,7 @@ const DotplotViewInternal = observer(
       <div>
         <Header
           model={model}
-          selection={selection}
-          setCursorMode={setCursorMode}
+          selection={cursorMode === 'move' ? undefined : selection}
         />
         <div
           ref={root}
@@ -229,7 +237,7 @@ const DotplotViewInternal = observer(
             <VerticalAxis model={model} />
             <HorizontalAxis model={model} />
             <div ref={ref} className={classes.content}>
-              {mouseOvered && mouserect ? (
+              {cursorMode === 'crosshair' && mouseOvered && mouserect ? (
                 <div
                   ref={lref}
                   className={classes.popover}
@@ -250,7 +258,10 @@ const DotplotViewInternal = observer(
                   <br />
                 </div>
               ) : null}
-              {mousedown && xdistanceabs() > 3 && ydistanceabs() > 3 ? (
+              {cursorMode === 'crosshair' &&
+              mousedown &&
+              xdistanceabs() > 3 &&
+              ydistanceabs() > 3 ? (
                 <div
                   ref={rref}
                   className={classes.popover}
@@ -267,8 +278,7 @@ const DotplotViewInternal = observer(
               ) : null}
 
               <div
-                role="presentation"
-                style={{ cursor: cursorMode === 'move' ? 'move' : 'crosshair' }}
+                style={{ cursor: cursorMode }}
                 onMouseDown={event => {
                   if (event.button === 0) {
                     setMouseDownClient([event.clientX, event.clientY])
@@ -277,7 +287,7 @@ const DotplotViewInternal = observer(
                 }}
               >
                 <Grid model={model}>
-                  {mousedown && mouserect ? (
+                  {cursorMode === 'crosshair' && mousedown && mouserect ? (
                     <rect
                       fill="rgba(255,0,0,0.3)"
                       x={Math.min(mouserect[0], mousedown[0])}

@@ -190,7 +190,6 @@ export function bpToPx({
   const blocks = staticBlocks.contentBlocks
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
   let currBlock = 0
-  let warning: string | undefined
 
   let i = 0
   for (; i < displayedRegions.length; i++) {
@@ -221,7 +220,6 @@ export function bpToPx({
     return {
       index: i,
       offsetPx: Math.round(bpSoFar / bpPerPx),
-      warning,
     }
   }
 
