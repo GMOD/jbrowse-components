@@ -176,7 +176,9 @@ export default function RootModel(
           self,
           autorun(() => {
             if (self.session) {
-              // this is needed to get MST to start tracking itself
+              // we use a specific initialization routine after session is
+              // created to get it to start tracking itself sort of related
+              // issue here
               // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
               self.history.initialize()
             }
