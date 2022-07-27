@@ -34,6 +34,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
+import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 // async
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
@@ -529,10 +530,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                       layoutId: getContainingView(self).id,
                       rendererType: 'PileupRenderer',
                     },
-                  )) as { feature: unknown }
+                  )) as { feature: SimpleFeatureSerialized }
 
                   if (feature) {
-                    // @ts-ignore
                     self.setContextMenuFeature(new SimpleFeature(feature))
                   }
                 }

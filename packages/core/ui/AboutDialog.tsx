@@ -23,6 +23,9 @@ const useStyles = makeStyles()(theme => ({
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
+  content: {
+    minWidth: 800,
+  },
 }))
 
 export default function AboutDialog({
@@ -89,7 +92,7 @@ export default function AboutDialog({
       : info || {}
 
   return (
-    <Dialog open onClose={handleClose}>
+    <Dialog open onClose={handleClose} maxWidth="xl">
       <DialogTitle>
         {trackName}
         <IconButton
@@ -100,7 +103,7 @@ export default function AboutDialog({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
+      <DialogContent className={classes.content}>
         <BaseCard title="Configuration">
           <Button
             variant="contained"

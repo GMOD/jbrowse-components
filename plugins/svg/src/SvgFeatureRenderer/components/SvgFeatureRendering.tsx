@@ -30,9 +30,11 @@ function RenderedFeatureGlyph(props: {
   region: Region
   config: AnyConfigurationModel
   layout: BaseLayout<unknown>
-  extraGlyphs: ExtraGlyphValidator[]
+  extraGlyphs?: ExtraGlyphValidator[]
   displayMode: string
-  displayModel: DisplayModel
+  exportSVG?: unknown
+  displayModel?: DisplayModel
+  detectRerender?: () => void
   viewParams: {
     start: number
     end: number
@@ -41,8 +43,20 @@ function RenderedFeatureGlyph(props: {
   }
   [key: string]: unknown
 }) {
-  const { feature, bpPerPx, region, config, displayMode, layout, extraGlyphs } =
-    props
+  const {
+    feature,
+    detectRerender,
+    bpPerPx,
+    region,
+    config,
+    displayMode,
+    layout,
+    extraGlyphs,
+  } = props
+
+  // used for unit testing, difficult to mock out so it is in actual source code
+  detectRerender?.()
+
   const { reversed } = region
   const start = feature.get(reversed ? 'end' : 'start')
   const startPx = bpToPx(start, region, bpPerPx)
@@ -138,14 +152,15 @@ function RenderedFeatureGlyph(props: {
 
 const RenderedFeatures = observer(
   (props: {
-    features: Map<string, Feature>
-    isFeatureDisplayed: (f: Feature) => boolean
+    features?: Map<string, Feature>
+    isFeatureDisplayed?: (f: Feature) => boolean
     bpPerPx: number
     config: AnyConfigurationModel
     displayMode: string
-    displayModel: DisplayModel
+    displayModel?: DisplayModel
     region: Region
-    extraGlyphs: ExtraGlyphValidator[]
+    exportSVG?: unknown
+    extraGlyphs?: ExtraGlyphValidator[]
     layout: BaseLayout<unknown>
     viewParams: {
       start: number
@@ -159,7 +174,9 @@ const RenderedFeatures = observer(
     return (
       <>
         {[...features.values()]
-          .filter(feature => isFeatureDisplayed(feature))
+          .filter(feature =>
+            isFeatureDisplayed ? isFeatureDisplayed(feature) : true,
+          )
           .map(feature => (
             <RenderedFeatureGlyph
               key={feature.id()}
@@ -177,18 +194,19 @@ function SvgFeatureRendering(props: {
   blockKey: string
   regions: Region[]
   bpPerPx: number
+  detectRerender?: () => void
   config: AnyConfigurationModel
   features: Map<string, Feature>
-  displayModel: DisplayModel
-  exportSVG: boolean
+  displayModel?: DisplayModel
+  exportSVG?: boolean
   viewParams: {
     start: number
     end: number
     offsetPx: number
     offsetPx1: number
   }
-  featureDisplayHandler: (f: Feature) => boolean
-  extraGlyphs: ExtraGlyphValidator[]
+  featureDisplayHandler?: (f: Feature) => boolean
+  extraGlyphs?: ExtraGlyphValidator[]
   onMouseOut?: React.MouseEventHandler
   onMouseDown?: React.MouseEventHandler
   onMouseLeave?: React.MouseEventHandler
@@ -206,7 +224,7 @@ function SvgFeatureRendering(props: {
     config,
     displayModel = {},
     exportSVG,
-    featureDisplayHandler = () => true,
+    featureDisplayHandler,
     onMouseOut,
     onMouseDown,
     onMouseLeave,
@@ -216,6 +234,7 @@ function SvgFeatureRendering(props: {
     onMouseUp,
     onClick,
   } = props
+
   const [region] = regions || []
   const width = (region.end - region.start) / bpPerPx
   const displayMode = readConfObject(config, 'displayMode') as string
@@ -225,6 +244,7 @@ function SvgFeatureRendering(props: {
   const [height, setHeight] = useState(0)
   const [movedDuringLastMouseDown, setMovedDuringLastMouseDown] =
     useState(false)
+
   const mouseDown = useCallback(
     (event: React.MouseEvent) => {
       setMouseIsDown(true)
@@ -325,6 +345,7 @@ function SvgFeatureRendering(props: {
         isFeatureDisplayed={featureDisplayHandler}
         {...props}
       />
+
       <SvgOverlay
         {...props}
         region={region}

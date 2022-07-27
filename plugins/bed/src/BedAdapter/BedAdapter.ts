@@ -18,7 +18,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
   protected bedFeatures?: Promise<{
     header: string
     features: Record<string, string[]>
-    parser: typeof BED
+    parser: BED
     columnNames: string[]
     scoreColumn: string
     colRef: number

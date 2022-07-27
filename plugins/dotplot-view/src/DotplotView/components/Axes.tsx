@@ -3,7 +3,8 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getBlockLabelKeysToHide } from './util'
-import { viewBpToPx, getTickDisplayStr } from '@jbrowse/core/util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { DotplotViewModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
@@ -37,7 +38,11 @@ export const HorizontalAxis = observer(
     const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
     const dblocks = dynamicBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
-    const hviewSnap = { ...getSnapshot(hview), width }
+    const hviewSnap = {
+      ...getSnapshot(hview),
+      width,
+      staticBlocks: hview.staticBlocks,
+    }
     return (
       <svg width={viewWidth} height={borderY} className={classes.htext}>
         {dblocks
@@ -67,7 +72,7 @@ export const HorizontalAxis = observer(
           })}
         {hticks.map(tick => {
           const x =
-            (viewBpToPx({
+            (bpToPx({
               refName: tick.refName,
               coord: tick.base,
               self: hviewSnap,
@@ -92,7 +97,7 @@ export const HorizontalAxis = observer(
           .filter(tick => tick.type === 'major')
           .map(tick => {
             const x =
-              (viewBpToPx({
+              (bpToPx({
                 refName: tick.refName,
                 coord: tick.base,
                 self: hviewSnap,
@@ -134,7 +139,11 @@ export const VerticalAxis = observer(
     const { offsetPx, width, dynamicBlocks, bpPerPx } = vview
     const dblocks = dynamicBlocks.contentBlocks
     const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
-    const vviewSnap = { ...getSnapshot(vview), width }
+    const vviewSnap = {
+      ...getSnapshot(vview),
+      width,
+      staticBlocks: vview.staticBlocks,
+    }
     return (
       <svg className={classes.vtext} width={borderX} height={viewHeight}>
         {dblocks
@@ -162,7 +171,7 @@ export const VerticalAxis = observer(
           })}
         {vticks.map(tick => {
           const y =
-            (viewBpToPx({
+            (bpToPx({
               refName: tick.refName,
               coord: tick.base,
               self: vviewSnap,
@@ -187,7 +196,7 @@ export const VerticalAxis = observer(
           .filter(tick => tick.type === 'major')
           .map(tick => {
             const y =
-              (viewBpToPx({
+              (bpToPx({
                 refName: tick.refName,
                 coord: tick.base,
                 self: vviewSnap,

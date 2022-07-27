@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/development-tools",
-  "version": "1.6.9",
+  "version": "2.0.0",
   "description": "Tools to help with developing and building JBrowse 2 plugins",
   "keywords": [
     "jbrowse",
@@ -17,15 +17,10 @@
   "author": "JBrowse Team",
   "main": "dist/index.js",
   "files": [
-    "dist/",
-    "patches/",
-    "postinstall.js"
+    "dist/"
   ],
-  "bin": {
-    "jbrowse-plugin-postinstall": "./postinstall.js"
-  },
   "engines": {
-    "node": ">=10"
+    "node": ">=14"
   },
   "scripts": {
     "prebuild": "rimraf dist",
@@ -48,22 +43,25 @@
     "babel-plugin-transform-rename-import": "^2.3.0",
     "builtin-modules": "^3.2.0",
     "chalk": "^4.1.1",
-    "cross-spawn": "^7.0.3",
     "lodash.merge": "^4.6.2",
-    "patch-package": "^6.2.2",
-    "rollup": "^2.61.0",
     "rollup-plugin-external-globals": "^0.6.1",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-terser": "^7.0.2",
-    "tsdx": "0.14.1",
-    "typescript": "^4.5.2"
+    "rollup-plugin-terser": "^7.0.2"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.3",
-    "regenerator-runtime": "^0.13.7",
-    "tslib": "^2.3.1"
+    "@jbrowse/core": "^2.0.0",
+    "regenerator-runtime": "^0.13.0",
+    "rollup": "^2.0.0",
+    "tslib": "^2.0.0",
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/rollup-plugin-node-builtins": "^2.1.2",
+    "@types/rollup-plugin-node-globals": "^1.4.1",
+    "rollup": "^2.77.0",
+    "typescript": "^4.7.4"
   },
   "publishConfig": {
     "access": "public"

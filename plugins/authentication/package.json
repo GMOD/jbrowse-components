@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -44,7 +44,7 @@
     "@mui/material": "^5.0.0",
     "crypto-js": "^3.0.0",
     "electron": "^15.0.0",
-    "generic-filehandle": "^2.0.0",
+    "generic-filehandle": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

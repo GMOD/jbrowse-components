@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist/"
+    "outDir": "dist/",
+    "module": "commonjs"
   },
 
   "exclude": ["**/*.test.ts*", "**/*.test.js*", "dist"]

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-jobs-management",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JBrowse 2 jobs management",
   "keywords": [
     "jbrowse",
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/text-indexing": "^2.0.0",
+    "@jbrowse/text-indexing": "^2.0.1",
     "@mui/icons-material": "^5.0.0"
   },
   "peerDependencies": {

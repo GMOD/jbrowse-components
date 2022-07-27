@@ -1,3 +1,17 @@
+import {
+  getPropertyMembers,
+  getChildType,
+  isArrayType,
+  isModelType,
+  isReferenceType,
+  isValidReference,
+  isMapType,
+  types,
+  IAnyType,
+  IAnyStateTreeNode,
+  Instance,
+} from 'mobx-state-tree'
+
 /**
  * Pad the end of a base64 string with "=" to make it valid
  * @param b64 - unpadded b64 string
@@ -50,4 +64,56 @@ export async function toUrlSafeB64(str: string) {
   return pos > 0
     ? encoded.slice(0, pos).replace(/\+/g, '-').replace(/\//g, '_')
     : encoded.replace(/\+/g, '-').replace(/\//g, '_')
+}
+
+type MSTArray = Instance<ReturnType<typeof types.array>>
+type MSTMap = Instance<ReturnType<typeof types.map>>
+
+// attempts to remove undefined references from the given MST model. can only actually
+// remove them from arrays and maps. throws MST undefined ref error if it encounters
+// undefined refs in model properties
+export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
+  // makes it work with session sharing
+  if (node === undefined) {
+    return
+  }
+  if (isArrayType(type)) {
+    const array = node as MSTArray
+    const childType = getChildType(node)
+    if (isReferenceType(childType)) {
+      // filter array elements
+      for (let i = 0; i < array.length; ) {
+        if (!isValidReference(() => array[i])) {
+          array.splice(i, 1)
+        } else {
+          i += 1
+        }
+      }
+    }
+    array.forEach(el => {
+      filterSessionInPlace(el, childType)
+    })
+  } else if (isMapType(type)) {
+    const map = node as MSTMap
+    const childType = getChildType(map)
+    if (isReferenceType(childType)) {
+      // filter the map members
+      for (const key in map.keys()) {
+        if (!isValidReference(() => map.get(key))) {
+          map.delete(key)
+        }
+      }
+    }
+    map.forEach(child => {
+      filterSessionInPlace(child, childType)
+    })
+  } else if (isModelType(type)) {
+    // iterate over children
+    const { properties } = getPropertyMembers(node)
+
+    Object.entries(properties).forEach(([pname, ptype]) => {
+      // @ts-ignore
+      filterSessionInPlace(node[pname], ptype)
+    })
+  }
 }

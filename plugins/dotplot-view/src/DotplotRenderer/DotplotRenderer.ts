@@ -3,22 +3,25 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import {
-  createCanvas,
-  createImageBitmap,
-} from '@jbrowse/core/util/offscreenCanvasPonyfill'
-import { viewBpToPx, renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
+  renameRegionsIfNeeded,
+  renderToAbstractCanvas,
+  Region,
+  Feature,
+} from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { getSnapshot } from 'mobx-state-tree'
-import ComparativeServerSideRendererType, {
-  RenderArgsDeserialized as ComparativeRenderArgsDeserialized,
-  RenderArgs as ComparativeRenderArgs,
+import ComparativeRenderer, {
+  RenderArgsDeserialized,
+  RenderArgs,
 } from '@jbrowse/core/pluggableElementTypes/renderers/ComparativeServerSideRendererType'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
+
+// locals
 import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
 
 const { parseCigar } = MismatchParser
 
-export interface DotplotRenderArgsDeserialized
-  extends ComparativeRenderArgsDeserialized {
+export interface DotplotRenderArgsDeserialized extends RenderArgsDeserialized {
   height: number
   width: number
   highResolutionScaling: number
@@ -28,7 +31,7 @@ export interface DotplotRenderArgsDeserialized
   }
 }
 
-interface DotplotRenderArgs extends ComparativeRenderArgs {
+interface DotplotRenderArgs extends RenderArgs {
   adapterConfig: AnyConfigurationModel
   sessionId: string
   view: {
@@ -37,96 +40,147 @@ interface DotplotRenderArgs extends ComparativeRenderArgs {
   }
 }
 
-function drawCir(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  fill = true,
-  r = 1,
-) {
+const r = 'fell outside of range due to CIGAR string'
+const lt = '(less than min coordinate of feature)'
+const gt = '(greater than max coordinate of feature)'
+const fudgeFactor = 1 // allow 1px fuzzyness before warn
+
+function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
   ctx.beginPath()
   ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
-  fill ? ctx.fill() : ctx.stroke()
+  ctx.fill()
 }
-export default class DotplotRenderer extends ComparativeServerSideRendererType {
+export default class DotplotRenderer extends ComparativeRenderer {
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
-    const assemblyManager =
-      this.pluginManager.rootModel?.session?.assemblyManager
+    const pm = this.pluginManager
+    const assemblyManager = pm.rootModel?.session?.assemblyManager
 
-    if (!assemblyManager) {
-      throw new Error('No assembly manager provided')
+    const { view, sessionId, adapterConfig } = args
+
+    async function process(regions?: Region[]) {
+      if (!assemblyManager) {
+        throw new Error('No assembly manager provided')
+      }
+      const result = await renameRegionsIfNeeded(assemblyManager, {
+        sessionId,
+        adapterConfig,
+        regions,
+      })
+      return result.regions
     }
 
-    args.view.hview.displayedRegions = (
-      await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        regions: args.view.hview.displayedRegions,
-        adapterConfig: args.adapterConfig,
-      })
-    ).regions
-    args.view.vview.displayedRegions = (
-      await renameRegionsIfNeeded(assemblyManager, {
-        sessionId: args.sessionId,
-        regions: args.view.vview.displayedRegions,
-        adapterConfig: args.adapterConfig,
-      })
-    ).regions
+    view.hview.displayedRegions = await process(view.hview.displayedRegions)
+    view.vview.displayedRegions = await process(view.vview.displayedRegions)
+
     return args
   }
-  async makeImageData(
+
+  async drawDotplot(
+    ctx: CanvasRenderingContext2D,
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
-    const { highResolutionScaling = 1, width, height, config, views } = props
-
-    const canvas = createCanvas(
-      Math.ceil(width * highResolutionScaling),
-      height * highResolutionScaling,
-    )
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const { config, views, height, drawCigar } = props
     const color = readConfObject(config, 'color')
-    const isCallback = config.color.isCallback
     const posColor = readConfObject(config, 'posColor')
     const negColor = readConfObject(config, 'negColor')
     const colorBy = readConfObject(config, 'colorBy')
     const lineWidth = readConfObject(config, 'lineWidth')
-    ctx.lineWidth = lineWidth
-    ctx.scale(highResolutionScaling, highResolutionScaling)
+    const thresholds = readConfObject(config, 'thresholds')
+    const palette = readConfObject(config, 'thresholdsPalette')
+    const isCallback = config.color.isCallback
     const [hview, vview] = views
     const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
     const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
-    const unableToDraw = [] as string[]
+    const warnings = [] as { message: string; effect: string }[]
+    ctx.lineWidth = lineWidth
 
     // we operate on snapshots of these attributes of the hview/vview because
     // it is significantly faster than accessing the mobx objects
     const { bpPerPx: hBpPerPx } = hview
     const { bpPerPx: vBpPerPx } = vview
 
-    const hvsnap = {
+    function clampWithWarnX(
+      num: number,
+      min: number,
+      max: number,
+      feature: Feature,
+    ) {
+      if (num < min - fudgeFactor) {
+        const strand = feature.get('strand') || 1
+        const start = strand === 1 ? feature.get('start') : feature.get('end')
+        const end = strand === 1 ? feature.get('end') : feature.get('start')
+        const refName = feature.get('refName')
+
+        warnings.push({
+          message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
+          effect: 'clipped the feature',
+        })
+        return min
+      }
+      if (num > max + fudgeFactor) {
+        const strand = feature.get('strand') || 1
+        const start = strand === 1 ? feature.get('start') : feature.get('end')
+        const end = strand === 1 ? feature.get('end') : feature.get('start')
+        const refName = feature.get('refName')
+
+        warnings.push({
+          message: `feature at (X ${refName}:${start}-${end}) ${r} ${gt}`,
+          effect: 'clipped the feature',
+        })
+        return max
+      }
+      return num
+    }
+
+    function clampWithWarnY(
+      num: number,
+      min: number,
+      max: number,
+      feature: Feature,
+    ) {
+      if (num < min - fudgeFactor) {
+        const mate = feature.get('mate')
+        const { refName, start, end } = mate
+        warnings.push({
+          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${lt}`,
+          effect: 'clipped the feature',
+        })
+        return min
+      }
+      if (num > max + fudgeFactor) {
+        const mate = feature.get('mate')
+        const { refName, start, end } = mate
+
+        warnings.push({
+          message: `feature at (Y ${refName}:${start}-${end}) ${r} ${gt}`,
+          effect: 'clipped the feature',
+        })
+        return max
+      }
+      return num
+    }
+
+    const hsnap = {
       ...getSnapshot(hview),
+      staticBlocks: hview.staticBlocks,
       width: hview.width,
     }
-    const vvsnap = {
+    const vsnap = {
       ...getSnapshot(vview),
+      staticBlocks: vview.staticBlocks,
       width: vview.width,
     }
     hview.features?.forEach(feature => {
-      let start = feature.get('start')
-      let end = feature.get('end')
       const strand = feature.get('strand') || 1
+      const start = strand === 1 ? feature.get('start') : feature.get('end')
+      const end = strand === 1 ? feature.get('end') : feature.get('start')
       const refName = feature.get('refName')
       const mate = feature.get('mate')
       const mateRef = mate.refName
-      if (strand === -1) {
-        ;[end, start] = [start, end]
-      }
 
       let r
       if (colorBy === 'identity') {
-        const numMatches = feature.get('numMatches')
-        const blockLen = feature.get('blockLen')
-        const identity = numMatches / blockLen
-        const thresholds = readConfObject(config, 'thresholds')
-        const palette = readConfObject(config, 'thresholdsPalette')
+        const identity = feature.get('identity')
         for (let i = 0; i < thresholds.length; i++) {
           if (identity > +thresholds[i]) {
             r = palette[i]
@@ -134,11 +188,9 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           }
         }
       } else if (colorBy === 'meanQueryIdentity') {
-        const identity = feature.get('meanScore')
-        r = `hsl(${identity * 200},100%,40%)`
+        r = `hsl(${feature.get('meanScore') * 200},100%,40%)`
       } else if (colorBy === 'mappingQuality') {
-        const mq = feature.get('mappingQual')
-        r = `hsl(${mq},100%,40%)`
+        r = `hsl(${feature.get('mappingQual')},100%,40%)`
       } else if (colorBy === 'strand') {
         r = strand === -1 ? negColor : posColor
       } else if (colorBy === 'default') {
@@ -147,44 +199,28 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       ctx.fillStyle = r
       ctx.strokeStyle = r
 
-      const b10 = viewBpToPx({
-        self: hvsnap,
-        refName,
-        coord: start,
-      })?.offsetPx
-      const b20 = viewBpToPx({
-        self: hvsnap,
-        refName,
-        coord: end,
-      })?.offsetPx
-      const e10 = viewBpToPx({
-        self: vvsnap,
-        refName: mateRef,
-        coord: mate.start,
-      })?.offsetPx
-      const e20 = viewBpToPx({
-        self: vvsnap,
-        refName: mateRef,
-        coord: mate.end,
-      })?.offsetPx
+      const b10 = bpToPx({ self: hsnap, refName, coord: start })
+      const b20 = bpToPx({ self: hsnap, refName, coord: end })
+      const e10 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.start })
+      const e20 = bpToPx({ self: vsnap, refName: mateRef, coord: mate.end })
       if (
         b10 !== undefined &&
         b20 !== undefined &&
         e10 !== undefined &&
         e20 !== undefined
       ) {
-        const b1 = b10 - db1
-        const b2 = b20 - db1
-        const e1 = e10 - db2
-        const e2 = e20 - db2
+        const b1 = b10.offsetPx - db1
+        const b2 = b20.offsetPx - db1
+        const e1 = e10.offsetPx - db2
+        const e2 = e20.offsetPx - db2
         if (Math.abs(b1 - b2) <= 4 && Math.abs(e1 - e2) <= 4) {
-          drawCir(ctx, b1, height - e1, true, lineWidth)
+          drawCir(ctx, b1, height - e1, lineWidth)
         } else {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
 
-          if (cigar) {
+          if (drawCigar && cigar) {
             const cigarOps = parseCigar(cigar)
 
             ctx.beginPath()
@@ -200,6 +236,8 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
               } else if (op === 'I') {
                 currY += val / vBpPerPx
               }
+              currX = clampWithWarnX(currX, b1, b2, feature)
+              currY = clampWithWarnY(currY, e1, e2, feature)
               ctx.lineTo(currX, height - currY)
             }
             ctx.stroke()
@@ -211,22 +249,23 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
           }
         }
       } else {
-        if (unableToDraw.length <= 5) {
-          unableToDraw.push(
-            `feature at ${refName}:${start}-${end} ${mateRef}:${mate.start}-${mate.end} not plotted, fell outside of range ${b10} ${b20} ${e10} ${e20}`,
-          )
+        if (warnings.length <= 5) {
+          if (b10 === undefined || b20 === undefined) {
+            warnings.push({
+              message: `feature at (X ${refName}:${start}-${end}) not plotted, fell outside of range`,
+              effect: 'feature not rendered',
+            })
+          } else {
+            warnings.push({
+              message: `feature at (Y ${mateRef}:${mate.start}-${mate.end}) not plotted, fell outside of range`,
+              effect: 'feature not rendered',
+            })
+          }
         }
       }
     })
-    if (unableToDraw.length) {
-      console.warn(
-        (unableToDraw.length > 5
-          ? 'Many features fell outside the boundaries of the contigs.....sample of features: '
-          : 'Some features fell outside the boundaries of the contigs: ') +
-          unableToDraw.slice(0, 5).join('\n'),
-      )
-    }
-    return createImageBitmap(canvas)
+
+    return { warnings }
   }
 
   async render(renderProps: DotplotRenderArgsDeserialized) {
@@ -236,36 +275,36 @@ export default class DotplotRenderer extends ComparativeServerSideRendererType {
       view: { hview, vview },
     } = renderProps
     const dimensions = [width, height]
-    const realizedViews = [hview, vview].map((snap, idx) => {
+    const views = [hview, vview].map((snap, idx) => {
       const view = Dotplot1DView.create(snap)
       view.setVolatileWidth(dimensions[idx])
       return view
     })
-    const target = realizedViews[0]
+    const target = views[0]
     const feats = await this.getFeatures({
       ...renderProps,
       regions: target.dynamicBlocks.contentBlocks,
     })
     target.setFeatures(feats)
-    const imageData = await this.makeImageData({
-      ...renderProps,
-      views: realizedViews,
-    })
+
+    const ret = await renderToAbstractCanvas(width, height, renderProps, ctx =>
+      this.drawDotplot(ctx, { ...renderProps, views }),
+    )
 
     const results = await super.render({
       ...renderProps,
+      ...ret,
       height,
       width,
-      imageData,
     })
 
     return {
       ...results,
-      imageData,
+      ...ret,
       height,
       width,
-      offsetX: realizedViews[0].dynamicBlocks.blocks[0].offsetPx,
-      offsetY: realizedViews[1].dynamicBlocks.blocks[0].offsetPx,
+      offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
+      offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
     }
   }
 }

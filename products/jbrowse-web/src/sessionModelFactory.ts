@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
+import clone from 'clone'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
@@ -655,34 +656,29 @@ export default function sessionModelFactory(
         editableConfigSession.showWidget(editor)
       },
       editTrackConfiguration(configuration: AnyConfigurationModel) {
-        if (
-          !self.adminMode &&
-          self.sessionTracks.indexOf(configuration) === -1
-        ) {
+        const { adminMode, sessionTracks } = self
+        if (!adminMode && sessionTracks.indexOf(configuration) === -1) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         this.editConfiguration(configuration)
       },
     }))
     .views(self => ({
-      getTrackActionMenuItems(config: any) {
-        const session = self
+      getTrackActionMenuItems(config: AnyConfigurationModel) {
+        const { adminMode, sessionTracks } = self
         const canEdit =
-          session.adminMode ||
-          session.sessionTracks.find(track => {
-            return track.trackId === config.trackId
-          })
+          adminMode || sessionTracks.find(t => t.trackId === config.trackId)
 
         // disable if it is a reference sequence track
-        const isRefSeqTrack =
+        const isRefSeq =
           readConfObject(config, 'type') === 'ReferenceSequenceTrack'
         return [
           {
             label: 'About track',
             onClick: () => {
-              session.queueDialog(doneCallback => [
+              self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose: doneCallback },
+                { config, handleClose },
               ])
             },
             icon: InfoIcon,
@@ -690,42 +686,34 @@ export default function sessionModelFactory(
           {
             label: 'Settings',
             disabled: !canEdit,
-            onClick: () => {
-              session.editTrackConfiguration(config)
-            },
+            onClick: () => self.editTrackConfiguration(config),
             icon: SettingsIcon,
           },
           {
             label: 'Delete track',
-            disabled: !canEdit || isRefSeqTrack,
-            onClick: () => {
-              session.deleteTrackConf(config)
-            },
+            disabled: !canEdit || isRefSeq,
+            onClick: () => self.deleteTrackConf(config),
             icon: DeleteIcon,
           },
           {
             label: 'Copy track',
-            disabled: isRefSeqTrack,
+            disabled: isRefSeq,
             onClick: () => {
-              const trackSnapshot = JSON.parse(
-                JSON.stringify(getSnapshot(config)),
-              )
+              const snap = clone(getSnapshot(config)) as any
               const now = Date.now()
-              trackSnapshot.trackId += `-${now}`
-              trackSnapshot.displays.forEach(
-                (display: { displayId: string }) => {
-                  display.displayId += `-${now}`
-                },
-              )
+              snap.trackId += `-${now}`
+              snap.displays.forEach((display: { displayId: string }) => {
+                display.displayId += `-${now}`
+              })
               // the -sessionTrack suffix to trackId is used as metadata for
               // the track selector to store the track in a special category,
               // and default category is also cleared
-              if (!session.adminMode) {
-                trackSnapshot.trackId += '-sessionTrack'
-                trackSnapshot.category = undefined
+              if (!self.adminMode) {
+                snap.trackId += '-sessionTrack'
+                snap.category = undefined
               }
-              trackSnapshot.name += ' (copy)'
-              session.addTrackConf(trackSnapshot)
+              snap.name += ' (copy)'
+              self.addTrackConf(snap)
             },
             icon: CopyIcon,
           },

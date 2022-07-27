@@ -8,6 +8,7 @@ import DivSequenceRendering from './DivSequenceRendering'
 import DivRenderingConfigSchema from '../configSchema'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function Rendering(props: any) {
   return (
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -16,7 +17,8 @@ function Rendering(props: any) {
   )
 }
 function Fallback(props: FallbackProps) {
-  return <h1 className="error">{String(props.error)}</h1>
+  const { error } = props
+  return <h1 className="error">{String(error)}</h1>
 }
 
 describe('<DivSequenceRendering />', () => {

@@ -1,5 +1,5 @@
 // this is all the stuff that the pluginManager re-exports for plugins to use
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, LazyExoticComponent, Suspense } from 'react'
 import * as ReactDom from 'react-dom'
 import * as mobx from 'mobx'
 import * as mst from 'mobx-state-tree'
@@ -46,7 +46,7 @@ import * as coreMstReflection from '../util/mst-reflection'
 import * as rxjs from '../util/rxjs'
 import * as mstTypes from '../util/types/mst'
 
-import ReExportsList from './list'
+import reExportsList from './list'
 
 const Entries = {
   Accordion: lazy(() => import('@mui/material/Accordion')),
@@ -192,11 +192,291 @@ const Attributes = lazy(() => import('./Attributes'))
 const FeatureDetails = lazy(() => import('./FeatureDetails'))
 const BaseCard = lazy(() => import('./BaseCard'))
 
-// uses 'as any' because otherwise typescript gives warning Exported variable
-// 'libs' has or is using name 'DataGridComponent' from external module
-// "node_modules/@mui/x-data-grid/DataGrid/DataGrid" but cannot be named.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DataGrid = lazy(() => import('./DataGrid')) as any
+const DataGridEntries: Record<string, LazyExoticComponent<any>> = {
+  DataGrid: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({ default: module.DataGrid })),
+  ),
+  GridActionsCellItem: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridActionsCellItem,
+    })),
+  ),
+  GridAddIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridAddIcon,
+    })),
+  ),
+  GridArrowDownwardIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridArrowDownwardIcon,
+    })),
+  ),
+  GridArrowUpwardIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridArrowUpwardIcon,
+    })),
+  ),
+  GridAutoSizer: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridAutoSizer,
+    })),
+  ),
+  GridCellCheckboxForwardRef: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridCellCheckboxForwardRef,
+    })),
+  ),
+  GridCellCheckboxRenderer: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridCellCheckboxRenderer,
+    })),
+  ),
+  GridCheckCircleIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridCheckCircleIcon,
+    })),
+  ),
+  GridCheckIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridCheckIcon,
+    })),
+  ),
+  GridCloseIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridCloseIcon,
+    })),
+  ),
+  GridColumnHeaderSeparator: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridColumnHeaderSeparator,
+    })),
+  ),
+  GridColumnHeaderSortIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridColumnHeaderSortIcon,
+    })),
+  ),
+  GridColumnIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridColumnIcon,
+    })),
+  ),
+  GridColumnMenu: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridColumnMenu,
+    })),
+  ),
+  GridColumnMenuContainer: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridColumnMenuContainer,
+    })),
+  ),
+  GridDragIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridDragIcon,
+    })),
+  ),
+  GridExpandMoreIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridExpandMoreIcon,
+    })),
+  ),
+  GridFilterAltIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridFilterAltIcon,
+    })),
+  ),
+  GridFilterForm: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridFilterForm,
+    })),
+  ),
+  GridFilterListIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridFilterListIcon,
+    })),
+  ),
+  GridFilterPanel: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridFilterPanel,
+    })),
+  ),
+  GridFooter: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({ default: module.GridFooter })),
+  ),
+  GridFooterContainer: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridFooterContainer,
+    })),
+  ),
+  GridHeader: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({ default: module.GridHeader })),
+  ),
+  GridHeaderCheckbox: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridHeaderCheckbox,
+    })),
+  ),
+  GridKeyboardArrowRight: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridKeyboardArrowRight,
+    })),
+  ),
+  GridLoadIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridLoadIcon,
+    })),
+  ),
+  GridLoadingOverlay: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridLoadingOverlay,
+    })),
+  ),
+  GridMenuIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridMenuIcon,
+    })),
+  ),
+  GridMoreVertIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridMoreVertIcon,
+    })),
+  ),
+  GridNoRowsOverlay: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridNoRowsOverlay,
+    })),
+  ),
+  GridOverlay: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridOverlay,
+    })),
+  ),
+  GridPagination: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridPagination,
+    })),
+  ),
+  GridPanel: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({ default: module.GridPanel })),
+  ),
+  GridPanelWrapper: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridPanelWrapper,
+    })),
+  ),
+  GridPreferencesPanel: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridPreferencesPanel,
+    })),
+  ),
+  GridRemoveIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridRemoveIcon,
+    })),
+  ),
+  GridRoot: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({ default: module.GridRoot })),
+  ),
+  GridRowCount: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridRowCount,
+    })),
+  ),
+  GridSaveAltIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridSaveAltIcon,
+    })),
+  ),
+  GridScrollArea: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridScrollArea,
+    })),
+  ),
+  GridSearchIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridSearchIcon,
+    })),
+  ),
+  GridSelectedRowCount: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridSelectedRowCount,
+    })),
+  ),
+  GridSeparatorIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridSeparatorIcon,
+    })),
+  ),
+  GridTableRowsIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridTableRowsIcon,
+    })),
+  ),
+  GridToolbar: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbar,
+    })),
+  ),
+  GridToolbarColumnsButton: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbarColumnsButton,
+    })),
+  ),
+  GridToolbarContainer: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbarContainer,
+    })),
+  ),
+  GridToolbarDensitySelector: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbarDensitySelector,
+    })),
+  ),
+  GridToolbarExport: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbarExport,
+    })),
+  ),
+  GridToolbarExportContainer: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbarExportContainer,
+    })),
+  ),
+  GridToolbarFilterButton: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridToolbarFilterButton,
+    })),
+  ),
+  GridTripleDotsVerticalIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridTripleDotsVerticalIcon,
+    })),
+  ),
+  GridViewHeadlineIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridViewHeadlineIcon,
+    })),
+  ),
+  GridViewStreamIcon: lazy(() =>
+    import('@mui/x-data-grid').then(module => ({
+      default: module.GridViewStreamIcon,
+    })),
+  ),
+}
+
+const LazyDataGridComponents = Object.fromEntries(
+  Object.entries(DataGridEntries).map(([key, ReactComponent]) => [
+    key,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (props: any) => (
+      <Suspense fallback={<div />}>
+        <ReactComponent {...props} />
+      </Suspense>
+    ),
+  ]),
+)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LazyAttributes = (props: any) => (
@@ -226,10 +506,10 @@ const libs = {
   'react-dom': ReactDom,
   'mobx-react': mxreact,
   '@mui/x-data-grid': {
-    DataGrid,
     useGridApiContext,
     useGridApiRef,
     useGridRootProps,
+    ...LazyDataGridComponents,
   },
 
   // special case so plugins can easily use @mui/icons-material; don't remove
@@ -306,12 +586,25 @@ const libs = {
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
-// make sure that all the items in the ReExports/list array (used by build systems and such)
-// are included here. it's OK if there are some additional ones that are not in the list
-ReExportsList.forEach(name => {
-  if (!(name in libs)) {
-    throw new Error(`ReExports/modules is missing ${name}`)
-  }
-})
+const libsList = Array.from(Object.keys(libs))
+
+// make sure that all the items in the ReExports/list array (used by build
+// systems and such) are included here, and vice versa
+const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
+if (inLibsOnly.length) {
+  throw new Error(
+    `The following modules are in the re-exports list, but not the modules libs: ${inLibsOnly.join(
+      ', ',
+    )}`,
+  )
+}
+const inReExportsOnly = reExportsList.filter(mod => !libsList.includes(mod))
+if (inReExportsOnly.length) {
+  throw new Error(
+    `The following modules are in the modules libs, but not the re-exports list: ${inReExportsOnly.join(
+      ', ',
+    )}`,
+  )
+}
 
 export default libs

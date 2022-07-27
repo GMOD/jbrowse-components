@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sequence",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -38,16 +38,17 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@mui/icons-material": "^5.0.1",
     "@gmod/indexedfasta": "^2.0.2",
     "@gmod/twobit": "^1.1.12",
-    "abortable-promise-cache": "^1.5.0",
-    "generic-filehandle": "^2.2.2"
+    "abortable-promise-cache": "^1.5.0"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
     "@jbrowse/plugin-wiggle": "^2.0.0",
     "@mui/material": "^5.0.0",
+    "tss-react": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

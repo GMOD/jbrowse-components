@@ -26,19 +26,19 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async renameRegionsIfNeeeded(
-    args: RenderArgs,
-    renderer: ComparativeRenderer,
-  ) {
-    return renderer.renameRegionsIfNeeded(args)
+  async renameRegionsIfNeeeded(args: RenderArgs, rend: ComparativeRenderer) {
+    return rend.renameRegionsIfNeeded(args)
+  }
+
+  getRenderer(rendererType: string) {
+    return this.pluginManager.getRendererType(
+      rendererType,
+    ) as ComparativeRenderer
   }
 
   async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
     const { rendererType } = args
-    const renderer = this.pluginManager.getRendererType(
-      rendererType,
-    ) as ComparativeRenderer
-
+    const renderer = this.getRenderer(rendererType)
     const result = await this.renameRegionsIfNeeeded(
       (await super.serializeArguments(args, rpcDriverClassName)) as RenderArgs,
       renderer,
@@ -67,25 +67,10 @@ export default class ComparativeRender extends RpcMethodType {
 
     checkAbortSignal(signal)
 
-    const RendererType = this.pluginManager.getRendererType(
-      rendererType,
-    ) as ComparativeRenderer
-
-    if (!RendererType) {
-      throw new Error(`renderer "${rendererType}" not found`)
-    }
-    if (!RendererType.ReactComponent) {
-      throw new Error(
-        `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
-      )
-    }
-
-    const result =
-      rpcDriverClassName === 'MainThreadRpcDriver'
-        ? await RendererType.render(deserializedArgs)
-        : await RendererType.renderInWorker(deserializedArgs)
-    checkAbortSignal(signal)
-    return result
+    const renderer = this.getRenderer(rendererType)
+    return rpcDriverClassName === 'MainThreadRpcDriver'
+      ? renderer.render(deserializedArgs)
+      : renderer.renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
@@ -102,20 +87,7 @@ export default class ComparativeRender extends RpcMethodType {
       return superDeserialized
     }
 
-    const { rendererType } = args
-    const RendererType = this.pluginManager.getRendererType(
-      rendererType,
-    ) as ComparativeRenderer
-    if (!RendererType) {
-      throw new Error(`renderer "${rendererType}" not found`)
-    }
-    if (!RendererType.ReactComponent) {
-      throw new Error(
-        `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
-      )
-    }
-
-    return RendererType.deserializeResultsInClient(
+    return this.getRenderer(args.rendererType).deserializeResultsInClient(
       superDeserialized as ResultsSerialized,
       args,
     )

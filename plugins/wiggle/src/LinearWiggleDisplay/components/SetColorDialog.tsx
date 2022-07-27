@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { observer } from 'mobx-react'
 import {
   Button,
   Dialog,
@@ -12,7 +13,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import CloseIcon from '@mui/icons-material/Close'
-import { CompactPicker, Color, RGBColor } from 'react-color'
+import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -23,22 +24,14 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// this is needed because passing a entire color object into the react-color
-// for alpha, can't pass in an rgba string for example
-function serialize(color: Color) {
-  if (color instanceof Object) {
-    const { r, g, b } = color as RGBColor
-    return `rgb(${r},${g},${b})`
-  }
-  return color
-}
-
-export default function SetColorDialog({
+function SetColorDialog({
   model,
   handleClose,
 }: {
   model: {
-    color: number
+    color?: string
+    posColor?: string
+    negColor?: string
     setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
@@ -78,17 +71,19 @@ export default function SetColorDialog({
         {posneg ? (
           <>
             <Typography>Positive color</Typography>
-            <CompactPicker
+            <ColorPicker
+              color={model.posColor || 'black'}
               onChange={event => {
-                model.setPosColor(serialize(event.rgb))
+                model.setPosColor(event)
                 model.setColor(undefined)
               }}
             />
             <Typography>Negative color</Typography>
 
-            <CompactPicker
+            <ColorPicker
+              color={model.negColor || 'black'}
               onChange={event => {
-                model.setNegColor(serialize(event.rgb))
+                model.setNegColor(event)
                 model.setColor(undefined)
               }}
             />
@@ -96,8 +91,9 @@ export default function SetColorDialog({
         ) : (
           <>
             <Typography>Overall color</Typography>
-            <CompactPicker
-              onChange={event => model.setColor(serialize(event.rgb))}
+            <ColorPicker
+              color={model.color || 'black'}
+              onChange={event => model.setColor(event)}
             />
           </>
         )}
@@ -127,3 +123,5 @@ export default function SetColorDialog({
     </Dialog>
   )
 }
+
+export default observer(SetColorDialog)

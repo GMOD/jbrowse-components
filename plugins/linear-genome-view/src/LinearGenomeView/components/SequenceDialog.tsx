@@ -240,7 +240,7 @@ function SequenceDialog({
         >
           Download FASTA
         </Button>
-        <Button onClick={handleClose} color="primary" autoFocus>
+        <Button onClick={handleClose} variant="contained">
           Close
         </Button>
       </DialogActions>

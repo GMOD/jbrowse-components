@@ -10,6 +10,11 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    source: {
+      type: 'string',
+      defaultValue: '',
+      description: 'Used for multiwiggle',
+    },
   },
   { explicitlyTyped: true },
 )

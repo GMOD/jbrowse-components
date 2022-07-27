@@ -14,7 +14,7 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -145,6 +145,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Adapter does not support retrieving features')
+    }
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -168,16 +171,11 @@ export default class FeatureRendererType extends ServerSideRendererType {
 
     const featureObservable =
       requestRegions.length === 1
-        ? (dataAdapter as BaseFeatureDataAdapter).getFeatures(
+        ? dataAdapter.getFeatures(
             this.getExpandedRegion(region, renderArgs),
-            // @ts-ignore
             renderArgs,
           )
-        : // @ts-ignore
-          (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
-            requestRegions,
-            renderArgs,
-          )
+        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
     const feats = await featureObservable.pipe(toArray()).toPromise()
     checkAbortSignal(signal)
@@ -213,5 +211,3 @@ export default class FeatureRendererType extends ServerSideRendererType {
     return { ...result, features }
   }
 }
-
-export class NewFeatureRendererType extends ServerSideRendererType {}
