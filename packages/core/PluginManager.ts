@@ -1,8 +1,8 @@
 import {
-  types,
-  IAnyType,
   isModelType,
   isType,
+  types,
+  IAnyType,
   IAnyModelType,
 } from 'mobx-state-tree'
 
@@ -18,6 +18,7 @@ import ConnectionType from './pluggableElementTypes/ConnectionType'
 import RpcMethodType from './pluggableElementTypes/RpcMethodType'
 import InternetAccountType from './pluggableElementTypes/InternetAccountType'
 import TextSearchAdapterType from './pluggableElementTypes/TextSearchAdapterType'
+import AddTrackWorkflowType from './pluggableElementTypes/AddTrackWorkflowType'
 
 import {
   ConfigurationSchema,
@@ -77,6 +78,7 @@ type PluggableElementTypeGroup =
   | 'rpc method'
   | 'internet account'
   | 'text search adapter'
+  | 'add track workflow'
 
 /** internal class that holds the info for a certain element type */
 class TypeRecord<ElementClass extends PluggableElementBase> {
@@ -155,6 +157,7 @@ export default class PluginManager {
     'widget',
     'rpc method',
     'internet account',
+    'add track workflow',
   ) as PhasedScheduler<PluggableElementTypeGroup> | undefined
 
   rendererTypes = new TypeRecord('RendererType', RendererType)
@@ -177,6 +180,8 @@ export default class PluginManager {
   widgetTypes = new TypeRecord('WidgetType', WidgetType)
 
   rpcMethods = new TypeRecord('RpcMethodType', RpcMethodType)
+
+  addTrackWidgets = new TypeRecord('AddTrackWorkflow', AddTrackWorkflowType)
 
   internetAccountTypes = new TypeRecord(
     'InternetAccountType',
@@ -289,6 +294,8 @@ export default class PluginManager {
         return this.rpcMethods
       case 'internet account':
         return this.internetAccountTypes
+      case 'add track workflow':
+        return this.addTrackWidgets
       default:
         throw new Error(`invalid element type '${groupName}'`)
     }
@@ -305,48 +312,45 @@ export default class PluginManager {
     }
     const typeRecord = this.getElementTypeRecord(groupName)
 
-    if (this.elementCreationSchedule) {
-      this.elementCreationSchedule.add(groupName, () => {
-        let newElement = creationCallback(this)
-        if (!newElement.name) {
-          throw new Error(`cannot add a ${groupName} with no name`)
-        }
+    this.elementCreationSchedule?.add(groupName, () => {
+      const newElement = creationCallback(this)
+      if (!newElement.name) {
+        throw new Error(`cannot add a ${groupName} with no name`)
+      }
 
-        if (typeRecord.has(newElement.name)) {
-          throw new Error(
-            `${groupName} ${newElement.name} already registered, cannot register it again`,
-          )
-        }
+      if (typeRecord.has(newElement.name)) {
+        throw new Error(
+          `${groupName} ${newElement.name} already registered, cannot register it again`,
+        )
+      }
 
-        newElement = this.evaluateExtensionPoint(
+      typeRecord.add(
+        newElement.name,
+        this.evaluateExtensionPoint(
           'Core-extendPluggableElement',
           newElement,
-        ) as PluggableElementType
-
-        typeRecord.add(newElement.name, newElement)
-      })
-    }
+        ) as PluggableElementType,
+      )
+    })
 
     return this
   }
 
   getElementType(groupName: PluggableElementTypeGroup, typeName: string) {
-    const typeRecord = this.getElementTypeRecord(groupName)
-    return typeRecord.get(typeName)
+    return this.getElementTypeRecord(groupName).get(typeName)
   }
 
   getElementTypesInGroup(groupName: PluggableElementTypeGroup) {
-    const typeRecord = this.getElementTypeRecord(groupName)
-    return typeRecord.all()
+    return this.getElementTypeRecord(groupName).all()
   }
 
   /** get a MST type for the union of all specified pluggable MST types */
   pluggableMstType(
-    typeGroup: PluggableElementTypeGroup,
+    groupName: PluggableElementTypeGroup,
     fieldName: PluggableElementMember,
     fallback: IAnyType = types.maybe(types.null),
   ) {
-    const pluggableTypes = this.getElementTypeRecord(typeGroup)
+    const pluggableTypes = this.getElementTypeRecord(groupName)
       .all()
       // @ts-ignore
       .map(t => t[fieldName])
@@ -356,7 +360,7 @@ export default class PluginManager {
     // encountered in tests
     if (pluggableTypes.length === 0) {
       console.warn(
-        `No JBrowse pluggable types found matching ('${typeGroup}','${fieldName}')`,
+        `No pluggable types found matching ('${groupName}','${fieldName}')`,
       )
       return fallback
     }
@@ -452,6 +456,10 @@ export default class PluginManager {
     return this.viewTypes.get(typeName)
   }
 
+  getAddTrackWorkflow(typeName: string): AddTrackWorkflowType {
+    return this.addTrackWidgets.get(typeName)
+  }
+
   getWidgetType(typeName: string): WidgetType {
     return this.widgetTypes.get(typeName)
   }
@@ -464,100 +472,82 @@ export default class PluginManager {
     return this.rpcMethods.get(methodName)
   }
 
-  getInternetAccountType(internetAccountName: string): InternetAccountType {
-    return this.internetAccountTypes.get(internetAccountName)
+  getInternetAccountType(name: string): InternetAccountType {
+    return this.internetAccountTypes.get(name)
   }
 
-  addRendererType(
-    creationCallback: (pluginManager: PluginManager) => RendererType,
-  ): this {
-    return this.addElementType('renderer', creationCallback)
+  addRendererType(cb: (pm: PluginManager) => RendererType) {
+    return this.addElementType('renderer', cb)
   }
 
-  addAdapterType(
-    creationCallback: (pluginManager: PluginManager) => AdapterType,
-  ): this {
-    return this.addElementType('adapter', creationCallback)
+  addAdapterType(cb: (pm: PluginManager) => AdapterType) {
+    return this.addElementType('adapter', cb)
   }
 
-  addTextSearchAdapterType(
-    creationCallback: (pluginManager: PluginManager) => TextSearchAdapterType,
-  ): this {
-    return this.addElementType('text search adapter', creationCallback)
+  addTextSearchAdapterType(cb: (pm: PluginManager) => TextSearchAdapterType) {
+    return this.addElementType('text search adapter', cb)
   }
 
-  addTrackType(
-    creationCallback: (pluginManager: PluginManager) => TrackType,
-  ): this {
+  addTrackType(cb: (pm: PluginManager) => TrackType) {
     // Goes through the already-created displays and registers the ones that
     // specify this track type
     const callback = () => {
-      const track = creationCallback(this)
-      ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
-        display => {
-          if (
-            display.trackType === track.name &&
-            // track may have already added the displayType in its creationCallback
-            !track.displayTypes.includes(display)
-          ) {
-            track.addDisplayType(display)
-          }
-        },
-      )
+      const track = cb(this)
+      const displays = this.getElementTypesInGroup('display') as DisplayType[]
+      displays.forEach(display => {
+        // track may have already added the displayType in its cb
+        if (
+          display.trackType === track.name &&
+          !track.displayTypes.includes(display)
+        ) {
+          track.addDisplayType(display)
+        }
+      })
       return track
     }
     return this.addElementType('track', callback)
   }
 
-  addDisplayType(
-    creationCallback: (pluginManager: PluginManager) => DisplayType,
-  ): this {
-    return this.addElementType('display', creationCallback)
+  addDisplayType(cb: (pluginManager: PluginManager) => DisplayType) {
+    return this.addElementType('display', cb)
   }
 
-  addViewType(
-    creationCallback: (pluginManager: PluginManager) => ViewType,
-  ): this {
+  addViewType(cb: (pluginManager: PluginManager) => ViewType) {
     const callback = () => {
-      const newView = creationCallback(this)
-      ;(this.getElementTypesInGroup('display') as DisplayType[]).forEach(
-        display => {
-          if (
-            display.viewType === newView.name &&
-            // view may have already added the displayType in its creationCallback
-            !newView.displayTypes.includes(display)
-          ) {
-            newView.addDisplayType(display)
-          }
-        },
-      )
+      const newView = cb(this)
+      const displays = this.getElementTypesInGroup('display') as DisplayType[]
+      displays.forEach(display => {
+        // view may have already added the displayType in its callback
+        if (
+          display.viewType === newView.name &&
+          !newView.displayTypes.includes(display)
+        ) {
+          newView.addDisplayType(display)
+        }
+      })
       return newView
     }
     return this.addElementType('view', callback)
   }
 
-  addWidgetType(
-    creationCallback: (pluginManager: PluginManager) => WidgetType,
-  ): this {
-    return this.addElementType('widget', creationCallback)
+  addWidgetType(cb: (pm: PluginManager) => WidgetType) {
+    return this.addElementType('widget', cb)
   }
 
-  addConnectionType(
-    creationCallback: (pluginManager: PluginManager) => ConnectionType,
-  ): this {
-    return this.addElementType('connection', creationCallback)
+  addConnectionType(cb: (pm: PluginManager) => ConnectionType) {
+    return this.addElementType('connection', cb)
   }
 
-  addRpcMethod(
-    creationCallback: (pluginManager: PluginManager) => RpcMethodType,
-  ): this {
-    return this.addElementType('rpc method', creationCallback)
+  addRpcMethod(cb: (pm: PluginManager) => RpcMethodType) {
+    return this.addElementType('rpc method', cb)
   }
 
-  addInternetAccountType(
-    creationCallback: (pluginManager: PluginManager) => InternetAccountType,
-  ): this {
-    return this.addElementType('internet account', creationCallback)
+  addInternetAccountType(cb: (pm: PluginManager) => InternetAccountType) {
+    return this.addElementType('internet account', cb)
+  }
+
+  addAddTrackWorkflowType(cb: (pm: PluginManager) => AddTrackWorkflowType) {
+    return this.addElementType('add track workflow', cb)
   }
 
   addToExtensionPoint<T>(

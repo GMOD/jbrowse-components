@@ -3,18 +3,9 @@ import {
   cast,
   getSnapshot,
   getType,
-  getPropertyMembers,
-  getChildType,
-  isArrayType,
-  isModelType,
-  isReferenceType,
-  isValidReference,
-  isMapType,
   resolveIdentifier,
   types,
   IAnyStateTreeNode,
-  IAnyType,
-  Instance,
   SnapshotIn,
   IAnyModelType,
 } from 'mobx-state-tree'
@@ -46,61 +37,11 @@ import SaveIcon from '@mui/icons-material/Save'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
+import TimeTraveller from './TimeTraveller'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
-
-// attempts to remove undefined references from the given MST model. can only actually
-// remove them from arrays and maps. throws MST undefined ref error if it encounters
-// undefined refs in model properties
-function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
-  type MSTArray = Instance<ReturnType<typeof types.array>>
-  type MSTMap = Instance<ReturnType<typeof types.map>>
-
-  // makes it work with session sharing
-  if (node === undefined) {
-    return
-  }
-  if (isArrayType(nodeType)) {
-    const array = node as MSTArray
-    const childType = getChildType(node)
-    if (isReferenceType(childType)) {
-      // filter array elements
-      for (let i = 0; i < array.length; ) {
-        if (!isValidReference(() => array[i])) {
-          array.splice(i, 1)
-        } else {
-          i += 1
-        }
-      }
-    }
-    array.forEach(el => {
-      filterSessionInPlace(el, childType)
-    })
-  } else if (isMapType(nodeType)) {
-    const map = node as MSTMap
-    const childType = getChildType(map)
-    if (isReferenceType(childType)) {
-      // filter the map members
-      for (const key in map.keys()) {
-        if (!isValidReference(() => map.get(key))) {
-          map.delete(key)
-        }
-      }
-    }
-    map.forEach(child => {
-      filterSessionInPlace(child, childType)
-    })
-  } else if (isModelType(nodeType)) {
-    // iterate over children
-    const { properties } = getPropertyMembers(node)
-
-    Object.entries(properties).forEach(([pname, ptype]) => {
-      // @ts-ignore
-      filterSessionInPlace(node[pname], ptype)
-    })
-  }
-}
+import { filterSessionInPlace } from './util'
 
 interface Menu {
   label: string
@@ -127,10 +68,11 @@ export default function RootModel(
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
-      isAssemblyEditing: false,
-      isDefaultSessionEditing: false,
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({
+      isAssemblyEditing: false,
+      isDefaultSessionEditing: false,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
@@ -171,8 +113,26 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
     }))
+
     .actions(self => ({
+      stopTrackingUndo() {
+        self.history.resumeTrackingUndo()
+      },
+      resumeTrackingUndo() {
+        self.history.resumeTrackingUndo()
+      },
       afterCreate() {
+        document.addEventListener('keydown', event => {
+          if (
+            (event.ctrlKey && event.key === 'z') ||
+            (event.metaKey && event.key === 'z')
+          ) {
+            if (self.history.canUndo) {
+              self.history.undo()
+            }
+          }
+        })
+
         Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
           .filter(
@@ -201,6 +161,17 @@ export default function RootModel(
                   )
                 }
               }
+            }
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.session) {
+              // this is needed to get MST to start tracking itself
+              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
+              self.history.initialize()
             }
           }),
         )
@@ -425,7 +396,6 @@ export default function RootModel(
       },
     }))
     .volatile(self => ({
-      history: {},
       menus: [
         {
           label: 'File',
@@ -566,6 +536,13 @@ export default function RootModel(
           label: 'Tools',
           menuItems: [
             {
+              label: 'Undo',
+              disabled: self.history.canUndo,
+              onClick: () => {
+                self.history.undo()
+              },
+            },
+            {
               label: 'Plugin store',
               icon: ExtensionIcon,
               onClick: () => {
@@ -584,10 +561,6 @@ export default function RootModel(
       adminMode,
     }))
     .actions(self => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setHistory(history: any) {
-        self.history = history
-      },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
       },

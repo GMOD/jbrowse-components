@@ -1,11 +1,8 @@
 import React, { useState } from 'react'
+import { Button, Paper, Typography, alpha } from '@mui/material'
 import { getSession } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
-import { storeBlobLocation } from '@jbrowse/core/util/tracks'
-import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { alpha } from '@mui/material/styles'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { useDropzone } from 'react-dropzone'
 
 // icons
@@ -14,10 +11,11 @@ import ErrorIcon from '@mui/icons-material/Error'
 
 const MAX_FILE_SIZE = 512 * 1024 ** 2 // 512 MiB
 
-function styledBy(property, mapping) {
-  return props => mapping[props[property]]
+function styledBy(property: string, mapping: { [key: string]: string }) {
+  return (props: { [key: string]: string }) => mapping[props[property]]
 }
 
+// @ts-ignore
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
@@ -76,57 +74,47 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function ImportSession(props) {
-  const [errorMessage, setErrorMessage] = useState('')
-  const { model } = props
+export function readBlobAsText(blob: Blob): Promise<string> {
+  const a = new FileReader()
+  return new Promise((resolve, reject) => {
+    a.onload = e => {
+      if (e.target) {
+        resolve(e.target.result as string)
+      } else {
+        reject(new Error('unknown result reading blob from canvas'))
+      }
+    }
+    a.readAsText(blob)
+  })
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function ImportSession({ model }: { model: any }) {
+  const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: 'application/json',
+    accept: { 'application/json': [] },
     maxSize: MAX_FILE_SIZE,
     multiple: false,
     onDrop: async (acceptedFiles, rejectedFiles) => {
-      if (rejectedFiles.length) {
-        if (acceptedFiles.length || rejectedFiles.length > 1) {
-          setErrorMessage('Only one session at a time may be imported')
-        } else if (rejectedFiles[0].size > MAX_FILE_SIZE) {
-          setErrorMessage(
-            `File size is too large (${Math.round(
-              rejectedFiles[0].size / 1024 ** 2,
-            )} MiB), max size is ${MAX_FILE_SIZE / 1024 ** 2} MiB`,
+      try {
+        if (rejectedFiles.length) {
+          throw new Error(
+            `${rejectedFiles[0].errors.map(e => `${e}`).join(', ')}`,
           )
-        } else if (rejectedFiles[0].type !== 'application/json') {
-          setErrorMessage('File does not appear to be JSON')
         } else {
-          setErrorMessage('Unknown file import error')
+          const sessionText = await readBlobAsText(acceptedFiles[0])
+          getSession(model).setSession(JSON.parse(sessionText).session)
         }
-        return
-      }
-      const [file] = acceptedFiles
-      const fileHandle = openLocation(storeBlobLocation({ blob: file }))
-      let sessionText
-      try {
-        sessionText = await fileHandle.readFile('utf8')
-      } catch (error) {
-        console.error(error)
-        setErrorMessage(`Problem opening file ${file.path}: ${error}`)
-        return
-      }
-      let sessionContents
-      try {
-        sessionContents = JSON.parse(sessionText).session
-      } catch (error) {
-        console.error(error)
-        sessionContents = { error: `Error parsing ${file.path}: ${error}` }
-      }
-      const session = getSession(model)
-      try {
-        session.setSession(sessionContents)
-      } catch (error) {
-        console.error(error)
-        setErrorMessage(`Error activating session: ${error} `)
+      } catch (e) {
+        console.error(e)
+        setError(e)
       }
     },
   })
-  const { classes } = useStyles({ isDragActive })
+
+  // @ts-ignore
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { classes } = useStyles({ isDragActive }) as any
 
   return (
     <div className={classes.root}>
@@ -145,7 +133,7 @@ function ImportSession(props) {
           </Button>
         </div>
       </Paper>
-      {errorMessage ? (
+      {error ? (
         <Paper className={classes.error}>
           <div className={classes.errorHeader}>
             <ErrorIcon color="inherit" fontSize="large" />
@@ -155,17 +143,11 @@ function ImportSession(props) {
               </Typography>
             </div>
           </div>
-          <Typography className={classes.errorMessage}>
-            {errorMessage}
-          </Typography>
+          <Typography className={classes.errorMessage}>{`${error}`}</Typography>
         </Paper>
       ) : null}
     </div>
   )
-}
-
-ImportSession.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(ImportSession)

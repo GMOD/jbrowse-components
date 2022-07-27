@@ -15,16 +15,8 @@ export default class FromConfigSequenceAdapter
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: NoAssemblyRegion) {
-    // TODO: restore commented version below once TSDX supports Rollup v2
-    // xref: https://github.com/rollup/rollup/blob/master/CHANGELOG.md#bug-fixes-45
-    // return ObservableCreate<Feature>(async observer => {
-    //   const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
-    const superGetFeatures = super.getFeatures
     return ObservableCreate<Feature>(async observer => {
-      const feats = await superGetFeatures
-        .call(this, region)
-        .pipe(toArray())
-        .toPromise()
+      const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
       const feat = feats[0]
       observer.next(
         new SimpleFeature({

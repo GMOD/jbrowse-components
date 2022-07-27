@@ -89,6 +89,11 @@ Array [
     "label": "Tools",
     "menuItems": Array [
       Object {
+        "disabled": false,
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      Object {
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -205,6 +210,11 @@ Array [
   Object {
     "label": "Tools",
     "menuItems": Array [
+      Object {
+        "disabled": false,
+        "label": "Undo",
+        "onClick": [Function],
+      },
       Object {
         "icon": Object {
           "$$typeof": Symbol(react.memo),

@@ -85,13 +85,14 @@ export function setBlobMap(map: { [key: string]: File }) {
   blobMap = map
 }
 
-// blob files are stored in a global map
+let counter = 0
+
+// blob files are stored in a global map. the blobId is based on a combination
+// of timestamp plus counter to be unique across sessions and fast repeated
+// calls
 export function storeBlobLocation(location: PreFileLocation) {
   if (location && 'blob' in location) {
-    // possibly we should be more clear about when this is not undefined, and
-    // also allow mix of blob and url for index and file
-    // @ts-ignore
-    const blobId = `b${+Date.now()}`
+    const blobId = `b${+Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
     return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
   }

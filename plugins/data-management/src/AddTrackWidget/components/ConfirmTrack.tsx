@@ -230,10 +230,9 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const { classes } = useStyles()
-  const session = getSession(model)
   const { trackAdapter } = model
-  // prettier-ignore
-  const adapters = getAdapterTypes(getEnv(session).pluginManager)
+  const { pluginManager } = getEnv(model)
+  const adapters = getAdapterTypes(pluginManager)
   return (
     <TextField
       className={classes.spacing}
@@ -242,9 +241,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       helperText="Select an adapter type"
       select
       fullWidth
-      onChange={event => {
-        model.setAdapterHint(event.target.value)
-      }}
+      onChange={event => model.setAdapterHint(event.target.value)}
       SelectProps={{
         // @ts-ignore
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
@@ -264,10 +261,13 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
               : elt.name}
           </MenuItem>
         ))}
-      {/* adapters with the 'adapterMetadata.category' property are categorized by the value of the property here */}
-      {categorizeAdapters(
-        adapters.filter(elt => !elt.adapterMetadata?.hiddenFromGUI),
-      )}
+      {
+        // adapters with the 'adapterMetadata.category' property are categorized
+        // by the value of the property here
+        categorizeAdapters(
+          adapters.filter(elt => !elt.adapterMetadata?.hiddenFromGUI),
+        )
+      }
     </TextField>
   )
 })

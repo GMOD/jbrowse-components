@@ -8,8 +8,12 @@ import {
   IconButton,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { useLocalStorage, measureText, isUriLocation } from '@jbrowse/core/util'
-import isObject from 'is-object'
+import {
+  useLocalStorage,
+  measureGridWidth,
+  getStr,
+  isUriLocation,
+} from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import clone from 'clone'
 
@@ -148,11 +152,6 @@ function SourcesGrid({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
 
-  const entries = Object.fromEntries(rows.map(s => [s.name, s]))
-
-  const getStr = (obj: unknown) =>
-    isObject(obj) ? JSON.stringify(obj) : String(obj)
-
   // @ts-ignore
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
 
@@ -167,8 +166,11 @@ function SourcesGrid({
           <ColorPicker
             color={value || 'blue'}
             onChange={c => {
-              entries[id].color = c
-              onChange(Object.values(entries))
+              const elt = rows.find(f => f.name === id)
+              if (elt) {
+                elt.color = c
+              }
+              onChange([...rows])
             }}
           />
         )
@@ -177,7 +179,7 @@ function SourcesGrid({
     {
       field: 'name',
       headerName: 'Name',
-      flex: 0.5,
+      width: measureGridWidth(rows.map(r => r.name)),
     },
     ...Object.keys(rest).map(val => ({
       field: val,
@@ -185,12 +187,8 @@ function SourcesGrid({
         const { value } = params
         return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
       },
-      width: Math.max(
-        ...rows.map(row =>
-          // @ts-ignore
-          Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
-        ),
-      ),
+      // @ts-ignore
+      width: measureGridWidth(rows.map(r => r[val])),
     })),
   ]
 
@@ -239,10 +237,14 @@ function SourcesGrid({
         color={widgetColor}
         onChange={c => {
           setWidgetColor(c)
-          selected.forEach(s => {
-            entries[s].color = c
+          selected.forEach(id => {
+            const elt = rows.find(f => f.name === id)
+            if (elt) {
+              elt.color = c
+            }
           })
-          onChange(Object.values(entries))
+
+          onChange([...rows])
         }}
         onClose={() => setAnchorEl(null)}
       />

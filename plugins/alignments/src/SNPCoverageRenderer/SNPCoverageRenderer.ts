@@ -1,6 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, bpSpanPx } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { featureSpanPx, bpSpanPx, Feature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {

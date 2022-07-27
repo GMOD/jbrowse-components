@@ -63,7 +63,7 @@ function getPlugins(
       // use a regex to make sure to include eventual hoisted packages
       include:
         mode === 'umd' || mode === 'esmBundle' || mode === 'cjs'
-          ? /\/node_modules\//
+          ? [/\/node_modules\//, /\/__virtual__\//]
           : /\/regenerator-runtime\//,
     }),
     json(),
@@ -76,6 +76,7 @@ function getPlugins(
         '**/*.test.tsx',
         // TS defaults below
         'node_modules',
+        '__virtual__',
         'bower_components',
         'jspm_packages',
         distPath,
@@ -91,7 +92,7 @@ function getPlugins(
     (mode === 'cjs' || mode === 'esmBundle') &&
       externalGlobals(createGlobalMap(jbrowseGlobals)),
     babelPluginJBrowse({
-      exclude: 'node_modules/**',
+      exclude: ['node_modules/**', '__virtual__/**'],
       extensions: [...DEFAULT_BABEL_EXTENSIONS, 'ts', 'tsx'],
       // @ts-ignore
       custom: {

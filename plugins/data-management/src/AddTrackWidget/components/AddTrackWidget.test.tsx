@@ -1,15 +1,19 @@
 import React from 'react'
-import { render, cleanup, fireEvent } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import AddTrackWidget from './AddTrackWidget'
+import { AddTrackModel } from '../model'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 describe('<AddTrackWidget />', () => {
-  let session
-  let model
+  let session: AbstractSessionModel
+  let model: AddTrackModel
 
   beforeAll(() => {
+    // @ts-ignore
     session = createTestSession()
+    // @ts-ignore
     session.addAssemblyConf({
       name: 'volMyt1',
       sequence: {
@@ -29,6 +33,7 @@ describe('<AddTrackWidget />', () => {
         },
       },
     })
+    // @ts-ignore
     session.addTrackConf({
       trackId: 'i3jUPmrgMOS',
       type: 'FeatureTrack',
@@ -77,6 +82,8 @@ describe('<AddTrackWidget />', () => {
       },
       filterAttributes: ['type', 'start', 'end'],
     })
+
+    // @ts-ignore
     const view = session.addView('LinearGenomeView', {
       displayedRegions: [
         {
@@ -87,22 +94,18 @@ describe('<AddTrackWidget />', () => {
         },
       ],
     })
+
+    // @ts-ignore
     model = session.addWidget('AddTrackWidget', 'addTrackWidget', {
       view: view.id,
     })
-  })
-
-  afterEach(cleanup)
-
-  it('renders', () => {
-    const { container } = render(<AddTrackWidget model={model} />)
-    expect(container.firstChild).toMatchSnapshot()
   })
 
   it('adds a track', async () => {
     const { getByTestId, getAllByTestId, findByText, findAllByText } = render(
       <AddTrackWidget model={model} />,
     )
+    // @ts-ignore
     expect(session.sessionTracks.length).toBe(1)
     fireEvent.change(getAllByTestId('urlInput')[0], {
       target: { value: 'test.txt' },
@@ -114,31 +117,13 @@ describe('<AddTrackWidget />', () => {
     fireEvent.change(getByTestId('trackNameInput'), {
       target: { value: 'Test track name' },
     })
-    const trackTypeSelect = getByTestId('trackTypeSelect')
-    fireEvent.mouseDown(trackTypeSelect)
-    const featureTrack = await findByText('FeatureTrack')
-    fireEvent.click(featureTrack)
-    const assemblyNameSelect = getByTestId('assemblyNameSelect')
-    fireEvent.mouseDown(assemblyNameSelect)
+    fireEvent.mouseDown(getByTestId('trackTypeSelect'))
+    fireEvent.click(await findByText('FeatureTrack'))
+    fireEvent.mouseDown(getByTestId('assemblyNameSelect'))
     const volMyt1 = await findAllByText('volMyt1')
     fireEvent.click(volMyt1[1])
     fireEvent.click(getAllByTestId('addTrackNextButton')[0])
-    expect(session.sessionTracks.length).toBe(2)
-  })
-
-  xit('fails to add a track', async () => {
-    const { getByTestId, getAllByTestId, findByText } = render(
-      <AddTrackWidget model={model} />,
-    )
-    expect(session.sessionTracks.length).toBe(2)
-    fireEvent.change(getAllByTestId('urlInput')[0], {
-      target: { value: 'test.txt' },
-    })
-    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
-    fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
-    const chrom = await findByText('ChromSizesAdapter')
-    fireEvent.click(chrom)
-    fireEvent.click(getAllByTestId('addTrackNextButton')[0])
+    // @ts-ignore
     expect(session.sessionTracks.length).toBe(2)
   })
 })
