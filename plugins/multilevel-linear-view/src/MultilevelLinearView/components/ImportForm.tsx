@@ -166,7 +166,6 @@ const ImportForm = observer(
               zoomVal = (model.views.length - index) * num
             }
             view.zoomTo(zoomVal)
-            zoomVal *= num
             num--
             index++
           })

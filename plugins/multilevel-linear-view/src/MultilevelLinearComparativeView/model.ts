@@ -6,6 +6,7 @@ import {
   types,
   Instance,
   SnapshotIn,
+  getEnv,
 } from 'mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -310,12 +311,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       clearView() {
         self.views = cast([])
+        self.linkViews = false
       },
 
       removeView(target: any) {
+        const session = getSession(self)
+        const pluginManager = getEnv(session)
         // cannot remove the anchor or the overview -- needs to have minimum these two views
         if (target.isAnchor === false && target.isOverview === false) {
           self.views.remove(target)
+          session.notify(`A view has been closed`, 'info', {
+            name: 'undo',
+            onClick: () => {
+              pluginManager.rootModel.history.undo()
+            },
+          })
         }
       },
     }))
@@ -331,41 +341,57 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.assemblyNames[0],
         )
         if (assembly) {
-          const loc = isAbove
-            ? self.views.findIndex(view => view.id === neighbour.id)
-            : self.views.findIndex(view => view.id === neighbour.id) + 1
-          let bp = isAbove
-            ? neighbour.bpPerPx * (loc + 2)
-            : neighbour.bpPerPx / (loc - 1)
+          const bp = isAbove
+            ? neighbour.limitBpPerPx.upperLimit
+            : neighbour.limitBpPerPx.lowerLimit
+
           // @ts-ignore
           const anchor = self.views.find(view => view.isAnchor)
-
           // @ts-ignore
           if (bp < anchor?.bpPerPx) {
             // @ts-ignore
             bp = anchor.bpPerPx
           }
 
-          if (
-            (loc === 0 && self.isDescending) ||
-            (loc === self.numViews && !self.isDescending)
-          ) {
-            // new overview
-          }
-          if (
-            (loc === self.numViews && self.isDescending) ||
-            (loc === 0 && !self.isDescending)
-          ) {
-            // new anchor
-          }
-
-          const newView = {
+          let newView = {
             type: 'LinearGenomeMultilevelView' as const,
             bpPerPx: bp,
             offsetPx: 0,
             displayedRegions: assembly.regions,
           }
 
+          if (neighbour.isOverview) {
+            // @ts-ignore
+            neighbour.toggleIsOverview()
+
+            const offset = anchor?.offsetPx
+
+            newView = {
+              ...newView,
+              // @ts-ignore
+              isOverview: true,
+              offsetPx: offset ? offset : 0,
+            }
+          }
+          if (neighbour.isAnchor) {
+            // @ts-ignore
+            neighbour.toggleIsAnchor()
+            // @ts-ignore
+            neighbour.setLimitBpPerPx(true)
+
+            const offset = neighbour?.offsetPx
+
+            newView = {
+              ...newView,
+              // @ts-ignore
+              isAnchor: true,
+              offsetPx: offset,
+              limitBpPerPx: { limited: false, upperLimit: 1, lowerLimit: 0 },
+            }
+          }
+          const loc = isAbove
+            ? self.views.findIndex(view => view.id === neighbour.id)
+            : self.views.findIndex(view => view.id === neighbour.id) + 1
           self.insertView(loc, newView)
           self.setWidth(self.width)
           self.alignViews()
