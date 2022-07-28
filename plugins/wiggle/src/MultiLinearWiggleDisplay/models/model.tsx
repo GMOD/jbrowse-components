@@ -445,7 +445,7 @@ const stateModelFactory = (
             scaleType,
             domain,
             range: [rowHeight - offset, offset],
-            inverted: getConf(self, 'inverted'),
+            inverted: getConf(self, 'inverted') as boolean,
           }),
           4,
         )

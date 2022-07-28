@@ -122,6 +122,35 @@ Array [
     "label": "Tools",
     "menuItems": Array [
       Object {
+        "disabled": false,
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      Object {
+        "disabled": false,
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Redo",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
+      Object {
         "icon": Object {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -259,6 +288,35 @@ Array [
   Object {
     "label": "Tools",
     "menuItems": Array [
+      Object {
+        "disabled": false,
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Undo",
+        "onClick": [Function],
+      },
+      Object {
+        "disabled": false,
+        "icon": Object {
+          "$$typeof": Symbol(react.memo),
+          "compare": null,
+          "type": Object {
+            "$$typeof": Symbol(react.forward_ref),
+            "render": [Function],
+          },
+        },
+        "label": "Redo",
+        "onClick": [Function],
+      },
+      Object {
+        "type": "divider",
+      },
       Object {
         "icon": Object {
           "$$typeof": Symbol(react.memo),

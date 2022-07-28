@@ -8,12 +8,16 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 
 const ConfirmDialog = ({
   tracks,
   onClose,
 }: {
-  tracks: { trackId: string; type: string }[]
+  tracks: AnyConfigurationModel[]
   onClose: (arg: boolean, arg1?: { name: string }) => void
 }) => {
   const [val, setVal] = useState('MultiWiggle ' + Date.now())
@@ -31,7 +35,7 @@ const ConfirmDialog = ({
         <ul>
           {tracks.map(track => (
             <li key={track.trackId}>
-              {track.trackId} - {track.type}
+              {readConfObject(track, 'name')} - {track.type}
             </li>
           ))}
         </ul>

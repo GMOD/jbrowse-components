@@ -1128,10 +1128,21 @@ export const useLocalStorage = (key: string, defaultValue = '') => {
   return [value, setValue] as [string, (arg: string) => void]
 }
 
+export function getUriLink(value: { uri: string; baseUri?: string }) {
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return href
+}
+
 export function getStr(obj: unknown) {
   return isObject(obj)
     ? isUriLocation(obj)
-      ? obj.uri
+      ? getUriLink(obj)
       : JSON.stringify(obj)
     : String(obj)
 }

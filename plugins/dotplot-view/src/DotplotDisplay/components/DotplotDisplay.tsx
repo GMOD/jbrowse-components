@@ -1,13 +1,13 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
-import { DotplotDisplayModel } from '..'
+import { DotplotDisplayModel } from '../stateModelFactory'
 import { DotplotViewModel } from '../../DotplotView/model'
 
-const DotplotDisplay: React.FC<{
+function DotplotDisplay(props: {
   model: DotplotDisplayModel
   children?: React.ReactNode
-}> = props => {
+}) {
   const { model, children } = props
   const { offsetX = 0, offsetY = 0 } = model.data || {}
   const view = getContainingView(model) as DotplotViewModel

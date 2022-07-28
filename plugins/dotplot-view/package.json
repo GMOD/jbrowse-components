@@ -39,6 +39,7 @@
   "dependencies": {
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
+    "@mui/x-data-grid": "^5.0.1",
     "clone": "^2.1.2",
     "normalize-wheel": "^1.0.1"
   },

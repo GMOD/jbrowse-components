@@ -6,15 +6,18 @@ import {
   DialogActions,
   DialogTitle,
   IconButton,
+  Paper,
+  PaperProps,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
-  useLocalStorage,
-  measureGridWidth,
   getStr,
   isUriLocation,
+  measureGridWidth,
+  useLocalStorage,
 } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import Draggable from 'react-draggable'
 import clone from 'clone'
 
 // locals
@@ -42,6 +45,17 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// draggable dialog demo https://mui.com/material-ui/react-dialog/#draggable-dialog
+function PaperComponent(props: PaperProps) {
+  return (
+    <Draggable
+      handle="#draggable-dialog-title"
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Paper {...props} />
+    </Draggable>
+  )
+}
 export default function SetColorDialog({
   model,
   handleClose,
@@ -62,8 +76,14 @@ export default function SetColorDialog({
   )
   const showTips = showTipsTmp === 'true'
   return (
-    <Dialog open onClose={handleClose} maxWidth="xl">
-      <DialogTitle>
+    <Dialog
+      PaperComponent={PaperComponent}
+      open
+      onClose={handleClose}
+      maxWidth="xl"
+      aria-labelledby="draggable-dialog-title" // this area is important for the draggable functionality
+    >
+      <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
         Multi-wiggle color/arrangement editor{' '}
         <IconButton className={classes.closeButton} onClick={handleClose}>
           <CloseIcon />
@@ -93,6 +113,13 @@ export default function SetColorDialog({
                 Sorting the data grid itself can also re-arrange subtracks
               </li>
               <li>Changes are applied when you hit Submit</li>
+              <li>
+                You can click and drag the dialog box to move it on the screen
+              </li>
+              <li>
+                Columns in the table can be hidden using a vertical '...' menu
+                on the right side of each column
+              </li>
             </ul>
           </>
         ) : null}
@@ -112,7 +139,7 @@ export default function SetColorDialog({
             setCurrLayout(model.sources)
           }}
         >
-          Clear custom colors
+          Clear custom settings
         </Button>
         <Button
           variant="contained"
@@ -178,11 +205,13 @@ function SourcesGrid({
     },
     {
       field: 'name',
+      sortingOrder: [null],
       headerName: 'Name',
       width: measureGridWidth(rows.map(r => r.name)),
     },
     ...Object.keys(rest).map(val => ({
       field: val,
+      sortingOrder: [null],
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
@@ -195,6 +224,10 @@ function SourcesGrid({
   // this helps keep track of the selection, even though it is not used
   // anywhere except inside the picker
   const [widgetColor, setWidgetColor] = useState('blue')
+  const [currSort, setCurrSort] = useState<{
+    idx: number
+    field: string | null
+  }>({ idx: 0, field: null })
 
   return (
     <div>
@@ -258,16 +291,24 @@ function SourcesGrid({
           rowHeight={25}
           headerHeight={33}
           columns={columns}
+          sortModel={
+            [
+              /* we control the sort as a controlled component using onSortModelChange */
+            ]
+          }
           onSortModelChange={args => {
             const sort = args[0]
+            const idx = (currSort.idx + 1) % 2
+            const field = sort?.field || currSort.field
+            setCurrSort({ idx, field })
             onChange(
-              sort
+              field
                 ? [...rows].sort((a, b) => {
                     // @ts-ignore
-                    const aa = a[sort.field]
+                    const aa = getStr(a[field])
                     // @ts-ignore
-                    const bb = b[sort.field]
-                    return sort.sort === 'asc'
+                    const bb = getStr(b[field])
+                    return idx === 1
                       ? aa.localeCompare(bb)
                       : bb.localeCompare(aa)
                   })

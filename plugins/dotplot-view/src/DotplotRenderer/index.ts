@@ -9,7 +9,7 @@ export default (pluginManager: PluginManager) => {
       new DotplotRenderer({
         name: 'DotplotRenderer',
         configSchema: configSchema,
-        ReactComponent: ReactComponent,
+        ReactComponent,
         pluginManager,
       }),
   )
