@@ -92,7 +92,8 @@ export function readBlobAsText(blob: Blob): Promise<string> {
 function ImportSession({ model }: { model: any }) {
   const [error, setError] = useState<unknown>()
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { 'application/json': [] },
+    // @ts-ignore
+    accept: 'application/json',
     maxSize: MAX_FILE_SIZE,
     multiple: false,
     onDrop: async (acceptedFiles, rejectedFiles) => {
