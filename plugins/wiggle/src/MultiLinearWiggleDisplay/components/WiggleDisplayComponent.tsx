@@ -19,6 +19,16 @@ type LGV = LinearGenomeViewModel
 
 const trackLabelFontSize = 12.8
 
+function getOffset(model: WiggleDisplayModel) {
+  const { prefersOffset } = model
+  const { trackLabels } = getContainingView(model) as LGV
+  const track = getContainingTrack(model)
+  const trackName = getConf(track, 'name')
+  return trackLabels === 'overlapping' && !prefersOffset
+    ? measureText(trackName, trackLabelFontSize) + 100
+    : 10
+}
+
 const Wrapper = observer(
   ({
     children,
@@ -32,20 +42,13 @@ const Wrapper = observer(
     if (exportSVG) {
       return <>{children}</>
     } else {
-      const { height, prefersOffset } = model
-      const { trackLabels } = getContainingView(model) as LGV
-      const track = getContainingTrack(model)
-      const trackName = getConf(track, 'name')
-      const left =
-        trackLabels === 'overlapping' && !prefersOffset
-          ? measureText(trackName, trackLabelFontSize) + 100
-          : 10
+      const { height } = model
       return (
         <svg
           style={{
             position: 'absolute',
             top: 0,
-            left,
+            left: 0,
             pointerEvents: 'none',
             height,
             width: 1800,
@@ -202,7 +205,9 @@ export const StatBars = observer(
       <Wrapper {...props}>
         {needsFullHeightScalebar ? (
           <>
-            <YScaleBar model={model} orientation={orientation} />
+            <g transform={`translate(${!exportSVG ? getOffset(model) : 0},0)`}>
+              <YScaleBar model={model} orientation={orientation} />
+            </g>
             <g transform={`translate(${viewWidth - labelWidth - 100},0)`}>
               <ColorLegend
                 exportSVG={exportSVG}
