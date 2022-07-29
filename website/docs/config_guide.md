@@ -820,7 +820,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### DeltaAdapter config
 
