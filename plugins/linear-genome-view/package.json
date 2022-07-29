@@ -39,7 +39,6 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
     "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",

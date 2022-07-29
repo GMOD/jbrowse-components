@@ -36,9 +36,7 @@
     "build:es5": "tsc --build tsconfig.build.es5.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.17.9"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
