@@ -820,7 +820,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### DeltaAdapter config
 
@@ -847,7 +847,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### ChainAdapter config
 
@@ -874,7 +874,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### MCScanAnchorsAdapter
 
