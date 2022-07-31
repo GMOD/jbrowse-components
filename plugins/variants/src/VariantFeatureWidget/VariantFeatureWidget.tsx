@@ -200,33 +200,16 @@ function BreakendPanel(props: {
   )
 }
 
-const csqFields = [
-  'Allele',
-  'Consequence',
-  'IMPACT',
-  'SYMBOL',
-  'Gene',
-  'Feature_type',
-  'Feature',
-  'BIOTYPE',
-  'EXON',
-  'INTRON',
-  'HGVSc',
-  'HGVSp',
-  'cDNA_position',
-  'CDS_position',
-  'Protein_position',
-  'Amino_acids',
-  'Codons',
-  'Existing_variation',
-  'DISTANCE',
-  'STRAND',
-  'FLAGS',
-  'SYMBOL_SOURCE',
-  'HGNC_ID',
-]
-
-function CsqDetails({ feature }: { feature: any }) {
+function CsqDetails({
+  feature,
+  descriptions,
+}: {
+  feature: any
+  descriptions: any
+}) {
+  const csqFields = (descriptions?.INFO?.CSQ?.Description?.match(
+    /.*Format: (.*)/,
+  )?.[1].split('|') || []) as string[]
   const csq = feature.INFO.CSQ as string[] | undefined
   const rows =
     csq?.map((elt, idx) => ({
@@ -279,7 +262,7 @@ function VariantFeatureDetails(props: any) {
         {...props}
       />
       <Divider />
-      <CsqDetails feature={rest} />
+      <CsqDetails feature={rest} descriptions={descriptions} />
       <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel
