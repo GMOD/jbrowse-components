@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import SimpleFeature, {
+  Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@mui/x-data-grid'
@@ -200,10 +201,49 @@ function BreakendPanel(props: {
   )
 }
 
+const csqFields = [
+  'Allele',
+  'Consequence',
+  'IMPACT',
+  'SYMBOL',
+  'Gene',
+  'Feature_type',
+  'Feature',
+  'BIOTYPE',
+  'EXON',
+  'INTRON',
+  'HGVSc',
+  'HGVSp',
+  'cDNA_position',
+  'CDS_position',
+  'Protein_position',
+  'Amino_acids',
+  'Codons',
+  'Existing_variation',
+  'DISTANCE',
+  'STRAND',
+  'FLAGS',
+  'SYMBOL_SOURCE',
+  'HGNC_ID',
+]
+
+function CsqDetails({ feature }: { feature: any }) {
+  console.log('here')
+  const rows = (feature.CSQ as string[]).map(elt =>
+    Object.fromEntries(elt.split('|').map((e, i) => [csqFields[i], e])),
+  )
+  const columns = csqFields.map(c => ({
+    name: c,
+  }))
+
+  return <DataGrid rows={rows} columns={columns} />
+}
+
 function VariantFeatureDetails(props: any) {
   const { model } = props
   const { featureData, descriptions } = model
   const feat = JSON.parse(JSON.stringify(featureData))
+  console.log('herererere')
   const { samples, ...rest } = feat
   const basicDescriptions = {
     CHROM: 'chromosome: An identifier from the reference genome',
@@ -216,6 +256,7 @@ function VariantFeatureDetails(props: any) {
       'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',
   }
 
+  console.log({ feat })
   return (
     <Paper data-testid="variant-side-drawer">
       <FeatureDetails
@@ -223,6 +264,7 @@ function VariantFeatureDetails(props: any) {
         descriptions={{ ...basicDescriptions, ...descriptions }}
         {...props}
       />
+      <CsqDetails feature={rest} />
       <Divider />
       {feat.type === 'breakend' ? (
         <BreakendPanel
