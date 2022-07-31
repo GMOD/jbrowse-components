@@ -13,16 +13,18 @@ import VCF from '@gmod/vcf'
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 
 const readVcf = (f: string) => {
-  const lines = f.split('\n')
   const header: string[] = []
   const rest: string[] = []
-  lines.forEach(line => {
-    if (line.startsWith('#')) {
-      header.push(line)
-    } else if (line) {
-      rest.push(line)
-    }
-  })
+  f.split('\n')
+    .map(f => f.trim())
+    .filter(f => !!f)
+    .forEach(line => {
+      if (line.startsWith('#')) {
+        header.push(line)
+      } else if (line) {
+        rest.push(line)
+      }
+    })
   return { header: header.join('\n'), lines: rest }
 }
 
@@ -51,19 +53,17 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
 
   // converts lines into an interval tree
   public async setupP() {
-    const buffer = await openLocation(
-      readConfObject(this.config, 'vcfLocation'),
-      this.pluginManager,
-    ).readFile()
+    const pm = this.pluginManager
+    const buf = await openLocation(this.getConf('vcfLocation'), pm).readFile()
 
-    const buf = isGzip(buffer) ? await unzip(buffer) : buffer
+    const buffer = isGzip(buf) ? await unzip(buf) : buf
 
     // 512MB  max chrome string length is 512MB
-    if (buf.length > 536_870_888) {
+    if (buffer.length > 536_870_888) {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
 
-    const str = new TextDecoder().decode(buf)
+    const str = new TextDecoder().decode(buffer)
     const { header, lines } = readVcf(str)
 
     const intervalTree = lines
