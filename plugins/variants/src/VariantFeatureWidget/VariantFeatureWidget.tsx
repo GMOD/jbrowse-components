@@ -10,7 +10,6 @@ import {
   Typography,
 } from '@mui/material'
 import SimpleFeature, {
-  Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { DataGrid } from '@mui/x-data-grid'
@@ -228,22 +227,38 @@ const csqFields = [
 ]
 
 function CsqDetails({ feature }: { feature: any }) {
-  console.log('here')
-  const rows = (feature.CSQ as string[]).map(elt =>
-    Object.fromEntries(elt.split('|').map((e, i) => [csqFields[i], e])),
-  )
+  const csq = feature.INFO.CSQ as string[] | undefined
+  const rows =
+    csq?.map((elt, idx) => ({
+      id: idx,
+      ...Object.fromEntries(elt.split('|').map((e, i) => [csqFields[i], e])),
+    })) || []
   const columns = csqFields.map(c => ({
-    name: c,
+    field: c,
   }))
 
-  return <DataGrid rows={rows} columns={columns} />
+  const rowHeight = 25
+  const hideFooter = rows.length < 100
+  const headerHeight = 80
+  return rows.length ? (
+    <div
+      style={{
+        height:
+          Math.min(rows.length, 100) * rowHeight +
+          headerHeight +
+          (hideFooter ? 0 : 50),
+        width: '100%',
+      }}
+    >
+      <DataGrid rowHeight={rowHeight} rows={rows} columns={columns} />
+    </div>
+  ) : null
 }
 
 function VariantFeatureDetails(props: any) {
   const { model } = props
   const { featureData, descriptions } = model
   const feat = JSON.parse(JSON.stringify(featureData))
-  console.log('herererere')
   const { samples, ...rest } = feat
   const basicDescriptions = {
     CHROM: 'chromosome: An identifier from the reference genome',
@@ -256,7 +271,6 @@ function VariantFeatureDetails(props: any) {
       'filter status: PASS if this position has passed all filters, otherwise a semicolon-separated list of codes for filters that fail',
   }
 
-  console.log({ feat })
   return (
     <Paper data-testid="variant-side-drawer">
       <FeatureDetails
@@ -264,6 +278,7 @@ function VariantFeatureDetails(props: any) {
         descriptions={{ ...basicDescriptions, ...descriptions }}
         {...props}
       />
+      <Divider />
       <CsqDetails feature={rest} />
       <Divider />
       {feat.type === 'breakend' ? (

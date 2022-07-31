@@ -1789,6 +1789,20 @@
           "uri": "volvox_del.paf"
         }
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variant_effect_demo_data",
+      "name": "Variant effect predictor example",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "variant_effect_demo_data.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Variation"],
+      "assemblyNames": ["volvox"]
     }
   ],
   "aggregateTextSearchAdapters": [
