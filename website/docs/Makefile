@@ -25,7 +25,7 @@ cli.md: ../../products/jbrowse-cli/README.md
 	cp $^ $@
 
 combined.md: $(SRC_FILES)
-	(echo '---\ntitle: Consolidated documentation\nid: combined\n---\n\nThis document is a collection of all our documentation. It includes our quick start guides, user guide, configuration guide, CLI guide, developer guide, and FAQ. :::note\nYou can browse the other documents individually using the sidebar on the left. **This page is to help simplify `ctrl+f` searching and easy browsing.**\n:::\nYou can also download a pdf version of these same docs located at https://jbrowse.org/jb2/jbrowse2.pdf.\n\nimport Figure from "./figure"' && for f in $^; do cat $$f | node md_parser.js; done) > $@
+	(echo '---\ntitle: Consolidated docs\nid: combined\n---\n\nThis document is a collection of all our documentation. It includes our quick start guides, user guide, configuration guide, CLI guide, developer guide, and FAQ. :::note\nYou can browse the other documents individually using the sidebar on the left. **This page is to help simplify `ctrl+f` searching and easy browsing.**\n:::\nYou can also download a pdf version of these same docs located at https://jbrowse.org/jb2/jbrowse2.pdf.\n\nimport Figure from "./figure"\nimport config from "../docusaurus.config.json"' && for f in $^; do cat $$f | node md_parser.js; done) > $@
 
 clean:
 	git clean -fdx .

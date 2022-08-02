@@ -1,10 +1,10 @@
 ---
 id: developer_guide
-title: Developer guide
+title: Comprehensive developer guide
 toplevel: true
 ---
 
-import Figure from './figure'
+import Figure from '../figure'
 
 In this guide, will introduce the JBrowse 2 ecosystem from the developer's
 point of view. We'll examine the core concepts of how code is packaged and

@@ -14,14 +14,19 @@
       "type": "category",
       "label": "User guides",
       "items": [
+        "userguides/userguide_comp",
+        "userguides/userguide_config_comp",
         "userguides/userguide_cli",
         "userguides/userguide_gui",
         "userguides/userguide_genome"
       ]
     },
-    "user_guide",
-    "config_guide",
-    "developer_guide",
+    {
+      "type": "category",
+      "label": "Developer guides",
+      "items": ["devguides/developer_guide"]
+    },
+    "jbrowse_jupyter",
     "embedded_components",
     "api_guide",
     "urlparams",
@@ -49,7 +54,7 @@
     },
     {
       "type": "category",
-      "label": "JBrowse educational courses",
+      "label": "User tutorials",
       "items": [
         {
           "type": "category",

@@ -5,8 +5,8 @@ toplevel: true
 ---
 
 import Figure from '../figure'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import config from '../../docusaurus.config.json'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 const winDownloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-desktop-${config.customFields.currentVersion}-win.exe`
 const macDownloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-desktop-${config.customFields.currentVersion}-mac.dmg`
 const linDownloadLink = `https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-desktop-${config.customFields.currentVersion}-linux.AppImage`
@@ -62,7 +62,7 @@ You can now double-click the AppImage file to launch JBrowse.
 ## JBrowse Desktop start screen
 
 After you have installed and started JBrowse Desktop you will see a start
-screen like this
+screen like this:
 
 <Figure src="/img/desktop-landing.png" caption="Screenshot showing the start screen on JBrowse desktop"/>
 
@@ -95,6 +95,6 @@ are combined which can be helpful for comparative genomics.
 
 ### Next steps
 
-Check out the [user guide](../user_guide) for more info on how to use JBrowse
+Check out the [user guide](/docs/userguides/userguide_comp) for more info on how to use JBrowse
 Desktop. This covers all the features that are available with screenshots and
 instructions.

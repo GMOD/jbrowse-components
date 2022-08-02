@@ -1,10 +1,15 @@
 ---
-id: config_guide
-title: Config guide
+id: userguide_config_comp
+title: Comprehensive config guide
 toplevel: true
 ---
 
-import Figure from './figure'
+CAROLINE:
+
+- remove useless "dont configure this" sections
+- add config section for plugins
+
+import Figure from '../figure'
 
 ## Intro to the config.json
 
@@ -741,7 +746,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### DeltaAdapter config
 
@@ -768,7 +773,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### ChainAdapter config
 
@@ -795,7 +800,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### MCScanAnchorsAdapter
 
