@@ -21,8 +21,8 @@ function FeatureGlyph(props: {
   shouldShowDescription: boolean
   fontHeight: number
   allowedWidthExpansion: number
-  exportSVG: unknown
-  displayModel: DisplayModel
+  exportSVG?: unknown
+  displayModel?: DisplayModel
   selected?: boolean
   reversed?: boolean
   topLevel?: boolean

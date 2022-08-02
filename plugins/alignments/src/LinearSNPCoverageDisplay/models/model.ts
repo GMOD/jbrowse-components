@@ -7,12 +7,14 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getContainingView } from '@jbrowse/core/util'
+
+// locals
 import Tooltip from '../components/Tooltip'
 import { getUniqueModificationValues } from '../../shared'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])

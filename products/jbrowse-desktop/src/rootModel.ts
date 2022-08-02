@@ -15,7 +15,9 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { MenuItem } from '@jbrowse/core/ui'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
 
 // icons
@@ -25,6 +27,8 @@ import AppsIcon from '@mui/icons-material/Apps'
 import StorageIcon from '@mui/icons-material/Storage'
 import SettingsIcon from '@mui/icons-material/Settings'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
+import UndoIcon from '@mui/icons-material/Undo'
+import RedoIcon from '@mui/icons-material/Redo'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -32,7 +36,6 @@ import sessionModelFactory from './sessionModelFactory'
 import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -66,13 +69,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
-      isAssemblyEditing: false,
       sessionPath: types.optional(types.string, ''),
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(() => ({
+      isAssemblyEditing: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: async (path: string) => {
+      openNewSessionCallback: async (_path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
       pluginManager,
@@ -201,19 +205,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(() => {
-            self.jbrowse.internetAccounts.forEach(account => {
-              this.initializeInternetAccount(account.internetAccountId)
-            })
-          }),
-        )
-      },
     }))
     .volatile(self => ({
-      history: {},
       menus: [
         {
           label: 'File',
@@ -353,6 +346,23 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           label: 'Tools',
           menuItems: [
             {
+              label: 'Undo',
+              disabled: self.history.canUndo,
+              icon: UndoIcon,
+              onClick: () => {
+                self.history.undo()
+              },
+            },
+            {
+              label: 'Redo',
+              disabled: self.history.canRedo,
+              icon: RedoIcon,
+              onClick: () => {
+                self.history.redo()
+              },
+            },
+            { type: 'divider' },
+            {
               label: 'Plugin store',
               icon: ExtensionIcon,
               onClick: () => {
@@ -390,10 +400,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.setSession(sessionSnapshot)
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setHistory(history: any) {
-        self.history = history
       },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
@@ -533,6 +539,48 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
 
       afterCreate() {
+        document.addEventListener('keydown', event => {
+          if (event.shiftKey || event.key === 'y') {
+            if (
+              (event.shiftKey && event.ctrlKey && event.key === 'z') ||
+              (event.shiftKey && event.metaKey && event.key === 'z') ||
+              (event.ctrlKey && event.key === 'y')
+            ) {
+              if (self.history.canRedo) {
+                self.history.redo()
+              }
+            }
+          } else {
+            if (
+              (event.ctrlKey && event.key === 'z') ||
+              (event.metaKey && event.key === 'z')
+            ) {
+              if (self.history.canUndo) {
+                self.history.undo()
+              }
+            }
+          }
+        })
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.session) {
+              // we use a specific initialization routine after session is
+              // created to get it to start tracking itself sort of related
+              // issue here
+              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
+              self.history.initialize()
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              self.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
         addDisposer(
           self,
           autorun(

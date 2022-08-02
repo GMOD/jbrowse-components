@@ -3,5 +3,13 @@
 exports[`inverted mode and reversed 1`] = `
 Object {
   "imageData": Any<Object>,
+  "reducedFeatures": Array [
+    Object {
+      "end": 200,
+      "score": 2,
+      "start": 101,
+      "uniqueId": "t2",
+    },
+  ],
 }
 `;

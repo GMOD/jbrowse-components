@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react'
+import isObject from 'is-object'
 import {
   addDisposer,
   getParent,
@@ -11,7 +12,6 @@ import {
   IStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
   isSessionModel,
@@ -24,6 +24,7 @@ import {
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
+import { isUriLocation } from './types'
 
 export type { Feature }
 export * from './types'
@@ -480,7 +481,7 @@ export function compareLocStrings(
  * @param min -
  * @param  max -
  */
-export function clamp(num: number, min: number, max: number): number {
+export function clamp(num: number, min: number, max: number) {
   if (num < min) {
     return min
   }
@@ -490,7 +491,7 @@ export function clamp(num: number, min: number, max: number): number {
   return num
 }
 
-function roundToNearestPointOne(num: number): number {
+function roundToNearestPointOne(num: number) {
   return Math.round(num * 10) / 10
 }
 
@@ -523,8 +524,8 @@ export function degToRad(degrees: number) {
 /**
  * @returns [x, y]
  */
-export function polarToCartesian(rho: number, theta: number): [number, number] {
-  return [rho * Math.cos(theta), rho * Math.sin(theta)]
+export function polarToCartesian(rho: number, theta: number) {
+  return [rho * Math.cos(theta), rho * Math.sin(theta)] as [number, number]
 }
 
 /**
@@ -532,10 +533,10 @@ export function polarToCartesian(rho: number, theta: number): [number, number] {
  * @param y - the y
  * @returns [rho, theta]
  */
-export function cartesianToPolar(x: number, y: number): [number, number] {
+export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
   const theta = Math.atan(y / x)
-  return [rho, theta]
+  return [rho, theta] as [number, number]
 }
 
 export function featureSpanPx(
@@ -570,31 +571,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-interface Assembly {
-  name: string
-  [key: string]: any
-}
-interface Track {
-  trackId: string
-  [key: string]: any
-}
-interface Config {
-  savedSessions: unknown[]
-  assemblies: Assembly[]
-  tracks: Track[]
-  defaultSession?: {}
-}
-// similar to electron.js
-export function mergeConfigs(A: Config, B: Config) {
-  const merged = merge(A, B)
-  if (B.defaultSession) {
-    merged.defaultSession = B.defaultSession
-  } else if (A.defaultSession) {
-    merged.defaultSession = A.defaultSession
-  }
-  return merged
 }
 
 // https://stackoverflow.com/a/53187807
@@ -1135,4 +1111,47 @@ export function getLayoutId({
   layoutId: string
 }) {
   return sessionId + '-' + layoutId
+}
+
+// similar to https://blog.logrocket.com/using-localstorage-react-hooks/
+export const useLocalStorage = (key: string, defaultValue = '') => {
+  const [value, setValue] = useState(
+    () => localStorage.getItem(key) || defaultValue,
+  )
+
+  useEffect(() => {
+    localStorage.setItem(key, value)
+  }, [key, value])
+
+  // without this cast, tsc complained that the type of setValue could be a
+  // string or a callback
+  return [value, setValue] as [string, (arg: string) => void]
+}
+
+export function getUriLink(value: { uri: string; baseUri?: string }) {
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return href
+}
+
+export function getStr(obj: unknown) {
+  return isObject(obj)
+    ? isUriLocation(obj)
+      ? getUriLink(obj)
+      : JSON.stringify(obj)
+    : String(obj)
+}
+
+// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
+export function measureGridWidth(elements: string[]) {
+  return Math.max(
+    ...elements.map(element =>
+      Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
+    ),
+  )
 }

@@ -1,3 +1,66 @@
+## 2.1.0 (2022-07-28)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                              | Download                                                          |
+| ------------------------------------ | ----------------------------------------------------------------- |
+| @jbrowse/core                        | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments           | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication       |                                                                   |
+| @jbrowse/plugin-bed                  | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-comparative-adapters |                                                                   |
+| @jbrowse/plugin-config               | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management      | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view         |                                                                   |
+| @jbrowse/plugin-hic                  |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse       | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-menus                |                                                                   |
+| @jbrowse/plugin-sequence             | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view     |                                                                   |
+| @jbrowse/plugin-svg                  | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-trix                 | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
+| @jbrowse/plugin-variants             | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle               | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/desktop                     |                                                                   |
+| @jbrowse/img                         | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view  | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view    | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                         |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#3111](https://github.com/GMOD/jbrowse-components/pull/3111) Create undo manager in jbrowse-web and jbrowse-desktop ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3115](https://github.com/GMOD/jbrowse-components/pull/3115) Add warning when dotplot renders outside of it's boundaries, and create click-and-drag panning of dotplot view ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3102](https://github.com/GMOD/jbrowse-components/pull/3102) Allow creating alternative "add track workflows" from within the "Add track" widget ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3043](https://github.com/GMOD/jbrowse-components/pull/3043) Create MultiWiggle track type, adapter, and renderers ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3113](https://github.com/GMOD/jbrowse-components/pull/3113) Improve SVG performance by avoiding re-render when feature is clicked ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3110](https://github.com/GMOD/jbrowse-components/pull/3110) Remove TSDX from plugin development tools ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3106](https://github.com/GMOD/jbrowse-components/pull/3106) Add "emphasis" mode for no fill/scatterplot mode in XYPlot type renderings ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3109](https://github.com/GMOD/jbrowse-components/pull/3109) Better support for developing plugins from within yarn 2+ workspaces (include \_\_virtual folder in build) ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`
+  - [#3095](https://github.com/GMOD/jbrowse-components/pull/3095) Add MUI exports to re-exports list ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3092](https://github.com/GMOD/jbrowse-components/pull/3092) Fix use of embedded components with vite 3.0 using tsc to compile @jbrowse/core ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#3116](https://github.com/GMOD/jbrowse-components/pull/3116) Add docs for multi-wiggle tracks ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 2.0.1 (2022-07-13)
 
 <details><summary>Packages in this release</summary>

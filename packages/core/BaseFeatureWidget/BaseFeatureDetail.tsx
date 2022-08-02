@@ -18,7 +18,14 @@ import { IAnyStateTreeNode } from 'mobx-state-tree'
 
 // locals
 import { getConf } from '../configuration'
-import { measureText, getSession, isUriLocation } from '../util'
+import {
+  measureText,
+  measureGridWidth,
+  getSession,
+  getStr,
+  getUriLink,
+  isUriLocation,
+} from '../util'
 import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
@@ -70,7 +77,7 @@ export const useStyles = makeStyles()(theme => ({
   },
   fieldName: {
     wordBreak: 'break-all',
-    minWidth: '90px',
+    minWidth: 90,
     borderBottom: '1px solid #0003',
     fontSize: 12,
     background: theme.palette.grey[200],
@@ -309,6 +316,14 @@ interface AttributeProps {
   prefix?: string[]
 }
 
+export function UriLink({
+  value,
+}: {
+  value: { uri: string; baseUri?: string }
+}) {
+  const href = getUriLink(value)
+  return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
+}
 const DataGridDetails = ({
   value,
   prefix,
@@ -342,19 +357,18 @@ const DataGridDetails = ({
       colNames = [...unionKeys]
     }
 
-    const getStr = (obj: unknown) =>
-      isObject(obj) ? JSON.stringify(obj) : String(obj)
-
     const columns = colNames.map(val => ({
       field: val,
-      renderCell: (val: GridCellParams) => getStr(val.formattedValue),
-      width: Math.max(
-        ...rows.map(row =>
-          Math.min(Math.max(measureText(getStr(row[val]), 14) + 50, 80), 1000),
-        ),
-      ),
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
+      },
+      width: measureGridWidth(rows.map(r => r[val])),
     }))
 
+    const rowHeight = 25
+    const hideFooter = rows.length < 100
+    const headerHeight = 80
     // disableSelection on click helps avoid
     // https://github.com/mui-org/material-ui-x/issues/1197
     return (
@@ -363,20 +377,20 @@ const DataGridDetails = ({
         <div
           style={{
             height:
-              Math.min(rows.length, 100) * 20 +
-              50 +
-              (rows.length < 100 ? 0 : 50),
+              Math.min(rows.length, 100) * rowHeight +
+              headerHeight +
+              (hideFooter ? 0 : 50),
             width: '100%',
           }}
         >
           <DataGrid
             disableSelectionOnClick
-            rowHeight={25}
+            rowHeight={rowHeight}
             rows={rows}
             rowsPerPageOptions={[]}
             hideFooterSelectedRowCount
             columns={columns}
-            hideFooter={rows.length < 100}
+            hideFooter={hideFooter}
           />
         </div>
       </>

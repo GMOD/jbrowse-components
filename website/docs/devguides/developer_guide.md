@@ -108,6 +108,7 @@ Pluggable elements are pieces of functionality that plugins can add to JBrowse. 
 - Connection types
 - Text search adapter types
 - Extension points
+- Add track workflow
 
 In additional to creating plugins that create new adapters, track types,
 etc. note that you can also wrap the behavior of another track so these
@@ -241,6 +242,12 @@ The wiggle plugin, for example, registers two custom RPC method types
 - `WiggleGetMultiRegionStats`
 
 These methods can run in the webworker when available
+
+### Add track workflows
+
+Plugins can register their own React component to display in the "Add track"
+widget for adding tracks that require custom logic. The Multi-wiggle track is
+an example of this, it produces a textbox where you can paste a list of files.
 
 ### Extension points
 

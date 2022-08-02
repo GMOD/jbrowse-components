@@ -1,27 +1,35 @@
-import { promises as fsPromises } from 'fs'
-import path from 'path'
-import { URL } from 'url'
 import { toArray } from 'rxjs/operators'
+import path from 'path'
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
+import { LocalFile, GenericFilehandle } from 'generic-filehandle'
+
+export function generateReadBuffer(
+  getFileFunction: (str: string) => GenericFilehandle,
+) {
+  return (request: Request) => {
+    const file = getFileFunction(request.url)
+    return file.readFile('utf8')
+  }
+}
+
+beforeEach(() => {
+  // @ts-ignore
+  fetch.resetMocks()
+  // @ts-ignore
+  fetch.mockResponse(
+    generateReadBuffer(
+      (url: string) =>
+        new LocalFile(path.join(__dirname, `../../test_data/${url}`)),
+    ),
+  )
+})
 
 test('adapter can fetch features from ensembl_genes test set', async () => {
-  const rootTemplate = path
-    .join(
-      __dirname,
-      '..',
-      '..',
-      'test_data',
-      'ensembl_genes',
-      '{refseq}',
-      'trackData.json',
-    )
-    .replace(/\\/g, '\\\\')
-  await fsPromises.stat(rootTemplate.replace('{refseq}', '21')) // will throw if doesnt exist
   const args = {
     refNames: [],
     rootUrlTemplate: {
-      uri: decodeURI(new URL(`file://${rootTemplate}`).href),
+      uri: 'ensembl_genes/{refseq}/trackData.json',
       locationType: 'UriLocation',
     },
   }

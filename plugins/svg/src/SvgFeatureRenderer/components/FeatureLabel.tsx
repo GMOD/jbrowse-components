@@ -31,9 +31,9 @@ export default observer(
     allowedWidthExpansion?: number
     feature: Feature
     reversed?: boolean
-    displayModel: DisplayModel
+    displayModel?: DisplayModel
+    exportSVG?: unknown
     region: Region
-    exportSVG: unknown
     viewParams: {
       start: number
       end: number

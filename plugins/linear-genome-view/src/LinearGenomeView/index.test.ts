@@ -925,6 +925,7 @@ test('navToLocString with human assembly', () => {
     assemblyManager: {
       assemblies: {
         hg38: {
+          // @ts-ignore
           regions: hg38DisplayedRegions,
         },
       },

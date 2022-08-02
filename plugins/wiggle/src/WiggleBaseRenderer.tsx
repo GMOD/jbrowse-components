@@ -1,4 +1,3 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
   RenderArgsSerialized,
@@ -7,9 +6,9 @@ import FeatureRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
 import { ThemeOptions } from '@mui/material'
-import { ScaleOpts } from './util'
+import { ScaleOpts, Source } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {
   scaleOpts: ScaleOpts
@@ -30,6 +29,11 @@ export interface RenderArgsDeserializedWithFeatures
   features: Map<string, Feature>
 }
 
+export interface MultiRenderArgsDeserialized
+  extends RenderArgsDeserializedWithFeatures {
+  sources: Source[]
+}
+
 export type {
   RenderArgsSerialized,
   RenderResults,
@@ -46,11 +50,12 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
 
-    const res = await renderToAbstractCanvas(
+    // @ts-ignore
+    const { reducedFeatures, ...rest } = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
-      (ctx: CanvasRenderingContext2D) =>
+      ctx =>
         this.draw(ctx, {
           ...renderProps,
           features,
@@ -59,7 +64,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     const results = await super.render({
       ...renderProps,
-      ...res,
+      ...rest,
       features,
       height,
       width,
@@ -67,8 +72,9 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     return {
       ...results,
-      ...res,
-      features,
+      ...rest,
+      // @ts-ignore
+      features: reducedFeatures || results.features,
       containsNoTransferables: true,
       height,
       width,
@@ -82,5 +88,5 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
     props: T,
-  ): Promise<void>
+  ): Promise<Record<string, unknown> | void>
 }

@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 import React, { useRef } from 'react'
 
 import { Region } from '@jbrowse/core/util/types'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 
 function WiggleRendering(props: {
@@ -40,7 +40,11 @@ function WiggleRendering(props: {
     const clientBp = region.start + bpPerPx * px
     let featureUnderMouse
     for (const feature of features.values()) {
-      if (clientBp <= feature.get('end') && clientBp >= feature.get('start')) {
+      // bpPerPx added to the end to accomodate "reduced features" (one feature per px)
+      if (
+        clientBp <= feature.get('end') + bpPerPx &&
+        clientBp >= feature.get('start')
+      ) {
         featureUnderMouse = feature
         break
       }
@@ -51,23 +55,13 @@ function WiggleRendering(props: {
     <div
       ref={ref}
       data-testid="wiggle-rendering-test"
-      onMouseMove={event => {
-        const featureUnderMouse = getFeatureUnderMouse(event.clientX)
-        onMouseMove(
-          event,
-          featureUnderMouse ? featureUnderMouse.id() : undefined,
-        )
-      }}
-      onClick={event => {
-        const featureUnderMouse = getFeatureUnderMouse(event.clientX)
-        onFeatureClick(
-          event,
-          featureUnderMouse ? featureUnderMouse.id() : undefined,
-        )
-      }}
+      onMouseMove={event =>
+        onMouseMove(event, getFeatureUnderMouse(event.clientX)?.id())
+      }
+      onClick={event =>
+        onFeatureClick(event, getFeatureUnderMouse(event.clientX)?.id())
+      }
       onMouseLeave={event => onMouseLeave(event)}
-      role="presentation"
-      className="WiggleRendering"
       style={{
         overflow: 'visible',
         position: 'relative',

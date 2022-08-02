@@ -105,7 +105,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     return this.samHeader
   }
 
-  private async setup(opts?: BaseOptions) {
+  async setup(opts?: BaseOptions) {
     if (!this.setupP) {
       this.setupP = this.setupPre(opts).catch(e => {
         this.setupP = undefined

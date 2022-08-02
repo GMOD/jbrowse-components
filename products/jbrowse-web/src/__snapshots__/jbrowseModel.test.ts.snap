@@ -159,6 +159,74 @@ Object {
         "type": "ReferenceSequenceTrack",
       },
     },
+    Object {
+      "name": "volvox_del",
+      "sequence": Object {
+        "adapter": Object {
+          "faiLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_del.fa.fai",
+          },
+          "fastaLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_del.fa",
+          },
+          "metadataLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": Array [
+          Object {
+            "displayId": "volvox_del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+        ],
+        "trackId": "volvox_del-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+    Object {
+      "name": "volvox_ins",
+      "sequence": Object {
+        "adapter": Object {
+          "faiLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_ins.fa.fai",
+          },
+          "fastaLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_ins.fa",
+          },
+          "metadataLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": Array [
+          Object {
+            "displayId": "volvox_ins-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+        ],
+        "trackId": "volvox_ins-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": Object {},
   "connections": Array [],
@@ -1065,6 +1133,53 @@ Object {
       "name": "wiggle_track 404",
       "trackId": "volvox_bigwig_nonexist",
       "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "subadapters": Array [
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v1.cram.bw",
+            },
+            "source": "k1",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v2.cram.bw",
+            },
+            "source": "k2",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v3.cram.bw",
+            },
+            "source": "k3",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v4.cram.bw",
+            },
+            "source": "k4",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_microarray_multi-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig",
+      "trackId": "volvox_microarray_multi",
+      "type": "MultiQuantitativeTrack",
     },
     Object {
       "adapter": Object {
@@ -3062,6 +3177,40 @@ Object {
       "name": "volvox.filtered.lowercase",
       "trackId": "volvox.filtered.lowercase",
       "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
+        "pafLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_del.paf",
+        },
+        "queryAssembly": "volvox_del",
+        "targetAssembly": "volvox",
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox_del",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_del.paf-1658813720770-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        Object {
+          "displayId": "volvox_del.paf-1658813720770-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        Object {
+          "displayId": "volvox_del.paf-1658813720770-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_del.paf",
+      "trackId": "volvox_del.paf-1658813720770",
+      "type": "SyntenyTrack",
     },
   ],
 }

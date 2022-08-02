@@ -1,18 +1,13 @@
 import React, { useEffect, useState } from 'react'
+import { Tooltip, IconButton, TextField } from '@mui/material'
 import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import {
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  Tooltip,
-  IconButton,
-  TextField,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import HelpIcon from '@mui/icons-material/Help'
 import { getEnv } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
+
+// icons
+import HelpIcon from '@mui/icons-material/Help'
 
 // Optimize by using system default fonts:
 // https://css-tricks.com/snippets/css/font-stacks/
@@ -23,10 +18,20 @@ const useStyles = makeStyles()(theme => ({
   callbackEditor: {
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
+    width: '100%',
     fontFamily,
   },
   textAreaFont: {
     fontFamily,
+  },
+  callbackContainer: {
+    width: '100%',
+    overflowX: 'auto',
+  },
+
+  error: {
+    color: 'red',
+    fontSize: '0.8em',
   },
 }))
 
@@ -72,10 +77,8 @@ function CallbackEditor({
   // do this last
   return (
     <>
-      <FormControl>
-        <InputLabel shrink htmlFor="callback-editor">
-          {slot.name}
-        </InputLabel>
+      {error ? <p className={classes.error}>{`${error}`}</p> : null}
+      <div className={classes.callbackContainer}>
         <TextField
           multiline
           className={classes.callbackEditor}
@@ -88,38 +91,34 @@ function CallbackEditor({
             },
           }}
         />
-        {error ? (
-          <FormHelperText
-            style={{ color: '#f00' }}
-          >{`${error}`}</FormHelperText>
-        ) : null}
-        <FormHelperText>{slot.description}</FormHelperText>
-      </FormControl>
-      <Tooltip
-        title={
-          <div>
-            Callbacks are written in Jexl format. Click to learn more.
-            <br /> Names of available context items: {slot.contextVariable}
-          </div>
-        }
-        arrow
-      >
-        <IconButton
-          color="primary"
-          onClick={() => {
-            const newWindow = window.open(
-              'https://github.com/TomFrost/Jexl',
-              '_blank',
-              'noopener,noreferrer',
-            )
-            if (newWindow) {
-              newWindow.opener = null
-            }
-          }}
+
+        <p>{slot.description}</p>
+        <Tooltip
+          title={
+            <div>
+              Callbacks are written in Jexl format. Click to learn more.
+              <br /> Names of available context items: {slot.contextVariable}
+            </div>
+          }
+          arrow
         >
-          <HelpIcon />
-        </IconButton>
-      </Tooltip>
+          <IconButton
+            color="primary"
+            onClick={() => {
+              const newWindow = window.open(
+                'https://github.com/TomFrost/Jexl',
+                '_blank',
+                'noopener,noreferrer',
+              )
+              if (newWindow) {
+                newWindow.opener = null
+              }
+            }}
+          >
+            <HelpIcon />
+          </IconButton>
+        </Tooltip>
+      </div>
     </>
   )
 }

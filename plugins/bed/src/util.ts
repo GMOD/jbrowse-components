@@ -130,7 +130,7 @@ export function featureData(
   colStart: number,
   colEnd: number,
   scoreColumn: string,
-  parser: typeof BED,
+  parser: BED,
   uniqueId: string,
   names?: string[],
 ) {
