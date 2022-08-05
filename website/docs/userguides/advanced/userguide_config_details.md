@@ -89,4 +89,4 @@ Then you can use the custom jexl function in your config callbacks as follows:
 }
 ```
 
-See our developer guides for more information regarding plugin development.
+See our [developer guides](/docs/developer_guide/) for more information regarding plugin development.
