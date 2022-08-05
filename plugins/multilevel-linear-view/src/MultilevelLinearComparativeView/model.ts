@@ -378,7 +378,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               offsetPx: offset ? offset : 0,
             }
           }
-          if (neighbour.isAnchor) {
+          if (neighbour.isAnchor && !isAbove) {
             // @ts-ignore
             neighbour.toggleIsAnchor()
             // @ts-ignore
