@@ -84,12 +84,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             view.setLimitBpPerPx(false, view.bpPerPx, view.bpPerPx)
           }
           if (prev !== -1 && next !== self.views.length) {
+            let upperLimit
+            let lowerLimit
+            if (self.isDescending) {
+              upperLimit = self.views[prev].bpPerPx
+              lowerLimit = self.views[next].bpPerPx
+            } else {
+              upperLimit = self.views[next].bpPerPx
+              lowerLimit = self.views[prev].bpPerPx
+            }
             // @ts-ignore
-            view.setLimitBpPerPx(
-              true,
-              self.views[prev].bpPerPx,
-              self.views[next].bpPerPx,
-            )
+            view.setLimitBpPerPx(true, upperLimit, lowerLimit)
           }
 
           prev++
