@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { findByText, fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import MiniControls from './MiniControls'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
