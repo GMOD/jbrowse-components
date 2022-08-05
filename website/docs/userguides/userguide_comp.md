@@ -1,12 +1,12 @@
 ---
 id: userguide_comp
 toplevel: true
-title: Comprehensive user guide
+title: Navigating JBrowse and how to use genome tracks
 ---
 
 import Figure from '../figure'
 
-This comprehensive user guide covers general UI navigation, features available for different track types, and supplementary tools available in JBrowse.
+This user guide covers general UI navigation, and tools/features available for some of the different track types.
 
 Use the navigation menu on the right to skip to a topic of interest, if applicable.
 

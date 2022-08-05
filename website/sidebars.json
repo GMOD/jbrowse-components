@@ -20,7 +20,17 @@
         "userguides/userguide_bookmarks",
         "userguides/userguide_plugins",
         "userguides/userguide_proteins",
-        "userguides/userguide_config_comp"
+        {
+          "type": "category",
+          "label": "Advanced configuration guides",
+          "items": [
+            "userguides/advanced/userguide_config_comp",
+            "userguides/advanced/userguide_config_theme",
+            "userguides/advanced/userguide_config_analytics",
+            "userguides/advanced/userguide_config_plugins",
+            "userguides/advanced/userguide_config_details"
+          ]
+        }
       ]
     },
     {
