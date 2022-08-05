@@ -36,7 +36,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           <IconButton
             {...bindTrigger(popupState)}
             color="secondary"
-            datatest-id="mllv-minicontrols-menu"
+            data-testid="mllv-minicontrols-menu"
           >
             <MenuIcon />
           </IconButton>

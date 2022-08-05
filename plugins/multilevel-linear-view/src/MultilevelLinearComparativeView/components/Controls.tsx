@@ -136,14 +136,12 @@ const Controls = observer(
     view,
     model,
     polygonPoints,
-    ExtraButtons,
     ExtraControls,
   }: {
     view: LGV
     model: LCV
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     polygonPoints?: any
-    ExtraButtons?: React.ReactNode
     ExtraControls?: React.ReactNode
   }) => {
     const { classes } = useStyles()

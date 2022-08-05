@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { findByText, fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import MiniControls from './MiniControls'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
@@ -155,5 +155,29 @@ describe('MLLV Mini controls component', () => {
     await waitFor(() => {
       expect(com).toHaveProperty('disabled', true)
     })
+  })
+  it('clicks open view menu', async () => {
+    const session = createTestSession(sessionConfig) as any
+    session.addAssemblyConf(assemblyConf)
+    const model = session.views[0]
+    const { findByTestId, getByText } = render(
+      <MiniControls model={model.views[0]} />,
+    )
+    const com = await findByTestId('mllv-minicontrols-menu')
+    fireEvent.click(com)
+    expect(getByText('Export SVG')).toBeDefined()
+  })
+  it('hides the view', async () => {
+    const session = createTestSession(sessionConfig) as any
+    session.addAssemblyConf(assemblyConf)
+    const model = session.views[0]
+    const { findByTestId, findByText } = render(
+      <MiniControls model={model.views[1]} />,
+    )
+    const com = await findByTestId('mllv-minicontrols-menu')
+    fireEvent.click(com)
+    const hide = await findByText('Hide view')
+    fireEvent.click(hide)
+    expect(model.views[1].isVisible).toBe(false)
   })
 })
