@@ -346,7 +346,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.assemblyNames[0],
         )
         if (assembly) {
-          const bp = isAbove
+          let bp = isAbove
             ? neighbour.limitBpPerPx.upperLimit
             : neighbour.limitBpPerPx.lowerLimit
 
