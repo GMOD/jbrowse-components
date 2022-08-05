@@ -1,6 +1,6 @@
 ---
 id: userguide_cli
-title: Config editing via command-line interface
+title: Configure JBrowse using the CLI
 toplevel: true
 ---
 
@@ -12,83 +12,69 @@ reference your data sources. This guide will show you how to set those up using
 the JBrowse CLI.
 
 :::note
-
 You can also do this configuration with graphical configuration editing
-interface built into JBrowse 2. See that guide [here](../quickstart_gui).
+interface built into JBrowse 2. See that guide [here](/docs/userguides/userguide_gui).
+:::
 
+:::info For admins
+If you are an administrator configuring JBrowse on a webserver, you must add the
+`--out` command followed by your target directory, e.g. `--out /var/www/html/jbrowse2`
+to write each jbrowse CLI configuration command to the `config.json` in that target
+directory for your webserver to read from.
+
+See the FAQ for "[what web server do I need](../faq#what-web-server-do-i-need-to-run-jbrowse-2)" for more information.
 :::
 
 ## Pre-requisites
 
-- [JBrowse CLI](../quickstart_web#installing-the-cli-tools)
-
-- [JBrowse 2 web application](../quickstart_web#using-jbrowse-create-to-download-jbrowse-2)
+- Installed and created your JBrowse environment using the [quickstart CLI guide](/docs/quickstarts/quickstart_cli)
+- Some bioinformatics tools:
+  - [Samtools](http://www.htslib.org/) installed e.g. `sudo apt install samtools` or `brew install samtools`, used for creating FASTA index and BAM/CRAM processing
+  - [Genometools](http://genometools.org/) installed e.g. `sudo apt install genometools` or `brew install genometools`, (further, `brew install brewsci` and `brew install bio`) used for sorting GFF3 for creating tabix GFF
+  - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g. `sudo apt intall tabix` and `brew install htslib`, used for creating tabix indexes for BED/VCF/GFF files
 
 ## Adding a genome assembly
-
-:::info
-
-For this step we configure JBrowse to use files being hosted at a URL. For an
-example of how to use files located on your computer, see the
-[adding a track](#adding-a-track) step.
-
-:::
 
 First we will configure an assembly, or reference genome, for for JBrowse 2.
 This usually means providing a file that describes the reference sequence for
 the organism, such as a FASTA or 2BIT file.
 
-You will want to use your own data for your organism, but for this example we
-provide a small example reference sequence for a simulated organism, _volvox
-mythicus_, that you can use.
+You can add a reference to a remote file as follows,
+this example uses an assembly for a simulated organism
+_volvox mythicus_:
 
-```sh-session
-# Make sure you are in the directory where you have downloaded JBrowse 2
+```bash
+## Make sure you are in the directory where you have downloaded JBrowse 2
 jbrowse add-assembly http://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.fa
 ```
 
-:::caution
+`add-assembly` will automatically create a `config.json` file in the present directory (if `--out` is not specified) and populate it with the assembly, in this example, "volvox".
 
-A FASTA must have an index to work in JBrowse 2. This command assumes that the
-index file is the same as the FASTA but with `.fai` appended to the file name.
+### Loading a local FASTA file
 
+To use your own local data (in the following, replace "genome.fa" with your FASTA file), you'll have to first create an index with samtools, then add it to the `config.json` using a local reference:
+
+```bash
+## Create an indexed (.fai) FASTA file using samtools
+samtools faidx genome.fa
+## Then, load it using the add-assembly command
+## and add your genome assembly to the config
+jbrowse add-assembly genome.fa --load copy
+```
+
+:::info Note
+Using `add-assembly` with a FASTA file assumes its index file is `.fai`. If you have an index file with a difference extension, you can manually specify it using the `--index` flag.
+
+You can run `jbrowse add-assembly --help` to get a list of all the options.
 :::
-
-This command will generate a config file if one does not exist yet and add an
-assembly called "volvox" to the config file with the URLs of the FASTA and FASTA
-index files. The name of the assembly was guessed from the file name, but you
-can customize that and many other things with various flags passed to the
-command. You can run `jbrowse add-assembly --help` to get a list of all the
-options.
 
 JBrowse 2 also supports other assembly file formats, such as bgzip-compressed
 indexed FASTA (e.g. `.fa.gz`, `.fa.gz.fai`, and `.fa.gz.gzi` files) and 2BIT
 files. See [configuring assemblies](../config_guide#assembly-config) for more info
 on formats supported for the sequence file.
 
-:::note
-
-If your FASTA is not indexed, you can use the `samtools` tool to index it.
-
-```sh-session
-samtools faidx volvox.fa
-# generates volvox.fa.fai
-```
-
-Or if you want to compress your FASTA, you can use `bgzip` as well.
-
-```sh-session
-bgzip volvox.fa
-samtools faidx volvox.fa.gz
-# compresses volvox.fa to volvox.fa.gz and generates volvox.fa.gz.fai and volvox.fa.gz.gzi
-```
-
-For more info about `bgzip` and `samtools`, see https://www.htslib.org/.
-
-:::
-
 If you have your JBrowse 2
-[running as described](../quickstart_web#running-jbrowse-2) in the JBrowse web
+[running as described](/docs/quickstart/quickstart_cli/#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view. You will
 now see your config in the Assembly dropdown.
 
@@ -96,35 +82,33 @@ now see your config in the Assembly dropdown.
 
 ## Adding a track
 
-Now we will show you how to add an alignments track and a variant track to
-JBrowse 2.
-
-:::info
-
-For this step we configure JBrowse to use files located on your computer. For an
-example of how to use files hosted at a URL, see the
-[adding a genome assembly](#adding-a-genome-assembly) step.
-
-:::
+Now we will show you how to add an alignments track and a variant track to JBrowse 2.
 
 ### Adding an alignments track
 
-For this example we will use a BAM file to add an alignments track. Again, for
-this example we provide a small example BAM, but for your data you will replace
-the file name with the names of your data files.
+For this example we will use a BAM file to add an alignments track.
 
-For this track we will assume the data is on your computer at the locations
-`/data/volvox.bam` and `/data/volvox.bam.bai`. You can download these file here
-if you want to run this example:
-[BAM](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam) and
-[BAM index](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam.bai).
+As with assemblies, you can add a track using local files or remote locations of your files.
 
-To add the track, run
+This example uses the following [BAM](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam) and
+[BAM index](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.bam.bai) files downloaded locally as `/data/volvox.bam` and `/data/volvox.bam.bai` respectively:
 
-```sh-session
-# Replace with the location of your BAM file
+```bash
+## Replace with the location of your BAM file
 jbrowse add-track /data/volvox.bam --load copy
 ```
+
+:::note
+If you're using your own local BAM file and need to generate an index, use samtools as follows:
+
+```bash
+## Create an indexed BAM file using samtools
+samtools index file.bam
+## Add the BAM and BAI files to the JBrowse config
+jbrowse add-track file.bam --load copy
+```
+
+:::
 
 This will copy the BAM and BAM index into the JBrowse 2 directory and add a
 track pointing at those files to the config file. To see more options adding the
@@ -137,21 +121,8 @@ JBrowse 2 directory. If you want more control over the location, you can use
 option because on a traditional server you will need to ensure that the file is
 in a place where the web server is serving it.
 
-:::note
-
-If your BAM is not indexed, you can use the `samtools` tool to index it.
-
-```sh-session
-samtools index volvox.bam
-# generates volvox.bam.bai
-```
-
-For more info about `samtools`, see https://www.htslib.org/.
-
-:::
-
 If you have your JBrowse 2
-[running as described](../quickstart_web#running-jbrowse-2) in the JBrowse web
+[running as described](/docs/quickstart/quickstart_cli/#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the alignments
 track.
@@ -170,7 +141,7 @@ can download these file here:
 
 To add the track, run
 
-```sh-session
+```bash
 jbrowse add-track /data/volvox.vcf.gz --load copy
 ```
 
@@ -179,14 +150,14 @@ jbrowse add-track /data/volvox.vcf.gz --load copy
 If your VCF is not indexed, you can use the `bgzip` and `tabix` tools to
 compress index it.
 
-```sh-session
+```bash
 bgzip yourfile.vcf
 tabix yourfile.vcf.gz
 ```
 
 Alternatively, you can do the same thing with the `bcftools` tool.
 
-```sh-session
+```bash
 bcftools view volvox.vcf --output-type z > volvox.vcf.gz
 rm volvox.vcf
 bcftools index --tbi volvox.vcf.gz
@@ -195,7 +166,7 @@ bcftools index --tbi volvox.vcf.gz
 Note if you get errors about your VCF file not being sorted when using tabix,
 you can use bcftools to sort your VCF.
 
-```sh-session
+```bash
 bcftools sort file.vcf > file.sorted.vcf
 bgzip file.sorted.vcf
 tabix file.sorted.vcf.gz
@@ -207,7 +178,7 @@ https://www.htslib.org/.
 :::
 
 If you have your JBrowse 2
-[running as described](../quickstart_web#running-jbrowse-2) in the JBrowse web
+[running as described](/docs/quickstart/quickstart_cli/#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the variant track.
 
@@ -216,49 +187,83 @@ volvox assembly. Then open track selector, and you will see the variant track.
 ### Adding a BigWig/BigBed track
 
 Probably one of the most simple track types to load is a BigWig/BigBed file
-since it does not have any external index file, it is just a single file
+since it does not have any external index file, it is just a single file.
 
-An example file is here https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox-sorted.bam.coverage.bw
+Make use of this [example file](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox-sorted.bam.coverage.bw) if you do not currently have your own data to add.
 
-```sh-session
+```bash
 ## Download bigwig or bigbed file
 jbrowse add-track volvox-sorted.bam.coverage.bw --load copy
 ```
 
 ### Adding a GFF3 file with GFF3Tabix
 
-To load a GFF3 file, we can sort and index it with tabix
+To load a GFF3 file, we can sort and index it with tabix, make sure you have [GenomeTools](http://genometools.org/) (to
+install can use `sudo apt install genometools`).
 
-Sorting a GFF3 can be done with [GenomeTools](http://genometools.org/) (to
-install can use `sudo apt install genometools`)
-
-```sh-session
+```bash
 gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
 bgzip yourfile.sorted.gff
 tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
-Note: as an alternative to gt gff3 -sortlines is awk+GNU sort
+As an alternative to `gt gff3 -sortlines`, use `awk` and GNU `sort`, as follows:
 
-```sh-session
+```bash
 awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n"}' file.gff > file.sorted.gff
 bgzip file.sorted.gff
 tabix file.sorted.gff.gz
 ```
 
-The awk command is inspired by the method in the tabix documentation
-http://www.htslib.org/doc/tabix.html but avoids subshells and properly sets the
-tab delimiter for GNU sort in case there are spaces in the GFF
+The `awk` command is inspired by the method in the [tabix documentation](http://www.htslib.org/doc/tabix.html), but avoids subshells and properly sets the
+tab delimiter for GNU sort in case there are spaces in the GFF.
+
+### Adding a synteny track
+
+Loading synteny data makes use of all the previous functions we've used so far in this guide.
+
+Here, we make use of the [grape](https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_145_Genoscope.12X.fa.gz) and [peach](https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.0.fa.gz) genome assemblies, but replace with your own data if applicable.
+
+Use [minimap2](https://github.com/lh3/minimap2) to create a PAF file from FASTA files:
+
+```bash
+## Use minimap2 to create a PAF from your assemblies
+minimap2 grape.fa.gz peach.fa.gz > peach_vs_grape.paf
+## add each assembly to jbrowse config
+## the -n flag names the assemblies explicitly
+jbrowse add-assembly grape.fa.gz --load copy -n grape
+jbrowse add-assembly peach.fa.gz --load copy -n peach
+```
+
+As we did [previously](#adding-a-gff3-file-with-gff3tabix) with GFF3 files:
+
+```bash
+## -a establishes an alias for an assembly
+jbrowse add-track grape.sorted.gff.gz -a grape --load copy
+jbrowse add-track peach.sorted.gff.gz -a peach --load copy
+```
+
+Next, we'll load the synteny "track" from the PAF file.
+
+**Order matters here for the `--assemblyNames` parameter:**
+
+If minimap2 is run as `minimap2 grape.fa peach.fa`, then you need to load as `--assemblyNames peach,grape`.
+
+The order is reversed between the `minimap2` and `jbrowse` tools.
+
+```bash
+jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy
+```
 
 ## Indexing feature names for searching
 
-The final step of loading you jbrowse instance may include adding a "search
-index" so that you can search by genes or other features by their name or ID
+The final step of loading your JBrowse instance may include adding a "search
+index" so that you can search by genes or other features by their name or ID.
 
-To do this we can use the `jbrowse text-index` command
+To do this we can use the `jbrowse text-index` command:
 
-```sh-session
+```bash
 jbrowse text-index
 ```
 
@@ -266,7 +271,7 @@ This will index relevant track types e.g. any track with Gff3TabixAdapter (gene
 names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print
 out a progress bar for each track that it is indexing.
 
-This will also update your config.json so after it completes, you can type a
+This will also update your `config.json` so that after it completes, you can type a
 gene name into the "search box" in the linear genome view or other views and
 quickly navigate to genes by gene name.
 
@@ -277,5 +282,36 @@ see the [FAQ entries for text searching](../faq#text-searching)
 
 Now that you have JBrowse configured with an assembly and a couple of tracks,
 you can start customizing it further. Check out the rest of the docs for more
-information, especially the [JBrowse CLI](../cli) docs for more details on some of
+information, especially the [JBrowse CLI](/docs/cli) docs for more details on some of
 the steps shown here.
+
+## Miscellaneous tips
+
+You can use `--subDir` to organize your data directory:
+
+```bash
+mkdir my_bams
+## Copies .bam and .bai files to my_bams folder
+jbrowse add-track myfile.bam --subDir my_bams --load copy
+```
+
+If you are in a directory without a `config.json` file, you can add the `--out` paramter, and the
+track or assembly will load into that `config.json` file, as follows:
+
+```bash
+jbrowse add-track /path/to/my/file.bam --out /path/to/my/jbrowse2 --load copy
+```
+
+Make sure to upgrade your JBrowse release often:
+
+```bash
+jbrowse upgrade
+```
+
+If you have or desire multiple configs files, you can specify which one you'd like to add configuration options to:
+
+```bash
+## The following adds an assembly to the alt_config.json file specified
+## To run JBrowse using this alt_config.json, navigate to http://localhost/jbrowse2/?config=alt_config.json
+jbrowse add-assembly mygenome.fa --out /path/to/my/jbrowse2/alt_config.json --load copy
+```

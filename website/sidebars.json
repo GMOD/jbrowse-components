@@ -14,11 +14,13 @@
       "type": "category",
       "label": "User guides",
       "items": [
-        "userguides/userguide_comp",
-        "userguides/userguide_config_comp",
-        "userguides/userguide_cli",
         "userguides/userguide_gui",
-        "userguides/userguide_genome"
+        "userguides/userguide_cli",
+        "userguides/userguide_comp",
+        "userguides/userguide_bookmarks",
+        "userguides/userguide_plugins",
+        "userguides/userguide_proteins",
+        "userguides/userguide_config_comp"
       ]
     },
     {
@@ -56,6 +58,7 @@
       "type": "category",
       "label": "User tutorials",
       "items": [
+        "tutorials/guided_cancer_tutorial",
         {
           "type": "category",
           "label": "Archive",

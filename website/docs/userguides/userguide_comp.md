@@ -104,12 +104,6 @@ You can undo the closing of a view, track, or any other action in the UI with
 the Tools->Undo/Redo buttons. The keyboard shortcut "ctrl+z"/"cmd+z"(mac) work
 for undo as well as "ctrl+y"/"cmd+shift"z"(mac)
 
-### Undo and redo
-
-You can undo the closing of a view, track, or any other action in the UI with
-the Tools->Undo/Redo buttons. The keyboard shortcut "ctrl+z"/"cmd+z"(mac) work
-for undo as well as "ctrl+y"/"cmd+shift"z"(mac)
-
 ### Sharing sessions
 
 On JBrowse Web, the main menu bar has a "Share" button to enable users to share
@@ -300,7 +294,7 @@ variation.
 See [IGV's Interpreting Color by Pair Orientation guide](https://software.broadinstitute.org/software/igv/interpreting_pair_orientations)
 for further details on interpreting these pair orientations.
 
-<Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->" src="/img/inverted_duplication.png" />
+<Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->." src="/img/inverted_duplication.png" />
 
 ### Sashimi-style arcs
 
@@ -309,7 +303,7 @@ alignments (indicated by N in the CIGAR string). If the reads additionally are
 tagged with XS tags, it will try to draw the arcs using the strand indicated by
 the alignment.
 
-<Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq" src="/img/alignments_track_arcs.png" />
+<Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq." src="/img/alignments_track_arcs.png" />
 
 :::info Note
 You can disable these by clicking on the track menu (vertical "..."
@@ -334,7 +328,7 @@ larger insertions better, so this feature is more prominant with large reads.
 :::info Note
 You can disable these by clicking on the track menu (vertical "..."
 next to track label, then hovering over SNPCoverage options, and unchecking
-"Draw insertion/clipping indicators" and "Draw insertion/clipping counts")
+"Draw insertion/clipping indicators" and "Draw insertion/clipping counts").
 :::
 
 ## Quantitative tracks
@@ -373,7 +367,7 @@ All tracks have a drag handle on the bottom, which you can drag down to make the
 In 2.1.0, we created the ability to have "Multi-quantitative tracks" which is a
 single track composed of multiple quantitative signals, which have their
 Y-scalebar synchronized. There are 5 rendering modes for the multi-quantitative
-tracks
+tracks.
 
 - xyplot
 - multirowxyplot
@@ -381,16 +375,16 @@ tracks
 - multirowline
 - multidensity
 
-You can interactively change these settings through the track menu
+You can interactively change these settings through the track menu.
 
-<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types" src="/img/multiwig/multi_renderer_types.png" />
+<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
 With the "multi-row" settings (multirowxyplot, multirowline, multidensity) the
 track colors are not modified. For the overlapping (xyplot, multiline), the
 tracks will be autoassigned a color from the palette. You can manually
-customize the subtrack colors from the track menu as well
+customize the subtrack colors from the track menu as well.
 
-<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts" src="/img/multiwig/multi_colorselect.png" />
+<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
 
 Oftentimes, one of the outliers on one of the subtracks may affect the
 Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
@@ -399,54 +393,14 @@ the min or max scores is available via the track menu also.
 
 ### Adding multi-quantitative tracks via the UI
 
-There are several ways to create multi-quantitative tracks from scratch
+There are several ways to create multi-quantitative tracks from scratch.
 
 1. Using the add track panel to open up a list of URLs for bigwig files, or from several local tracks from your machine
 2. Using the track selector to add multiple tracks to your current selection, and then creating a multi-wiggle track from the tracks in your selection
 3. Hardcoding the multiwiggle track in your config file (see [multi-quantitative track configuration](../config_guide#multiquantitativetrack-config) for more info)
 
-<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer" src="/img/multiwig/addtrack.png" />
-<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection" src="/img/multiwig/trackselector.png" />
-
-## Multi-quantitative tracks
-
-In 2.1.0, we created the ability to have "Multi-quantitative tracks" which is a
-single track composed of multiple quantitative signals, which have their
-Y-scalebar synchronized. There are 5 rendering modes for the multi-quantitative
-tracks
-
-- xyplot
-- multirowxyplot
-- multiline
-- multirowline
-- multidensity
-
-You can interactively change these settings through the track menu
-
-<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types" src="/img/multiwig/multi_renderer_types.png" />
-
-With the "multi-row" settings (multirowxyplot, multirowline, multidensity) the
-track colors are not modified. For the overlapping (xyplot, multiline), the
-tracks will be autoassigned a color from the palette. You can manually
-customize the subtrack colors from the track menu as well
-
-<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts" src="/img/multiwig/multi_colorselect.png" />
-
-Oftentimes, one of the outliers on one of the subtracks may affect the
-Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
-+/- 3SD" setting (3 standard deviations are displayed). Manually configuring
-the min or max scores is available via the track menu also.
-
-### Adding multi-quantitative tracks via the UI
-
-There are several ways to create multi-quantitative tracks from scratch
-
-1. Using the add track panel to open up a list of URLs for bigwig files, or from several local tracks from your machine
-2. Using the track selector to add multiple tracks to your current selection, and then creating a multi-wiggle track from the tracks in your selection
-3. Hardcoding the multiwiggle track in your config file (see [multi-quantitative track configuration](../config_guide#multiquantitativetrack-config) for more info)
-
-<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer" src="/img/multiwig/addtrack.png" />
-<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection" src="/img/multiwig/trackselector.png" />
+<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
+<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />
 
 ## Variant tracks
 
@@ -512,7 +466,7 @@ Currently configuration options are basic for Hi-C tracks, see
 [the comprehensive config guide](../config_guide#hictrack-config) for info about configuring Hi-C
 tracks.
 
-<Figure caption="Screenshot of a Hi-C track" src="/img/hic_track.png" />
+<Figure caption="Screenshot of a Hi-C track." src="/img/hic_track.png" />
 
 ## SV inspector
 
@@ -523,7 +477,7 @@ structural variant calls.
 
 We can start the SV inspector by launching it from the App level menu bar
 
-<Figure caption="The SV inspector can be launched from the main menu bar" src="/img/sv_inspector_begin.png" />
+<Figure caption="The SV inspector can be launched from the main menu bar." src="/img/sv_inspector_begin.png" />
 
 This will bring up an "import form" that asks you for your SV evidence.
 
@@ -534,7 +488,7 @@ The following formats are supported:
 - BED, BEDPE
 - STAR-fusion result file
 
-<Figure caption="The import form for getting started with the SV inspector" src="/img/sv_inspector_importform.png" />
+<Figure caption="The import form for getting started with the SV inspector." src="/img/sv_inspector_importform.png" />
 
 ### Example SV inspector workflow
 
@@ -547,7 +501,7 @@ translocation events called from a breast cancer cell line SKBR3, based on
 
 Copy this URL and paste it into the import form and select hg19:
 
-<Figure caption="The SV inspector with the import form and URL pasted" src="/img/sv_inspector_importform_after.png" />
+<Figure caption="The SV inspector with the import form and URL pasted." src="/img/sv_inspector_importform_after.png" />
 
 ### SV inspector results
 
@@ -555,14 +509,14 @@ After loading the user's requested file, you will have a tabular view with each
 row representing a row of the file you opened, along with a whole-genome
 overview of the SVs on the right
 
-<Figure caption="The SV inspector with loaded results" src="/img/sv_inspector_importform_loaded.png" />
+<Figure caption="The SV inspector with loaded results." src="/img/sv_inspector_importform_loaded.png" />
 
 Now here is where things can become interesting
 
 We can search and filter the table, with filtering and searching being reflected
 in the circular view as well.
 
-<Figure caption="The SV inspector with filter applied" src="/img/sv_inspector_importform_filtered.png" />
+<Figure caption="The SV inspector with filter applied." src="/img/sv_inspector_importform_filtered.png" />
 
 ### Launching breakpoint split view
 
@@ -574,67 +528,4 @@ view"
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
-<Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />
-
-## Getting the protein sequence for features
-
-If you have a track with gene or transcript level features, then the feature
-detail sidebar will automatically stitch together the sequence for that
-feature. Options include:
-
-- CDS - the coding sequences, spliced together
-- Protein - performs protein translation on the CDS, currently assuming the
-  default codon translation table
-- cDNA - the CDS plus UTR, or just all exons if a non-coding gene
-- Gene w/ introns - the entire gene region sequence with the introns included
-- Gene w/ 10bp of introns - the spliced gene sequence with 10bp around the
-  splice sites shown
-- Gene w/ 500 up+down stream - the entire gene region with 500bp upstream and
-  downstream (shown in light red)
-- Gene w/ 500 up+down stream + 10bp of introns - the spliced gene sequence with
-  10bp around the splice sites shown and the up/down stream shown
-
-Some of the parameters such as 500bp and 10bp are arbitrarily chosen, if you are
-interested in adjusting these default parameters [let us know](/contact/).
-
-<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_detail_sequence.png" />
-
-## Using the plugin store
-
-Users can add plugins to their session using the in-app plugin store. The
-plugin will be added to your "session" which can be shared with the share
-button (or if you are an admin running the admin-server, then it will be added
-to the config file).
-
-This can add extra functions, tracks, or many other interesting features. For
-example, if you add the CIVIC plugin, it will automatically add a track that
-contains the CIVIC cancer gene annotations to hg19.
-
-:::info Note
-Not all plugins are directly useful from being added, and require hand-editing of the configuration file to be useful.
-If you would like to use such a plugin and do not have access to the configuration file, contact your administrator.
-:::
-
-<Figure caption="Screenshot showing the plugin store inside the app" src="/img/plugin_store.png" />
-
-## Using the bookmark widget
-
-The "bookmark widget" can store lists of interesting regions that you might like to easily revisit.
-
-<Figure caption="Clicking and dragging on a region can be used to create a bookmark" src="/img/bookmark_widget.png"/>
-
-The bookmark stores a list of single regions (chromosome, start, and end
-coordinate), and clicking on the regions in the bookmark widget will launch a
-linear genome view at that region.
-
-You can also import a list of regions from a BED file.
-
-<Figure caption="Importing a list of regions from a BED file" src="/img/bookmark_widget_import.png"/>
-
-:::info Note
-You can add "notes" for your list of regions by double clicking on the label field to easily "annotate" your datasets.
-:::
-
-<Figure caption="Editing description" src="/img/bookmark_widget_edit_label.png"/>
-
-Finally, you can export your list of regions to a BED file or TSV.
+<Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />

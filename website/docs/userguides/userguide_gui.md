@@ -1,6 +1,6 @@
 ---
 id: userguide_gui
-title: Config editing via graphical interface
+title: Configure JBrowse using the GUI
 toplevel: true
 ---
 

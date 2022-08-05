@@ -58,7 +58,7 @@ JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
 statically hosted on a webserver without any backend services running.
 
 Therefore, running JBrowse 2 generally involves just copying the JBrowse 2
-folder to your web server html folder e.g. `/var/www/html/`.
+folder to your web server html folder e.g. copy `/var/www/html/` to Amazon S3.
 
 If you use a different platform such as Django, you may want to put it in the
 static resources folder.

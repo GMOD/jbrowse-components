@@ -12,10 +12,10 @@ Just want to download JBrowse web and get started? Follow our [JBrowse web quick
 
 Want JBrowse desktop? Follow our [JBrowse desktop quick start](/docs/quickstarts/quickstart_desktop).
 
-## Pre-requisites
+## Prerequisites
 
 - Ability to run commands on the command line
-- Node.js 14+
+- Node.js 14+ installed
 
 :::caution
 
@@ -58,7 +58,7 @@ the [npx](https://nodejs.dev/learn/the-npx-nodejs-package-runner) command, which
 is included with Node.js, to run JBrowse CLI without installing it. Simply
 replace `jbrowse` with `npx @jbrowse/cli` in any command, e.g.
 
-```
+```sh-session
 npx @jbrowse/cli --version
 ```
 
