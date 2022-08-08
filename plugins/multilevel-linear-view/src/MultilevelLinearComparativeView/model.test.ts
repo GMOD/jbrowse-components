@@ -6,7 +6,6 @@ import stateModelFactory from './model'
 import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 import 'requestidlecallback-polyfill'
-import { Instance, types } from 'mobx-state-tree'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 const mv = {
   id: 'MiDMyyWpxp',

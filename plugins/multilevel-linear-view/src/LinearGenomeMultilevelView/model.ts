@@ -150,8 +150,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // @ts-ignore
           const { assemblyNames } = self
           const { assemblyManager } = getSession(self)
-          console.log(assemblyManager.assemblies)
-          console.log(getSession(self).assemblies)
           const { isValidRefName } = assemblyManager
           const assemblyName = optAssemblyName || assemblyNames[0]
 
