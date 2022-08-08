@@ -150,15 +150,41 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           // @ts-ignore
           const { assemblyNames } = self
           const { assemblyManager } = getSession(self)
+          console.log(assemblyManager.assemblies)
+          console.log(getSession(self).assemblies)
           const { isValidRefName } = assemblyManager
           const assemblyName = optAssemblyName || assemblyNames[0]
 
-          const parsedLocStrings = locString
-            .split(' ')
-            .filter(f => !!f.trim())
-            .map(l =>
+          let parsedLocStrings
+          const inputs = locString
+            .split(/(\s+)/)
+            .map(f => f.trim())
+            .filter(f => !!f)
+
+          // first try interpreting as a whitespace-separated sequence of
+          // multiple locstrings
+          try {
+            parsedLocStrings = inputs.map(l =>
               parseLocString(l, ref => isValidRefName(ref, assemblyName)),
             )
+          } catch (e) {
+            // if this fails, try interpreting as a whitespace-separated refname,
+            // start, end if start and end are integer inputs
+            const [refName, start, end] = inputs
+            if (
+              `${e}`.match(/Unknown reference sequence/) &&
+              Number.isInteger(+start) &&
+              Number.isInteger(+end)
+            ) {
+              parsedLocStrings = [
+                parseLocString(refName + ':' + start + '..' + end, ref =>
+                  isValidRefName(ref, assemblyName),
+                ),
+              ]
+            } else {
+              throw e
+            }
+          }
 
           const locations = parsedLocStrings.map(region => {
             const asmName = region.assemblyName || assemblyName
