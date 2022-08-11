@@ -93,7 +93,6 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const indicatorToHeight = (n: number) =>
       indicatorToY(getOrigin('linear')) - indicatorToY(n)
 
-    // @ts-ignore
     const { bases } = theme.palette
     const colorForBase: { [key: string]: string } = {
       A: bases.A.main,
