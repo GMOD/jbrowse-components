@@ -119,24 +119,25 @@ export default function RootModel(
     .actions(self => ({
       afterCreate() {
         document.addEventListener('keydown', event => {
-          if (event.shiftKey || event.key === 'y') {
+          if (self.history.canRedo) {
             if (
-              (event.shiftKey && event.ctrlKey && event.key === 'z') ||
-              (event.shiftKey && event.metaKey && event.key === 'z') ||
-              (event.ctrlKey && event.key === 'y')
+              // ctrl+shift+z or cmd+shift+z
+              ((event.ctrlKey || event.metaKey) &&
+                event.shiftKey &&
+                event.code === 'KeyZ') ||
+              // ctrl+y
+              (event.ctrlKey && !event.shiftKey && event.code === 'KeyY')
             ) {
-              if (self.history.canRedo) {
-                self.history.redo()
-              }
+              self.history.redo()
             }
-          } else {
+          } else if (self.history.canUndo) {
             if (
-              (event.ctrlKey && event.key === 'z') ||
-              (event.metaKey && event.key === 'z')
+              // ctrl+z or cmd+z
+              (event.ctrlKey || event.metaKey) &&
+              !event.shiftKey &&
+              event.code === 'KeyZ'
             ) {
-              if (self.history.canUndo) {
-                self.history.undo()
-              }
+              self.history.undo()
             }
           }
         })
