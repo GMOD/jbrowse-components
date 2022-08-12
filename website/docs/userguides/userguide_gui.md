@@ -14,7 +14,7 @@ the JBrowse 2's graphical configuration editing.
 :::note
 
 You can also do this configuration with JBrowse CLI. See that guide
-[here](../quickstart_cli).
+[here](../userguide_cli).
 
 :::
 
@@ -22,9 +22,9 @@ You can also do this configuration with JBrowse CLI. See that guide
 
 This tutorial requires having the following software installed
 
-- [JBrowse CLI](../quickstart_cli#install-the-cli-tools)
+- [JBrowse CLI](/docs/quickstarts/quickstart_cli/#installing-the-cli-tools)
 
-- [JBrowse 2 web application](../quickstart_cli#using-jbrowse-create-to-install-jbrowse)
+- [JBrowse 2 web application](/docs/quickstarts/quickstart_cli/#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 
@@ -165,9 +165,9 @@ select the currently open session, or any of your previously saved sessions.
 ## Additional resources
 
 There are a number of additional features for configuring JBrowse 2. Make sure
-to refer to the [config guide](../config_guide) for topics such as
-[adding tracks](../config_guide#adding-tracks-and-connections) or
-[adding an assembly with the CLI](../config_guide#adding-an-assembly-with-the-cli)
+to refer to the [config guide](/docs/userguides/advanced/userguide_config_comp) for topics such as
+[adding tracks](/docs/userguides/advanced/userguide_config_comp/#track-configurations) or
+[adding an assembly with the CLI](/docs/userguides/advanced/userguide_config_comp/#adding-an-assembly-with-the-cli).
 
 ## Conclusion
 

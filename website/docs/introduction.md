@@ -14,12 +14,18 @@ Welcome to the JBrowse 2 documentation.
 
 ### User and developer guides
 
-- [Comprehensive user guide](/docs/userguides/userguide_comp) - for general usage, guided by screenshots and descriptions
-- [Comprehensive config guide](/docs/userguides/userguide_config_comp) - for detailed configuration settings
-- [Config editing via command-line interface](/docs/userguides/userguide_cli) - a guide for configuring JBrowse via CLI
 - [Config editing via graphical interface](/docs/userguides/userguide_gui) - a guide for configuring JBrowse via the GUI
-- [Configuring a genome in JBrowse](/docs/userguides/userguide_genome) - a guide for admins configuring their first genome via the CLI
-- [Developer guide](/docs/devguides/developer_guide) - for developers of plugins
+- [Config editing via command-line interface](/docs/userguides/userguide_cli) - a guide for configuring JBrowse via CLI
+- [Navigating JBrowse and how to use genome tracks](/docs/userguides/userguide_comp) - for general usage, guided by screenshots and descriptions
+- [Comprehensive config guide](/docs/userguides/advanced/userguide_config_comp/) - for detailed configuration settings
+- [Core concepts and pluggable elements for developers](/docs/devguides/developer_guide) - for developers of plugins
+
+#### Tutorials
+
+- [Writing a simple plugin for JBrowse 2](/docs/tutorials/dev/simple_plugin_tutorial/01_introduction/)
+- [Developing with JBrowse web and desktop](/docs/tutorials/dev/develop_web_and_desktop_tutorial/)
+
+...and more! Use the left panel to browse some of the other guide docs available.
 
 ### Other resources
 
@@ -30,9 +36,7 @@ Welcome to the JBrowse 2 documentation.
   command line image generator
 - [Embedded components](embedded_components) - docs for our reusable React
   components
-- [JBrowse Jupyter](/docs) - docs for JBrowse Jupyter
-
-We also keep a log of our previous training classes, checkout our [tutorials](/docs/tutorials/).
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) - docs for JBrowse Jupyter
 
 ### Contact information
 

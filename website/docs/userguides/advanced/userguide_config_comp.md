@@ -162,7 +162,7 @@ jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
 See our [configure JBrowse using the cli](/docs/userguides/userguide_cli/#adding-a-genome-assembly) guide for more in-depth instructions, or more
-information on the `add-assembly` command through our [CLI tools guide](../cli#jbrowse-add-assembly-sequence).
+information on the `add-assembly` command through our [CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
 
 :::note
 Assemblies can also be added graphically using the assembly manager when

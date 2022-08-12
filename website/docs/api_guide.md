@@ -329,7 +329,7 @@ chr1:6000..7000 // using .. notation for range
 chr1:7000 // centered on this position
 ```
 
-:::Note
+:::note
 Navigating via a text search query e.g. supply &loc=gene_name is not yet
 supported.
 :::
@@ -411,7 +411,7 @@ If you click the "Share button" in the header bar, it will generate a
 
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
-See [this FAQ entry for more info about how shared sessions work](/docs/faq#how-does-the-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+See [this FAQ entry for more info about how shared sessions work](/docs/faq#how-does-the-session-sharing-work-with-shortened-urls-work-in-jbrowse-web)
 
 ##### Session spec
 
@@ -499,9 +499,11 @@ Expanded:
 }
 ```
 
-Note that this dotplot session spec doesn't have the ability to navigate to
+:::note
+This dotplot session spec doesn't have the ability to navigate to
 specific regions on the assembly yet, it just navigates to a whole genome
 overview.
+:::
 
 ###### Spreadsheet view
 
@@ -598,7 +600,9 @@ Example:
 https://jbrowse.org/code/jb2/v1.5.9/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6NdfjvXcCiZpq23-Dt2923u-_2DCPmsevHMn0ePT2umMEEz4GgGWx7C1AKC9EzzQv7wupbpkGfntX3HKt3-YW4OZcJCub1DRZJvgW5xEinzBuMbINtELaKeT_2bY98E0ym_PvdR8rTu7LuMUUBXH4CUeTwjdgUKeJYgZ6_MM-yLWtsGiwo5yBrwBkO3w9dx3b7I3fsuI5FTVGVGd9BdAcJCW27SYhn7QxDKqg0l7pRCIJkmM7YHIxcd2AQbwNSAYExzxQYjCsFeZDtDtlpYo5ZdU9qJQ-fTiZxxrPVYGrf-sdJroHrtQS_ZhIaFiLGZC25JlUUFmGAD0kcPzQ1O90nNQe72dU0eC716vV6rrjC8EObQLEUMElpINu0_tHn3R_yq_t6oBQjuAEegexmP0JfaSv16bpQM_4CMgh1If1WWooguQxTDHnGDpQpDyCjkVhBFTJeliiS-gBpsZ2A0CBrPV3VBt7pIuAiUgvQumZ7Wq6hVrjFKAFNxfZnrfxTKXWw2d3bjG6VN29Rlk2j5mQZaW7ssK8MFmNGin14oVUz1pr5zMQVkXiocQPL_9L6l1jVHFLQD13xsyDHihBqb9AiVPsE_d8WPEKTLuUcv2xdjK8qzLM1PdUDlqPAHH-eeL99vvNC4cFKsrFZ9QuCGmjL
 ```
 
-Note that the "Share" button has a gear icon that let's you select "Long URL"
+:::note
+The "Share" button has a gear icon that let's you select "Long URL"
 that produces these URLs. The encoded share links can be used without the
 central session sharing system in place, as the entire session is encoded in
 the URL.
+:::

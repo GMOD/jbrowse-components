@@ -162,21 +162,54 @@ myfile.bam.bai.
 
 As mentioned [above](/docs/faq/#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can also manually edit your config file, or use the GUI.
 
+#### How do I customize the color of the features displayed on my track
+
+We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
+callbacks, including feature coloration.
+
+An example of a Jexl configuration callback might look like this:
+
+    "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
+
+See our [configuration callbacks userguide page](/docs/userguides/advanced/userguide_config_callbacks.md) for more information.
+
+##### Adding color callbacks in the GUI
+
+In brief, to add a configuration callback to a track using the GUI, perform the following steps:
+
+1. On the track you're meaning to color, click on the three vertical dots '...' on the right side of the track label
+2. Click "Settings" (if this option is greyed out, copy the track with "Copy Track", then open up the track under "Session Tracks" and repeat steps 1-2)
+3. Scroll down to the "display 1 renderer" heading (this is typically the display you want to edit, if not scroll to display 2)
+4. Click on the circle to the right of the color you'd like to change
+5. In this text box, enter in the [Jexl](https://github.com/TomFrost/Jexl) callback for the feature colouration, e.g. "get(feature,'strand') == -1 ? 'red' : 'blue'"
+
+##### Adding color callbacks via the command line
+
+Adding color callbacks via the command line can be a little tricky because the coloration property exists within the renderer.
+
+In brief, to add a configuration callback to a track using the CLI, your `add-track` is going to look something like this:
+
+```bash
+jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "my_BasicDisplay", "type": "LinearBasicDisplay", "renderer": {"color1": "jexl:get(feature, 'strand') == -1 ? 'red' : 'blue'" }}]}'
+```
+
+While adding the track to the `config.json`, you're adding additional configurations using the --config option. This additional configuration is a "renderer" on the display that your track will be using. In this case, this .vcf will be using the LinearBasicDisplay
+
 ### Curiosities
 
 #### Why do all the tracks need an assembly specified
 
 We require that all tracks have a specific genome assembly specified in their
-config. This is because jbrowse 2 is a multi-genome-assembly browser (and can
-compare genomes given the data). This may be different to using say jbrowse 1
-where it knows which genome assembly you are working with at any given time
+config. This is because JBrowse 2 is a multi-genome-assembly browser (and can
+compare genomes given the data). This may be different to using, say, JBrwose 1
+where it knows which genome assembly you are working with at any given time.
 
 #### How are the menus structured in the app
 
 In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
-linear genome view has it's own hamburger menu. Note that each track also has
-it's own track level menu.
+linear genome view has its own hamburger menu. Note that each track also has
+its own track level menu.
 
 #### Why do some of my reads not display soft clipping
 
@@ -187,13 +220,13 @@ The soft clipping indicators on these reads will appear black.
 
 #### Do you have any tips for learning React and mobx-state-tree
 
-Here is a short guide to React and mobx-state-tree that could help get you oriented
+Here is a short guide to React and mobx-state-tree that could help get you oriented:
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
 #### What technologies does JBrowse 2 use
 
-We build on a lot of great open source technology, some main ones include
+We build on a lot of great open source technology, some main ones include:
 
 - React
 - mobx-state-tree
@@ -231,7 +264,7 @@ the "display" section of your config
 - `maxFeatureScreenDensity` - number of features times bpPerPx
 - `fetchSizeLimit` - this config variable exists on the adapters (can increase size limit)
 
-Example config with a small feature screen density
+Example config with a small feature screen density:
 
 ```json
 {
@@ -260,7 +293,7 @@ Example config with a small feature screen density
 }
 ```
 
-Example config for a CRAM file with a small fetchSizeLimit configured
+Example config for a CRAM file with a small fetchSizeLimit configured:
 
 ```json
 {
@@ -300,18 +333,18 @@ alternative temporary directory using the environment variable
 
 The `jbrowse text-index` command creates text searching indexes using trix. The
 trix indexes are based on the format described by UCSC here
-https://genome.ucsc.edu/goldenPath/help/trix.html but we reimplemented the code
+https://genome.ucsc.edu/goldenPath/help/trix.html, but we re-implemented the code
 the create these index formats in the JBrowse CLI so you do not have to install
 the UCSC tools.
 
-The main idea is that you give trix
+The main idea is that you give trix:
 
 ```
 GENEID001  Wnt signalling
 GENEID002  ey  Pax6
 ```
 
-Then this will generate a new file, the .ix file, sorted in alphabetical order
+Then this will generate a new file, the .ix file, sorted in alphabetical order:
 
 ```
 ey  GENE002
@@ -321,7 +354,7 @@ Wnt  GENE001
 ```
 
 Then a second file, the .ixx file, tells us at what byte offset certain lines
-in the file are e.g.
+in the file are e.g.:
 
 ```
 signa000000435
@@ -340,15 +373,15 @@ bar, so instead, we store it in localStorage and only keep the key to the
 localStorage entry in the URL var. This is because otherwise URLs can get
 prohibitively long, and break server side navigations, intermediate caches,
 etc. Therefore, we make "sharing a session" a manual step that generates a
-shortened URL by default
+shortened URL by default.
 
-Note 1: user's of @jbrowse/react-linear-genome-view have to re-implement any
+Note 1: users of @jbrowse/react-linear-genome-view have to re-implement any
 URL query param logic themselves, as this component makes no attempt to access
-URL query params
+URL query params.
 
 Note 2: You can copy and paste your URL bar and put it in another tab on your
 own computer, and JBrowse will restore the session using BroadcastChannel
-(supported on Firefox and Chrome)
+(supported on Firefox and Chrome).
 
 #### How does the session sharing work with shortened URLs work in JBrowse Web
 
@@ -358,7 +391,7 @@ session snapshots that users create when they use the "Share" button. The
 &password= component of the share URL), encrypts the session client side, and
 sends the encrypted session without the key to the AWS dynamoDB.
 
-This process, generates a URL with the format
+This process, generates a URL with the format:
 
 &session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
 
@@ -386,7 +419,7 @@ If for any reason the session sharing system isn't working, e.g. you are behind
 a firewall or you are not able to connect to the central share server, you can
 click the "Gear" icon in the "Share" button pop-up, and it will give you the
 option to use "Long URL" instead of "Short URL" which let's you create share
-links without the central server
+links without the central server.
 
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the

@@ -6,7 +6,7 @@ toplevel: true
 
 import Figure from '../../figure'
 
-We use Jexl (see https://github.com/TomFrost/Jexl) for defining configuration
+We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
 callbacks.
 
 An example of a Jexl configuration callback might look like this:
