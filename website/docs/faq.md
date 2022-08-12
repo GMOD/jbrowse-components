@@ -8,43 +8,47 @@ toplevel: true
 
 #### How can I start the JBrowse 2 app as a developer
 
-We recommend that you have the following
+We recommend that you have the following:
 
-- Node v12+
+- A stable and recent version of [node](https://nodejs.org/en/)
 - Git
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
 
 Then you can follow steps from our
-[README](https://github.com/gmod/jbrowse-components)
+[README](https://github.com/gmod/jbrowse-components).
 
-It basically boils down to
+It basically boils down to:
 
-- `git clone https://github.com/GMOD/jbrowse-components`
-- `cd jbrowse-components`
-- `yarn`
-- `cd products/jbrowse-web`
-- `yarn start`
+```bash
+git clone https://github.com/GMOD/jbrowse-components
+cd jbrowse-components
+yarn
+cd products/jbrowse-web
+yarn start
+```
 
-This will boot up a development instance of `jbrowse-web` on port 3000
+This will boot up a development instance of `jbrowse-web` on port `3000`.
 
-You can use `PORT=8080 yarn start` to manually specify a different port
+You can use `PORT=8080 yarn start` to manually specify a different port.
 
 You can also instead go to the `products/jbrowse-desktop` directory to do this
-on desktop
+on desktop.
 
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-use `yarn storybook` instead of `yarn start`
+use `yarn storybook` instead of `yarn start`.
+
+For a more extensive tutorial, see [Developing with JBrowse web and desktop](/docs/tutorials/dev/develop_web_and_desktop_tutorial).
 
 ### General
 
 #### What is special about JBrowse 2
 
 One thing that makes JBrowse 2 special is that we can create new view types via
-our plugin system, e.g. circular, dotplot, etc. Anything you want can be added
-as a view, and can be shown alongside our other views
+our plugin system, e.g. circular, dotplot, etc.. Anything you want can be added
+as a view, and can be shown alongside our other views.
 
-This makes JBrowse 2 more than just a genome browser-- it is really a platform
-that can be built on.
+This makes JBrowse 2 more than just a genome browser: it is really a platform
+that can be built upon.
 
 #### What are new features in JBrowse 2
 
@@ -78,69 +82,75 @@ this.
 
 #### How can I setup JBrowse 2 on my web server
 
-We recommend following the steps in the [quickstart web](../quickstart_web) guide.
+We recommend following the steps in the [quickstart web via CLI](/docs/quickstarts/quickstart_cli/) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
-/var/www/html
+`/var/www/html`.
 
-You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version
+You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version.
 
 #### How do I install or update the @jbrowse/cli tool
 
 To install the @jbrowse/cli tool, you can use `npm install -g @jbrowse/cli`
 
-You can use this same command to upgrade the tool too
+You can use this same command to upgrade the tool too.
 
 This command will give you a command named `jbrowse` which should automatically
 be in your path if you have a standard installation of nodejs. We recommend
 using nodesource or nvm to get your nodejs for this.
 
 Also note that the @jbrowse/cli tool is just made for preparing your
-config.json, it is not used to run any server-side code
+config.json, it is **not used to run any server-side code**.
 
 #### How do I update my instance of jbrowse-web
 
-You can use the command, after installing
+You can use the command, after installing:
 
 ```
 jbrowse upgrade /path/to/your/jbrowse2
 ```
 
 This will download the latest release from github and overwrite it onto your
-jbrowse-web instance
+jbrowse-web instance.
+
+If you've manually downloaded jbrowse-web, the newest releases can be found [here](https://github.com/GMOD/jbrowse-components/releases).
 
 #### How can I setup JBrowse 2 without the CLI tools
 
-The jbrowse CLI tools are basically a convenience, and are not strictly required
+The jbrowse CLI tools are basically a convenience, and are not strictly required.
 
-Simple tasks can be done without it
+Simple tasks can be done without it.
 
-For example, for jbrowse create, you can visit the [blog](/jb2/blog) and
+For example, for jbrowse create, you can visit the [releases page](https://github.com/GMOD/jbrowse-components/releases) and
 download the latest jbrowse-web release tag, and unzip it into your web
-directory
+directory.
+
+Checkout our [quickstart web](/docs/quickstarts/quickstart_web/) guide for a speedy start to using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-config.json, reviewing the config docs and sample configs will be valuable
+`config.json`; reviewing the [config docs](/docs/userguides/advanced/userguide_config_comp/) and sample configs will be valuable.
 
-Understanding the [config basics](../config_guide#intro-to-the-configjson) will
+To configure JBrowse using the GUI, checkout our [guide](/docs/userguides/userguide_gui/).
+
+Understanding the [config basics](/docs/userguides/advanced/userguide_config_comp/#intro-to-the-configjson) will
 come in handy also because you can manually edit in advanced configs after your
-tracks are loaded however be careful because corrupt configs can produce hard
-to understand errors, because our config system is strongly typed
+tracks are loaded; however be careful:s corrupt configs can produce hard
+to understand errors, because our config system is strongly typed.
 
-Feel free to message the team if you encounter these
+Reach out to the team [on gitter](https://gitter.im/GMOD/jbrowse2) or in the [discussions](https://github.com/GMOD/jbrowse-components/discussions) if you have any complex configuration issues.
 
 #### How do I load a track into JBrowse 2
 
-If you have followed the above steps and installed jbrowse 2 on your webserver
-and loaded the assembly, and have the CLI tools installed
+With the JBrowse CLI tools, you can easily add tracks with the `add-track` command, e.g.:
 
     jbrowse add-track myfile.bw -a hg19
 
-This will setup a bigwig track on the hg19 assembly in your config.json. Make
-sure to run the command inside your current jbrowse2 folder e.g.
+This will setup a bigwig track on the hg19 assembly in your config.json.
+
+Make sure to run the command inside your current jbrowse2 folder e.g.
 /var/www/html/jbrowse2 or wherever you are currently setting up a config.json
-(you can have multiple configs)
+(you can have multiple configs).
 
 Note that you can also use remote URLs
 
@@ -148,7 +158,9 @@ Note that you can also use remote URLs
 
 The add-track command will do as much as possible to infer from the file
 extension how to configure this track, and automatically infer the index to be
-myfile.bam.bai
+myfile.bam.bai.
+
+As mentioned [above](/docs/faq/#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can also manually edit your config file, or use the GUI.
 
 ### Curiosities
 

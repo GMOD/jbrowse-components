@@ -26,6 +26,7 @@
           "items": [
             "userguides/advanced/userguide_config_comp",
             "userguides/advanced/userguide_config_theme",
+            "userguides/advanced/userguide_config_callbacks",
             "userguides/advanced/userguide_config_analytics",
             "userguides/advanced/userguide_config_plugins",
             "userguides/advanced/userguide_config_details"
@@ -35,17 +36,60 @@
     },
     {
       "type": "category",
-      "label": "Developer guides",
-      "items": ["devguides/developer_guide"]
+      "label": "User tutorials",
+      "items": [
+        "tutorials/user/guided_cancer_tutorial",
+        {
+          "type": "category",
+          "label": "Archive",
+          "items": [
+            "tutorials/user/archive/pag2022_synteny_tutorial",
+            "tutorials/user/archive/bcc2020_plugin_development",
+            {
+              "type": "category",
+              "label": "BCC2020 - Embedding JBrowse 2 in your website",
+              "items": [
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_01_getting_started",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_02_introduction",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_03_simple_site",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_04_assemblies",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_05_tracks",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_06_other_options",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_07_creating_the_view",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_08_default_session",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_09_reacting",
+                "tutorials/user/archive/bcc2020_embedding_jbrowse_10_conclusion"
+              ]
+            }
+          ]
+        }
+      ]
     },
-    "jbrowse_jupyter",
-    "embedded_components",
-    "api_guide",
-    "cli",
+    {
+      "type": "category",
+      "label": "Developer guides",
+      "items": [
+        "devguides/developer_guide",
+        "devguides/devguide_config",
+        "devguides/devguide_pluggable_elements"
+      ]
+    },
     {
       "type": "category",
       "label": "Developer tutorials",
       "items": [
+        {
+          "type": "category",
+          "label": "Writing a simple JBrowse 2 plugin",
+          "items": [
+            "tutorials/dev/simple_plugin_tutorial/01_introduction",
+            "tutorials/dev/simple_plugin_tutorial/02_installation_and_setup",
+            "tutorials/dev/simple_plugin_tutorial/03_adding_pluggable_element",
+            "tutorials/dev/simple_plugin_tutorial/04_publishing",
+            "tutorials/dev/simple_plugin_tutorial/05_conclusion"
+          ]
+        },
+        "tutorials/dev/develop_web_and_desktop_tutorial",
         {
           "type": "category",
           "label": "Embedding JBrowse 2 in your website",
@@ -63,37 +107,10 @@
         }
       ]
     },
-    {
-      "type": "category",
-      "label": "User tutorials",
-      "items": [
-        "tutorials/guided_cancer_tutorial",
-        {
-          "type": "category",
-          "label": "Archive",
-          "items": [
-            "pag2022_synteny_tutorial",
-            "bcc2020_plugin_development",
-            {
-              "type": "category",
-              "label": "BCC2020 - Embedding JBrowse 2 in your website",
-              "items": [
-                "bcc2020_embedding_jbrowse_01_getting_started",
-                "bcc2020_embedding_jbrowse_02_introduction",
-                "bcc2020_embedding_jbrowse_03_simple_site",
-                "bcc2020_embedding_jbrowse_04_assemblies",
-                "bcc2020_embedding_jbrowse_05_tracks",
-                "bcc2020_embedding_jbrowse_06_other_options",
-                "bcc2020_embedding_jbrowse_07_creating_the_view",
-                "bcc2020_embedding_jbrowse_08_default_session",
-                "bcc2020_embedding_jbrowse_09_reacting",
-                "bcc2020_embedding_jbrowse_10_conclusion"
-              ]
-            }
-          ]
-        }
-      ]
-    },
+    "jbrowse_jupyter",
+    "embedded_components",
+    "api_guide",
+    "cli",
     "combined",
     "faq"
   ]

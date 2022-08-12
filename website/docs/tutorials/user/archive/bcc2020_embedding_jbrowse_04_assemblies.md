@@ -63,7 +63,7 @@ source ~/.bashrc
 Now if you run the command `jbrowse --help` in the terminal, you should see
 something like this:
 
-![The output of `jbrowse --help` in a terminal](./img/bcc2020_jbrowse_help.png)
+![The output of `jbrowse --help` in a terminal](../../../img/bcc2020_jbrowse_help.png)
 
 :::note If you're not using the VM
 You may already have `yarn` or `npm` set up to do global installations, so you

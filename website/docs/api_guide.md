@@ -108,7 +108,7 @@ As an example, the here is an array of MenuItems and the resulting menu:
 Users can customize the top-level menu items using these functions that are
 available on the rootModel:
 
-#### appendMenu
+#### `appendMenu`
 
 Add a top-level menu
 
@@ -122,7 +122,7 @@ Add a top-level menu
 
 The new length of the top-level menus array
 
-#### insertMenu
+#### `insertMenu`
 
 Insert a top-level menu
 
@@ -137,7 +137,7 @@ Insert a top-level menu
 
 The new length of the top-level menus array
 
-#### appendToMenu
+#### `appendToMenu`
 
 Add a menu item to a top-level menu
 
@@ -152,7 +152,7 @@ Add a menu item to a top-level menu
 
 The new length of the menu
 
-#### insertInMenu
+#### `insertInMenu`
 
 Insert a menu item into a top-level menu
 
@@ -168,7 +168,7 @@ Insert a menu item into a top-level menu
 
 The new length of the menu
 
-#### appendToSubMenu
+#### `appendToSubMenu`
 
 Add a menu item to a sub-menu
 
@@ -183,7 +183,7 @@ Add a menu item to a sub-menu
 
 The new length of the sub-menu
 
-#### insertInSubMenu
+#### `insertInSubMenu`
 
 Insert a menu item into a sub-menu
 

@@ -15,7 +15,7 @@ Want JBrowse desktop? Follow our [JBrowse desktop quick start](/docs/quickstarts
 ## Prerequisites
 
 - Ability to run commands on the command line
-- Node.js 14+ installed
+- A stable and recent version of [node](https://nodejs.org/en/)
 
 :::caution
 
