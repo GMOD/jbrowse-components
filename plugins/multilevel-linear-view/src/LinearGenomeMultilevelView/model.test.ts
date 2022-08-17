@@ -181,30 +181,4 @@ describe('model testing linear genome multilevel view', () => {
     view.toggleIsOverview()
     expect(view.isOverview).toBe(false)
   })
-  it('sets has mini controls', async () => {
-    const session = createTestSession()
-    // @ts-ignore
-    session.addAssemblyConf(assemblyConf)
-    // @ts-ignore
-    session.addView('MultilevelLinearView', mv)
-    // @ts-ignore
-    session.views[0].setWidth(800)
-    // @ts-ignore
-    const view = session.views[0].views[1]
-    view.setCustomMiniControls(false)
-    expect(view.hasCustomMiniControls).toBe(false)
-  })
-  it('has custom header', async () => {
-    const session = createTestSession()
-    // @ts-ignore
-    session.addAssemblyConf(assemblyConf)
-    // @ts-ignore
-    session.addView('MultilevelLinearView', mv)
-    // @ts-ignore
-    session.views[0].setWidth(800)
-    // @ts-ignore
-    const view = session.views[0].views[1]
-    view.setHasCustomHeader(false)
-    expect(view.hasCustomHeader).toBe(false)
-  })
 })

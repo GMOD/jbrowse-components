@@ -3,6 +3,7 @@ import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 
 // locals
 import { LinearGenomeViewModel } from '..'
@@ -30,11 +31,6 @@ const useStyles = makeStyles()(theme => ({
       width: '1em',
       textAlign: 'left',
     },
-  },
-  miniControls: {
-    position: 'absolute',
-    right: 0,
-    zIndex: 1001,
   },
   '@keyframes ellipsis': {
     '0%': {
@@ -64,6 +60,17 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     return <ImportForm model={model} />
   }
 
+  const MiniControlsComponent =
+    (getEnv(model).pluginManager.evaluateExtensionPoint(
+      'LGV-CustomMiniControls',
+      model,
+    ) as typeof MiniControls | undefined) || MiniControls
+  const HeaderComponent =
+    (getEnv(model).pluginManager.evaluateExtensionPoint(
+      'LGV-CustomHeader',
+      model,
+    ) as typeof Header | undefined) || Header
+
   return (
     <div style={{ position: 'relative' }}>
       {model.seqDialogDisplayed ? (
@@ -79,13 +86,8 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
         />
       ) : null}
 
-      {!hideHeader ? <Header model={model} /> : null}
-      {/* @ts-ignore */}
-      {hideHeader && !model.hasCustomMiniControls ? (
-        <div className={classes.miniControls}>
-          <MiniControls model={model} />
-        </div>
-      ) : null}
+      {!hideHeader ? <HeaderComponent model={model} /> : null}
+      <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
           <Paper variant="outlined" className={classes.note}>

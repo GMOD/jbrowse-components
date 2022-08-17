@@ -519,8 +519,7 @@ export default class PluginManager {
       displays.forEach(display => {
         // view may have already added the displayType in its callback
         if (
-          (display.viewType === newView.name ||
-            display.viewType === newView.extendedName) &&
+          display.viewType === newView.name &&
           !newView.displayTypes.includes(display)
         ) {
           newView.addDisplayType(display)

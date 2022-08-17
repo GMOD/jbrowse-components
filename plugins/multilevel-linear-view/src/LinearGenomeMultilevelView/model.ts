@@ -42,8 +42,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       hideControls: true,
       isVisible: true,
-      hasCustomMiniControls: true,
-      hasCustomHeader: true,
       isAnchor: false,
       isOverview: false,
       limitBpPerPx: types.optional(types.frozen(), {
@@ -70,12 +68,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       toggleIsOverview() {
         self.isOverview = !self.isOverview
-      },
-      setCustomMiniControls(flag: boolean) {
-        self.hasCustomMiniControls = flag
-      },
-      setHasCustomHeader(flag: boolean) {
-        self.hasCustomHeader = flag
       },
       setLimitBpPerPx(
         limited: boolean,

@@ -6,7 +6,6 @@ import { makeStyles } from 'tss-react/mui'
 import { MultilevelLinearViewModel } from '../model'
 import AreaOfInterest from './AreaOfInterest'
 import Subheader from './Subheader'
-import MiniControls from './MiniControls'
 import Header from './Header'
 import { bpToPx } from '@jbrowse/core/util'
 import ImportForm from './ImportForm'
@@ -155,12 +154,6 @@ const MultilevelLinearView = observer(
                       // @ts-ignore
                       view.isVisible ? (
                         <>
-                          {
-                            // @ts-ignore
-                            view.hasCustomMiniControls ? (
-                              <MiniControls model={view} />
-                            ) : null
-                          }
                           <ReactComponent key={view.id} model={view} />
                         </>
                       ) : null

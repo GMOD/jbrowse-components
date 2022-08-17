@@ -4,6 +4,8 @@ import { IconButton, FormGroup, useTheme, alpha } from '@mui/material'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter'
+// TODO: UPDATE LGV PLUGIN TO EXPORT THIS
+// import { ZoomControls } from '@jbrowse/plugin-linear-genome-view'
 import ZoomControls from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ZoomControls'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 
@@ -44,7 +46,7 @@ const Header = observer(
     const { primary } = theme.palette
     const colour = primary.light
     // @ts-ignore
-    const anchorView = model?.views.find(view => view.isAnchor)
+    const anchorView = model?.views?.find(view => view.isAnchor)
 
     return (
       <div>

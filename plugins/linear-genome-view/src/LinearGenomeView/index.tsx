@@ -53,6 +53,7 @@ import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ZoomControls from './components/ZoomControls'
+import LinearGenomeView from './components/LinearGenomeView'
 
 export interface BpOffset {
   refName?: string
@@ -1218,6 +1219,7 @@ export {
   SearchBox,
   ExportSvgDlg,
   ZoomControls,
+  LinearGenomeView,
 }
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
