@@ -774,12 +774,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.toggleNoTracksActive,
           },
           {
-            label: 'Show gridlines',
+            label: 'Show guidelines',
             icon: VisibilityIcon,
             type: 'checkbox',
             checked: self.showGridlines,
             onClick: self.toggleShowGridlines,
           },
+          ...(canShowCytobands
+            ? [
+                {
+                  label: 'Show ideogram',
+                  icon: VisibilityIcon,
+                  type: 'checkbox' as const,
+                  checked: self.showCytobands,
+                  onClick: () => {
+                    self.setShowCytobands(!showCytobands)
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Track labels',
             icon: LabelIcon,
@@ -807,16 +820,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
               },
             ],
           },
-          ...(canShowCytobands
-            ? [
-                {
-                  label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
-                  onClick: () => {
-                    self.setShowCytobands(!showCytobands)
-                  },
-                },
-              ]
-            : []),
         ]
 
         // add track's view level menu options
