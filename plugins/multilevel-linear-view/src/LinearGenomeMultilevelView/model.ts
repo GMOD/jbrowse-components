@@ -18,8 +18,6 @@ import AddIcon from '@mui/icons-material/Add'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VerticalAlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 
-import MiniControls from '../MultilevelLinearView/components/MiniControls'
-
 export interface BpOffset {
   refName?: string
   index: number
@@ -60,7 +58,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         prevRight: -1,
       }),
     })
-    .actions((self: any) => ({
+    .actions(self => ({
       toggleControls() {
         self.hideControls = !self.hideControls
       },
@@ -224,7 +222,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           self.showAllRegions()
         }
       },
-      moveIfAnchor(leftOffset: any, rightOffset: any) {
+      moveIfAnchor(leftOffset: BpOffset, rightOffset: BpOffset) {
         if (self.isAnchor) {
           self.moveTo(leftOffset, rightOffset)
         }
@@ -288,7 +286,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           ]
 
           superMenuItemsArray.splice(2, 0, ...addRemoveMenuItems)
-          console.log(self.isVisible)
 
           const controlsHideMenuItems: MenuItem[] = [
             {
@@ -315,7 +312,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         },
       }
     })
-    .views((self: any) => {
+    .views(self => {
       const { rubberBandMenuItems: superMenuItems } = self
 
       const superMenuItemsArray = superMenuItems()
