@@ -52,6 +52,7 @@ import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
+import ZoomControls from './components/ZoomControls'
 
 export interface BpOffset {
   refName?: string
@@ -1211,7 +1212,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg, RefNameAutocomplete, SearchBox }
+export {
+  renderToSvg,
+  RefNameAutocomplete,
+  SearchBox,
+  ExportSvgDlg,
+  ZoomControls,
+}
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export { default as ReactComponent } from './components/LinearGenomeView'

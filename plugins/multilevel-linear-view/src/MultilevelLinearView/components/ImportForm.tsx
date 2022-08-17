@@ -16,7 +16,7 @@ import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import RefNameAutocomplete from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/RefNameAutocomplete'
+import { RefNameAutocomplete } from '@jbrowse/plugin-linear-genome-view/'
 
 import { MultilevelLinearViewModel } from '../model'
 

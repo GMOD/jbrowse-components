@@ -5,7 +5,7 @@ jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 const mv = {
   id: 'MiDMyyWpxp',
   // @ts-ignore
-  type: 'MultilevelLinearComparativeView',
+  type: 'MultilevelLinearView',
   displayName: 'MLLV Default',
   linkViews: true,
   views: [
@@ -134,7 +134,7 @@ describe('model testing linear genome multilevel view', () => {
     // @ts-ignore
     session.addAssemblyConf(assemblyConf)
     // @ts-ignore
-    session.addView('MultilevelLinearComparativeView', mv)
+    session.addView('MultilevelLinearView', mv)
     // @ts-ignore
     session.views[0].setWidth(800)
     // @ts-ignore
@@ -147,7 +147,7 @@ describe('model testing linear genome multilevel view', () => {
     // @ts-ignore
     session.addAssemblyConf(assemblyConf)
     // @ts-ignore
-    session.addView('MultilevelLinearComparativeView', mv)
+    session.addView('MultilevelLinearView', mv)
     // @ts-ignore
     session.views[0].setWidth(800)
     // @ts-ignore
@@ -160,7 +160,7 @@ describe('model testing linear genome multilevel view', () => {
     // @ts-ignore
     session.addAssemblyConf(assemblyConf)
     // @ts-ignore
-    session.addView('MultilevelLinearComparativeView', mv)
+    session.addView('MultilevelLinearView', mv)
     // @ts-ignore
     session.views[0].setWidth(800)
     // @ts-ignore
@@ -173,7 +173,7 @@ describe('model testing linear genome multilevel view', () => {
     // @ts-ignore
     session.addAssemblyConf(assemblyConf)
     // @ts-ignore
-    session.addView('MultilevelLinearComparativeView', mv)
+    session.addView('MultilevelLinearView', mv)
     // @ts-ignore
     session.views[0].setWidth(800)
     // @ts-ignore
@@ -186,7 +186,7 @@ describe('model testing linear genome multilevel view', () => {
     // @ts-ignore
     session.addAssemblyConf(assemblyConf)
     // @ts-ignore
-    session.addView('MultilevelLinearComparativeView', mv)
+    session.addView('MultilevelLinearView', mv)
     // @ts-ignore
     session.views[0].setWidth(800)
     // @ts-ignore
@@ -199,7 +199,7 @@ describe('model testing linear genome multilevel view', () => {
     // @ts-ignore
     session.addAssemblyConf(assemblyConf)
     // @ts-ignore
-    session.addView('MultilevelLinearComparativeView', mv)
+    session.addView('MultilevelLinearView', mv)
     // @ts-ignore
     session.views[0].setWidth(800)
     // @ts-ignore

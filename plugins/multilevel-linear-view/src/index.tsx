@@ -2,26 +2,19 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import DynamicFeedIcon from '@mui/icons-material/DynamicFeed'
-import MultilevelLinearComparativeViewF from './MultilevelLinearComparativeView'
 import MultilevelLinearViewF from './MultilevelLinearView'
-import MultilevelTrackF from './MultilevelTrack'
 import LinearGenomeMultilevelViewF from './LinearGenomeMultilevelView'
 
 export default class extends Plugin {
-  name = 'MultilevelLinearComparativeViewPlugin'
+  name = 'MultilevelLinearViewPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(LinearGenomeMultilevelViewF),
     )
     pluginManager.addViewType(() =>
-      pluginManager.jbrequire(MultilevelLinearComparativeViewF),
-    )
-    pluginManager.addViewType(() =>
       pluginManager.jbrequire(MultilevelLinearViewF),
     )
-
-    MultilevelTrackF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

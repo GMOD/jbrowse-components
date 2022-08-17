@@ -7,7 +7,7 @@ import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import MenuIcon from '@mui/icons-material/Menu'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/src/index'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view/'
 
 import {
   bindTrigger,

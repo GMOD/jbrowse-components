@@ -8,20 +8,17 @@ import {
 } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
-import ExportSvgDlg from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ExportSvgDialog'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
-import LabelIcon from '@mui/icons-material/Label'
 import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VerticalAlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+
+import MiniControls from '../MultilevelLinearView/components/MiniControls'
 
 export interface BpOffset {
   refName?: string
@@ -36,251 +33,226 @@ export interface BpOffset {
 }
 
 export default function stateModelFactory(pluginManager: PluginManager) {
-  return types.compose(
-    'LinearGenomeMultilevelView',
+  return (
     pluginManager.getViewType('LinearGenomeView')
-      .stateModel as LinearGenomeViewStateModel,
+      .stateModel as LinearGenomeViewStateModel
+  )
+    .named('LinearGenomeMultilevelView')
+    .props({
+      id: ElementId,
+      type: types.literal('LinearGenomeMultilevelView'),
 
-    types
-      .model({
-        id: ElementId,
-        type: types.literal('LinearGenomeMultilevelView'),
-
-        hideControls: true,
-        isVisible: true,
-        hasCustomMiniControls: true,
-        hasCustomHeader: true,
-        isAnchor: false,
-        isOverview: false,
-
-        limitBpPerPx: types.optional(types.frozen(), {
-          limited: false,
-          upperLimit: 1,
-          lowerLimit: 0,
-        }),
-
-        polygonPoints: types.optional(types.frozen(), {
-          left: -1,
-          right: -1,
-          prevLeft: -1,
-          prevRight: -1,
-        }),
-      })
-      .actions(self => ({
-        toggleControls() {
-          self.hideControls = !self.hideControls
-        },
-        toggleVisible() {
-          self.isVisible = !self.isVisible
-        },
-        toggleIsAnchor() {
-          self.isAnchor = !self.isAnchor
-        },
-        toggleIsOverview() {
-          self.isOverview = !self.isOverview
-        },
-        setCustomMiniControls(flag: boolean) {
-          self.hasCustomMiniControls = flag
-        },
-        setHasCustomHeader(flag: boolean) {
-          self.hasCustomHeader = flag
-        },
-        setLimitBpPerPx(
-          limited: boolean,
-          upperLimit?: number,
-          lowerLimit?: number,
+      hideControls: true,
+      isVisible: true,
+      hasCustomMiniControls: true,
+      hasCustomHeader: true,
+      isAnchor: false,
+      isOverview: false,
+      limitBpPerPx: types.optional(types.frozen(), {
+        limited: false,
+        upperLimit: 1,
+        lowerLimit: 0,
+      }),
+      polygonPoints: types.optional(types.frozen(), {
+        left: -1,
+        right: -1,
+        prevLeft: -1,
+        prevRight: -1,
+      }),
+    })
+    .actions((self: any) => ({
+      toggleControls() {
+        self.hideControls = !self.hideControls
+      },
+      toggleVisible() {
+        self.isVisible = !self.isVisible
+      },
+      toggleIsAnchor() {
+        self.isAnchor = !self.isAnchor
+      },
+      toggleIsOverview() {
+        self.isOverview = !self.isOverview
+      },
+      setCustomMiniControls(flag: boolean) {
+        self.hasCustomMiniControls = flag
+      },
+      setHasCustomHeader(flag: boolean) {
+        self.hasCustomHeader = flag
+      },
+      setLimitBpPerPx(
+        limited: boolean,
+        upperLimit?: number,
+        lowerLimit?: number,
+      ) {
+        self.limitBpPerPx = {
+          limited: limited,
+          upperLimit: upperLimit ? upperLimit : self.limitBpPerPx.upperLimit,
+          lowerLimit: lowerLimit ? lowerLimit : self.limitBpPerPx.lowerLimit,
+        }
+      },
+      setPolygonPoints(
+        left: number,
+        right: number,
+        prevLeft: number,
+        prevRight: number,
+      ) {
+        self.polygonPoints = {
+          left: left,
+          right: right,
+          prevLeft: prevLeft,
+          prevRight: prevRight,
+        }
+      },
+      zoomTo(bpPerPx: number) {
+        if (
+          !self.limitBpPerPx.limited ||
+          (bpPerPx <= self.limitBpPerPx.upperLimit &&
+            bpPerPx >= self.limitBpPerPx.lowerLimit)
         ) {
-          self.limitBpPerPx = {
-            limited: limited,
-            upperLimit: upperLimit ? upperLimit : self.limitBpPerPx.upperLimit,
-            lowerLimit: lowerLimit ? lowerLimit : self.limitBpPerPx.lowerLimit,
-          }
-        },
-        setPolygonPoints(
-          left: number,
-          right: number,
-          prevLeft: number,
-          prevRight: number,
-        ) {
-          self.polygonPoints = {
-            left: left,
-            right: right,
-            prevLeft: prevLeft,
-            prevRight: prevRight,
-          }
-        },
-        zoomTo(bpPerPx: number) {
-          if (
-            !self.limitBpPerPx.limited ||
-            (bpPerPx <= self.limitBpPerPx.upperLimit &&
-              bpPerPx >= self.limitBpPerPx.lowerLimit)
-          ) {
-            // @ts-ignore
-            const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
-            // @ts-ignore
-            if (newBpPerPx === self.bpPerPx) {
-              return newBpPerPx
-            }
-            // @ts-ignore
-            const oldBpPerPx = self.bpPerPx
-            // @ts-ignore
-            self.bpPerPx = newBpPerPx
+          const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
 
-            if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
-              console.warn('zoomTo bpPerPx rounding error')
-              return oldBpPerPx
-            }
-
-            // @ts-ignore
-            const viewWidth = self.width
-            // @ts-ignore
-            self.scrollTo(
-              Math.round(
-                // @ts-ignore
-                ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
-                  viewWidth / 2,
-              ),
-            )
+          if (newBpPerPx === self.bpPerPx) {
             return newBpPerPx
           }
-          // @ts-ignore
-          return self.bpPerPx
-        },
-        navToLocString(locString: string, optAssemblyName?: string) {
-          // @ts-ignore
-          const { assemblyNames } = self
-          const { assemblyManager } = getSession(self)
-          const { isValidRefName } = assemblyManager
-          const assemblyName = optAssemblyName || assemblyNames[0]
 
-          let parsedLocStrings
-          const inputs = locString
-            .split(/(\s+)/)
-            .map(f => f.trim())
-            .filter(f => !!f)
+          const oldBpPerPx = self.bpPerPx
 
-          // first try interpreting as a whitespace-separated sequence of
-          // multiple locstrings
-          try {
-            parsedLocStrings = inputs.map(l =>
-              parseLocString(l, ref => isValidRefName(ref, assemblyName)),
-            )
-          } catch (e) {
-            // if this fails, try interpreting as a whitespace-separated refname,
-            // start, end if start and end are integer inputs
-            const [refName, start, end] = inputs
-            if (
-              `${e}`.match(/Unknown reference sequence/) &&
-              Number.isInteger(+start) &&
-              Number.isInteger(+end)
-            ) {
-              parsedLocStrings = [
-                parseLocString(refName + ':' + start + '..' + end, ref =>
-                  isValidRefName(ref, assemblyName),
-                ),
-              ]
-            } else {
-              throw e
-            }
+          self.bpPerPx = newBpPerPx
+
+          if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+            console.warn('zoomTo bpPerPx rounding error')
+            return oldBpPerPx
           }
 
-          const locations = parsedLocStrings.map(region => {
-            const asmName = region.assemblyName || assemblyName
-            const asm = assemblyManager.get(asmName)
-            const { refName } = region
-            if (!asm) {
-              throw new Error(`assembly ${asmName} not found`)
-            }
-            const { regions } = asm
-            if (!regions) {
-              throw new Error(`regions not loaded yet for ${asmName}`)
-            }
-            const canonicalRefName = asm.getCanonicalRefName(region.refName)
-            if (!canonicalRefName) {
-              throw new Error(
-                `Could not find refName ${refName} in ${asm.name}`,
-              )
-            }
-            const parentRegion = regions.find(
-              region => region.refName === canonicalRefName,
-            )
-            if (!parentRegion) {
-              throw new Error(`Could not find refName ${refName} in ${asmName}`)
-            }
+          const viewWidth = self.width
 
-            return {
-              ...region,
-              assemblyName: asmName,
-              parentRegion,
-            }
-          })
+          self.scrollTo(
+            Math.round(
+              ((self.offsetPx + viewWidth / 2) * oldBpPerPx) / newBpPerPx -
+                viewWidth / 2,
+            ),
+          )
+          return newBpPerPx
+        }
+        return self.bpPerPx
+      },
+      navToLocString(locString: string, optAssemblyName?: string) {
+        const { assemblyNames } = self
+        const { assemblyManager } = getSession(self)
+        const { isValidRefName } = assemblyManager
+        const assemblyName = optAssemblyName || assemblyNames[0]
 
-          if (locations.length === 1) {
-            const loc = locations[0]
-            // @ts-ignore
-            self.setDisplayedRegions([
-              { reversed: loc.reversed, ...loc.parentRegion },
-            ])
-            const { start, end, parentRegion } = loc
-            // @ts-ignore
-            self.navTo({
-              ...loc,
-              start: clamp(start ?? 0, 0, parentRegion.end),
-              end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
-            })
+        let parsedLocStrings
+        const inputs = locString
+          .split(/(\s+)/)
+          .map(f => f.trim())
+          .filter(f => !!f)
+
+        // first try interpreting as a whitespace-separated sequence of
+        // multiple locstrings
+        try {
+          parsedLocStrings = inputs.map(l =>
+            parseLocString(l, ref => isValidRefName(ref, assemblyName)),
+          )
+        } catch (e) {
+          // if this fails, try interpreting as a whitespace-separated refname,
+          // start, end if start and end are integer inputs
+          const [refName, start, end] = inputs
+          if (
+            `${e}`.match(/Unknown reference sequence/) &&
+            Number.isInteger(+start) &&
+            Number.isInteger(+end)
+          ) {
+            parsedLocStrings = [
+              parseLocString(refName + ':' + start + '..' + end, ref =>
+                isValidRefName(ref, assemblyName),
+              ),
+            ]
           } else {
-            // @ts-ignore
-            self.setDisplayedRegions(
-              // @ts-ignore
-              locations.map(r => (r.start === undefined ? r.parentRegion : r)),
-            )
-            // @ts-ignore
-            self.showAllRegions()
+            throw e
           }
-        },
-        moveIfAnchor(leftOffset: number, rightOffset: number) {
-          if (self.isAnchor) {
-            // @ts-ignore
-            self.moveTo(leftOffset, rightOffset)
-          }
-        },
-        closeView() {
-          const parent = getContainingView(self)
-          parent.removeView(self)
-        },
-        addView(isAbove: boolean) {
-          const parent = getContainingView(self)
-          parent.addView(isAbove, self)
-        },
-      }))
-      .views(self => ({
-        menuItems(): MenuItem[] {
-          // @ts-ignore
-          const { canShowCytobands, showCytobands } = self
+        }
 
-          const menuItems: MenuItem[] = [
-            {
-              label: 'Export SVG',
-              icon: PhotoCameraIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDlg,
-                  { model: self, handleClose },
-                ])
-              },
-            },
-            {
-              label: 'Open track selector',
-              // @ts-ignore
-              onClick: self.activateTrackSelector,
-              icon: TrackSelectorIcon,
-            },
-            {
-              label: 'Horizontally flip',
-              icon: SyncAltIcon,
-              // @ts-ignore
-              onClick: self.horizontallyFlip,
-            },
+        const locations = parsedLocStrings.map(region => {
+          const asmName = region.assemblyName || assemblyName
+          const asm = assemblyManager.get(asmName)
+          const { refName } = region
+          if (!asm) {
+            throw new Error(`assembly ${asmName} not found`)
+          }
+          const { regions } = asm
+          if (!regions) {
+            throw new Error(`regions not loaded yet for ${asmName}`)
+          }
+          const canonicalRefName = asm.getCanonicalRefName(region.refName)
+          if (!canonicalRefName) {
+            throw new Error(`Could not find refName ${refName} in ${asm.name}`)
+          }
+          const parentRegion = regions.find(
+            region => region.refName === canonicalRefName,
+          )
+          if (!parentRegion) {
+            throw new Error(`Could not find refName ${refName} in ${asmName}`)
+          }
+
+          return {
+            ...region,
+            assemblyName: asmName,
+            parentRegion,
+          }
+        })
+
+        if (locations.length === 1) {
+          const loc = locations[0]
+
+          self.setDisplayedRegions([
+            { reversed: loc.reversed, ...loc.parentRegion },
+          ])
+          const { start, end, parentRegion } = loc
+
+          self.navTo({
+            ...loc,
+            start: clamp(start ?? 0, 0, parentRegion.end),
+            end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
+          })
+        } else {
+          self.setDisplayedRegions(
+            // @ts-ignore
+            locations.map(r => (r.start === undefined ? r.parentRegion : r)),
+          )
+
+          self.showAllRegions()
+        }
+      },
+      moveIfAnchor(leftOffset: any, rightOffset: any) {
+        if (self.isAnchor) {
+          self.moveTo(leftOffset, rightOffset)
+        }
+      },
+      closeView() {
+        const parent = getContainingView(self)
+        parent.removeView(self)
+      },
+      addView(isAbove: boolean) {
+        const parent = getContainingView(self)
+        parent.addView(isAbove, self)
+      },
+    }))
+    .views(self => {
+      // @ts-ignore
+      const { menuItems: superMenuItems } = self
+      return {
+        menuItems(): MenuItem[] {
+          const superMenuItemsArray: MenuItem[] = superMenuItems()
+
+          const index = superMenuItemsArray.findIndex(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (item: any) => item.label === 'Return to import form',
+          )
+
+          superMenuItemsArray.splice(index, 1)
+
+          const addRemoveMenuItems = [
             !self.isAnchor && !self.isOverview
               ? {
                   label: 'Remove view',
@@ -313,47 +285,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 },
               ],
             },
-            { type: 'divider' },
-            {
-              label: 'Show all regions in assembly',
-              icon: VisibilityIcon,
-              // @ts-ignore
-              onClick: self.showAllRegionsInAssembly,
-            },
-            {
-              label: 'Show center line',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              // @ts-ignore
-              checked: self.showCenterLine,
-              // @ts-ignore
-              onClick: self.toggleCenterLine,
-            },
-            {
-              label: 'Show header',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              // @ts-ignore
-              checked: !self.hideHeader,
-              // @ts-ignore
-              onClick: self.toggleHeader,
-            },
-            {
-              label: 'Show no tracks active button',
-              icon: VisibilityIcon,
-              type: 'checkbox',
-              // @ts-ignore
-              checked: !self.hideNoTracksActive,
-              // @ts-ignore
-              onClick: self.toggleNoTracksActive,
-            },
+          ]
+
+          superMenuItemsArray.splice(2, 0, ...addRemoveMenuItems)
+          console.log(self.isVisible)
+
+          const controlsHideMenuItems: MenuItem[] = [
             {
               label: 'Show controls',
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: !self.hideControls,
               onClick: self.toggleControls,
-              disabled: !self.isVisible || self.isAnchor,
+              disabled: !self.isVisible || self.isAnchor || self.isOverview,
             },
             {
               label: 'Hide view',
@@ -361,87 +305,44 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               type: 'checkbox',
               checked: !self.isVisible,
               onClick: self.toggleVisible,
+              disabled: self.isOverview,
             },
-            {
-              label: 'Track labels',
-              icon: LabelIcon,
-              subMenu: [
-                {
-                  label: 'Overlapping',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  // @ts-ignore
-                  checked: self.trackLabels === 'overlapping',
-                  // @ts-ignore
-                  onClick: () => self.setTrackLabels('overlapping'),
-                },
-                {
-                  label: 'Offset',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  // @ts-ignore
-                  checked: self.trackLabels === 'offset',
-                  // @ts-ignore
-                  onClick: () => self.setTrackLabels('offset'),
-                },
-                {
-                  label: 'Hidden',
-                  icon: VisibilityIcon,
-                  type: 'radio',
-                  // @ts-ignore
-                  checked: self.trackLabels === 'hidden',
-                  // @ts-ignore
-                  onClick: () => self.setTrackLabels('hidden'),
-                },
-              ],
-            },
-            ...(canShowCytobands
-              ? [
-                  {
-                    label: showCytobands ? 'Hide ideogram' : 'Show ideograms',
-                    onClick: () => {
-                      // @ts-ignore
-                      self.setShowCytobands(!showCytobands)
-                    },
-                  },
-                ]
-              : []),
           ]
 
-          return menuItems
+          superMenuItemsArray.splice(12, 0, ...controlsHideMenuItems)
+
+          return superMenuItemsArray
         },
-      }))
-      .views(self => {
-        // @ts-ignore
-        const { rubberBandMenuItems: superMenuItems } = self
+      }
+    })
+    .views((self: any) => {
+      const { rubberBandMenuItems: superMenuItems } = self
 
-        const superMenuItemsArray = superMenuItems()
+      const superMenuItemsArray = superMenuItems()
 
-        const index = superMenuItemsArray.findIndex(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (item: any) => item.label === 'Zoom to region',
-        )
-        superMenuItemsArray.splice(index, 1)
-        return {
-          rubberBandMenuItems(): MenuItem[] {
-            return [
-              {
-                label: 'Zoom to region',
-                icon: ZoomInIcon,
-                onClick: () => {
-                  // @ts-ignore
-                  const { leftOffset, rightOffset } = self
-                  if (leftOffset && rightOffset) {
-                    self.moveIfAnchor(leftOffset, rightOffset)
-                  }
-                },
+      const index = superMenuItemsArray.findIndex(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (item: any) => item.label === 'Zoom to region',
+      )
+      superMenuItemsArray.splice(index, 1)
+      return {
+        rubberBandMenuItems(): MenuItem[] {
+          return [
+            {
+              label: 'Zoom to region',
+              icon: ZoomInIcon,
+              onClick: () => {
+                const { leftOffset, rightOffset } = self
+                if (leftOffset && rightOffset) {
+                  self.moveIfAnchor(leftOffset, rightOffset)
+                }
               },
-              ...superMenuItemsArray,
-            ]
-          },
-        }
-      }),
-  )
+            },
+            ...superMenuItemsArray,
+          ]
+        },
+      }
+    })
 }
 
 export type LinearGenomeMultilevelViewStateModel = ReturnType<

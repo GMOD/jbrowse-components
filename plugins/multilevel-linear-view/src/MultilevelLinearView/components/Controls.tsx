@@ -8,10 +8,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
-import { MultilevelLinearComparativeViewModel } from '../model'
+import { MultilevelLinearViewModel } from '../model'
 import MiniControls from './MiniControls'
 
-type LCV = MultilevelLinearComparativeViewModel
+type LCV = MultilevelLinearViewModel
 type LGV = LinearGenomeMultilevelViewModel
 
 const WIDGET_HEIGHT = 32

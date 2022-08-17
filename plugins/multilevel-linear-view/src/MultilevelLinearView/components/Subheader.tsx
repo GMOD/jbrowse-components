@@ -2,10 +2,10 @@ import React from 'react'
 import { observer } from 'mobx-react'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
-import { MultilevelLinearComparativeViewModel } from '../model'
+import { MultilevelLinearViewModel } from '../model'
 import Controls from './Controls'
 
-type LCV = MultilevelLinearComparativeViewModel
+type LCV = MultilevelLinearViewModel
 type LGV = LinearGenomeMultilevelViewModel
 
 const Subheader = observer(

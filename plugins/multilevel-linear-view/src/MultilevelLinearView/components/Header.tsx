@@ -7,10 +7,10 @@ import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter'
 import ZoomControls from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/components/ZoomControls'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 
-import { MultilevelLinearComparativeViewModel } from '../model'
+import { MultilevelLinearViewModel } from '../model'
 import { PanControls, RegionWidth } from './Controls'
 
-type LCV = MultilevelLinearComparativeViewModel
+type LCV = MultilevelLinearViewModel
 
 const LinkViews = observer(({ model }: { model: LCV }) => {
   return (

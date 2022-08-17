@@ -2,8 +2,7 @@ import { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import modelFactory from './model'
 
-export default (pluginManager: PluginManager) => {
-  const { jbrequire } = pluginManager
+export default ({ jbrequire }: PluginManager) => {
   const ViewType = jbrequire('@jbrowse/core/pluggableElementTypes/ViewType')
   return new ViewType({
     name: 'MultilevelLinearView',

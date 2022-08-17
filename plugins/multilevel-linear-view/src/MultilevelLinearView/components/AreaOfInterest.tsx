@@ -4,9 +4,9 @@ import { Typography, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import { LinearGenomeMultilevelViewModel } from '../../LinearGenomeMultilevelView/model'
-import { MultilevelLinearComparativeViewModel } from '../model'
+import { MultilevelLinearViewModel } from '../model'
 
-type LCV = MultilevelLinearComparativeViewModel
+type LCV = MultilevelLinearViewModel
 type LGV = LinearGenomeMultilevelViewModel
 
 const useStyles = makeStyles()(theme => ({
