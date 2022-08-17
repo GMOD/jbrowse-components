@@ -120,12 +120,14 @@ export function createBaseTrackModel(
       hideDisplay(displayId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const t = self.displays.filter(d => d.conf === conf)
+        const t = self.displays.filter(d => d.configuration === conf)
         transaction(() => t.forEach(d => self.displays.remove(d)))
         return t.length
       },
       replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
-        const idx = self.displays.findIndex(d => d.conf.displayId === oldId)
+        const idx = self.displays.findIndex(
+          d => d.configuration.displayId === oldId,
+        )
         if (idx === -1) {
           throw new Error(`could not find display id ${oldId} to replace`)
         }
