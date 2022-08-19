@@ -37,7 +37,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
     "pluralize": "^8.0.0",
     "react-dropzone": "^14.2.1"

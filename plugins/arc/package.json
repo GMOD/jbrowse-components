@@ -37,7 +37,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "react-svg-tooltip": "^0.0.11"
   },
   "peerDependencies": {

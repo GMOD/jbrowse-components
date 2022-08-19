@@ -46,7 +46,6 @@
     "react": ">=16.8.0"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@gmod/trix": "^2.0.4"
   },
   "publishConfig": {
