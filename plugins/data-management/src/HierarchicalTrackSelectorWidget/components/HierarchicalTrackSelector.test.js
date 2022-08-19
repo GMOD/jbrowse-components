@@ -1,5 +1,6 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import { createTheme, ThemeProvider } from '@mui/material/styles'
+import { ThemeProvider } from '@mui/material/styles'
 import { cleanup, render } from '@testing-library/react'
 import React from 'react'
 import HierarchicalTrackSelector from './HierarchicalTrackSelector'
@@ -17,7 +18,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container } = render(
-      <ThemeProvider theme={createTheme()}>
+      <ThemeProvider theme={createJBrowseTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
@@ -72,7 +73,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
-      <ThemeProvider theme={createTheme()}>
+      <ThemeProvider theme={createJBrowseTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
@@ -133,7 +134,7 @@ describe('HierarchicalTrackSelector widget', () => {
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
-      <ThemeProvider theme={createTheme()}>
+      <ThemeProvider theme={createJBrowseTheme()}>
         <HierarchicalTrackSelector model={model} />
       </ThemeProvider>,
     )
