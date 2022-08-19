@@ -44,8 +44,8 @@ also exist in the header of the linear genome view
 The zoom buttons exist in the header of the linear genome view, and there is
 also a slider bar to zoom in and out.
 
-Note: You can also hold the "Ctrl" key and use your mousewheel or trackpad to
-scroll and this will zoom in and out
+Note: You can also hold the <kbd>Ctrl</kbd> key and use your mousewheel or
+trackpad to scroll and this will zoom in and out
 
 #### Re-ordering tracks
 
@@ -98,8 +98,11 @@ guide](../quickstart_gui)
 ### Undo and redo
 
 You can undo the closing of a view, track, or any other action in the UI with
-the Tools->Undo/Redo buttons. The keyboard shortcut "ctrl+z"/"cmd+z"(mac) work
-for undo as well as "ctrl+y"/"cmd+shift"z"(mac)
+the <kbd><kbd><samp>Tools</samp></kbd>→<kbd><samp>Undo/Redo</samp></kbd></kbd>
+buttons. The keyboard shortcuts <kbd><kbd>Ctrl</kbd>+<kbd>Z</kbd></kbd>
+/<kbd><kbd>Cmd</kbd>+<kbd>Z</kbd></kbd> (mac) work for undo as well
+as <kbd><kbd>Ctrl</kbd>+<kbd>Y</kbd></kbd>
+/<kbd><kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></kbd> (mac) for redo.
 
 ### Sharing sessions
 
