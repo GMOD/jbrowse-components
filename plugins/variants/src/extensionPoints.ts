@@ -42,8 +42,6 @@ export default (pluginManager: PluginManager) => {
     'Core-guessTrackTypeForLocation',
     (trackTypeGuesser: TrackTypeGuesser) => {
       return (adapterName: string) => {
-        console.log({ adapterName })
-
         if (adapterName === 'VcfTabixAdapter' || adapterName === 'VcfAdapter') {
           return 'VariantTrack'
         }
