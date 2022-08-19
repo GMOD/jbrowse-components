@@ -46,7 +46,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
+  const { tracks, error, initialized, hasDisplayedRegions } = model
   const { classes } = useStyles()
 
   if (!initialized && !error) {
@@ -86,7 +86,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
         />
       ) : null}
 
-      {!hideHeader ? <HeaderComponent model={model} /> : null}
+      <HeaderComponent model={model} />
       <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
