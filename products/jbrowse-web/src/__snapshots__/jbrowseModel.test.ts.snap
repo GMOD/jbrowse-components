@@ -304,12 +304,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_sv_test-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_sv_test-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_sv_test-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox structural variant test",
@@ -342,12 +342,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_sv_test_renamed-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox structural variant test w/renamed refs",
@@ -981,12 +981,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_test_vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_test_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_test_vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox 1000genomes vcf",
@@ -1968,12 +1968,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_filtered_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox filtered vcf",
@@ -2006,12 +2006,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox filtered vcf (with assembly alias)",
@@ -2961,12 +2961,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox.inv.vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox.inv.vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox.inv.vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox inversions",
@@ -3213,6 +3213,66 @@ Object {
       "name": "volvox_del.paf",
       "trackId": "volvox_del.paf-1658813720770",
       "type": "SyntenyTrack",
+    },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "variant_effect_demo_data.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Variation",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "variant_effect_demo_data-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "variant_effect_demo_data-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "Ensembl VEP example",
+      "trackId": "variant_effect_demo_data",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_vcf_jannovar.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Variation",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "variant_effect_demo_jannovar-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "Jannovar example",
+      "trackId": "variant_effect_demo_jannovar",
+      "type": "VariantTrack",
     },
   ],
 }
