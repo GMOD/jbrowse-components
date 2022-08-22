@@ -3,15 +3,12 @@ import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
-import MiniControls from './MiniControls'
 import SequenceDialog from './SequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
 

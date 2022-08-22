@@ -1,3 +1,4 @@
+import React from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -191,10 +192,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       HeaderComponent(): React.FC<any> {
         return Header
       },

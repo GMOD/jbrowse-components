@@ -1,3 +1,4 @@
+import React from 'react'
 import { types, Instance } from 'mobx-state-tree'
 
 import {
@@ -234,10 +235,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // @ts-ignore
       const { menuItems: superMenuItems } = self
       return {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         MiniControlsComponent(): React.FC<any> {
           return MiniControls
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         HeaderComponent(): React.FC<any> {
           return Header
         },
