@@ -51,6 +51,8 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
+import MiniControls from './components/MiniControls'
+import Header from './components/Header'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import ZoomControls from './components/ZoomControls'
 import LinearGenomeView from './components/LinearGenomeView'
@@ -189,6 +191,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      MiniControlsComponent(): React.FC<any> {
+        return MiniControls
+      },
+
+      HeaderComponent(): React.FC<any> {
+        return Header
+      },
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         const { assemblyNames } = self
