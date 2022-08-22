@@ -17,6 +17,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VerticalAlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
+import MiniControls from '../MultilevelLinearView/components/MiniControls'
+import Header from '../MultilevelLinearView/components/Header'
 
 export interface BpOffset {
   refName?: string
@@ -232,6 +234,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // @ts-ignore
       const { menuItems: superMenuItems } = self
       return {
+        MiniControlsComponent(): React.FC<any> {
+          return MiniControls
+        },
+
+        HeaderComponent(): React.FC<any> {
+          return Header
+        },
         menuItems(): MenuItem[] {
           const superMenuItemsArray: MenuItem[] = superMenuItems()
 

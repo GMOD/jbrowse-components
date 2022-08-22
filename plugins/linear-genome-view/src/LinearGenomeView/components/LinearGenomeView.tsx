@@ -60,16 +60,8 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     return <ImportForm model={model} />
   }
 
-  const MiniControlsComponent =
-    (getEnv(model).pluginManager.evaluateExtensionPoint(
-      'LGV-CustomMiniControls',
-      model,
-    ) as typeof MiniControls | undefined) || MiniControls
-  const HeaderComponent =
-    (getEnv(model).pluginManager.evaluateExtensionPoint(
-      'LGV-CustomHeader',
-      model,
-    ) as typeof Header | undefined) || Header
+  const MiniControlsComponent = model.MiniControlsComponent()
+  const HeaderComponent = model.HeaderComponent()
 
   return (
     <div style={{ position: 'relative' }}>
