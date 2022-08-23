@@ -18,28 +18,6 @@ export default class extends Plugin {
     pluginManager.addViewType(() =>
       pluginManager.jbrequire(MultilevelLinearViewF),
     )
-    pluginManager.addToExtensionPoint(
-      'LGV-CustomMiniControls',
-      // @ts-ignore
-      (model: LinearGenomeViewModel) => {
-        // @ts-ignore
-        if (model.type === 'LinearGenomeMultilevelView') {
-          return MiniControls
-        }
-        return undefined
-      },
-    )
-    pluginManager.addToExtensionPoint(
-      'LGV-CustomHeader',
-      // @ts-ignore
-      (model: LinearGenomeViewModel) => {
-        // @ts-ignore
-        if (model.type === 'LinearGenomeMultilevelView') {
-          return Header
-        }
-        return undefined
-      },
-    )
   }
 
   configure(pluginManager: PluginManager) {
