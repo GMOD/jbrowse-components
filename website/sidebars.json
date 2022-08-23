@@ -90,6 +90,7 @@
           ]
         },
         "tutorials/dev/develop_web_and_desktop_tutorial",
+        "tutorials/dev/no_build_plugin_tutorial",
         {
           "type": "category",
           "label": "Embedding JBrowse 2 in your website",

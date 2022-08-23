@@ -10,6 +10,13 @@ The following guide will walk you through setting up a developer environment for
 
 This guide will provide some steps from the perspective of a plugin developer, but if you are interested in contributing to [jbrowse-components](https://github.com/GMOD/jbrowse-components/), the setup steps are equally relevant.
 
+## Prerequisites
+
+- git
+- A stable and recent version of [node](https://nodejs.org/en/)
+- yarn or npm
+- basic familiarity with the command line, React, package management, and npm
+
 ## Setup JBrowse 2 using the latest developer build
 
 The code for both JBrowse web and JBrowse desktop is found in the [jbrowse-components](https://github.com/GMOD/jbrowse-components/) repository. First we're going to clone the repo and install the dependencies.
