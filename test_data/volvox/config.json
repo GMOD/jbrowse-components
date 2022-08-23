@@ -607,28 +607,30 @@
         "type": "MultiWiggleAdapter",
         "subadapters": [
           {
-            "source": "k1",
+            "name": "k1",
+            "source": "j1",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "v1.cram.bw"
             }
           },
           {
-            "source": "k2",
+            "name": "k2",
+            "source": "j2",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "v2.cram.bw"
             }
           },
           {
-            "source": "k3",
+            "name": "k3",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "v3.cram.bw"
             }
           },
           {
-            "source": "k4",
+            "name": "k4",
             "type": "BigWigAdapter",
             "bigWigLocation": {
               "uri": "v4.cram.bw"

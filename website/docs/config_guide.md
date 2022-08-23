@@ -689,7 +689,8 @@ Example with group field
 }
 ```
 
-The "name" or "source" field on the subadapters will be used as the subtrack label
+The "name" or "source" field on the subadapters will be used as the subtrack
+label (where, "source" will be given priority over "name" if specified)
 
 ### QuantitativeTrack config
 
