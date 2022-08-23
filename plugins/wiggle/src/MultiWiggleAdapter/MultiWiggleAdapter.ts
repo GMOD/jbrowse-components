@@ -63,7 +63,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   // note: can't really have dis-agreeing refNames
   public async getRefNames(opts?: BaseOptions) {
     const adapters = await this.getAdapters()
-    return adapters[0].dataAdapter.getRefNames(opts)
+    const allNames = await Promise.all(
+      adapters.map(a => a.dataAdapter.getRefNames(opts)),
+    )
+    return [...new Set(allNames.flat())]
   }
 
   public async getGlobalStats(opts?: BaseOptions) {
