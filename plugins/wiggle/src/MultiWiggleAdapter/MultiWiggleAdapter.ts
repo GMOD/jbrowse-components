@@ -52,7 +52,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
         return {
-          source: dataAdapter.id,
+          source: conf.name || dataAdapter.id,
           ...conf,
           dataAdapter,
         }
