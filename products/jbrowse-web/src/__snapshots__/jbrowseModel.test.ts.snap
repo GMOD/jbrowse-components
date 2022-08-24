@@ -1141,28 +1141,30 @@ Object {
             "bigWigLocation": Object {
               "uri": "v1.cram.bw",
             },
-            "source": "k1",
+            "name": "k1",
+            "source": "j1",
             "type": "BigWigAdapter",
           },
           Object {
             "bigWigLocation": Object {
               "uri": "v2.cram.bw",
             },
-            "source": "k2",
+            "name": "k2",
+            "source": "j2",
             "type": "BigWigAdapter",
           },
           Object {
             "bigWigLocation": Object {
               "uri": "v3.cram.bw",
             },
-            "source": "k3",
+            "name": "k3",
             "type": "BigWigAdapter",
           },
           Object {
             "bigWigLocation": Object {
               "uri": "v4.cram.bw",
             },
-            "source": "k4",
+            "name": "k4",
             "type": "BigWigAdapter",
           },
         ],
