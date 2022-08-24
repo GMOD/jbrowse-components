@@ -3,12 +3,16 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  Feature,
+  Region,
+  complement,
+  reverse,
+} from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
 
 export default class extends BaseFeatureDataAdapter {
-  public static capabilities = ['hasLocalStats']
-
   public async configure() {
     const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
     if (!adapter) {
@@ -25,8 +29,7 @@ export default class extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
-      const hw = 1000
-
+      const hw = 0
       let { start: queryStart, end: queryEnd } = query
       queryStart = Math.max(0, queryStart - hw)
       queryEnd += hw
@@ -45,21 +48,43 @@ export default class extends BaseFeatureDataAdapter {
         opts,
       )
       const feats = await ret.pipe(toArray()).toPromise()
-      const residues = feats[0]?.get('seq') || ''
+      const residues: string = feats[0]?.get('seq') || ''
       const search = this.getConf('search')
-      const regexp = new RegExp(search, 'g')
-      const matches = residues.matchAll(regexp)
+      const searchFoward = this.getConf('searchForward')
+      const searchBackwards = this.getConf('searchBackwards')
+
       if (search) {
-        for (const match of matches) {
-          const s = queryStart + match.index
-          observer.next(
-            new SimpleFeature({
-              uniqueId: `${this.id}-match-${s}`,
-              refName: query.refName,
-              start: s,
-              end: s + search.length,
-            }),
+        if (searchFoward) {
+          const matches = residues.matchAll(new RegExp(search, 'g'))
+          for (const match of matches) {
+            const s = queryStart + (match.index || 0)
+            observer.next(
+              new SimpleFeature({
+                uniqueId: `${this.id}-match-${s}-p`,
+                refName: query.refName,
+                start: s,
+                end: s + search.length,
+                strand: 1,
+              }),
+            )
+          }
+        }
+        if (searchBackwards) {
+          const matches = complement(residues).matchAll(
+            new RegExp(reverse(search), 'g'),
           )
+          for (const match of matches) {
+            const s = queryStart + (match.index || 0)
+            observer.next(
+              new SimpleFeature({
+                uniqueId: `${this.id}-match-${s}-n`,
+                refName: query.refName,
+                start: s,
+                end: s + search.length,
+                strand: -1,
+              }),
+            )
+          }
         }
       }
 

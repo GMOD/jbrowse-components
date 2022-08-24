@@ -787,7 +787,11 @@ export const isElectron = /electron/i.test(
 )
 
 export function revcom(seqString: string) {
-  return complement(seqString).split('').reverse().join('')
+  return reverse(complement(seqString))
+}
+
+export function reverse(seqString: string) {
+  return seqString.split('').reverse().join('')
 }
 
 export const complement = (() => {

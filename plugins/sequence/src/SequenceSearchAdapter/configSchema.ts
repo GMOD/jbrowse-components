@@ -11,6 +11,14 @@ const configSchema = ConfigurationSchema(
       type: 'frozen',
       defaultValue: null,
     },
+    searchForward: {
+      type: 'boolean',
+      defaultValue: true,
+    },
+    searchBackwards: {
+      type: 'boolean',
+      defaultValue: true,
+    },
   },
   { explicitlyTyped: true },
 )
