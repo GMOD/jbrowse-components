@@ -4,6 +4,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TwoBitAdapterF from './TwoBitAdapter'
 import DivSequenceRendererF from './DivSequenceRenderer'
 import BgzipFastaAdapterF from './BgzipFastaAdapter'
+import ChromSizesAdapterF from './ChromSizesAdapter'
 import IndexedFastaAdapterF from './IndexedFastaAdapter'
 import GCContentAdapterF from './GCContentAdapter'
 import SequenceSearchAdapterF from './SequenceSearchAdapter'
@@ -18,6 +19,7 @@ export default class SequencePlugin extends Plugin {
     DivSequenceRendererF(pluginManager)
     TwoBitAdapterF(pluginManager)
     BgzipFastaAdapterF(pluginManager)
+    ChromSizesAdapterF(pluginManager)
     IndexedFastaAdapterF(pluginManager)
     GCContentAdapterF(pluginManager)
     SequenceSearchAdapterF(pluginManager)

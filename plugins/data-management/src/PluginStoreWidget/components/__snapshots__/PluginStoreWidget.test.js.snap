@@ -8,7 +8,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1z10yd4-MuiFormControl-root-MuiTextField-root"
   >
     <label
-      class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-root MuiFormLabel-colorPrimary css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
       data-shrink="false"
       for="mui-1"
       id="mui-1-label"
@@ -16,11 +16,11 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       Filter plugins
     </label>
     <div
-      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1wz39fi-MuiInputBase-root-MuiInput-root"
+      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1wz39fi-MuiInputBase-root-MuiInput-root"
     >
       <input
         aria-invalid="false"
-        class="MuiInput-input MuiInputBase-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
+        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
         id="mui-1"
         type="text"
         value=""
@@ -834,7 +834,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                 class="MuiCardActions-root MuiCardActions-spacing css-1t6e9jv-MuiCardActions-root"
               >
                 <button
-                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButtonBase-root  css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >
