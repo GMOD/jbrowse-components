@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
 import {
   Button,
   Dialog,
@@ -11,10 +10,11 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import CloseIcon from '@mui/icons-material/Close'
 
 // locals
@@ -52,9 +52,7 @@ function SequenceDialog({
         {handleClose ? (
           <IconButton
             className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
+            onClick={() => handleClose()}
             size="large"
           >
             <CloseIcon />
@@ -69,14 +67,31 @@ function SequenceDialog({
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => {}}
+          onClick={() => {
+            const trackId = `sequence_search_${+Date.now()}`
+            getSession(model).addTrackConf({
+              trackId,
+              name: `Sequence search ${value}`,
+              assemblyNames: model.assemblyNames,
+              type: 'FeatureTrack',
+              adapter: {
+                type: 'SequenceSearchAdapter',
+                subadapter: {},
+              },
+            })
+            model.toggleTrack(trackId)
+          }}
+          variant="contained"
           color="primary"
-          startIcon={<ContentCopyIcon />}
         >
           Submit
         </Button>
 
-        <Button onClick={handleClose} variant="contained">
+        <Button
+          onClick={() => handleClose()}
+          variant="contained"
+          color="secondary"
+        >
           Close
         </Button>
       </DialogActions>

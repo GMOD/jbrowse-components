@@ -16,7 +16,9 @@ export default class extends BaseFeatureDataAdapter {
   public static capabilities = ['hasLocalStats']
 
   public async configure() {
+    // instantiate the sequence adapter
     const adapter = this.getConf('sequenceAdapter')
+
     const dataAdapter = await this.getSubAdapter?.(adapter)
     if (!dataAdapter) {
       throw new Error('Error getting subadapter')
@@ -32,11 +34,9 @@ export default class extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions) {
     this.windowSize = 1000
     this.windowDelta = 1000
-    this.gcMode = 'content'
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
-      const hw = this.windowSize === 1 ? 1 : this.windowSize / 2 // Half the window size
-      const f = this.windowSize === 1
+      const hw = 1000
 
       let { start: queryStart, end: queryEnd } = query
       queryStart = Math.max(0, queryStart - hw)
@@ -58,38 +58,13 @@ export default class extends BaseFeatureDataAdapter {
       const feats = await ret.pipe(toArray()).toPromise()
       const residues = feats[0]?.get('seq') || ''
 
-      for (let i = hw; i < residues.length - hw; i += this.windowDelta) {
-        const r = f ? residues[i] : residues.slice(i - hw, i + hw)
-        let nc = 0
-        let ng = 0
-        let len = 0
-        for (let j = 0; j < r.length; j++) {
-          if (r[j] === 'c' || r[j] === 'C') {
-            nc++
-          } else if (r[j] === 'g' || r[j] === 'G') {
-            ng++
-          }
-          if (r[j] !== 'N') {
-            len++
-          }
-        }
-        const pos = queryStart
-        let score
-        if (this.gcMode === 'content') {
-          score = (ng + nc) / (len || 1)
-        } else if (this.gcMode === 'skew') {
-          score = (ng - nc) / (ng + nc || 1)
-        }
-
-        observer.next(
-          new SimpleFeature({
-            uniqueId: `${this.id}_${pos + i}`,
-            start: pos + i,
-            end: pos + i + this.windowDelta,
-            score,
-          }),
-        )
-      }
+      observer.next(
+        new SimpleFeature({
+          uniqueId: `${this.id}`,
+          start: 0,
+          end: 100,
+        }),
+      )
       observer.complete()
     })
   }
@@ -99,5 +74,5 @@ export default class extends BaseFeatureDataAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  public freeResources(/* { region } */) {}
+  public freeResources(/* { region } */): void {}
 }
