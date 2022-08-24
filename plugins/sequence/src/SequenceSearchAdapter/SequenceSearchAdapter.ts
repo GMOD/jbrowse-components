@@ -9,6 +9,7 @@ import {
   Region,
   complement,
   reverse,
+  doesIntersect2,
 } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
 
@@ -29,7 +30,7 @@ export default class extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
-      const hw = 0
+      const hw = 1000
       let { start: queryStart, end: queryEnd } = query
       queryStart = Math.max(0, queryStart - hw)
       queryEnd += hw
@@ -58,15 +59,18 @@ export default class extends BaseFeatureDataAdapter {
           const matches = residues.matchAll(new RegExp(search, 'g'))
           for (const match of matches) {
             const s = queryStart + (match.index || 0)
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `${this.id}-match-${s}-p`,
-                refName: query.refName,
-                start: s,
-                end: s + search.length,
-                strand: 1,
-              }),
-            )
+
+            if (doesIntersect2(s, s + search.length, query.start, query.end)) {
+              observer.next(
+                new SimpleFeature({
+                  uniqueId: `${this.id}-match-${s}-p`,
+                  refName: query.refName,
+                  start: s,
+                  end: s + search.length,
+                  strand: 1,
+                }),
+              )
+            }
           }
         }
         if (searchReverse) {
@@ -75,15 +79,17 @@ export default class extends BaseFeatureDataAdapter {
           )
           for (const match of matches) {
             const s = queryStart + (match.index || 0)
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `${this.id}-match-${s}-n`,
-                refName: query.refName,
-                start: s,
-                end: s + search.length,
-                strand: -1,
-              }),
-            )
+            if (doesIntersect2(s, s + search.length, query.start, query.end)) {
+              observer.next(
+                new SimpleFeature({
+                  uniqueId: `${this.id}-match-${s}-n`,
+                  refName: query.refName,
+                  start: s,
+                  end: s + search.length,
+                  strand: -1,
+                }),
+              )
+            }
           }
         }
       }
