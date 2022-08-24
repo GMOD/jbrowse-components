@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.grey[500],
   },
   dialogContent: {
-    width: '80em',
+    width: '40em',
   },
 }))
 
@@ -60,7 +60,11 @@ function SequenceDialog({
       <Divider />
 
       <DialogContent className={classes.dialogContent}>
-        <Typography>Set a sequence search pattern</Typography>
+        <Typography>
+          Supply a sequence to search for. A track will be created with the
+          resulting matches once submitted. You can also supply regex style
+          expressions.
+        </Typography>
         <TextField
           value={value}
           onChange={e => setValue(e.target.value)}
@@ -70,29 +74,31 @@ function SequenceDialog({
       <DialogActions>
         <Button
           onClick={() => {
-            const trackId = `sequence_search_${+Date.now()}`
-            const session = getSession(model)
-            const { assemblyManager } = session
-            const assemblyName = model.assemblyNames[0]
-            session.addTrackConf({
-              trackId,
-              name: `Sequence search ${value}`,
-              assemblyNames: [assemblyName],
-              type: 'FeatureTrack',
-              adapter: {
-                type: 'SequenceSearchAdapter',
-                search: value,
-                sequenceAdapter: getSnapshot(
-                  assemblyManager.get(assemblyName)?.configuration.sequence
-                    .adapter,
-                ),
-              },
-            })
-            model.toggleTrack(trackId)
+            if (value) {
+              const trackId = `sequence_search_${+Date.now()}`
+              const session = getSession(model)
+              const { assemblyManager } = session
+              const assemblyName = model.assemblyNames[0]
+              session.addTrackConf({
+                trackId,
+                name: `Sequence search ${value}`,
+                assemblyNames: [assemblyName],
+                type: 'FeatureTrack',
+                adapter: {
+                  type: 'SequenceSearchAdapter',
+                  search: value,
+                  sequenceAdapter: getSnapshot(
+                    assemblyManager.get(assemblyName)?.configuration.sequence
+                      .adapter,
+                  ),
+                },
+              })
+              model.toggleTrack(trackId)
+            }
+            handleClose()
           }}
           variant="contained"
           color="primary"
-          disabled={!value}
         >
           Submit
         </Button>
