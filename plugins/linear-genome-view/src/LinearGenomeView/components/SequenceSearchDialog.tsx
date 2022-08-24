@@ -23,7 +23,6 @@ import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import { setServers } from 'dns'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
