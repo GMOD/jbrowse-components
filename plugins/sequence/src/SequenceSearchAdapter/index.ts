@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-import configSchemaF from './configSchema'
+import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
@@ -14,7 +14,7 @@ export default (pluginManager: PluginManager) => {
           displayName: null,
           description: null,
         },
-        configSchema: configSchemaF(pluginManager),
+        configSchema,
         getAdapterClass: () =>
           import('./SequenceSearchAdapter').then(r => r.default),
       }),

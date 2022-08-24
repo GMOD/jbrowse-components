@@ -7,23 +7,14 @@ import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
 
 export default class extends BaseFeatureDataAdapter {
-  private windowSize = 1000
-
-  private windowDelta = 1000
-
-  private gcMode = 'content'
-
   public static capabilities = ['hasLocalStats']
 
   public async configure() {
-    // instantiate the sequence adapter
-    const adapter = this.getConf('sequenceAdapter')
-
-    const dataAdapter = await this.getSubAdapter?.(adapter)
-    if (!dataAdapter) {
+    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
+    if (!adapter) {
       throw new Error('Error getting subadapter')
     }
-    return dataAdapter.dataAdapter as BaseFeatureDataAdapter
+    return adapter.dataAdapter as BaseFeatureDataAdapter
   }
 
   public async getRefNames() {
@@ -32,8 +23,6 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions) {
-    this.windowSize = 1000
-    this.windowDelta = 1000
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
       const hw = 1000
@@ -57,22 +46,26 @@ export default class extends BaseFeatureDataAdapter {
       )
       const feats = await ret.pipe(toArray()).toPromise()
       const residues = feats[0]?.get('seq') || ''
+      const search = this.getConf('search')
+      const regexp = new RegExp(search, 'g')
+      const matches = residues.matchAll(regexp)
+      if (search) {
+        for (const match of matches) {
+          const s = queryStart + match.index
+          observer.next(
+            new SimpleFeature({
+              uniqueId: `${this.id}-match-${s}`,
+              refName: query.refName,
+              start: s,
+              end: s + search.length,
+            }),
+          )
+        }
+      }
 
-      observer.next(
-        new SimpleFeature({
-          uniqueId: `${this.id}`,
-          start: 0,
-          end: 100,
-        }),
-      )
       observer.complete()
     })
   }
 
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
-   * from caches, etc
-   */
-  public freeResources(/* { region } */): void {}
+  public freeResources() {}
 }

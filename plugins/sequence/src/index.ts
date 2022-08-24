@@ -6,6 +6,7 @@ import DivSequenceRendererF from './DivSequenceRenderer'
 import BgzipFastaAdapterF from './BgzipFastaAdapter'
 import IndexedFastaAdapterF from './IndexedFastaAdapter'
 import GCContentAdapterF from './GCContentAdapter'
+import SequenceSearchAdapterF from './SequenceSearchAdapter'
 import ReferenceSequenceTrackF from './ReferenceSequenceTrack'
 import LinearReferenceSequenceDisplayF from './LinearReferenceSequenceDisplay'
 import createExtensionPoints from './createExtensionPoints'
@@ -19,6 +20,7 @@ export default class SequencePlugin extends Plugin {
     BgzipFastaAdapterF(pluginManager)
     IndexedFastaAdapterF(pluginManager)
     GCContentAdapterF(pluginManager)
+    SequenceSearchAdapterF(pluginManager)
     ReferenceSequenceTrackF(pluginManager)
     LinearReferenceSequenceDisplayF(pluginManager)
     createExtensionPoints(pluginManager)

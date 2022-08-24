@@ -10,6 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
@@ -29,9 +30,6 @@ const useStyles = makeStyles()(theme => ({
   },
   dialogContent: {
     width: '80em',
-  },
-  textAreaFont: {
-    fontFamily: 'Courier New',
   },
 }))
 
@@ -61,28 +59,40 @@ function SequenceDialog({
       </DialogTitle>
       <Divider />
 
-      <DialogContent>
+      <DialogContent className={classes.dialogContent}>
         <Typography>Set a sequence search pattern</Typography>
-        <TextField value={value} onChange={e => setValue(e.target.value)} />
+        <TextField
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          helperText="Sequence search pattern"
+        />
       </DialogContent>
       <DialogActions>
         <Button
           onClick={() => {
             const trackId = `sequence_search_${+Date.now()}`
-            getSession(model).addTrackConf({
+            const session = getSession(model)
+            const { assemblyManager } = session
+            const assemblyName = model.assemblyNames[0]
+            session.addTrackConf({
               trackId,
               name: `Sequence search ${value}`,
-              assemblyNames: model.assemblyNames,
+              assemblyNames: [assemblyName],
               type: 'FeatureTrack',
               adapter: {
                 type: 'SequenceSearchAdapter',
-                subadapter: {},
+                search: value,
+                sequenceAdapter: getSnapshot(
+                  assemblyManager.get(assemblyName)?.configuration.sequence
+                    .adapter,
+                ),
               },
             })
             model.toggleTrack(trackId)
           }}
           variant="contained"
           color="primary"
+          disabled={!value}
         >
           Submit
         </Button>

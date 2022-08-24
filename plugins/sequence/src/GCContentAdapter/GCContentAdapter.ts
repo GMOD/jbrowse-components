@@ -16,12 +16,11 @@ export default class extends BaseFeatureDataAdapter {
   public static capabilities = ['hasLocalStats']
 
   public async configure() {
-    const adapter = this.getConf('sequenceAdapter')
-    const dataAdapter = await this.getSubAdapter?.(adapter)
-    if (!dataAdapter) {
+    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
+    if (!adapter) {
       throw new Error('Error getting subadapter')
     }
-    return dataAdapter.dataAdapter as BaseFeatureDataAdapter
+    return adapter.dataAdapter as BaseFeatureDataAdapter
   }
 
   public async getRefNames() {
@@ -30,9 +29,6 @@ export default class extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions) {
-    this.windowSize = 1000
-    this.windowDelta = 1000
-    this.gcMode = 'content'
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
       const hw = this.windowSize === 1 ? 1 : this.windowSize / 2 // Half the window size

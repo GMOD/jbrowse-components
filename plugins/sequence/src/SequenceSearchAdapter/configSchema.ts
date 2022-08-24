@@ -1,12 +1,18 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default (pluginManager: PluginManager) => {
-  return ConfigurationSchema(
-    'GCContentAdapter',
-    {
-      sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter'),
+const configSchema = ConfigurationSchema(
+  'SequenceSearchAdapter',
+  {
+    search: {
+      type: 'string',
+      defaultValue: '',
     },
-    { explicitlyTyped: true },
-  )
-}
+    sequenceAdapter: {
+      type: 'frozen',
+      defaultValue: null,
+    },
+  },
+  { explicitlyTyped: true },
+)
+
+export default configSchema
