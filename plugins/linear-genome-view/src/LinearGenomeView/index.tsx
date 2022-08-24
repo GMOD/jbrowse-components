@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -52,6 +53,10 @@ import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
+
+const SequenceSearchDialog = lazy(
+  () => import('./components/SequenceSearchDialog'),
+)
 
 export interface BpOffset {
   refName?: string
@@ -407,7 +412,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.searchQuery = query
       },
 
-      setSequenceDialogOpen(open: boolean) {
+      setGetSequenceDialogOpen(open: boolean) {
         self.seqDialogDisplayed = open
       },
 
@@ -715,6 +720,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
             icon: FolderOpenIcon,
           },
           {
+            label: 'Sequence search',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SequenceSearchDialog,
+                { model: self, handleClose },
+              ])
+            },
+          },
+          {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
@@ -783,9 +797,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   icon: VisibilityIcon,
                   type: 'checkbox' as const,
                   checked: self.showCytobands,
-                  onClick: () => {
-                    self.setShowCytobands(!showCytobands)
-                  },
+                  onClick: () => self.setShowCytobands(!showCytobands),
                 },
               ]
             : []),
@@ -825,9 +837,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
               { type: 'divider' },
               { type: 'subHeader', label: key },
             )
-            value.forEach(action => {
-              menuItems.push(action)
-            })
+            value.forEach(action => menuItems.push(action))
           }
         }
 
@@ -1163,9 +1173,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           {
             label: 'Get sequence',
             icon: MenuOpenIcon,
-            onClick: () => {
-              self.setSequenceDialogOpen(true)
-            },
+            onClick: () => self.setGetSequenceDialogOpen(true),
           },
         ]
       },
