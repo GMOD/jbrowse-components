@@ -51,7 +51,7 @@ export default class extends BaseFeatureDataAdapter {
       const residues: string = feats[0]?.get('seq') || ''
       const search = this.getConf('search')
       const searchFoward = this.getConf('searchForward')
-      const searchBackwards = this.getConf('searchBackwards')
+      const searchReverse = this.getConf('searchReverse')
 
       if (search) {
         if (searchFoward) {
@@ -69,7 +69,7 @@ export default class extends BaseFeatureDataAdapter {
             )
           }
         }
-        if (searchBackwards) {
+        if (searchReverse) {
           const matches = complement(residues).matchAll(
             new RegExp(reverse(search), 'g'),
           )

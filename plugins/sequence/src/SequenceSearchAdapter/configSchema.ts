@@ -15,7 +15,7 @@ const configSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
     },
-    searchBackwards: {
+    searchReverse: {
       type: 'boolean',
       defaultValue: true,
     },

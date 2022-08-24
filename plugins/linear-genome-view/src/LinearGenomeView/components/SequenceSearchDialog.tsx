@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
+  FormGroup,
+  FormControlLabel,
   IconButton,
   TextField,
   Typography,
@@ -20,6 +23,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import { LinearGenomeViewModel } from '..'
+import { setServers } from 'dns'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -42,6 +46,8 @@ function SequenceDialog({
 }) {
   const { classes } = useStyles()
   const [value, setValue] = useState('')
+  const [searchForward, setSearchForward] = useState(true)
+  const [searchReverse, setSearchReverse] = useState(true)
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose}>
@@ -70,6 +76,26 @@ function SequenceDialog({
           onChange={e => setValue(e.target.value)}
           helperText="Sequence search pattern"
         />
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={searchForward}
+                onChange={event => setSearchForward(event.target.checked)}
+              />
+            }
+            label="Search forward strand"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={searchReverse}
+                onChange={event => setSearchReverse(event.target.checked)}
+              />
+            }
+            label="Search reverse strand"
+          />
+        </FormGroup>
       </DialogContent>
       <DialogActions>
         <Button
@@ -87,6 +113,8 @@ function SequenceDialog({
                 adapter: {
                   type: 'SequenceSearchAdapter',
                   search: value,
+                  searchForward,
+                  searchReverse,
                   sequenceAdapter: getSnapshot(
                     assemblyManager.get(assemblyName)?.configuration.sequence
                       .adapter,
