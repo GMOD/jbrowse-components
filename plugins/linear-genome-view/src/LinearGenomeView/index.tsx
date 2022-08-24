@@ -396,16 +396,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return newBpPerPx
       },
 
-      setOffsets(left: undefined | BpOffset, right: undefined | BpOffset) {
+      setOffsets(left?: BpOffset, right?: BpOffset) {
         // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
       },
 
-      setSearchResults(
-        results: BaseResult[] | undefined,
-        query: string | undefined,
-      ) {
+      setSearchResults(results?: BaseResult[], query?: string) {
         self.searchResults = results
         self.searchQuery = query
       },
@@ -561,8 +558,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
         const snap = getSnapshot(self)
         const simView = Base1DView.create({
-          // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
-          ...(snap as Omit<typeof self, symbol>),
+          ...snap,
           interRegionPaddingWidth: self.interRegionPaddingWidth,
         })
 

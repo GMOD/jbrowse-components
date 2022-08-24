@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import {
   Button,
-  CircularProgress,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
