@@ -6,6 +6,7 @@ const configSchema = ConfigurationSchema(
     search: {
       type: 'string',
       defaultValue: '',
+      description: 'Search string or regex to search for',
     },
     sequenceAdapter: {
       type: 'frozen',
@@ -16,6 +17,10 @@ const configSchema = ConfigurationSchema(
       defaultValue: true,
     },
     searchReverse: {
+      type: 'boolean',
+      defaultValue: true,
+    },
+    caseInsensitive: {
       type: 'boolean',
       defaultValue: true,
     },

@@ -47,6 +47,15 @@ function SequenceDialog({
   const [value, setValue] = useState('')
   const [searchForward, setSearchForward] = useState(true)
   const [searchReverse, setSearchReverse] = useState(true)
+  const [caseInsensitive, setCaseInsensitive] = useState(true)
+
+  let error
+
+  try {
+    new RegExp(value)
+  } catch (e) {
+    error = e
+  }
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose}>
@@ -68,7 +77,7 @@ function SequenceDialog({
         <Typography>
           Supply a sequence to search for. A track will be created with the
           resulting matches once submitted. You can also supply regex style
-          expressions.
+          expressions e.g. AACT(C|T).
         </Typography>
         <TextField
           value={value}
@@ -94,7 +103,17 @@ function SequenceDialog({
             }
             label="Search reverse strand"
           />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={caseInsensitive}
+                onChange={event => setCaseInsensitive(event.target.checked)}
+              />
+            }
+            label="Case insensitive"
+          />
         </FormGroup>
+        {error ? <Typography color="error">{`${error}`}</Typography> : null}
       </DialogContent>
       <DialogActions>
         <Button
@@ -114,6 +133,7 @@ function SequenceDialog({
                   search: value,
                   searchForward,
                   searchReverse,
+                  caseInsensitive,
                   sequenceAdapter: getSnapshot(
                     assemblyManager.get(assemblyName)?.configuration.sequence
                       .adapter,

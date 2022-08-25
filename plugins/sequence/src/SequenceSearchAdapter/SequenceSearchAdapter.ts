@@ -7,8 +7,7 @@ import {
   SimpleFeature,
   Feature,
   Region,
-  complement,
-  reverse,
+  revcom,
   doesIntersect2,
 } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
@@ -53,10 +52,12 @@ export default class extends BaseFeatureDataAdapter {
       const search = this.getConf('search')
       const searchFoward = this.getConf('searchForward')
       const searchReverse = this.getConf('searchReverse')
+      const caseInsensitive = this.getConf('caseInsensitive')
+      const re = new RegExp(search, 'g' + (caseInsensitive ? 'i' : ''))
 
       if (search) {
         if (searchFoward) {
-          const matches = residues.matchAll(new RegExp(search, 'g'))
+          const matches = residues.matchAll(re)
           for (const match of matches) {
             const s = queryStart + (match.index || 0)
 
@@ -66,7 +67,8 @@ export default class extends BaseFeatureDataAdapter {
                   uniqueId: `${this.id}-match-${s}-p`,
                   refName: query.refName,
                   start: s,
-                  end: s + search.length,
+                  end: s + match[0].length,
+                  name: match[0],
                   strand: 1,
                 }),
               )
@@ -74,18 +76,17 @@ export default class extends BaseFeatureDataAdapter {
           }
         }
         if (searchReverse) {
-          const matches = complement(residues).matchAll(
-            new RegExp(reverse(search), 'g'),
-          )
+          const matches = revcom(residues).matchAll(re)
           for (const match of matches) {
-            const s = queryStart + (match.index || 0)
+            const s = queryEnd - (match.index || 0)
             if (doesIntersect2(s, s + search.length, query.start, query.end)) {
               observer.next(
                 new SimpleFeature({
                   uniqueId: `${this.id}-match-${s}-n`,
                   refName: query.refName,
-                  start: s,
-                  end: s + search.length,
+                  start: s - match[0].length,
+                  name: match[0],
+                  end: s,
                   strand: -1,
                 }),
               )
