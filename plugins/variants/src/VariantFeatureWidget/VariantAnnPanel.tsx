@@ -11,7 +11,7 @@ export default function VariantAnnPanel({
   descriptions: any
 }) {
   const annFields = (descriptions?.INFO?.ANN?.Description?.match(
-    /.*Functional annotations:'(.*)'/,
+    /.*Functional annotations:'(.*)'$/,
   )?.[1].split('|') || []) as string[]
   const ann = (feature.INFO.ANN || []) as string[]
 
