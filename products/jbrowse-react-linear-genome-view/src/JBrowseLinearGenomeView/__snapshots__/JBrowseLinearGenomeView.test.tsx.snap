@@ -8,7 +8,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
     class="MuiScopedCssBaseline-root mui-1pa2gw3-MuiScopedCssBaseline-root"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 tss-1c5v0p0-viewContainer mui-15s4tt4-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 tss-1wati62-viewContainer mui-15s4tt4-MuiPaper-root"
       style="padding: 0px 4px 4px;"
     >
       <div
@@ -20,7 +20,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           aria-label="more"
           class="MuiButtonBase-root MuiIconButton-root tss-smxndn-iconRoot MuiIconButton-edgeStart MuiIconButton-sizeSmall mui-p2zbmj-MuiButtonBase-root-MuiIconButton-root"
           data-testid="view_menu_icon"
-          style="padding: 3px;"
           tabindex="0"
           type="button"
         >

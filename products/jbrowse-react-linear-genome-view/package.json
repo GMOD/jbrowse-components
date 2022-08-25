@@ -27,7 +27,7 @@
     "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",
-    "postbuild": "node output-version.js> src/version.js",
+    "postversion": "node output-version.js> src/version.js",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:es5": "tsc --build tsconfig.build.es5.json",
     "build:webpack": "npm-run-all build:webpack:*",
