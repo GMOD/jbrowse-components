@@ -2,8 +2,8 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { getSession } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'

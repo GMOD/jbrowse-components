@@ -345,7 +345,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -379,7 +379,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -413,7 +413,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -447,7 +447,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -481,7 +481,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -515,7 +515,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -549,7 +549,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -583,7 +583,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -617,7 +617,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -651,7 +651,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -685,7 +685,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"
@@ -719,7 +719,7 @@ exports[`open up a widget 1`] = `
                   class="MuiFormControlLabel-root MuiFormControlLabel-labelPlacementEnd css-j204z7-MuiFormControlLabel-root"
                 >
                   <span
-                    class="MuiCheckbox-root MuiCheckbox-colorPrimary MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
+                    class="MuiButtonBase-root MuiCheckbox-root MuiCheckbox-colorPrimary PrivateSwitchBase-root MuiCheckbox-root MuiCheckbox-colorPrimary tss-18u5im4-compact css-12wnr2w-MuiButtonBase-root-MuiCheckbox-root"
                   >
                     <input
                       class="PrivateSwitchBase-input css-1m9pwf3"

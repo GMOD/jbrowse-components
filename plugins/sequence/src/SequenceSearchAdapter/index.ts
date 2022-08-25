@@ -7,16 +7,16 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'ChromSizesAdapter',
-        configSchema,
+        name: 'SequenceSearchAdapter',
         adapterMetadata: {
           category: null,
           hiddenFromGUI: true,
           displayName: null,
           description: null,
         },
+        configSchema,
         getAdapterClass: () =>
-          import('./ChromSizesAdapter').then(r => r.default),
+          import('./SequenceSearchAdapter').then(r => r.default),
       }),
   )
 }
