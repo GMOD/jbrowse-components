@@ -1801,7 +1801,7 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["Variation"],
+      "category": ["VCF"],
       "assemblyNames": ["volvox"]
     },
     {
@@ -1815,7 +1815,7 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["Variation"],
+      "category": ["VCF"],
       "assemblyNames": ["volvox"]
     }
   ],
