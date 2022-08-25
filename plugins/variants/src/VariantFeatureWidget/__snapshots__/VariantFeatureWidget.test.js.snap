@@ -198,5 +198,11 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
   <hr
     class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
   />
+  <hr
+    class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+  />
+  <hr
+    class="MuiDivider-root MuiDivider-fullWidth css-9mgopn-MuiDivider-root"
+  />
 </div>
 `;

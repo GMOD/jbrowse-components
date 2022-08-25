@@ -1789,6 +1789,34 @@
           "uri": "volvox_del.paf"
         }
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variant_effect_demo_data",
+      "name": "Ensembl VEP example",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "variant_effect_demo_data.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Variation"],
+      "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "variant_effect_demo_jannovar",
+      "name": "Jannovar example",
+      "adapter": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox_vcf_jannovar.vcf",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Variation"],
+      "assemblyNames": ["volvox"]
     }
   ],
   "aggregateTextSearchAdapters": [
