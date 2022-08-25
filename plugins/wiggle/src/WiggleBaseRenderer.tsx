@@ -73,8 +73,9 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     return {
       ...results,
       ...rest,
-      features: (new Map(reducedFeatures?.map((r: Feature) => [r.id(), r])) ||
-        results.features) as Map<string, Feature>,
+      features: (reducedFeatures
+        ? new Map(reducedFeatures.map((r: Feature) => [r.id(), r]))
+        : results.features) as Map<string, Feature>,
       height,
       width,
       containsNoTransferables: true,
