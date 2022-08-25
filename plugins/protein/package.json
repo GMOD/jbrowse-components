@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-protein",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "keywords": [
     "jbrowse",
@@ -36,7 +36,6 @@
     "build:es5": "tsc --build tsconfig.build.es5.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
-  "dependencies": {},
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "mobx": "^6.0.0",
