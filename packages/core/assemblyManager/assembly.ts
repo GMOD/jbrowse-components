@@ -131,7 +131,13 @@ export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
 ) {
-  const adapterLoads = new AbortablePromiseCache<any, any>({
+  const adapterLoads = new AbortablePromiseCache<
+    CacheData,
+    {
+      forwardMap: { [key: string]: string }
+      reverseMap: { [key: string]: string }
+    }
+  >({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
       args: CacheData,
