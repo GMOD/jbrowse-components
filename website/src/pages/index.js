@@ -175,9 +175,11 @@ function Home() {
               publish, please cite the most recent JBrowse paper:
             </p>
             <cite>
-              Buels, Robert, et al. &quot;JBrowse: a dynamic web platform for
-              genome visualization and analysis.&quot; Genome Biology 17.1
-              (2016): 66.
+              JBrowse 2: A modular genome browser with views of synteny and
+              structural variation (2022). bioRxiv.{' '}
+              <a href="https://doi.org/10.1101/2022.07.28.501447">
+                https://doi.org/10.1101/2022.07.28.501447
+              </a>
             </cite>
           </Typography>
         </Box>
