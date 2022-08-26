@@ -134,12 +134,11 @@ const ViewContainer = observer(
             </Typography>
           ) : null}
           <div className={classes.grow} />
-          <div
-            style={{ width: 20, height: 20 }}
-            onClick={() => setDlgOpen(true)}
-          >
-            <Logomark variant="white" />
-          </div>
+          <IconButton onClick={() => setDlgOpen(true)}>
+            <div style={{ width: 22, height: 22 }}>
+              <Logomark variant="white" />
+            </div>
+          </IconButton>
         </div>
         <Paper>{children}</Paper>
         <AboutDialog open={dlgOpen} onClose={() => setDlgOpen(false)} />
