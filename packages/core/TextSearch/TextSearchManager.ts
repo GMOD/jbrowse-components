@@ -22,31 +22,29 @@ export interface SearchScope {
 }
 
 export default class TextSearchManager {
-  adapterCache: QuickLRU
+  adapterCache = new QuickLRU<string, BaseTextSearchAdapter>({
+    maxSize: 15,
+  })
 
-  constructor(public pluginManager: PluginManager) {
-    this.adapterCache = new QuickLRU({
-      maxSize: 15,
-    })
-  }
+  constructor(public pluginManager: PluginManager) {}
 
   /**
    * Instantiate/initialize list of relevant adapters
    */
-  loadTextSearchAdapters(searchScope: SearchScope): BaseTextSearchAdapter[] {
-    return this.relevantAdapters(searchScope).map(adapterConfig => {
-      const adapterId = readConfObject(adapterConfig, 'textSearchAdapterId')
-      if (this.adapterCache.has(adapterId)) {
-        return this.adapterCache.get(adapterId)
+  loadTextSearchAdapters(searchScope: SearchScope) {
+    const pm = this.pluginManager
+    return this.relevantAdapters(searchScope).map(config => {
+      const adapterId = readConfObject(config, 'textSearchAdapterId')
+      const r = this.adapterCache.get(adapterId)
+      if (r) {
+        return r
       } else {
-        const { AdapterClass } = this.pluginManager.getTextSearchAdapterType(
-          adapterConfig.type,
-        )
+        const { AdapterClass } = pm.getTextSearchAdapterType(config.type)
         const adapter = new AdapterClass(
-          adapterConfig,
+          config,
           undefined,
-          this.pluginManager,
-        )
+          pm,
+        ) as BaseTextSearchAdapter
         this.adapterCache.set(adapterId, adapter)
         return adapter
       }
@@ -58,8 +56,8 @@ export default class TextSearchManager {
    * @param args - search options/arguments include: search query
    */
   relevantAdapters(searchScope: SearchScope) {
-    const { aggregateTextSearchAdapters, tracks } = this.pluginManager.rootModel
-      ?.jbrowse as {
+    const pm = this.pluginManager
+    const { aggregateTextSearchAdapters, tracks } = pm.rootModel?.jbrowse as {
       tracks: AnyConfigurationModel[]
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       aggregateTextSearchAdapters: any
@@ -67,20 +65,19 @@ export default class TextSearchManager {
 
     const { assemblyName } = searchScope
 
-    const relevant = [
+    return [
       ...this.getAdaptersWithAssembly(
         assemblyName,
         aggregateTextSearchAdapters,
       ),
       ...this.getTrackAdaptersWithAssembly(assemblyName, tracks),
     ]
-    return relevant
   }
 
   getAdaptersWithAssembly(
     asmName: string,
     adapterConfs: AnyConfigurationModel[],
-  ) {
+  ): AnyConfigurationModel[] {
     return adapterConfs.filter(conf =>
       readConfObject(conf, 'assemblyNames')?.includes(asmName),
     )
@@ -89,20 +86,16 @@ export default class TextSearchManager {
   getTrackAdaptersWithAssembly(
     asmName: string,
     adapterConfs: AnyConfigurationModel[],
-  ) {
-    const tracksConfs = adapterConfs.filter(conf =>
-      readConfObject(conf, [
-        'textSearching',
-        'textSearchAdapter',
-        'assemblyNames',
-      ])?.includes(asmName),
-    )
-    const trackAdapters = tracksConfs.map(trackConf => {
-      const { textSearching } = trackConf
-      const { textSearchAdapter } = textSearching
-      return textSearchAdapter
-    })
-    return trackAdapters
+  ): AnyConfigurationModel[] {
+    return adapterConfs
+      .filter(conf =>
+        readConfObject(conf, [
+          'textSearching',
+          'textSearchAdapter',
+          'assemblyNames',
+        ])?.includes(asmName),
+      )
+      .map(conf => conf.textSearching.textSearchAdapter)
   }
 
   /**
@@ -137,6 +130,6 @@ export default class TextSearchManager {
   ) {
     return rankFn(
       results.sort((a, b) => -b.getLabel().localeCompare(a.getLabel())),
-    ).sort((result1, result2) => result1.getScore() - result2.getScore())
+    ).sort((r1, r2) => r1.getScore() - r2.getScore())
   }
 }

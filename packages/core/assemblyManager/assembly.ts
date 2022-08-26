@@ -131,11 +131,11 @@ export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
 ) {
-  const adapterLoads = new AbortablePromiseCache({
+  const adapterLoads = new AbortablePromiseCache<any, any>({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
       args: CacheData,
-      abortSignal?: AbortSignal,
+      signal?: AbortSignal,
       statusCallback?: Function,
     ) {
       const { adapterConf, self, options } = args
@@ -143,7 +143,7 @@ export default function assemblyFactory(
         self,
         adapterConf,
         { ...options, statusCallback },
-        abortSignal,
+        signal,
       )
     },
   })
