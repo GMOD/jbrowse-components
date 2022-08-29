@@ -13,7 +13,10 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
   name = 'PileupGetGlobalValueForTag'
 
   async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    args: RenderArgs & {
+      signal?: AbortSignal
+      statusCallback?: (arg: string) => void
+    },
     rpcDriverClassName: string,
   ) {
     const { rootModel } = this.pluginManager
@@ -65,7 +68,10 @@ export class PileupGetVisibleModifications extends RpcMethodType {
   name = 'PileupGetVisibleModifications'
 
   async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    args: RenderArgs & {
+      signal?: AbortSignal
+      statusCallback?: (arg: string) => void
+    },
     rpcDriverClassName: string,
   ) {
     const { rootModel } = this.pluginManager
