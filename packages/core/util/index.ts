@@ -725,7 +725,7 @@ export async function renameRegionsIfNeeded<
     signal?: AbortSignal
     adapterConfig: unknown
     sessionId: string
-    statusCallback?: Function
+    statusCallback?: (arg: string) => void
   },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { regions = [], adapterConfig } = args

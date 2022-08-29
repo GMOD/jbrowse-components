@@ -1,6 +1,8 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
+
+// locals
 import { getConf, AnyConfigurationModel } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
@@ -131,11 +133,17 @@ export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pluginManager: PluginManager,
 ) {
-  const adapterLoads = new AbortablePromiseCache({
+  const adapterLoads = new AbortablePromiseCache<
+    CacheData,
+    {
+      forwardMap: { [key: string]: string }
+      reverseMap: { [key: string]: string }
+    }
+  >({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
       args: CacheData,
-      abortSignal?: AbortSignal,
+      signal?: AbortSignal,
       statusCallback?: Function,
     ) {
       const { adapterConf, self, options } = args
@@ -143,7 +151,7 @@ export default function assemblyFactory(
         self,
         adapterConf,
         { ...options, statusCallback },
-        abortSignal,
+        signal,
       )
     },
   })

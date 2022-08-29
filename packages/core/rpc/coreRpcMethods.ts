@@ -212,7 +212,10 @@ export class CoreEstimateRegionStats extends RpcMethodType {
   name = 'CoreEstimateRegionStats'
 
   async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    args: RenderArgs & {
+      signal?: AbortSignal
+      statusCallback?: (arg: string) => void
+    },
     rpcDriverClassName: string,
   ) {
     const assemblyManager =
