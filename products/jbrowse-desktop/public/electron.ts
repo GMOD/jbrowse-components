@@ -611,7 +611,7 @@ autoUpdater.on('update-downloaded', () => {
     type: 'info',
     title: 'Update completed',
     message:
-      'Update downloaded, the update will take place when you restart the app',
+      'Update downloaded, the update will take place when you restart the app. Once you close the app, wait a minute or so before re-launching because it will be doing a reinstall in the background',
     buttons: ['OK'],
   })
 })
