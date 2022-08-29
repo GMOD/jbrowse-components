@@ -1,6 +1,8 @@
 import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import AbortablePromiseCache from 'abortable-promise-cache'
+
+// locals
 import { getConf, AnyConfigurationModel } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
