@@ -5,7 +5,6 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import MiniFeatures from '@site/src/components/MiniFeatures'
 import MiniPlugins from '@site/src/components/MiniPlugins'
-import { Button } from '@mui/material'
 
 import styles from './styles.module.css'
 import { Alert, AlertTitle } from '@mui/material'

@@ -38,6 +38,7 @@
       "type": "category",
       "label": "User tutorials",
       "items": [
+        "tutorials/user/plugin_usage",
         "tutorials/user/guided_cancer_tutorial",
         {
           "type": "category",

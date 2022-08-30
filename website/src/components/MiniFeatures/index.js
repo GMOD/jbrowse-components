@@ -71,7 +71,7 @@ export default function MiniFeatures() {
               <h3>Check out the video tutorial series</h3>
               <p>
                 Also checkout our{' '}
-                <a href="/jb2/docs/tutorials/guided_cancer_tutorial">
+                <a href="/jb2/docs/tutorials/user/guided_cancer_tutorial">
                   written guides
                 </a>
                 .
