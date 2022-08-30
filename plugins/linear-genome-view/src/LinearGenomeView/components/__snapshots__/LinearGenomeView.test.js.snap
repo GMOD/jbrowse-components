@@ -90,7 +90,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="tss-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -117,7 +117,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -137,7 +137,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -166,7 +166,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               style="margin: 7px; min-width: 175px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
                 style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
                 <input
@@ -175,7 +175,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   aria-invalid="false"
                   autocapitalize="none"
                   autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+                  class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
                   id="refNameAutocomplete-lgv"
                   placeholder="Search for location"
                   role="combobox"
@@ -265,7 +265,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </svg>
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
+            class="MuiSlider-colorPrimary MuiSlider-sizeSmall MuiSlider-root tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -275,7 +275,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               style="left: 0%; width: 0%;"
             />
             <span
-              class="MuiSlider-thumb MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall css-14gf62f-MuiSlider-thumb"
+              class="MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall MuiSlider-thumb css-14gf62f-MuiSlider-thumb"
               data-focusvisible="false"
               data-index="0"
               style="left: 0%;"
@@ -655,7 +655,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="tss-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -682,7 +682,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -702,7 +702,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButtonBase-root tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -731,7 +731,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="margin: 7px; min-width: 175px;"
             >
               <div
-                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
                 style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
               >
                 <input
@@ -740,7 +740,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   aria-invalid="false"
                   autocapitalize="none"
                   autocomplete="off"
-                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+                  class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
                   id="refNameAutocomplete-lgv"
                   placeholder="Search for location"
                   role="combobox"
@@ -832,7 +832,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
+            class="MuiSlider-colorPrimary MuiSlider-sizeSmall MuiSlider-root tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -842,7 +842,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="left: 0%; width: 9.774680693120512%;"
             />
             <span
-              class="MuiSlider-thumb MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall css-14gf62f-MuiSlider-thumb"
+              class="MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall MuiSlider-thumb css-14gf62f-MuiSlider-thumb"
               data-focusvisible="false"
               data-index="0"
               style="left: 9.774680693120512%;"

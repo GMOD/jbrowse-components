@@ -8,7 +8,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1z10yd4-MuiFormControl-root-MuiTextField-root"
   >
     <label
-      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+      class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-root MuiFormLabel-colorPrimary css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
       data-shrink="false"
       for="mui-1"
       id="mui-1-label"
@@ -16,11 +16,11 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       Filter plugins
     </label>
     <div
-      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1wz39fi-MuiInputBase-root-MuiInput-root"
+      class="MuiInput-root MuiInput-underline MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1wz39fi-MuiInputBase-root-MuiInput-root"
     >
       <input
         aria-invalid="false"
-        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
+        class="MuiInput-input MuiInputBase-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
         id="mui-1"
         type="text"
         value=""
@@ -480,12 +480,12 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -496,7 +496,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     RdfPlugin
                   </p>
@@ -856,7 +856,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                 class="MuiCardActions-root MuiCardActions-spacing css-1t6e9jv-MuiCardActions-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButtonBase-root  css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >

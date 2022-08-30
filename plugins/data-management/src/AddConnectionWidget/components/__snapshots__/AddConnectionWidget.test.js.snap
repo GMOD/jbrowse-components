@@ -14,7 +14,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
         class="MuiStepLabel-root MuiStepLabel-vertical css-14sza3e-MuiStepLabel-root"
       >
         <span
-          class="MuiStepLabel-iconContainer Mui-active css-vnkopk-MuiStepLabel-iconContainer"
+          class="MuiStepLabel-iconContainer css-vnkopk-MuiStepLabel-iconContainer"
         >
           <svg
             aria-hidden="true"
@@ -68,7 +68,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                 >
                   <label
-                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
+                    class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                     data-shrink="true"
                     for="mui-1"
                     id="mui-1-label"
@@ -76,7 +76,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                     connectionType
                   </label>
                   <div
-                    class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
+                    class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
                     variant="outlined"
                   >
                     <div
@@ -84,7 +84,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                       aria-expanded="false"
                       aria-haspopup="listbox"
                       aria-labelledby="mui-1-label mui-1"
-                      class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
+                      class="MuiSelect-select MuiSelect-outlined MuiOutlinedInput-input MuiInputBase-input css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input"
                       id="mui-1"
                       role="button"
                       tabindex="0"
@@ -155,7 +155,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                 class="tss-1spe31o-actionsContainer"
               >
                 <button
-                  class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium tss-11xjtta-button css-1e6y48t-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButtonBase-root Mui-disabled tss-11xjtta-button css-1e6y48t-MuiButtonBase-root-MuiButton-root"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -163,7 +163,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   Back
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium tss-11xjtta-button css-sghohy-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root tss-11xjtta-button css-sghohy-MuiButtonBase-root-MuiButton-root"
                   data-testid="addConnectionNext"
                   tabindex="0"
                   type="button"
@@ -193,7 +193,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
         class="MuiStepLabel-root MuiStepLabel-vertical Mui-disabled css-14sza3e-MuiStepLabel-root"
       >
         <span
-          class="MuiStepLabel-iconContainer Mui-disabled css-vnkopk-MuiStepLabel-iconContainer"
+          class="MuiStepLabel-iconContainer css-vnkopk-MuiStepLabel-iconContainer"
         >
           <svg
             aria-hidden="true"
