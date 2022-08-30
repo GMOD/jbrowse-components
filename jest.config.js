@@ -25,7 +25,12 @@ module.exports = {
     // most packages have their src in src/, except for jbrowse-core
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
-  coveragePathIgnorePatterns: ['!*.d.ts', 'makeWorkerInstance.ts'],
+  coveragePathIgnorePatterns: [
+    '!*.d.ts',
+    'makeWorkerInstance.ts',
+    'react-colorful.js',
+    'QuickLRU.js',
+  ],
   setupFiles: [
     '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/createRange.js',

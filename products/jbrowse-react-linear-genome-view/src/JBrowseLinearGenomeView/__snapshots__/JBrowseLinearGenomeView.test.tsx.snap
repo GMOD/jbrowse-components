@@ -18,7 +18,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           aria-controls="view-menu"
           aria-haspopup="true"
           aria-label="more"
-          class="MuiButtonBase-root tss-smxndn-iconRoot MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall mui-p2zbmj-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root tss-smxndn-iconRoot MuiIconButton-edgeStart MuiIconButton-sizeSmall mui-p2zbmj-MuiButtonBase-root-MuiIconButton-root"
           data-testid="view_menu_icon"
           style="padding: 3px;"
           tabindex="0"
@@ -172,7 +172,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="tss-ig8oez-headerBar"
               >
                 <button
-                  class="MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButtonBase-root tss-fnrte0-toggleButton mui-1vn1biu-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall tss-fnrte0-toggleButton mui-1vn1biu-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   title="Open track selector"
                   type="button"
@@ -199,7 +199,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm mui-qfz70r-MuiFormGroup-root"
                 >
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButtonBase-root tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -219,7 +219,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <button
-                    class="MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButtonBase-root tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -248,7 +248,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       style="margin: 7px; min-width: 175px;"
                     >
                       <div
-                        class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot mui-1dityd8-MuiInputBase-root-MuiOutlinedInput-root"
+                        class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot mui-1dityd8-MuiInputBase-root-MuiOutlinedInput-root"
                         style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
                       >
                         <input
@@ -257,7 +257,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           aria-invalid="false"
                           autocapitalize="none"
                           autocomplete="off"
-                          class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused mui-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
+                          class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused mui-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
                           id="refNameAutocomplete-test_view"
                           placeholder="Search for location"
                           role="combobox"
@@ -349,7 +349,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <span
-                    class="MuiSlider-colorPrimary MuiSlider-sizeSmall MuiSlider-root tss-1c03ro5-slider mui-1csk8ad-MuiSlider-root"
+                    class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider mui-1csk8ad-MuiSlider-root"
                   >
                     <span
                       class="MuiSlider-rail mui-14pt78w-MuiSlider-rail"
@@ -359,7 +359,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       style="left: 0%; width: 56.78411120929245%;"
                     />
                     <span
-                      class="MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall MuiSlider-thumb mui-1kbujg-MuiSlider-thumb"
+                      class="MuiSlider-thumb MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall mui-1kbujg-MuiSlider-thumb"
                       data-focusvisible="false"
                       data-index="0"
                       style="left: 56.78411120929245%;"

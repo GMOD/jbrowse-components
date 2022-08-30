@@ -60,10 +60,8 @@ const useStyles = makeStyles()(theme => ({
   // accordionColor set's display:flex so that the child accordionText use
   // vertically centered text
   accordionColor: {
-    // @ts-ignore
-    background: theme.palette.tertiary?.main,
-    // @ts-ignore
-    color: theme.palette.tertiary?.contrastText,
+    background: theme.palette.tertiary.main,
+    color: theme.palette.tertiary.contrastText,
     width: '100%',
     display: 'flex',
     paddingLeft: 5,

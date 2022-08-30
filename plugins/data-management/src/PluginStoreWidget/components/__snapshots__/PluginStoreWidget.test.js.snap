@@ -2,13 +2,13 @@
 
 exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
 <div
-  class="tss-dgo1uw-root"
+  class="tss-1kq0gb6-root"
 >
   <div
-    class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
+    class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1z10yd4-MuiFormControl-root-MuiTextField-root"
   >
     <label
-      class="MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined MuiFormLabel-root MuiFormLabel-colorPrimary css-14s5rfu-MuiFormLabel-root-MuiInputLabel-root"
+      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
       data-shrink="false"
       for="mui-1"
       id="mui-1-label"
@@ -16,26 +16,26 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       Filter plugins
     </label>
     <div
-      class="MuiOutlinedInput-root MuiInputBase-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+      class="MuiInputBase-root MuiInput-root MuiInput-underline MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd css-1wz39fi-MuiInputBase-root-MuiInput-root"
     >
       <input
         aria-invalid="false"
-        class="MuiOutlinedInput-input MuiInputBase-input MuiInputBase-inputAdornedEnd css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+        class="MuiInputBase-input MuiInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd css-nz481w-MuiInputBase-input-MuiInput-input"
         id="mui-1"
         type="text"
         value=""
       />
       <div
-        class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-1laqsz7-MuiInputAdornment-root"
+        class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
           tabindex="0"
           type="button"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
             data-testid="ClearIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -49,34 +49,22 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
           />
         </button>
       </div>
-      <fieldset
-        aria-hidden="true"
-        class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
-      >
-        <legend
-          class="css-1ftyaf0"
-        >
-          <span>
-            Filter plugins
-          </span>
-        </legend>
-      </fieldset>
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-1wc0u5o-MuiPaper-root-MuiAccordion-root"
   >
     <div
       aria-expanded="true"
-      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root"
+      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
       role="button"
       tabindex="0"
     >
       <div
-        class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-o4b71y-MuiAccordionSummary-content"
+        class="MuiAccordionSummary-content Mui-expanded css-1rhnrrr-MuiAccordionSummary-content"
       >
         <h5
-          class="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
         >
           Installed plugins
         </h5>
@@ -86,7 +74,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-havevq-MuiSvgIcon-root"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -118,12 +106,12 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                 class="MuiList-root MuiList-padding css-h4y409-MuiList-root"
               >
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -134,18 +122,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     SVGPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -156,18 +144,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     LinearGenomeViewPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -178,18 +166,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     AlignmentsPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -200,18 +188,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     AuthenticationPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -222,18 +210,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     BedPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -244,18 +232,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     CircularViewPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -266,18 +254,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     ConfigurationPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -288,18 +276,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     DataManagementPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -310,18 +298,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     DotplotPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -332,18 +320,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     GTFPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -354,18 +342,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     GFF3Plugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -376,18 +364,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     LegacyJBrowsePlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -398,18 +386,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     LinearComparativeViewPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -420,18 +408,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     LollipopPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -442,18 +430,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     ArcRenderer
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -464,18 +452,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     MenusPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -486,7 +474,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     MultilevelLinearViewPlugin
                   </p>
@@ -514,12 +502,12 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -530,18 +518,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     SequencePlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -552,18 +540,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     TrackHubRegistryPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -574,18 +562,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     VariantsPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -596,18 +584,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     WigglePlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -618,18 +606,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     SpreadsheetViewPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -640,18 +628,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     SvInspectorViewPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -662,18 +650,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     BreakpointSplitViewPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -684,18 +672,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     HicPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -706,18 +694,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     TrixPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -728,18 +716,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     GridBookmarkPlugin
                   </p>
                 </li>
                 <li
-                  class="MuiListItem-root MuiListItem-gutters MuiListItem-padding css-1p823my-MuiListItem-root"
+                  class="MuiListItem-root MuiListItem-dense MuiListItem-gutters MuiListItem-padding css-ypie1g-MuiListItem-root"
                 >
                   <svg
                     aria-hidden="true"
                     aria-label="This plugin was installed by an administrator, you cannot remove it."
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1qzgyfr-lockedPluginTooltip css-havevq-MuiSvgIcon-root"
                     data-mui-internal-clone-element="true"
                     data-testid="LockIcon"
                     focusable="false"
@@ -750,7 +738,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     ComparativeAdaptersPlugin
                   </p>
@@ -763,19 +751,19 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
     </div>
   </div>
   <div
-    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded MuiAccordion-gutters css-1elwnq4-MuiPaper-root-MuiAccordion-root"
+    class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-1wc0u5o-MuiPaper-root-MuiAccordion-root"
   >
     <div
       aria-expanded="true"
-      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded MuiAccordionSummary-gutters css-sh22l5-MuiButtonBase-root-MuiAccordionSummary-root"
+      class="MuiButtonBase-root MuiAccordionSummary-root Mui-expanded css-1yigmdy-MuiButtonBase-root-MuiAccordionSummary-root"
       role="button"
       tabindex="0"
     >
       <div
-        class="MuiAccordionSummary-content Mui-expanded MuiAccordionSummary-contentGutters css-o4b71y-MuiAccordionSummary-content"
+        class="MuiAccordionSummary-content Mui-expanded css-1rhnrrr-MuiAccordionSummary-content"
       >
         <h5
-          class="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
         >
           Available plugins
         </h5>
@@ -785,7 +773,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-i4bv87-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-5xjg5v-expandIcon css-havevq-MuiSvgIcon-root"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -820,10 +808,10 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                   class="tss-yyi66y-dataField"
                 >
                   <h5
-                    class="MuiTypography-root MuiTypography-h5 css-ag7rrr-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1ps4owl-MuiTypography-root-MuiLink-root"
+                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1py4a5k-MuiTypography-root-MuiLink-root"
                       href="https://github.com/GMOD/jbrowse-plugin-msaview#readme"
                       rel="noopener"
                       target="_blank"
@@ -837,7 +825,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
                     data-testid="PersonIcon"
                     focusable="false"
                     style="margin-right: 0.5em;"
@@ -848,18 +836,18 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                     />
                   </svg>
                   <p
-                    class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                    class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                   >
                     Colin Diesh
                   </p>
                 </div>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-19fbf4i-bold css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 tss-19fbf4i-bold css-k0xfey-MuiTypography-root"
                 >
                   Description:
                 </p>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-k0xfey-MuiTypography-root"
                 >
                   multiple sequence alignment browser plugin for JBrowse 2
                 </p>
@@ -868,16 +856,16 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                 class="MuiCardActions-root MuiCardActions-spacing css-1t6e9jv-MuiCardActions-root"
               >
                 <button
-                  class="MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButtonBase-root  css-sghohy-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >
                   <span
-                    class="MuiButton-startIcon MuiButton-iconSizeMedium css-1d6wzja-MuiButton-startIcon"
+                    class="MuiButton-startIcon MuiButton-iconSizeSmall css-cstir9-MuiButton-startIcon"
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-havevq-MuiSvgIcon-root"
                       data-testid="AddIcon"
                       focusable="false"
                       viewBox="0 0 24 24"

@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { configSchema as divSequenceRendererConfigSchema } from '../DivSequenceRenderer'
+import { default as divSequenceRendererConfigSchema } from '../DivSequenceRenderer/configSchema'
 
 export const configSchema = ConfigurationSchema(
   'LinearReferenceSequenceDisplay',

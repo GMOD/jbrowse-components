@@ -131,6 +131,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 onChange={val => {
                   setImportError('')
                   setSelectedAsm(val)
+                  setValue('')
                 }}
                 session={session}
                 selected={selectedAsm}

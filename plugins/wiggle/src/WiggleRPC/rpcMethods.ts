@@ -62,7 +62,10 @@ export class WiggleGetMultiRegionStats extends RpcMethodType {
   }
 
   async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    args: RenderArgs & {
+      signal?: AbortSignal
+      statusCallback?: (arg: string) => void
+    },
     rpcDriverClassName: string,
   ) {
     const pm = this.pluginManager
@@ -122,7 +125,10 @@ export class MultiWiggleGetSources extends RpcMethodType {
   }
 
   async serializeArguments(
-    args: RenderArgs & { signal?: AbortSignal; statusCallback?: Function },
+    args: RenderArgs & {
+      signal?: AbortSignal
+      statusCallback?: (arg: string) => void
+    },
     rpcDriverClassName: string,
   ) {
     const pm = this.pluginManager

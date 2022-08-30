@@ -670,6 +670,7 @@ Example with group field
     "subadapters": [
       {
         "type": "BigWigAdapter",
+        "name": "k1",
         "bigWigLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF055ZII/@@download/ENCFF055ZII.bigWig"
         },
@@ -677,6 +678,7 @@ Example with group field
       },
       {
         "type": "BigWigAdapter",
+        "name": "k2",
         "bigWigLocation": {
           "uri": "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig"
         },
@@ -686,6 +688,9 @@ Example with group field
   }
 }
 ```
+
+The "name" or "source" field on the subadapters will be used as the subtrack
+label (where, "source" will be given priority over "name" if specified)
 
 ### QuantitativeTrack config
 
@@ -820,7 +825,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### DeltaAdapter config
 
@@ -847,7 +852,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### ChainAdapter config
 
@@ -874,7 +879,7 @@ Slots
 - queryAssembly - alternative to assemblyNames: just the assemblyName of the
   query
 - targetAssembly - alternative to assemblyNames: just the assemblyName of the
-  query
+  target
 
 ### MCScanAnchorsAdapter
 

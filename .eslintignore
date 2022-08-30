@@ -16,3 +16,5 @@ products/jbrowse-desktop/public/generateFastaIndex.js
 /demos/
 webpack.config.js
 craco.config.js
+packages/core/util/QuickLRU.js
+packages/core/util/QuickLRU.d.ts

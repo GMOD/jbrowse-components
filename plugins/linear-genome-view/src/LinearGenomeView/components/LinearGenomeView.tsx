@@ -9,7 +9,7 @@ import { LinearGenomeViewModel } from '..'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
-import SequenceDialog from './SequenceDialog'
+import GetSequenceDialog from './GetSequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
 
 type LGV = LinearGenomeViewModel
@@ -63,9 +63,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   return (
     <div style={{ position: 'relative' }}>
       {model.seqDialogDisplayed ? (
-        <SequenceDialog
+        <GetSequenceDialog
           model={model}
-          handleClose={() => model.setSequenceDialogOpen(false)}
+          handleClose={() => model.setGetSequenceDialogOpen(false)}
         />
       ) : null}
       {model.isSearchDialogDisplayed ? (

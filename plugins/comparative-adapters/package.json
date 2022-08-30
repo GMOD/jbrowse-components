@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-comparative-adapters",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "JBrowse 2 comparative adapters",
   "keywords": [
     "jbrowse",
@@ -37,7 +37,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "generic-filehandle": "^3.0.0"
   },
