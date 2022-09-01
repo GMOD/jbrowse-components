@@ -1,4 +1,3 @@
-import { DEFAULT_EXTENSIONS as DEFAULT_BABEL_EXTENSIONS } from '@babel/core'
 import commonjs from '@rollup/plugin-commonjs'
 import fs from 'fs'
 import json from '@rollup/plugin-json'
@@ -61,27 +60,12 @@ function getPlugins(
       preferBuiltins: false,
     }),
     // all bundled external modules need to be converted from CJS to ESM
-    commonjs({
-      // use a regex to make sure to include eventual hoisted packages
-      include:
-        mode === 'umd' || mode === 'esmBundle' || mode === 'cjs'
-          ? [/\/node_modules\//, /\/__virtual__\//]
-          : /\/regenerator-runtime\//,
-    }),
+    commonjs(),
     json(),
     typescript({
       exclude: [
         // all TS test files, regardless whether co-located or in test/ etc
-        '**/*.spec.ts',
-        '**/*.test.ts',
-        '**/*.spec.tsx',
-        '**/*.test.tsx',
-        // TS defaults below
-        'node_modules',
-        '__virtual__',
-        'bower_components',
-        'jspm_packages',
-        distPath,
+        '**/*.{spec,test}.ts{x,}',
       ],
       moduleResolution: 'node',
       tsconfig: './tsconfig.json',
@@ -95,7 +79,6 @@ function getPlugins(
       externalGlobals(createGlobalMap(jbrowseGlobals)),
     babelPluginJBrowse({
       exclude: ['node_modules/**', '__virtual__/**'],
-      extensions: [...DEFAULT_BABEL_EXTENSIONS, 'ts', 'tsx'],
       // @ts-ignore
       custom: {
         extractErrors: false,
