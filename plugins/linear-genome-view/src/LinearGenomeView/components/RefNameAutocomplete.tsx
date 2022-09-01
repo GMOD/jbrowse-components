@@ -19,7 +19,6 @@ import HelpIcon from '@mui/icons-material/Help'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import { dedupe } from './util'
 
 // lazy
 const HelpDialog = lazy(() => import('./HelpDialog'))
@@ -74,8 +73,8 @@ function RefNameAutocomplete({
   const [inputValue, setInputValue] = useState('')
   const [searchOptions, setSearchOptions] = useState<Option[]>()
   const debouncedSearch = useDebounce(currentSearch, 300)
-  const { coarseVisibleLocStrings, hasDisplayedRegions } = model
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
+  const { coarseVisibleLocStrings, hasDisplayedRegions } = model
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const regions = assembly?.regions || []
@@ -104,11 +103,31 @@ function RefNameAutocomplete({
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
         if (active) {
-          setSearchOptions(
-            dedupe(results, r => r.getDisplayString()).map(result => ({
-              result,
-            })),
-          )
+          const m: { [key: string]: BaseResult[] } = {}
+
+          for (let i = 0; i < results.length; i++) {
+            const r = results[i]
+            const d = r.getDisplayString()
+            if (!m[d]) {
+              m[d] = []
+            }
+            m[d].push(r)
+          }
+          const display = Object.entries(m).map(([displayString, results]) => {
+            if (results.length === 1) {
+              return { result: results[0] }
+            } else {
+              return {
+                result: new BaseResult({
+                  displayString,
+                  results,
+                  label: displayString,
+                }),
+              }
+            }
+          })
+
+          setSearchOptions(display)
           setLoaded(true)
         }
       } catch (e) {
@@ -150,7 +169,7 @@ function RefNameAutocomplete({
         value={inputBoxVal}
         loading={!loaded}
         inputValue={inputValue}
-        onInputChange={(event, newInputValue) => {
+        onInputChange={(_event, newInputValue) => {
           setInputValue(newInputValue)
           onChange?.(newInputValue)
         }}
