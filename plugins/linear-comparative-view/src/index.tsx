@@ -14,6 +14,7 @@ import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 import LinearComparativeDisplayF from './LinearComparativeDisplay'
 import LinearComparativeViewF from './LinearComparativeView'
 import LinearSyntenyDisplayF from './LinearSyntenyDisplay'
+import LGVSyntenyDisplayF from './LGVSyntenyDisplay'
 import LinearSyntenyRendererF from './LinearSyntenyRenderer'
 import LinearSyntenyViewF from './LinearSyntenyView'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
@@ -37,6 +38,7 @@ export default class extends Plugin {
     LinearSyntenyRendererF(pluginManager)
     LinearComparativeDisplayF(pluginManager)
     LinearSyntenyDisplayF(pluginManager)
+    LGVSyntenyDisplayF(pluginManager)
     LaunchLinearSyntenyViewF(pluginManager)
     SyntenyTrackF(pluginManager)
     SyntenyFeatureWidgetF(pluginManager)
