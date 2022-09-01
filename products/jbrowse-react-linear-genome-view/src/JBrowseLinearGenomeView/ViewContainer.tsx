@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import {
   IconButton,
   IconButtonProps as IconButtonPropsType,
@@ -17,10 +17,11 @@ import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseV
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
+const AboutDialog = lazy(() => import('./AboutDialog'))
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
-    background: theme.palette.secondary.main + ' !important',
+    background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),
   },
   icon: {
@@ -58,8 +59,7 @@ const ViewMenu = observer(
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-    const items = model.menuItems?.()
-    if (!items?.length) {
+    if (!model.menuItems()?.length) {
       return null
     }
 
@@ -70,7 +70,6 @@ const ViewMenu = observer(
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          style={{ padding: 3 }}
           onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
         >
@@ -84,7 +83,7 @@ const ViewMenu = observer(
             setAnchorEl(undefined)
           }}
           onClose={() => setAnchorEl(undefined)}
-          menuItems={items}
+          menuItems={model.menuItems()}
         />
       </>
     )
@@ -93,10 +92,11 @@ const ViewMenu = observer(
 
 const ViewContainer = observer(
   ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
-    const [ref, { width }] = useMeasure()
     const { classes } = useStyles()
     const theme = useTheme()
     const session = getSession(view)
+    const [dlgOpen, setDlgOpen] = useState(false)
+    const [ref, { width }] = useMeasure()
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
@@ -133,11 +133,18 @@ const ViewContainer = observer(
             </Typography>
           ) : null}
           <div className={classes.grow} />
-          <div style={{ width: 20, height: 20 }}>
-            <Logomark variant="white" />
-          </div>
+          <IconButton onClick={() => setDlgOpen(true)}>
+            <div style={{ width: 22, height: 22 }}>
+              <Logomark variant="white" />
+            </div>
+          </IconButton>
         </div>
         <Paper>{children}</Paper>
+        {dlgOpen ? (
+          <Suspense fallback={<div />}>
+            <AboutDialog open onClose={() => setDlgOpen(false)} />
+          </Suspense>
+        ) : null}
       </Paper>
     )
   },
