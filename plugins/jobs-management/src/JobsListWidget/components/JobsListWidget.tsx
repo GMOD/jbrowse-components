@@ -30,8 +30,7 @@ const useStyles = makeStyles()(theme => ({
   adminBadge: {
     margin: '0.5em',
     borderRadius: 3,
-    // this is the quaternary color in JB2 palette
-    backgroundColor: '#FFB11D',
+    backgroundColor: theme.palette.quaternary.main,
     padding: '1em',
     display: 'flex',
     alignContent: 'center',

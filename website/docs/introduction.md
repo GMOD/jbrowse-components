@@ -14,7 +14,7 @@ Welcome to the JBrowse 2 documentation.
 
 ### User and developer guides
 
-- [User guide](userguide) - for general usage, guided by screenshots and descriptions
+- [User guide](user_guide) - for general usage, guided by screenshots and descriptions
 - [Comprehensive config guide](config_guide) - for detailed configuration settings
 - [Core concepts and pluggable elements for developers](developer_guide) - for developers of plugins
 

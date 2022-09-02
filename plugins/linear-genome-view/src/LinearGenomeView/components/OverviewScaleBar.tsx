@@ -88,7 +88,6 @@ const Polygon = observer(
       model
     const { contentBlocks, totalWidthPxWithoutBorders } = dynamicBlocks
 
-    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const polygonColor = tertiary ? tertiary.light : primary.light
 
@@ -398,7 +397,6 @@ const ScaleBar = observer(
     const visibleRegions = dynamicBlocks.contentBlocks
     const overviewVisibleRegions = overview.dynamicBlocks
 
-    // @ts-ignore
     const { tertiary, primary } = theme.palette
     const scaleBarColor = tertiary ? tertiary.light : primary.light
 

@@ -2,10 +2,8 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
-import { readConfObject } from '@jbrowse/core/configuration'
+import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
 
 export default class extends BaseFeatureDataAdapter {
@@ -18,30 +16,19 @@ export default class extends BaseFeatureDataAdapter {
   public static capabilities = ['hasLocalStats']
 
   public async configure() {
-    // instantiate the sequence adapter
-    const sequenceAdapter = readConfObject(this.config, 'sequenceAdapter')
-
-    const dataAdapter = await this.getSubAdapter?.(sequenceAdapter)
-    if (!dataAdapter) {
+    const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
+    if (!adapter) {
       throw new Error('Error getting subadapter')
     }
-    return dataAdapter.dataAdapter as BaseFeatureDataAdapter
+    return adapter.dataAdapter as BaseFeatureDataAdapter
   }
 
   public async getRefNames() {
-    const sequenceAdapter = await this.configure()
-    return sequenceAdapter.getRefNames()
+    const adapter = await this.configure()
+    return adapter.getRefNames()
   }
 
-  /**
-   * Fetch features for a certain region
-   * @param param -
-   * @returns Observable of Feature objects in the region
-   */
   public getFeatures(query: Region, opts: BaseOptions) {
-    this.windowSize = 1000
-    this.windowDelta = 1000
-    this.gcMode = 'content'
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()
       const hw = this.windowSize === 1 ? 1 : this.windowSize / 2 // Half the window size
@@ -56,11 +43,14 @@ export default class extends BaseFeatureDataAdapter {
         return
       }
 
-      const ret = sequenceAdapter.getFeatures({
-        ...query,
-        start: queryStart,
-        end: queryEnd,
-      })
+      const ret = sequenceAdapter.getFeatures(
+        {
+          ...query,
+          start: queryStart,
+          end: queryEnd,
+        },
+        opts,
+      )
       const feats = await ret.pipe(toArray()).toPromise()
       const residues = feats[0]?.get('seq') || ''
 
@@ -105,5 +95,5 @@ export default class extends BaseFeatureDataAdapter {
    * will not be needed for the forseeable future and can be purged
    * from caches, etc
    */
-  public freeResources(/* { region } */): void {}
+  public freeResources(/* { region } */) {}
 }

@@ -6,7 +6,7 @@
       "label": "Quickstart guides",
       "items": ["quickstart_desktop", "quickstart_web", "quickstart_cli"]
     },
-    "userguide",
+    "user_guide",
     "config_guide",
     {
       "type": "category",
@@ -14,6 +14,8 @@
       "items": [
         "developer_guide",
         "devguide_config",
+        "urlparams",
+        "api_guide",
         "devguide_pluggable_elements"
       ]
     },
@@ -86,7 +88,6 @@
     },
     "jbrowse_jupyter",
     "embedded_components",
-    "api_guide",
     "cli",
     "combined",
     "faq"

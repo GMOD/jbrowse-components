@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2022-06-17T10:57:18.370Z",
+  "dateCreated": "2022-08-25T17:50:26.931Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -154,6 +154,30 @@
         "type": "VcfAdapter",
         "vcfLocation": {
           "uri": "volvox.filtered.lowercase.vcf",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "trackId": "variant_effect_demo_data",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "variant_effect_demo_data.vcf",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
+      "trackId": "variant_effect_demo_jannovar",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox_vcf_jannovar.vcf",
           "locationType": "UriLocation"
         }
       }

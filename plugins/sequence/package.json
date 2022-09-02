@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-sequence",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "JBrowse 2 sequence adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -37,7 +37,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@gmod/indexedfasta": "^2.0.2",
     "@gmod/twobit": "^1.1.12",
     "abortable-promise-cache": "^1.5.0"

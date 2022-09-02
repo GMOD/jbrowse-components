@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
@@ -24,13 +24,12 @@
     "snappdf": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.pdf",
     "snapjpg": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.jpg",
     "tiny": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out tiny.svg",
-    "tinypng": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out out.png",
-    "postversion": "git push --follow-tags"
+    "tinypng": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out out.png"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/plugin-linear-genome-view": "^2.1.0",
-    "@jbrowse/react-linear-genome-view": "^2.1.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.1.2",
+    "@jbrowse/react-linear-genome-view": "^2.1.2",
     "abortcontroller-polyfill": "^1.7.3",
     "canvas": "^2.9.1",
     "jsdom": "^19.0.0",

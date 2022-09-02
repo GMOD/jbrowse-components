@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-config",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "JBrowse 2 config utilities",
   "keywords": [
     "jbrowse",
@@ -37,7 +37,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
     "pluralize": "^8.0.0"
   },
