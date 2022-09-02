@@ -23,7 +23,7 @@ export default function calculateStaticBlocks(
   padding = true,
   elision = true,
   extra = 0,
-  width = 1000,
+  width = 800,
 ) {
   const {
     offsetPx,
