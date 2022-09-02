@@ -1,5 +1,5 @@
 ---
-id: userguide
+id: user_guide
 toplevel: true
 title: User guide
 ---

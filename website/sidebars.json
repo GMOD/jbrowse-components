@@ -6,7 +6,7 @@
       "label": "Quickstart guides",
       "items": ["quickstart_desktop", "quickstart_web", "quickstart_cli"]
     },
-    "userguide",
+    "user_guide",
     "config_guide",
     {
       "type": "category",
