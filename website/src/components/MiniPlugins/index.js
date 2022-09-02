@@ -1,6 +1,5 @@
 import React from 'react'
 import pluginStyles from './styles.module.css'
-import pluginJSON from './plugins.json'
 import {
   Link,
   Typography,
@@ -19,7 +18,78 @@ import {
   Outbound,
 } from '@mui/icons-material'
 
-const { plugins } = pluginJSON
+const plugins = [
+  {
+    name: 'GDC',
+    authors: ['Garrett Stevens', 'Colin Diesh', 'Rob Buels', 'Caroline Bridge'],
+    description:
+      "JBrowse 2 plugin for integrating resources from NCI's Genomic Data Commons (GDC).",
+    location: 'https://github.com/GMOD/jbrowse-plugin-gdc',
+    repoName: 'jbrowse-plugin-gdc',
+    url: 'https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js',
+    license: 'MIT',
+    image:
+      'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/gdc-screenshot-fs8.png',
+    guideURL: '/jb2/docs/tutorials/plugin_usage/#gdc-plugin',
+    resourceURL: 'https://portal.gdc.cancer.gov/',
+  },
+  {
+    name: 'ICGC',
+    authors: ['Caroline Bridge'],
+    description:
+      'JBrowse 2 plugin for integrating resources from the International Cancer Genome Consortium (ICGC).',
+    location: 'https://github.com/GMOD/jbrowse-plugin-icgc',
+    repoName: 'jbrowse-plugin-icgc',
+    url: 'https://unpkg.com/jbrowse-plugin-icgc/dist/jbrowse-plugin-icgc.umd.production.min.js',
+    license: 'Apache License 2.0',
+    image:
+      'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/icgc-screenshot-fs8.png',
+    guideURL: '/jb2/docs/tutorials/plugin_usage/#icgc-plugin',
+    resourceURL: 'https://dcc.icgc.org/',
+  },
+  {
+    name: 'UCSC',
+    authors: ['Colin Diesh'],
+    description:
+      'JBrowse 2 plugin for integrating resources from the UCSC API.',
+    location: 'https://github.com/cmdcolin/jbrowse-plugin-ucsc-api',
+    repoName: 'jbrowse-plugin-uscs-api',
+    url: 'https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js',
+    license: 'MIT',
+    image:
+      'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/ucsc-screenshot-fs8.png',
+    guideURL: '/jb2/docs/tutorials/plugin_usage/#ucsc-plugin',
+    resourceURL: 'https://genome.ucsc.edu/',
+  },
+  {
+    name: 'Biothings',
+    authors: ['Colin Diesh'],
+    description:
+      "JBrowse 2 plugin for adapting the API's from mygene.info and myvariant.info to get super rich gene annotations.",
+    location: 'https://github.com/cmdcolin/jbrowse-plugin-biothings-api',
+    repoName: 'jbrowse-plugin-biothings-api',
+    url: 'https://unpkg.com/jbrowse-plugin-biothings/dist/jbrowse-plugin-biothings.umd.production.min.js',
+    license: 'MIT',
+    image:
+      'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/biothings-screenshot-fs8.png',
+    guideURL: '/jb2/docs/tutorials/plugin_usage/#biothings-plugin',
+    resourceURL: 'https://biothings.io/',
+  },
+  {
+    name: 'CIVIC',
+    authors: ['Colin Diesh'],
+    description:
+      'JBrowse 2 plugin for fetching data from the CIVIC clinical interpretation of cancer variants.',
+    location: 'https://github.com/cmdcolin/jbrowse-plugin-civic-api',
+    repoName: 'jbrowse-plugin-civic-api',
+    url: 'https://unpkg.com/jbrowse-plugin-civic/dist/jbrowse-plugin-civic.umd.production.min.js',
+    license: 'Apache License 2.0',
+    image:
+      'https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/civic-screenshot-fs8.png',
+    guideURL: '/jb2/docs/tutorials/plugin_usage/#civic-plugin',
+    resourceURL: 'https://civicdb.org/welcome',
+  },
+]
 
 export const PluginCard = ({ plugin }) => {
   return (
