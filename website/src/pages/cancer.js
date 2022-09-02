@@ -53,6 +53,7 @@ export default function Home() {
           <Alert severity="info">
             <AlertTitle>Don't see your dataset here?</AlertTitle>
             <strong>
+              {/* eslint-disable-next-line react/jsx-no-target-blank*/}
               <a
                 href="https://github.com/GMOD/jbrowse-components/issues/new/choose"
                 target="_blank"
@@ -62,6 +63,7 @@ export default function Home() {
             </strong>{' '}
             for a new plugin to connect the resource, or{' '}
             <strong>
+              {/* eslint-disable-next-line react/jsx-no-target-blank*/}
               <a
                 href="https://jbrowse.org/jb2/docs/developer_guide/"
                 target="_blank"

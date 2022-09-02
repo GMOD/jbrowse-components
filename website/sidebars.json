@@ -14,9 +14,9 @@
       "items": [
         "developer_guide",
         "devguide_config",
+        "devguide_pluggable_elements",
         "urlparams",
-        "api_guide",
-        "devguide_pluggable_elements"
+        "api_guide"
       ]
     },
     {

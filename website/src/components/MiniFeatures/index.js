@@ -24,11 +24,11 @@ function Feature({ img, title, link, description }) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
+        {/* eslint-disable-next-line react/jsx-no-target-blank*/}
         <a href={link} target="_blank">
           <img
             alt={`A screenshot of JBrowse`}
             className={styles.featureSvg}
-            role="img"
             src={img}
             style={{
               borderRadius: '8px',

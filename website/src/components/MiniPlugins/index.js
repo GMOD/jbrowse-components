@@ -1,8 +1,6 @@
 import React from 'react'
 import pluginStyles from './styles.module.css'
 import pluginJSON from './plugins.json'
-const { plugins } = pluginJSON
-
 import {
   Link,
   Typography,
@@ -20,6 +18,8 @@ import {
   Book,
   Outbound,
 } from '@mui/icons-material'
+
+const { plugins } = pluginJSON
 
 export const PluginCard = ({ plugin }) => {
   return (
