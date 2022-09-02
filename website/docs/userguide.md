@@ -407,7 +407,7 @@ There are several ways to create multi-quantitative tracks from scratch.
 Visualizing variant tracks from the VCF format alongside the original alignment
 evidence track is a common workflow for validating your results, shown below:
 
-<Figure caption="Variant track indicating an SNP alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
+<Figure caption="Variant track indicating a SNP alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
 ### Variant widget
 

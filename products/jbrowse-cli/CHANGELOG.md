@@ -1,2 +1,0 @@
-- Fixed usage of the `jbrowse upgrade` command having unzipping failures (https://github.com/GMOD/jbrowse-components/pull/1085)
-- Fixed `jbrowse add-track` when there are multiple assemblies (https://github.com/GMOD/jbrowse-components/pull/1103)

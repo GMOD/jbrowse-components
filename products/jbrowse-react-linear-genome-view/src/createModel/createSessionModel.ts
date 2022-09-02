@@ -12,6 +12,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
+import { version } from '../version'
 import {
   getMembers,
   getParent,
@@ -113,7 +114,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent<any>(self).assemblyManager
       },
       get version() {
-        return ''
+        return version
       },
       get views() {
         return [self.view]

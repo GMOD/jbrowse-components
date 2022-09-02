@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
     "jbrowse",
@@ -37,10 +37,9 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.5",
-    "@jbrowse/plugin-variants": "^2.1.0",
+    "@jbrowse/plugin-variants": "^2.1.2",
     "@mui/icons-material": "^5.0.1",
     "csvtojson": "^2.0.10"
   },

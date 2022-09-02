@@ -15,11 +15,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
-import { Region } from '@jbrowse/core/util/types'
 import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { getSession } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { getSession, Feature, Region } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
@@ -31,9 +29,6 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
-  loadingMessage: {
-    padding: theme.spacing(5),
-  },
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -89,7 +84,7 @@ function SequenceDialog({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
+  model: LGV
   handleClose: () => void
 }) {
   const { classes } = useStyles()
@@ -162,19 +157,11 @@ function SequenceDialog({
   const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
 
   return (
-    <Dialog
-      data-testid="sequence-dialog"
-      maxWidth="xl"
-      open
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
+    <Dialog maxWidth="xl" open onClose={handleClose}>
+      <DialogTitle>
         Reference sequence
         {handleClose ? (
           <IconButton
-            data-testid="close-seqDialog"
             className={classes.closeButton}
             onClick={() => {
               handleClose()

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-authentication",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "JBrowse 2 Authentication",
   "keywords": [
     "jbrowse",
@@ -35,9 +35,6 @@
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:es5": "tsc --build tsconfig.build.es5.json",
     "clean": "rimraf dist esm *.tsbuildinfo"
-  },
-  "dependencies": {
-    "@babel/runtime": "^7.17.9"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

@@ -292,6 +292,8 @@ describe('run with a single assembly similar to embedded config', () => {
       '--attributes',
       'Name,ID,Note',
     ])
+    // to update (e.g. if volvox config is updated) run:
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     .it('Indexes single assembly volvox config', ctx => {
       const postVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
@@ -322,6 +324,8 @@ describe('run with a volvox config', () => {
       '--attributes',
       'Name,ID,Note',
     ])
+    // to update (e.g. if volvox config is updated) run:
+    // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     .it('Indexes entire volvox config', ctx => {
       const postVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
       const postVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')

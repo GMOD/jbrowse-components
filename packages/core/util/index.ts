@@ -725,7 +725,7 @@ export async function renameRegionsIfNeeded<
     signal?: AbortSignal
     adapterConfig: unknown
     sessionId: string
-    statusCallback?: Function
+    statusCallback?: (arg: string) => void
   },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { regions = [], adapterConfig } = args
@@ -787,7 +787,11 @@ export const isElectron = /electron/i.test(
 )
 
 export function revcom(seqString: string) {
-  return complement(seqString).split('').reverse().join('')
+  return reverse(complement(seqString))
+}
+
+export function reverse(seqString: string) {
+  return seqString.split('').reverse().join('')
 }
 
 export const complement = (() => {

@@ -6,7 +6,7 @@
     "outDir": "dist",
     "rootDir": "./src",
     "composite": true,
-    "target": "es5",
+    "target": "es2018",
     "module": "commonjs"
   },
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],

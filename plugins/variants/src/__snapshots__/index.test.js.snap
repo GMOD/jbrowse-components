@@ -6,12 +6,12 @@ exports[`plugin in a stock JBrowse 2`] = `
 Object {
   "displays": Array [
     Object {
-      "displayId": "trackId0-ChordVariantDisplay",
-      "type": "ChordVariantDisplay",
-    },
-    Object {
       "displayId": "trackId0-LinearVariantDisplay",
       "type": "LinearVariantDisplay",
+    },
+    Object {
+      "displayId": "trackId0-ChordVariantDisplay",
+      "type": "ChordVariantDisplay",
     },
   ],
   "trackId": "trackId0",

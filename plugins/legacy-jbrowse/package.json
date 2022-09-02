@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-legacy-jbrowse",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "JBrowse 2 plugin for connecting to and reading JBrowse 1 data",
   "keywords": [
     "jbrowse",
@@ -37,7 +37,6 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.9",
     "@gmod/nclist": "^0.2.1",
     "buffer-crc32": "^0.2.13",
     "generic-filehandle": "^3.0.0",

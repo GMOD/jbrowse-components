@@ -2,15 +2,13 @@ import React, { useRef, useEffect, useState } from 'react'
 import { Popover, Tooltip, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession, stringify } from '@jbrowse/core/util'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => {
-  // @ts-ignore
   const { tertiary, primary } = theme.palette
   const background = tertiary
     ? alpha(tertiary.main, 0.7)
@@ -124,9 +122,11 @@ function OverviewRubberBand({
       // click and drag
       if (startX !== undefined && currentX !== undefined) {
         if (Math.abs(currentX - startX) > 3) {
+          const left = Math.min(startX, currentX)
+          const right = Math.max(startX, currentX)
           model.moveTo(
-            overview.pxToBp(startX - cytobandOffset),
-            overview.pxToBp(currentX - cytobandOffset),
+            overview.pxToBp(left - cytobandOffset),
+            overview.pxToBp(right - cytobandOffset),
           )
         }
       }
@@ -305,16 +305,6 @@ function OverviewRubberBand({
       </div>
     </div>
   )
-}
-
-OverviewRubberBand.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  overview: MobxPropTypes.objectOrObservableObject.isRequired,
-  ControlComponent: ReactPropTypes.node,
-}
-
-OverviewRubberBand.defaultProps = {
-  ControlComponent: <div />,
 }
 
 export default observer(OverviewRubberBand)
