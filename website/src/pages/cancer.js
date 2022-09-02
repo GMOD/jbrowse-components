@@ -4,7 +4,7 @@ import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import MiniFeatures from '@site/src/components/MiniFeatures'
-import MiniPlugins from '@site/src/components/MiniPlugins'
+import MiniPlugins from '../components/MiniPlugins'
 
 import styles from './styles.module.css'
 import { Alert, AlertTitle } from '@mui/material'
