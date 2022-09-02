@@ -1,6 +1,6 @@
 import React from 'react'
 import pluginStyles from './styles.module.css'
-import pluginJSON from '../../../static/plugins.json'
+import pluginJSON from './plugins.json'
 const { plugins } = pluginJSON
 
 import {
