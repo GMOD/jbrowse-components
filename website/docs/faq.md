@@ -8,43 +8,47 @@ toplevel: true
 
 #### How can I start the JBrowse 2 app as a developer
 
-We recommend that you have the following
+We recommend that you have the following:
 
-- Node v12+
+- A stable and recent version of [node](https://nodejs.org/en/)
 - Git
 - [Yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
 
 Then you can follow steps from our
-[README](https://github.com/gmod/jbrowse-components)
+[README](https://github.com/gmod/jbrowse-components).
 
-It basically boils down to
+It basically boils down to:
 
-- `git clone https://github.com/GMOD/jbrowse-components`
-- `cd jbrowse-components`
-- `yarn`
-- `cd products/jbrowse-web`
-- `yarn start`
+```bash
+git clone https://github.com/GMOD/jbrowse-components
+cd jbrowse-components
+yarn
+cd products/jbrowse-web
+yarn start
+```
 
-This will boot up a development instance of `jbrowse-web` on port 3000
+This will boot up a development instance of `jbrowse-web` on port `3000`.
 
-You can use `PORT=8080 yarn start` to manually specify a different port
+You can use `PORT=8080 yarn start` to manually specify a different port.
 
 You can also instead go to the `products/jbrowse-desktop` directory to do this
-on desktop
+on desktop.
 
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-use `yarn storybook` instead of `yarn start`
+use `yarn storybook` instead of `yarn start`.
+
+For a more extensive tutorial, see [Developing with JBrowse web and desktop](/docs/tutorials/dev/develop_web_and_desktop_tutorial).
 
 ### General
 
 #### What is special about JBrowse 2
 
 One thing that makes JBrowse 2 special is that we can create new view types via
-our plugin system, e.g. circular, dotplot, etc. Anything you want can be added
-as a view, and can be shown alongside our other views
+our plugin system, e.g. circular, dotplot, etc.. Anything you want can be added
+as a view, and can be shown alongside our other views.
 
-This makes JBrowse 2 more than just a genome browser-- it is really a platform
-that can be built on.
+This makes JBrowse 2 more than just a genome browser: it is really a platform
+that can be built upon.
 
 #### What are new features in JBrowse 2
 
@@ -58,7 +62,7 @@ JBrowse 2 by itself is just a set of JS, CSS, and HTML files that can be
 statically hosted on a webserver without any backend services running.
 
 Therefore, running JBrowse 2 generally involves just copying the JBrowse 2
-folder to your web server html folder e.g. `/var/www/html/`.
+folder to your web server html folder e.g. copy `/var/www/html/` to Amazon S3.
 
 If you use a different platform such as Django, you may want to put it in the
 static resources folder.
@@ -78,69 +82,75 @@ this.
 
 #### How can I setup JBrowse 2 on my web server
 
-We recommend following the steps in the [quickstart web](../quickstart_web) guide.
+We recommend following the steps in the [quickstart web via CLI](../quickstart_cli/) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
-/var/www/html
+`/var/www/html`.
 
-You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version
+You can also use `jbrowse upgrade /var/www/html/jb2` to get the latest version.
 
 #### How do I install or update the @jbrowse/cli tool
 
 To install the @jbrowse/cli tool, you can use `npm install -g @jbrowse/cli`
 
-You can use this same command to upgrade the tool too
+You can use this same command to upgrade the tool too.
 
 This command will give you a command named `jbrowse` which should automatically
 be in your path if you have a standard installation of nodejs. We recommend
 using nodesource or nvm to get your nodejs for this.
 
 Also note that the @jbrowse/cli tool is just made for preparing your
-config.json, it is not used to run any server-side code
+config.json, it is **not used to run any server-side code**.
 
 #### How do I update my instance of jbrowse-web
 
-You can use the command, after installing
+You can use the command, after installing:
 
 ```
 jbrowse upgrade /path/to/your/jbrowse2
 ```
 
 This will download the latest release from github and overwrite it onto your
-jbrowse-web instance
+jbrowse-web instance.
+
+If you've manually downloaded jbrowse-web, the newest releases can be found [here](https://github.com/GMOD/jbrowse-components/releases).
 
 #### How can I setup JBrowse 2 without the CLI tools
 
-The jbrowse CLI tools are basically a convenience, and are not strictly required
+The jbrowse CLI tools are basically a convenience, and are not strictly required.
 
-Simple tasks can be done without it
+Simple tasks can be done without it.
 
-For example, for jbrowse create, you can visit the [blog](/jb2/blog) and
+For example, for jbrowse create, you can visit the [releases page](https://github.com/GMOD/jbrowse-components/releases) and
 download the latest jbrowse-web release tag, and unzip it into your web
-directory
+directory.
+
+Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-config.json, reviewing the config docs and sample configs will be valuable
+`config.json`; reviewing the [config docs](../config_guide) and sample configs will be valuable.
 
-Understanding the [config basics](../config_guide#intro-to-the-configjson) will
+To configure JBrowse using the GUI, checkout our [tutorial](../tutorials/config_gui).
+
+Understanding the [config basics](../config_guide/#intro-to-the-configjson) will
 come in handy also because you can manually edit in advanced configs after your
-tracks are loaded however be careful because corrupt configs can produce hard
-to understand errors, because our config system is strongly typed
+tracks are loaded; however be careful:s corrupt configs can produce hard
+to understand errors, because our config system is strongly typed.
 
-Feel free to message the team if you encounter these
+Reach out to the team [on gitter](https://gitter.im/GMOD/jbrowse2) or in the [discussions](https://github.com/GMOD/jbrowse-components/discussions) if you have any complex configuration issues.
 
 #### How do I load a track into JBrowse 2
 
-If you have followed the above steps and installed jbrowse 2 on your webserver
-and loaded the assembly, and have the CLI tools installed
+With the JBrowse CLI tools, you can easily add tracks with the `add-track` command, e.g.:
 
     jbrowse add-track myfile.bw -a hg19
 
-This will setup a bigwig track on the hg19 assembly in your config.json. Make
-sure to run the command inside your current jbrowse2 folder e.g.
+This will setup a bigwig track on the hg19 assembly in your config.json.
+
+Make sure to run the command inside your current jbrowse2 folder e.g.
 /var/www/html/jbrowse2 or wherever you are currently setting up a config.json
-(you can have multiple configs)
+(you can have multiple configs).
 
 Note that you can also use remote URLs
 
@@ -148,23 +158,58 @@ Note that you can also use remote URLs
 
 The add-track command will do as much as possible to infer from the file
 extension how to configure this track, and automatically infer the index to be
-myfile.bam.bai
+myfile.bam.bai.
+
+As mentioned [above](#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can also manually edit your config file, or use the GUI.
+
+#### How do I customize the color of the features displayed on my track
+
+We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
+callbacks, including feature coloration.
+
+An example of a Jexl configuration callback might look like this:
+
+    "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
+
+See our [configuration callbacks guide](../config_guide/#configuration-callbacks) for more information.
+
+##### Adding color callbacks in the GUI
+
+In brief, to add a configuration callback to a track using the GUI, perform the following steps:
+
+1. On the track you're meaning to color, click on the three vertical dots '...' on the right side of the track label
+2. Click "Settings" (if this option is greyed out, copy the track with "Copy Track", then open up the track under "Session Tracks" and repeat steps 1-2)
+3. Scroll down to the "display 1 renderer" heading (this is typically the display you want to edit, if not scroll to display 2)
+4. Click on the circle to the right of the color you'd like to change
+5. In this text box, enter in the [Jexl](https://github.com/TomFrost/Jexl) callback for the feature colouration, e.g. "get(feature,'strand') == -1 ? 'red' : 'blue'"
+
+##### Adding color callbacks via the command line
+
+Adding color callbacks via the command line can be a little tricky because the coloration property exists within the renderer.
+
+In brief, to add a configuration callback to a track using the CLI, your `add-track` is going to look something like this:
+
+```bash
+jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "my_BasicDisplay", "type": "LinearBasicDisplay", "renderer": {"color1": "jexl:get(feature, 'strand') == -1 ? 'red' : 'blue'" }}]}'
+```
+
+While adding the track to the `config.json`, you're adding additional configurations using the --config option. This additional configuration is a "renderer" on the display that your track will be using. In this case, this .vcf will be using the LinearBasicDisplay
 
 ### Curiosities
 
 #### Why do all the tracks need an assembly specified
 
 We require that all tracks have a specific genome assembly specified in their
-config. This is because jbrowse 2 is a multi-genome-assembly browser (and can
-compare genomes given the data). This may be different to using say jbrowse 1
-where it knows which genome assembly you are working with at any given time
+config. This is because JBrowse 2 is a multi-genome-assembly browser (and can
+compare genomes given the data). This may be different to using, say, JBrwose 1
+where it knows which genome assembly you are working with at any given time.
 
 #### How are the menus structured in the app
 
 In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
-linear genome view has it's own hamburger menu. Note that each track also has
-it's own track level menu.
+linear genome view has its own hamburger menu. Note that each track also has
+its own track level menu.
 
 #### Why do some of my reads not display soft clipping
 
@@ -175,13 +220,13 @@ The soft clipping indicators on these reads will appear black.
 
 #### Do you have any tips for learning React and mobx-state-tree
 
-Here is a short guide to React and mobx-state-tree that could help get you oriented
+Here is a short guide to React and mobx-state-tree that could help get you oriented:
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
 #### What technologies does JBrowse 2 use
 
-We build on a lot of great open source technology, some main ones include
+We build on a lot of great open source technology, some main ones include:
 
 - React
 - mobx-state-tree
@@ -219,7 +264,7 @@ the "display" section of your config
 - `maxFeatureScreenDensity` - number of features times bpPerPx
 - `fetchSizeLimit` - this config variable exists on the adapters (can increase size limit)
 
-Example config with a small feature screen density
+Example config with a small feature screen density:
 
 ```json
 {
@@ -248,7 +293,7 @@ Example config with a small feature screen density
 }
 ```
 
-Example config for a CRAM file with a small fetchSizeLimit configured
+Example config for a CRAM file with a small fetchSizeLimit configured:
 
 ```json
 {
@@ -288,18 +333,18 @@ alternative temporary directory using the environment variable
 
 The `jbrowse text-index` command creates text searching indexes using trix. The
 trix indexes are based on the format described by UCSC here
-https://genome.ucsc.edu/goldenPath/help/trix.html but we reimplemented the code
+https://genome.ucsc.edu/goldenPath/help/trix.html, but we re-implemented the code
 the create these index formats in the JBrowse CLI so you do not have to install
 the UCSC tools.
 
-The main idea is that you give trix
+The main idea is that you give trix:
 
 ```
 GENEID001  Wnt signalling
 GENEID002  ey  Pax6
 ```
 
-Then this will generate a new file, the .ix file, sorted in alphabetical order
+Then this will generate a new file, the .ix file, sorted in alphabetical order:
 
 ```
 ey  GENE002
@@ -309,7 +354,7 @@ Wnt  GENE001
 ```
 
 Then a second file, the .ixx file, tells us at what byte offset certain lines
-in the file are e.g.
+in the file are e.g.:
 
 ```
 signa000000435
@@ -328,15 +373,15 @@ bar, so instead, we store it in localStorage and only keep the key to the
 localStorage entry in the URL var. This is because otherwise URLs can get
 prohibitively long, and break server side navigations, intermediate caches,
 etc. Therefore, we make "sharing a session" a manual step that generates a
-shortened URL by default
+shortened URL by default.
 
-Note 1: user's of @jbrowse/react-linear-genome-view have to re-implement any
+Note 1: users of @jbrowse/react-linear-genome-view have to re-implement any
 URL query param logic themselves, as this component makes no attempt to access
-URL query params
+URL query params.
 
 Note 2: You can copy and paste your URL bar and put it in another tab on your
 own computer, and JBrowse will restore the session using BroadcastChannel
-(supported on Firefox and Chrome)
+(supported on Firefox and Chrome).
 
 #### How does the session sharing work with shortened URLs work in JBrowse Web
 
@@ -346,7 +391,7 @@ session snapshots that users create when they use the "Share" button. The
 &password= component of the share URL), encrypts the session client side, and
 sends the encrypted session without the key to the AWS dynamoDB.
 
-This process, generates a URL with the format
+This process, generates a URL with the format:
 
 &session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
 
@@ -374,7 +419,7 @@ If for any reason the session sharing system isn't working, e.g. you are behind
 a firewall or you are not able to connect to the central share server, you can
 click the "Gear" icon in the "Share" button pop-up, and it will give you the
 option to use "Long URL" instead of "Short URL" which let's you create share
-links without the central server
+links without the central server.
 
 Also, if you are implementing JBrowse Web on your own server and would like to
 create your own URL shortener, you can use the shareURL parameter in the
