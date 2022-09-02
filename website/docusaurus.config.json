@@ -91,10 +91,6 @@
             {
               "label": "Documentation",
               "to": "docs/"
-            },
-            {
-              "label": "Cancer portal",
-              "to": "cancer/"
             }
           ]
         },
