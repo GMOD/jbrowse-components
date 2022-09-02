@@ -25,10 +25,11 @@ export default function calculateStaticBlocks(
   extra = 0,
 
   // on the main thread, window.innerWidth is used because this reduces
-  // recalculating the blocks, otherwise, model.width for cases such as
-  // off-main-thread. also this is not a ternary because our window.innerWidth
-  // might be undefined on off-main-thread, so instead use || model.width
-  width = (typeof window !== 'undefined' && window.innerWidth) || model.width,
+  // recalculating the blocks (as model.width can change depending on scroll),
+  // otherwise, model.width for cases such as off-main-thread. also this is not
+  // a ternary because our window.innerWidth might be undefined on
+  // off-main-thread, so instead use || model.width
+  width = 800,
 ) {
   const {
     offsetPx,
