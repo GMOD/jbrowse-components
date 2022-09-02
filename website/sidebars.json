@@ -14,6 +14,8 @@
       "items": [
         "developer_guide",
         "devguide_config",
+        "urlparams",
+        "api_guide",
         "devguide_pluggable_elements"
       ]
     },
@@ -86,7 +88,6 @@
     },
     "jbrowse_jupyter",
     "embedded_components",
-    "api_guide",
     "cli",
     "combined",
     "faq"
