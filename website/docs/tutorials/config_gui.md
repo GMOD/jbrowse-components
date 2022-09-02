@@ -1,10 +1,10 @@
 ---
-id: quickstart_gui
-title: Config editing quick start — graphical interface
+id: config_gui
+title: Configure JBrowse using the GUI
 toplevel: true
 ---
 
-import Figure from './figure'
+import Figure from '../figure'
 
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that
@@ -14,7 +14,7 @@ the JBrowse 2's graphical configuration editing.
 :::note
 
 You can also do this configuration with JBrowse CLI. See that guide
-[here](../quickstart_cli).
+[here](../config_cli).
 
 :::
 
@@ -22,19 +22,23 @@ You can also do this configuration with JBrowse CLI. See that guide
 
 This tutorial requires having the following software installed
 
-- [JBrowse CLI](../quickstart_web#install-the-cli-tools)
+- [JBrowse CLI](../../quickstart_cli/#installing-the-cli-tools)
 
-- [JBrowse 2 web application](../quickstart_web#using-jbrowse-create-to-install-jbrowse)
+- [JBrowse 2 web application](../../quickstart_cli/#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 
 The JBrowse CLI contains a tool called `admin-server`. This will act as a web
 server for JBrowse 2 and will write any changes made in JBrowse 2 to a config
-file. The `admin-server` is meant to be run only temporarily to help you set up
-your config, it is not used for serving your jbrowse instance in production.
+file.
+
+:::warning Note
+The `admin-server` is meant to be used temporarily for configuration, **not in
+production.**
+:::
 
 The `admin-server` launches an instance of JBrowse 2 in "admin mode", which then
-lets you
+lets you:
 
 - Add and edit assemblies with the "Assembly manager"
 - Add tracks and edit tracks
@@ -42,26 +46,19 @@ lets you
 
 All of these changes will be written by the server to the JBrowse config file
 (usually `config.json`) located in the JBrowse instance. This is something that
-can only be done while the `admin-server` is running, which again, is only meant
-to be temporary!
+can only be done while the `admin-server` is running, which again, is **only meant
+to be temporary!**
 
-To start the `admin-server`, navigate into your JBrowse 2 directory and run
+To start the `admin-server`, navigate into your JBrowse 2 directory and run:
 
-```sh-session
+```bash
 ## Start the admin-server
 jbrowse admin-server
 ```
 
-This will then generate a link that you can visit in your web browser
+This will then generate a link that you can visit in your web browser:
 
-<Figure caption="JBrowse CLI admin-server output, which provides a link that can be used. Note: we do not recommend using admin-server in production, and should be used for temporary configuration" src="/img/admin_server.png"/>
-
-:::warning
-
-Note: the admin-server is meant to be used temporarily for configuration, not in
-production
-
-:::
+<Figure caption="JBrowse CLI admin-server output, which provides a link that can be used." src="/img/admin_server.png"/>
 
 ## Adding a genome assembly
 
@@ -70,11 +67,11 @@ In order to do this, use the navigation bar to open up the Assembly Manager
 (`Admin > Open Assembly Manager`).
 
 This opens up a table which can be used to create, edit, and delete assemblies
-in your application
+in your application:
 
-<Figure caption="Screenshot showing the assembly manager, with no assemblies loaded yet" src="/img/assembly_manager.png"/>
+<Figure caption="Screenshot showing the assembly manager, with no assemblies loaded yet." src="/img/assembly_manager.png"/>
 
-Let's add the hg38 human reference genome to our JBrowse 2 application.
+As an example, let's add the hg38 human reference genome to our JBrowse 2 application.
 
 Press the "Add New Assembly" button, and enter the necessary information in the
 form:
@@ -85,10 +82,10 @@ form:
 - fasta index: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai`
 - gzi: `https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi`
 
-<Figure caption="Assembly manager page for adding a new assembly" src="/img/hg38_assembly_table.png"/>
+<Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
 
 Click on "Create New Assembly". Great, we've added an assembly!
-We can see that we have successfully added the hg38 assembly.
+We can see that we have successfully added the hg38 assembly:
 
 <Figure caption="The assembly manager dialog box with human assemblies available" src="/img/add_hg38_assembly.png"/>
 
@@ -109,26 +106,30 @@ the form for adding a track `File > Open Track`:
 <Figure caption="JBrowse 2 file menu with the 'Add track' form" src="/img/add_track_form.png"/>
 
 Alternatively, you can use the action button (circular "+") inside the track
-selector to access the "Add track" form.
+selector to access the "Add track" form:
 
 <Figure caption="The 'Add track' form can be launched from the circular '+' button in the bottom righthand corner" src="/img/add_track_tracklist.png"/>
 
-In the "Add track" form, you can provide a URL to a file to load. Opening files
-from your local machine is not supported currently in the JBrowse 2 web app
-(JBrowse desktop does allow this, though, and this functionality may be added in
-some form in the future)
+In the "Add track" form, you can provide a URL or select a local file to load.
 
-Paste a URL to a file and optionally provide an index file URL too. The
-following file formats are supported
+The following file formats are supported in core JBrowse 2:
 
-- `tabix`-indexed VCF
-- `tabix`-indexed BED
-- `tabix`-indexed GFF
-- indexed BAM
-- indexed CRAM
-- BigWig
+- CRAM
+- BAM
+- htsget
+- VCF (Tabix-indexed)
+- GFF3 (Tabix-indexed)
+- BED (Tabix-indexed)
 - BigBed
-- Hi-C (Juicebox)
+- BigWig
+- JBrowse 1 nested containment lists (NCLists)
+- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
+- PAF (synteny/dotplot)
+- Indexed FASTA/BGZip indexed FASTA
+- 2bit
+- .hic (Hi-C contact matrix visualization)
+
+Additional data formats can be supported via plugins; checkout the [plugin store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
@@ -137,13 +138,13 @@ index file explicitly.
 
 ### Editing a track
 
-First we will open a Linear Genome View using the navigation bar
+First, open a Linear Genome View using the navigation bar
 (`File > Add > Linear Genome View`), and click on the "Select Tracks" button.
 
 The configuration settings are accessible by clicking on the ellipses by each
 track.
 
-<Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server" src="/img/admin_settings_access.png"/>
+<Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server." src="/img/admin_settings_access.png"/>
 
 Open the configuration editor for the track by clicking on the "Settings" button
 shown above. You can use the configuration editor to live-edit any configurable
@@ -156,7 +157,7 @@ of your JBrowse 2 instance. This is the session that will appear when JBrowse 2
 is first visited. To do so, open the form to set the default session
 (`Admin > Set default session`):
 
-<Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session" src="/img/default_session_form.png"/>
+<Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
 
 You can use the form to clear your default session,
 select the currently open session, or any of your previously saved sessions.
@@ -164,13 +165,13 @@ select the currently open session, or any of your previously saved sessions.
 ## Additional resources
 
 There are a number of additional features for configuring JBrowse 2. Make sure
-to refer to the [config guide](../config_guide) for topics such as
-[adding tracks](../config_guide#adding-tracks-and-connections) or
-[adding an assembly with the CLI](../config_guide#adding-an-assembly-with-the-cli)
+to refer to the [config guide](../../config_guide) for topics such as
+[adding tracks](../../config_guide/#track-configurations) or
+[adding an assembly with the CLI](../../config_guide/#adding-an-assembly-with-the-cli).
 
 ## Conclusion
 
-This quickstart showed how to launch the `admin-server` in the JBrowse CLI to
+This guide showed how to launch the `admin-server` in the JBrowse CLI to
 perform graphical configuration of your application. Specifically, we looked at
 how to access and use the assembly manager, as well as how to access the
 configuration editor for tracks. Importantly, all tracks have different

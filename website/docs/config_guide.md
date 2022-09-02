@@ -6,6 +6,12 @@ toplevel: true
 
 import Figure from './figure'
 
+The following guide provides comprehensive information regarding the anatomy and usage of the `config.json` file that is critical for running a JBrowse 2 session.
+
+:::info
+To learn how to configure JBrowse with assemblies and tracks using the [CLI](./tutorials/config_cli) or the [GUI](./tutorials/config_gui) checkout those respective tutorials.
+:::
+
 ## Intro to the config.json
 
 A JBrowse 2 configuration file, a config.json, is structured as follows
@@ -31,7 +37,7 @@ A JBrowse 2 configuration file, a config.json, is structured as follows
 }
 ```
 
-The most important thing to configure are your assemblies and your tracks
+The most important thing to configure are your assemblies and your tracks.
 
 ### Configuring assemblies
 
@@ -39,9 +45,9 @@ An assembly configuration includes the "name" of your assembly, any "aliases"
 that might be associated with that assembly e.g. GRCh37 is sometimes seen as an
 alias for hg19, and then a "sequence" configuration containing a reference
 sequence track config. This is provides a special "track" that is outside the
-normal track config
+normal track config.
 
-Here is a complete config.json file containing only a hg19
+Here is a complete config.json file containing only an hg19 assembly:
 
 ```json
 {
@@ -88,9 +94,9 @@ Here is a complete config.json file containing only a hg19
 ## Configuring reference name aliasing
 
 Reference name aliasing is a process to make chromosomes that are named slightly
-differently but which refer to the same thing render properly
+differently but which refer to the same thing render properly.
 
-The refNameAliases in the above config provides this functionality
+The refNameAliases in the above config provides this functionality:
 
 ```json
 "refNameAliases": {
@@ -104,10 +110,8 @@ The refNameAliases in the above config provides this functionality
 }
 ```
 
-The hg19_aliases then is a tab delimited file that looks like this
-
-The first column should be the names that are in your FASTA sequence, and the
-rest of the columns are aliases
+The hg19_aliases then is a tab delimited file that looks like the following; the first column should be the names that are in your FASTA sequence, and the
+rest of the columns are aliases:
 
 ```
 1	chr1
@@ -137,15 +141,15 @@ Y	chrY
 M	chrM	MT
 ```
 
-Note that "chromAliases" files from UCSC match this format
-
-https://hgdownload.soe.ucsc.edu/goldenPath/canFam6/bigZips/canFam6.chromAlias.txt
+:::note
+"chromAliases" files [from UCSC](https://hgdownload.soe.ucsc.edu/goldenPath/canFam6/bigZips/canFam6.chromAlias.txt) match this format.
+:::
 
 ## Adding an assembly with the CLI
 
-Generally we add a new assembly with the CLI using something like
+Generally we add a new assembly with the CLI using something like:
 
-```sh
+```bash
 # use samtools to make a fasta index for your reference genome
 samtools faidx myfile.fa
 
@@ -157,12 +161,13 @@ myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
 jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
-See our CLI docs for the add-assembly for more details here --
-[add-assembly](../cli#jbrowse-add-assembly-sequence)
+See our [configure JBrowse using the cli](../tutorials/config_cli/#adding-a-genome-assembly) tutorial for more in-depth instructions, or more
+information on the `add-assembly` command through our [CLI tools guide](../cli/#jbrowse-add-assembly-sequence).
 
-Note: assemblies can also be added graphically using the assembly manager when
-you are using the admin-server. See the [quickstart
-guide](../quickstart_gui#adding-an-assembly) for more details.
+:::note
+Assemblies can also be added graphically using the assembly manager when
+you are using the `admin-server`. See how to [configure JBrowse using the GUI](../tutorials/config_gui/#adding-a-genome-assembly) for more details.
+:::
 
 ## Assembly config
 
@@ -170,11 +175,11 @@ Because JBrowse 2 can potentially have multiple assemblies loaded at once, it
 needs to make sure each track is associated with an assembly.
 
 To do this, we make assemblies a special part of the config, and make sure each
-track refers to which genome assembly it uses
+track refers to which genome assembly it uses.
 
 ### Example config with hg19 genome assembly loaded
 
-Here is a complete config.json that has the hg19 genome loaded
+Here is a complete config.json that has the hg19 genome loaded:
 
 ```json
 {
@@ -218,9 +223,7 @@ Here is a complete config.json that has the hg19 genome loaded
 }
 ```
 
-The top level config is an array of assemblies
-
-Each assembly contains
+The top level config is an array of assemblies; each assembly contains:
 
 - `name` - a name to refer to the assembly by. each track that is related to
   this assembly references this name
@@ -241,7 +244,7 @@ Each assembly contains
 ### ReferenceSequenceTrack
 
 Example ReferenceSequenceTrack config, which as above, is specified as the
-child of the assembly section of the config
+child of the assembly section of the config:
 
 ```json
 {
@@ -272,7 +275,7 @@ child of the assembly section of the config
 
 A bgzip FASTA format file is generated by
 
-```sh
+```bash
 bgzip -i sequence.fa
 samtools faidx sequence.fa.gz
 
@@ -306,7 +309,7 @@ These are loaded into a BgzipFastaAdapter as follows
 
 An indexed FASTA file is similar to the above, but the sequence is not compressed
 
-```sh
+```bash
 samtools faidx sequence.fa
 
 ## above commands generate the .fa and .fai files
@@ -380,16 +383,16 @@ Optionally you can specify a .chrom.sizes file which will speed up loading the 2
 
 ## Track configurations
 
-All tracks can contain
+All tracks can contain:
 
-- trackId - internal track ID, must be unique
-- name - displayed track name
-- assemblyNames - an array of assembly names a track is associated with, often
+- `trackId` - internal track ID, must be unique
+- `name` - displayed track name
+- `assemblyNames` - an array of assembly names a track is associated with, often
   just a single assemblyName
-- category - (optional) array of categories to display in a hierarchical track
+- `category` - (optional) array of categories to display in a hierarchical track
   selector
 
-Example config.json containing a track config
+Example `config.json` containing a track config:
 
 ```json
 {
@@ -439,7 +442,7 @@ Example config.json containing a track config
 
 ### AlignmentsTrack config
 
-Example AlignmentsTrack config
+Example AlignmentsTrack config:
 
 ```json
 {
@@ -465,12 +468,12 @@ Example AlignmentsTrack config
 
 #### BamAdapter configuration options
 
-- bamLocation - a 'file location' for the BAM
-- index: a subconfiguration schema containing
+- `bamLocation` - a 'file location' for the BAM
+- `index` - a subconfiguration schema containing
   - indexType: options BAI or CSI. default: BAI
   - location: a 'file location' of the index
 
-Example BamAdapter config
+Example BamAdapter config:
 
 ```json
 {
@@ -490,10 +493,10 @@ Example BamAdapter config
 
 #### CramAdapter configuration options
 
-- cramLocation - a 'file location' for the CRAM
-- craiLocation - a 'file location' for the CRAI
+- `cramLocation` - a 'file location' for the CRAM
+- `craiLocation` - a 'file location' for the CRAI
 
-Example CramAdapter config
+Example CramAdapter config:
 
 ```json
 {
@@ -511,7 +514,7 @@ Example CramAdapter config
 
 ### HicTrack config
 
-Example Hi-C track config
+Example Hi-C track config:
 
 ```json
 {
@@ -531,7 +534,7 @@ Example Hi-C track config
 
 #### HicAdapter config
 
-We just simply supply a hicLocation currently for the HicAdapter
+We just simply supply a `hicLocation` currently for the HicAdapter:
 
 ```json
 {
@@ -556,10 +559,10 @@ We just simply supply a hicLocation currently for the HicAdapter
 
 ### VariantTrack config
 
-- defaultRendering - options: 'pileup' or 'svg'. default 'svg'
-- adapter - a variant type adapter config e.g. a VcfTabixAdapter
+- `defaultRendering` - options: 'pileup' or 'svg'. default 'svg'
+- `adapter` - a variant type adapter config e.g. a VcfTabixAdapter
 
-Example config
+Example config:
 
 ```json
 {
@@ -585,12 +588,12 @@ Example config
 
 #### VcfTabixAdapter configuration options
 
-- vcfGzLocation - a 'file location' for the BigWig
-- index: a subconfiguration schema containing
+- `vcfGzLocation` - a 'file location' for the BigWig
+- `index` - a subconfiguration schema containing
   - indexType: options TBI or CSI. default TBI
   - location: the location of the index
 
-Example VcfTabixAdapter adapter config
+Example VcfTabixAdapter adapter config:
 
 ```json
 {
@@ -610,7 +613,7 @@ Example VcfTabixAdapter adapter config
 
 ### MultiQuantitativeTrack config
 
-Example MultiQuantitativeTrack config
+Example MultiQuantitativeTrack config:
 
 ```json
 {
@@ -654,9 +657,9 @@ You can pass an array of urls for bigWig files to the "bigWigs" slot for
 MultiWiggleAdapter, or an array of complete subtrack adapter configs to the
 "subadapters" slot for MultiWiggleAdapter. The subadapters slot can contain
 extra fields such as color, which is interpreted as the subtrack color, and any
-accessory fields like "group" that might help end users organize the subtracks
+accessory fields like "group" that might help end users organize the subtracks.
 
-Example with group field
+Example with group field:
 
 ```json
 {
@@ -694,7 +697,7 @@ label (where, "source" will be given priority over "name" if specified)
 
 ### QuantitativeTrack config
 
-Example QuantitativeTrack config
+Example QuantitativeTrack config:
 
 ```json
 {
@@ -714,49 +717,49 @@ Example QuantitativeTrack config
 
 #### General QuantitativeTrack options
 
-- scaleType - options: linear, log, to display the coverage data. default: linear
-- adapter - an adapter that returns numeric signal data, e.g. feature.get('score')
+- `scaleType` - options: linear, log, to display the coverage data. default: linear
+- `adapter` - an adapter that returns numeric signal data, e.g. feature.get('score')
 
 #### Autoscale options for QuantitativeTrack
 
-Options for autoscale
+Options for autoscale:
 
-- local - min/max values of what is visible on the screen
-- global - min/max values in the entire dataset
-- localsd - mean value +- N stddevs of what is visible on screen
-- globalsd - mean value +/- N stddevs of everything in the dataset
+- `local` - min/max values of what is visible on the screen
+- `global` - min/max values in the entire dataset
+- `localsd` - mean value +- N stddevs of what is visible on screen
+- `globalsd` - mean value +/- N stddevs of everything in the dataset
 
 #### Score min/max for QuantitativeTrack
 
 These options overrides the autoscale options and provides a minimum or maximum
-value for the autoscale bar
+value for the autoscale bar:
 
 - minScore
 - maxScore
 
 #### QuantitativeTrack drawing options
 
-- inverted - draws upside down
-- defaultRendering - can be density, xyplot, or line
-- summaryScoreMode - options: min, max, whiskers
+- `inverted` - draws upside down
+- `defaultRendering` - can be density, xyplot, or line
+- `summaryScoreMode` - options: min, max, whiskers
 
 #### QuantitativeTrack renderer options
 
-- filled - fills in the XYPlot histogram
-- bicolorPivot - options: numeric, mean, none. default: numeric
-- bicolorPivotValue - number at which the color switches from posColor to
+- `filled` - fills in the XYPlot histogram
+- `bicolorPivot` - options: numeric, mean, none. default: numeric
+- `bicolorPivotValue` - number at which the color switches from posColor to
   negColor. default: 0
-- color - color or color callback for drawing the values. overrides
+- `color` - color or color callback for drawing the values. overrides
   posColor/negColor. default: none
-- posColor - color to draw "positive" values. default: red
-- negColor - color to draw "negative" values. default: blue
-- clipColor - color to draw "clip" indicator. default: red
+- `posColor` - color to draw "positive" values. default: red
+- `negColor` - color to draw "negative" values. default: blue
+- `clipColor` - color to draw "clip" indicator. default: red
 
 #### BigWigAdapter options
 
-- bigWigLocation - a 'file location' for the bigwig
+- `bigWigLocation` - a 'file location' for the bigwig
 
-Example BigWig adapter config
+Example BigWig adapter config:
 
 ```json
 {
@@ -770,7 +773,7 @@ Example BigWig adapter config
 
 ### SyntenyTrack config
 
-Example SyntenyTrack config
+Example SyntenyTrack config:
 
 ```json
 {
@@ -788,22 +791,22 @@ Example SyntenyTrack config
 }
 ```
 
-We can load a SyntenyTrack from PAF with the CLI e.g. with
+We can load a SyntenyTrack from PAF with the CLI e.g. with:
 
-```sh
+```bash
 jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
     grape,peach --load copy --out /var/www/html/jbrowse2
 ```
 
-The first assembly is the "target" and the second assembly is the "query"
+The first assembly is the "target" and the second assembly is the "query."
 
-See the [super quickstart guide](../superquickstart_web) for more recipes on
-loading synteny tracks with the CLI.
+See how to [configure JBrowse using the CLI](../tutorials/config_cli/#adding-a-synteny-track) for more ways to
+load synteny tracks with the CLI.
 
 ### PAFAdapter config
 
 The PAF adapter reflects a pairwise alignment, and is outputted by tools like
-minimap2. It can be used for SyntenyTracks
+minimap2. It can be used for SyntenyTracks:
 
 ```json
 {
@@ -817,20 +820,20 @@ minimap2. It can be used for SyntenyTracks
 
 Slots
 
-- pafLocation - the location of the PAF file. The pafLocation can refer to a
+- `pafLocation` - the location of the PAF file. The pafLocation can refer to a
   gzipped or unzipped delta file. It will be read into memory entirely as it is
   not an indexed file format.
-- assemblyNames - list of assembly names, typically two (first in list is
+- `assemblyNames` - list of assembly names, typically two (first in list is
   target, second is query)
-- queryAssembly - alternative to assemblyNames: just the assemblyName of the
+- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
   query
-- targetAssembly - alternative to assemblyNames: just the assemblyName of the
+- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
 ### DeltaAdapter config
 
 The DeltaAdapter is used to load .delta files from MUMmer/nucmer. It can be
-used for SyntenyTracks
+used for SyntenyTracks:
 
 ```json
 {
@@ -844,20 +847,20 @@ used for SyntenyTracks
 
 Slots
 
-- deltaLocation - the location of the delta file. The deltaLocation can refer to a
+- `deltaLocation` - the location of the delta file. The deltaLocation can refer to a
   gzipped or unzipped delta file. It will be read into memory entirely as it is
   not an indexed file format.
-- assemblyNames - list of assembly names, typically two (first in list is
+- `assemblyNames` - list of assembly names, typically two (first in list is
   target, second is query)
-- queryAssembly - alternative to assemblyNames: just the assemblyName of the
+- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
   query
-- targetAssembly - alternative to assemblyNames: just the assemblyName of the
+- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
 ### ChainAdapter config
 
 The ChainAdapter is used to load .chain files from MUMmer/nucmer. It can be
-used for SyntenyTracks
+used for SyntenyTracks:
 
 ```json
 {
@@ -871,19 +874,19 @@ used for SyntenyTracks
 
 Slots
 
-- chainLocation - the location of the UCSC chain file. The chainLocation can
+- `chainLocation` - the location of the UCSC chain file. The chainLocation can
   refer to a gzipped or unzipped delta file. It will be read into memory
   entirely as it is not an indexed file format.
-- assemblyNames - list of assembly names, typically two (first in list is
+- `assemblyNames` - list of assembly names, typically two (first in list is
   target, second is query)
-- queryAssembly - alternative to assemblyNames: just the assemblyName of the
+- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
   query
-- targetAssembly - alternative to assemblyNames: just the assemblyName of the
+- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
   target
 
 ### MCScanAnchorsAdapter
 
-The .anchors file from MCScan refers to pairs of homologous genes and can be loaded into synteny tracks in jbrowse 2
+The .anchors file from MCScan refers to pairs of homologous genes and can be loaded into synteny tracks in JBrowse 2:
 
 ```json
 {
@@ -901,20 +904,20 @@ The .anchors file from MCScan refers to pairs of homologous genes and can be loa
 }
 ```
 
-The guide at https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)
+[This guide](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
 shows a demonstration of how to create the anchors and bed files (the .bed
 files are intermediate steps in creating the anchors files and are required by
-the MCScanAnchorsAdapter)
+the MCScanAnchorsAdapter).
 
-Slots
+Slots:
 
-- mcscanAnchorsLocation - the location of the .anchors file from the MCScan
+- `mcscanAnchorsLocation` - the location of the .anchors file from the MCScan
   workflow. The .anchors file has three columns. It can be gzipped or
   ungzipped, and is read into memory whole
-- bed1Location - the location of the first assemblies .bed file from the MCScan
+- `bed1Location` - the location of the first assemblies .bed file from the MCScan
   workflow. It can be gzipped or ungzipped, and is read into memory whole. This
   would refer to the gene names on the "left" side of the .anchors file.
-- bed2Location - the location of the second assemblies .bed file from the
+- `bed2Location` - the location of the second assemblies .bed file from the
   MCScan workflow. It can be gzipped or ungzipped, and is read into memory
   whole. This would refer to the gene names on the "right" side of the .anchors
   file.
@@ -922,7 +925,7 @@ Slots
 ### MCScanSimpleAnchorsAdapter
 
 The "simple" .anchors.simple file from MCScan refers to pairs of homologous
-genes and can be loaded into synteny tracks in jbrowse 2
+genes and can be loaded into synteny tracks in JBrowse 2:
 
 ```json
 {
@@ -940,12 +943,12 @@ genes and can be loaded into synteny tracks in jbrowse 2
 }
 ```
 
-The guide at https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)
+[This guide](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
 shows a demonstration of how to create the anchors and bed files (the .bed
 files are intermediate steps in creating the anchors.simple files and are
 required by the MCScanSimpleAnchorsAdapter)
 
-Slots
+Slots:
 
 - `mcscanSimpleAnchorsLocation` - the location of the .anchors.simple file from
   the MCScan workflow (this file has 5 columns, start and end gene from bed1,
@@ -971,7 +974,7 @@ the `FromConfigAdapter` and `FromConfigSequenceAdapter`. They can be used as the
 This adapter can be used to generate features directly from values stored in
 the configuration.
 
-Example `FromConfigAdapter`
+Example `FromConfigAdapter`:
 
 ```json
 {
@@ -996,7 +999,7 @@ Example `FromConfigAdapter`
 Similar behavior to `FromConfigAdapter`, with a specific emphasis on performance
 when the features are sequences.
 
-Example `FromConfigSequenceAdapter`
+Example `FromConfigSequenceAdapter`:
 
 ```json
 {
@@ -1022,12 +1025,10 @@ Example `FromConfigSequenceAdapter`
 
 ## Text searching
 
-Text searching is now available on JBrowse 2.
-
 Text searching appears in two forms: per-track indexes and aggregate indexes
-which search across multiple tracks
+which search across multiple tracks.
 
-Aggregate indexes may look like this
+Aggregate indexes may look like this:
 
 ```json
 {
@@ -1052,7 +1053,7 @@ Aggregate indexes may look like this
 }
 ```
 
-An example per-track config may look like this
+An example per-track config may look like this:
 
 ```json
 {
@@ -1089,20 +1090,20 @@ An example per-track config may look like this
 }
 ```
 
-Information on generating trix indexes via the cli can be found
-[here](../cli#jbrowse-text-index)
+Information on generating trix indexes via the CLI can be found
+[here](../cli#jbrowse-text-index).
 
 ### TrixTextSearchAdapter config
 
-The trix search index is the current file format for name searching
+The trix search index is the current file format for name searching.
 
 It is based on the UCSC trix file format described here
-https://genome.ucsc.edu/goldenPath/help/trix.html
+https://genome.ucsc.edu/goldenPath/help/trix.html.
 
-To create trix indexes you can use our command line tools. More info found at
+To create trix indexes you can use our command line tools. More info can be found at
 our [jbrowse text-index guide](../cli#jbrowse-text-index). This tool will
 automatically generate a config like this. The config slots are described below
-for details
+for details:
 
 ```json
 {
@@ -1125,14 +1126,14 @@ for details
 }
 ```
 
-- ixFilePath - the location of the trix ix file
-- ixxFilePath - the location of the trix ixx file
-- metaFilePath - the location of the metadata json file for the trix index
+- `ixFilePath` - the location of the trix ix file
+- `ixxFilePath` - the location of the trix ixx file
+- `metaFilePath` - the location of the metadata json file for the trix index
 
 ### JBrowse1TextSearchAdapter config
 
-This is more uncommon, but allows back compatibility with a jbrowse 1 names
-index created by generate-names.pl
+This is more uncommon, but allows back compatibility with a JBrowse1 names
+index created by `generate-names.pl`:
 
 ```json
 {
@@ -1147,7 +1148,7 @@ index created by generate-names.pl
 }
 ```
 
-- namesIndexLocation - the location of the JBrowse1 names index data directory
+- `namesIndexLocation` - the location of the JBrowse1 names index data directory
 
 ## DotplotView config
 
@@ -1157,7 +1158,7 @@ initialize a dotplot view.
 ## LinearSyntenyView config
 
 It is recommended to use the LinearSyntenyView's importform or a session spec
-to initialize a dotplot view.
+to initialize a linear synteny view.
 
 ## Configuring the theme
 
@@ -1187,7 +1188,7 @@ theme:
 
 <Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
-The customized theme screenshot uses the below configuration
+The customized theme screenshot uses the below configuration:
 
 |            | Color code | Color       |
 | ---------- | ---------- | ----------- |
@@ -1259,7 +1260,7 @@ options you could pass to Material-UI's
 [`createMuiTheme`](https://material-ui.com/customization/theming/#createmuitheme-options-args-theme)
 should work in the theme configuration.
 
-## Disabling analytics
+## Disabiling analytics
 
 This is done via adding a field in the global configuration in the config file.
 For example:
@@ -1272,102 +1273,95 @@ For example:
 }
 ```
 
-### Configuration callbacks
+## Configuration callbacks
 
-We use Jexl (see https://github.com/TomFrost/Jexl) for defining configuration
+We use [Jexl](https://github.com/TomFrost/Jexl) for defining configuration
 callbacks.
 
-An example of a Jexl configuration callback might look like this
+An example of a Jexl configuration callback might look like this:
 
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
 
-The notation get(feature,'strand') is the same as feature.get('strand') in
+The notation `get(feature,'strand')` is the same as `feature.get('strand')` in
 javascript code.
 
-We have a number of other functions such as
+We have a number of other functions, such as:
 
-Feature operations - get
+**Feature operations - get**
 
+```js
+jexl: get(feature, 'start') // start coordinate, 0-based half open
+jexl: get(feature, 'end') // end coordinate, 0-based half open
+jexl: get(feature, 'refName') // chromosome or reference sequence name
+jexl: get(feature, 'CIGAR') // BAM or CRAM feature CIGAR string
+jexl: get(feature, 'seq') // BAM or CRAM feature sequence
+jexl: get(feature, 'type') // feature type e.g. mRNA or gene
 ```
 
-jexl:get(feature,'start') // start coordinate, 0-based half open
-jexl:get(feature,'end') // end coordinate, 0-based half open
-jexl:get(feature,'refName') // chromosome or reference sequence name
-jexl:get(feature,'CIGAR') // BAM or CRAM feature CIGAR string
-jexl:get(feature,'seq') // BAM or CRAM feature sequence
-jexl:get(feature,'type') // feature type e.g. mRNA or gene
-
-```
-
-Feature operations - getTag
+**Feature operations - getTag**
 
 The getTag function smooths over slight differences in BAM and CRAM features to access their tags
 
-```
-jexl:getTag(feature, 'MD') // fetches MD string from BAM or CRAM feature
-jexl:getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
-
-```
-
-String functions
-
-```
-jexl:charAt('abc',2) // c
-jexl:charCodeAt(' ',0) // 32
-jexl:codePointAt(' ',0) // 32
-jexl:startsWith('kittycat','kit') // true
-jexl:endsWith('kittycat','cat') // true
-jexl:padStart('cat', 8, 'kitty') // kittycat
-jexl:padEnd('kitty', 8, 'cat') // kittycat
-jexl:replace('kittycat','cat','') // kitty
-jexl:replaceAll('kittycatcat','cat','') // kitty
-jexl:slice('kittycat',5) // cat
-jexl:substring('kittycat',0,5) // kitty
-jexl:trim('  kitty ') // kitty, whitespace trimmed
-jexl:trimStart('  kitty ') // kitty, starting whitespace trimmed
-jexl:trimEnd('  kitty ') // kitty, ending whitespace trimmed
-jexl:toUpperCase('kitty') // KITTY
-jexl:toLowerCase('KITTY') // kitty
-jexl:split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
+```js
+jexl: getTag(feature, 'MD') // fetches MD string from BAM or CRAM feature
+jexl: getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
 ```
 
-Math functions
+**String functions**
 
+```js
+jexl: charAt('abc', 2) // c
+jexl: charCodeAt(' ', 0) // 32
+jexl: codePointAt(' ', 0) // 32
+jexl: startsWith('kittycat', 'kit') // true
+jexl: endsWith('kittycat', 'cat') // true
+jexl: padStart('cat', 8, 'kitty') // kittycat
+jexl: padEnd('kitty', 8, 'cat') // kittycat
+jexl: replace('kittycat', 'cat', '') // kitty
+jexl: replaceAll('kittycatcat', 'cat', '') // kitty
+jexl: slice('kittycat', 5) // cat
+jexl: substring('kittycat', 0, 5) // kitty
+jexl: trim('  kitty ') // kitty, whitespace trimmed
+jexl: trimStart('  kitty ') // kitty, starting whitespace trimmed
+jexl: trimEnd('  kitty ') // kitty, ending whitespace trimmed
+jexl: toUpperCase('kitty') // KITTY
+jexl: toLowerCase('KITTY') // kitty
+jexl: split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
 ```
 
-jexl:max(0,2)
-jexl:min(0,2)
-jexl:sqrt(4)
-jexl:ceil(0.5)
-jexl:floor(0.5)
-jexl:round(0.5)
-jexl:abs(-0.5)
-jexl:log10(50000)
-jexl:parseInt('2')
-jexl:parseFloat('2.054')
+**Math functions**
 
+```js
+jexl: max(0, 2)
+jexl: min(0, 2)
+jexl: sqrt(4)
+jexl: ceil(0.5)
+jexl: floor(0.5)
+jexl: round(0.5)
+jexl: abs(-0.5)
+jexl: log10(50000)
+jexl: parseInt('2')
+jexl: parseFloat('2.054')
 ```
 
-Console logging
+**Console logging**
 
+```js
+jexl: log(feature) // console.logs output and returns value
+jexl: cast({ mRNA: 'green', pseudogene: 'purple' })[get(feature, 'type')] // returns either green or purple depending on feature type
 ```
 
-jexl:log(feature) // console.logs output and returns value
-jexl:cast({'mRNA':'green','pseudogene':'purple'})[get(feature,'type')] // returns either green or purple depending on feature type
+**Binary operators**
 
+```js
+jexl: get(feature, 'flags') & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```
 
-Binary operators
+## Customizing the feature details panel
 
-```
-jexl:get(feature,'flags')&2 // bitwise and to check if BAM or CRAM feature flags has 2 set
-```
+Every track has a configuration called `formatDetails`.
 
-## Customizing feature details panels
-
-Every track has a configuration called `formatDetails`
-
-Here is an example track with a formatter
+Here is an example track with a formatter:
 
 ```json
 {
@@ -1401,7 +1395,7 @@ link to gene pages for example as well.
 In addition, this example also adds a custom field called `"newfield"` and
 removes e.g. `"type"` from being displayed.
 
-The schema for `formatDetails` is
+The schema for `formatDetails` is:
 
 - `feature` - customizes the top-level feature
 - `subfeatures` - customizes the subfeatures, recursively up to `depth`
@@ -1410,7 +1404,7 @@ The schema for `formatDetails` is
 The general way this is done is by making a jexl callback either or both of
 `feature` and `subfeatures` (if you want both feature and subfeatures, you can copy the same thing to both config slots).
 
-The callback returns an object where the keys of the object are what you want to replace
+The callback returns an object where the keys of the object are what you want to replace.
 
 In the example above we return an object with:
 
@@ -1447,3 +1441,41 @@ Then you can use the custom jexl function in your config callbacks as follows:
    ...
 }
 ```
+
+See our [developer guides](../developer_guide/) for more information regarding plugin development.
+
+## Configuring plugins
+
+External published plugins can be added to the configuration like so:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GDC",
+      "url": "https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js"
+    }
+  ]
+}
+```
+
+Published plugins are typically hosted on unpkg and can be referenced as above.
+
+Any tools that are available via that plugin will then be added to JBrowse. You can verify the plugin is installed properly by checking the Plugin Store:
+
+<Figure src="/img/plugin-store.png" caption="Example screenshot showing how installed plugins are represented in the plugin store interface. Plugins installed via the config are shown with a lock icon, indicating they cannot be removed via the GUI."/>
+
+If you have an unpublished plugin running locally, you can add that plugin to your configuration using the localhost the plugin is running on:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GDC",
+      "url": "http://localhost:9000/dist/jbrowse-plugin-gdc.umd.development.js"
+    }
+  ]
+}
+```
+
+Checkout our [developer guide](../developer_guide/) for more information on developing plugins, or our [plugins page](/plugins) to browse currently published plugins.

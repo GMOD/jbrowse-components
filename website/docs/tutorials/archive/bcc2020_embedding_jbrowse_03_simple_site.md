@@ -6,7 +6,7 @@ title: Beginnings of a simple site
 :::danger Out of date
 
 Please see the
-[updated version of this tutorial](./tutorials/embed_linear_genome_view/01_introduction).
+[updated version of this tutorial](../embed_linear_genome_view/01_introduction).
 
 :::
 
@@ -80,7 +80,7 @@ tools (You can use `F12` or `Ctrl-Shift-I` or right-click the page and select
 `Inspect`) and go to the "Network" tab. If you see something like the below with
 a status of 200 for "jbrowse-linear-view.js", then you are good to go!
 
-![Network tab of developer tools showing that script has loaded correctly](./img/bcc2020_network_success.png)
+![Network tab of developer tools showing that script has loaded correctly](../../../img/bcc2020_network_success.png)
 
 Now we need to actually instantiate a view. The code to do so looks like this:
 

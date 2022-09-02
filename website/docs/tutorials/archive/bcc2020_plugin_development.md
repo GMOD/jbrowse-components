@@ -109,7 +109,7 @@ Notes about the plugin:
 - we run our plugin development server on a custom port. This is a webpack-dev-server for the plugin code
 - the config we are pointing at is here https://github.com/cmdcolin/jbrowse-plugin-ucsc-api/blob/master/assets/config_ucsc_api.json and we can see it is basically resolving to a plugin.js file at a CDN, which can be the final built output or the webpack-dev-server served version
 
-![](./img/bcc2020_img1.png)
+![](../../../img/bcc2020_img1.png)
 Screenshot of the UCSC REST API plugin displaying boxes for the interaction features
 
 ### Combining the UCSC API plugin with a custom renderer
@@ -140,7 +140,7 @@ https://github.com/cmdcolin/jbrowse-plugin-arc-renderer/blob/master/assets/confi
 This loads both the UCSCPlugin and the ArcRendererPlugin at the same time, and
 renders the UCSC GeneHancer interactions as arcs
 
-![](./img/bcc2020_img2.png)
+![](../../../img/bcc2020_img2.png)
 
 ### Making custom view types with plugins
 
@@ -163,7 +163,7 @@ have a gene expression heatmap, barchart, get charts dynamically from an R
 server side component, make a graph genome, etc. The ideas are endless! And we
 can make it interact with other views!
 
-![](./img/bcc2020_img3.png)
+![](../../../img/bcc2020_img3.png)
 
 ### Debugging your plugins
 
