@@ -4,62 +4,46 @@
     {
       "type": "category",
       "label": "Quickstart guides",
-      "items": [
-        "quickstarts/quickstart_desktop",
-        "quickstarts/quickstart_web",
-        "quickstarts/quickstart_cli"
-      ]
+      "items": ["quickstart_desktop", "quickstart_web", "quickstart_cli"]
     },
+    "userguide",
+    "config_guide",
     {
       "type": "category",
-      "label": "User guides",
+      "label": "Developer guides",
       "items": [
-        "userguides/userguide_gui",
-        "userguides/userguide_cli",
-        "userguides/userguide_comp",
-        "userguides/userguide_bookmarks",
-        "userguides/userguide_plugins",
-        "userguides/userguide_proteins",
-        {
-          "type": "category",
-          "label": "Advanced configuration guides",
-          "items": [
-            "userguides/advanced/userguide_config_comp",
-            "userguides/advanced/userguide_config_theme",
-            "userguides/advanced/userguide_config_callbacks",
-            "userguides/advanced/userguide_config_analytics",
-            "userguides/advanced/userguide_config_plugins",
-            "userguides/advanced/userguide_config_details"
-          ]
-        }
+        "developer_guide",
+        "devguide_config",
+        "devguide_pluggable_elements"
       ]
     },
     {
       "type": "category",
       "label": "User tutorials",
       "items": [
-        "tutorials/user/plugin_usage",
-        "tutorials/user/guided_cancer_tutorial",
+        "tutorials/config_cli",
+        "tutorials/config_gui",
+        "tutorials/plugin_usage",
         {
           "type": "category",
           "label": "Archive",
           "items": [
-            "tutorials/user/archive/pag2022_synteny_tutorial",
-            "tutorials/user/archive/bcc2020_plugin_development",
+            "tutorials/archive/pag2022_synteny_tutorial",
+            "tutorials/archive/bcc2020_plugin_development",
             {
               "type": "category",
               "label": "BCC2020 - Embedding JBrowse 2 in your website",
               "items": [
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_01_getting_started",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_02_introduction",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_03_simple_site",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_04_assemblies",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_05_tracks",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_06_other_options",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_07_creating_the_view",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_08_default_session",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_09_reacting",
-                "tutorials/user/archive/bcc2020_embedding_jbrowse_10_conclusion"
+                "tutorials/archive/bcc2020_embedding_jbrowse_01_getting_started",
+                "tutorials/archive/bcc2020_embedding_jbrowse_02_introduction",
+                "tutorials/archive/bcc2020_embedding_jbrowse_03_simple_site",
+                "tutorials/archive/bcc2020_embedding_jbrowse_04_assemblies",
+                "tutorials/archive/bcc2020_embedding_jbrowse_05_tracks",
+                "tutorials/archive/bcc2020_embedding_jbrowse_06_other_options",
+                "tutorials/archive/bcc2020_embedding_jbrowse_07_creating_the_view",
+                "tutorials/archive/bcc2020_embedding_jbrowse_08_default_session",
+                "tutorials/archive/bcc2020_embedding_jbrowse_09_reacting",
+                "tutorials/archive/bcc2020_embedding_jbrowse_10_conclusion"
               ]
             }
           ]
@@ -68,30 +52,8 @@
     },
     {
       "type": "category",
-      "label": "Developer guides",
-      "items": [
-        "devguides/developer_guide",
-        "devguides/devguide_config",
-        "devguides/devguide_pluggable_elements"
-      ]
-    },
-    {
-      "type": "category",
       "label": "Developer tutorials",
       "items": [
-        {
-          "type": "category",
-          "label": "Writing a simple JBrowse 2 plugin",
-          "items": [
-            "tutorials/dev/simple_plugin_tutorial/01_introduction",
-            "tutorials/dev/simple_plugin_tutorial/02_installation_and_setup",
-            "tutorials/dev/simple_plugin_tutorial/03_adding_pluggable_element",
-            "tutorials/dev/simple_plugin_tutorial/04_publishing",
-            "tutorials/dev/simple_plugin_tutorial/05_conclusion"
-          ]
-        },
-        "tutorials/dev/develop_web_and_desktop_tutorial",
-        "tutorials/dev/no_build_plugin_tutorial",
         {
           "type": "category",
           "label": "Embedding JBrowse 2 in your website",
@@ -106,7 +68,20 @@
             "tutorials/embed_linear_genome_view/08_reacting",
             "tutorials/embed_linear_genome_view/09_conclusion"
           ]
-        }
+        },
+        {
+          "type": "category",
+          "label": "Writing a simple JBrowse 2 plugin",
+          "items": [
+            "tutorials/simple_plugin_tutorial/01_introduction",
+            "tutorials/simple_plugin_tutorial/02_installation_and_setup",
+            "tutorials/simple_plugin_tutorial/03_adding_pluggable_element",
+            "tutorials/simple_plugin_tutorial/04_publishing",
+            "tutorials/simple_plugin_tutorial/05_conclusion"
+          ]
+        },
+        "tutorials/develop_web_and_desktop_tutorial",
+        "tutorials/no_build_plugin_tutorial"
       ]
     },
     "jbrowse_jupyter",

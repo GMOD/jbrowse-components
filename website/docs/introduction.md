@@ -7,23 +7,23 @@ toplevel: true
 
 Welcome to the JBrowse 2 documentation.
 
-- [Quick start for JBrowse desktop](/docs/quickstarts/quickstart_desktop) - a quick start guide
+- [Quick start for JBrowse desktop](quickstart_desktop) - a quick start guide
   to getting JBrowse desktop running on your machine
-- [Quick start for JBrowse web](/docs/quickstarts/quickstart_web) - a quick start guide to running JBrowse 2 in a browser
-- [Quick start for JBrowse web via CLI](/docs/quickstarts/quickstart_cli) - a quick start guide to intalling the JBrowse 2 CLI and getting JBrowse web running locally on a browser
+- [Quick start for JBrowse web](quickstart_web) - a quick start guide to running JBrowse 2 in a browser
+- [Quick start for JBrowse web via CLI](quickstart_cli) - a quick start guide to intalling the JBrowse 2 CLI and getting JBrowse web running locally on a browser
 
 ### User and developer guides
 
-- [Config editing via graphical interface](/docs/userguides/userguide_gui) - a guide for configuring JBrowse via the GUI
-- [Config editing via command-line interface](/docs/userguides/userguide_cli) - a guide for configuring JBrowse via CLI
-- [Navigating JBrowse and how to use genome tracks](/docs/userguides/userguide_comp) - for general usage, guided by screenshots and descriptions
-- [Comprehensive config guide](/docs/userguides/advanced/userguide_config_comp/) - for detailed configuration settings
-- [Core concepts and pluggable elements for developers](/docs/devguides/developer_guide) - for developers of plugins
+- [User guide](userguide) - for general usage, guided by screenshots and descriptions
+- [Comprehensive config guide](config_guide) - for detailed configuration settings
+- [Core concepts and pluggable elements for developers](developer_guide) - for developers of plugins
 
 #### Tutorials
 
-- [Writing a simple plugin for JBrowse 2](/docs/tutorials/dev/simple_plugin_tutorial/01_introduction/)
-- [Developing with JBrowse web and desktop](/docs/tutorials/dev/develop_web_and_desktop_tutorial/)
+- [Config editing via graphical interface](./tutorials/config_gui) - a guide for configuring JBrowse via the GUI
+- [Config editing via command-line interface](./tutorials/config_cli) - a guide for configuring JBrowse via CLI
+- [Writing a simple plugin for JBrowse 2](./tutorials/simple_plugin_tutorial/01_introduction/)
+- [Developing with JBrowse web and desktop](./tutorials/develop_web_and_desktop_tutorial/)
 
 ...and more! Use the left panel to browse some of the other guide docs available.
 
@@ -36,7 +36,7 @@ Welcome to the JBrowse 2 documentation.
   command line image generator
 - [Embedded components](embedded_components) - docs for our reusable React
   components
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) - docs for JBrowse Jupyter
+- [JBrowse Jupyter](jbrowse_jupyter) - docs for JBrowse Jupyter
 
 ### Contact information
 

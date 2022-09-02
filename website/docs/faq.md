@@ -82,7 +82,7 @@ this.
 
 #### How can I setup JBrowse 2 on my web server
 
-We recommend following the steps in the [quickstart web via CLI](/docs/quickstarts/quickstart_cli/) guide.
+We recommend following the steps in the [quickstart web via CLI](../quickstart_cli/) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
@@ -126,14 +126,14 @@ For example, for jbrowse create, you can visit the [releases page](https://githu
 download the latest jbrowse-web release tag, and unzip it into your web
 directory.
 
-Checkout our [quickstart web](/docs/quickstarts/quickstart_web/) guide for a speedy start to using a manually downloaded JBrowse instance.
+Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-`config.json`; reviewing the [config docs](/docs/userguides/advanced/userguide_config_comp/) and sample configs will be valuable.
+`config.json`; reviewing the [config docs](../config_guide) and sample configs will be valuable.
 
-To configure JBrowse using the GUI, checkout our [guide](/docs/userguides/userguide_gui/).
+To configure JBrowse using the GUI, checkout our [tutorial](../tutorials/config_gui).
 
-Understanding the [config basics](/docs/userguides/advanced/userguide_config_comp/#intro-to-the-configjson) will
+Understanding the [config basics](../config_guide/#intro-to-the-configjson) will
 come in handy also because you can manually edit in advanced configs after your
 tracks are loaded; however be careful:s corrupt configs can produce hard
 to understand errors, because our config system is strongly typed.
@@ -160,7 +160,7 @@ The add-track command will do as much as possible to infer from the file
 extension how to configure this track, and automatically infer the index to be
 myfile.bam.bai.
 
-As mentioned [above](/docs/faq/#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can also manually edit your config file, or use the GUI.
+As mentioned [above](#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can also manually edit your config file, or use the GUI.
 
 #### How do I customize the color of the features displayed on my track
 
@@ -171,7 +171,7 @@ An example of a Jexl configuration callback might look like this:
 
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
 
-See our [configuration callbacks userguide page](/docs/userguides/advanced/userguide_config_callbacks.md) for more information.
+See our [configuration callbacks guide](../config_guide/#configuration-callbacks) for more information.
 
 ##### Adding color callbacks in the GUI
 
