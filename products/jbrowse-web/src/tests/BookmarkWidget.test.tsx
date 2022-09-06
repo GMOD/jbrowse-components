@@ -1,17 +1,22 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 import { fireEvent, render } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
 
+type LGV = LinearGenomeViewModel
 setup()
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(url => {
       return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
@@ -23,33 +28,34 @@ const delay = { timeout: 15000 }
 
 test('click and drag rubberBand, bookmarks region', async () => {
   const pm = getPluginManager()
-  const state = pm.rootModel
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const rubberBandComponent = await findByTestId(
-    'rubberBand_controls',
-    {},
-    delay,
-  )
+  const state = pm.rootModel!
+  const session = state.session!
+  const view = session.views[0] as LGV
 
-  expect(state.session.views[0].bpPerPx).toEqual(0.05)
-  fireEvent.mouseDown(rubberBandComponent, { clientX: 100, clientY: 0 })
-  fireEvent.mouseMove(rubberBandComponent, { clientX: 250, clientY: 0 })
-  fireEvent.mouseUp(rubberBandComponent, { clientX: 250, clientY: 0 })
+  const rubberband = await findByTestId('rubberBand_controls', {}, delay)
+  expect(view.bpPerPx).toEqual(0.05)
+  fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
+  fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
+  fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
   const bookmarkMenuItem = await findByText('Bookmark region')
   fireEvent.click(bookmarkMenuItem)
-  const { widgets } = state.session
+  // @ts-ignore
+  const { widgets } = session
   const bookmarkWidget = widgets.get('GridBookmark')
   expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
 }, 20000)
 
 test('bookmarks current region', async () => {
   const pm = getPluginManager()
-  const state = pm.rootModel
+  const state = pm.rootModel!
+  const session = state.session!
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmark current region'))
-  const { widgets } = state.session
+  // @ts-ignore
+  const { widgets } = session
   const { bookmarkedRegions } = widgets.get('GridBookmark')
   expect(bookmarkedRegions[0].start).toEqual(100)
   expect(bookmarkedRegions[0].end).toEqual(140)
@@ -57,9 +63,11 @@ test('bookmarks current region', async () => {
 
 test('navigates to bookmarked region from widget', async () => {
   const pm = getPluginManager()
-  const state = pm.rootModel
 
   const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const state = pm.rootModel!
+  const session = state.session!
+  const view = session.views[0] as LGV
 
   // need this to complete before we can try to navigate
   fireEvent.click(
@@ -75,7 +83,8 @@ test('navigates to bookmarked region from widget', async () => {
   fireEvent.click(viewMenu)
   fireEvent.click(await findByText('Open bookmark widget'))
 
-  const { widgets } = state.session
+  // @ts-ignore
+  const { widgets } = session
   const bookmarkWidget = widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
@@ -83,9 +92,8 @@ test('navigates to bookmarked region from widget', async () => {
     refName: 'ctgA',
     assemblyName: 'volvox',
   })
-  const view = state.session.views[0]
 
-  fireEvent.click(await findByText('ctgA:201..240'), {}, delay)
+  fireEvent.click(await findByText('ctgA:201..240', {}, delay))
   const newRegion = view.getSelectedRegions(
     view.leftOffset,
     view.rightOffset,

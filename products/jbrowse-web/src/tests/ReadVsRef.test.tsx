@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'

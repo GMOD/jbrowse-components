@@ -247,7 +247,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <div
-                    class="MuiAutocomplete-root mui-1auycx3-MuiAutocomplete-root"
+                    class="MuiAutocomplete-root mui-1kxbtff-MuiAutocomplete-root"
                     data-testid="autocomplete"
                     style="width: 200px;"
                   >

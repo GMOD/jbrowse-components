@@ -40,7 +40,7 @@ async function doSetup(val?: unknown) {
   const view = state.session.views[0] as LGV
   fireEvent.click(await findByText('Help'))
 
-  const autocomplete = await findByTestId('autocomplete')
+  const autocomplete = await findByTestId('autocomplete', {}, delay)
   const input = await findByPlaceholderText('Search for location')
 
   autocomplete.focus()
@@ -123,7 +123,7 @@ test(
     fireEvent.change(input, { target: { value: 'ctgb' } })
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    fireEvent.click((await findAllByText('Go'))[0])
+    fireEvent.click((await findAllByText('Go', {}, delay))[0])
     await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
   },
   total,
