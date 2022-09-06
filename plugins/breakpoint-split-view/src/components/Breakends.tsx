@@ -39,7 +39,7 @@ function getMatchedBreakendFeatures(features: Map<string, Feature>) {
           const bnd = parseBreakend(a)
           if (bnd) {
             if (!candidates[cur]) {
-              candidates[bnd.MatePosition] = [f]
+              candidates[bnd.MatePosition || 'none'] = [f]
             } else {
               candidates[cur].push(f)
             }
