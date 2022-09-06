@@ -6,6 +6,7 @@ import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import {
   JBrowse,
   setup,
@@ -14,13 +15,16 @@ import {
   getPluginManager,
 } from './util'
 
+type LGV = LinearGenomeViewModel
 expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
@@ -33,12 +37,14 @@ const delay = { timeout: 20000 }
 test('launch read vs ref panel', async () => {
   console.warn = jest.fn()
   const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  const state = pluginManager.rootModel!
+  const session = state.session!
+  const view = session.views[0] as LGV
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(5, 100)
+  view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(
       'htsTrackEntry-volvox_alignments_pileup_coverage',
@@ -58,19 +64,21 @@ test('launch read vs ref panel', async () => {
   await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
   fireEvent.click(elt)
 
-  expect(state.session.views[1].type).toBe('LinearSyntenyView')
+  expect(session.views[1].type).toBe('LinearSyntenyView')
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
 }, 20000)
 
 test('launch read vs ref dotplot', async () => {
   console.warn = jest.fn()
   const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
+  const state = pluginManager.rootModel!
+  const session = state.session!
+  const view = session.views[0] as LGV
   const { findByTestId, findByText, findAllByTestId } = render(
     <JBrowse pluginManager={pluginManager} />,
   )
   await findByText('Help')
-  state.session.views[0].setNewView(5, 100)
+  view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(
       'htsTrackEntry-volvox_alignments_pileup_coverage',
@@ -85,6 +93,6 @@ test('launch read vs ref dotplot', async () => {
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
 
-  expect(state.session.views[1].type).toBe('DotplotView')
+  expect(session.views[1].type).toBe('DotplotView')
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)

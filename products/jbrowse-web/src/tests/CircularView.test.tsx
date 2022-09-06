@@ -13,7 +13,9 @@ setup()
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
