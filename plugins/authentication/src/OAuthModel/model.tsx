@@ -1,7 +1,8 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { isElectron } from '@jbrowse/core/util'
+import { isElectron, UriLocation } from '@jbrowse/core/util'
 import { Instance, types } from 'mobx-state-tree'
+import jwtDecode, { JwtPayload } from 'jwt-decode';
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
@@ -152,9 +153,17 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           self.removeToken()
-          let errorMessage
+          const contentType = response.headers.get('Content-Type');
+          let errorMessage, errorJson;
           try {
-            errorMessage = await response.text()
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+              errorJson = await response.json();
+              if (errorJson.error && errorJson.error === "invalid_grant") {
+                console.log("Refresh token expired:" + (typeof sessionStorage === 'undefined' ? "in web worker" : "not in web worker"))
+                this.removeRefreshToken();
+              }
+            }
+            errorMessage = errorJson?.error_description ?? await response.text()
           } catch (error) {
             errorMessage = ''
           }
@@ -166,11 +175,15 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
         }
 
         const accessToken = await response.json()
+        if (accessToken.refresh_token) {
+          this.storeRefreshToken(accessToken.refresh_token);
+        }
         return accessToken.access_token
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => void
+      let listener: (event: MessageEvent) => void;
+      let refreshTokenPromise: Promise<string> | undefined = undefined;
       return {
         // used to listen to child window for auth code/token
         addMessageChannel(
@@ -304,6 +317,34 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           this.addMessageChannel(resolve, reject)
           this.useEndpointForAuthorization(resolve, reject)
+        },
+        async validateToken(
+          token: string,
+          location: UriLocation,
+        ): Promise<string> {
+          console.log("Validate Token: ", token);
+          const decoded = jwtDecode<JwtPayload>(token);
+          if (decoded.exp && decoded.exp < (new Date()).getTime() / 1000) {
+            console.log("Validate Token - token expired:", decoded.exp);
+            const refreshToken =
+              self.hasRefreshToken && self.retrieveRefreshToken()
+            if (refreshToken) {
+              try {
+                if (!refreshTokenPromise) {
+                  refreshTokenPromise = self.exchangeRefreshForAccessToken(
+                    refreshToken,
+                  );
+                }
+                const newToken = await refreshTokenPromise;
+                return this.validateToken(newToken, location)
+              } catch (err) {
+                throw new Error(`Token could not be refreshed. ${err}`)
+              }
+            }
+          } else {
+            refreshTokenPromise = undefined;
+          }
+          return token
         },
       }
     })
