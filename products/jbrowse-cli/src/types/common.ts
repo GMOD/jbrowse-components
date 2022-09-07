@@ -3,9 +3,6 @@ import { Track, LocalPathLocation, UriLocation } from '../base'
 import path from 'path'
 import fetch from '../fetchWithProxy'
 
-// Method for handing off the parsing of a gff3 file URL.
-// Calls the proper parser depending on if it is gzipped or not.
-// Returns a @gmod/gff stream.
 export async function createRemoteStream(urlIn: string) {
   const response = await fetch(urlIn)
   if (!response.ok) {
@@ -16,8 +13,6 @@ export async function createRemoteStream(urlIn: string) {
   return response
 }
 
-// Checks if the passed in string is a valid URL.
-// Returns a boolean.
 export function isURL(FileName: string) {
   let url
 
@@ -110,14 +105,7 @@ export function supported(type: string) {
     'VcfAdapter',
   ].includes(type)
 }
-/**
- * Generates metadata of index given a filename (trackId or assembly)
- * @param name -  assembly name or trackId
- * @param attributes -  attributes indexed
- * @param include -  feature types included from index
- * @param exclude -  feature types excluded from index
- * @param configs - list of track
- */
+
 export async function generateMeta({
   configs,
   attributes,
