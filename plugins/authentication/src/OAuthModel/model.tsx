@@ -159,7 +159,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             if (contentType && contentType.indexOf("application/json") !== -1) {
               errorJson = await response.json();
               if (errorJson.error && errorJson.error === "invalid_grant") {
-                console.log("Refresh token expired:" + (typeof sessionStorage === 'undefined' ? "in web worker" : "not in web worker"))
                 this.removeRefreshToken();
               }
             }
@@ -249,6 +248,30 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           this.deleteMessageChannel()
         },
+        /**
+         * Get a fetch method that will add any needed authentication headers to
+         * the request before sending it. If location is provided, it will be
+         * checked to see if it includes a token in it pre-auth information.
+         * @param location - UriLocation of the resource
+         * @returns A function that can be used to fetch
+         */
+        getFetcher(
+          location?: UriLocation,
+        ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
+          return async (
+            input: RequestInfo,
+            init?: RequestInit,
+          ): Promise<Response> => {
+            // if(location) {
+            console.log("NONRPC - oAuthModel => getFetcher() => getPreAuthorizationInformation() from:" + (typeof sessionStorage === 'undefined' ? "webworker" : "not web worker"));
+            //   location.internetAccountPreAuthorization =
+            //     await self.getPreAuthorizationInformation(location)
+            // }
+            const authToken = await self.getToken(location)
+            const newInit = self.addAuthHeaderToInit(init, authToken)
+            return fetch(input, newInit)
+          }
+        },
         // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization(
           resolve: (token: string) => void,
@@ -322,10 +345,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           token: string,
           location: UriLocation,
         ): Promise<string> {
-          console.log("Validate Token: ", token);
           const decoded = jwtDecode<JwtPayload>(token);
           if (decoded.exp && decoded.exp < (new Date()).getTime() / 1000) {
-            console.log("Validate Token - token expired:", decoded.exp);
             const refreshToken =
               self.hasRefreshToken && self.retrieveRefreshToken()
             if (refreshToken) {
