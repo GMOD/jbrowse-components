@@ -248,30 +248,6 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           }
           this.deleteMessageChannel()
         },
-        /**
-         * Get a fetch method that will add any needed authentication headers to
-         * the request before sending it. If location is provided, it will be
-         * checked to see if it includes a token in it pre-auth information.
-         * @param location - UriLocation of the resource
-         * @returns A function that can be used to fetch
-         */
-        getFetcher(
-          location?: UriLocation,
-        ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
-          return async (
-            input: RequestInfo,
-            init?: RequestInit,
-          ): Promise<Response> => {
-            // if(location) {
-            console.log("NONRPC - oAuthModel => getFetcher() => getPreAuthorizationInformation() from:" + (typeof sessionStorage === 'undefined' ? "webworker" : "not web worker"));
-            //   location.internetAccountPreAuthorization =
-            //     await self.getPreAuthorizationInformation(location)
-            // }
-            const authToken = await self.getToken(location)
-            const newInit = self.addAuthHeaderToInit(init, authToken)
-            return fetch(input, newInit)
-          }
-        },
         // opens external OAuth flow, popup for web and new browser window for desktop
         async useEndpointForAuthorization(
           resolve: (token: string) => void,
