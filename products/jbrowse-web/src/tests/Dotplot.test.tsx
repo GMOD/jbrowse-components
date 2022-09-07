@@ -74,3 +74,5 @@ test('open a dotplot view with import form', async () => {
 
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 30000)
+
+test('inverted dotplot', async () => {})

@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
-import { fireEvent, render } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { createView, setup, hts, generateReadBuffer } from './util'
 
-import { JBrowse, setup, generateReadBuffer, getPluginManager } from './util'
-
-type LGV = LinearGenomeViewModel
 setup()
 
 beforeEach(() => {
@@ -27,11 +24,7 @@ beforeEach(() => {
 const delay = { timeout: 15000 }
 
 test('click and drag rubberBand, bookmarks region', async () => {
-  const pm = getPluginManager()
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const state = pm.rootModel!
-  const session = state.session!
-  const view = session.views[0] as LGV
+  const { view, session, findByTestId, findByText } = createView()
 
   const rubberband = await findByTestId('rubberBand_controls', {}, delay)
   expect(view.bpPerPx).toEqual(0.05)
@@ -47,10 +40,7 @@ test('click and drag rubberBand, bookmarks region', async () => {
 }, 20000)
 
 test('bookmarks current region', async () => {
-  const pm = getPluginManager()
-  const state = pm.rootModel!
-  const session = state.session!
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
+  const { session, findByTestId, findByText } = createView()
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmark current region'))
@@ -62,17 +52,10 @@ test('bookmarks current region', async () => {
 }, 20000)
 
 test('navigates to bookmarked region from widget', async () => {
-  const pm = getPluginManager()
-
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const state = pm.rootModel!
-  const session = state.session!
-  const view = session.views[0] as LGV
+  const { session, view, findByTestId, findByText } = createView()
 
   // need this to complete before we can try to navigate
-  fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_alignments', {}, delay),
-  )
+  fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))
   await findByTestId(
     'trackRenderingContainer-integration_test-volvox_alignments',
     {},

@@ -1,18 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
+import { fireEvent, waitFor } from '@testing-library/react'
 import { TextEncoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
-import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
+import { createView, setup, generateReadBuffer } from './util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-import { fireEvent, render, waitFor } from '@testing-library/react'
-
-type LGV = LinearGenomeViewModel
 
 window.TextEncoder = TextEncoder
 
@@ -39,11 +35,7 @@ beforeEach(() => {
 
 test('export svg', async () => {
   console.error = jest.fn()
-  const pm = getPluginManager()
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  const state = pm.rootModel!
-  const session = state.session!
-  const view = session.views[0] as LGV
+  const { view, findByTestId, findByText } = createView()
   await findByText('Help')
   view.setNewView(0.1, 1)
   fireEvent.click(

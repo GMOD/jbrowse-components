@@ -1,22 +1,19 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import {
-  JBrowse,
   setup,
+  createView,
   expectCanvasMatch,
   generateReadBuffer,
-  getPluginManager,
 } from './util'
 
-type LGV = LinearGenomeViewModel
 expect.extend({ toMatchImageSnapshot })
 setup()
 
@@ -37,13 +34,8 @@ const delay = { timeout: 20000 }
 
 test('launch read vs ref panel', async () => {
   console.warn = jest.fn()
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel!
-  const session = state.session!
-  const view = session.views[0] as LGV
-  const { findByTestId, findByText, findAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, session, findByTestId, findByText, findAllByTestId } =
+    createView()
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
@@ -71,13 +63,8 @@ test('launch read vs ref panel', async () => {
 
 test('launch read vs ref dotplot', async () => {
   console.warn = jest.fn()
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel!
-  const session = state.session!
-  const view = session.views[0] as LGV
-  const { findByTestId, findByText, findAllByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+  const { view, session, findByTestId, findByText, findAllByTestId } =
+    createView()
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(

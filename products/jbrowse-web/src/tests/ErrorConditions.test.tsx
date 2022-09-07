@@ -5,12 +5,14 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { JBrowse, getPluginManager, generateReadBuffer } from './util'
+import {
+  JBrowse,
+  createView,
+  getPluginManager,
+  generateReadBuffer,
+} from './util'
 
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
-
-type LGV = LinearGenomeViewModel
 
 const delay = { timeout: 15000 }
 
@@ -46,11 +48,7 @@ test('404 sequence file', async () => {
 
 test('wrong assembly', async () => {
   console.error = jest.fn()
-  const pm = getPluginManager()
-  const { findAllByText } = render(<JBrowse pluginManager={pm} />)
-  const state = pm.rootModel!
-  const session = state.session!
-  const view = session.views[0] as LGV
+  const { view, findAllByText } = createView()
   view.showTrack('volvox_wrong_assembly')
   await findAllByText(
     'Error: region assembly (volvox) does not match track assemblies (wombat)',
