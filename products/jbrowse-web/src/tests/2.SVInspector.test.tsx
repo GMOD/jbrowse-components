@@ -1,25 +1,23 @@
-import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { fireEvent, render, waitFor } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
+import { fireEvent, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 
-import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
+import { setup, createView, generateReadBuffer } from './util'
 
 window.TextEncoder = TextEncoder
 window.TextDecoder = TextDecoder
-
-expect.extend({ toMatchImageSnapshot })
 
 setup()
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(url => {
       return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
@@ -31,13 +29,8 @@ const delay = { timeout: 20000 }
 
 test('opens a vcf.gz file in the sv inspector view', async () => {
   console.warn = jest.fn()
-  const pluginManager = getPluginManager()
-  const { findByTestId, getByTestId, findByText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-  const {
-    rootModel: { session },
-  } = pluginManager
+  const { session, findByTestId, getByTestId, findByText } = createView()
+
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('SV inspector'))

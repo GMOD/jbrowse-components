@@ -1,15 +1,11 @@
-import React from 'react'
-import { screen, waitFor, fireEvent, render } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
-import { setup, generateReadBuffer, getPluginManager, JBrowse } from './util'
+import { setup, createView, generateReadBuffer } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
-
-type LGV = LinearGenomeViewModel
 
 setup()
 
@@ -32,15 +28,16 @@ const delay = { timeout: 10000 }
 const total = 30000
 
 async function doSetup(val?: unknown) {
-  const pluginManager = getPluginManager(val)
-  const state = pluginManager.rootModel
-  const { findByText, findByTestId, findAllByText, findByPlaceholderText } =
-    render(<JBrowse pluginManager={pluginManager} />)
-  // @ts-ignore
-  const view = state.session.views[0] as LGV
+  const {
+    view,
+    findByText,
+    findByTestId,
+    findAllByText,
+    findByPlaceholderText,
+  } = createView(val)
   fireEvent.click(await findByText('Help'))
 
-  const autocomplete = await findByTestId('autocomplete')
+  const autocomplete = await findByTestId('autocomplete', {}, delay)
   const input = await findByPlaceholderText('Search for location')
 
   autocomplete.focus()
@@ -123,7 +120,7 @@ test(
     fireEvent.change(input, { target: { value: 'ctgb' } })
     fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
     fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-    fireEvent.click((await findAllByText('Go'))[0])
+    fireEvent.click((await findAllByText('Go', {}, delay))[0])
     await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
   },
   total,
