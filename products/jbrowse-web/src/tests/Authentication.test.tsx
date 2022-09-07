@@ -1,29 +1,27 @@
-import React from 'react'
-import { fireEvent, render, waitFor, within } from '@testing-library/react'
+import { fireEvent, waitFor, within } from '@testing-library/react'
 import { LocalFile, RemoteFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import crypto from 'crypto'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import config from '../../test_data/volvox/config.json'
 import {
-  JBrowse,
   setup,
+  createView,
   expectCanvasMatch,
   generateReadBuffer,
-  getPluginManager,
 } from './util'
 
-expect.extend({ toMatchImageSnapshot })
 setup()
-
+// @ts-ignore
 global.crypto = { getRandomValues: crypto.randomFillSync }
 
 beforeEach(() => {
   clearCache()
   clearAdapterCache()
   sessionStorage.clear()
+  // @ts-ignore
   fetch.resetMocks()
+  // @ts-ignore
   fetch.mockResponse(
     generateReadBuffer(
       url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
@@ -34,7 +32,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('open a bigwig track that needs oauth authentication and has existing token', async () => {
-  const pm = getPluginManager({
+  const { state, view, findByTestId, findByText } = createView({
     ...config,
     tracks: [
       {
@@ -54,17 +52,18 @@ test('open a bigwig track that needs oauth authentication and has existing token
       },
     ],
   })
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
   const token = '1234'
   sessionStorage.setItem('dropboxOAuth-token', token)
+  // @ts-ignore
   await waitFor(() => expect(state.internetAccounts.length).toBe(2))
+  // @ts-ignore
   state.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
+  // @ts-ignore
   state.internetAccounts[0].openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
   await findByText('Help')
-  state.session.views[0].setNewView(5, 0)
+  view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_microarray_dropbox', {}, delay),
   )
@@ -78,7 +77,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
-  const pm = getPluginManager({
+  const { view, findByTestId } = createView({
     ...config,
     internetAccounts: [
       {
@@ -107,9 +106,7 @@ test('opens a bigwig track that needs external token authentication', async () =
       },
     ],
   })
-  const state = pm.rootModel
-  const { findByTestId } = render(<JBrowse pluginManager={pm} />)
-  state.session.views[0].setNewView(5, 0)
+  view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(
       'htsTrackEntry-volvox_microarray_externaltoken',
@@ -138,7 +135,7 @@ test('opens a bigwig track that needs external token authentication', async () =
 }, 25000)
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
-  const pm = getPluginManager({
+  const { view, findByTestId, findByText } = createView({
     ...config,
     tracks: [
       {
@@ -158,9 +155,7 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
       },
     ],
   })
-  const state = pm.rootModel
-  const { findByTestId, findByText } = render(<JBrowse pluginManager={pm} />)
-  state.session.views[0].setNewView(5, 0)
+  view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId('htsTrackEntry-volvox_microarray_httpbasic', {}, delay),
   )

@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import React from 'react'
 import { fireEvent, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
 // locals
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import {
   setup,
   createView,
@@ -14,7 +11,6 @@ import {
   generateReadBuffer,
 } from './util'
 
-expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {

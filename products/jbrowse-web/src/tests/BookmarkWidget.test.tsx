@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import React from 'react'
 import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'

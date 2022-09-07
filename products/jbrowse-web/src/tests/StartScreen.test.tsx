@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 import { fireEvent, render } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import StartScreen from '../StartScreen'
 import factoryReset from '../factoryReset'
 import { setup, getPluginManager } from './util'
-
-expect.extend({ toMatchImageSnapshot })
 
 setup()
 

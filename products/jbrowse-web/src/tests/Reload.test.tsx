@@ -1,5 +1,4 @@
 import { fireEvent } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -11,7 +10,6 @@ import {
   pc,
   createView,
 } from './util'
-expect.extend({ toMatchImageSnapshot })
 
 const readBuffer = generateReadBuffer(
   url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),

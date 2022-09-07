@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import React from 'react'
 import { fireEvent, waitFor } from '@testing-library/react'
 import { TextEncoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
 import { fireEvent, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'

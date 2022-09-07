@@ -1,7 +1,7 @@
 {
   "session": {
     "id": "jSupO3tX-",
-    "name": "Grape vs Peach (small) 9/6/2022, 4:35:27 PM",
+    "name": "Grape vs Peach (small) 9/6/2022, 4:35:27 PM-restored",
     "margin": 0,
     "drawerWidth": 384,
     "views": [
@@ -254,7 +254,7 @@
             }
           ],
           "bpPerPx": 3.240626284831751,
-          "offsetPx": 44449085,
+          "offsetPx": 44449236,
           "interRegionPaddingWidth": 0,
           "minimumBlockWidth": 0
         },
@@ -1607,12 +1607,12 @@
         "cursorMode": "crosshair",
         "tracks": [
           {
-            "id": "XFiCSbYbX",
+            "id": "Num7dqx3Y",
             "type": "SyntenyTrack",
             "configuration": "dotplot_track_small_cigar",
             "displays": [
               {
-                "id": "jIEIcaf_Nf",
+                "id": "i8CcEgbJtl",
                 "type": "DotplotDisplay",
                 "configuration": "dotplot_track_small_cigar-DotplotDisplay"
               }
@@ -1628,57 +1628,23 @@
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorWidget",
         "collapsed": {
-          "dotplot_track_small_cigar": false
+          "dotplot_track_small_cigar": true,
+          "dotplot_track_small": false,
+          "dotplot_track_small-1662503813711-sessionTrack": true
         },
         "filterText": "",
         "view": "rtg57cPzQ"
       },
       "configEditor": {
         "id": "configEditor",
-        "type": "ConfigurationEditorWidget",
-        "target": "dotplot_track_small-1662503813711-sessionTrack"
+        "type": "ConfigurationEditorWidget"
       }
     },
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     },
     "connectionInstances": [],
-    "sessionTracks": [
-      {
-        "type": "SyntenyTrack",
-        "trackId": "dotplot_track_small-1662503813711-sessionTrack",
-        "name": "Grape vs peach small (PAF) (copy)",
-        "assemblyNames": ["grape", "peach"],
-        "adapter": {
-          "type": "PAFAdapter",
-          "assemblyNames": ["peach", "grape"],
-          "pafLocation": {
-            "locationType": "UriLocation",
-            "uri": "peach_grape_small.paf",
-            "baseUri": "http://localhost:3000/test_data/config_dotplot.json"
-          }
-        },
-        "displays": [
-          {
-            "type": "DotplotDisplay",
-            "displayId": "dotplot_track_small-DotplotDisplay-1662503813711",
-            "renderer": {
-              "type": "DotplotRenderer",
-              "color": "#f0f",
-              "colorBy": "strand"
-            }
-          },
-          {
-            "type": "LinearComparativeDisplay",
-            "displayId": "dotplot_track_small-LinearComparativeDisplay-1662503813711"
-          },
-          {
-            "type": "LinearSyntenyDisplay",
-            "displayId": "dotplot_track_small-LinearSyntenyDisplay-1662503813711"
-          }
-        ]
-      }
-    ],
+    "sessionTracks": [],
     "sessionConnections": [],
     "sessionAssemblies": [],
     "sessionPlugins": [],
