@@ -578,6 +578,13 @@ export default class AddTrack extends JBrowseCommand {
       }
     }
 
+    if (/\.bed$/i.test(fileName)) {
+      return {
+        type: 'BedAdapter',
+        bedLocation: makeLocation(fileName),
+      }
+    }
+
     if (/\.(bb|bigbed)$/i.test(fileName)) {
       return {
         type: 'BigBedAdapter',
