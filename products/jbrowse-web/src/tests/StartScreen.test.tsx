@@ -1,13 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
-import '@testing-library/jest-dom/extend-expect'
 import { fireEvent, render } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import StartScreen from '../StartScreen'
 import factoryReset from '../factoryReset'
 import { setup, getPluginManager } from './util'
-
-expect.extend({ toMatchImageSnapshot })
 
 setup()
 
@@ -24,7 +21,7 @@ describe('<StartScreen />', () => {
 
 test('Add New Session', async () => {
   const pluginManager = getPluginManager()
-  const root = pluginManager.rootModel
+  const root = pluginManager.rootModel!
   const { findByText } = render(
     <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
   )
@@ -35,24 +32,22 @@ test('Add New Session', async () => {
 
 test('Add New LGV Session', async () => {
   const pluginManager = getPluginManager()
-  const root = pluginManager.rootModel
+  const root = pluginManager.rootModel!
   const { findByText } = render(
     <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
   )
   await findByText('Start a new session')
   fireEvent.click(await findByText('Linear Genome View'))
-  expect(root.session).toBeTruthy()
-  expect(root.session.views.length).toBeGreaterThan(0)
+  expect(root.session!.views.length).toBeGreaterThan(0)
 })
 
 test('Add New SV Inspector Session', async () => {
   const pluginManager = getPluginManager()
-  const root = pluginManager.rootModel
+  const root = pluginManager.rootModel!
   const { findByText } = render(
     <StartScreen rootModel={root} onFactoryReset={factoryReset} />,
   )
   await findByText('Start a new session')
   fireEvent.click(await findByText('Structural Variant Inspector'))
-  expect(root.session).toBeTruthy()
-  expect(root.session.views.length).toBeGreaterThan(0)
+  expect(root.session!.views.length).toBeGreaterThan(0)
 })

@@ -128,7 +128,21 @@
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {
-          "uri": "peach_grape_small.paf",
+          "uri": "peach_grape_small.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["peach", "grape"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "dotplot_track_small_cigar",
+      "name": "Grape vs peach small (PAF w/ CIGAR)",
+      "assemblyNames": ["grape", "peach"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "peach_grape_small_cigar.paf.gz",
           "locationType": "UriLocation"
         },
         "assemblyNames": ["peach", "grape"]

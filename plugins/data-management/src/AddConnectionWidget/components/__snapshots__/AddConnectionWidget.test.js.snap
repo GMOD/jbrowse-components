@@ -77,7 +77,6 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   </label>
                   <div
                     class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
-                    variant="outlined"
                   >
                     <div
                       aria-describedby="mui-1-helper-text"

@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { GenericFilehandle } from 'generic-filehandle'
@@ -9,6 +12,7 @@ import { GenericFilehandle } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
@@ -17,8 +21,6 @@ import corePlugins from '../corePlugins'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Image, createCanvas } from 'canvas'
-
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -61,7 +63,6 @@ export function getPluginManager(initialState?: any, adminMode = true) {
     rootModel.setDefaultSession()
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   rootModel.session!.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
@@ -111,6 +112,8 @@ export function setup() {
   Storage.prototype.setItem = jest.fn()
   Storage.prototype.removeItem = jest.fn()
   Storage.prototype.clear = jest.fn()
+
+  expect.extend({ toMatchImageSnapshot })
 }
 
 // eslint-disable-next-line no-global-assign
@@ -143,13 +146,11 @@ export const hts = (str: string) => 'htsTrackEntry-' + str
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createView(args?: any) {
-  const pm = getPluginManager(args)
-  const state = pm.rootModel
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { session } = state!
+export function createView(...args: any[]) {
+  const pm = getPluginManager(...args)
+  const state = pm.rootModel!
+  const session = state.session!
   const rest = render(<JBrowse pluginManager={pm} />)
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const view = session!.views[0] as LGV
-  return { view, state, ...rest }
+  return { view, state, session, ...rest }
 }

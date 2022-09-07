@@ -105,11 +105,17 @@ export default class DotplotRenderer extends ComparativeRenderer {
       max: number,
       feature: Feature,
     ) {
+      const strand = feature.get('strand') || 1
+      if (strand === -1) {
+        ;[max, min] = [min, max]
+      }
       if (num < min - fudgeFactor) {
-        const strand = feature.get('strand') || 1
-        const start = strand === 1 ? feature.get('start') : feature.get('end')
-        const end = strand === 1 ? feature.get('end') : feature.get('start')
+        let start = feature.get('start')
+        let end = feature.get('end')
         const refName = feature.get('refName')
+        if (strand === -1) {
+          ;[end, start] = [start, end]
+        }
 
         warnings.push({
           message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,

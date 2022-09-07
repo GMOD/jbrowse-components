@@ -1192,7 +1192,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                               </label>
                               <div
                                 class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
-                                variant="outlined"
                               >
                                 <div
                                   aria-describedby="mui-16-helper-text"
@@ -1358,7 +1357,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                 </label>
                                 <div
                                   class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
-                                  variant="outlined"
                                 >
                                   <div
                                     aria-describedby="mui-18-helper-text"
@@ -1435,7 +1433,6 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                 </label>
                                 <div
                                   class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl css-md26zr-MuiInputBase-root-MuiOutlinedInput-root"
-                                  variant="outlined"
                                 >
                                   <div
                                     aria-describedby="mui-19-helper-text"

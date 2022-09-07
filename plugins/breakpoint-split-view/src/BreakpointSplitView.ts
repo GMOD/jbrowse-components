@@ -41,7 +41,7 @@ class BreakpointSplitViewType extends ViewType {
       const INFO = feature.get('INFO')
       endPos = INFO.END[0] - 1
       mateRefName = getCanonicalRefName(INFO.CHR2[0])
-    } else if (bnd) {
+    } else if (bnd?.MatePosition) {
       const matePosition = bnd.MatePosition.split(':')
       endPos = +matePosition[1] - 1
       mateRefName = getCanonicalRefName(matePosition[0])
