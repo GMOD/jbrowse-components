@@ -2,7 +2,7 @@ import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { isElectron, UriLocation } from '@jbrowse/core/util'
 import { Instance, types } from 'mobx-state-tree'
-import jwtDecode, { JwtPayload } from 'jwt-decode';
+import jwtDecode, { JwtPayload } from 'jwt-decode'
 
 // locals
 import { OAuthInternetAccountConfigModel } from './configSchema'
@@ -153,16 +153,17 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           self.removeToken()
-          const contentType = response.headers.get('Content-Type');
-          let errorMessage, errorJson;
+          const contentType = response.headers.get('Content-Type')
+          let errorMessage, errorJson
           try {
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-              errorJson = await response.json();
-              if (errorJson.error && errorJson.error === "invalid_grant") {
-                this.removeRefreshToken();
+            if (contentType && contentType.indexOf('application/json') !== -1) {
+              errorJson = await response.json()
+              if (errorJson.error && errorJson.error === 'invalid_grant') {
+                this.removeRefreshToken()
               }
             }
-            errorMessage = errorJson?.error_description ?? await response.text()
+            errorMessage =
+              errorJson?.error_description ?? (await response.text())
           } catch (error) {
             errorMessage = ''
           }
@@ -175,14 +176,14 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         const accessToken = await response.json()
         if (accessToken.refresh_token) {
-          this.storeRefreshToken(accessToken.refresh_token);
+          this.storeRefreshToken(accessToken.refresh_token)
         }
         return accessToken.access_token
       },
     }))
     .actions(self => {
-      let listener: (event: MessageEvent) => void;
-      let refreshTokenPromise: Promise<string> | undefined = undefined;
+      let listener: (event: MessageEvent) => void
+      let refreshTokenPromise: Promise<string> | undefined = undefined
       return {
         // used to listen to child window for auth code/token
         addMessageChannel(
@@ -321,25 +322,24 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           token: string,
           location: UriLocation,
         ): Promise<string> {
-          const decoded = jwtDecode<JwtPayload>(token);
-          if (decoded.exp && decoded.exp < (new Date()).getTime() / 1000) {
+          const decoded = jwtDecode<JwtPayload>(token)
+          if (decoded.exp && decoded.exp < new Date().getTime() / 1000) {
             const refreshToken =
               self.hasRefreshToken && self.retrieveRefreshToken()
             if (refreshToken) {
               try {
                 if (!refreshTokenPromise) {
-                  refreshTokenPromise = self.exchangeRefreshForAccessToken(
-                    refreshToken,
-                  );
+                  refreshTokenPromise =
+                    self.exchangeRefreshForAccessToken(refreshToken)
                 }
-                const newToken = await refreshTokenPromise;
+                const newToken = await refreshTokenPromise
                 return this.validateToken(newToken, location)
               } catch (err) {
                 throw new Error(`Token could not be refreshed. ${err}`)
               }
             }
           } else {
-            refreshTokenPromise = undefined;
+            refreshTokenPromise = undefined
           }
           return token
         },
