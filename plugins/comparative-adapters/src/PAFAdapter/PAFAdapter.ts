@@ -295,11 +295,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName,
                 strand,
                 assemblyName,
-                revCigar: true,
+                rev: index === 0 ? -1 : 1,
                 syntenyId: i,
-                ...(numMatches && blockLen
-                  ? { identity: numMatches / blockLen }
-                  : {}),
+                identity: (numMatches || 0) / (blockLen || 1),
                 mate: { start: mateStart, end: mateEnd, refName: mateName },
                 ...extra,
               }),
