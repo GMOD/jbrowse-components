@@ -18,14 +18,21 @@ export default class ViewType extends PluggableElementBase {
 
   displayTypes: DisplayType[] = []
 
+  // allows for views that are 'extended' from other views to be added as a new view type in the plugin manager
+  // without this, the plugin manager cannot distinguish whether relevant displays have been added to the view type's list
+  // and thus will not display tracks that should be accessible within a view that has been extended from another
+  extendedName?: string
+
   constructor(stuff: {
     name: string
     ReactComponent: ViewReactComponent
     stateModel: IAnyModelType
+    extendedName?: string
   }) {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
     this.stateModel = stuff.stateModel
+    this.extendedName = stuff.extendedName ? stuff.extendedName : undefined
     if (!this.ReactComponent) {
       throw new Error(`no ReactComponent defined for view ${this.name}`)
     }

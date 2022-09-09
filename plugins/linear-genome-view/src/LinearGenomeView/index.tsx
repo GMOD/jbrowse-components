@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import React, { lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -53,6 +53,10 @@ import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
+import MiniControls from './components/MiniControls'
+import Header from './components/Header'
+import ZoomControls from './components/ZoomControls'
+import LinearGenomeView from './components/LinearGenomeView'
 
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
@@ -192,6 +196,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      MiniControlsComponent(): React.FC<any> {
+        return MiniControls
+      },
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      HeaderComponent(): React.FC<any> {
+        return Header
+      },
+
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         const { assemblyNames } = self
@@ -1220,7 +1234,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg, RefNameAutocomplete, SearchBox }
+export {
+  renderToSvg,
+  RefNameAutocomplete,
+  SearchBox,
+  ZoomControls,
+  LinearGenomeView,
+}
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export { default as ReactComponent } from './components/LinearGenomeView'
