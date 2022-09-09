@@ -225,9 +225,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
-          const rev = feature.get('rev')
-
-          console.log({ rev, feature })
+          const flipInsDel = feature.get('flipInsDel')
 
           if (drawCigar && cigar) {
             const cigarOps = parseCigar(cigar)
@@ -235,7 +233,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
             ctx.beginPath()
             ctx.moveTo(currX, height - currY)
 
-            if (rev === -1) {
+            if (flipInsDel) {
               for (let i = 0; i < cigarOps.length; i += 2) {
                 const val = +cigarOps[i]
                 const op = cigarOps[i + 1]
@@ -243,9 +241,9 @@ export default class DotplotRenderer extends ComparativeRenderer {
                   currX += (val / hBpPerPx) * strand
                   currY += val / vBpPerPx
                 } else if (op === 'D' || op === 'N') {
-                  currY += val / vBpPerPx
-                } else if (op === 'I') {
                   currX += (val / hBpPerPx) * strand
+                } else if (op === 'I') {
+                  currY += val / vBpPerPx
                 }
                 currX = clampWithWarnX(currX, b1, b2, feature)
                 currY = clampWithWarnY(currY, e1, e2, feature)
@@ -259,9 +257,9 @@ export default class DotplotRenderer extends ComparativeRenderer {
                   currX += (val / hBpPerPx) * strand
                   currY += val / vBpPerPx
                 } else if (op === 'D' || op === 'N') {
-                  currX += (val / hBpPerPx) * strand
-                } else if (op === 'I') {
                   currY += val / vBpPerPx
+                } else if (op === 'I') {
+                  currX += (val / hBpPerPx) * strand
                 }
                 currX = clampWithWarnX(currX, b1, b2, feature)
                 currY = clampWithWarnY(currY, e1, e2, feature)
