@@ -475,7 +475,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             track => track.configuration.trackId,
           )
           results.forEach(result => {
-            if (openTrackIds !== []) {
+            if (openTrackIds.length !== 0) {
               if (openTrackIds.includes(result.trackId)) {
                 result.updateScore(result.getScore() + 1)
               }

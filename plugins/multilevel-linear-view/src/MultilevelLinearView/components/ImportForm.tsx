@@ -243,7 +243,7 @@ const ImportForm = observer(
             <AssemblySelector
               onChange={val => {
                 setError(undefined)
-                setSelected([val, val, val])
+                setSelected(Array(parseInt(numViews, 10)).fill(val))
               }}
               session={session}
               selected={selected[0]}

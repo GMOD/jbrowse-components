@@ -10,5 +10,6 @@ export default ({ jbrequire }: PluginManager) => {
     ReactComponent: lazy(
       () => import('./components/LinearGenomeMultilevelView'),
     ),
+    extendedName: 'LinearGenomeView',
   })
 }
