@@ -72,14 +72,22 @@ export default function assemblyManagerFactory(
         if (!assemblyName) {
           throw new Error('no assembly name supplied to waitForAssembly')
         }
-        const assembly = self.get(assemblyName)
+        let assembly = self.get(assemblyName)
+        if (!assembly) {
+          try {
+            await when(() => Boolean(self.get(assemblyName)), { timeout: 1000 })
+            assembly = self.get(assemblyName)
+          } catch (e) {
+            // ignore
+          }
+        }
         if (!assembly) {
           return undefined
         }
         await when(
           () =>
-            Boolean(assembly.regions && assembly.refNameAliases) ||
-            !!assembly.error,
+            Boolean(assembly?.regions && assembly.refNameAliases) ||
+            !!assembly?.error,
         )
         if (assembly.error) {
           throw assembly.error

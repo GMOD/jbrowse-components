@@ -142,7 +142,11 @@ export default function sessionModelFactory(
         return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent<any>(self).jbrowse.assemblyNames
+        const { assemblyNames } = getParent<any>(self).jbrowse
+        const sessionAssemblyNames = self.sessionAssemblies.map(assembly =>
+          readConfObject(assembly, 'name'),
+        )
+        return [...assemblyNames, ...sessionAssemblyNames]
       },
       get tracks() {
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
@@ -244,7 +248,8 @@ export default function sessionModelFactory(
           console.warn(`Assembly ${assemblyConfig.name} was already existing`)
           return asm
         }
-        self.sessionAssemblies.push(assemblyConfig)
+        const length = self.sessionAssemblies.push(assemblyConfig)
+        return self.sessionAssemblies[length - 1]
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
