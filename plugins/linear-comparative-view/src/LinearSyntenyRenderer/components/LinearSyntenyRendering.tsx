@@ -440,25 +440,20 @@ function LinearSyntenyRendering({
                 const d1 = len / viewSnaps[0].bpPerPx
                 const d2 = len / viewSnaps[1].bpPerPx
 
-                if (!flipInsDel) {
-                  if (op === 'M' || op === '=' || op === 'X') {
-                    cx1 += d1 * rev1
+                if (op === 'M' || op === '=' || op === 'X') {
+                  cx1 += d1 * rev1
+                  cx2 += d2 * rev2
+                } else if (op === 'D' || op === 'N') {
+                  if (flipInsDel) {
                     cx2 += d2 * rev2
-                  } else if (op === 'D') {
+                  } else {
                     cx1 += d1 * rev1
-                  } else if (op === 'N') {
-                    cx1 += d1 * rev1
-                  } else if (op === 'I') {
-                    cx2 += d2 * rev2
                   }
-                } else {
-                  if (op === 'M' || op === '=' || op === 'X') {
+                } else if (op === 'I') {
+                  if (flipInsDel) {
                     cx1 += d1 * rev1
+                  } else {
                     cx2 += d2 * rev2
-                  } else if (op === 'D' || op === 'N') {
-                    cx2 += d2 * rev2
-                  } else if (op === 'I') {
-                    cx1 += d1 * rev1
                   }
                 }
 
