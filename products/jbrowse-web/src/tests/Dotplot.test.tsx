@@ -6,6 +6,7 @@ import { TextEncoder, TextDecoder } from 'web-encoding'
 import path from 'path'
 import dotplotConfig from '../../test_data/config_dotplot.json'
 import dotplotSession from './dotplot_inverted_test.json'
+import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import {
   setup,
   generateReadBuffer,
@@ -73,4 +74,12 @@ test('inverted dotplot', async () => {
     defaultSession: dotplotSession.session,
   })
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
-})
+}, 30000)
+
+test('inverted dotplot flip axes', async () => {
+  const { findByTestId } = createView({
+    ...dotplotConfig,
+    defaultSession: dotplotSessionFlipAxes.session,
+  })
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+}, 30000)
