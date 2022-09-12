@@ -21,19 +21,19 @@ function Grid({
   const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
   const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
 
+  // Uses math.max/math.min avoid making very large SVG rect offscreen element,
+  // which can sometimes fail to draw
+  const rx = Math.max(hbottom, 0)
+  const ry = Math.max(viewHeight - vtop, 0)
+  const w = Math.min(htop - hbottom, viewWidth)
+  const h = Math.min(vtop - vbottom, viewHeight)
   return (
     <svg
       style={{ background: 'rgba(0,0,0,0.12)' }}
       width={viewWidth}
       height={viewHeight}
     >
-      <rect
-        x={hbottom}
-        y={viewHeight - vtop}
-        width={htop - hbottom}
-        height={vtop - vbottom}
-        fill="#fff"
-      />
+      <rect x={rx} y={ry} width={w} height={h} fill="#fff" />
       <g>
         {hblocks.map(region => {
           const x = region.offsetPx - hview.offsetPx

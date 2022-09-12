@@ -119,9 +119,7 @@ function drawMatchSimple({
     const x22 = px22 - offsets[l2]
 
     const y1 = interstitialYPos(l1 < l2, height)
-
     const y2 = interstitialYPos(l2 < l1, height)
-
     const mid = (y2 - y1) / 2
 
     // drawing a line if the results are thin: drawing a line results in much
@@ -406,6 +404,7 @@ function LinearSyntenyRendering({
 
             // we have to read the CIGAR backwards when looking at negative strand features
             const f1flipped = f1.get('revCigar') && f1.get('strand') === -1
+            const flipInsDel = f1.get('flipInsDel')
 
             // flip the direction of the CIGAR drawing in horizontally flipped
             // modes
@@ -440,15 +439,22 @@ function LinearSyntenyRendering({
 
                 const d1 = len / viewSnaps[0].bpPerPx
                 const d2 = len / viewSnaps[1].bpPerPx
+
                 if (op === 'M' || op === '=' || op === 'X') {
                   cx1 += d1 * rev1
                   cx2 += d2 * rev2
-                } else if (op === 'D') {
-                  cx1 += d1 * rev1
-                } else if (op === 'N') {
-                  cx1 += d1 * rev1
+                } else if (op === 'D' || op === 'N') {
+                  if (flipInsDel) {
+                    cx2 += d2 * rev2
+                  } else {
+                    cx1 += d1 * rev1
+                  }
                 } else if (op === 'I') {
-                  cx2 += d2 * rev2
+                  if (flipInsDel) {
+                    cx1 += d1 * rev1
+                  } else {
+                    cx2 += d2 * rev2
+                  }
                 }
 
                 // check that we are even drawing in view here, e.g. that all
