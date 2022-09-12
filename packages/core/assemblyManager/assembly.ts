@@ -179,6 +179,10 @@ export default function assemblyFactory(
         return getConf(self, 'aliases')
       },
 
+      get displayName(): string | undefined {
+        return getConf(self, 'displayName')
+      },
+
       hasName(name: string) {
         return this.allAliases.includes(name)
       },

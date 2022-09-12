@@ -78,7 +78,9 @@ export default function AboutDialog({
     )
 
     trackName = asm
-      ? `Reference Sequence (${readConfObject(asm, 'name')})`
+      ? `Reference Sequence (${
+          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
+        })`
       : 'Reference Sequence'
   }
 
