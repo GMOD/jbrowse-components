@@ -440,7 +440,7 @@ function LinearSyntenyRendering({
                 const d1 = len / viewSnaps[0].bpPerPx
                 const d2 = len / viewSnaps[1].bpPerPx
 
-                if (flipInsDel) {
+                if (!flipInsDel) {
                   if (op === 'M' || op === '=' || op === 'X') {
                     cx1 += d1 * rev1
                     cx2 += d2 * rev2

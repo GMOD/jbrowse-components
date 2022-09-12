@@ -73,7 +73,7 @@ test('inverted dotplot', async () => {
     ...dotplotConfig,
     defaultSession: dotplotSession.session,
   })
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)
 }, 30000)
 
 test('inverted dotplot flip axes', async () => {
@@ -81,5 +81,8 @@ test('inverted dotplot flip axes', async () => {
     ...dotplotConfig,
     defaultSession: dotplotSessionFlipAxes.session,
   })
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)
 }, 30000)
+
+// session with dotplots and linear synteny views with both orientations tested
+// http://localhost:3000/?config=test_data%2Fconfig_dotplot.json&session=share-GGmzKoxYlo&password=JhsC4

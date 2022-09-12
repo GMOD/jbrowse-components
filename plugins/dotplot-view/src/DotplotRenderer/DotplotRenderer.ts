@@ -233,7 +233,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
             ctx.beginPath()
             ctx.moveTo(currX, height - currY)
 
-            if (flipInsDel) {
+            if (!flipInsDel) {
               for (let i = 0; i < cigarOps.length; i += 2) {
                 const val = +cigarOps[i]
                 const op = cigarOps[i + 1]
