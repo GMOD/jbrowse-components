@@ -2,7 +2,7 @@ import { fireEvent, waitFor } from '@testing-library/react'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 // locals
-import { doBeforeEach, createView, setup, expectCanvasMatch } from './util'
+import { hts, doBeforeEach, createView, setup, expectCanvasMatch } from './util'
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -22,11 +22,7 @@ test('launch read vs ref panel', async () => {
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_alignments_pileup_coverage',
-      {},
-      delay,
-    ),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)
@@ -52,11 +48,7 @@ test('launch read vs ref dotplot', async () => {
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_alignments_pileup_coverage',
-      {},
-      delay,
-    ),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
   const track = await findAllByTestId('pileup_overlay_canvas', {}, delay)

@@ -27,14 +27,14 @@ async function doSetup(val?: unknown) {
   return { autocomplete, input, ...args }
 }
 
-test('test trix from lgv header', async () => {
+test('single result, searching: eden.1', async () => {
   const { input, autocomplete } = await doSetup()
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)
 
-test('opens a dialog with multiple results', async () => {
+test('dialog with multiple results, searching seg02', async () => {
   const { input, view, autocomplete } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'seg02' } })
@@ -43,16 +43,15 @@ test('opens a dialog with multiple results', async () => {
   await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)
 
-test('opens a dialog with multiple results with jb1 text search adapter results', async () => {
+test('dialog with multiple results with jb1 config, searching: eden.1', async () => {
   const { input, view, autocomplete } = await doSetup(jb1_config)
-
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await screen.findByText('Search results', {}, delay)
   expect(view.searchResults?.length).toBeGreaterThan(0)
 }, 30000)
 
-test('test navigation with the search input box', async () => {
+test('test navigation with the search input box, {volvox2}ctgB:1..200', async () => {
   const { input, view, autocomplete } = await doSetup()
   fireEvent.change(input, { target: { value: '{volvox2}ctgB:1..200' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
@@ -62,16 +61,15 @@ test('test navigation with the search input box', async () => {
   )
 }, 30000)
 
-test('nav lower case refnames, locstring', async () => {
+test('nav lower case refnames, searching: ctgb:1-100', async () => {
   const { input, view, autocomplete } = await doSetup()
-
   fireEvent.change(input, { target: { value: 'ctgb:1-100' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
 }, 30000)
 
-test('nav lower case refnames, refname', async () => {
+test('nav lower case refnames, searching: ctgb', async () => {
   const { input, view, autocomplete, findAllByText } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'ctgb' } })
@@ -81,7 +79,7 @@ test('nav lower case refnames, refname', async () => {
   await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
 }, 30000)
 
-test('nav lower case refnames, locstring', async () => {
+test('nav lower case refnames, searching: contigb:1-100', async () => {
   const { input, view, autocomplete } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'contigb:1-100' } })

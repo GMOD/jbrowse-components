@@ -55,7 +55,7 @@ test('open a dotplot view with import form', async () => {
 
 test('inverted dotplot', async () => {
   const { findByTestId } = createView({
-    ...dotplotConfig,
+    ...config,
     defaultSession: dotplotSession.session,
   })
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)
@@ -63,7 +63,7 @@ test('inverted dotplot', async () => {
 
 test('inverted dotplot flip axes', async () => {
   const { findByTestId } = createView({
-    ...dotplotConfig,
+    ...config,
     defaultSession: dotplotSessionFlipAxes.session,
   })
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)

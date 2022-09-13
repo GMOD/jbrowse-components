@@ -1,36 +1,26 @@
 import { fireEvent } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { createView, setup, hts, generateReadBuffer } from './util'
+
+import { createView, setup, hts, doBeforeEach } from './util'
 
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 15000 }
 
 test('click and drag rubberBand, bookmarks region', async () => {
-  const { view, session, findByTestId, findByText } = createView()
-
+  const { session, view, findByTestId, findByText } = createView()
   const rubberband = await findByTestId('rubberBand_controls', {}, delay)
+
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
   const bookmarkMenuItem = await findByText('Bookmark region')
   fireEvent.click(bookmarkMenuItem)
+
   // @ts-ignore
   const { widgets } = session
   const bookmarkWidget = widgets.get('GridBookmark')
@@ -42,6 +32,7 @@ test('bookmarks current region', async () => {
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmark current region'))
+
   // @ts-ignore
   const { widgets } = session
   const { bookmarkedRegions } = widgets.get('GridBookmark')
@@ -50,7 +41,7 @@ test('bookmarks current region', async () => {
 }, 20000)
 
 test('navigates to bookmarked region from widget', async () => {
-  const { session, view, findByTestId, findByText } = createView()
+  const { view, session, findByTestId, findByText } = createView()
 
   // need this to complete before we can try to navigate
   fireEvent.click(await findByTestId(hts('volvox_alignments'), {}, delay))

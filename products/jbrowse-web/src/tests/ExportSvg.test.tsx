@@ -1,12 +1,11 @@
-import React from 'react'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 import { TextEncoder } from 'web-encoding'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
 
 // locals
-import { JBrowse, setup, getPluginManager, doBeforeEach } from './util'
+import { hts, createView, setup, doBeforeEach } from './util'
 
 window.TextEncoder = TextEncoder
 
@@ -22,22 +21,19 @@ beforeEach(() => {
   doBeforeEach()
 })
 
+const delay = { timeout: 25000 }
+
 test('export svg', async () => {
   console.error = jest.fn()
   const { view, findByTestId, findByText } = createView()
+
   await findByText('Help')
   view.setNewView(0.1, 1)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_alignments_pileup_coverage',
-      {},
-      { timeout: 10000 },
-    ),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
   view.exportSvg()
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
-    timeout: 25000,
-  })
+  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
   // @ts-ignore
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]

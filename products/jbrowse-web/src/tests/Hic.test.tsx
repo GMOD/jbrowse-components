@@ -21,14 +21,8 @@ setup()
 const delay = { timeout: 20000 }
 
 test('hic', async () => {
-  const { view, findByTestId } = createView({
-    ...hicConfig,
-    configuration: {
-      rpc: {
-        defaultDriver: 'MainThreadRpcDriver',
-      },
-    },
-  })
+  const { view, findByTestId } = createView(hicConfig)
+
   view.setNewView(5000, 0)
   fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
   expectCanvasMatch(await findByTestId(pc('{hg19}1:1..4,000,000-0'), {}, delay))

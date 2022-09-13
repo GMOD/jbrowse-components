@@ -34,13 +34,6 @@ global.nodeImage = Image
 // @ts-ignore
 global.nodeCreateCanvas = createCanvas
 
-// @ts-ignore
-configSnapshot.configuration = {
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
-  },
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getPluginManager(initialState?: any, adminMode = true) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
