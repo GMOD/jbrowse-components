@@ -1,22 +1,19 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
-
-import { LocalFile } from 'generic-filehandle'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { GenericFilehandle } from 'generic-filehandle'
+import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { QueryParamProvider } from 'use-query-params'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
@@ -25,6 +22,8 @@ import corePlugins from '../corePlugins'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Image, createCanvas } from 'canvas'
+
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
@@ -67,6 +66,7 @@ export function getPluginManager(initialState?: any, adminMode = true) {
     rootModel.setDefaultSession()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   rootModel.session!.views.map(view => view.setWidth(800))
   pluginManager.setRootModel(rootModel)
 
@@ -153,13 +153,17 @@ export const hts = (str: string) => 'htsTrackEntry-' + str
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createView(...args: any[]) {
-  const pm = getPluginManager(...args)
-  const state = pm.rootModel!
-  const session = state.session!
-  const rest = render(<JBrowse pluginManager={pm} />)
-  const view = session!.views[0] as LGV
-  return { view, state, session, ...rest }
+export function createView(args?: any, adminMode?: boolean) {
+  const pluginManager = getPluginManager(args, adminMode)
+  const rest = render(<JBrowse pluginManager={pluginManager} />)
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const rootModel = pluginManager.rootModel!
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const session = rootModel.session!
+
+  const view = session.views[0] as LGV
+  return { view, rootModel, session, ...rest }
 }
 
 export function doBeforeEach(

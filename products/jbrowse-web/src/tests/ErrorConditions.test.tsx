@@ -1,4 +1,3 @@
-import React from 'react'
 import { createView, doBeforeEach } from './util'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 

@@ -27,7 +27,7 @@ test('variant track test - opens feature detail view', async () => {
 }, 20000)
 
 test('widget drawer navigation', async () => {
-  const { view, state, findByTestId, findByText } = createView()
+  const { view, session, findByTestId, findByText } = createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
   // opens a config editor widget
@@ -50,24 +50,24 @@ test('widget drawer navigation', async () => {
 
   // test minimize and maximize widget drawer
   // @ts-ignore
-  expect(state.session.minimized).toBeFalsy()
+  expect(session.minimized).toBeFalsy()
 
   await findByTestId('drawer-minimize')
   fireEvent.click(await findByTestId('drawer-minimize'))
   // @ts-ignore
-  expect(state.session.minimized).toBeTruthy()
+  expect(session.minimized).toBeTruthy()
 
   fireEvent.click(await findByTestId('drawer-maximize'))
   // @ts-ignore
-  expect(state.session.minimized).toBeFalsy()
+  expect(session.minimized).toBeFalsy()
 
   // test deleting widget from select dropdown using trash icon
   // @ts-ignore
-  expect(state.session.activeWidgets.size).toEqual(2)
+  expect(session.activeWidgets.size).toEqual(2)
   fireEvent.mouseDown(
     getByRole(await findByTestId('widget-drawer-selects'), 'button'),
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   // @ts-ignore
-  expect(state.session.activeWidgets.size).toEqual(1)
+  expect(session.activeWidgets.size).toEqual(1)
 }, 20000)
