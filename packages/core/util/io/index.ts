@@ -89,14 +89,16 @@ export function openLocation(
 
 export function getFetcher(
   location: FileLocation,
-  pluginManager: PluginManager,
+  pluginManager?: PluginManager,
 ): Fetcher {
   if (!isUriLocation(location)) {
     throw new Error(`Not a valid UriLocation: ${JSON.stringify(location)}`)
   }
-  const internetAccount = getInternetAccount(location, pluginManager)
-  if (internetAccount) {
-    return internetAccount.getFetcher(location)
+  if (pluginManager) {
+    const internetAccount = getInternetAccount(location, pluginManager)
+    if (internetAccount) {
+      return internetAccount.getFetcher(location)
+    }
   }
   return checkAuthNeededFetch
 }
