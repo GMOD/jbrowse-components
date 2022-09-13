@@ -1,45 +1,16 @@
 import React from 'react'
-import { render } from '@testing-library/react'
-import { ErrorBoundary } from 'react-error-boundary'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  JBrowse,
-  createView,
-  getPluginManager,
-  generateReadBuffer,
-} from './util'
-
+import { createView, doBeforeEach } from './util'
 import chromeSizesConfig from '../../test_data/config_chrom_sizes_test.json'
 
 const delay = { timeout: 15000 }
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
-  )
+  doBeforeEach()
 })
-
-function FallbackComponent({ error }: { error: unknown }) {
-  return <div>there was an error: {String(error)}</div>
-}
 
 test('404 sequence file', async () => {
   console.error = jest.fn()
-  const pm = getPluginManager(chromeSizesConfig)
-  const { findAllByText } = render(
-    <ErrorBoundary FallbackComponent={FallbackComponent}>
-      <JBrowse pluginManager={pm} />
-    </ErrorBoundary>,
-  )
+  const { findAllByText } = createView(chromeSizesConfig)
   await findAllByText('HTTP 404 fetching grape.chrom.sizes.nonexist', {
     exact: false,
   })

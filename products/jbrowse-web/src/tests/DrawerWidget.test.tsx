@@ -1,24 +1,12 @@
 import '@testing-library/jest-dom/extend-expect'
 
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { fireEvent, getByRole } from '@testing-library/react'
-import { createView, generateReadBuffer, hts } from './util'
+import { createView, doBeforeEach, hts } from './util'
 
 const delay = { timeout: 15000 }
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 test('variant track test - opens feature detail view', async () => {

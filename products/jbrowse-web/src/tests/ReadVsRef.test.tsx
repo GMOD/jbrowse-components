@@ -1,37 +1,24 @@
 import { fireEvent, waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 // locals
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import {
-  setup,
-  createView,
-  expectCanvasMatch,
-  generateReadBuffer,
-} from './util'
+import { doBeforeEach, createView, setup, expectCanvasMatch } from './util'
 
+expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 20000 }
 
 test('launch read vs ref panel', async () => {
   console.warn = jest.fn()
-  const { view, session, findByTestId, findByText, findAllByTestId } =
+
+  const { session, view, findByTestId, findByText, findAllByTestId } =
     createView()
+
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
@@ -59,8 +46,9 @@ test('launch read vs ref panel', async () => {
 
 test('launch read vs ref dotplot', async () => {
   console.warn = jest.fn()
-  const { view, session, findByTestId, findByText, findAllByTestId } =
+  const { session, view, findByTestId, findByText, findAllByTestId } =
     createView()
+
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(

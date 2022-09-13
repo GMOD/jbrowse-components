@@ -1,38 +1,22 @@
-import React from 'react'
 import { screen, waitFor, fireEvent } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 // locals
-import { setup, generateReadBuffer, createView } from './util'
+import { setup, doBeforeEach, createView } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 10000 }
 
 async function doSetup(val?: unknown) {
   const args = createView(val)
-  const { findByTestId, findByText, findByPlaceholderText } = args
-  // @ts-ignore
-  fireEvent.click(await findByText('Help'))
+  const { findByTestId, findByPlaceholderText } = args
 
-  const autocomplete = await findByTestId('autocomplete')
+  const autocomplete = await findByTestId('autocomplete', {}, delay)
   const input = (await findByPlaceholderText(
     'Search for location',
   )) as HTMLInputElement

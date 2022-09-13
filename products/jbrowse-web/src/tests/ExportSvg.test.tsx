@@ -1,12 +1,12 @@
-import { fireEvent, waitFor } from '@testing-library/react'
+import React from 'react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { TextEncoder } from 'web-encoding'
-import { LocalFile } from 'generic-filehandle'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
-import { createView, setup, generateReadBuffer } from './util'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+// locals
+import { JBrowse, setup, getPluginManager, doBeforeEach } from './util'
 
 window.TextEncoder = TextEncoder
 
@@ -19,16 +19,7 @@ global.Blob = (content, options) => ({ content, options })
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
-  )
+  doBeforeEach()
 })
 
 test('export svg', async () => {

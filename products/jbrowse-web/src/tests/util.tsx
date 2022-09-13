@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
+
+import { LocalFile } from 'generic-filehandle'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -156,4 +160,16 @@ export function createView(...args: any[]) {
   const rest = render(<JBrowse pluginManager={pm} />)
   const view = session!.views[0] as LGV
   return { view, state, session, ...rest }
+}
+
+export function doBeforeEach(
+  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
+) {
+  clearCache()
+  clearAdapterCache()
+
+  // @ts-ignore
+  fetch.resetMocks()
+  // @ts-ignore
+  fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }

@@ -1,11 +1,10 @@
 import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   setup,
   expectCanvasMatch,
   generateReadBuffer,
+  doBeforeEach,
   hts,
   pc,
   createView,
@@ -18,12 +17,7 @@ const readBuffer = generateReadBuffer(
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(readBuffer)
+  doBeforeEach()
 })
 
 const delay = { timeout: 10000 }
