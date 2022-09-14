@@ -9,17 +9,9 @@ import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { fetchResults } from './util'
+import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
-
-// splits on the last instance of a character
-function splitLast(str: string, split: string) {
-  const lastIndex = str.lastIndexOf(split)
-  const before = str.slice(0, lastIndex)
-  const after = str.slice(lastIndex + 1)
-  return [before, after]
-}
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

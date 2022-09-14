@@ -51,3 +51,11 @@ export async function fetchResults({
     elt => elt.getId(),
   )
 }
+
+// splits on the last instance of a character
+export function splitLast(str: string, split: string) {
+  const lastIndex = str.lastIndexOf(split)
+  const before = str.slice(0, lastIndex)
+  const after = str.slice(lastIndex + 1)
+  return [before, after]
+}
