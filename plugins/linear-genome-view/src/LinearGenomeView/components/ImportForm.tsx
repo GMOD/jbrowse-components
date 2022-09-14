@@ -69,28 +69,29 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
         navToOption(option)
       } else {
         const [ref, rest] = splitLast(input, ':')
-        const allRefs = assembly?.allRefNames || []
+        const allRefs = assembly?.allRefNamesWithLowerCase || []
         if (
           allRefs.includes(input) ||
           (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
         ) {
           model.navToLocString(input, selectedAsm)
-        }
-        const results = await fetchResults({
-          queryString: input,
-          searchType: 'exact',
-          searchScope,
-          rankSearchResults,
-          textSearchManager,
-          assembly,
-        })
-
-        if (results.length > 1) {
-          model.setSearchResults(results, input.toLowerCase())
-        } else if (results.length === 1) {
-          navToOption(results[0])
         } else {
-          model.navToLocString(input, selectedAsm)
+          const results = await fetchResults({
+            queryString: input,
+            searchType: 'exact',
+            searchScope,
+            rankSearchResults,
+            textSearchManager,
+            assembly,
+          })
+
+          if (results.length > 1) {
+            model.setSearchResults(results, input.toLowerCase())
+          } else if (results.length === 1) {
+            navToOption(results[0])
+          } else {
+            model.navToLocString(input, selectedAsm)
+          }
         }
       }
     } catch (e) {

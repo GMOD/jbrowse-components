@@ -61,13 +61,13 @@ test('search eden.1 and hit enter', async () => {
 
 test('lower case refname, searching: contigb', async () => {
   console.warn = jest.fn()
-  const { input, findByText, autocomplete, getInputValue } = await doSetup()
+  const { input, autocomplete, findByText, getInputValue } = await doSetup()
 
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'contigb' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-
   fireEvent.click(await findByText('Open'))
+
   await waitFor(() => expect(getInputValue()).toBe('ctgB:1..6,079'), delay)
 }, 30000)
 

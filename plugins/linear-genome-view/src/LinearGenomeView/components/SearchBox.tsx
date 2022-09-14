@@ -54,30 +54,31 @@ function SearchBox({
       if (option.hasLocation()) {
         navToOption(option)
       } else {
-        let input = option.getLabel()
+        const input = option.getLabel()
         const [ref, rest] = splitLast(input, ':')
-        const allRefs = assembly?.allRefNames || []
+        const allRefs = assembly?.allRefNamesWithLowerCase || []
         if (
           allRefs.includes(input) ||
           (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
         ) {
           model.navToLocString(input, assemblyName)
-        }
-        const results = await fetchResults({
-          queryString: input,
-          searchType: 'exact',
-          searchScope,
-          rankSearchResults,
-          textSearchManager,
-          assembly,
-        })
-
-        if (results.length > 1) {
-          model.setSearchResults(results, input.toLowerCase())
-        } else if (results.length === 1) {
-          navToOption(results[0])
         } else {
-          model.navToLocString(input, assemblyName)
+          const results = await fetchResults({
+            queryString: input,
+            searchType: 'exact',
+            searchScope,
+            rankSearchResults,
+            textSearchManager,
+            assembly,
+          })
+
+          if (results.length > 1) {
+            model.setSearchResults(results, input.toLowerCase())
+          } else if (results.length === 1) {
+            navToOption(results[0])
+          } else {
+            model.navToLocString(input, assemblyName)
+          }
         }
       }
     } catch (e) {

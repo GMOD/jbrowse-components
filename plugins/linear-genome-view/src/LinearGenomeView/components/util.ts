@@ -53,9 +53,13 @@ export async function fetchResults({
 }
 
 // splits on the last instance of a character
-export function splitLast(str: string, split: string) {
+export function splitLast(str: string, split: string): [string, string] {
   const lastIndex = str.lastIndexOf(split)
-  const before = str.slice(0, lastIndex)
-  const after = str.slice(lastIndex + 1)
-  return [before, after]
+  if (lastIndex === -1) {
+    return [str, '']
+  } else {
+    const before = str.slice(0, lastIndex)
+    const after = str.slice(lastIndex + 1)
+    return [before, after]
+  }
 }

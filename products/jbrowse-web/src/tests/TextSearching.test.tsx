@@ -70,12 +70,11 @@ test('nav lower case refnames, searching: ctgb:1-100', async () => {
 }, 30000)
 
 test('nav lower case refnames, searching: ctgb', async () => {
-  const { input, view, autocomplete, findAllByText } = await doSetup()
+  const { input, view, autocomplete } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'ctgb' } })
   fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  fireEvent.click((await findAllByText('Go'))[0])
   await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
 }, 30000)
 
