@@ -1,4 +1,4 @@
-import { waitFor, fireEvent } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 
 // locals
 import { setup, createView, doBeforeEach } from './util'
@@ -71,14 +71,15 @@ test('lower case refname, searching: contigb', async () => {
   await waitFor(() => expect(getInputValue()).toBe('ctgB:1..6,079'), delay)
 }, 30000)
 
-xtest('description of gene, searching: kinase', async () => {
+test('description of gene, searching: kinase', async () => {
   console.warn = jest.fn()
-  const { input, findByText, autocomplete, getInputValue } = await doSetup()
+  const { input, findByText, autocomplete } = await doSetup()
 
   fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'kinase' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
 
   fireEvent.click(await findByText('Open'))
-  await waitFor(() => expect(getInputValue()).toBe('ctgB:1..6,079'), delay)
+  await screen.findByText('Search results', {}, delay)
+  // await waitFor(() => expect(getInputValue()).toBe('ctgB:1..6,079'), delay)
 }, 30000)
