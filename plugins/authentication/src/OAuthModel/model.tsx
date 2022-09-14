@@ -153,24 +153,21 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
 
         if (!response.ok) {
           self.removeToken()
-          const contentType = response.headers.get('Content-Type')
-          let errorMessage, errorJson
+          let text = await response.text()
           try {
-            if (contentType && contentType.indexOf('application/json') !== -1) {
-              errorJson = await response.json()
-              if (errorJson.error && errorJson.error === 'invalid_grant') {
-                this.removeRefreshToken()
-              }
+            let obj = JSON.parse(text)
+            if (obj.error === 'invalid_grant') {
+              this.removeRefreshToken()
             }
-            errorMessage =
-              errorJson?.error_description ?? (await response.text())
-          } catch (error) {
-            errorMessage = ''
+            text = obj?.error_description ?? (await response.text())
+          } catch (e) {
+            /* just use original text as error */
           }
+
           throw new Error(
             `Network response failure — ${response.status} (${
               response.statusText
-            }) ${errorMessage ? ` (${errorMessage})` : ''}`,
+            }) ${text ? ` (${text})` : ''}`,
           )
         }
 
