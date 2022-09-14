@@ -235,10 +235,10 @@ function SVGTracks({
         const current = offset
         const trackName =
           getConf(track, 'name') ||
-          `Reference sequence (${readConfObject(
-            getParent(track.configuration),
-            'name',
-          )})`
+          `Reference sequence (${
+            readConfObject(getParent(track.configuration), 'displayName') ||
+            readConfObject(getParent(track.configuration), 'name')
+          })`
         const display = track.displays[0]
         offset += display.height + paddingHeight + textHeight
         return (
