@@ -717,7 +717,12 @@ export default function sessionModelFactory(
       },
     }))
 
-  return types.snapshotProcessor(addSnackbarToModel(sessionModel), {
+  const extendedSessionModel = pluginManager.evaluateExtensionPoint(
+    'Core-extendSession',
+    sessionModel,
+  ) as typeof sessionModel
+
+  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
     // @ts-ignore
     preProcessor(snapshot) {
       if (snapshot) {
