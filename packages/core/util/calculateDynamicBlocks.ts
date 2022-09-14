@@ -1,3 +1,4 @@
+import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { intersection2 } from './range'
 import { assembleLocString } from '.'
 import {
@@ -60,6 +61,7 @@ export default function calculateDynamicBlocks(
       displayedRegionLeftPx + (regionEnd - regionStart) / bpPerPx
 
     const regionWidthPx = (regionEnd - regionStart) / bpPerPx
+    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     if (
       displayedRegionLeftPx < windowRightPx &&
@@ -104,7 +106,7 @@ export default function calculateDynamicBlocks(
         end,
         reversed,
         offsetPx: blockOffsetPx,
-        parentRegion: region,
+        parentRegion,
         regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,
