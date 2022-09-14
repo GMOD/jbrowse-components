@@ -58,9 +58,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   function navToOption(option: BaseResult) {
     const location = option.getLocation()
     const trackId = option.getTrackId()
-    model.navToLocString(location, selectedAsm)
-    if (trackId) {
-      model.showTrack(trackId)
+    if (location) {
+      model.navToLocString(location, selectedAsm)
+      if (trackId) {
+        model.showTrack(trackId)
+      }
     }
   }
 
@@ -71,7 +73,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(input: string) {
     try {
-      if (option?.getDisplayString() === input) {
+      if (option?.getDisplayString() === input && option.hasLocation()) {
         navToOption(option)
       } else {
         const [ref, rest] = splitLast(input, ':')

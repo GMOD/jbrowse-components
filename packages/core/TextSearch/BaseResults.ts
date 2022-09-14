@@ -93,8 +93,12 @@ export default class BaseResult {
     return `${this.getLabel()}-${this.getLocation()}-${this.getTrackId()}`
   }
 
+  hasLocation() {
+    return !!this.locString
+  }
+
   getLocation() {
-    return this.locString || this.label
+    return this.locString
   }
 
   getComboResults() {

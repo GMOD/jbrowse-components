@@ -87,3 +87,15 @@ test('nav lower case refnames, searching: contigb:1-100', async () => {
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
 }, 30000)
+
+test('description of gene, searching: kinase', async () => {
+  console.warn = jest.fn()
+  const { input, autocomplete } = await doSetup()
+
+  fireEvent.mouseDown(input)
+  fireEvent.change(input, { target: { value: 'kinase' } })
+
+  fireEvent.click(await screen.findByText('EDEN (protein kinase)', {}, delay))
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
+}, 30000)
