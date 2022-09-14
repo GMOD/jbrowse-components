@@ -159,7 +159,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             if (obj.error === 'invalid_grant') {
               this.removeRefreshToken()
             }
-            text = obj?.error_description ?? (await response.text())
+            text ??= obj?.error_description
           } catch (e) {
             /* just use original text as error */
           }
