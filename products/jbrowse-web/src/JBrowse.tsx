@@ -22,6 +22,7 @@ const JBrowse = observer(
     const [adminKey] = useQueryParam('adminKey', StringParam)
     const [adminServer] = useQueryParam('adminServer', StringParam)
     const [configPath] = useQueryParam('config', StringParam)
+    const [dataPath] = useQueryParam('data', StringParam)
     const [, setSessionId] = useQueryParam('session', StringParam)
     const { rootModel } = pluginManager
     const { error, jbrowse } = rootModel || {}
@@ -41,31 +42,35 @@ const JBrowse = observer(
         return
       }
       onSnapshot(jbrowse, async snapshot => {
-        if (adminKey) {
-          const response = await fetch(adminServer || `/updateConfig`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              adminKey,
-              configPath,
-              config: snapshot,
-            }),
-          })
-          if (!response.ok) {
-            const message = await response.text()
-            if (session) {
-              session.notify(
+        try {
+          if (adminKey) {
+            const response = await fetch(adminServer || `/updateConfig`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                adminKey,
+                configPath: configPath || dataPath + '/config.json',
+                config: snapshot,
+              }),
+            })
+            if (!response.ok) {
+              const message = await response.text()
+              throw new Error(
                 `Admin server error: ${response.status} (${
                   response.statusText
                 }) ${message || ''}`,
               )
             }
           }
+        } catch (e) {
+          if (session) {
+            session.notify(`${e}`, 'error')
+          }
         }
       })
-    }, [jbrowse, session, adminKey, adminServer, configPath])
+    }, [jbrowse, session, adminKey, adminServer, configPath, dataPath])
 
     if (error) {
       throw error

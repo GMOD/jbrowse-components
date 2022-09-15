@@ -106,6 +106,7 @@ export function Loader({
   const Str = StringParam
 
   const [config] = useQueryParam('config', Str)
+  const [data] = useQueryParam('data', Str)
   const [session] = useQueryParam('session', Str)
   const [adminKey] = useQueryParam('adminKey', Str)
   const [password, setPassword] = useQueryParam('password', Str)
@@ -115,7 +116,7 @@ export function Loader({
   const [tracks, setTracks] = useQueryParam('tracks', Str)
 
   const loader = SessionLoader.create({
-    configPath: load(config),
+    configPath: load(config) || load(data) + '/config.json',
     sessionQuery: load(session),
     password: load(password),
     adminKey: load(adminKey),
