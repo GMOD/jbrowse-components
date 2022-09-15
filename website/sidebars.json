@@ -83,7 +83,8 @@
           ]
         },
         "tutorials/develop_web_and_desktop_tutorial",
-        "tutorials/no_build_plugin_tutorial"
+        "tutorials/no_build_plugin_tutorial",
+        "tutorials/desktop_spec_plugin_tutorial"
       ]
     },
     "jbrowse_jupyter",
