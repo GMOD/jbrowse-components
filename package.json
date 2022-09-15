@@ -100,7 +100,7 @@
     "cross-env": "^7.0.2",
     "cross-spawn": "^7.0.1",
     "dependency-graph": "^0.11.0",
-    "electron": "19.0.4",
+    "electron": "20.1.4",
     "electron-builder": "^23.0.3",
     "electron-mock-ipc": "^0.3.8",
     "electron-notarize": "^1.0.0",

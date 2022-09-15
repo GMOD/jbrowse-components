@@ -103,7 +103,7 @@
     "webpack": "^5.72.0"
   },
   "devDependencies": {
-    "electron": "19.0.4"
+    "electron": "20.1.4"
   },
   "browserslist": [
     "last 1 chrome version"
