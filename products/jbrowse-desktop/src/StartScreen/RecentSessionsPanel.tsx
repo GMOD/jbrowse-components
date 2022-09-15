@@ -35,26 +35,16 @@ import SessionCard from './SessionCard'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   pointer: {
     cursor: 'pointer',
-  },
-  formControl: {
-    margin: theme.spacing(2),
-  },
-
-  header: {
-    margin: theme.spacing(2),
   },
   toggleButton: {
     '&.Mui-disabled': {
       pointerEvents: 'auto',
     },
   },
-  button: {
-    margin: theme.spacing(2),
-  },
-}))
+})
 
 interface RecentSessionData {
   path: string
@@ -252,7 +242,6 @@ export default function RecentSessionPanel({
   setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
-  const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
@@ -326,7 +315,7 @@ export default function RecentSessionPanel({
       ) : null}
       <Grid container spacing={4} alignItems="center">
         <Grid item>
-          <FormControl className={classes.formControl}>
+          <FormControl>
             <ToggleButtonGroup
               exclusive
               value={displayMode}
@@ -342,7 +331,7 @@ export default function RecentSessionPanel({
           </FormControl>
         </Grid>
         <Grid item>
-          <FormControl className={classes.formControl}>
+          <FormControl>
             <ToggleButtonGroup>
               <ToggleButtonWithTooltip
                 value="delete"
