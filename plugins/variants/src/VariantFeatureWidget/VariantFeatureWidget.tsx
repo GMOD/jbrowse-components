@@ -55,7 +55,11 @@ function VariantFeatureDetails(props: any) {
           locStrings={[`${feat.INFO.CHR2[0]}:${feat.INFO.END}`]}
         />
       ) : null}
-      <VariantSampleGrid feature={feat} {...props} />
+      <VariantSampleGrid
+        feature={feat}
+        {...props}
+        descriptions={descriptions}
+      />
     </Paper>
   )
 }
