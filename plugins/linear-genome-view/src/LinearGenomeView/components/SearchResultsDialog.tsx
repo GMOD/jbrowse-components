@@ -150,10 +150,13 @@ export default function SearchResultsDialog({
                       <TableCell align="right">
                         <Button
                           onClick={() => {
-                            handleClick(result.getLocation())
-                            const resultTrackId = result.getTrackId()
-                            if (resultTrackId) {
-                              model.showTrack(resultTrackId)
+                            const location = result.getLocation()
+                            if (location) {
+                              handleClick(location)
+                              const resultTrackId = result.getTrackId()
+                              if (resultTrackId) {
+                                model.showTrack(resultTrackId)
+                              }
                             }
                             handleClose()
                           }}

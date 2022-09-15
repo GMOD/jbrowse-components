@@ -6,7 +6,6 @@ test('create BaseResult', () => {
   })
 
   expect(baseResult.getLabel()).toEqual('chr1')
-  expect(baseResult.getLocation()).toEqual('chr1')
 })
 
 test('create LocationResult', () => {

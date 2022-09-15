@@ -1,47 +1,26 @@
-import React from 'react'
 import '@testing-library/jest-dom/extend-expect'
-import { fireEvent, render, waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import configSnapshot from '../../test_data/volvox/config.json'
-import { JBrowse, setup, getPluginManager, generateReadBuffer } from './util'
+import { doBeforeEach, createView, setup } from './util'
 
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 10000 }
 
 test('open a circular view', async () => {
   console.warn = jest.fn()
-  const pluginManager = getPluginManager({
+  const { findByTestId, findByText, queryByTestId } = createView({
     ...configSnapshot,
     defaultSession: {
       name: 'Integration Test Circular',
       views: [{ id: 'integration_test_circular', type: 'CircularView' }],
     },
-    configuration: {
-      rpc: {
-        defaultDriver: 'MainThreadRpcDriver',
-      },
-    },
   })
-  const { findByTestId, findByText, queryByTestId } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
   // wait for the UI to be loaded
   await findByText('Help')
   // try opening a track before opening the actual view

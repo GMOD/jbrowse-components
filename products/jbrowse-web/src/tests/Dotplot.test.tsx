@@ -1,18 +1,13 @@
 import { fireEvent } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 import path from 'path'
-import dotplotConfig from '../../test_data/config_dotplot.json'
+
+// locals
+import config from '../../test_data/config_dotplot.json'
 import dotplotSession from './dotplot_inverted_test.json'
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
-import {
-  setup,
-  generateReadBuffer,
-  expectCanvasMatch,
-  createView,
-} from './util'
+import { setup, doBeforeEach, expectCanvasMatch, createView } from './util'
 
 if (!window.TextEncoder) {
   window.TextEncoder = TextEncoder
@@ -23,30 +18,20 @@ if (!window.TextDecoder) {
 
 const delay = { timeout: 25000 }
 
+expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url =>
-        new LocalFile(require.resolve(`../../test_data/${path.basename(url)}`)),
-    ),
-  )
+  doBeforeEach(url => require.resolve(`../../test_data/${path.basename(url)}`))
 })
 
 test('open a dotplot view', async () => {
-  const { findByTestId } = createView(dotplotConfig)
+  const { findByTestId } = createView(config)
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 20000)
 
 test('open a dotplot view with import form', async () => {
-  const { findByTestId, findAllByTestId, findByText } =
-    createView(dotplotConfig)
+  const { findByTestId, findAllByTestId, findByText } = createView(config)
 
   fireEvent.click(await findByTestId('close_view'))
   fireEvent.click(await findByText('File'))
@@ -70,7 +55,7 @@ test('open a dotplot view with import form', async () => {
 
 test('inverted dotplot', async () => {
   const { findByTestId } = createView({
-    ...dotplotConfig,
+    ...config,
     defaultSession: dotplotSession.session,
   })
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)
@@ -78,7 +63,7 @@ test('inverted dotplot', async () => {
 
 test('inverted dotplot flip axes', async () => {
   const { findByTestId } = createView({
-    ...dotplotConfig,
+    ...config,
     defaultSession: dotplotSessionFlipAxes.session,
   })
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)

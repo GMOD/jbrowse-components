@@ -1,12 +1,11 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 import { TextEncoder } from 'web-encoding'
-import { LocalFile } from 'generic-filehandle'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
-import { createView, setup, generateReadBuffer } from './util'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+// locals
+import { hts, createView, setup, doBeforeEach } from './util'
 
 window.TextEncoder = TextEncoder
 
@@ -19,34 +18,22 @@ global.Blob = (content, options) => ({ content, options })
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
-  )
+  doBeforeEach()
 })
+
+const delay = { timeout: 25000 }
 
 test('export svg', async () => {
   console.error = jest.fn()
   const { view, findByTestId, findByText } = createView()
+
   await findByText('Help')
   view.setNewView(0.1, 1)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_alignments_pileup_coverage',
-      {},
-      { timeout: 10000 },
-    ),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
   view.exportSvg()
-  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), {
-    timeout: 25000,
-  })
+  await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
   // @ts-ignore
   const svg = FileSaver.saveAs.mock.calls[0][0].content[0]

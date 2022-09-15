@@ -1,31 +1,19 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
 import { getConf } from '@jbrowse/core/configuration'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
 import masterConfig from '../../test_data/volvox/connection_test.json'
 import {
   JBrowse,
   createView,
   setup,
   getPluginManager,
-  generateReadBuffer,
+  doBeforeEach,
 } from './util'
 
 setup()
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 10000 }
@@ -50,17 +38,18 @@ test('copy and delete track in admin mode', async () => {
 }, 20000)
 
 test('copy and delete reference sequence track disabled', async () => {
-  const { view, session, queryByText, findByTestId, findByText } = createView(
-    undefined,
-    true,
-  )
-  const { assemblyManager } = session
+  const { view, rootModel, session, queryByText, findByTestId, findByText } =
+    createView(undefined, true)
+
+  // @ts-ignore
+  const { assemblyManager } = rootModel
+
   await findByText('Help')
   view.setNewView(0.05, 5000)
   const trackConf = getConf(assemblyManager.get('volvox'), 'sequence')
 
   // @ts-ignore
-  const trackMenuItems = session!.getTrackActionMenuItems(trackConf)
+  const trackMenuItems = session.getTrackActionMenuItems(trackConf)
 
   // copy ref seq track disbaled
   fireEvent.click(
@@ -68,7 +57,6 @@ test('copy and delete reference sequence track disabled', async () => {
   )
   fireEvent.click(await findByText('Copy track'))
   expect(queryByText(/Session tracks/)).toBeNull()
-
   // clicking 'copy track' should not create a copy of a ref sequence track
   await waitFor(() => expect(view.tracks.length).toBe(0))
   expect(trackMenuItems[2].disabled).toBe(true)
