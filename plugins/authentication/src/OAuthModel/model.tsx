@@ -155,7 +155,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           self.removeToken()
           let text = await response.text()
           try {
-            let obj = JSON.parse(text)
+            const obj = JSON.parse(text)
             if (obj.error === 'invalid_grant') {
               this.removeRefreshToken()
             }
