@@ -1,0 +1,28 @@
+{
+  "assemblies": [
+    {
+      "name": "hla",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hla-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "hla.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "hla.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": []
+}
