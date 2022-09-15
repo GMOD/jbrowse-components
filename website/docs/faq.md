@@ -201,7 +201,7 @@ While adding the track to the `config.json`, you're adding additional configurat
 
 We require that all tracks have a specific genome assembly specified in their
 config. This is because JBrowse 2 is a multi-genome-assembly browser (and can
-compare genomes given the data). This may be different to using, say, JBrwose 1
+compare genomes given the data). This may be different to using, say, JBrowse 1
 where it knows which genome assembly you are working with at any given time.
 
 #### How are the menus structured in the app
