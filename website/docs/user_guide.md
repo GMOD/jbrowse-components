@@ -6,67 +6,63 @@ title: User guide
 
 import Figure from './figure'
 
+This user guide is a comprehensive compilation of all general UI navigation, tools/features available for some of the different track types, and other useful features for using JBrowse.
+
+Use the navigation menu on the right to skip to a topic of interest, if applicable.
+
 ## Navigating the UI
 
 ### Linear genome view usage
 
-To start a linear genome view, use the menu bar
-
-File->Add->Linear genome view
-
-#### Using the location search box
-
-- Use the search box in the LGV
-- Enter syntax chr1:1-100 or chr1:1..100 (e.g. colon or dash is allowed)
-- You can also specify an assembly name with the locstring {hg19}chr1:1-100
-- Discontinuous regions can be specified with a space-separated loc string like
-  chr1:1-100 chr2:1-100
-- You can make a region horizontally flipped by using [rev] after the string
-  e.g. chr1:1-100[rev]
-- You can also space-separate a single locstring e.g. "chr1 1 100" and it will
-  attempt to resolve this
-
-You can also use the search box to search by gene name (if it is configured)
-
-<Figure caption="Search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
-
-In order to enable name searching, you or the admin on the instance will need to
-create a "text index". See the [quickstart
-guide](../quickstart_cli#indexing-feature-names-for-searching) for more info.
+To open a linear genome view (LGV), use the menu bar: `ADD` -> `Linear genome view`
 
 #### Scrolling
 
-Mouse wheel can scroll side to side, as well as click and drag. The pan buttons
-also exist in the header of the linear genome view
+You can scroll side to side using your mouse wheel or via click and drag. Left and right pan buttons found in the header of the LGV can also be used to scroll in their respective directions.
 
 #### Zooming
 
-The zoom buttons exist in the header of the linear genome view, and there is
-also a slider bar to zoom in and out.
+The zoom buttons and the slider bar found in the header of the linear genome view can be used to zoom in and out on the view
 
-Note: You can also hold the <kbd>Ctrl</kbd> key and use your mousewheel or
-trackpad to scroll and this will zoom in and out
+You can also hold the `Ctrl` key and use your mousewheel or trackpad to scroll to zoom in and out.
 
 #### Re-ordering tracks
 
-There is a drag handle on the track labels indicating by the six dots, clicking
-and dragging on this part of the track label can reorder tracks
+Click and drag up or down on the drag handle on the track labels (indicated by six vertical dots) to reorder tracks.
 
-## Adding tracks
+<Figure caption="(1) Use Add, Linear genome view to add a new LGV. (2) The pan buttons can be used to scroll left or right. (3) The zoom buttons or the slider can be used to zoom on the view. (4) Tracks can be reordered by clicking and dragging the drag handle indicated by six vertical dots." src="/img/lgv_usage_guide.png" />
 
-To add a new track or connection, you can use the menu bar in the app to open
-the form for adding a track:
+#### Using the location search box
 
-File->Open Track
+The location search box is located at the top of the LGV.
 
-<Figure caption="After opening the menu item for 'Open new track' a drawer widget for the 'Add track form' will appear" src="/img/add_track_form.png" />
+You can search a location in several ways when typing in the search box:
 
-Note: There is also a circular "+" button inside the track selector menu that
-can also be used to access the "Add track" form.
+1. Searching by region and location, e.g. `chr1:1..100` or `chr1:1-100` or `chr1 1 100`
+2. Searching by assembly, region, and location, e.g. `{hg19}chr1:1-100`
+3. Searching discontinuous regions, delimited by a space, and opening them side-by-side, e.g. `chr1:1..100 chr2:1..100`
+4. Searching in any of the above ways and appending \[rev\] to the end of the region will horizontally flip it, e.g. `chr1:1-100\[rev\]`
+5. If configured, searching by gene name or feature keywords, e.g. `BRCA1`
 
-<Figure caption="The orange plus icon in the bottom right of a tracklist can also be used to launch the 'Add track form'" src="/img/add_track_tracklist.png" />
+To configure name searching, you or the admin of the instance will need to
+create a "text index". See the [configuration guide](../tutorials/config_cli#indexing-feature-names-for-searching) for more information.
 
-In the "Add track" form, you can provide a URL to a file to load, or you can
+<Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
+
+## Opening tracks
+
+To open a new track or connection, use the menu bar: `File` -> `Open track..`
+
+<Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
+
+:::info Tip
+There is a circular plus (+) icon button inside the "Available tracks" widget that
+can also be used to access the "Add a track" form.
+:::
+
+<Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The orange plus (+) icon button in the bottom right the 'Available Tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
+
+In the "Add a track" form, you can provide a URL to a file to load, or you can
 also open files from your local machine. In some cases, you need to provide an
 index (bigwig files for example have no index, but BAM/CRAM or tabix filetypes
 like VCF/GFF/BED tabix do). In some cases we can automatically infer the index
@@ -74,35 +70,39 @@ e.g. if you provide a URL for a BAM and the index filename is bamfilename
 +'.bai' but you may need to manually supply it in some cases (index inference
 can't be done with files from your local machine)
 
-The following file formats are supported
+The following file formats are supported in core JBrowse 2:
 
-- Tabixed VCF
-- Tabixed BED
-- Tabixed GFF
-- BAM
 - CRAM
-- BigWig
+- BAM
+- htsget
+- VCF (Tabix-indexed)
+- GFF3 (Tabix-indexed)
+- BED (Tabix-indexed)
 - BigBed
-- .hic file (Juicebox)
-- PAF
+- BigWig
+- JBrowse 1 nested containment lists (NCLists)
+- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
+- PAF (synteny/dotplot)
+- Indexed FASTA/BGZip indexed FASTA
+- 2bit
+- .hic (Hi-C contact matrix visualization)
+
+Additional data formats can be supported via plugins; checkout the [plugin store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
 as filename+'.bai' for example, but if it is different than this, make sure to
 specify the index file explicitly.
 
-Note: If you are an administrator, you can add tracks with the command line or
-with the admin server [add-track](../cli#jbrowse-add-track) or [admin-server
-guide](../quickstart_gui)
+:::info Note
+If you are an administrator, you can add tracks with the [command line](../tutorials/config_cli/#adding-a-track) or with the [admin server](../tutorials/config_gui).
+:::
 
 ### Undo and redo
 
 You can undo the closing of a view, track, or any other action in the UI with
-the <kbd><kbd><samp>Tools</samp></kbd>→<kbd><samp>Undo/Redo</samp></kbd></kbd>
-buttons. The keyboard shortcuts <kbd><kbd>Ctrl</kbd>+<kbd>Z</kbd></kbd>
-/<kbd><kbd>Cmd</kbd>+<kbd>Z</kbd></kbd> (mac) work for undo as well
-as <kbd><kbd>Ctrl</kbd>+<kbd>Y</kbd></kbd>
-/<kbd><kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></kbd> (mac) for redo.
+the Tools->Undo/Redo buttons. The keyboard shortcut "ctrl+z"/"cmd+z"(mac) work
+for undo as well as "ctrl+y"/"cmd+shift"z"(mac)
 
 ### Sharing sessions
 
@@ -110,16 +110,16 @@ On JBrowse Web, the main menu bar has a "Share" button to enable users to share
 their sessions with other people. The share button generates a URL that can be
 sent to other users.
 
-Note: Share sessions is not available on JBrowse Desktop.
+You **cannot** copy the URL in your address bar and send it to other users, you
+**must** use the "Share" button to share your session.
 
-Also note: you can't copy the literal URL in your address bar and send it to
-other users, you must use the "Share" button to do that, but you can copy and
-paste the URL in your URL bar between different tabs in your local browser
-though
+:::info Note
+Sharing sessions is not available for JBrowse Desktop.
+:::
 
-<Figure caption="The session share dialog, which gives you a short URL to share your session with other users. It is important to use these URLs generated here rather than simply copying and pasting your URL to other users" src="/img/share_button.png" />
+<Figure caption="The session share dialog, which gives you a short URL to share your session with other users. It is important to use the URLs generated here, rather than copying and pasting your browser's URL to other users." src="/img/share_button.png" />
 
-The session URL will contain
+The session URL will contain the following:
 
 - what views are on the screen, and settings for the views (e.g. track labels
   overlapping or offset)
@@ -127,9 +127,7 @@ The session URL will contain
 - extra tracks that you added with the "Add track workflow"
 - for the alignments track, the show soft clipping and sort settings on the
   pileup
-- etc
-
-All this stuff gets included in the session
+- ...and more!
 
 This means you can share links with your custom tracks with other users,
 without being a JBrowse admin!
@@ -147,15 +145,15 @@ from the track menu on the track selector.
 ### About track dialog
 
 Using the track menu as described above, you can access the "About track"
-dialog
+dialog.
 
-<Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to for example." src="/img/about_track.png"/>
+<Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to, for example." src="/img/about_track.png"/>
 
 ### Editing track configs
 
 As a non-admin user, in order to edit a track config, you have to make a copy
 of the track. This will copy it to your "session tracks", which you can edit
-freely
+freely.
 
 <Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
 
@@ -163,11 +161,7 @@ freely
 
 The scale bars accept a click-and-drag action to select a region. Rubberband selection can be performed on both the main (lower) and overview (upper) scale bars.
 
-<!--
-https://s3.amazonaws.com/jbrowse.org/code/jb2/main/index.html?config=test_data%2Fvolvox%2Fconfig.json&session=share-6_PDCGXnZY&password=sufpR
--->
-
-<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
+<Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc.." src="/img/rubberband.png" />
 
 #### Track label positioning
 
@@ -175,23 +169,19 @@ Track labels can be positioned on their own row or overlapping the data to save
 vertical screen space. They can also be hidden. This is done by clicking on the
 hamburger menu for a specific view.
 
-<!--
-http://localhost:3000/?config=test_data%2Fvolvox%2Fconfig.json&session=share-1RbMciFHOT&password=wYEDf
--->
-
-<Figure caption="Example of using the overlap and offset track label positioning options" src="/img/tracklabels.png" />
+<Figure caption="Example of using the overlap and offset track label positioning options." src="/img/tracklabels.png" />
 
 #### Horizontally flip
 
 The view can be horizontally flipped, or reverse complemented, to make the
-coordinates go from right to left instead of left to right
+coordinates go from right to left instead of left to right.
 
 We use triangles pointing in the direction of the orientation in the overview
-bar to help indicate whether the app is horizontally flipped or not
+bar to help indicate whether the app is horizontally flipped or not.
 
-Here is an example of before and after horizontally flipping the view
+Here is an example of before and after horizontally flipping the view:
 
-<Figure caption="Before and after horizontally flipping" src="/img/horizontally_flip.png" />
+<Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" />
 
 ## Sequence track
 
@@ -205,9 +195,9 @@ bottom.
 ## Alignments tracks
 
 Visualizing alignments is an important aspect of genome browsers. This guide
-will go over the main features of the "Alignments track"
+will go over the main features of the "Alignments track."
 
-The alignments track is a combination of a pileup and a coverage visualization
+The alignments track is a combination of a pileup and a coverage visualization.
 
 ### Pileup visualization
 
@@ -223,16 +213,7 @@ The coverage visualization shows the depth-of-coverage of the reads at each
 position on the genome, and also draws using colored boxes any occurrence of
 mismatches between the read and the reference genome, so if 50% of the reads
 had a T instead of the reference A, half the height of the coverage histogram
-would contain a 'red' box
-
-<!--
-image info:
-window.innerWidth
-1378
-window.innerHeight
-513
-https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=test_data%2Fconfig_demo.json&session=eJztVctu2kAU_RU0q1Yixjbh5V0e5NFSioA2UqsKje2LPYk9tmYGSIL8770zJsYkRF1U6qoLFtzXOXN8Zu6WcJoC8cgYNo0ZSMky3nBt1z6xeyd2d-7aXsf17IFlO70fpElSKiLGiWc3SSjoBsQdC1VMvHb_tEnWDDaSeD-3hIU48u75Sn1yJ_c-9oVM5gl9GpdgceQMMKiecv1vxDhQcQ08S-E7jsBMtlxKUJNH4jnt027X6nR7_U7HcQY9u9Mkfj4BYZLVYAinECH3El7Acofk4DCpqFCGMnDk5Z4O3I7ddbFZwBqEBAwuaSKhSaiUkPrJAc_iFzIVNHioHe2b0x9GjjMc7U9xlrCIp8CVnOtiTMTAohiB3QFqE2R8yaKVoApZYjmP0kRg0YQlsMrLFq8SbhEl12rUH-7H1-v2ox3bfjN6e7zFHOE2fIFe5CaLiZ0BZp_Pp-1GTgOfZY0P4-svo-nHRlVUF0brUEqDygRUQZSJJx0zI3SQhjRXIGpczml6tgvi96PpKAsquivBtNZK5dJrtWTboil9zjjdSCvI0ta9L7KNBCsTUSsyJpEtjd4SQEO5wKPIB1-0rSVdmJOd2JZrtRcpzXMILcQiRZMwHsKjBkv-ITD-GCmKQhsN8QV6TcOW32W6C735YFUC-2br6AqoWgk4Un4kWRi02XhykaGzaQSHxkqSYJjOzmTK98Z6U7x316D_vrmOtL12mOR5sCv5g80OK__WazVqe8_Jlf_flQeufG3LmmzHzHYka2ZISCBQ-v3VUcYjLNZnk3G2eekgnhIrKGOlycuIflpjFsINUtdou1d4H_qK_XqrVCnjsZmBzMS8pBYzBBFBzAKakBLEWHJEfUhkHfsCn2cQet_sBmoC1R6LQBkh6vPmdbzqHr1fUV2rm_dKLmtwRN-vJKG52UFbVG3JEmQ4h0elZSxX6sEq1ZLTQLE1XL7iXZjLyhEEjXTLcevxAEyi-A3q17Nj
--->
+would contain a 'red' box.
 
 <Figure caption="Screenshot showing the alignments track, which contains both a coverage view at the top and a pileup view at the bottom" src="/img/alignments.png" />
 
@@ -240,21 +221,13 @@ https://s3.amazonaws.com/jbrowse.org/code/jb2/alpha/master/index.html?config=tes
 
 If a read contains bases that do not map the the genome properly, they can
 either be removed from the alignment (hard clipping) or can be included, and
-not shown by default (soft clipping)
+not shown by default (soft clipping).
 
 JBrowse 2 also contains an option to "show the soft clipping" that has occurred.
 This can be valuable to show the signal around a region that contains
-structural variation or difficult mappability
+structural variation or difficult mappability.
 
-<!--
-image info:
-window.innerWidth
-1378
-window.innerHeight
-513
-http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJztVVFv2jAQ_ivIT5sENAHaoryxdms7VR0qrJs0Tcgkh-M1cTLbCTCU_76zQ5N0pFWr7XEvkXx33_edL5_tHRE0BuKRK6GBSap5IjoalO7AhsZpBKRLYioZF8RzuiSQdA3yCw90SLzheNQlOYe1It63HeEB0vCaZmFoEK63qRG45gKovACRxHCHIMwkq5UCPd0Qb3Dijkb9oTMYDN3T8fhkeNwly3QK0iSdvovKXKUR3UJwCwzJS0kJq5uyfV-zCTIqTaW2nYLAdo4dx0GshBykAgysaKSgS6hSEC-j7R6cJ1GebEjxHZuV1L9v7Icx9-P7H4uv63ojk4gzEYPQam6KMRECZyHKDo5R2E_EirOsnEFF3osSwXoSaKB6Ku_5ksYInPIIsrSk8faKm9j9fJ8Fp25YSzbrajnXOZTbtUPstq6C59pZpBaBxaI5FVvZsZWdNddhZ3bXeWPq33YqQHOcZnYPA8V5-hT9kMitidaDMxka0FSDbLR8hqyTfRSRuLpO_GpfmeRYYzy1CKimR6XGUdt--na8heXgf8NhPtwQKfiZgfBhctD0fJ2847puW9v1i0X7gyXXpCgK41IRgESjGlD5-273oYP_WiUQN8vZB6A6k9BS3pIsrNrsZnqW4LGgDB77T7Nfq_MLeTPa1P47KK5NOHrGgy2wlxhRidTfw17hxseof2TJxg7qX6yy5X_zPjLvn-5tjK3Nky1Zy6EgAl-bK95EuWBYbDcQJusHBPG0zKCMlWehjJjLO-QBXOIIjNr-pq9DnxBvHqsqZa04s5KJnJethRxFpB9yn0akFLHOvaZLiFRT-wxNA9I8antC00D1PDLQdhBNvnlTrzpuT1dUp-_yqZLzhpwxXRJFNLXv3A6ntuIRdjiHjTZjLF_qthfaTJ76mudw_or2n8kV9kYQuECNK4FvMprP8BXFb9Ec-8Q
--->
-
+<Figure caption="The soft clipping option is a toggle in the 'Pileup settings' menu." src="/img/alignments_soft_clipped_menu.png" />
 <Figure caption="Shows what turning on soft-clipping enables for a simulated long-read dataset. There is a simulated structural variant, a deletion, at this position, so the read has bases that map to the other side of the deletion being revealed by this." src="/img/alignments_soft_clipped.png" />
 
 ### Sort by options
@@ -262,115 +235,114 @@ http://localhost:3001/?config=test_data%2Fvolvox%2Fconfig.json&session=eJztVVFv2
 The alignments tracks can also be configured to "sort by" a specific attribute
 for reads that span **the center line**.
 
-By default the center line is not shown, but by showing it (Go to the view's
-hamburger menu->Select "Show center line") then you will obtain a better idea
-of what the "sort by" option is doing
+By default the center line is not shown, but by showing it (detailed below) then you will obtain a better idea
+of what the "sort by" option is doing.
 
 ### Showing the center line
-
-Here is how to turn on the center line
 
 1. Open the hamburger menu in the top left of the linear genome view
 2. Select "Show center line"
 
-<Figure caption="Illustrates before and after turning on the center line. The center line is an indicator that shows what base pair underlies the center of the view. Note that this is used in the 'Sort by' option discussed below; the sort is performed using properties of the feature or even exact base pair underlying the center line" src="/img/alignments_center_line.png" />
+<Figure caption="The 'show center line' option is a toggle in the LGV menu." src="/img/alignments_center_line_menu.png" />
+<Figure caption="The center line is an indicator that shows what base pair underlies the center of the view." src="/img/alignments_center_line.png" />
 
-### Sorting by base
+:::info Note
+The center line is used by the 'Sort by' function discussed in this section; the sort is performed using properties of the feature, or even exact base pair underlying the center line.
+:::
 
-Sorting by base will re-arrange the pileup so that the reads that have a
-specific base-pair mutation at the position crossing the center line (which is
-1bp wide) will be arranged in a sorted manner. To enable Sort by base
+### Sorting by base pair
+
+Sorting by base pair will re-arrange the pileup so that the reads that have a
+specific base pair mutation at the position crossing the center line (which is
+1bp wide) will be arranged in a sorted manner. To enable Sort by base pair:
 
 1. Open the track menu for the specific track using the vertical '...' in the
    track label
-2. Select 'Sort by'->'Base pair'
+2. Select `Pileup settings`->`Sort by`->`Base pair`
 
 <Figure caption="Illustrating the pileup re-ordering that happens when turning on the 'Sort by'->'Base pair'. The sorting is done by specifically what letter of each read underlies the current center line position (the center line is 1bp wide, so sorted by that exact letter)" src="/img/alignments_sort_by_base.png" />
 
 ### Sort, color and filter by tag
 
-We can now also do things like
-
-- Sort by tag
-- Filter by tag
-- Color by tag
-
-With these features, we can create very expressive views of alignments tracks.
+With these features, we can create expressive views of alignments tracks.
 For example, in the below step-by-step guide, it shows how to color and sort
-the reads by the HP tag.
+the reads by the HP tag:
 
-<Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag" src="/img/alignments/haplotype.png" />
+<Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag." src="/img/alignments/haplotype.png" />
 
 ### Color by modifications/methylation
 
 If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
-format, then the alignments track can use these to color these. It uses two
-modes
+format, then the alignments track can use these merks to color these modification. It uses two
+modes:
 
 1. Modifications mode - draws the modifications as they are
 2. Methylation mode - draws both unmodified and modifified CpGs (unmodified
    positions are not indicated by the MM tag and this mode considers the
    sequence context)
 
-<Figure caption="The track menu can be used to access the settings to color by modifications or methylation" src="/img/alignments/modifications1.png" />
-<Figure caption="Screenshot showing the same track in both modifications mode and methylation mode" src="/img/alignments/modifications2.png" />
-<Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings" src="/img/alignments/modifications3.png" />
+<Figure caption="The track menu can be used to access the settings to color by modifications or methylation." src="/img/alignments/modifications1.png" />
+<Figure caption="Screenshot showing the same track in both modifications mode and methylation mode." src="/img/alignments/modifications2.png" />
+<Figure caption="After the setting has been enabled you can revisit the dialog box to see the current coloring settings." src="/img/alignments/modifications3.png" />
 
 ### Color by orientation
 
 JBrowse uses the same color scheme as IGV for coloring by pair orientation.
 These pair orientations can be used to reveal complex patterns of structural
-variation
+variation.
 
-See
-https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
-for a good guide on interpreting these pair orientations
+See [IGV's Interpreting Color by Pair Orientation guide](https://software.broadinstitute.org/software/igv/interpreting_pair_orientations)
+for further details on interpreting these pair orientations.
 
-<Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->" src="/img/inverted_duplication.png" />
+<Figure caption="This shows an inverted duplication, the tandem duplication can produce green arrows which have reads pointing in opposite directions e.g. <-- and -->, while blue arrows which can indicate an inversion point in the same direction e.g. --> and -->." src="/img/inverted_duplication.png" />
 
 ### Sashimi-style arcs
 
 The alignments track will draw sashimi-track style arcs across spliced
 alignments (indicated by N in the CIGAR string). If the reads additionally are
 tagged with XS tags, it will try to draw the arcs using the strand indicated by
-the alignment
+the alignment.
 
-<Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq" src="/img/alignments_track_arcs.png" />
+<Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq." src="/img/alignments_track_arcs.png" />
 
-Note that you can disable these by clicking on the track menu (vertical ...
+:::info Note
+You can disable these by clicking on the track menu (vertical "..."
 next to track label, then hovering over SNPCoverage options, and unchecking
-"Draw arcs")
+"Draw arcs").
+:::
 
 ### Insertion and clipping indicators
 
-The alignments track will also draw a upside-down histogram of insertion and
+The alignments track will also draw an upside-down histogram of insertion and
 soft/hard clipped read counts at all positions, and mark significant positions
 (covering 30% of the reads) with a colored triangle.
 
 <Figure caption="Clipping and insertion indicators are drawn at the top of the alignments track. Purple indicates insertions, the blue indicates soft clipping, and red indicates hard clipping." src="/img/alignment_clipping_indicators.png" />
 
-Also, insertions that are larger than 10bp are marked with a special larger
-purple rectangle, seen in the below screenshot. Generally, long reads span
+Also, insertions that are larger than 10bp are marked with a larger
+purple rectangle, seen in the screenshot below. Generally, long reads span
 larger insertions better, so this feature is more prominant with large reads.
 
-<Figure caption="Large insertion indicator drawn from long reads, along with the 'show soft clipping' setting turned on for a short read track" src="/img/insertion_indicators.png" />
+<Figure caption="Large insertion indicator drawn from long reads, along with the 'show soft clipping' setting turned on for a short read track." src="/img/insertion_indicators.png" />
 
-Note that you can disable these by clicking on the track menu (vertical ...
+:::info Note
+You can disable these by clicking on the track menu (vertical "..."
 next to track label, then hovering over SNPCoverage options, and unchecking
-"Draw insertion/clipping indicators" and "Draw insertion/clipping counts")
+"Draw insertion/clipping indicators" and "Draw insertion/clipping counts").
+:::
 
 ## Quantitative tracks
 
 Visualizing genome signals, whether it is read depth-of-coverage or other
-signal, can often be done by using BigWig or other quantitative feature files
+signal, can often be done by using BigWig or other quantitative feature files.
 
-<Figure caption="A simple wiggle track with the XY plot renderer" src="/img/bigwig_xyplot.png" />
+<Figure caption="A simple wiggle track with the XY plot renderer." src="/img/bigwig_xyplot.png" />
 
-### Example use case: viewing whole-genome coverage for profiling CNV
+### Viewing whole-genome coverage for profiling CNV
 
-The latest JBrowse also allows refining the resolution of BigWig tracks, and
-viewing whole genome coverage. This allows us to get detailed global views of
-CNV for example from whole-genome coverage profiling.
+You can refine the resolution of BigWig tracks, and
+view whole genome coverage to get detailed global views of
+CNV, for example from whole-genome coverage profiling.
 
 Here is a short picture guide to setup a whole-genome view of a BigWig for CNV
 coverage visualization:
@@ -384,17 +356,18 @@ coverage visualization:
 5. Go to the track menu and select "Resolution->Finer resolution" a couple
    times until resolution looks nice
 
-Also note: all tracks have a drag handle on the bottom of it which you can drag
-down to make the track taller.
+:::info Note
+All tracks have a drag handle on the bottom, which you can drag down to make the track taller.
+:::
 
-<Figure caption="A step-by-step guide to view a whole-genome CNV profile of coverage from a BigWig file" src="/img/bigwig/whole_genome_coverage.png" />
+<Figure caption="A step-by-step guide to view a whole-genome CNV profile of coverage from a BigWig file." src="/img/bigwig/whole_genome_coverage.png" />
 
 ## Multi-quantitative tracks
 
 In 2.1.0, we created the ability to have "Multi-quantitative tracks" which is a
 single track composed of multiple quantitative signals, which have their
 Y-scalebar synchronized. There are 5 rendering modes for the multi-quantitative
-tracks
+tracks.
 
 - xyplot
 - multirowxyplot
@@ -402,16 +375,16 @@ tracks
 - multirowline
 - multidensity
 
-You can interactively change these settings through the track menu
+You can interactively change these settings through the track menu.
 
-<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types" src="/img/multiwig/multi_renderer_types.png" />
+<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
 With the "multi-row" settings (multirowxyplot, multirowline, multidensity) the
 track colors are not modified. For the overlapping (xyplot, multiline), the
 tracks will be autoassigned a color from the palette. You can manually
-customize the subtrack colors from the track menu as well
+customize the subtrack colors from the track menu as well.
 
-<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts" src="/img/multiwig/multi_colorselect.png" />
+<Figure caption="The color/arrangement editor for multi-quantitative tracks let's you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
 
 Oftentimes, one of the outliers on one of the subtracks may affect the
 Y-scalebar too much, so it is often helpful to use the "Autoscale type->Local
@@ -420,31 +393,30 @@ the min or max scores is available via the track menu also.
 
 ### Adding multi-quantitative tracks via the UI
 
-There are several ways to create multi-quantitative tracks from scratch
+There are several ways to create multi-quantitative tracks from scratch.
 
 1. Using the add track panel to open up a list of URLs for bigwig files, or from several local tracks from your machine
 2. Using the track selector to add multiple tracks to your current selection, and then creating a multi-wiggle track from the tracks in your selection
 3. Hardcoding the multiwiggle track in your config file (see [multi-quantitative track configuration](../config_guide#multiquantitativetrack-config) for more info)
 
-<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer" src="/img/multiwig/addtrack.png" />
-<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection" src="/img/multiwig/trackselector.png" />
+<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
+<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />
 
 ## Variant tracks
 
 Visualizing variant tracks from the VCF format alongside the original alignment
-evidence track is a common workflow for validating your results. In JBrowse 2
-we can open a variant track and an alignments track as shown below
+evidence track is a common workflow for validating your results, shown below:
 
-<Figure caption="Variant track indicating a SNP alongside the alignment track evidence" src="/img/variant_with_pileup.png" />
+<Figure caption="Variant track indicating a SNP alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
 ### Variant widget
 
 The variant features have a specialized widget that contains a table indicating
 all the calls that were made in a multi-sample VCF. Some VCF files, like the
 1000 genomes VCF, can contain thousands of samples in a single file. This
-table can display the details
+table can display the details.
 
-<Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes" src="/img/variant_panel.png" />
+<Figure caption="Screenshot showing the variant feature sidebar with a filtered by genotype (with alternative allele '1'). Users can also filter by sample name or other attributes." src="/img/variant_panel.png" />
 
 ## Comparative views
 
@@ -452,110 +424,84 @@ The dotplot view is a 2D comparative view that can display alignments between
 different genome assemblies, or even compare a long-read or NGS short-read
 against the genome.
 
-### Opening a dotplot view
+### Opening a dotplot view or synteny view
 
-Currently the workflow for launching a dotplot is done by navigating in the
-header bar to the File->Add->Dotplot view
+1. Navigate on the header bar `Add`->`Dotplot view` or `Add`->`Linear synteny view`
+2. Select the genome assemblies of interest
+3. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or .anchors.simple (MCScan) file
 
-This will let you select the genome assemblies of interest
+<Figure caption="Adding a new dotplot or synteny view via the menubar." src="/img/dotplot_menu.png" />
 
-Then you can also provide a synteny file in the form of PAF via the Add track
-workflow
+<Figure caption="Screenshot of the import form for a dotplot or synteny view. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
 
-Then currently you must configuration edit the PAFAdapter to indicate the two
-assemblies in the PAFAdapter
+<Figure caption="Screenshot of a dotplot visualization of the grape vs the peach genome." src="/img/dotplot.png" />
 
-<Figure caption="Adding a new dotplot or synteny view via the menubar" src="/img/dotplot_menu.png" />
-
-<Figure caption="Example of the import form for a dotplot or synteny view. Allows you to select two different assemblies and a PAF file can be supplied via a URL" src="/img/dotplot_add.png" />
-
-<Figure caption="Example of a dotplot visualization of the grape vs the peach genome" src="/img/dotplot.png" />
-
-See the [dotplot configuration](../config_guide#dotplot-view-config) for more
-detailed descriptions
-
-### Opening a linear synteny view
-
-Use the main menu bar to select
-
-File->Add->Linear synteny view
-
-<Figure caption="Example of the import form for a synteny view allowing you to select two different assemblies and optionally adding a PAF file via a URL" src="/img/dotplot_add.png" />
-
-<Figure caption="Example screenshot showing the linear synteny view for grape vs peach" src="/img/linear_synteny.png" />
-
-See the [linear synteny
-configuration](../config_guide#configuring-linear-synteny-views) for more details
-on manually configuring the synteny view
+<Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 
 ### Opening a synteny view from a dotplot view
 
-We have designed JBrowse 2 to be able to open up a synteny view from a dotplot
-view. This is enabled by "display modes" so that the same track can be
-displayed in different contexts.
+You can open a synteny view from a dotplot view by selecting a region on the dotplot and clicking "Open linear synteny view", shown below:
 
-Here is a short demo that shows opening a synteny view from a dotplot view
-selection
-
-<Figure caption="Screenshow showing the 'click and drag' selection over the dotplot view prompts you to open up a linear synteny view from the selected region" src="/img/synteny_from_dotplot_view.png" />
+<Figure caption="Screenshow showing the 'click and drag' selection over the dotplot view which prompts you to open up a linear synteny view from the selected region." src="/img/synteny_from_dotplot_view.png" />
 
 ### Long read vs reference plots
 
-One can also launch a dotplot view that compares a long read to the reference
-genome by
+You can also launch a dotplot view that compares a long read to the reference
+genome:
 
-- Right clicking an alignment
-- Select "Dotplot read vs ref" or "Linear read vs ref" in the context menu
+1. With your alignments track open, right click on an alignment
+2. Select "Dotplot read vs ref" or "Linear read vs ref" in the context menu
 
-<Figure caption="Example of a dotplot of a long read vs the reference genome" src="/img/dotplot_longread.png" />
+<Figure caption="Screenshot of a dotplot produced by a long read vs the reference genome." src="/img/dotplot_longread.png" />
 
-<Figure caption="Example of a 'synteny' view of a long read vs the reference genome" src="/img/linear_longread.png" />
+<Figure caption="Screenshot of a 'synteny' view produced by a long read vs the reference genome." src="/img/linear_longread.png" />
 
 ## Hi-C tracks
 
-Visualizing Hi-C data can be performed with .hic files which are generated by
+Visualizing Hi-C data can be performed with .hic files generated by
 the Juicebox software suite. It uses the hic-straw module developed by the
-juicebox/igv.js team to visualize it in jbrowse.
+juicebox/igv.js team to visualize it in JBrowse.
 
 Currently configuration options are basic for Hi-C tracks, see
-[configuration](../config_guide#hictrack-config) for info about configuring Hi-C
-tracks
+[the comprehensive config guide](../config_guide#hictrack-config) for info about configuring Hi-C
+tracks.
 
-<Figure caption="Screenshot of a Hi-C track" src="/img/hic_track.png" />
+<Figure caption="Screenshot of a Hi-C track." src="/img/hic_track.png" />
 
 ## SV inspector
 
-The SV inspector is a "workflow" that is designed to help users inspect
-structural variant calls
+The Structural Variant (SV) inspector is a "workflow" that is designed to help users inspect
+structural variant calls.
 
 ### Opening the SV inspector
 
 We can start the SV inspector by launching it from the App level menu bar
 
-<Figure caption="The SV inspector can be launched from the main menu bar" src="/img/sv_inspector_begin.png" />
+<Figure caption="The SV inspector can be launched from the main menu bar." src="/img/sv_inspector_begin.png" />
 
-This will bring up an "import form" that asks you for your SV evidence. This
-can be provided opening a file locally or using a URL for files in the
-following formats:
+This will bring up an "import form" that asks you for your SV evidence.
 
+The following formats are supported:
+
+- CSV, TSV
 - VCF or VCF.gz (plain text VCF, or (b)gzipped VCF)
-- BEDPE
+- BED, BEDPE
 - STAR-fusion result file
 
-<Figure caption="The import form for getting started with the SV inspector" src="/img/sv_inspector_importform.png" />
+<Figure caption="The import form for getting started with the SV inspector." src="/img/sv_inspector_importform.png" />
 
 ### Example SV inspector workflow
 
 We can start the SV inspector workflow by opening up this file containing
 translocation events called from a breast cancer cell line SKBR3, based on
-these published data http://schatz-lab.org/publications/SKBR3/
+[these published data](http://schatz-lab.org/publications/SKBR3/).
 
     ## Example VCF for use in the SV inspector
     https://jbrowse.org/genomes/hg19/skbr3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.new.vcf
 
-Copy this URL and paste it into the import form and select hg19
+Copy this URL and paste it into the import form and select hg19:
 
-<Figure caption="The SV inspector with the import form and URL pasted" src="/img/sv_inspector_importform_after.png" />
+<Figure caption="The SV inspector with the import form and URL pasted." src="/img/sv_inspector_importform_after.png" />
 
 ### SV inspector results
 
@@ -563,14 +509,14 @@ After loading the user's requested file, you will have a tabular view with each
 row representing a row of the file you opened, along with a whole-genome
 overview of the SVs on the right
 
-<Figure caption="The SV inspector with loaded results" src="/img/sv_inspector_importform_loaded.png" />
+<Figure caption="The SV inspector with loaded results." src="/img/sv_inspector_importform_loaded.png" />
 
 Now here is where things can become interesting
 
 We can search and filter the table, with filtering and searching being reflected
 in the circular view as well.
 
-<Figure caption="The SV inspector with filter applied" src="/img/sv_inspector_importform_filtered.png" />
+<Figure caption="The SV inspector with filter applied." src="/img/sv_inspector_importform_filtered.png" />
 
 ### Launching breakpoint split view
 
@@ -582,13 +528,13 @@ view"
 This allows us to inspect the breakpoints of the structural variant, and
 compare each side to the alignments.
 
-<Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)" src="/img/breakpoint_split_view.png" />
+<Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />
 
-## Getting the protein sequence for features
+### Getting the protein sequence for features
 
 If you have a track with gene or transcript level features, then the feature
 detail sidebar will automatically stitch together the sequence for that
-feature. The options include:
+feature. Options include:
 
 - CDS - the coding sequences, spliced together
 - Protein - performs protein translation on the CDS, currently assuming the
@@ -602,10 +548,10 @@ feature. The options include:
 - Gene w/ 500 up+down stream + 10bp of introns - the spliced gene sequence with
   10bp around the splice sites shown and the up/down stream shown
 
-Some of the params such as 500bp and 10bp are arbitrarily chosen, if you are
-interested in adjusting these parameters let us know
+Some of the parameters such as 500bp and 10bp are arbitrarily chosen, if you are
+interested in adjusting these default parameters [let us know](/contact/).
 
-<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details" src="/img/feature_detail_sequence.png" />
+<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details." src="/img/feature_detail_sequence.png" />
 
 ## Using the plugin store
 
@@ -614,34 +560,35 @@ plugin will be added to your "session" which can be shared with the share
 button (or if you are an admin running the admin-server, then it will be added
 to the config file).
 
-This can add extra functions or tracks or many other interesting features. For
+This can add extra functions, tracks, or many other interesting features. For
 example, if you add the CIVIC plugin, it will automatically add a track that
 contains the CIVIC cancer gene annotations to hg19.
 
-Note that not all plugins are directly useful from being added (sometimes it
-needs extra work on the part of the plugin developer to make them useful in the
-GUI, some plugins require hand editing of configuration files).
+:::info Note
+Not all plugins are directly useful from being added, and require hand-editing of the configuration file to be useful.
+If you would like to use such a plugin and do not have access to the configuration file, contact your administrator.
+:::
 
-<Figure caption="Screenshot showing the plugin store inside the app" src="/img/plugin_store.png" />
+<Figure caption="Screenshot showing the plugin store inside the app." src="/img/plugin_store.png" />
 
 ## Using the bookmark widget
 
-JBrowse Web and JBrowse Desktop come with a "bookmark widget" that you can use to store lists
-of interesting regions that would would like to easily revisit.
+The "bookmark widget" can store lists of interesting regions that you might like to easily revisit.
 
-<Figure caption="Clicking and dragging on a region can be used to create a bookmark" src="/img/bookmark_widget.png"/>
+<Figure caption="Clicking and dragging on a region can be used to create a bookmark." src="/img/bookmark_widget.png"/>
 
 The bookmark stores a list of single regions (chromosome, start, and end
 coordinate), and clicking on the regions in the bookmark widget will launch a
 linear genome view at that region.
 
-You can also import a list of regions from a BED file
+You can also import a list of regions from a BED file.
 
-<Figure caption="Importing a list of regions from a BED file" src="/img/bookmark_widget_import.png"/>
+<Figure caption="Importing a list of regions from a BED file." src="/img/bookmark_widget_import.png"/>
 
-Note also that you can add "notes" for your list of regions, allowing a simple
-way to "annotate" your datasets
+:::info Note
+You can add "notes" for your list of regions by double clicking on the label field to easily "annotate" your datasets.
+:::
 
-<Figure caption="Editing description" src="/img/bookmark_widget_edit_label.png"/>
+<Figure caption="Screenshot editing description." src="/img/bookmark_widget_edit_label.png"/>
 
-Finally, you can export your list of regions to a BED file or TSV
+Finally, you can export your list of regions to a BED file or TSV.

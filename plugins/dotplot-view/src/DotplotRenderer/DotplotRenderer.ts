@@ -105,11 +105,17 @@ export default class DotplotRenderer extends ComparativeRenderer {
       max: number,
       feature: Feature,
     ) {
+      const strand = feature.get('strand') || 1
+      if (strand === -1) {
+        ;[max, min] = [min, max]
+      }
       if (num < min - fudgeFactor) {
-        const strand = feature.get('strand') || 1
-        const start = strand === 1 ? feature.get('start') : feature.get('end')
-        const end = strand === 1 ? feature.get('end') : feature.get('start')
+        let start = feature.get('start')
+        let end = feature.get('end')
         const refName = feature.get('refName')
+        if (strand === -1) {
+          ;[end, start] = [start, end]
+        }
 
         warnings.push({
           message: `feature at (X ${refName}:${start}-${end}) ${r} ${lt}`,
@@ -219,12 +225,14 @@ export default class DotplotRenderer extends ComparativeRenderer {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
+          const flipInsDel = feature.get('flipInsDel')
 
           if (drawCigar && cigar) {
             const cigarOps = parseCigar(cigar)
 
             ctx.beginPath()
             ctx.moveTo(currX, height - currY)
+
             for (let i = 0; i < cigarOps.length; i += 2) {
               const val = +cigarOps[i]
               const op = cigarOps[i + 1]
@@ -232,14 +240,23 @@ export default class DotplotRenderer extends ComparativeRenderer {
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
               } else if (op === 'D' || op === 'N') {
-                currX += (val / hBpPerPx) * strand
+                if (flipInsDel) {
+                  currY += val / vBpPerPx
+                } else {
+                  currX += (val / hBpPerPx) * strand
+                }
               } else if (op === 'I') {
-                currY += val / vBpPerPx
+                if (flipInsDel) {
+                  currX += (val / hBpPerPx) * strand
+                } else {
+                  currY += val / vBpPerPx
+                }
               }
               currX = clampWithWarnX(currX, b1, b2, feature)
               currY = clampWithWarnY(currY, e1, e2, feature)
               ctx.lineTo(currX, height - currY)
             }
+
             ctx.stroke()
           } else {
             ctx.beginPath()

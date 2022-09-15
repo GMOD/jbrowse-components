@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import {
   IconButton,
   IconButtonProps as IconButtonPropsType,
@@ -16,6 +16,8 @@ import useMeasure from 'react-use-measure'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+
+const AboutDialog = lazy(() => import('./AboutDialog'))
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -94,6 +96,7 @@ const ViewContainer = observer(
     const { classes } = useStyles()
     const theme = useTheme()
     const session = getSession(view)
+    const [dlgOpen, setDlgOpen] = useState(false)
     const [ref, { width }] = useMeasure()
     const padWidth = theme.spacing(1)
 
@@ -131,11 +134,14 @@ const ViewContainer = observer(
             </Typography>
           ) : null}
           <div className={classes.grow} />
-          <div style={{ width: 20, height: 20 }}>
-            <Logomark variant="white" />
-          </div>
+          <IconButton onClick={() => setDlgOpen(true)}>
+            <div style={{ width: 22, height: 22 }}>
+              <Logomark variant="white" />
+            </div>
+          </IconButton>
         </div>
         <Paper>{children}</Paper>
+        <AboutDialog open={dlgOpen} onClose={() => setDlgOpen(false)} />
       </Paper>
     )
   },

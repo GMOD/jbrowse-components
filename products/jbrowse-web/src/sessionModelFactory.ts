@@ -244,7 +244,8 @@ export default function sessionModelFactory(
           console.warn(`Assembly ${assemblyConfig.name} was already existing`)
           return asm
         }
-        self.sessionAssemblies.push(assemblyConfig)
+        const length = self.sessionAssemblies.push(assemblyConfig)
+        return self.sessionAssemblies[length - 1]
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
@@ -717,7 +718,12 @@ export default function sessionModelFactory(
       },
     }))
 
-  return types.snapshotProcessor(addSnackbarToModel(sessionModel), {
+  const extendedSessionModel = pluginManager.evaluateExtensionPoint(
+    'Core-extendSession',
+    sessionModel,
+  ) as typeof sessionModel
+
+  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
     // @ts-ignore
     preProcessor(snapshot) {
       if (snapshot) {

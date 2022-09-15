@@ -27,7 +27,10 @@ function getTrackName(config: AnyConfigurationModel): string {
   }
   return (
     readConfObject(config, 'name') ||
-    `Reference sequence (${readConfObject(getParent(config), 'name')})`
+    `Reference sequence (${
+      readConfObject(getParent(config), 'displayName') ||
+      readConfObject(getParent(config), 'name')
+    })`
   )
 }
 

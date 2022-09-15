@@ -1,0 +1,65 @@
+.button {
+  text-transform: none;
+}
+
+.section {
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.body {
+  margin: 5em;
+}
+
+.topLinks {
+  margin: 0 auto;
+  display: flex;
+  align-items: space-between;
+  justify-content: center;
+}
+
+.card {
+  margin: 1em auto;
+  width: 500px;
+}
+
+.cardMedia {
+  height: 200px;
+  width: 800px;
+}
+
+@media (max-width: 800px) {
+  .cardMedia {
+    display: none;
+  }
+
+  .card {
+    width: auto;
+  }
+}
+
+.icon {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+.topButton {
+  margin: 1em;
+}
+
+.dataField {
+  display: flex;
+  align-items: center;
+  margin: 0.4em 0em;
+}
+
+.customLink {
+  color: #fff;
+  text-decoration-color: #fff;
+}

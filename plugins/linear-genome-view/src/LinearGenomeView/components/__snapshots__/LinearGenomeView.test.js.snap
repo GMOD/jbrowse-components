@@ -157,7 +157,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
           <div
-            class="MuiAutocomplete-root css-16awh2u-MuiAutocomplete-root"
+            class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
             data-testid="autocomplete"
             style="width: 200px;"
           >
@@ -722,7 +722,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <div
-            class="MuiAutocomplete-root css-16awh2u-MuiAutocomplete-root"
+            class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
             data-testid="autocomplete"
             style="width: 255.27500000000003px;"
           >

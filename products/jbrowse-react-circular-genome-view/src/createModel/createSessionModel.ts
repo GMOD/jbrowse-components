@@ -27,6 +27,7 @@ import {
 import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'
+import { version } from '../version'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -104,7 +105,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return getParent<any>(self).assemblyManager
       },
       get version() {
-        return ''
+        return version
       },
       get views() {
         return [self.view]

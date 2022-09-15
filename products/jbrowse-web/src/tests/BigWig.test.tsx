@@ -1,32 +1,18 @@
 import { fireEvent } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
 import {
   setup,
-  generateReadBuffer,
+  doBeforeEach,
   expectCanvasMatch,
   createView,
   pc,
   hts,
 } from './util'
 
-expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 10000 }

@@ -72,7 +72,9 @@ function getTrackName(
     return (
       trackName ||
       (asm
-        ? `Reference Sequence (${readConfObject(asm, 'name')})`
+        ? `Reference Sequence (${
+            readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
+          })`
         : 'Reference Sequence')
     )
   }

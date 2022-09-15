@@ -1,9 +1,14 @@
 import React from 'react'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { GenericFilehandle } from 'generic-filehandle'
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import rangeParser from 'range-parser'
@@ -28,13 +33,6 @@ jest.mock('../makeWorkerInstance', () => () => {})
 global.nodeImage = Image
 // @ts-ignore
 global.nodeCreateCanvas = createCanvas
-
-// @ts-ignore
-configSnapshot.configuration = {
-  rpc: {
-    defaultDriver: 'MainThreadRpcDriver',
-  },
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getPluginManager(initialState?: any, adminMode = true) {
@@ -111,6 +109,8 @@ export function setup() {
   Storage.prototype.setItem = jest.fn()
   Storage.prototype.removeItem = jest.fn()
   Storage.prototype.clear = jest.fn()
+
+  expect.extend({ toMatchImageSnapshot })
 }
 
 // eslint-disable-next-line no-global-assign
@@ -123,9 +123,12 @@ export function canvasToBuffer(canvas: HTMLCanvasElement) {
   )
 }
 
-export function expectCanvasMatch(canvas: HTMLElement) {
+export function expectCanvasMatch(
+  canvas: HTMLElement,
+  failureThreshold = 0.05,
+) {
   expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
-    failureThreshold: 0.05,
+    failureThreshold,
     failureThresholdType: 'percent',
   })
 }
@@ -143,13 +146,27 @@ export const hts = (str: string) => 'htsTrackEntry-' + str
 export const pc = (str: string) => `prerendered_canvas_${str}_done`
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createView(args?: any) {
-  const pm = getPluginManager(args)
-  const state = pm.rootModel
+export function createView(args?: any, adminMode?: boolean) {
+  const pluginManager = getPluginManager(args, adminMode)
+  const rest = render(<JBrowse pluginManager={pluginManager} />)
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { session } = state!
-  const rest = render(<JBrowse pluginManager={pm} />)
+  const rootModel = pluginManager.rootModel!
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const view = session!.views[0] as LGV
-  return { view, state, ...rest }
+  const session = rootModel.session!
+
+  const view = session.views[0] as LGV
+  return { view, rootModel, session, ...rest }
+}
+
+export function doBeforeEach(
+  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
+) {
+  clearCache()
+  clearAdapterCache()
+
+  // @ts-ignore
+  fetch.resetMocks()
+  // @ts-ignore
+  fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
