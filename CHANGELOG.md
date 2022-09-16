@@ -1,25 +1,3 @@
-## 2.1.4 (2022-09-16)
-
-<details><summary>Packages in this release</summary>
-<p>
-
-| Package                             | Download                                                          |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
-| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
-| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
-
-</p>
-</details>
-
-#### :bug: Bug Fix
-
-- [#3191](https://github.com/GMOD/jbrowse-components/pull/3191) Fix the version number reported by embedded components ([@cmdcolin](https://github.com/cmdcolin))
-
-#### Committers: 1
-
-- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
-
 ## 2.1.3 (2022-09-15)
 
 <details><summary>Packages in this release</summary>
