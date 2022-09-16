@@ -111,10 +111,20 @@ When developing your plugin using JBrowse desktop, the app will not automaticall
 You can also abort the running process under the "yarn develop" tab we set up earlier, and start it again.
 :::
 
+:::info
+If you would like to see your `console.log` output under the "yarn develop" tab of your desktop development environment, follow these steps:
+
+1. Create or edit the `.bash_profile` file typically found in the root directory of your profile
+2. Add `export ELECTRON_ENABLE_LOGGING=1` on a new line to the file
+3. Restart your terminal and JBrowse `yarn develop` process
+
+You should now be able to see console log statements in your terminal when developing on JBrowse desktop (denoted by a message prefixed with something like INFO:CONSOLE).
+:::
+
 ## Next Steps
 
 Now that you have your environments and your plugin running, you can start developing for JBrowse 2.
 
-If you took a detour from the plugin tutorial, [head back to where you left off](../simple_plugin_tutorial/03_running).
+If you took a detour from the plugin tutorial, [head back to where you left off](../simple_plugin_tutorial/03_adding_pluggable_element).
 
 If you'd like some general development information, checkout the series of [developer guides](../../developer_guide) available.
