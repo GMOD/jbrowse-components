@@ -6,7 +6,7 @@ toplevel: true
 
 import Figure from '../figure'
 
-The following guide will provide a short tutorial on how to create a plugin that performs desktop-specific actions.
+The following tutorial will demonstrate making a desktop-specific JBrowse plugin to run external tools such as bcftools and tabix on a VCF file.
 
 ## Prerequisites
 
@@ -533,6 +533,8 @@ As stated before, we encourage you to clearly indicate when a plugin is intended
 ## Next steps
 
 After this tutorial you should have a general understanding of the capabilities and potential desktop-only workflows that can be developed for a plugin for JBrowse 2.
+
+It should be reiterated that the functionality outlined in this tutorial is a simple example to get you started with working on more complicated workflows with more tools -- virtually anything you might do with a script or on the command line can be integrated into the JBrowse UI to streamline a workflow, for example, creating BAM/CRAM files with mosdepth, gunzip, and bedGraphToBigWig tools.
 
 If you'd like some general development information, checkout the series of [developer guides](../../developer_guide) available.
 
