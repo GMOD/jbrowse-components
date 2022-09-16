@@ -68,3 +68,6 @@ git commit --message "Prepare for $RELEASE_TAG release"
 
 # Run lerna version first, publish after changelog and blog post have been created
 yarn lerna publish --force-publish "*" "$SEMVER_LEVEL" --message "[update docs] %s"
+
+# Push bump version from embedded package.json lifecycles, might be good if this was part of lerna but is separate for now
+git push
