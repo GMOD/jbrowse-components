@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gtf",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "JBrowse 2 gtf feature adapter",
   "keywords": [
     "jbrowse",
