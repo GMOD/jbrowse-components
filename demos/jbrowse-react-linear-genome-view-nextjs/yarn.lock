@@ -303,10 +303,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.7.tgz#12002398e69c7f1d6c67f536d74ac3f8d56b29a0"
   integrity sha512-RpXZPpJoyZKhpl1mTgihK5RpN0wDSdvCVv15tdOIw4MqomfFeB682+He/niIZXwbK5fEja9mroyvGbkaQoQtQw==
 
-"@jbrowse/core@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-2.1.3.tgz#44c49a10dbd7daf27cf0ee9ce481aa66bc72f0ce"
-  integrity sha512-9S6xv5IV6vlORmaBYNOECan6m/LxN+5xOtOd1OhNWJnZKoF4JvvcWzVrAneI7KawlUz5pUOfsbqwM6vuzYX3GQ==
+"@jbrowse/core@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-2.1.4.tgz#ac55555c927d2e4c7ab33c14ca577f9af5bd4c8d"
+  integrity sha512-R+T/0UbRLePE+KsSnc3rLDwRMjCk8Ae3giPF29j2a/Nte8qhq222lfCcLOb+vTYJDeVVaEmUkkge3lnnpRkDyg==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@mui/icons-material" "^5.0.1"
@@ -337,10 +337,10 @@
     shortid "^2.2.13"
     svg-path-generator "^1.1.0"
 
-"@jbrowse/plugin-alignments@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-alignments/-/plugin-alignments-2.1.3.tgz#3d1c38d270fc6675d060e9c9c77015be83e1409c"
-  integrity sha512-lrsUxcmEQ4DwLkongiXSlIOQ8CsfyZ/6QL8pJbAvHdB2yJRgMAMMWUcyKMj/JkTcPkDjfOGiehONIWSz5gFmZA==
+"@jbrowse/plugin-alignments@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-alignments/-/plugin-alignments-2.1.4.tgz#400ce52284095ce03baff432bcf7e63909b22ae6"
+  integrity sha512-Ql/rkbBKpd/5nlH0o7JGzvWaG9hUYtCK5ZaGnnQr8d1pO9YKGR2NMXKz1QH85LwIGB5xzPSLPL5P63XELcusww==
   dependencies:
     "@gmod/bam" "^1.1.15"
     "@gmod/cram" "^1.6.4"
@@ -350,10 +350,10 @@
     fast-deep-equal "^3.1.3"
     generic-filehandle "^3.0.0"
 
-"@jbrowse/plugin-bed@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-bed/-/plugin-bed-2.1.3.tgz#b75cd0a649d8854b94de0a8d1adafc31105daad8"
-  integrity sha512-9MylgJaJ3EZh/BAvbesc2FBqNoPSVLxrvonsbLeyjDbHNH/gcZILNcbhoq/4iM7RPTeHEA7lLkgJt+iBqQ6wJw==
+"@jbrowse/plugin-bed@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-bed/-/plugin-bed-2.1.4.tgz#c18fe6a378200423374a2791e510179675a99afd"
+  integrity sha512-BJWnLpUStW7IbUEyuQUmwkM71j2wi/rcsS3smMmqbTJ43soybZjMn5cVoe1FQFZwW36KVcq4lKL5wJtcXHQpcw==
   dependencies:
     "@flatten-js/interval-tree" "^1.0.15"
     "@gmod/bbi" "^2.0.2"
@@ -361,25 +361,25 @@
     "@gmod/bgzf-filehandle" "^1.4.3"
     "@gmod/tabix" "^1.5.2"
 
-"@jbrowse/plugin-circular-view@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-2.1.3.tgz#affe8ec71ca62641250ce729ff4616a872c592fb"
-  integrity sha512-/FSlTaZTMAXCe9oNPyJ2r1NDT7Q0n9gYI85LRq5WxzwH+PtTrLgF+I0zj7YflC0//REZeY0bQ2IBGptcf3uBCA==
+"@jbrowse/plugin-circular-view@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-2.1.4.tgz#64f0677f5aa2e1aeddc1a5aaf6d7896beb616f6b"
+  integrity sha512-Oj6rW0Kx/9qiAB/vgomOZJbwEY3CWgig8sKmcQ7ShgINkOl4Shsi4XwGTFMX2sLBBJLLer4QWP6CrslYJ+Ee4w==
   dependencies:
     "@mui/icons-material" "^5.0.1"
 
-"@jbrowse/plugin-config@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-2.1.3.tgz#64fb3b12a08f22d60d485d5807c5d8e8dda9bd03"
-  integrity sha512-JSqJOunOgUC1TAR7ajumTskbGopDyk3VZUExdo0/i4LQOVtKqz9eGvnvWSggK0iGU6VKlrVthfhdXvdbP30lBg==
+"@jbrowse/plugin-config@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-2.1.4.tgz#dcc3ccb5debcdc8c6a263c2a0aaee8b89f13bad1"
+  integrity sha512-lGbeGVTjk0Lr3vZliggUg4Lb6GDLuCyUA3lKNgGJRf5/nV0degoDIP+mqDmA58mUtvC3kvoicba47AJUurUUkg==
   dependencies:
     "@mui/icons-material" "^5.0.1"
     pluralize "^8.0.0"
 
-"@jbrowse/plugin-data-management@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-data-management/-/plugin-data-management-2.1.3.tgz#7736a380f27a3cc7dcfb70b8d48ccf43abda0eb2"
-  integrity sha512-wvG+h62KrNkGhOmyxcEgngKtQlqngo4Cwprb41QiGdExSmZAtulfLJ86s4i27O9h8K0/++x0zssI9ShsuWAz6Q==
+"@jbrowse/plugin-data-management@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-data-management/-/plugin-data-management-2.1.4.tgz#6024b369bfe0b109accd7e68b41f042855ed460b"
+  integrity sha512-1B7L8zAzivtRmxeYYSip8uvJX6AXmqWFIMqA6Oizm0WOZa8/8I7VdijQvxhRCplU+iJOka9YGvDvOoaYNvTQMw==
   dependencies:
     "@gmod/ucsc-hub" "^0.1.3"
     "@mui/icons-material" "^5.0.1"
@@ -388,20 +388,20 @@
     react-vtree "^3.0.0-beta.1"
     react-window "^1.8.6"
 
-"@jbrowse/plugin-gff3@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-gff3/-/plugin-gff3-2.1.3.tgz#77573e595837547ed657b91ea8962d31a49cafaa"
-  integrity sha512-EY/mN2OCkuxbjNMPZFPHw2tXFmxvwktq76oEf89D9Vl6ssUUlSqZbNVNy50GkPtq/ucdXk5SPzes0xP9aNq3EA==
+"@jbrowse/plugin-gff3@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-gff3/-/plugin-gff3-2.1.4.tgz#51d45beede63d6cbc2d3018da8ec0088f69284b5"
+  integrity sha512-scl1+v8c9LUGem+RFz73INcGhPR8pPJk7QhtpaxqV1q/jjSdC6ivVqweSDqZaVhc29wqqTHv1gsQ4JM8mlZmXA==
   dependencies:
     "@flatten-js/interval-tree" "^1.0.15"
     "@gmod/bgzf-filehandle" "^1.4.3"
     "@gmod/gff" "^1.2.0"
     "@gmod/tabix" "^1.5.2"
 
-"@jbrowse/plugin-legacy-jbrowse@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-legacy-jbrowse/-/plugin-legacy-jbrowse-2.1.3.tgz#bcb451304df9b5739f837ea231145e60f2f0e1f0"
-  integrity sha512-f0lfd1tx1+0ypMg+iGqJe8wYEfF8KBElWIHMAgJmROhsPws6SxLjnwGpIlGQjdgWir97wCBsEo3eEprnyYxBJg==
+"@jbrowse/plugin-legacy-jbrowse@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-legacy-jbrowse/-/plugin-legacy-jbrowse-2.1.4.tgz#2ce574d65c4dad5adb33662adc9dc4c90846d87d"
+  integrity sha512-1bYRpcyGVB6ozQfDGBMFDBD+12roWYT16K4xffbLQLWyaf5mkTF4f3zNyTdYw/TJn/keHJ4l9Y2VySxEJexV2g==
   dependencies:
     "@gmod/nclist" "^0.2.1"
     buffer-crc32 "^0.2.13"
@@ -409,10 +409,10 @@
     get-value "^3.0.1"
     set-value "^4.0.1"
 
-"@jbrowse/plugin-linear-genome-view@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-2.1.3.tgz#515c1130844b1bf6c22dd7c1fcd73041474ecaaa"
-  integrity sha512-ces5Gf+MA3cled4LlYolTjw/TscZ1j2y7v2/XJzzROw6t0TZdLUeLZy27g8uxBcAmFTgf1LNS+lGyrGZ5Pe5oQ==
+"@jbrowse/plugin-linear-genome-view@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-2.1.4.tgz#16da633ee8b270a43ee5ab887502901a44b2a0e8"
+  integrity sha512-VBoTxfjPnXEq/vcBfHkmZhRBBu03dXwCf47rxzhhbW1uqR9uOm7v/Vwma97fb/UafmEtWmWpkqYIWOc/dc39Yw==
   dependencies:
     "@mui/icons-material" "^5.0.1"
     "@popperjs/core" "^2.11.0"
@@ -424,31 +424,31 @@
     normalize-wheel "^1.0.1"
     react-popper "^2.0.0"
 
-"@jbrowse/plugin-sequence@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-2.1.3.tgz#4b6d1686d35b70e78e68af83174bce02dc3c28da"
-  integrity sha512-051LS2tGzJfHhMJo4tE3MgQWCBebTRs1y0VOO2YTvPM6M/uCZxysVfhXYeJLTZyhTz7Bdon/tsqyrLIv4xADdw==
+"@jbrowse/plugin-sequence@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-2.1.4.tgz#a381fef58499634bdcccad086733d1450c755e1a"
+  integrity sha512-MikWkHS5VuNqWyzRdRX5DBwsbqIekbKw534NFd9LSpSdIZkvTUF/YPqlGqI93XiE2LgBL0Nma4xtgsZuBCSa6Q==
   dependencies:
     "@gmod/indexedfasta" "^2.0.2"
     "@gmod/twobit" "^1.1.12"
     abortable-promise-cache "^1.5.0"
 
-"@jbrowse/plugin-svg@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-svg/-/plugin-svg-2.1.3.tgz#8126c2faac9f205072deda306e12d6b4fc904834"
-  integrity sha512-tRneS1lKucD0Dk/s8EiehyMfcLhUYIzdTM5Qqpj3bs9b3zuBFsposOYMoRpyl+K+za5AHR+A42X1in8xpDyjZg==
+"@jbrowse/plugin-svg@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-svg/-/plugin-svg-2.1.4.tgz#b19fb70a665f033291f67c82c19f6948d259ca4f"
+  integrity sha512-adXUIeEq5UtaafrWn0lo8aNyDOBubyjeXvPk5eeSUKHpZ+tx154a6PiVdO4zFQCvMvgOe3nSDac1Hjf9cIWAbw==
 
-"@jbrowse/plugin-trix@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-trix/-/plugin-trix-2.1.3.tgz#937c3d91449b484e286cbeb72d451cf0cfee0823"
-  integrity sha512-YKtpQXGwxPknGfiaS1YqCUBOuRfBLvuC2JAkL2phO4TIAEEVQh2EAGmkTzm7nNaMJIRgDnQ79wXMk3paN+jxYQ==
+"@jbrowse/plugin-trix@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-trix/-/plugin-trix-2.1.4.tgz#54320e9e830089371f8d45747ffdf354cdabf069"
+  integrity sha512-E4y4MNEAu2bW2ZLNWELP5yaH+GM6Tbg/vWHbhZ90l4BHRrED8slV3Pt5ewZ4gu15L5fo/3gsU5Iq1/x8sfy4Mw==
   dependencies:
     "@gmod/trix" "^2.0.4"
 
-"@jbrowse/plugin-variants@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-variants/-/plugin-variants-2.1.3.tgz#18ef09bae761a37ad1b72437ddd6522e39b0de01"
-  integrity sha512-kxwGQaSdAeazZ0t4FZMFdjDfoVAXKeSL8pridEhuTGebzyyA692PzAZHp5YFuaZkyaSqMUX33LW3CEP3CANvOQ==
+"@jbrowse/plugin-variants@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-variants/-/plugin-variants-2.1.4.tgz#9a912f4202171a2a4c416b6980d218827eb04da4"
+  integrity sha512-zim9GurYwlImUDIT+RA9VQsrgjYwQriZuJS8kMfTFbgDOAape5/Pnn3qAhR4c98a35SVx6pYMWLCah46px9RtQ==
   dependencies:
     "@flatten-js/interval-tree" "^1.0.15"
     "@gmod/bgzf-filehandle" "^1.4.3"
@@ -458,10 +458,10 @@
     "@mui/x-data-grid" "^5.0.1"
     generic-filehandle "^3.0.0"
 
-"@jbrowse/plugin-wiggle@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-2.1.3.tgz#0456e4ec8e44f7a5133fcff637ba13873b151f46"
-  integrity sha512-hVru9ppCmDhDyArpVMLKIdb62Fnu2Qw2OYCiZy2wW6S0kRIfTO0djpJpnXfDbxbNBN9sngvar+MFefgqnVA1Hw==
+"@jbrowse/plugin-wiggle@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-2.1.4.tgz#2ccfa3aba3088fcd319a222ab57b5577074aa4c9"
+  integrity sha512-EZlQRR3utd9lpq88TSJI8YCbB9OCPpDKunv4WNB0hmOaDtOK4wamBJNRcPp/OLrBqR/+T1D4qhTV9IyUxl5itQ==
   dependencies:
     "@gmod/bbi" "^2.0.2"
     "@mui/icons-material" "^5.0.2"
@@ -477,28 +477,28 @@
     react-popper "^2.0.0"
 
 "@jbrowse/react-linear-genome-view@^2.0.0":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/react-linear-genome-view/-/react-linear-genome-view-2.1.3.tgz#dd61cc98f62697160c8c8ef84ab4e043c4743beb"
-  integrity sha512-iowOgfo8H2LmEamJuZlTTNLblQmbTJcYJRtcl8rH1VDxXXJxmli21f8WHFwssoBgC16tK3+LOZzgYW9qoauhig==
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/react-linear-genome-view/-/react-linear-genome-view-2.1.4.tgz#8851e98bf8910fc6ea4ab718583db5f97dd66484"
+  integrity sha512-HAj9d7X7ntCiG4FTxSVj1zgExPLmhmWhtrS5HQcAPrw1kx9UvGOdlgOW5CeMkVligO5J44UHr0oWtyJ7VD54pg==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@emotion/cache" "^11.7.1"
     "@emotion/react" "^11.9.0"
     "@emotion/styled" "^11.8.1"
-    "@jbrowse/core" "^2.1.3"
-    "@jbrowse/plugin-alignments" "^2.1.3"
-    "@jbrowse/plugin-bed" "^2.1.3"
-    "@jbrowse/plugin-circular-view" "^2.1.3"
-    "@jbrowse/plugin-config" "^2.1.3"
-    "@jbrowse/plugin-data-management" "^2.1.3"
-    "@jbrowse/plugin-gff3" "^2.1.3"
-    "@jbrowse/plugin-legacy-jbrowse" "^2.1.3"
-    "@jbrowse/plugin-linear-genome-view" "^2.1.3"
-    "@jbrowse/plugin-sequence" "^2.1.3"
-    "@jbrowse/plugin-svg" "^2.1.3"
-    "@jbrowse/plugin-trix" "^2.1.3"
-    "@jbrowse/plugin-variants" "^2.1.3"
-    "@jbrowse/plugin-wiggle" "^2.1.3"
+    "@jbrowse/core" "^2.1.4"
+    "@jbrowse/plugin-alignments" "^2.1.4"
+    "@jbrowse/plugin-bed" "^2.1.4"
+    "@jbrowse/plugin-circular-view" "^2.1.4"
+    "@jbrowse/plugin-config" "^2.1.4"
+    "@jbrowse/plugin-data-management" "^2.1.4"
+    "@jbrowse/plugin-gff3" "^2.1.4"
+    "@jbrowse/plugin-legacy-jbrowse" "^2.1.4"
+    "@jbrowse/plugin-linear-genome-view" "^2.1.4"
+    "@jbrowse/plugin-sequence" "^2.1.4"
+    "@jbrowse/plugin-svg" "^2.1.4"
+    "@jbrowse/plugin-trix" "^2.1.4"
+    "@jbrowse/plugin-variants" "^2.1.4"
+    "@jbrowse/plugin-wiggle" "^2.1.4"
     "@mui/icons-material" "^5.0.0"
     "@mui/material" "^5.0.0"
     mobx "^6.6.0"
@@ -601,7 +601,7 @@
   resolved "https://registry.yarnpkg.com/@mui/types/-/types-7.2.0.tgz#91380c2d42420f51f404120f7a9270eadd6f5c23"
   integrity sha512-lGXtFKe5lp3UxTBGqKI1l7G8sE2xBik8qCfrLHD5olwP/YU0/ReWoWT7Lp1//ri32dK39oPMrJN8TgbkCSbsNA==
 
-"@mui/utils@^5.10.3", "@mui/utils@^5.9.3":
+"@mui/utils@^5.10.3":
   version "5.10.3"
   resolved "https://registry.yarnpkg.com/@mui/utils/-/utils-5.10.3.tgz#ce2a96f31de2a5e717f507b5383dbabbddbc4dfc"
   integrity sha512-4jXMDPfx6bpMVuheLaOpKTjpzw39ogAZLeaLj5+RJec3E37/hAZMYjURfblLfTWMMoGoqkY03mNsZaEwNobBow==
@@ -613,12 +613,12 @@
     react-is "^18.2.0"
 
 "@mui/x-data-grid@^5.0.1":
-  version "5.17.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-5.17.2.tgz#50b6b130c8a6c59c57ceb73d8e53e71cc3cc1ed1"
-  integrity sha512-zAwX57HHAanmPem1UrfsYNUX4cazrVpXZvgbfkrjDFjsmCuWz9vTuk67YgEx5VuDG1U/suFB1E9UO/LpYb7n4A==
+  version "5.17.3"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-5.17.3.tgz#3a2802c71bb99d30953ae1d6a6d6107e60300c68"
+  integrity sha512-EBTD7nfV3b6Zz7X8IS0BR4x3ihzHqGAemP6Ah22N/oHTIz+HWsCMtsYWRs5SjQewVjY8JXJ3fcJJEgldOcaqqg==
   dependencies:
     "@babel/runtime" "^7.18.9"
-    "@mui/utils" "^5.9.3"
+    "@mui/utils" "^5.10.3"
     clsx "^1.2.1"
     prop-types "^15.8.1"
     reselect "^4.1.6"
@@ -813,9 +813,9 @@ callsites@^3.0.0:
   integrity sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==
 
 caniuse-lite@^1.0.30001332:
-  version "1.0.30001400"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001400.tgz#3038bee70d8b875604cd8833cb0e5e254ee0281a"
-  integrity sha512-Mv659Hn65Z4LgZdJ7ge5JTVbE3rqbJaaXgW5LEI9/tOaXclfIZ8DW7D7FCWWWmWiiPS7AC48S8kf3DApSxQdgA==
+  version "1.0.30001402"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001402.tgz#aa29e1f47f5055b0d0c07696a67b8b08023d14c8"
+  integrity sha512-Mx4MlhXO5NwuvXGgVb+hg65HZ+bhUYsz8QtDGDo2QmaJS2GBX47Xfi2koL86lc8K+l+htXeTEB/Aeqvezoo6Ew==
 
 canvas-sequencer@^3.1.0:
   version "3.1.0"

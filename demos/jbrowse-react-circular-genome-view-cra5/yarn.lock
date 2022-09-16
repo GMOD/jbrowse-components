@@ -1453,10 +1453,10 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
 
-"@jbrowse/core@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-2.1.3.tgz#44c49a10dbd7daf27cf0ee9ce481aa66bc72f0ce"
-  integrity sha512-9S6xv5IV6vlORmaBYNOECan6m/LxN+5xOtOd1OhNWJnZKoF4JvvcWzVrAneI7KawlUz5pUOfsbqwM6vuzYX3GQ==
+"@jbrowse/core@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-2.1.4.tgz#ac55555c927d2e4c7ab33c14ca577f9af5bd4c8d"
+  integrity sha512-R+T/0UbRLePE+KsSnc3rLDwRMjCk8Ae3giPF29j2a/Nte8qhq222lfCcLOb+vTYJDeVVaEmUkkge3lnnpRkDyg==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@mui/icons-material" "^5.0.1"
@@ -1487,25 +1487,25 @@
     shortid "^2.2.13"
     svg-path-generator "^1.1.0"
 
-"@jbrowse/plugin-circular-view@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-2.1.3.tgz#affe8ec71ca62641250ce729ff4616a872c592fb"
-  integrity sha512-/FSlTaZTMAXCe9oNPyJ2r1NDT7Q0n9gYI85LRq5WxzwH+PtTrLgF+I0zj7YflC0//REZeY0bQ2IBGptcf3uBCA==
+"@jbrowse/plugin-circular-view@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-2.1.4.tgz#64f0677f5aa2e1aeddc1a5aaf6d7896beb616f6b"
+  integrity sha512-Oj6rW0Kx/9qiAB/vgomOZJbwEY3CWgig8sKmcQ7ShgINkOl4Shsi4XwGTFMX2sLBBJLLer4QWP6CrslYJ+Ee4w==
   dependencies:
     "@mui/icons-material" "^5.0.1"
 
-"@jbrowse/plugin-config@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-2.1.3.tgz#64fb3b12a08f22d60d485d5807c5d8e8dda9bd03"
-  integrity sha512-JSqJOunOgUC1TAR7ajumTskbGopDyk3VZUExdo0/i4LQOVtKqz9eGvnvWSggK0iGU6VKlrVthfhdXvdbP30lBg==
+"@jbrowse/plugin-config@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-2.1.4.tgz#dcc3ccb5debcdc8c6a263c2a0aaee8b89f13bad1"
+  integrity sha512-lGbeGVTjk0Lr3vZliggUg4Lb6GDLuCyUA3lKNgGJRf5/nV0degoDIP+mqDmA58mUtvC3kvoicba47AJUurUUkg==
   dependencies:
     "@mui/icons-material" "^5.0.1"
     pluralize "^8.0.0"
 
-"@jbrowse/plugin-data-management@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-data-management/-/plugin-data-management-2.1.3.tgz#7736a380f27a3cc7dcfb70b8d48ccf43abda0eb2"
-  integrity sha512-wvG+h62KrNkGhOmyxcEgngKtQlqngo4Cwprb41QiGdExSmZAtulfLJ86s4i27O9h8K0/++x0zssI9ShsuWAz6Q==
+"@jbrowse/plugin-data-management@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-data-management/-/plugin-data-management-2.1.4.tgz#6024b369bfe0b109accd7e68b41f042855ed460b"
+  integrity sha512-1B7L8zAzivtRmxeYYSip8uvJX6AXmqWFIMqA6Oizm0WOZa8/8I7VdijQvxhRCplU+iJOka9YGvDvOoaYNvTQMw==
   dependencies:
     "@gmod/ucsc-hub" "^0.1.3"
     "@mui/icons-material" "^5.0.1"
@@ -1515,9 +1515,9 @@
     react-window "^1.8.6"
 
 "@jbrowse/plugin-linear-genome-view@^2.0.0":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-2.1.3.tgz#515c1130844b1bf6c22dd7c1fcd73041474ecaaa"
-  integrity sha512-ces5Gf+MA3cled4LlYolTjw/TscZ1j2y7v2/XJzzROw6t0TZdLUeLZy27g8uxBcAmFTgf1LNS+lGyrGZ5Pe5oQ==
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-2.1.4.tgz#16da633ee8b270a43ee5ab887502901a44b2a0e8"
+  integrity sha512-VBoTxfjPnXEq/vcBfHkmZhRBBu03dXwCf47rxzhhbW1uqR9uOm7v/Vwma97fb/UafmEtWmWpkqYIWOc/dc39Yw==
   dependencies:
     "@mui/icons-material" "^5.0.1"
     "@popperjs/core" "^2.11.0"
@@ -1529,19 +1529,19 @@
     normalize-wheel "^1.0.1"
     react-popper "^2.0.0"
 
-"@jbrowse/plugin-sequence@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-2.1.3.tgz#4b6d1686d35b70e78e68af83174bce02dc3c28da"
-  integrity sha512-051LS2tGzJfHhMJo4tE3MgQWCBebTRs1y0VOO2YTvPM6M/uCZxysVfhXYeJLTZyhTz7Bdon/tsqyrLIv4xADdw==
+"@jbrowse/plugin-sequence@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-2.1.4.tgz#a381fef58499634bdcccad086733d1450c755e1a"
+  integrity sha512-MikWkHS5VuNqWyzRdRX5DBwsbqIekbKw534NFd9LSpSdIZkvTUF/YPqlGqI93XiE2LgBL0Nma4xtgsZuBCSa6Q==
   dependencies:
     "@gmod/indexedfasta" "^2.0.2"
     "@gmod/twobit" "^1.1.12"
     abortable-promise-cache "^1.5.0"
 
-"@jbrowse/plugin-variants@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-variants/-/plugin-variants-2.1.3.tgz#18ef09bae761a37ad1b72437ddd6522e39b0de01"
-  integrity sha512-kxwGQaSdAeazZ0t4FZMFdjDfoVAXKeSL8pridEhuTGebzyyA692PzAZHp5YFuaZkyaSqMUX33LW3CEP3CANvOQ==
+"@jbrowse/plugin-variants@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-variants/-/plugin-variants-2.1.4.tgz#9a912f4202171a2a4c416b6980d218827eb04da4"
+  integrity sha512-zim9GurYwlImUDIT+RA9VQsrgjYwQriZuJS8kMfTFbgDOAape5/Pnn3qAhR4c98a35SVx6pYMWLCah46px9RtQ==
   dependencies:
     "@flatten-js/interval-tree" "^1.0.15"
     "@gmod/bgzf-filehandle" "^1.4.3"
@@ -1551,10 +1551,10 @@
     "@mui/x-data-grid" "^5.0.1"
     generic-filehandle "^3.0.0"
 
-"@jbrowse/plugin-wiggle@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-2.1.3.tgz#0456e4ec8e44f7a5133fcff637ba13873b151f46"
-  integrity sha512-hVru9ppCmDhDyArpVMLKIdb62Fnu2Qw2OYCiZy2wW6S0kRIfTO0djpJpnXfDbxbNBN9sngvar+MFefgqnVA1Hw==
+"@jbrowse/plugin-wiggle@^2.1.4":
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-2.1.4.tgz#2ccfa3aba3088fcd319a222ab57b5577074aa4c9"
+  integrity sha512-EZlQRR3utd9lpq88TSJI8YCbB9OCPpDKunv4WNB0hmOaDtOK4wamBJNRcPp/OLrBqR/+T1D4qhTV9IyUxl5itQ==
   dependencies:
     "@gmod/bbi" "^2.0.2"
     "@mui/icons-material" "^5.0.2"
@@ -1570,21 +1570,21 @@
     react-popper "^2.0.0"
 
 "@jbrowse/react-circular-genome-view@^2.0.0":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@jbrowse/react-circular-genome-view/-/react-circular-genome-view-2.1.3.tgz#196d9762c97b4d13528723b4fd87d169c91935f8"
-  integrity sha512-4+Zyx+weYLIoGqHk6vok+WEZPau9ygGOLD5any1PlJL3gvoMm55BSs4zEqxq7jjW/Bj1J0tpMXRLvJeroIDZzQ==
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/@jbrowse/react-circular-genome-view/-/react-circular-genome-view-2.1.4.tgz#b7f2bb5fe0f811e6c7816a8b4dc6fa393cb94f08"
+  integrity sha512-ttm2lFu833ilj/s/S5D1RRv/FZGYZjsqg16we4VA8YVJMC6Cm3xQdpheX5AAdw9PzvlF+449mG8SBYfmH0dQEA==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@emotion/cache" "^11.7.1"
     "@emotion/react" "^11.9.0"
     "@emotion/styled" "^11.8.1"
-    "@jbrowse/core" "^2.1.3"
-    "@jbrowse/plugin-circular-view" "^2.1.3"
-    "@jbrowse/plugin-config" "^2.1.3"
-    "@jbrowse/plugin-data-management" "^2.1.3"
-    "@jbrowse/plugin-sequence" "^2.1.3"
-    "@jbrowse/plugin-variants" "^2.1.3"
-    "@jbrowse/plugin-wiggle" "^2.1.3"
+    "@jbrowse/core" "^2.1.4"
+    "@jbrowse/plugin-circular-view" "^2.1.4"
+    "@jbrowse/plugin-config" "^2.1.4"
+    "@jbrowse/plugin-data-management" "^2.1.4"
+    "@jbrowse/plugin-sequence" "^2.1.4"
+    "@jbrowse/plugin-variants" "^2.1.4"
+    "@jbrowse/plugin-wiggle" "^2.1.4"
     "@mui/icons-material" "^5.0.0"
     "@mui/material" "^5.0.0"
     mobx "^6.6.0"
@@ -1979,7 +1979,7 @@
   resolved "https://registry.yarnpkg.com/@mui/types/-/types-7.2.0.tgz#91380c2d42420f51f404120f7a9270eadd6f5c23"
   integrity sha512-lGXtFKe5lp3UxTBGqKI1l7G8sE2xBik8qCfrLHD5olwP/YU0/ReWoWT7Lp1//ri32dK39oPMrJN8TgbkCSbsNA==
 
-"@mui/utils@^5.10.3", "@mui/utils@^5.9.3":
+"@mui/utils@^5.10.3":
   version "5.10.3"
   resolved "https://registry.yarnpkg.com/@mui/utils/-/utils-5.10.3.tgz#ce2a96f31de2a5e717f507b5383dbabbddbc4dfc"
   integrity sha512-4jXMDPfx6bpMVuheLaOpKTjpzw39ogAZLeaLj5+RJec3E37/hAZMYjURfblLfTWMMoGoqkY03mNsZaEwNobBow==
@@ -1991,12 +1991,12 @@
     react-is "^18.2.0"
 
 "@mui/x-data-grid@^5.0.1":
-  version "5.17.2"
-  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-5.17.2.tgz#50b6b130c8a6c59c57ceb73d8e53e71cc3cc1ed1"
-  integrity sha512-zAwX57HHAanmPem1UrfsYNUX4cazrVpXZvgbfkrjDFjsmCuWz9vTuk67YgEx5VuDG1U/suFB1E9UO/LpYb7n4A==
+  version "5.17.3"
+  resolved "https://registry.yarnpkg.com/@mui/x-data-grid/-/x-data-grid-5.17.3.tgz#3a2802c71bb99d30953ae1d6a6d6107e60300c68"
+  integrity sha512-EBTD7nfV3b6Zz7X8IS0BR4x3ihzHqGAemP6Ah22N/oHTIz+HWsCMtsYWRs5SjQewVjY8JXJ3fcJJEgldOcaqqg==
   dependencies:
     "@babel/runtime" "^7.18.9"
-    "@mui/utils" "^5.9.3"
+    "@mui/utils" "^5.10.3"
     clsx "^1.2.1"
     prop-types "^15.8.1"
     reselect "^4.1.6"
@@ -2455,9 +2455,9 @@
     "@types/istanbul-lib-report" "*"
 
 "@types/jest@*":
-  version "29.0.2"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-29.0.2.tgz#05dcb2d78d2fcc444be89f95b7389f2c3601d336"
-  integrity sha512-TaklkwSEtvwJpleiKBHgEBySIQlcZ08gYP/s5wdtdLnjz9uxjnDd7U+Y0JWACebkqBc+jtbol2PEtEW0wQV2zQ==
+  version "29.0.3"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-29.0.3.tgz#b61a5ed100850686b8d3c5e28e3a1926b2001b59"
+  integrity sha512-F6ukyCTwbfsEX5F2YmVYmM5TcTHy1q9P5rWlRbrk56KyMh3v9xRGUO3aa8+SkvMi0SHXtASJv1283enXimC0Og==
   dependencies:
     expect "^29.0.0"
     pretty-format "^29.0.0"
@@ -3635,9 +3635,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001399, caniuse-lite@^1.0.30001400:
-  version "1.0.30001400"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001400.tgz#3038bee70d8b875604cd8833cb0e5e254ee0281a"
-  integrity sha512-Mv659Hn65Z4LgZdJ7ge5JTVbE3rqbJaaXgW5LEI9/tOaXclfIZ8DW7D7FCWWWmWiiPS7AC48S8kf3DApSxQdgA==
+  version "1.0.30001402"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001402.tgz#aa29e1f47f5055b0d0c07696a67b8b08023d14c8"
+  integrity sha512-Mx4MlhXO5NwuvXGgVb+hg65HZ+bhUYsz8QtDGDo2QmaJS2GBX47Xfi2koL86lc8K+l+htXeTEB/Aeqvezoo6Ew==
 
 canvas-sequencer@^3.1.0:
   version "3.1.0"
@@ -4649,9 +4649,9 @@ ejs@^3.1.6:
     jake "^10.8.5"
 
 electron-to-chromium@^1.4.251:
-  version "1.4.251"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.251.tgz#8b62448f3c591f0d32488df09454dda72dec96d5"
-  integrity sha512-k4o4cFrWPv4SoJGGAydd07GmlRVzmeDIJ6MaEChTUjk4Dmomn189tCicSzil2oyvbPoGgg2suwPDNWq4gWRhoQ==
+  version "1.4.253"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.253.tgz#3402fd2159530fc6d94237f1b9535fa7bebaf399"
+  integrity sha512-1pezJ2E1UyBTGbA7fUlHdPSXQw1k+82VhTFLG5G0AUqLGvsZqFzleOblceqegZzxYX4kC7hGEEdzIQI9RZ1Cuw==
 
 elliptic@^6.5.3:
   version "6.5.4"
