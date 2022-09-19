@@ -56,14 +56,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
-
-        // this represents assemblies in the specialized read vs ref dotplot
-        // view
-        viewAssemblyConfigs: types.array(types.frozen()),
       }),
     )
     .volatile(() => ({
-      headerHeight: 0,
       width: 800,
     }))
     .views(self => ({
@@ -147,10 +142,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         getParent<any>(self, 2).removeView(self)
       },
 
-      setHeaderHeight(height: number) {
-        self.headerHeight = height
-      },
-
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
         return self.middleComparativeHeight
@@ -180,6 +171,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
+
         // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)

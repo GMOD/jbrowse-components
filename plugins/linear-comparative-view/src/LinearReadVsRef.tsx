@@ -345,30 +345,31 @@ export function WindowSizeDlg(props: {
         })),
       )
 
+      session.addTemporaryAssembly({
+        name: `${readAssembly}`,
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          name: `Read sequence`,
+          trackId: seqTrackId,
+          assemblyNames: [readAssembly],
+          adapter: {
+            type: 'FromConfigSequenceAdapter',
+            noAssemblyManager: true,
+            features: [
+              {
+                start: 0,
+                end: totalLength,
+                seq: featSeq,
+                refName: readName,
+                uniqueId: `${Math.random()}`,
+              },
+            ],
+          },
+        },
+      })
+
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
-        viewAssemblyConfigs: [
-          {
-            name: `${readAssembly}`,
-            sequence: {
-              type: 'ReferenceSequenceTrack',
-              name: `Read sequence`,
-              trackId: seqTrackId,
-              adapter: {
-                type: 'FromConfigSequenceAdapter',
-                features: [
-                  {
-                    start: 0,
-                    end: totalLength,
-                    seq: featSeq,
-                    refName: readName,
-                    uniqueId: `${Math.random()}`,
-                  },
-                ],
-              },
-            },
-          },
-        ],
         views: [
           {
             type: 'LinearGenomeView',
@@ -376,7 +377,24 @@ export function WindowSizeDlg(props: {
             offsetPx: 0,
             bpPerPx: refLength / view.width,
             displayedRegions: lgvRegions,
-            tracks: [],
+            tracks: [
+              {
+                id: `${Math.random()}`,
+                type: 'ReferenceSequenceTrack',
+                assemblyNames: [trackAssembly],
+                configuration: sequenceTrackConf.trackId,
+                displays: [
+                  {
+                    id: `${Math.random()}`,
+                    type: 'LinearReferenceSequenceDisplay',
+                    showReverse: true,
+                    showTranslation: false,
+                    height: 35,
+                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
+                  },
+                ],
+              },
+            ],
           },
           {
             type: 'LinearGenomeView',
@@ -395,8 +413,7 @@ export function WindowSizeDlg(props: {
               {
                 id: `${Math.random()}`,
                 type: 'ReferenceSequenceTrack',
-                assemblyNames: [trackAssembly],
-                configuration: sequenceTrackConf.trackId,
+                configuration: seqTrackId,
                 displays: [
                   {
                     id: `${Math.random()}`,

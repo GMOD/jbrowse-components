@@ -37,12 +37,13 @@ export default function assemblyManagerFactory(
         // hence the union with {name:string}
         const {
           jbrowse: { assemblies },
-          session: { sessionAssemblies = [] } = {},
+          session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } = getParent<any>(self)
         return [
           ...assemblies,
           ...sessionAssemblies,
+          ...temporaryAssemblies,
         ] as (AnyConfigurationModel & { name: string })[]
       },
 
