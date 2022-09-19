@@ -20,7 +20,6 @@ const useStyles = makeStyles()({
 
 function RecentSessionCard({ sessionName, onClick, onDelete }) {
   const { classes } = useStyles()
-  const [hovered, setHovered] = useState(false)
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
 
   function onMenuClick(event) {
@@ -38,13 +37,7 @@ function RecentSessionCard({ sessionName, onClick, onDelete }) {
 
   return (
     <>
-      <ListItem
-        onMouseOver={() => setHovered(true)}
-        onMouseOut={() => setHovered(false)}
-        onClick={() => onClick(sessionName)}
-        raised={Boolean(hovered)}
-        button
-      >
+      <ListItem onClick={() => onClick(sessionName)} button>
         <Tooltip title={sessionName} enterDelay={300}>
           <Typography variant="body2" noWrap style={{ width: 250 }}>
             {sessionName}
