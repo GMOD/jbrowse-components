@@ -56,6 +56,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
+
+        // this represents assemblies in the specialized read vs ref dotplot
+        // view
+        viewAssemblyConfigs: types.array(types.frozen()),
       }),
     )
     .volatile(() => ({

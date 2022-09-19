@@ -345,31 +345,30 @@ export function WindowSizeDlg(props: {
         })),
       )
 
-      session.addAssembly?.({
-        name: `${readAssembly}`,
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          name: `Read sequence`,
-          trackId: seqTrackId,
-          assemblyNames: [readAssembly],
-          adapter: {
-            type: 'FromConfigSequenceAdapter',
-            noAssemblyManager: true,
-            features: [
-              {
-                start: 0,
-                end: totalLength,
-                seq: featSeq,
-                refName: readName,
-                uniqueId: `${Math.random()}`,
-              },
-            ],
-          },
-        },
-      })
-
       session.addView('LinearSyntenyView', {
         type: 'LinearSyntenyView',
+        viewAssemblyConfigs: [
+          {
+            name: `${readAssembly}`,
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              name: `Read sequence`,
+              trackId: seqTrackId,
+              adapter: {
+                type: 'FromConfigSequenceAdapter',
+                features: [
+                  {
+                    start: 0,
+                    end: totalLength,
+                    seq: featSeq,
+                    refName: readName,
+                    uniqueId: `${Math.random()}`,
+                  },
+                ],
+              },
+            },
+          },
+        ],
         views: [
           {
             type: 'LinearGenomeView',
@@ -377,24 +376,7 @@ export function WindowSizeDlg(props: {
             offsetPx: 0,
             bpPerPx: refLength / view.width,
             displayedRegions: lgvRegions,
-            tracks: [
-              {
-                id: `${Math.random()}`,
-                type: 'ReferenceSequenceTrack',
-                assemblyNames: [trackAssembly],
-                configuration: sequenceTrackConf.trackId,
-                displays: [
-                  {
-                    id: `${Math.random()}`,
-                    type: 'LinearReferenceSequenceDisplay',
-                    showReverse: true,
-                    showTranslation: false,
-                    height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
-                  },
-                ],
-              },
-            ],
+            tracks: [],
           },
           {
             type: 'LinearGenomeView',
@@ -413,7 +395,8 @@ export function WindowSizeDlg(props: {
               {
                 id: `${Math.random()}`,
                 type: 'ReferenceSequenceTrack',
-                configuration: seqTrackId,
+                assemblyNames: [trackAssembly],
+                configuration: sequenceTrackConf.trackId,
                 displays: [
                   {
                     id: `${Math.random()}`,
@@ -425,40 +408,6 @@ export function WindowSizeDlg(props: {
                   },
                 ],
               },
-              ...(qualTrack
-                ? [
-                    {
-                      id: `${Math.random()}`,
-                      type: 'QuantitativeTrack',
-                      configuration: {
-                        trackId: 'qualTrack',
-                        assemblyNames: [readAssembly],
-                        name: 'Read quality',
-                        type: 'QuantitativeTrack',
-                        adapter: {
-                          type: 'FromConfigAdapter',
-                          noAssemblyManager: true,
-                          features: qual.split(' ').map((score, index) => {
-                            return {
-                              start: index,
-                              end: index + 1,
-                              refName: readName,
-                              score: +score,
-                              uniqueId: `feat_${index}`,
-                            }
-                          }),
-                        },
-                      },
-                      displays: [
-                        {
-                          id: `${Math.random()}`,
-                          type: 'LinearWiggleDisplay',
-                          height: 100,
-                        },
-                      ],
-                    },
-                  ]
-                : []),
             ],
           },
         ],
