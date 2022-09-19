@@ -224,6 +224,10 @@ export default function stateModelFactory(pm: PluginManager) {
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
+        const session = getSession(self)
+        self.assemblyNames.forEach(asm => {
+          session.removeTemporaryAssembly(asm)
+        })
       },
 
       setHeaderHeight(height: number) {
@@ -395,6 +399,13 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .actions(self => ({
+      // if any of our assemblies are temporary assemblies
+      beforeDestroy() {
+        const session = getSession(self)
+        self.assemblyNames.forEach(asm => {
+          session.removeTemporaryAssembly(asm)
+        })
+      },
       afterAttach() {
         addDisposer(
           self,

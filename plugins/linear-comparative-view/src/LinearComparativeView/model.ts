@@ -106,10 +106,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // e.g. read vs ref
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(name => {
-          if (name.endsWith('-temp')) {
-            session.removeAssembly?.(name)
-          }
+        self.assemblyNames.forEach(asm => {
+          session.removeTemporaryAssembly(asm)
         })
       },
 
