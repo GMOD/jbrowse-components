@@ -143,7 +143,11 @@ export default function sessionModelFactory(
         return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent<any>(self).jbrowse.assemblyNames
+        const { assemblyNames } = getParent<any>(self).jbrowse
+        const sessionAssemblyNames = self.sessionAssemblies.map(assembly =>
+          readConfObject(assembly, 'name'),
+        )
+        return [...assemblyNames, ...sessionAssemblyNames]
       },
       get tracks() {
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
