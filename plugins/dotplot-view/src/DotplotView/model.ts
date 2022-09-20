@@ -82,7 +82,6 @@ export default function stateModelFactory(pm: PluginManager) {
       types.model('DotplotView', {
         id: ElementId,
         type: types.literal('DotplotView'),
-        headerHeight: 0,
         height: 600,
         borderSize: 20,
         tickSize: 5,
@@ -104,10 +103,6 @@ export default function stateModelFactory(pm: PluginManager) {
         // read vs ref dotplots where this track would not really apply
         // elsewhere
         viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
-
-        // this represents assemblies in the specialized read vs ref dotplot
-        // view
-        viewAssemblyConfigs: types.array(types.frozen()),
       }),
     )
     .volatile(() => ({
@@ -224,14 +219,6 @@ export default function stateModelFactory(pm: PluginManager) {
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
-        const session = getSession(self)
-        self.assemblyNames.forEach(asm => {
-          session.removeTemporaryAssembly(asm)
-        })
-      },
-
-      setHeaderHeight(height: number) {
-        self.headerHeight = height
       },
 
       zoomOutButton() {

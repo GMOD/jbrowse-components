@@ -57,7 +57,7 @@ export declare interface ReactProps {
 
 export default function sessionModelFactory(
   pluginManager: PluginManager,
-  assemblySchema = types.frozen(),
+  assemblyConfigSchemasType = types.frozen(),
 ) {
   const minDrawerWidth = 128
   const sessionModel = types
@@ -87,8 +87,8 @@ export default function sessionModelFactory(
       sessionConnections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
-      sessionAssemblies: types.array(assemblySchema),
-      temporaryAssemblies: types.array(assemblySchema),
+      sessionAssemblies: types.array(assemblyConfigSchemasType),
+      temporaryAssemblies: types.array(assemblyConfigSchemasType),
       sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
 
