@@ -20,7 +20,7 @@ test('wrong assembly', async () => {
   const { view, findAllByText } = createView()
   view.showTrack('volvox_wrong_assembly')
   await findAllByText(
-    'Error: region assembly (volvox) does not match track assemblies (wombat)',
+    'region assembly (volvox) does not match track assemblies (wombat)',
     {},
     delay,
   )

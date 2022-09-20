@@ -524,8 +524,15 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                 style="width: 100px;"
               >
                 <div
-                  style="display: flex;"
-                />
+                  class="css-m69qwo-MuiStack-root"
+                >
+                  <div
+                    style="width: 50%;"
+                  />
+                  <div
+                    style="width: 50%;"
+                  />
+                </div>
               </div>
               <div
                 class="tss-a9ifge-boundaryPaddingBlock"
