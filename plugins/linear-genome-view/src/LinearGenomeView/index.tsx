@@ -204,10 +204,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
         const { assemblyNames } = self
-        return assemblyNames.every(a => {
-          let s = assemblyManager.get(a)
-          return s ? s.initialized : true
-        })
+        return assemblyNames.every(a => assemblyManager.get(a)?.initialized)
       },
       get initialized() {
         return self.volatileWidth !== undefined && this.assembliesInitialized

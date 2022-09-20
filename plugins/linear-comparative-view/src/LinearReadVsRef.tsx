@@ -425,6 +425,41 @@ export function WindowSizeDlg(props: {
                   },
                 ],
               },
+
+              ...(qualTrack
+                ? [
+                    {
+                      id: `${Math.random()}`,
+                      type: 'QuantitativeTrack',
+                      configuration: {
+                        trackId: 'qualTrack',
+                        assemblyNames: [readAssembly],
+                        name: 'Read quality',
+                        type: 'QuantitativeTrack',
+                        adapter: {
+                          type: 'FromConfigAdapter',
+                          noAssemblyManager: true,
+                          features: qual.split(' ').map((score, index) => {
+                            return {
+                              start: index,
+                              end: index + 1,
+                              refName: readName,
+                              score: +score,
+                              uniqueId: `feat_${index}`,
+                            }
+                          }),
+                        },
+                      },
+                      displays: [
+                        {
+                          id: `${Math.random()}`,
+                          type: 'LinearWiggleDisplay',
+                          height: 100,
+                        },
+                      ],
+                    },
+                  ]
+                : []),
             ],
           },
         ],
