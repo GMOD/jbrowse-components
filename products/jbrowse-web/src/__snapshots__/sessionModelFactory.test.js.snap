@@ -13,6 +13,7 @@ Object {
   "sessionConnections": Array [],
   "sessionPlugins": Array [],
   "sessionTracks": Array [],
+  "temporaryAssemblies": Array [],
   "views": Array [],
   "widgets": Object {},
 }
