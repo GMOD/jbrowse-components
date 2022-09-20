@@ -4,6 +4,7 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { isFeatureError } from '@jbrowse/core/util/types'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
 const useStyles = makeStyles()(theme => ({
@@ -118,9 +119,9 @@ function BlockError({
   return (
     <div className={classes.blockMessage}>
       <Alert
-        severity="error"
+        severity={isFeatureError(error) ? error.severity : 'error'}
         action={
-          reload ? (
+          !isFeatureError(error) || error.severity === 'error' ? (
             <Button
               data-testid="reload_button"
               onClick={reload}

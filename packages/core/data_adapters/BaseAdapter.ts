@@ -3,6 +3,7 @@ import { toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal } from '../util'
+import { FeatureError } from '../util/types'
 import { Feature } from '../util/simpleFeature'
 import {
   readConfObject,
@@ -168,7 +169,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       const hasData = await this.hasDataForRefName(region.refName, opts)
       checkAbortSignal(opts.signal)
       if (!hasData) {
-        observer.complete()
+        observer.error(
+          new FeatureError(
+            `refName "${region.refName}" not found. You may need to configure refName aliases.`,
+            'info',
+          ),
+        )
       } else {
         this.getFeatures(region, opts).subscribe(observer)
       }
@@ -208,6 +214,11 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    */
   public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {
     const refNames = await this.getRefNames(opts)
+    // If refNames are not available, fall back to `true` since `false` may
+    // cause errors even if a refName is available
+    if (!refNames.length) {
+      return true
+    }
     return refNames.includes(refName)
   }
 

@@ -400,6 +400,20 @@ export function isRetryException(exception: Error): boolean {
   )
 }
 
+export class FeatureError extends Error {
+  constructor(
+    public message: string,
+    public severity: 'error' | 'warning' | 'info' = 'error',
+  ) {
+    super(message)
+    this.name = 'FeatureError'
+  }
+}
+
+export function isFeatureError(error: Error): error is FeatureError {
+  return error.name === 'FeatureError'
+}
+
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation = LocalPathLocation | UriLocation | BlobLocation
