@@ -22,7 +22,7 @@ import { makeStyles } from 'tss-react/mui'
 import WarningIcon from '@mui/icons-material/Warning'
 import SettingsIcon from '@mui/icons-material/Settings'
 
-import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
+import { LogoFull, FactoryResetDialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,
@@ -109,6 +109,7 @@ export default function StartScreen({
   const [sessions, setSessions] = useState<Record<string, any>>()
   const [sessionToDelete, setSessionToDelete] = useState<string>()
   const [sessionToLoad, setSessionToLoad] = useState<string>()
+  const [error, setError] = useState<unknown>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
@@ -121,9 +122,7 @@ export default function StartScreen({
           rootModel.activateSession(sessionToLoad)
         }
       } catch (e) {
-        setSessions(() => {
-          throw e
-        })
+        setError(e)
       }
     })()
   }, [rootModel, sessionToLoad])
@@ -226,6 +225,7 @@ export default function StartScreen({
               />
             ))}
           </List>
+          {error ? <ErrorMessage error={error} /> : null}
         </div>
       </Container>
 
