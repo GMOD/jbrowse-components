@@ -112,7 +112,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-1in441m"
+                        class="css-14lo706"
                       >
                         <span>
                           connectionType
