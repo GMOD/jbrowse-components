@@ -18,16 +18,24 @@ const useStyles = makeStyles()({
   },
 })
 
-function RecentSessionCard({ sessionName, onClick, onDelete }) {
+function RecentSessionCard({
+  sessionName,
+  onClick,
+  onDelete,
+}: {
+  sessionName: string
+  onClick: (arg: string) => void
+  onDelete: (arg: string) => void
+}) {
   const { classes } = useStyles()
   const [menuAnchorEl, setMenuAnchorEl] = useState(null)
 
-  function onMenuClick(event) {
+  function onMenuClick(event: any) {
     event.stopPropagation()
     setMenuAnchorEl(event.currentTarget)
   }
 
-  const handleMenuClose = action => {
+  const handleMenuClose = (action: any) => {
     setMenuAnchorEl(null)
     if (action === 'delete') {
       return onDelete(sessionName)

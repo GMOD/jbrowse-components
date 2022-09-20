@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
 import {
-  Alert,
   Button,
   CircularProgress,
   Container,
@@ -23,7 +22,7 @@ import { makeStyles } from 'tss-react/mui'
 import WarningIcon from '@mui/icons-material/Warning'
 import SettingsIcon from '@mui/icons-material/Settings'
 
-import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
+import { LogoFull, FactoryResetDialog, ErrorMessage } from '@jbrowse/core/ui'
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,
@@ -228,7 +227,7 @@ export default function StartScreen({
               />
             ))}
           </List>
-          {userMessage ? <Alert severity="error">{userMessage}</Alert> : null}
+          {userMessage ? <ErrorMessage error={userMessage} /> : null}
         </div>
       </Container>
 
