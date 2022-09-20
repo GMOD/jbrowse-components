@@ -28,14 +28,9 @@ function RecentSessionCard({
   onDelete: (arg: string) => void
 }) {
   const { classes } = useStyles()
-  const [menuAnchorEl, setMenuAnchorEl] = useState(null)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement | null>(null)
 
-  function onMenuClick(event: any) {
-    event.stopPropagation()
-    setMenuAnchorEl(event.currentTarget)
-  }
-
-  const handleMenuClose = (action: any) => {
+  const handleMenuClose = (action: string) => {
     setMenuAnchorEl(null)
     if (action === 'delete') {
       return onDelete(sessionName)
@@ -51,7 +46,13 @@ function RecentSessionCard({
             {sessionName}
           </Typography>
         </Tooltip>
-        <IconButton className={classes.menu} onClick={onMenuClick}>
+        <IconButton
+          className={classes.menu}
+          onClick={event => {
+            event.stopPropagation()
+            setMenuAnchorEl(event.currentTarget)
+          }}
+        >
           <MoreVertIcon color="secondary" />
         </IconButton>
       </ListItem>
