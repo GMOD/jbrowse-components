@@ -3,6 +3,7 @@ import { toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
 import { checkAbortSignal } from '../util'
+import { FeatureError } from '../util/types'
 import { Feature } from '../util/simpleFeature'
 import {
   readConfObject,
@@ -169,8 +170,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       checkAbortSignal(opts.signal)
       if (!hasData) {
         observer.error(
-          new Error(
+          new FeatureError(
             `refName "${region.refName}" not found. You may need to configure refName aliases.`,
+            'info',
           ),
         )
       } else {
