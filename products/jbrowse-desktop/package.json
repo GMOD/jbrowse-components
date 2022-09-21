@@ -45,6 +45,7 @@
     "@emotion/react": "^11.9.0",
     "@fontsource/roboto": "^4.5.0",
     "@gmod/faidx": "^1.0.1",
+    "@jbrowse/app-core": "^2.1.7",
     "@jbrowse/core": "^2.1.7",
     "@jbrowse/plugin-alignments": "^2.1.7",
     "@jbrowse/plugin-arc": "^2.1.7",

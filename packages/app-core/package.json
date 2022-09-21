@@ -20,7 +20,7 @@
   "author": "JBrowse Team",
   "main": "index.js",
   "scripts": {
-    "test": "cd ../..; jest packages/core",
+    "test": "cd ../..; jest packages/app-core",
     "coverage": "yarn test --coverage",
     "clean": "rimraf dist tsconfig.build.tsbuildinfo",
     "prebuild": "yarn clean",

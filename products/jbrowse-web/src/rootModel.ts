@@ -3,11 +3,9 @@ import {
   cast,
   getSnapshot,
   getType,
-  resolveIdentifier,
   types,
   IAnyStateTreeNode,
   SnapshotIn,
-  IAnyModelType,
 } from 'mobx-state-tree'
 import extendAuthenticationModel from '@jbrowse/app-core/authenticationModel'
 import { saveAs } from 'file-saver'
@@ -205,6 +203,7 @@ export default function RootModel(
           self,
           autorun(() => {
             self.jbrowse.internetAccounts.forEach(account => {
+              // @ts-ignore
               this.initializeInternetAccount(account.internetAccountId)
             })
           }),
@@ -305,31 +304,6 @@ export default function RootModel(
 
       setError(error?: unknown) {
         self.error = error
-      },
-      findAppropriateInternetAccount(location: UriLocation) {
-        // find the existing account selected from menu
-        const selectedId = location.internetAccountId
-        if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
-          if (selectedAccount) {
-            return selectedAccount
-          }
-        }
-
-        // if no existing account or not found, try to find working account
-        for (const account of self.internetAccounts) {
-          const handleResult = account.handlesLocation(location)
-          if (handleResult) {
-            return account
-          }
-        }
-
-        // if still no existing account, create ephemeral config to use
-        return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
-          : null
       },
     }))
     .volatile(self => ({

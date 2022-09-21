@@ -1,15 +1,13 @@
 import {
   addDisposer,
   cast,
-  resolveIdentifier,
   getSnapshot,
   types,
   SnapshotIn,
   Instance,
-  IAnyModelType,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import makeWorkerInstance from './makeWorkerInstance'
+import extendAuthenticationModel from '@jbrowse/app-core/authenticationModel'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -18,7 +16,6 @@ import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { MenuItem } from '@jbrowse/core/ui'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { UriLocation } from '@jbrowse/core/util/types'
 
 // icons
 import OpenIcon from '@mui/icons-material/FolderOpen'
@@ -32,6 +29,7 @@ import RedoIcon from '@mui/icons-material/Redo'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
+import makeWorkerInstance from './makeWorkerInstance'
 import sessionModelFactory from './sessionModelFactory'
 import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
@@ -52,18 +50,16 @@ interface Menu {
 }
 
 export default function rootModelFactory(pluginManager: PluginManager) {
-  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const Assembly = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, Assembly)
   const JobsManager = jobsModelFactory(pluginManager)
-  return types
+  const AssemblyManager = assemblyManagerFactory(Assembly, pluginManager)
+  const rootModel = types
     .model('Root', {
-      jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
+      jbrowse: JBrowseDesktop(pluginManager, Session, Assembly),
       session: types.maybe(Session),
       jobsManager: types.maybe(JobsManager),
-      assemblyManager: assemblyManagerFactory(
-        assemblyConfigSchema,
-        pluginManager,
-      ),
+      assemblyManager: types.optional(AssemblyManager, {}),
       savedSessionNames: types.maybe(types.array(types.string)),
       version: types.maybe(types.string),
       internetAccounts: types.array(
@@ -128,85 +124,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           snapshot.name = newSnapshotName
           this.setSession(snapshot)
         }
-      },
-      initializeInternetAccount(id: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType(
-          'internet account',
-        ) as IAnyModelType
-        const configuration = resolveIdentifier(schema, self, id)
-
-        const accountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        if (!accountType) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
-        }
-
-        const internetAccount = accountType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
-
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
-      },
-      createEphemeralInternetAccount(
-        internetAccountId: string,
-        initialSnapshot = {},
-        url: string,
-      ) {
-        let hostUri
-
-        try {
-          hostUri = new URL(url).origin
-        } catch (e) {
-          // ignore
-        }
-        // id of a custom new internaccount is `${type}-${name}`
-        const internetAccountSplit = internetAccountId.split('-')
-        const configuration = {
-          type: internetAccountSplit[0],
-          internetAccountId: internetAccountId,
-          name: internetAccountSplit.slice(1).join('-'),
-          description: '',
-          domains: [hostUri],
-        }
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        const internetAccount = internetAccountType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
-      },
-      findAppropriateInternetAccount(location: UriLocation) {
-        // find the existing account selected from menu
-        const selectedId = location.internetAccountId
-        if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(account => {
-            return account.internetAccountId === selectedId
-          })
-          if (selectedAccount) {
-            return selectedAccount
-          }
-        }
-
-        // if no existing account or not found, try to find working account
-        for (const account of self.internetAccounts) {
-          const handleResult = account.handlesLocation(location)
-          if (handleResult) {
-            return account
-          }
-        }
-
-        // if still no existing account, create ephemeral config to use
-        return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
-          : null
       },
     }))
     .volatile(self => ({
@@ -579,6 +496,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             self.jbrowse.internetAccounts.forEach(account => {
+              // @ts-ignore
               self.initializeInternetAccount(account.internetAccountId)
             })
           }),
@@ -600,6 +518,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+
+  return extendAuthenticationModel(rootModel, pluginManager)
 }
 
 export type RootModelType = ReturnType<typeof rootModelFactory>

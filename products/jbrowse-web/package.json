@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
+    "@jbrowse/app-core": "^2.1.7",
     "@jbrowse/core": "^2.1.7",
     "@jbrowse/plugin-alignments": "^2.1.7",
     "@jbrowse/plugin-arc": "^2.1.7",
