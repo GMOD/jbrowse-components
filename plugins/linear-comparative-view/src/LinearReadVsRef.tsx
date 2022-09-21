@@ -345,7 +345,7 @@ export function WindowSizeDlg(props: {
         })),
       )
 
-      session.addAssembly?.({
+      session.addTemporaryAssembly({
         name: `${readAssembly}`,
         sequence: {
           type: 'ReferenceSequenceTrack',
@@ -425,6 +425,7 @@ export function WindowSizeDlg(props: {
                   },
                 ],
               },
+
               ...(qualTrack
                 ? [
                     {

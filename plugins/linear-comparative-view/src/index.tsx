@@ -19,7 +19,7 @@ import LinearSyntenyViewF from './LinearSyntenyView'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView'
 import SyntenyTrackF from './SyntenyTrack'
 import SyntenyFeatureWidgetF from './SyntenyFeatureDetail'
-import { WindowSizeDlg } from './ReadVsRef'
+import { WindowSizeDlg } from './LinearReadVsRef'
 
 function isDisplay(elt: { name: string }): elt is DisplayType {
   return elt.name === 'LinearPileupDisplay'
