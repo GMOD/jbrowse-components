@@ -7,7 +7,7 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import extendAuthenticationModel from '@jbrowse/app-core/authenticationModel'
+import { extendAuthenticationModel } from '@jbrowse/app-core'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'

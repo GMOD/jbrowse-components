@@ -7,7 +7,8 @@ import {
   IAnyStateTreeNode,
   SnapshotIn,
 } from 'mobx-state-tree'
-import extendAuthenticationModel from '@jbrowse/app-core/authenticationModel'
+
+import { extendAuthenticationModel } from '@jbrowse/app-core'
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
