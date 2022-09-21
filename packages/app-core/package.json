@@ -1,0 +1,43 @@
+{
+  "name": "@jbrowse/app-core",
+  "version": "2.1.4",
+  "description": "JBrowse 2 'app-level' features for sharing code between products",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2",
+    "bionode",
+    "biojs",
+    "genomics"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "packages/app-core"
+  },
+  "author": "JBrowse Team",
+  "main": "index.js",
+  "scripts": {
+    "test": "cd ../..; jest packages/core",
+    "coverage": "yarn test --coverage",
+    "clean": "rimraf dist tsconfig.build.tsbuildinfo",
+    "prebuild": "yarn clean",
+    "prepack": "yarn build",
+    "build": "tsc -b tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
+  },
+  "peerDependencies": {
+    "@mui/material": "^5.0.0",
+    "@mui/x-data-grid": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
+    "prop-types": "^15.0.0",
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "rxjs": "^6.0.0",
+    "tss-react": "^3.0.0"
+  },
+  "private": true
+}

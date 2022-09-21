@@ -9,7 +9,7 @@ import {
   SnapshotIn,
   IAnyModelType,
 } from 'mobx-state-tree'
-
+import extendAuthenticationModel from '@jbrowse/app-core/authenticationModel'
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
@@ -53,22 +53,16 @@ export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
-  const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
-  const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
-  const AssemblyManager = assemblyManagerFactory(
-    assemblyConfigSchema,
-    pluginManager,
-  )
-  return types
+  const Assembly = assemblyConfigSchemaFactory(pluginManager)
+  const Session = sessionModelFactory(pluginManager, Assembly)
+  const AssemblyManager = assemblyManagerFactory(Assembly, pluginManager)
+  const rootModel = types
     .model('Root', {
-      jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
+      jbrowse: jbrowseWebFactory(pluginManager, Session, Assembly),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
       assemblyManager: types.optional(AssemblyManager, {}),
       version: types.maybe(types.string),
-      internetAccounts: types.array(
-        pluginManager.pluggableMstType('internet account', 'stateModel'),
-      ),
       history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({
@@ -229,65 +223,6 @@ export default function RootModel(
             throw error
           }
         }
-      },
-      initializeInternetAccount(
-        internetAccountId: string,
-        initialSnapshot = {},
-      ) {
-        const internetAccountConfigSchema =
-          pluginManager.pluggableConfigSchemaType('internet account')
-        const configuration = resolveIdentifier(
-          internetAccountConfigSchema as IAnyModelType,
-          self,
-          internetAccountId,
-        )
-
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        if (!internetAccountType) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
-        }
-
-        const internetAccount = internetAccountType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
-      },
-      createEphemeralInternetAccount(
-        internetAccountId: string,
-        initialSnapshot = {},
-        url: string,
-      ) {
-        let hostUri
-
-        try {
-          hostUri = new URL(url).origin
-        } catch (e) {
-          // ignore
-        }
-        // id of a custom new internaccount is `${type}-${name}`
-        const internetAccountSplit = internetAccountId.split('-')
-        const configuration = {
-          type: internetAccountSplit[0],
-          internetAccountId: internetAccountId,
-          name: internetAccountSplit.slice(1).join('-'),
-          description: '',
-          domains: hostUri ? [hostUri] : [],
-        }
-        const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
-        )
-        const internetAccount = internetAccountType.stateModel.create({
-          ...initialSnapshot,
-          type: configuration.type,
-          configuration,
-        })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
       },
       setAssemblyEditing(flag: boolean) {
         self.isAssemblyEditing = flag
@@ -705,6 +640,8 @@ export default function RootModel(
         return subMenu.length
       },
     }))
+
+  return extendAuthenticationModel(rootModel, pluginManager)
 }
 
 export function createTestSession(snapshot = {}, adminMode = false) {
