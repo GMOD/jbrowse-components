@@ -29,6 +29,7 @@ import {
   renderToSvg,
   RefNameAutocomplete,
   SearchBox,
+  ZoomControls,
 } from './LinearGenomeView'
 
 import {
@@ -45,6 +46,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
     BaseLinearDisplayComponent,
     BaseLinearDisplay,
     baseLinearDisplayConfigSchema,
+    SearchBox,
+    ZoomControls,
   }
 
   install(pluginManager: PluginManager) {
