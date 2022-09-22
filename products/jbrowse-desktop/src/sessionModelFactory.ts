@@ -46,7 +46,7 @@ export declare interface ReferringNode {
 
 export default function sessionModelFactory(
   pluginManager: PluginManager,
-  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
+  assemblyConfigSchemasType = types.frozen(),
 ) {
   const minDrawerWidth = 128
   const sessionModel = types
@@ -70,6 +70,7 @@ export default function sessionModelFactory(
         pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      temporaryAssemblies: types.array(assemblyConfigSchemasType),
 
       minimized: types.optional(types.boolean, false),
 
@@ -300,6 +301,36 @@ export default function sessionModelFactory(
 
       addAssembly(assemblyConfig: any) {
         self.sessionAssemblies.push(assemblyConfig)
+      },
+      removeAssembly(assemblyName: string) {
+        const index = self.sessionAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        if (index !== -1) {
+          self.sessionAssemblies.splice(index, 1)
+        }
+      },
+
+      removeTemporaryAssembly(assemblyName: string) {
+        const index = self.temporaryAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        if (index !== -1) {
+          self.temporaryAssemblies.splice(index, 1)
+        }
+      },
+
+      // used for read vs ref type assemblies.
+      addTemporaryAssembly(assemblyConfig: AnyConfigurationModel) {
+        const asm = self.sessionAssemblies.find(
+          f => f.name === assemblyConfig.name,
+        )
+        if (asm) {
+          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          return asm
+        }
+        const length = self.temporaryAssemblies.push(assemblyConfig)
+        return self.temporaryAssemblies[length - 1]
       },
 
       addAssemblyConf(assemblyConf: any) {
@@ -628,7 +659,12 @@ export default function sessionModelFactory(
       },
     }))
 
-  return types.snapshotProcessor(addSnackbarToModel(sessionModel), {
+  const extendedSessionModel = pluginManager.evaluateExtensionPoint(
+    'Core-extendSession',
+    sessionModel,
+  ) as typeof sessionModel
+
+  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
     // @ts-ignore
     preProcessor(snapshot) {
       if (snapshot) {

@@ -1,11 +1,8 @@
 import '@testing-library/jest-dom/extend-expect'
 import { fireEvent, waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 
-import { createView, setup, generateReadBuffer } from './util'
+import { createView, setup, doBeforeEach } from './util'
 
 window.TextEncoder = TextEncoder
 window.TextDecoder = TextDecoder
@@ -13,22 +10,14 @@ window.TextDecoder = TextDecoder
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 10000 }
 
 test('opens a vcf.gz file in the spreadsheet view', async () => {
   const { session, findByTestId, getByTestId, findByText } = createView()
+
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Spreadsheet view'))
@@ -47,7 +36,7 @@ test('opens a vcf.gz file in the spreadsheet view', async () => {
 }, 15000)
 
 test('opens a bed.gz file in the spreadsheet view', async () => {
-  const { findByTestId, session, getByTestId, findByText } = createView()
+  const { session, findByTestId, getByTestId, findByText } = createView()
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Spreadsheet view'))

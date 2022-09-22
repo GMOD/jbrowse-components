@@ -67,14 +67,13 @@ function getTrackName(
   session: { assemblies: AnyConfigurationModel[] },
 ) {
   const trackName = getConf(track, 'name')
-  if (getConf(track, 'type') === 'ReferenceSequenceTrack') {
+  if (!trackName && getConf(track, 'type') === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === track.configuration)
-    return (
-      trackName ||
-      (asm
-        ? `Reference Sequence (${readConfObject(asm, 'name')})`
-        : 'Reference Sequence')
-    )
+    return asm
+      ? `Reference Sequence (${
+          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
+        })`
+      : 'Reference Sequence'
   }
   return trackName
 }

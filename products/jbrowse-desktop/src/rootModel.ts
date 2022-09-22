@@ -133,18 +133,21 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         const schema = pluginManager.pluggableConfigSchemaType(
           'internet account',
         ) as IAnyModelType
-        const config = resolveIdentifier(schema, self, id)
+        const configuration = resolveIdentifier(schema, self, id)
 
-        const accountType = pluginManager.getInternetAccountType(config.type)
+        const accountType = pluginManager.getInternetAccountType(
+          configuration.type,
+        )
         if (!accountType) {
-          throw new Error(`unknown internet account type ${config.type}`)
+          throw new Error(`unknown internet account type ${configuration.type}`)
         }
 
         const internetAccount = accountType.stateModel.create({
           ...initialSnapshot,
-          type: config.type,
-          config,
+          type: configuration.type,
+          configuration,
         })
+
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },

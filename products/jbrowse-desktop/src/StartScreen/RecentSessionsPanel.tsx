@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import {
+  Button,
   Checkbox,
   CircularProgress,
   FormControl,
@@ -34,23 +35,16 @@ import SessionCard from './SessionCard'
 
 const { ipcRenderer } = window.require('electron')
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   pointer: {
     cursor: 'pointer',
-  },
-  formControl: {
-    margin: theme.spacing(2),
-  },
-
-  header: {
-    margin: theme.spacing(2),
   },
   toggleButton: {
     '&.Mui-disabled': {
       pointerEvents: 'auto',
     },
   },
-}))
+})
 
 interface RecentSessionData {
   path: string
@@ -248,7 +242,6 @@ export default function RecentSessionPanel({
   setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
-  const { classes } = useStyles()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessions, setSessions] = useState<RecentSessions>([])
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
@@ -297,9 +290,7 @@ export default function RecentSessionPanel({
 
   async function addToQuickstartList(arg: RecentSessionData[]) {
     await Promise.all(
-      arg.map(session =>
-        ipcRenderer.invoke('addToQuickstartList', session.path, session.name),
-      ),
+      arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
     )
   }
 
@@ -322,53 +313,85 @@ export default function RecentSessionPanel({
           }}
         />
       ) : null}
-      <FormControl className={classes.formControl}>
-        <ToggleButtonGroup
-          exclusive
-          value={displayMode}
-          onChange={(_, newVal) => setDisplayMode(newVal)}
-        >
-          <ToggleButtonWithTooltip value="grid" title="Grid view">
-            <ViewComfyIcon />
-          </ToggleButtonWithTooltip>
-          <ToggleButtonWithTooltip value="list" title="List view">
-            <ListIcon />
-          </ToggleButtonWithTooltip>
-        </ToggleButtonGroup>
-      </FormControl>
-
-      <FormControl className={classes.formControl}>
-        <ToggleButtonGroup>
-          <ToggleButtonWithTooltip
-            value="delete"
-            title="Delete sessions"
-            disabled={!selectedSessions?.length}
-            onClick={() => setSessionsToDelete(selectedSessions)}
-          >
-            <DeleteIcon />
-          </ToggleButtonWithTooltip>
-          <ToggleButtonWithTooltip
-            value="quickstart"
-            title="Add sessions to quickstart list"
-            disabled={!selectedSessions?.length}
-            onClick={() => addToQuickstartList(selectedSessions || [])}
-          >
-            <PlaylistAddIcon />
-          </ToggleButtonWithTooltip>
-        </ToggleButtonGroup>
-      </FormControl>
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showAutosaves === 'true'}
-            onChange={() =>
-              setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
+      <Grid container spacing={4} alignItems="center">
+        <Grid item>
+          <FormControl>
+            <ToggleButtonGroup
+              exclusive
+              value={displayMode}
+              onChange={(_, newVal) => setDisplayMode(newVal)}
+            >
+              <ToggleButtonWithTooltip value="grid" title="Grid view">
+                <ViewComfyIcon />
+              </ToggleButtonWithTooltip>
+              <ToggleButtonWithTooltip value="list" title="List view">
+                <ListIcon />
+              </ToggleButtonWithTooltip>
+            </ToggleButtonGroup>
+          </FormControl>
+        </Grid>
+        <Grid item>
+          <FormControl>
+            <ToggleButtonGroup>
+              <ToggleButtonWithTooltip
+                value="delete"
+                title="Delete sessions"
+                disabled={!selectedSessions?.length}
+                onClick={() => setSessionsToDelete(selectedSessions)}
+              >
+                <DeleteIcon />
+              </ToggleButtonWithTooltip>
+              <ToggleButtonWithTooltip
+                value="quickstart"
+                title="Add sessions to quickstart list"
+                disabled={!selectedSessions?.length}
+                onClick={() => addToQuickstartList(selectedSessions || [])}
+              >
+                <PlaylistAddIcon />
+              </ToggleButtonWithTooltip>
+            </ToggleButtonGroup>
+          </FormControl>
+        </Grid>
+        <Grid item>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={showAutosaves === 'true'}
+                onChange={() =>
+                  setShowAutosaves(showAutosaves === 'true' ? 'false' : 'true')
+                }
+              />
             }
+            label="Show autosaves"
           />
-        }
-        label="Show autosaves"
-      />
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            color="inherit"
+            component="label"
+            onClick={() => {}}
+          >
+            Open saved session (.jbrowse) file
+            <input
+              type="file"
+              hidden
+              onChange={async ({ target }) => {
+                try {
+                  const file = target && target.files && target.files[0]
+                  if (file) {
+                    const path = (file as File & { path: string }).path
+                    setPluginManager(await loadPluginManager(path))
+                  }
+                } catch (e) {
+                  console.error(e)
+                  setError(e)
+                }
+              }}
+            />
+          </Button>
+        </Grid>
+      </Grid>
 
       {sortedSessions.length ? (
         displayMode === 'grid' ? (

@@ -24,7 +24,10 @@ export interface BaseResultArgs {
   trackId?: string
 
   score?: number
+
+  results?: BaseResult[]
 }
+
 export default class BaseResult {
   label: string
 
@@ -46,6 +49,7 @@ export default class BaseResult {
 
   locString?: string
 
+  results?: BaseResult[]
   constructor(args: BaseResultArgs) {
     this.label = args.label
     this.locString = args.locString
@@ -57,6 +61,7 @@ export default class BaseResult {
     this.relevance = args.relevance
     this.trackId = args.trackId
     this.score = args.score || 1
+    this.results = args.results || []
   }
 
   getLabel() {
@@ -88,8 +93,16 @@ export default class BaseResult {
     return `${this.getLabel()}-${this.getLocation()}-${this.getTrackId()}`
   }
 
+  hasLocation() {
+    return !!this.locString
+  }
+
   getLocation() {
-    return this.locString || this.label
+    return this.locString
+  }
+
+  getComboResults() {
+    return this.results
   }
 }
 

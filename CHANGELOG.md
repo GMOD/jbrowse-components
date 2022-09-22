@@ -1,3 +1,109 @@
+## 2.1.4 (2022-09-16)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                             | Download                                                          |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/img                        | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view   | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+
+</p>
+</details>
+
+#### :bug: Bug Fix
+
+- [#3191](https://github.com/GMOD/jbrowse-components/pull/3191) Fix the UMD build of the react embedded components ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
+## 2.1.3 (2022-09-15)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication          |                                                                   |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-comparative-adapters    |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3188](https://github.com/GMOD/jbrowse-components/pull/3188) Add 'Open saved session' button to start screen on desktop ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3187](https://github.com/GMOD/jbrowse-components/pull/3187) Add mouseover tooltip descriptions to the header of the VariantFeatureDetails sample/genotype table ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3179](https://github.com/GMOD/jbrowse-components/pull/3179) Add extendSession extension point to web and desktop ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3178](https://github.com/GMOD/jbrowse-components/pull/3178) Allow X/Y assemblies of dotplot or top/bottom selection of synteny views to be either query or target ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3173](https://github.com/GMOD/jbrowse-components/pull/3173) Add ability for CLI to recognize plaintext BED files ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3162](https://github.com/GMOD/jbrowse-components/pull/3162) Add about dialog with version number for embedded components ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3163](https://github.com/GMOD/jbrowse-components/pull/3163) Note for user to wait before re-launching app on desktop update ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3179](https://github.com/GMOD/jbrowse-components/pull/3179) Add extendSession extension point to web and desktop ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3178](https://github.com/GMOD/jbrowse-components/pull/3178) Allow X/Y assemblies of dotplot or top/bottom selection of synteny views to be either query or target ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3173](https://github.com/GMOD/jbrowse-components/pull/3173) Add ability for CLI to recognize plaintext BED files ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3162](https://github.com/GMOD/jbrowse-components/pull/3162) Add about dialog with version number for embedded components ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3163](https://github.com/GMOD/jbrowse-components/pull/3163) Note for user to wait before re-launching app on desktop update ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3180](https://github.com/GMOD/jbrowse-components/pull/3180) Improve adding assemblies internally, and use the assembly displayName in more places in the UI ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3183](https://github.com/GMOD/jbrowse-components/pull/3183) Make pluginManager param to getFetcher optional ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3183](https://github.com/GMOD/jbrowse-components/pull/3183) Make pluginManager param to getFetcher optional ([@garrettjstevens](https://github.com/garrettjstevens))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#3168](https://github.com/GMOD/jbrowse-components/pull/3168) Fix search behavior when there are multiple matches in LGV header and when feature description matched in import form ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3182](https://github.com/GMOD/jbrowse-components/pull/3182) Fix "dead state tree node" error by creating snapshots of parent region for block calculations ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3182](https://github.com/GMOD/jbrowse-components/pull/3182) Fix "dead state tree node" error by creating snapshots of parent region for block calculations ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3170](https://github.com/GMOD/jbrowse-components/pull/3170) Fix drawing inverted CIGAR segments on dotplot ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3170](https://github.com/GMOD/jbrowse-components/pull/3170) Fix drawing inverted CIGAR segments on dotplot ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#3138](https://github.com/GMOD/jbrowse-components/pull/3138) Documentation overhaul ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- [#3138](https://github.com/GMOD/jbrowse-components/pull/3138) Documentation overhaul ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+
+#### :house: Internal
+
+- Other
+  - [#3179](https://github.com/GMOD/jbrowse-components/pull/3179) Add extendSession extension point to web and desktop ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3179](https://github.com/GMOD/jbrowse-components/pull/3179) Add extendSession extension point to web and desktop ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3165](https://github.com/GMOD/jbrowse-components/pull/3165) Use more defaults in rollup plugins ([@garrettjstevens](https://github.com/garrettjstevens))
+- `core`
+  - [#3183](https://github.com/GMOD/jbrowse-components/pull/3183) Make pluginManager param to getFetcher optional ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3164](https://github.com/GMOD/jbrowse-components/pull/3164) Typescript the QuickLRU module in @jbrowse/core ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3183](https://github.com/GMOD/jbrowse-components/pull/3183) Make pluginManager param to getFetcher optional ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3164](https://github.com/GMOD/jbrowse-components/pull/3164) Typescript the QuickLRU module in @jbrowse/core ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Caroline Bridge ([@carolinebridge-oicr](https://github.com/carolinebridge-oicr))
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 <details><summary>Packages in this release</summary>
 <p>
 

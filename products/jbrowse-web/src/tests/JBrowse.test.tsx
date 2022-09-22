@@ -1,18 +1,16 @@
 import '@testing-library/jest-dom/extend-expect'
 
 import { fireEvent } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
 import { TextEncoder } from 'web-encoding'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
+// locals
 import JBrowseRootModelFactory from '../rootModel'
 import corePlugins from '../corePlugins'
 import * as sessionSharing from '../sessionSharing'
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json'
-import { setup, generateReadBuffer, createView, hts } from './util'
+import { doBeforeEach, setup, createView, hts } from './util'
 import TestPlugin from './TestPlugin'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -23,16 +21,7 @@ setup()
 const delay = { timeout: 15000 }
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
+  doBeforeEach()
 })
 
 test('renders with an empty config', async () => {
@@ -68,7 +57,6 @@ test('toplevel configuration', () => {
   const state = pm.rootModel
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { jbrowse } = state!
-  // @ts-ignore
   const { configuration } = jbrowse
   // test reading top level configurations added by Test Plugin
   const test = getConf(jbrowse, ['TestPlugin', 'topLevelTest'])

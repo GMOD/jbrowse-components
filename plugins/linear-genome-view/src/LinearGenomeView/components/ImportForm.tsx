@@ -9,7 +9,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { fetchResults } from './util'
+import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
@@ -34,6 +34,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { rankSearchResults, isSearchDialogDisplayed, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [importError, setImportError] = useState(error)
+  const [option, setOption] = useState<BaseResult>()
+
   const searchScope = model.searchScope(selectedAsm)
 
   const assembly = assemblyManager.get(selectedAsm)
@@ -45,11 +47,16 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const [myVal, setValue] = useState('')
   const value = myVal || regions[0]?.refName
 
-  // use this instead of useState initializer because the useState initializer
-  // won't update in response to an observable
-  const option = new BaseResult({
-    label: value,
-  })
+  function navToOption(option: BaseResult) {
+    const location = option.getLocation()
+    const trackId = option.getTrackId()
+    if (location) {
+      model.navToLocString(location, selectedAsm)
+      if (trackId) {
+        model.showTrack(trackId)
+      }
+    }
+  }
 
   // gets a string as input, or use stored option results from previous query,
   // then re-query and
@@ -57,45 +64,34 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   // 2) if it's a single result navigate to it
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(input: string) {
-    if (!option) {
-      return
-    }
-    let trackId = option.getTrackId()
-    let location = input || option.getLocation() || ''
-    const [ref, rest] = location.split(':')
-    const allRefs = assembly?.allRefNames || []
     try {
-      // instead of querying text-index, first:
-      // - check if input matches a refname directly
-      // - or looks like locstring
-      // then just navigate as if it were a locstring
-      if (
-        allRefs.includes(location) ||
-        (allRefs.includes(ref) &&
-          rest !== undefined &&
-          !Number.isNaN(parseInt(rest, 10)))
-      ) {
-        model.navToLocString(location, selectedAsm)
+      if (option?.getDisplayString() === input && option.hasLocation()) {
+        navToOption(option)
       } else {
-        const results = await fetchResults({
-          queryString: input,
-          searchType: 'exact',
-          searchScope,
-          rankSearchResults,
-          textSearchManager,
-          assembly,
-        })
-        if (results.length > 1) {
-          model.setSearchResults(results, input.toLowerCase())
-          return
-        } else if (results.length === 1) {
-          location = results[0].getLocation()
-          trackId = results[0].getTrackId()
-        }
+        const [ref, rest] = splitLast(input, ':')
+        const allRefs = assembly?.allRefNamesWithLowerCase || []
+        if (
+          allRefs.includes(input) ||
+          (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
+        ) {
+          model.navToLocString(input, selectedAsm)
+        } else {
+          const results = await fetchResults({
+            queryString: input,
+            searchType: 'exact',
+            searchScope,
+            rankSearchResults,
+            textSearchManager,
+            assembly,
+          })
 
-        model.navToLocString(location, selectedAsm)
-        if (trackId) {
-          model.showTrack(trackId)
+          if (results.length > 1) {
+            model.setSearchResults(results, input.toLowerCase())
+          } else if (results.length === 1) {
+            navToOption(results[0])
+          } else {
+            model.navToLocString(input, selectedAsm)
+          }
         }
       }
     } catch (e) {
@@ -160,6 +156,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     // note: minWidth 270 accomodates full width of helperText
                     minWidth={270}
                     onChange={str => setValue(str)}
+                    onSelect={val => setOption(val)}
                     TextFieldProps={{
                       variant: 'outlined',
                       helperText:

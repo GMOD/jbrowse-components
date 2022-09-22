@@ -1,38 +1,30 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
-import { LocalFile, RemoteFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { RemoteFile } from 'generic-filehandle'
 import crypto from 'crypto'
 import config from '../../test_data/volvox/config.json'
 import {
   setup,
+  pc,
+  hts,
   createView,
   expectCanvasMatch,
-  generateReadBuffer,
+  doBeforeEach,
 } from './util'
 
 setup()
+
 // @ts-ignore
 global.crypto = { getRandomValues: crypto.randomFillSync }
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
+  doBeforeEach()
   sessionStorage.clear()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(
-      url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-    ),
-  )
 })
 
 const delay = { timeout: 20000 }
 
 test('open a bigwig track that needs oauth authentication and has existing token', async () => {
-  const { state, view, findByTestId, findByText } = createView({
+  const { rootModel, view, findByTestId, findByText } = createView({
     ...config,
     tracks: [
       {
@@ -55,24 +47,20 @@ test('open a bigwig track that needs oauth authentication and has existing token
   const token = '1234'
   sessionStorage.setItem('dropboxOAuth-token', token)
   // @ts-ignore
-  await waitFor(() => expect(state.internetAccounts.length).toBe(2))
+  await waitFor(() => expect(rootModel.internetAccounts.length).toBe(2))
   // @ts-ignore
-  state.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
+  rootModel.internetAccounts[0].validateToken = jest.fn().mockReturnValue(token)
   // @ts-ignore
-  state.internetAccounts[0].openLocation = jest
+  rootModel.internetAccounts[0].openLocation = jest
     .fn()
     .mockReturnValue(new RemoteFile('volvox_microarray_dropbox.bw'))
   await findByText('Help')
   view.setNewView(5, 0)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray_dropbox', {}, delay),
+    await findByTestId(hts('volvox_microarray_dropbox'), {}, delay),
   )
   expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
   )
 }, 25000)
 
@@ -108,11 +96,7 @@ test('opens a bigwig track that needs external token authentication', async () =
   })
   view.setNewView(5, 0)
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntry-volvox_microarray_externaltoken',
-      {},
-      delay,
-    ),
+    await findByTestId(hts('volvox_microarray_externaltoken'), {}, delay),
   )
   const { findByText: findByTextWithin } = within(
     await findByTestId('externalToken-form', {}, delay),
@@ -126,16 +110,12 @@ test('opens a bigwig track that needs external token authentication', async () =
   expect(Object.values(sessionStorage)).toContain('testentry')
 
   expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
   )
 }, 25000)
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
-  const { view, findByTestId, findByText } = createView({
+  const { findByTestId, findByText, view } = createView({
     ...config,
     tracks: [
       {
@@ -157,7 +137,7 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   })
   view.setNewView(5, 0)
   fireEvent.click(
-    await findByTestId('htsTrackEntry-volvox_microarray_httpbasic', {}, delay),
+    await findByTestId(hts('volvox_microarray_httpbasic'), {}, delay),
   )
   await findByTestId('login-httpbasic')
   fireEvent.change(await findByTestId('login-httpbasic-username'), {
@@ -176,10 +156,6 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   ).toContain(btoa(`username:password`))
 
   expectCanvasMatch(
-    await findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..4,000-0_done',
-      {},
-      delay,
-    ),
+    await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
   )
 })

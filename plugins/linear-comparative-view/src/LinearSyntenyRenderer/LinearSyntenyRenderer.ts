@@ -34,15 +34,9 @@ export default class LinearSyntenyRenderer extends ComparativeServerSideRenderer
     width: number
     view: { views: Base1DViewModel[] }
   }) {
-    const {
-      width,
-      view: { views },
-    } = renderProps
-    const realizedViews = views.map(snap => {
-      const view = Base1DView.create(snap)
-      view.setVolatileWidth(width)
-      return view
-    })
+    const { width, view } = renderProps
+    const realizedViews = view.views.map(snap => Base1DView.create(snap))
+    realizedViews.forEach(v => v.setVolatileWidth(width))
     const features = await Promise.all(
       realizedViews.map(view =>
         this.getFeatures({

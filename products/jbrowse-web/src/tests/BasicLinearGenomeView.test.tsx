@@ -1,21 +1,9 @@
 import { createEvent, fireEvent, waitFor, screen } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { setup, createView, generateReadBuffer, hts } from './util'
+import { setup, createView, doBeforeEach, hts } from './util'
 setup()
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer(url => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
-  )
+  doBeforeEach()
 })
 
 const delay = { timeout: 20000 }

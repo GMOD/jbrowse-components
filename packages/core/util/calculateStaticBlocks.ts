@@ -1,3 +1,4 @@
+import { isStateTreeNode, getSnapshot, Instance } from 'mobx-state-tree'
 import { assembleLocString } from '.'
 import {
   BlockSet,
@@ -6,11 +7,12 @@ import {
   InterRegionPaddingBlock,
 } from './blockTypes'
 import { Region } from './types'
+import { Region as RegionModel } from './types/mst'
 
 export interface Base1DViewModel {
   offsetPx: number
   width: number
-  displayedRegions: Region[]
+  displayedRegions: (Region | Instance<typeof RegionModel>)[]
   bpPerPx: number
   minimumBlockWidth: number
   interRegionPaddingWidth: number
@@ -54,6 +56,7 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
     const regionBlockCount = Math.ceil((regionEnd - regionStart) / blockSizeBp)
+    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
@@ -97,7 +100,7 @@ export default function calculateStaticBlocks(
         end,
         reversed,
         offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
-        parentRegion: region,
+        parentRegion,
         regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,

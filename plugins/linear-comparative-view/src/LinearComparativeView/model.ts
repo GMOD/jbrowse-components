@@ -59,7 +59,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      headerHeight: 0,
       width: 800,
     }))
     .views(self => ({
@@ -107,10 +106,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       // e.g. read vs ref
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(name => {
-          if (name.endsWith('-temp')) {
-            session.removeAssembly?.(name)
-          }
+        self.assemblyNames.forEach(asm => {
+          session.removeTemporaryAssembly(asm)
         })
       },
 
@@ -143,10 +140,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         getParent<any>(self, 2).removeView(self)
       },
 
-      setHeaderHeight(height: number) {
-        self.headerHeight = height
-      },
-
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
         return self.middleComparativeHeight
@@ -176,6 +169,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
+
         // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)

@@ -7,7 +7,7 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { fetchResults } from './util'
+import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel, SPACING, WIDGET_HEIGHT } from '..'
 
 const useStyles = makeStyles()(() => ({
@@ -33,49 +33,52 @@ function SearchBox({
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 
+  function navToOption(option: BaseResult) {
+    const location = option.getLocation()
+    const trackId = option.getTrackId()
+    if (location) {
+      model.navToLocString(location, assemblyName)
+      if (trackId) {
+        model.showTrack(trackId)
+      }
+    }
+  }
+
   // gets a string as input, or use stored option results from previous query,
   // then re-query and
   // 1) if it has multiple results: pop a dialog
   // 2) if it's a single result navigate to it
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(option: BaseResult) {
-    let trackId = option.getTrackId()
-    let location = option.getLocation()
-    const label = option.getLabel()
-    const [ref, rest] = location.split(':')
-    const allRefs = assembly?.allRefNames || []
     try {
-      // instead of querying text-index, first:
-      // - check if input matches a refName directly
-      // - or looks like locString
-      // then just navigate as if it were a locString
-      if (
-        allRefs.includes(location) ||
-        (allRefs.includes(ref) &&
-          rest !== undefined &&
-          !Number.isNaN(parseInt(rest, 10)))
-      ) {
-        model.navToLocString(location, assemblyName)
+      if (option.hasLocation()) {
+        navToOption(option)
       } else {
-        const results = await fetchResults({
-          queryString: label,
-          searchType: 'exact',
-          searchScope,
-          rankSearchResults,
-          textSearchManager,
-          assembly,
-        })
-        if (results.length > 1) {
-          model.setSearchResults(results, label.toLowerCase())
-          return
-        } else if (results.length === 1) {
-          location = results[0].getLocation()
-          trackId = results[0].getTrackId()
-        }
+        const input = option.getLabel()
+        const [ref, rest] = splitLast(input, ':')
+        const allRefs = assembly?.allRefNamesWithLowerCase || []
+        if (
+          allRefs.includes(input) ||
+          (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
+        ) {
+          model.navToLocString(input, assemblyName)
+        } else {
+          const results = await fetchResults({
+            queryString: input,
+            searchType: 'exact',
+            searchScope,
+            rankSearchResults,
+            textSearchManager,
+            assembly,
+          })
 
-        model.navToLocString(location, assemblyName)
-        if (trackId) {
-          model.showTrack(trackId)
+          if (results.length > 1) {
+            model.setSearchResults(results, input.toLowerCase())
+          } else if (results.length === 1) {
+            navToOption(results[0])
+          } else {
+            model.navToLocString(input, assemblyName)
+          }
         }
       }
     } catch (e) {

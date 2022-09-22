@@ -179,6 +179,10 @@ export default function assemblyFactory(
         return getConf(self, 'aliases')
       },
 
+      get displayName(): string | undefined {
+        return getConf(self, 'displayName')
+      },
+
       hasName(name: string) {
         return this.allAliases.includes(name)
       },
@@ -197,6 +201,18 @@ export default function assemblyFactory(
         return !self.refNameAliases
           ? undefined
           : Object.keys(self.refNameAliases)
+      },
+
+      get lowerCaseRefNames() {
+        return !self.lowerCaseRefNameAliases
+          ? undefined
+          : Object.keys(self.lowerCaseRefNameAliases || {})
+      },
+
+      get allRefNamesWithLowerCase() {
+        return this.allRefNames && this.lowerCaseRefNames
+          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
+          : undefined
       },
       get rpcManager() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

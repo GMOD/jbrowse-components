@@ -6,7 +6,7 @@
     "drawerWidth": 384,
     "views": [
       {
-        "id": "rtg57cPzQ",
+        "id": "Udq4ySDlU",
         "type": "DotplotView",
         "headerHeight": 0,
         "height": 600,
@@ -16,250 +16,10 @@
         "htextRotation": -90,
         "fontSize": 15,
         "trackSelectorType": "hierarchical",
-        "assemblyNames": ["grape", "peach"],
+        "assemblyNames": ["peach", "grape"],
         "drawCigar": true,
         "hview": {
-          "id": "bs5Fq1B2O",
-          "displayedRegions": [
-            {
-              "refName": "chr1",
-              "start": 0,
-              "end": 23037639,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr10",
-              "start": 0,
-              "end": 18140952,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr10_random",
-              "start": 0,
-              "end": 789605,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr11",
-              "start": 0,
-              "end": 19818926,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr11_random",
-              "start": 0,
-              "end": 282498,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr12",
-              "start": 0,
-              "end": 22702307,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr12_random",
-              "start": 0,
-              "end": 1566225,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr13",
-              "start": 0,
-              "end": 24396255,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr13_random",
-              "start": 0,
-              "end": 3268264,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr14",
-              "start": 0,
-              "end": 30274277,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr15",
-              "start": 0,
-              "end": 20304914,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr16",
-              "start": 0,
-              "end": 22053297,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr16_random",
-              "start": 0,
-              "end": 740079,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr17",
-              "start": 0,
-              "end": 17126926,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr17_random",
-              "start": 0,
-              "end": 829735,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr18",
-              "start": 0,
-              "end": 29360087,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr18_random",
-              "start": 0,
-              "end": 5170003,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr19",
-              "start": 0,
-              "end": 24021853,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr1_random",
-              "start": 0,
-              "end": 568933,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr2",
-              "start": 0,
-              "end": 18779844,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr3",
-              "start": 0,
-              "end": 19341862,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr3_random",
-              "start": 0,
-              "end": 1220746,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr4",
-              "start": 0,
-              "end": 23867706,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr4_random",
-              "start": 0,
-              "end": 76237,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr5",
-              "start": 0,
-              "end": 25021643,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr5_random",
-              "start": 0,
-              "end": 421237,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr6",
-              "start": 0,
-              "end": 21508407,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr7",
-              "start": 0,
-              "end": 21026613,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr7_random",
-              "start": 0,
-              "end": 1447032,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr8",
-              "start": 0,
-              "end": 22385789,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr9",
-              "start": 0,
-              "end": 23006712,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chr9_random",
-              "start": 0,
-              "end": 487831,
-              "reversed": false,
-              "assemblyName": "grape"
-            },
-            {
-              "refName": "chrUn",
-              "start": 0,
-              "end": 43154196,
-              "reversed": false,
-              "assemblyName": "grape"
-            }
-          ],
-          "bpPerPx": 3.240626284831751,
-          "offsetPx": 44449236,
-          "interRegionPaddingWidth": 0,
-          "minimumBlockWidth": 0
-        },
-        "vview": {
-          "id": "rdiybKSioQ",
+          "id": "H8gvkWHR2",
           "displayedRegions": [
             {
               "refName": "Pp01",
@@ -1599,20 +1359,260 @@
               "assemblyName": "peach"
             }
           ],
-          "bpPerPx": 6.193507117837667,
-          "offsetPx": 16599717,
+          "bpPerPx": 2.6403399886988135,
+          "offsetPx": 38938542,
+          "interRegionPaddingWidth": 0,
+          "minimumBlockWidth": 0
+        },
+        "vview": {
+          "id": "Okw5-uB4or",
+          "displayedRegions": [
+            {
+              "refName": "chr1",
+              "start": 0,
+              "end": 23037639,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr10",
+              "start": 0,
+              "end": 18140952,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr10_random",
+              "start": 0,
+              "end": 789605,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr11",
+              "start": 0,
+              "end": 19818926,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr11_random",
+              "start": 0,
+              "end": 282498,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr12",
+              "start": 0,
+              "end": 22702307,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr12_random",
+              "start": 0,
+              "end": 1566225,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr13",
+              "start": 0,
+              "end": 24396255,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr13_random",
+              "start": 0,
+              "end": 3268264,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr14",
+              "start": 0,
+              "end": 30274277,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr15",
+              "start": 0,
+              "end": 20304914,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr16",
+              "start": 0,
+              "end": 22053297,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr16_random",
+              "start": 0,
+              "end": 740079,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr17",
+              "start": 0,
+              "end": 17126926,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr17_random",
+              "start": 0,
+              "end": 829735,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr18",
+              "start": 0,
+              "end": 29360087,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr18_random",
+              "start": 0,
+              "end": 5170003,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr19",
+              "start": 0,
+              "end": 24021853,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr1_random",
+              "start": 0,
+              "end": 568933,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr2",
+              "start": 0,
+              "end": 18779844,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr3",
+              "start": 0,
+              "end": 19341862,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr3_random",
+              "start": 0,
+              "end": 1220746,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr4",
+              "start": 0,
+              "end": 23867706,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr4_random",
+              "start": 0,
+              "end": 76237,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr5",
+              "start": 0,
+              "end": 25021643,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr5_random",
+              "start": 0,
+              "end": 421237,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr6",
+              "start": 0,
+              "end": 21508407,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr7",
+              "start": 0,
+              "end": 21026613,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr7_random",
+              "start": 0,
+              "end": 1447032,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr8",
+              "start": 0,
+              "end": 22385789,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr9",
+              "start": 0,
+              "end": 23006712,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chr9_random",
+              "start": 0,
+              "end": 487831,
+              "reversed": false,
+              "assemblyName": "grape"
+            },
+            {
+              "refName": "chrUn",
+              "start": 0,
+              "end": 43154196,
+              "reversed": false,
+              "assemblyName": "grape"
+            }
+          ],
+          "bpPerPx": 6.727853667378426,
+          "offsetPx": 21409963,
           "interRegionPaddingWidth": 0,
           "minimumBlockWidth": 0
         },
         "cursorMode": "crosshair",
         "tracks": [
           {
-            "id": "Num7dqx3Y",
+            "id": "K_HphihvV",
             "type": "SyntenyTrack",
             "configuration": "dotplot_track_small_cigar",
             "displays": [
               {
-                "id": "i8CcEgbJtl",
+                "id": "QMcTNXVr8m",
                 "type": "DotplotDisplay",
                 "configuration": "dotplot_track_small_cigar-DotplotDisplay"
               }
@@ -1627,12 +1627,11 @@
         "id": "hierarchicalTrackSelector",
         "type": "HierarchicalTrackSelectorWidget",
         "collapsed": {
-          "dotplot_track_small_cigar": true,
-          "dotplot_track_small": false,
-          "dotplot_track_small-1662503813711-sessionTrack": true
+          "grape_peach_paf": false,
+          "dotplot_track_small_cigar": false
         },
         "filterText": "",
-        "view": "rtg57cPzQ"
+        "view": "Udq4ySDlU"
       },
       "configEditor": {
         "id": "configEditor",
