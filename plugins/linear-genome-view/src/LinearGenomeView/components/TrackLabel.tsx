@@ -6,10 +6,11 @@ import {
   getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { MenuItem, hasEmphasized } from '@jbrowse/core/ui'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import { IconButton, Paper, Typography, Badge, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import {
@@ -100,10 +101,12 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
       }
     }
 
-    const items = [
+    const items: MenuItem[] = [
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
       ...track.trackMenuItems(),
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
+
+    const emphasized = hasEmphasized(items)
 
     return (
       <Paper ref={ref} className={cx(className, classes.root)}>
@@ -131,15 +134,22 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
         >
           {trackName}
         </Typography>
-        <IconButton
-          {...bindTrigger(popupState)}
-          className={classes.iconButton}
-          color="secondary"
-          data-testid="track_menu_icon"
-          disabled={!items.length}
+        <Badge
+          color="error"
+          overlap="circular"
+          variant="dot"
+          invisible={!emphasized}
         >
-          <MoreVertIcon fontSize="small" />
-        </IconButton>
+          <IconButton
+            {...bindTrigger(popupState)}
+            className={classes.iconButton}
+            color="secondary"
+            data-testid="track_menu_icon"
+            disabled={!items.length}
+          >
+            <MoreVertIcon fontSize="small" />
+          </IconButton>
+        </Badge>
         <CascadingMenu
           {...bindPopover(popupState)}
           onMenuItemClick={(_: unknown, callback: Function) => callback()}

@@ -1,5 +1,6 @@
 import React, { useContext, useMemo, useCallback } from 'react'
 import {
+  Badge,
   Divider,
   ListItemIcon,
   ListItemText,
@@ -8,7 +9,13 @@ import {
   MenuItem,
   PopoverOrigin,
 } from '@mui/material'
-import { MenuItem as JBMenuItem, MenuItemEndDecoration } from './Menu'
+import {
+  MenuItem as JBMenuItem,
+  MenuItemEndDecoration,
+  EmptyIcon,
+  SubMenuItem,
+  hasEmphasized,
+} from './Menu'
 import {
   bindHover,
   bindFocus,
@@ -17,7 +24,6 @@ import {
   PopupState,
 } from 'material-ui-popup-state/hooks'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
-import ChevronRight from '@mui/icons-material/ChevronRight'
 
 const CascadingContext = React.createContext({
   parentPopupState: null,
@@ -48,17 +54,16 @@ function CascadingMenuItem({
 }
 
 function CascadingSubmenu({
-  title,
-  inset,
   popupId,
+  item,
+  hasIcon,
   ...props
 }: {
   children: React.ReactNode
-  title: string
   onMenuItemClick: Function
-  menuItems: JBMenuItem[]
-  inset: boolean
   popupId: string
+  item: SubMenuItem
+  hasIcon: boolean
 }) {
   const { parentPopupState } = React.useContext(CascadingContext)
   const popupState = usePopupState({
@@ -66,14 +71,30 @@ function CascadingSubmenu({
     variant: 'popover',
     parentPopupState,
   })
+  const { subMenu: menuItems } = item
+  const emphasized = item.emphasized || hasEmphasized(menuItems)
   return (
     <>
       <MenuItem {...bindHover(popupState)} {...bindFocus(popupState)}>
-        <ListItemText primary={title} inset={inset} />
-        <ChevronRight />
+        {hasIcon ? (
+          <ListItemIcon>
+            <EmptyIcon />
+          </ListItemIcon>
+        ) : null}
+        <Badge
+          color="error"
+          variant="dot"
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          invisible={!emphasized}
+        >
+          <ListItemText primary={item.label} />
+        </Badge>
+        <div style={{ flexGrow: 1, minWidth: 10 }} />
+        <EndDecoration item={item} />
       </MenuItem>
       <CascadingSubmenuHover
         {...props}
+        menuItems={menuItems}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         popupState={popupState}
@@ -177,10 +198,9 @@ function CascadingMenuList({
           <CascadingSubmenu
             key={`subMenu-${item.label}-${idx}`}
             popupId={`subMenu-${item.label}`}
-            title={item.label}
-            inset={hasIcon}
             onMenuItemClick={onMenuItemClick}
-            menuItems={item.subMenu}
+            item={item}
+            hasIcon={hasIcon}
           >
             <CascadingMenuList
               {...props}
@@ -200,16 +220,19 @@ function CascadingMenuList({
             onClick={'onClick' in item ? handleClick(item.onClick) : undefined}
             disabled={Boolean(item.disabled)}
           >
-            {item.icon ? (
+            {item.icon || hasIcon ? (
               <ListItemIcon>
-                <item.icon />
+                {item.icon ? <item.icon /> : <EmptyIcon />}
               </ListItemIcon>
-            ) : null}{' '}
-            <ListItemText
-              primary={item.label}
-              secondary={item.subLabel}
-              inset={hasIcon && !item.icon}
-            />
+            ) : null}
+            <Badge
+              color="error"
+              variant="dot"
+              anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+              invisible={!item.emphasized}
+            >
+              <ListItemText primary={item.label} secondary={item.subLabel} />
+            </Badge>
             <div style={{ flexGrow: 1, minWidth: 10 }} />
             <EndDecoration item={item} />
           </CascadingMenuItem>
