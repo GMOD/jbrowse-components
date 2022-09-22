@@ -86,7 +86,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           stringTest
@@ -191,7 +191,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           Enter URL
@@ -269,7 +269,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                           class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                         >
                           <legend
-                            class="css-ihdtdm"
+                            class="css-hdw1oc"
                           >
                             <span
                               class="notranslate"
@@ -326,7 +326,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                           class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                         >
                           <legend
-                            class="css-ihdtdm"
+                            class="css-hdw1oc"
                           >
                             <span
                               class="notranslate"
@@ -467,7 +467,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                               class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                             >
                               <legend
-                                class="css-ihdtdm"
+                                class="css-hdw1oc"
                               >
                                 <span
                                   class="notranslate"
@@ -524,7 +524,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                               class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                             >
                               <legend
-                                class="css-ihdtdm"
+                                class="css-hdw1oc"
                               >
                                 <span
                                   class="notranslate"
@@ -605,7 +605,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                             class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                           >
                             <legend
-                              class="css-ihdtdm"
+                              class="css-hdw1oc"
                             >
                               <span
                                 class="notranslate"
@@ -662,7 +662,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           numberTest
@@ -717,7 +717,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           integerTest
@@ -775,7 +775,7 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                         class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-14lo706"
+                          class="css-1in441m"
                         >
                           <span>
                             colorTest
@@ -948,7 +948,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           maxFeatureScreenDensity
@@ -1003,7 +1003,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           fetchSizeLimit
@@ -1060,7 +1060,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                         class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                       >
                         <legend
-                          class="css-ihdtdm"
+                          class="css-hdw1oc"
                         >
                           <span
                             class="notranslate"
@@ -1227,7 +1227,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                 >
                                   <legend
-                                    class="css-14lo706"
+                                    class="css-1in441m"
                                   >
                                     <span>
                                       Type
@@ -1283,7 +1283,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                     >
                                       <legend
-                                        class="css-14lo706"
+                                        class="css-1in441m"
                                       >
                                         <span>
                                           color
@@ -1392,7 +1392,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         orientationType
@@ -1468,7 +1468,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         displayMode
@@ -1523,7 +1523,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         minSubfeatureWidth
@@ -1578,7 +1578,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         maxHeight
@@ -1633,7 +1633,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         maxClippingSize
@@ -1688,7 +1688,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         height
@@ -1817,7 +1817,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                                   >
                                     <legend
-                                      class="css-14lo706"
+                                      class="css-1in441m"
                                     >
                                       <span>
                                         largeInsertionIndicatorScale
@@ -1992,7 +1992,7 @@ exports[`ConfigurationEditor widget renders with just the required model element
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-14lo706"
+                        class="css-1in441m"
                       >
                         <span>
                           foo
