@@ -51,11 +51,13 @@ function SearchBox({
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(option: BaseResult) {
     try {
+      // @ts-ignore
       if (option.hasLocation()) {
         navToOption(option)
       } else {
         const input = option.getLabel()
         const [ref, rest] = splitLast(input, ':')
+        // @ts-ignore
         const allRefs = assembly?.allRefNamesWithLowerCase || []
         if (
           allRefs.includes(input) ||
