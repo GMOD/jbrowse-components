@@ -196,7 +196,7 @@ export type BlockModel = Instance<BlockStateModel>
 // calls the render worker to render the block content not using a flow for
 // this, because the flow doesn't work with autorun
 export function renderBlockData(
-  self: Instance<BlockStateModel>,
+  self: BlockModel,
   optDisplay?: AbstractDisplayModel,
 ) {
   try {
@@ -269,7 +269,7 @@ interface ErrorProps {
 async function renderBlockEffect(
   props: RenderProps | ErrorProps,
   signal: AbortSignal,
-  self: Instance<BlockStateModel>,
+  self: BlockModel,
 ) {
   const {
     rendererType,
