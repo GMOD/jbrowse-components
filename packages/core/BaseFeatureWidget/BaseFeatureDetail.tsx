@@ -29,7 +29,7 @@ import {
 import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
-import { SimpleFeatureSerialized } from '../util/simpleFeature'
+import { SimpleFeatureSerializedNoId } from '../util/simpleFeature'
 import { ellipses } from './util'
 
 const MAX_FIELD_NAME_WIDTH = 170
@@ -251,7 +251,7 @@ const toLocale = (n: number) => n.toLocaleString('en-US')
 
 function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const obj = feature as SimpleFeatureSerialized & {
+  const obj = feature as SimpleFeatureSerializedNoId & {
     start: number
     end: number
     strand: number
@@ -557,7 +557,7 @@ function generateTitle(name: unknown, id: unknown, type: unknown) {
 
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
-  feature: SimpleFeatureSerialized
+  feature: SimpleFeatureSerializedNoId
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
@@ -565,7 +565,7 @@ export const FeatureDetails = (props: {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
   const session = getSession(model)
-  const defaultSeqTypes = ['mRNA', 'transcript']
+  const defaultSeqTypes = ['mRNA', 'transcript', 'gene']
   const sequenceTypes =
     getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
 
@@ -596,7 +596,7 @@ export const FeatureDetails = (props: {
           title="Subfeatures"
           defaultExpanded={!sequenceTypes.includes(feature.type)}
         >
-          {subfeatures.map((sub: any) => (
+          {subfeatures.map(sub => (
             <FeatureDetails
               key={JSON.stringify(sub)}
               feature={sub}

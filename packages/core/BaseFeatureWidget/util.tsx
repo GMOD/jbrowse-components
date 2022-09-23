@@ -11,8 +11,8 @@ export interface ParentFeat extends Feat {
 }
 export interface SeqState {
   seq: string
-  upstream: string
-  downstream: string
+  upstream?: string
+  downstream?: string
 }
 export function stitch(subfeats: Feat[], sequence: string) {
   return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
