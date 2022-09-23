@@ -64,7 +64,7 @@ export interface SimpleFeatureArgs {
 }
 
 // subfeatures do not have to have uniqueId
-interface SimpleFeatureSerializedNoId {
+export interface SimpleFeatureSerializedNoId {
   [key: string]: unknown
   parentId?: string
   subfeatures?: SimpleFeatureSerializedNoId[]

@@ -70,11 +70,7 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [currLayout, setCurrLayout] = useState(clone(sources || []))
-  const [showTipsTmp, setShowTips] = useLocalStorage(
-    'multiwiggle-showTips',
-    'true',
-  )
-  const showTips = showTipsTmp === 'true'
+  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', true)
   return (
     <Dialog
       PaperComponent={PaperComponent}
@@ -93,7 +89,7 @@ export default function SetColorDialog({
         <Button
           variant="contained"
           style={{ float: 'right' }}
-          onClick={() => setShowTips(showTips ? 'false' : 'true')}
+          onClick={() => setShowTips(!showTips)}
         >
           {showTips ? 'Hide tips' : 'Show tips'}
         </Button>
