@@ -9,8 +9,8 @@ import {
   RadioGroup,
   Tooltip,
   Typography,
-  makeStyles,
 } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { isAbortException } from '@jbrowse/core/util'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import PropTypes from 'prop-types'
@@ -37,7 +37,7 @@ function Wire({ children, ...props }) {
   return children(props)
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   hubList: {
     maxHeight: 400,
     overflowY: 'auto',
@@ -55,7 +55,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
   const [hubs, setHubs] = useState(new Map())
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   useEffect(() => {
     if (selectedHub) {
@@ -262,9 +262,7 @@ function TrackHubRegistrySelect({ model, setModelReady }) {
     return <div>{renderItems}</div>
   }
 
-  const speciesList = Object.keys(assemblies)
-    .sort()
-    .filter(item => item.toLowerCase().includes('sapiens'))
+  const speciesList = Object.keys(assemblies).sort()
 
   renderItems.push(
     <SelectBox
