@@ -12,35 +12,13 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { isAbortException } from '@jbrowse/core/util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+
+// locals
 import HubDetails from './HubDetails'
 import SelectBox from './SelectBox'
-
-async function mfetch(url: string, request: RequestInit) {
-  const response = await fetch(url, request)
-  if (!response.ok) {
-    throw new Error(
-      `HTTP 
-          ${response.status}: ${response.statusText} from 
-          ${url}`,
-    )
-  }
-  return response.json()
-}
-
-async function post_with_params(
-  url: string,
-  params = {} as Record<string, unknown>,
-  options = {} as RequestInit,
-) {
-  const urlParams = Object.keys(params)
-    .map(param => `${param}=${params[param]}`)
-    .join(';')
-  return mfetch(`${url}${urlParams ? `?${urlParams}` : ''}`, {
-    ...options,
-    method: 'POST',
-  })
-}
+import { mfetch, post_with_params } from './util'
 
 function QueryStatus({ status }: { status: string }) {
   return (
@@ -73,29 +51,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+interface HubAssembly {
+  name: string
+  synonyms: string[]
+}
+
 function TrackHubRegistrySelect({
-  model,
-  setModelReady,
+  model: trackHubConfig,
 }: {
-  model: any
-  setModelReady: (arg: boolean) => void
+  model: AnyConfigurationModel
 }) {
   const [error, setError] = useState<unknown>()
-  const [assemblies, setAssemblies] = useState<Record<string, any>>()
+  const [assemblies, setAssemblies] = useState<Record<string, HubAssembly[]>>()
   const [selectedSpecies, setSelectedSpecies] = useState('')
   const [selectedAssembly, setSelectedAssembly] = useState('')
   const [hubs, setHubs] = useState(new Map())
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
   const { classes } = useStyles()
-
-  useEffect(() => {
-    if (selectedHub) {
-      setModelReady(true)
-    } else {
-      setModelReady(false)
-    }
-  }, [selectedHub, setModelReady])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -117,6 +90,7 @@ function TrackHubRegistrySelect({
         setAssemblies(assembliesResponse)
       } catch (e) {
         if (!isAbortException(e)) {
+          console.error(e)
           setError(e)
         }
       }
@@ -133,34 +107,41 @@ function TrackHubRegistrySelect({
     const controller = new AbortController()
     const { signal } = controller
     async function getHubs(reset?: boolean) {
-      const entriesPerPage = 10
-      const newHubs = reset ? new Map() : new Map(hubs)
-      const page = Math.floor(hubs.size / entriesPerPage) + 1
-      const response = await post_with_params(
-        'https://www.trackhubregistry.org/api/search',
-        { page, entries_per_page: entriesPerPage },
-        { body: JSON.stringify({ assembly: selectedAssembly }), signal },
-      )
-      if (response) {
-        for (const item of response.items) {
-          if (item.hub.url.startsWith('ftp://')) {
-            item.error = 'JBrowse cannot add connections from FTP sources'
-          } else {
-            const hub = openLocation({
-              uri: item.hub.url,
-              locationType: 'UriLocation',
-            })
-            try {
-              await hub.stat()
-            } catch (error) {
-              item.error = `${error}`
+      try {
+        const entriesPerPage = 10
+        const newHubs = reset ? new Map() : new Map(hubs)
+        const page = Math.floor(hubs.size / entriesPerPage) + 1
+        const response = await post_with_params(
+          'https://www.trackhubregistry.org/api/search',
+          { page, entries_per_page: entriesPerPage },
+          { body: JSON.stringify({ assembly: selectedAssembly }), signal },
+        )
+        if (response) {
+          for (const item of response.items) {
+            if (item.hub.url.startsWith('ftp://')) {
+              item.error = 'JBrowse cannot add connections from FTP sources'
+            } else {
+              const hub = openLocation({
+                uri: item.hub.url,
+                locationType: 'UriLocation',
+              })
+              try {
+                await hub.stat()
+              } catch (error) {
+                item.error = `${error}`
+              }
             }
+            newHubs.set(item.id, item)
           }
-          newHubs.set(item.id, item)
+          setHubs(newHubs)
+          if (newHubs.size === response.total_entries) {
+            setAllHubsRetrieved(true)
+          }
         }
-        setHubs(newHubs)
-        if (newHubs.size === response.total_entries) {
-          setAllHubsRetrieved(true)
+      } catch (e) {
+        if (!isAbortException(e)) {
+          console.error(e)
+          setError(e)
         }
       }
     }
@@ -178,7 +159,7 @@ function TrackHubRegistrySelect({
     return () => {
       controller.abort()
     }
-  }, [])
+  }, [selectedAssembly, error, hubs, allHubsRetrieved])
 
   const renderItems = [
     <Typography key="heading" variant="h6">
@@ -223,7 +204,7 @@ function TrackHubRegistrySelect({
 
   if (selectedSpecies) {
     const ret = assemblies[selectedSpecies].filter(
-      (s: any) => !(s.name === 'GRCh37' && s.synonyms[0] === 'hg38'),
+      s => !(s.name === 'GRCh37' && s.synonyms[0] === 'hg38'),
     )
     renderItems.push(
       <SelectBox
@@ -253,9 +234,13 @@ function TrackHubRegistrySelect({
               onChange={event => {
                 const newHub = event.target.value
                 setSelectedHub(newHub)
-                model.target.name.set(hubs.get(newHub).hub.shortLabel)
-                model.target.assemblyNames.set([selectedAssembly])
-                model.target.trackDbId.set(newHub)
+
+                console.log({ newHub })
+
+                // set values on a trackhub registry configSchema
+                trackHubConfig.target.name.set(hubs.get(newHub).hub.shortLabel)
+                trackHubConfig.target.assemblyNames.set([selectedAssembly])
+                trackHubConfig.target.trackDbId.set(newHub)
               }}
             >
               {Array.from(hubs.values())
