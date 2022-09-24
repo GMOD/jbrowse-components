@@ -375,17 +375,18 @@ export const NextstrainExample = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+function loc(r: Region) {
+  return `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
+}
 const VisibleRegions = observer(
   ({ state }: { state: ReturnType<typeof createViewState> }) => {
-    const locstrings = state.session.views[0].coarseDynamicBlocks
-      .map(
-        (region: Region) =>
-          `${region.refName}:${Math.floor(region.start)}-${Math.floor(
-            region.end,
-          )}`,
-      )
-      .join(',')
-    return <p>Visible region: {locstrings}</p>
+    const view = state.session.views[0]
+    return view.initialized ? (
+      <div>
+        <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
+        <p>Static blocks {view.staticBlocks.map(loc).join(',')}</p>
+      </div>
+    ) : null
   },
 )
 
