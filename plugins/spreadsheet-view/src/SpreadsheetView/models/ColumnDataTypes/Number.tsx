@@ -25,9 +25,14 @@ const OPERATION_PREDICATES = {
     return numberInCell < firstNumber
   },
   between: (numberInCell, firstNumber, secondNumber) => {
-    return numberInCell > firstNumber && numberInCell < secondNumber
+    return (
+      numberInCell > firstNumber &&
+      secondNumber !== undefined &&
+      numberInCell < secondNumber
+    )
   },
-}
+} as { [key: string]: (arg0: number, a: number, b?: number) => boolean }
+
 OPERATION_PREDICATES['not between'] = (
   numberInCell,
   firstNumber,
@@ -36,75 +41,73 @@ OPERATION_PREDICATES['not between'] = (
   return !OPERATION_PREDICATES.between(numberInCell, firstNumber, secondNumber)
 }
 
-const useStyles = makeStyles()((/* theme */) => {
-  return {
-    textFilterControlAdornment: { marginRight: '-18px' },
-    textFilterControl: {
-      margin: [[0, 0, 0, '0.4rem']],
-      '& .MuiInput-formControl': {
-        marginTop: 8,
-      },
-      '& .MuiInputLabel-formControl': {
-        top: '-7px',
-        '&.MuiInputLabel-shrink': {
-          top: '-3px',
-        },
+const useStyles = makeStyles()({
+  textFilterControlAdornment: { marginRight: '-18px' },
+  textFilterControl: {
+    '& .MuiInput-formControl': {
+      marginTop: 8,
+    },
+    '& .MuiInputLabel-formControl': {
+      top: '-7px',
+      '&.MuiInputLabel-shrink': {
+        top: '-3px',
       },
     },
-  }
+  },
 })
 
 // React component for the column filter control
-const FilterReactComponent = observer(({ filterModel }) => {
-  const { classes } = useStyles()
+const FilterReactComponent = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ({ filterModel }: { filterModel: any }) => {
+    const { classes } = useStyles()
 
-  const operationChoices = OPERATIONS
+    const operationChoices = OPERATIONS
 
-  return (
-    <>
-      <Select
-        value={filterModel.operation}
-        onChange={event => {
-          filterModel.setOperation(String(event.target.value))
-        }}
-      >
-        {operationChoices.map(name => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
-      </Select>{' '}
-      <TextField
-        label="number"
-        placeholder="123"
-        type="number"
-        error={filterModel.firstNumberIsInvalid}
-        defaultValue={filterModel.firstNumber}
-        onChange={evt => {
-          filterModel.setFirstNumber(parseFloat(evt.target.value))
-        }}
-        className={classes.textFilterControl}
-      />
-      {filterModel.operation !== 'between' &&
-      filterModel.operation !== 'not between' ? null : (
-        <>
-          {' and '}
-          <TextField
-            label="number"
-            placeholder="456"
-            type="number"
-            error={filterModel.secondNumberIsInvalid}
-            defaultValue={filterModel.secondNumber}
-            onChange={evt =>
-              filterModel.setSecondNumber(parseFloat(evt.target.value))
-            }
-            className={classes.textFilterControl}
-          />
-        </>
-      )}
-    </>
-  )
-})
+    return (
+      <>
+        <Select
+          value={filterModel.operation}
+          onChange={e => filterModel.setOperation(String(e.target.value))}
+        >
+          {operationChoices.map(name => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>{' '}
+        <TextField
+          label="number"
+          placeholder="123"
+          type="number"
+          error={filterModel.firstNumberIsInvalid}
+          defaultValue={filterModel.firstNumber}
+          onChange={evt => {
+            filterModel.setFirstNumber(parseFloat(evt.target.value))
+          }}
+          className={classes.textFilterControl}
+        />
+        {filterModel.operation !== 'between' &&
+        filterModel.operation !== 'not between' ? null : (
+          <>
+            {' and '}
+            <TextField
+              label="number"
+              placeholder="456"
+              type="number"
+              error={filterModel.secondNumberIsInvalid}
+              defaultValue={filterModel.secondNumber}
+              onChange={evt =>
+                filterModel.setSecondNumber(parseFloat(evt.target.value))
+              }
+              className={classes.textFilterControl}
+            />
+          </>
+        )}
+      </>
+    )
+  },
+)
 
 // MST model for the column filter control
 const FilterModelType = types
@@ -125,7 +128,9 @@ const FilterModelType = types
       }
 
       const { firstNumber, secondNumber, operation, columnNumber } = self // avoid closing over self
-      return function stringPredicate(sheet, row) {
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]
 
@@ -148,28 +153,28 @@ const FilterModelType = types
     },
   }))
   .actions(self => ({
-    setFirstNumber(n) {
+    setFirstNumber(n: number) {
       if (Number.isNaN(n) || typeof n !== 'number') {
         self.firstNumber = undefined
       } else {
         self.firstNumber = n
       }
     },
-    setSecondNumber(n) {
+    setSecondNumber(n: number) {
       if (Number.isNaN(n) || typeof n !== 'number') {
         self.secondNumber = undefined
       } else {
         self.secondNumber = n
       }
     },
-    setOperation(op) {
+    setOperation(op: string) {
       self.operation = op
     },
   }))
   .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
 const NumberColumn = MakeSpreadsheetColumnType('Number', {
-  compare(cellA, cellB) {
+  compare(cellA: { text: string }, cellB: { text: string }) {
     return parseFloat(cellA.text) - parseFloat(cellB.text)
   },
   FilterModelType,

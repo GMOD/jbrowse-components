@@ -1,14 +1,4 @@
-import ClearIcon from '@mui/icons-material/Clear'
-import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-import { types, getType } from 'mobx-state-tree'
-import { observer } from 'mobx-react'
 import React from 'react'
-import {
-  getPropertyType,
-  getEnumerationValues,
-  getSubType,
-} from '@jbrowse/core/util/mst-reflection'
-
 import {
   IconButton,
   TextField,
@@ -17,6 +7,17 @@ import {
   Select,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
+import { types, getType } from 'mobx-state-tree'
+import { observer } from 'mobx-react'
+import {
+  getPropertyType,
+  getEnumerationValues,
+  getSubType,
+} from '@jbrowse/core/util/mst-reflection'
+
+// icons
+import ClearIcon from '@mui/icons-material/Clear'
 
 const OPERATIONS = [
   'equals',
@@ -45,76 +46,79 @@ const OPERATION_PREDICATES = {
     }
     return index === textInCell.length - stringToFind.length
   },
-}
+} as { [key: string]: (a: string, b: string) => boolean }
+
 OPERATION_PREDICATES['does not contain'] = (textInCell, stringToFind) => {
   return !OPERATION_PREDICATES.contains(textInCell, stringToFind)
 }
 OPERATION_PREDICATES['does not equal'] = (textInCell, stringToFind) => {
   return !OPERATION_PREDICATES.equals(textInCell, stringToFind)
 }
-const useStyles = makeStyles()((/* theme */) => {
-  return {
-    textFilterControlAdornment: { marginRight: '-18px' },
-    textFilterControl: {
-      margin: 0,
-      '& .MuiInput-formControl': {
-        marginTop: 8,
-      },
-      '& .MuiInputLabel-formControl': {
-        top: '-7px',
-        '&.MuiInputLabel-shrink': {
-          top: '-3px',
-        },
+
+const useStyles = makeStyles()({
+  textFilterControlAdornment: { marginRight: '-18px' },
+  textFilterControl: {
+    margin: 0,
+    '& .MuiInput-formControl': {
+      marginTop: 8,
+    },
+    '& .MuiInputLabel-formControl': {
+      top: '-7px',
+      '&.MuiInputLabel-shrink': {
+        top: '-3px',
       },
     },
-  }
+  },
 })
 
 // React component for the column filter control
-const FilterReactComponent = observer(({ filterModel }) => {
-  const { classes } = useStyles()
-  const operationChoices = getEnumerationValues(
-    getSubType(getPropertyType(getType(filterModel), 'operation')),
-  )
-  return (
-    <>
-      <Select
-        value={filterModel.operation}
-        onChange={event => {
-          filterModel.setOperation(String(event.target.value))
-        }}
-      >
-        {operationChoices.map(name => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
-      </Select>{' '}
-      <TextField
-        label="text"
-        value={filterModel.stringToFind}
-        onChange={evt => filterModel.setString(evt.target.value)}
-        className={classes.textFilterControl}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment
-              className={classes.textFilterControlAdornment}
-              position="end"
-            >
-              <IconButton
-                aria-label="clear filter"
-                onClick={() => filterModel.setString('')}
-                color="secondary"
+const FilterReactComponent = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ({ filterModel }: { filterModel: any }) => {
+    const { classes } = useStyles()
+    const operationChoices = getEnumerationValues(
+      getSubType(getPropertyType(getType(filterModel), 'operation')),
+    )
+    return (
+      <>
+        <Select
+          value={filterModel.operation}
+          onChange={event => {
+            filterModel.setOperation(String(event.target.value))
+          }}
+        >
+          {operationChoices.map(name => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>{' '}
+        <TextField
+          label="text"
+          value={filterModel.stringToFind}
+          onChange={evt => filterModel.setString(evt.target.value)}
+          className={classes.textFilterControl}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment
+                className={classes.textFilterControlAdornment}
+                position="end"
               >
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
-    </>
-  )
-})
+                <IconButton
+                  aria-label="clear filter"
+                  onClick={() => filterModel.setString('')}
+                  color="secondary"
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </>
+    )
+  },
+)
 
 // MST model for the column filter control
 const ColumnTextFilter = types
@@ -134,7 +138,9 @@ const ColumnTextFilter = types
         }
       }
       const s = stringToFind.toLowerCase() // case insensitive match
-      return function stringPredicate(sheet, row) {
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]
         if (!cell || !cell.text) {
@@ -149,17 +155,17 @@ const ColumnTextFilter = types
     },
   }))
   .actions(self => ({
-    setString(s) {
+    setString(s: string) {
       self.stringToFind = s
     },
-    setOperation(op) {
+    setOperation(op: string) {
       self.operation = op
     },
   }))
   .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
 const TextColumnType = MakeSpreadsheetColumnType('Text', {
-  compare(cellA, cellB) {
+  compare(cellA: { text: string }, cellB: { text: string }) {
     return cellA.text.localeCompare(cellB.text)
   },
   FilterModelType: ColumnTextFilter,

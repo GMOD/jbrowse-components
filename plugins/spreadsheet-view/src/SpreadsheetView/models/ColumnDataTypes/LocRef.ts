@@ -12,7 +12,7 @@ const FilterModelType = types.compose(
 const LocRef = MakeSpreadsheetColumnType('LocRef', {
   categoryName: 'Location',
   displayName: 'Reference seq',
-  compare(cellA, cellB) {
+  compare(cellA: { text: string }, cellB: { text: string }) {
     return cellA.text.localeCompare(cellB.text)
   },
   FilterModelType,
