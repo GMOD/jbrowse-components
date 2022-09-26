@@ -1,21 +1,21 @@
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-import { FilterModelType as NumberFilterModel } from './Number'
 import { types } from 'mobx-state-tree'
+import { FilterModelType as NumberFilterModel } from './Number'
 
 const FilterModelType = types.compose(
   NumberFilterModel,
   types.model({
-    type: types.literal('LocEnd'),
+    type: types.literal('LocStart'),
   }),
 )
 
-const LocEnd = MakeSpreadsheetColumnType('LocEnd', {
+const LocStart = MakeSpreadsheetColumnType('LocStart', {
   categoryName: 'Location',
-  displayName: 'End',
-  compare(cellA, cellB) {
+  displayName: 'Start',
+  compare(cellA: { text: string }, cellB: { text: string }) {
     return parseFloat(cellA.text) - parseFloat(cellB.text)
   },
   FilterModelType,
 })
 
-export default LocEnd
+export default LocStart

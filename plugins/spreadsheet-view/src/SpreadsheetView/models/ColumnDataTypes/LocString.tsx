@@ -45,8 +45,9 @@ const useStyles = makeStyles()({
 })
 
 // React component for the column filter control
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const FilterReactComponent = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
     const operationChoices = getEnumerationValues(
@@ -196,6 +197,8 @@ const FilterModelType = types
     },
     get parsedLocString() {
       const session = getSession(self)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const model = getParent<any>(self, 3).spreadsheet
       const { assemblyName } = model
       try {
@@ -256,15 +259,19 @@ const FilterModelType = types
   .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
 // opens a new LGV at the location described in the locString in the cell text
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 async function locationLinkClick(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spreadsheet: any,
   _columnNumber: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cell: any,
 ) {
   const session = getSession(spreadsheet)
   const { assemblyManager } = session
   const { assemblyName } = spreadsheet
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { id } = getParent<any>(spreadsheet)
 
   try {
@@ -302,6 +309,7 @@ async function locationLinkClick(
 }
 
 const DataCellReactComponent = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ cell, columnNumber, spreadsheet }: any) => {
     return (
       <a
@@ -321,6 +329,8 @@ const DataCellReactComponent = observer(
 const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
   categoryName: 'Location',
   displayName: 'Full location',
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   compare(cellA: { extendedData: any }, cellB: { extendedData: any }) {
     return compareLocs(cellA.extendedData, cellB.extendedData)
   },
