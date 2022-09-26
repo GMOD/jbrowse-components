@@ -19,6 +19,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
+export function ellipses(slug: string) {
+  return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
+}
+
 const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
@@ -36,24 +40,14 @@ const useStyles = makeStyles()(theme => ({
 function ToggleConnectionDialog({
   session,
   handleClose,
-  assemblyName,
   breakConnection,
 }: {
   handleClose: () => void
   session: AbstractSessionModel
-  assemblyName: string
   breakConnection: (arg: AnyConfigurationModel) => void
 }) {
   const { classes } = useStyles()
   const { connections, connectionInstances: instances = [] } = session
-  const assemblySpecificConnections = connections.filter(c => {
-    const configAssemblyNames = readConfObject(c, 'assemblyNames')
-    if (configAssemblyNames.length === 0) {
-      return true
-    }
-    return configAssemblyNames.includes(assemblyName)
-  })
-
   return (
     <Dialog open onClose={handleClose} maxWidth="lg">
       <DialogTitle>
@@ -68,8 +62,9 @@ function ToggleConnectionDialog({
       <DialogContent>
         <Typography>Use the checkbox to turn on/off connections</Typography>
         <div className={classes.connectionContainer}>
-          {assemblySpecificConnections.map(conf => {
+          {connections.map(conf => {
             const name = readConfObject(conf, 'name')
+            const assemblyNames = readConfObject(conf, 'assemblyNames')
             const found = instances.find(conn => name === conn.name)
             return (
               <FormControlLabel
@@ -87,12 +82,12 @@ function ToggleConnectionDialog({
                     color="primary"
                   />
                 }
-                label={name}
+                label={`${name} (${ellipses(assemblyNames.join(','))})`}
               />
             )
           })}
-          {!assemblySpecificConnections.length ? (
-            <Typography>No connections found for {assemblyName}</Typography>
+          {!connections.length ? (
+            <Typography>No connections found</Typography>
           ) : null}
         </div>
       </DialogContent>

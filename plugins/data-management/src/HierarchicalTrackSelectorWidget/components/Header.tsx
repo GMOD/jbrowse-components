@@ -74,7 +74,6 @@ function HierarchicalTrackSelectorHeader({
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const { assemblyNames } = model
-  const assemblyName = assemblyNames[assemblyIdx]
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -276,7 +275,6 @@ function HierarchicalTrackSelectorHeader({
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}
-            assemblyName={assemblyName}
           />
         ) : null}
       </Suspense>

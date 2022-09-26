@@ -62,22 +62,20 @@ function ManageConnectionsDlg({
           {connections.map(conf => {
             const name = readConfObject(conf, 'name')
             return (
-              <div key={`conn-${name}`}>
-                <Typography>
-                  {adminMode || sessionConnections?.includes(conf) ? (
-                    <IconButton onClick={() => breakConnection(conf, true)}>
-                      <CloseIcon color="error" />
+              <Typography key={`conn-${name}`}>
+                {adminMode || sessionConnections?.includes(conf) ? (
+                  <IconButton onClick={() => breakConnection(conf, true)}>
+                    <CloseIcon color="error" />
+                  </IconButton>
+                ) : (
+                  <Tooltip title="Unable to delete connection in config file as non-admin user">
+                    <IconButton>
+                      <CloseIcon color="disabled" />
                     </IconButton>
-                  ) : (
-                    <Tooltip title="Unable to delete connection in config file as non-admin user">
-                      <IconButton>
-                        <CloseIcon color="disabled" />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {name}
-                </Typography>
-              </div>
+                  </Tooltip>
+                )}
+                {name}
+              </Typography>
             )
           })}
           {!connections.length ? (
