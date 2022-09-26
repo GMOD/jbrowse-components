@@ -25,72 +25,75 @@ import {
   Select,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()((/* theme */) => {
-  return {
-    textFilterControlAdornment: { marginRight: '-18px' },
-    textFilterControl: {
-      margin: [[0, 0, 0, '0.4rem']],
-      '& .MuiInput-formControl': {
-        marginTop: 8,
-      },
-      '& .MuiInputLabel-formControl': {
-        top: '-7px',
-        '&.MuiInputLabel-shrink': {
-          top: '-3px',
-        },
+type LGV = LinearGenomeViewModel
+
+const useStyles = makeStyles()({
+  textFilterControlAdornment: { marginRight: '-18px' },
+  textFilterControl: {
+    '& .MuiInput-formControl': {
+      marginTop: 8,
+    },
+    '& .MuiInputLabel-formControl': {
+      top: '-7px',
+      '&.MuiInputLabel-shrink': {
+        top: '-3px',
       },
     },
-  }
+  },
 })
 
 // React component for the column filter control
-const FilterReactComponent = observer(({ filterModel }) => {
-  const { classes } = useStyles()
-  const operationChoices = getEnumerationValues(
-    getSubType(getPropertyType(getType(filterModel), 'operation')),
-  )
-  return (
-    <>
-      <Select
-        value={filterModel.operation}
-        onChange={event => {
-          filterModel.setOperation(String(event.target.value))
-        }}
-      >
-        {operationChoices.map(name => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
-      </Select>{' '}
-      <TextField
-        label="range"
-        placeholder="chr1:100-200"
-        error={filterModel.locStringIsInvalid}
-        value={filterModel.locString}
-        onChange={evt => filterModel.setLocString(evt.target.value)}
-        className={classes.textFilterControl}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment
-              className={classes.textFilterControlAdornment}
-              position="end"
-            >
-              <IconButton
-                aria-label="clear filter"
-                onClick={() => filterModel.setLocString('')}
-                color="secondary"
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FilterReactComponent = observer(
+  ({ filterModel }: { filterModel: any }) => {
+    const { classes } = useStyles()
+    const operationChoices = getEnumerationValues(
+      getSubType(getPropertyType(getType(filterModel), 'operation')),
+    )
+    return (
+      <>
+        <Select
+          value={filterModel.operation}
+          onChange={event => {
+            filterModel.setOperation(String(event.target.value))
+          }}
+        >
+          {operationChoices.map(name => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>{' '}
+        <TextField
+          label="range"
+          placeholder="chr1:100-200"
+          error={filterModel.locStringIsInvalid}
+          value={filterModel.locString}
+          onChange={evt => filterModel.setLocString(evt.target.value)}
+          className={classes.textFilterControl}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment
+                className={classes.textFilterControlAdornment}
+                position="end"
               >
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
-    </>
-  )
-})
+                <IconButton
+                  aria-label="clear filter"
+                  onClick={() => filterModel.setLocString('')}
+                  color="secondary"
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </>
+    )
+  },
+)
 
 const OPERATIONS = [
   'overlaps with',
@@ -100,6 +103,12 @@ const OPERATIONS = [
   'not contained within',
   'does not contain',
 ]
+
+interface Loc {
+  start: number
+  end: number
+  refName: string
+}
 
 // NOTE: assembly names, if present, are ignored in all of these predicates
 const OPERATION_PREDICATES = {
@@ -136,7 +145,8 @@ const OPERATION_PREDICATES = {
       )
     )
   },
-}
+} as { [key: string]: (a: Loc, b: Loc) => boolean }
+
 OPERATION_PREDICATES['does not overlap'] = (
   cellLocation,
   specifiedLocation,
@@ -173,7 +183,7 @@ const FilterModelType = types
   .views(self => ({
     get locStringIsInvalid() {
       if (self.locString) {
-        const parsed = self.parsedLocString
+        const parsed = this.parsedLocString
         return (
           !parsed ||
           parsed.refName === '' ||
@@ -186,7 +196,7 @@ const FilterModelType = types
     },
     get parsedLocString() {
       const session = getSession(self)
-      const model = getParent(self, 3).spreadsheet
+      const model = getParent<any>(self, 3).spreadsheet
       const { assemblyName } = model
       try {
         return parseLocString(self.locString, refName =>
@@ -196,16 +206,25 @@ const FilterModelType = types
         return undefined
       }
     },
+  }))
+  .views(self => ({
     // returns a function that tests the given row
     get predicate() {
-      if (!self.locString || self.locStringIsInvalid) {
+      const {
+        locString,
+        locStringIsInvalid,
+        parsedLocString,
+        operation,
+        columnNumber,
+      } = self // avoid closing over self
+      if (!locString || locStringIsInvalid || !parsedLocString) {
         return function alwaysTrue() {
           return true
         }
       }
 
-      const { parsedLocString, operation, columnNumber } = self // avoid closing over self
-      return function stringPredicate(sheet, row) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived: cells } = row
         const cell = cells[columnNumber]
 
@@ -222,44 +241,54 @@ const FilterModelType = types
           throw new Error(`"${operation}" not implemented in location filter`)
         }
 
-        return predicate(parsedCellText, parsedLocString)
+        return predicate(parsedCellText, parsedLocString as Loc)
       }
     },
   }))
   .actions(self => ({
-    setLocString(s) {
+    setLocString(s: string) {
       self.locString = s
     },
-    setOperation(op) {
+    setOperation(op: string) {
       self.operation = op
     },
   }))
   .volatile(() => ({ ReactComponent: FilterReactComponent }))
 
 // opens a new LGV at the location described in the locString in the cell text
-async function locationLinkClick(spreadsheet, columnNumber, cell) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function locationLinkClick(
+  spreadsheet: any,
+  _columnNumber: number,
+  cell: any,
+) {
   const session = getSession(spreadsheet)
   const { assemblyManager } = session
   const { assemblyName } = spreadsheet
-  const { id } = getParent(spreadsheet)
-  const assembly = await assemblyManager.waitForAssembly(assemblyName)
+  const { id } = getParent<any>(spreadsheet)
+
   try {
+    const assembly = await assemblyManager.waitForAssembly(assemblyName)
+    if (!assembly) {
+      throw new Error(`assembly not found "${assemblyName}"`)
+    }
     const loc = parseLocString(cell.text, name =>
       assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
     )
     const { refName } = loc
     const canonicalRefName = assembly.getCanonicalRefName(refName)
-    const newDisplayedRegion = assembly.regions.find(
+    const newDisplayedRegion = assembly.regions?.find(
       region => region.refName === canonicalRefName,
     )
 
     const newViewId = `${id}_${assemblyName}`
-    let view = session.views.find(v => v.id === newViewId)
+    let view = session.views.find(v => v.id === newViewId) as LGV
     if (!view) {
       view = session.addView('LinearGenomeView', {
         displayName: assemblyName,
         id: newViewId,
-      })
+      }) as LGV
+
       await when(() => view.initialized)
 
       // note that we have to clone this because otherwise it adds "same object
@@ -273,14 +302,13 @@ async function locationLinkClick(spreadsheet, columnNumber, cell) {
 }
 
 const DataCellReactComponent = observer(
-  ({ cell, columnNumber, spreadsheet }) => {
-    function click(evt) {
-      evt.preventDefault()
-      locationLinkClick(spreadsheet, columnNumber, cell)
-    }
+  ({ cell, columnNumber, spreadsheet }: any) => {
     return (
       <a
-        onClick={click}
+        onClick={evt => {
+          evt.preventDefault()
+          locationLinkClick(spreadsheet, columnNumber, cell)
+        }}
         title="open a new linear genome view here"
         href="#link"
       >
@@ -293,7 +321,7 @@ const DataCellReactComponent = observer(
 const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
   categoryName: 'Location',
   displayName: 'Full location',
-  compare(cellA, cellB) {
+  compare(cellA: { extendedData: any }, cellB: { extendedData: any }) {
     return compareLocs(cellA.extendedData, cellB.extendedData)
   },
   FilterModelType,
