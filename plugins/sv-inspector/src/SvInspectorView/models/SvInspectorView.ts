@@ -9,7 +9,7 @@ import {
 
 import { autorun, reaction } from 'mobx'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { types, getParent, addDisposer } from 'mobx-state-tree'
+import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -359,5 +359,10 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
 
   return { stateModel: types.compose(BaseViewModel, model) }
 }
+
+export type SvInspectorViewStateModel = ReturnType<
+  typeof SvInspectorViewF
+>['stateModel']
+export type SvInspectorViewModel = Instance<SvInspectorViewStateModel>
 
 export default SvInspectorViewF

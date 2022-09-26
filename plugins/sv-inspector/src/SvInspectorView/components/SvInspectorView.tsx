@@ -5,6 +5,9 @@ import { grey } from '@mui/material/colors'
 import { makeStyles } from 'tss-react/mui'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
+// locals
+import { SvInspectorViewModel } from '../models/SvInspectorView'
+
 // icons
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
@@ -47,7 +50,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const ViewControls = observer(({ model }: { model: any }) => {
+const ViewControls = observer(({ model }: { model: SvInspectorViewModel }) => {
   const { classes } = useStyles()
   return (
     <Grid
@@ -72,7 +75,7 @@ const ViewControls = observer(({ model }: { model: any }) => {
 })
 
 const CircularViewOptions = observer(
-  ({ svInspector }: { svInspector: any }) => {
+  ({ svInspector }: { svInspector: SvInspectorViewModel }) => {
     const { classes } = useStyles()
 
     return (
@@ -101,7 +104,7 @@ const CircularViewOptions = observer(
   },
 )
 
-function SvInspectorView({ model }: { model: any }) {
+function SvInspectorView({ model }: { model: SvInspectorViewModel }) {
   const { classes } = useStyles()
 
   const {
@@ -111,7 +114,6 @@ function SvInspectorView({ model }: { model: any }) {
     CircularViewReactComponent,
     showCircularView,
   } = model
-  console.log({ model })
 
   return (
     <div className={classes.root} data-testid={model.id}>
