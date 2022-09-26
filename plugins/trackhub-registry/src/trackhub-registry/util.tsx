@@ -3,7 +3,7 @@ export async function mfetch(url: string, request?: RequestInit) {
   if (!response.ok) {
     throw new Error(
       `HTTP 
-          ${response.status}: ${response.statusText} from 
+          ${response.status}: ${await response.text()} from
           ${url}`,
     )
   }
