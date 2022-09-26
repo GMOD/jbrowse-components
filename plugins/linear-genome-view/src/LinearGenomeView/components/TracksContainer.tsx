@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import normalizeWheel from 'normalize-wheel'
 
-import { LinearGenomeViewStateModel, SCALE_BAR_HEIGHT } from '..'
+// locals
+import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
 import Gridlines from './Gridlines'
@@ -21,7 +21,7 @@ const useStyles = makeStyles()({
   },
 })
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 type Timer = ReturnType<typeof setTimeout>
 
 function TracksContainer({

@@ -1,4 +1,5 @@
 import React, { Suspense, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import {
   AppBar,
   FormControl,
@@ -23,6 +24,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 // locals
 import Drawer from './Drawer'
+import ErrorMessage from './ErrorMessage'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {
@@ -206,11 +208,15 @@ const DrawerWidget = observer(
       <Drawer session={session}>
         <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
         <Suspense fallback={<div>Loading...</div>}>
-          <DrawerComponent
-            model={visibleWidget}
-            session={session}
-            toolbarHeight={toolbarHeight}
-          />
+          <ErrorBoundary
+            FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+          >
+            <DrawerComponent
+              model={visibleWidget}
+              session={session}
+              toolbarHeight={toolbarHeight}
+            />
+          </ErrorBoundary>
         </Suspense>
       </Drawer>
     )
