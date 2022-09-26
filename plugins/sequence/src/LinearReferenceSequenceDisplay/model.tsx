@@ -1,3 +1,4 @@
+import React from 'react'
 import { types } from 'mobx-state-tree'
 import {
   BaseLinearDisplay,
@@ -8,6 +9,8 @@ import {
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
+import { Alert, Button } from '@mui/material'
+import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
@@ -39,8 +42,23 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         },
         regionCannotBeRendered(/* region */) {
           const view = getContainingView(self) as LinearGenomeViewModel
-          if (view && view.bpPerPx >= 1) {
-            return 'Zoom in to see sequence'
+          if (view && view.bpPerPx > 1) {
+            return (
+              <Alert
+                severity="info"
+                action={
+                  <Button
+                    data-testid="zoom_in_button"
+                    onClick={() => view.zoomTo(1)}
+                    startIcon={<ZoomInIcon />}
+                  >
+                    Zoom in
+                  </Button>
+                }
+              >
+                Zoom in to see sequence
+              </Alert>
+            )
           }
           return undefined
         },
