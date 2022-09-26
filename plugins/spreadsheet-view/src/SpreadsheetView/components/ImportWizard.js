@@ -19,8 +19,7 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
-import { FileSelector } from '@jbrowse/core/ui'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
+import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   buttonContainer: { marginTop: theme.spacing(1) },
@@ -52,6 +51,7 @@ const NumberEditor = observer(
 )
 
 const ErrorDisplay = observer(({ error }) => {
+  console.log({ error })
   return (
     <Typography variant="h6" color="error">
       {`${error}`}
@@ -69,15 +69,18 @@ const ImportForm = observer(({ model }) => {
     setFileType,
     hasColumnNameLine,
     toggleHasColumnNameLine,
+    error,
   } = model
   const [selected, setSelected] = useState(assemblyNames[0])
-  const err = assemblyManager.get(selected)?.error
+  const err = assemblyManager.get(selected)?.error || error
   const showRowControls = model.fileType === 'CSV' || model.fileType === 'TSV'
   const rootModel = getRoot(model)
 
+  console.log({ err })
+
   return (
     <Container>
-      {err ? <ErrorDisplay error={err} /> : null}
+      {err ? <ErrorMessage error={err} /> : null}
       <Grid
         style={{ width: '25rem', margin: '0 auto' }}
         container
@@ -179,16 +182,7 @@ const ImportForm = observer(({ model }) => {
 
 const ImportWizard = observer(({ model }) => {
   const { classes } = useStyles()
-  return (
-    <>
-      {model.error ? (
-        <Container className={classes.errorContainer}>
-          <ErrorDisplay errorMessage={`${model.error}`} />
-        </Container>
-      ) : null}
-      <ImportForm model={model} />
-    </>
-  )
+  return <ImportForm model={model} />
 })
 
 export default ImportWizard

@@ -162,15 +162,20 @@ const ImportWizard = types
         // not required for stat to succeed to proceed, but it is helpful
         console.warn(e)
       }
-      await filehandle
-        .readFile()
-        .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
-        .then(buffer => typeParser(buffer, self))
-        .then(spreadsheet => {
-          this.setLoaded()
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          getParent<any>(self).displaySpreadsheet(spreadsheet)
-        })
+
+      try {
+        await filehandle
+          .readFile()
+          .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
+          .then(buffer => typeParser(buffer, self))
+          .then(spreadsheet => {
+            this.setLoaded()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            getParent<any>(self).displaySpreadsheet(spreadsheet)
+          })
+      } catch (e) {
+        this.setError(e)
+      }
     },
   }))
 
