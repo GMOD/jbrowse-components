@@ -1,3 +1,4 @@
 import extendAuthenticationModel from './authenticationModel'
+import App from './App'
 
-export { extendAuthenticationModel }
+export { App, extendAuthenticationModel }

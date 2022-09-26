@@ -7,7 +7,8 @@ import createCache from '@emotion/cache'
 
 // jbrowse
 import { getConf } from '@jbrowse/core/configuration'
-import { App, createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { App } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 

@@ -7,7 +7,8 @@ import { ThemeProvider } from '@mui/material/styles'
 
 // core
 import { getConf } from '@jbrowse/core/configuration'
-import { App, createJBrowseTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { App } from '@jbrowse/app-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals

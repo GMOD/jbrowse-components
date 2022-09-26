@@ -17,21 +17,26 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
 // locals
-import { readConfObject, AnyConfigurationModel } from '../configuration'
-import DrawerWidget from './DrawerWidget'
-import DropDownMenu from './DropDownMenu'
-import ErrorMessage from './ErrorMessage'
-import EditableTypography from './EditableTypography'
-import { LogoFull } from './Logo'
-import Snackbar from './Snackbar'
-import ViewContainer from './ViewContainer'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+import {
+  DrawerWidget,
+  DropDownMenu,
+  ErrorMessage,
+  EditableTypography,
+  LogoFull,
+  ViewContainer,
+  Snackbar,
+  MenuItem as JBMenuItem,
+} from '@jbrowse/core/ui'
 import {
   AbstractViewModel,
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
-} from '../util'
-import { MenuItem as JBMenuItem } from './index'
+} from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   root: {
