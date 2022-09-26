@@ -11,27 +11,39 @@ import {
   Container,
   Button,
   Grid,
-  Typography,
   TextField,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractRootModel, getSession } from '@jbrowse/core/util'
 import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import { ImportWizardModel } from '../models/ImportWizard'
 
 const useStyles = makeStyles()(theme => ({
   buttonContainer: { marginTop: theme.spacing(1) },
 }))
 
 const NumberEditor = observer(
-  ({ model, disabled, modelPropName, modelSetterName }) => {
+  ({
+    model,
+    disabled,
+    modelPropName,
+    modelSetterName,
+  }: {
+    model: ImportWizardModel
+    disabled: boolean
+    modelPropName: string
+    modelSetterName: string
+  }) => {
+    // @ts-ignore
     const [val, setVal] = useState(model[modelPropName])
     useEffect(() => {
       const num = parseInt(val, 10)
       if (!Number.isNaN(num)) {
         if (num > 0) {
+          // @ts-ignore
           model[modelSetterName](num)
         } else {
           setVal(1)
@@ -50,16 +62,7 @@ const NumberEditor = observer(
   },
 )
 
-const ErrorDisplay = observer(({ error }) => {
-  console.log({ error })
-  return (
-    <Typography variant="h6" color="error">
-      {`${error}`}
-    </Typography>
-  )
-})
-
-const ImportForm = observer(({ model }) => {
+const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
   const session = getSession(model)
   const { classes } = useStyles()
   const { assemblyNames, assemblyManager } = session
@@ -75,8 +78,6 @@ const ImportForm = observer(({ model }) => {
   const err = assemblyManager.get(selected)?.error || error
   const showRowControls = model.fileType === 'CSV' || model.fileType === 'TSV'
   const rootModel = getRoot(model)
-
-  console.log({ err })
 
   return (
     <Container>
@@ -95,13 +96,13 @@ const ImportForm = observer(({ model }) => {
               <FileSelector
                 location={model.fileSource}
                 setLocation={model.setFileSource}
-                rootModel={rootModel}
+                rootModel={rootModel as AbstractRootModel}
               />
             </FormGroup>
           </FormControl>
         </Grid>
         <Grid item>
-          <FormControl component="fieldset" className={classes.formControl}>
+          <FormControl component="fieldset">
             <FormLabel component="legend">File Type</FormLabel>
             <RadioGroup aria-label="file type" name="type" value={fileType}>
               <Grid container spacing={1} direction="row">
@@ -124,7 +125,7 @@ const ImportForm = observer(({ model }) => {
         </Grid>
         {showRowControls ? (
           <Grid item>
-            <FormControl component="fieldset" className={classes.formControl}>
+            <FormControl component="fieldset">
               <FormLabel component="legend">Column Names</FormLabel>
               <div>
                 <FormControlLabel
@@ -178,11 +179,6 @@ const ImportForm = observer(({ model }) => {
       </Grid>
     </Container>
   )
-})
-
-const ImportWizard = observer(({ model }) => {
-  const { classes } = useStyles()
-  return <ImportForm model={model} />
 })
 
 export default ImportWizard

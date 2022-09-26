@@ -1,4 +1,4 @@
-import { types, getEnv, getParent } from 'mobx-state-tree'
+import { types, getEnv, getParent, Instance } from 'mobx-state-tree'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getSession } from '@jbrowse/core/util'
 
@@ -178,5 +178,8 @@ const ImportWizard = types
       }
     },
   }))
+
+export type ImportWizardStateModel = typeof ImportWizard
+export type ImportWizardModel = Instance<ImportWizardStateModel>
 
 export default ImportWizard
