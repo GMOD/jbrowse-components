@@ -32,7 +32,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // @ts-ignore
         self.clear()
         const trackDbId = readConfObject(connectionConf, 'trackDbId')
-        console.log({ trackDbId, connectionConf })
         try {
           const trackDb = await mfetch(
             `https://www.trackhubregistry.org/api/search/trackdb/${trackDbId}`,

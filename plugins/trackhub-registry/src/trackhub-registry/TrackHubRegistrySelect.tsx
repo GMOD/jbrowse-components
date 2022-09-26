@@ -235,8 +235,6 @@ function TrackHubRegistrySelect({
                 const newHub = event.target.value
                 setSelectedHub(newHub)
 
-                console.log({ newHub })
-
                 // set values on a trackhub registry configSchema
                 trackHubConfig.target.name.set(hubs.get(newHub).hub.shortLabel)
                 trackHubConfig.target.assemblyNames.set([selectedAssembly])
