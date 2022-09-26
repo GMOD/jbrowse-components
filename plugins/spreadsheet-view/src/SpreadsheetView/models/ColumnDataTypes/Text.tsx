@@ -73,6 +73,7 @@ const useStyles = makeStyles()({
 
 // React component for the column filter control
 const FilterReactComponent = observer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
     const operationChoices = getEnumerationValues(
@@ -138,6 +139,7 @@ const ColumnTextFilter = types
       }
       const s = stringToFind.toLowerCase() // case insensitive match
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function stringPredicate(_sheet: any, row: any) {
         const { cellsWithDerived } = row
         const cell = cellsWithDerived[columnNumber]

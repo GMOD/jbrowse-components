@@ -183,35 +183,35 @@ const SpreadsheetView = observer(
                 height={colFilterHeight}
               />
             ))}
-
-        <div
-          className={classes.contentArea}
-          style={{ height: height - headerHeight }}
-        >
-          {mode !== 'import' ? null : (
-            <ImportWizard model={model.importWizard} />
-          )}
+        {mode === 'import' ? (
+          <ImportWizard model={model.importWizard} />
+        ) : (
           <div
-            style={{
-              position: 'relative',
-              display: mode === 'display' ? undefined : 'none',
-            }}
+            className={classes.contentArea}
+            style={{ height: height - headerHeight }}
           >
-            {spreadsheet ? (
-              <Spreadsheet
-                page={page}
-                rowsPerPage={rowsPerPage}
-                model={spreadsheet}
-                height={
-                  height -
-                  headerHeight -
-                  colFilterCount * colFilterHeight -
-                  statusBarHeight
-                }
-              />
-            ) : null}
+            <div
+              style={{
+                position: 'relative',
+                display: mode === 'display' ? undefined : 'none',
+              }}
+            >
+              {spreadsheet ? (
+                <Spreadsheet
+                  page={page}
+                  rowsPerPage={rowsPerPage}
+                  model={spreadsheet}
+                  height={
+                    height -
+                    headerHeight -
+                    colFilterCount * colFilterHeight -
+                    statusBarHeight
+                  }
+                />
+              ) : null}
+            </div>
           </div>
-        </div>
+        )}
 
         <div
           className={classes.statusBar}
