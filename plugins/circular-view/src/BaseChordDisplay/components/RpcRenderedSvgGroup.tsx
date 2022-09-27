@@ -4,10 +4,22 @@ import { observer } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
 import { rIC } from '@jbrowse/core/util'
 
-function RpcRenderedSvgGroup({ model }) {
+function RpcRenderedSvgGroup({
+  model,
+}: {
+  model: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any
+    html: string
+    filled: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderingComponent: React.FC<any>
+    renderProps: Function
+  }
+}) {
   const { data, html, filled, renderingComponent } = model
 
-  const ssrContainerNode = useRef(null)
+  const ssrContainerNode = useRef<SVGGElement>(null)
 
   useEffect(() => {
     const domNode = ssrContainerNode.current
