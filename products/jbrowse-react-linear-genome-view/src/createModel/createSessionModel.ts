@@ -72,6 +72,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       queueOfDialogs: [] as [DialogComponentType, any][],
     }))
     .views(self => ({
+      get disableAddTracks() {
+        return getParent<any>(self).disableAddTracks
+      },
       get DialogComponent() {
         if (self.queueOfDialogs.length) {
           return self.queueOfDialogs[0]?.[0]

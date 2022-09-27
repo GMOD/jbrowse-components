@@ -78,6 +78,18 @@ export const UsingLocObject = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+export const DisableAddTracks = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    // use 0-based coordinates for "location object" here
+    location: { refName: 'ctgA', start: 10000, end: 20000 },
+    disableAddTracks: true,
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const WithLongReads = () => {
   const state = createViewState({
     assembly,
