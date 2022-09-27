@@ -44,7 +44,7 @@ but since JBrowse Linear Genome View is based on the same code, we can use it to
 generate what we need as well.
 
 The instructions for installing JBrowse CLI are on the
-"[Introduction](./01_introduction)" page. After installing, if you run the
+"[Introduction](../01_introduction)" page. After installing, if you run the
 command `jbrowse --help` in the terminal, you should see something like this:
 
 ![The output of `jbrowse --help` in a terminal](./img/jbrowse_help.png)

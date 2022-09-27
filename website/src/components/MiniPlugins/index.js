@@ -53,7 +53,7 @@ const plugins = [
     description:
       'JBrowse 2 plugin for integrating resources from the UCSC API.',
     location: 'https://github.com/cmdcolin/jbrowse-plugin-ucsc-api',
-    repoName: 'jbrowse-plugin-uscs-api',
+    repoName: 'jbrowse-plugin-usc-api',
     url: 'https://unpkg.com/jbrowse-plugin-ucsc/dist/jbrowse-plugin-ucsc.umd.production.min.js',
     license: 'MIT',
     image:

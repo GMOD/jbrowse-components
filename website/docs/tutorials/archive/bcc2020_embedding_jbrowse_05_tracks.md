@@ -6,7 +6,7 @@ title: About tracks
 :::danger Out of date
 
 Please see the
-[updated version of this tutorial](../embed_linear_genome_view/01_introduction).
+[updated version of this tutorial](../../embed_linear_genome_view/01_introduction).
 
 :::
 
@@ -14,7 +14,7 @@ Please see the
 
 A track is the place to display your data files in JBrowse Linear View. For this
 tutorial we're going to add a gene track, an
-[alignments track](user_guide#alignments-tracks), and a [variants track](user_guide#variant-tracks).
+[alignments track](../../user_guide/#alignments-tracks), and a [variants track](../../user_guide/#variant-tracks).
 We're just going to use basic configuration, but check the links for the track
 types to see what kinds of things you can configure in them.
 

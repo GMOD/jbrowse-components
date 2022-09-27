@@ -91,6 +91,10 @@
             {
               "label": "Documentation",
               "to": "docs/"
+            },
+            {
+              "label": "Cancer resources",
+              "to": "cancer/"
             }
           ]
         },
