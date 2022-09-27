@@ -16,6 +16,7 @@ import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 // locals
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -35,9 +36,9 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 
-function AddConnectionWidget({ model }: { model: any }) {
+function AddConnectionWidget({ model }: { model: unknown }) {
   const [connectionType, setConnectionType] = useState<ConnectionType>()
-  const [configModel, setConfigModel] = useState({})
+  const [configModel, setConfigModel] = useState<AnyConfigurationModel>()
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
 
@@ -70,7 +71,7 @@ function AddConnectionWidget({ model }: { model: any }) {
           />
         )
       case 1:
-        return connectionType ? (
+        return connectionType && configModel ? (
           <ConfigureConnection
             connectionType={connectionType}
             model={configModel}

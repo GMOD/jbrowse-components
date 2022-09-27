@@ -124,8 +124,8 @@ export function viewportVisibleSection(
       }
     }
     return {
-      rho: [0, Math.min(circleRadius, maxRho)],
-      theta: [0, 2 * Math.PI],
+      rho: [0, Math.min(circleRadius, maxRho)] as [number, number],
+      theta: [0, 2 * Math.PI] as [number, number],
     }
   }
   // const viewportCompletelyContainsCircle =
@@ -268,7 +268,7 @@ export function viewportVisibleSection(
   }
 
   return {
-    rho: [rhoMin, Math.min(circleRadius, rhoMax)],
-    theta: [thetaMin, thetaMax],
+    rho: [rhoMin, Math.min(circleRadius, rhoMax)] as [number, number],
+    theta: [thetaMin, thetaMax] as [number, number],
   }
 }

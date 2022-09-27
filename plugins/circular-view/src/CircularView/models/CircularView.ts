@@ -67,9 +67,7 @@ export default function CircularView(pluginManager: PluginManager) {
         get staticSlices() {
           return calculateStaticSlices(self)
         },
-        get visibleStaticSlices() {
-          return this.staticSlices.filter(sliceIsVisible.bind(this, self))
-        },
+
         get visibleSection() {
           return viewportVisibleSection(
             [
@@ -140,7 +138,7 @@ export default function CircularView(pluginManager: PluginManager) {
         get tooSmallToLock() {
           return this.minBpPerPx <= 0.0000000001
         },
-        get figureDimensions() {
+        get figureDimensions(): [number, number] {
           return [
             this.radiusPx * 2 + 2 * self.paddingPx,
             this.radiusPx * 2 + 2 * self.paddingPx,
@@ -204,6 +202,11 @@ export default function CircularView(pluginManager: PluginManager) {
           return this.assemblyNames.every(
             a => assemblyManager.get(a)?.initialized,
           )
+        },
+      }))
+      .views(self => ({
+        get visibleStaticSlices() {
+          return self.staticSlices.filter(s => sliceIsVisible(self, s))
         },
       }))
       .volatile(() => ({
