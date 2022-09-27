@@ -9,8 +9,9 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
+import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
+import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals
 import ConfigureConnection from './ConfigureConnection'
@@ -34,28 +35,15 @@ const useStyles = makeStyles()(theme => ({
 
 const steps = ['Select a Connection Type', 'Configure Connection']
 
-function AddConnectionWidget({ model }) {
-  const [connectionType, setConnectionType] = useState({})
+function AddConnectionWidget({ model }: { model: any }) {
+  const [connectionType, setConnectionType] = useState<ConnectionType>()
   const [configModel, setConfigModel] = useState({})
-  const [configModelReady, setConfigModelReady] = useState(true)
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
 
   const session = getSession(model)
 
   const { pluginManager } = getEnv(session)
-
-  function handleSetConnectionType(newConnectionType) {
-    setConnectionType(newConnectionType)
-    setConfigModel(
-      newConnectionType.configSchema.create(
-        {
-          connectionId: `${newConnectionType.name}-${Date.now()}`,
-        },
-        getEnv(model),
-      ),
-    )
-  }
 
   function stepContent() {
     switch (activeStep) {
@@ -66,17 +54,28 @@ function AddConnectionWidget({ model }) {
               'connection',
             )}
             connectionType={connectionType}
-            setConnectionType={handleSetConnectionType}
+            setConnectionType={c => {
+              setConnectionType(c)
+              if (c) {
+                setConfigModel(
+                  c.configSchema.create(
+                    {
+                      connectionId: `${c.name}-${Date.now()}`,
+                    },
+                    getEnv(model),
+                  ),
+                )
+              }
+            }}
           />
         )
       case 1:
-        return (
+        return connectionType ? (
           <ConfigureConnection
             connectionType={connectionType}
             model={configModel}
-            setModelReady={setConfigModelReady}
           />
-        )
+        ) : null
 
       default:
         return <Typography>Unknown step</Typography>
@@ -97,18 +96,16 @@ function AddConnectionWidget({ model }) {
 
   function handleFinish() {
     const connectionConf = session.addConnectionConf(configModel)
-    session.makeConnection(connectionConf)
+    if (session.makeConnection) {
+      session.makeConnection(connectionConf)
+    }
     session.hideWidget(model)
   }
 
   function checkNextEnabled() {
-    if (
-      (activeStep === 0 && connectionType.name) ||
-      (activeStep === 1 && configModel && configModelReady)
-    ) {
-      return true
-    }
-    return false
+    return (
+      (activeStep === 0 && connectionType) || (activeStep === 1 && configModel)
+    )
   }
 
   return (
@@ -148,10 +145,6 @@ function AddConnectionWidget({ model }) {
       </Stepper>
     </div>
   )
-}
-
-AddConnectionWidget.propTypes = {
-  model: MobxPropTypes.observableObject.isRequired,
 }
 
 export default observer(AddConnectionWidget)
