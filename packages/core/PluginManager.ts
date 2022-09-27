@@ -552,7 +552,7 @@ export default class PluginManager {
 
   addToExtensionPoint<T>(
     extensionPointName: string,
-    callback: (extendee: T) => T,
+    callback: (extendee: T, props: Record<string, unknown>) => T,
   ) {
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {
@@ -562,13 +562,17 @@ export default class PluginManager {
     callbacks.push(callback)
   }
 
-  evaluateExtensionPoint(extensionPointName: string, extendee: unknown) {
+  evaluateExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ) {
     const callbacks = this.extensionPoints.get(extensionPointName)
     let accumulator = extendee
     if (callbacks) {
       for (const callback of callbacks) {
         try {
-          accumulator = callback(accumulator)
+          accumulator = callback(accumulator, props)
         } catch (error) {
           console.error(error)
         }
@@ -580,13 +584,14 @@ export default class PluginManager {
   async evaluateAsyncExtensionPoint(
     extensionPointName: string,
     extendee: unknown,
+    props?: Record<string, unknown>,
   ) {
     const callbacks = this.extensionPoints.get(extensionPointName)
     let accumulator = extendee
     if (callbacks) {
       for (const callback of callbacks) {
         try {
-          accumulator = await callback(accumulator)
+          accumulator = await callback(accumulator, props)
         } catch (error) {
           console.error(error)
         }

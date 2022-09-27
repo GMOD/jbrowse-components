@@ -27,7 +27,7 @@ interface ViewStateOptions {
   plugins?: PluginConstructor[]
   location?: string | Location
   defaultSession?: SessionSnapshot
-  disableAddTracks: boolean
+  disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
 

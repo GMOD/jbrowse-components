@@ -147,11 +147,11 @@ export interface SessionWithConfigEditing extends AbstractSessionModel {
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
   ): void
 }
-export function isSessionWithAddTracks(thing: {
-  addTrackConf?: Function
-  disableAddTracks?: boolean
-}): thing is SessionWithConfigEditing {
+export function isSessionWithAddTracks(
+  thing: unknown,
+): thing is SessionWithConfigEditing {
   return (
+    // @ts-ignore
     isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
   )
 }
