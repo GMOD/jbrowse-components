@@ -224,7 +224,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-hdw1oc"
+                    class="css-ihdtdm"
                   >
                     <span
                       class="notranslate"
@@ -789,7 +789,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-hdw1oc"
+                    class="css-ihdtdm"
                   >
                     <span
                       class="notranslate"
