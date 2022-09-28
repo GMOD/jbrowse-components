@@ -2,8 +2,8 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import fs from 'fs'
 import { SequencePanel } from './SequenceFeatureDetails'
-import DLGAP3 from './test_data/DLGAP3.json'
-import NCDN from './test_data/NCDN.json'
+import DLGAP3 from './test_data/DLGAP3'
+import NCDN from './test_data/NCDN'
 
 test('test using the sequence feature panel', () => {
   // produced from uniprot
@@ -32,7 +32,7 @@ test('test using the sequence feature panel', () => {
   expect(element.textContent).toEqual(`>NM_001080418.3-protein\n${pep}*`)
 })
 
-const readFasta = filename => {
+const readFasta = (filename: string) => {
   return fs
     .readFileSync(require.resolve(filename), 'utf8')
     .split('\n')

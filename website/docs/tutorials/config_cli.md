@@ -19,7 +19,7 @@ interface built into JBrowse 2. See that guide [here](../config_gui).
 :::info For admins
 If you are an administrator configuring JBrowse on a webserver, you must add the
 `--out` command followed by your target directory, e.g. `--out /var/www/html/jbrowse2`
-to write each jbrowse CLI configuration command to the `config.json` in that target
+to write each JBrowse CLI configuration command to the `config.json` in that target
 directory for your webserver to read from.
 
 See the FAQ for "[what web server do I need](../../faq#what-web-server-do-i-need-to-run-jbrowse-2)" for more information.
@@ -282,7 +282,7 @@ see the [FAQ entries for text searching](../../faq#text-searching)
 
 Now that you have JBrowse configured with an assembly and a couple of tracks,
 you can start customizing it further. Check out the rest of the docs for more
-information, especially the [JBrowse CLI](../cli) docs for more details on some of
+information, especially the [JBrowse CLI](../../cli) docs for more details on some of
 the steps shown here.
 
 ## Miscellaneous tips

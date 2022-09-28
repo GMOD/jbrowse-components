@@ -1,14 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import { types } from 'mobx-state-tree'
 
 /** utility function for assembling the MST model of a column data type */
 export default function MakeSpreadsheetColumnType(
-  name,
+  name: string,
   {
     DataCellReactComponent = null,
     FilterModelType = null,
     compare,
     displayName = undefined,
     categoryName = undefined,
+  }: {
+    compare?: any
+    DataCellReactComponent?: React.FC<any> | null
+    FilterModelType?: any
+    displayName?: string
+    categoryName?: string
   },
 ) {
   return types
@@ -17,7 +25,7 @@ export default function MakeSpreadsheetColumnType(
     })
     .volatile(() => ({
       DataCellReactComponent,
-      FilterModelType,
+      FilterModelType: FilterModelType as any,
       displayName: displayName || name,
       categoryName,
     }))

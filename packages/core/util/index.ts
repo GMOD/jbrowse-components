@@ -1117,19 +1117,33 @@ export function getLayoutId({
   return sessionId + '-' + layoutId
 }
 
-// similar to https://blog.logrocket.com/using-localstorage-react-hooks/
-export const useLocalStorage = (key: string, defaultValue = '') => {
-  const [value, setValue] = useState(
-    () => localStorage.getItem(key) || defaultValue,
-  )
-
-  useEffect(() => {
-    localStorage.setItem(key, value)
-  }, [key, value])
-
-  // without this cast, tsc complained that the type of setValue could be a
-  // string or a callback
-  return [value, setValue] as [string, (arg: string) => void]
+// Hook from https://usehooks.com/useLocalStorage/
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') {
+      return initialValue
+    }
+    try {
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch (error) {
+      console.error(error)
+      return initialValue
+    }
+  })
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value
+      setStoredValue(valueToStore)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore))
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  return [storedValue, setValue] as const
 }
 
 export function getUriLink(value: { uri: string; baseUri?: string }) {

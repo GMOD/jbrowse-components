@@ -1,7 +1,9 @@
 import React from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { ErrorBoundary } from 'react-error-boundary'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // locals
@@ -98,7 +100,11 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           </Paper>
         ) : (
           tracks.map(track => (
-            <TrackContainer key={track.id} model={model} track={track} />
+            <ErrorBoundary
+              FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+            >
+              <TrackContainer key={track.id} model={model} track={track} />
+            </ErrorBoundary>
           ))
         )}
       </TracksContainer>

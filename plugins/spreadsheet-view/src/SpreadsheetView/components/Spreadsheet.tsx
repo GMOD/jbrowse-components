@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
+import { Checkbox, IconButton, Tooltip, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 import { getParent, Instance } from 'mobx-state-tree'
 import { grey, indigo } from '@mui/material/colors'
-import { Checkbox, IconButton, Tooltip, FormControlLabel } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import SpreadsheetStateModel from '../models/Spreadsheet'
-import RowStateModel from '../models/Row'
 
 // icons
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
@@ -14,6 +12,8 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 // locals
+import SpreadsheetStateModel from '../models/Spreadsheet'
+import RowStateModel from '../models/Row'
 import ColumnMenu from './ColumnMenu'
 import RowMenu from './RowMenu'
 

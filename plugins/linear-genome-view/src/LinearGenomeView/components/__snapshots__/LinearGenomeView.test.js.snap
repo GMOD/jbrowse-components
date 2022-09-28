@@ -335,11 +335,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
     >
       <div
         class="tss-17gfnt3-verticalGuidesContainer"
-        style="left: -1024px; width: 2148px;"
+        style="left: -800px; width: 1700px;"
       >
         <div
           class="tss-a9ifge-boundaryPaddingBlock"
-          style="width: 1024px;"
+          style="width: 800px;"
         />
         <div
           class="tss-1dmfa10-contentBlock"
@@ -376,7 +376,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         </div>
         <div
           class="tss-a9ifge-boundaryPaddingBlock"
-          style="width: 1024px;"
+          style="width: 800px;"
         />
       </div>
     </div>
@@ -395,11 +395,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <div
             class="tss-1u2dss8-scaleBar"
-            style="left: -1025px; width: 2148px; height: 17px; box-sizing: border-box;"
+            style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
           >
             <div
               class="tss-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 1024px;"
+              style="background: none; width: 800px;"
             />
             <div
               class="tss-1dmfa10-contentBlock"
@@ -412,7 +412,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </div>
             <div
               class="tss-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 1024px;"
+              style="background: none; width: 800px;"
             />
           </div>
         </div>
@@ -513,11 +513,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             <div
               class="tss-d6gpow-linearBlocks"
               data-testid="Blockset"
-              style="left: -1024px;"
+              style="left: -800px;"
             >
               <div
                 class="tss-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 1024px;"
+                style="background: none; width: 800px;"
               />
               <div
                 class="tss-1dmfa10-contentBlock"
@@ -529,7 +529,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               </div>
               <div
                 class="tss-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 1024px;"
+                style="background: none; width: 800px;"
               />
             </div>
           </div>
@@ -902,11 +902,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
     >
       <div
         class="tss-17gfnt3-verticalGuidesContainer"
-        style="left: -1024px; width: 3150px;"
+        style="left: -800px; width: 1702px;"
       >
         <div
           class="tss-a9ifge-boundaryPaddingBlock"
-          style="width: 1024px;"
+          style="width: 800px;"
         />
         <div
           class="tss-1dmfa10-contentBlock"
@@ -947,7 +947,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         />
         <div
           class="tss-1dmfa10-contentBlock"
-          style="width: 1000px;"
+          style="width: 800px;"
         >
           <div
             class="tss-1nnah7t-tick-majorTick"
@@ -1117,51 +1117,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             class="tss-i794sq-tick-minorTick"
             style="left: 819px;"
           />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 839px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 859px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 879px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 899px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 919px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 939px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 959px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 979px;"
-          />
-          <div
-            class="tss-1nnah7t-tick-majorTick"
-            style="left: 999px;"
-          />
-          <div
-            class="tss-i794sq-tick-minorTick"
-            style="left: 1019px;"
-          />
         </div>
-        <div
-          class="tss-a9ifge-boundaryPaddingBlock"
-          style="width: 1024px;"
-        />
       </div>
     </div>
     <div
@@ -1179,11 +1135,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <div
             class="tss-1u2dss8-scaleBar"
-            style="left: -1025px; width: 3150px; height: 17px; box-sizing: border-box;"
+            style="left: -801px; width: 1702px; height: 17px; box-sizing: border-box;"
           >
             <div
               class="tss-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 1024px;"
+              style="background: none; width: 800px;"
             />
             <div
               class="tss-1dmfa10-contentBlock"
@@ -1200,7 +1156,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
             <div
               class="tss-1dmfa10-contentBlock"
-              style="width: 1000px;"
+              style="width: 800px;"
             >
               <div
                 class="tss-1f3h2yl-tick"
@@ -1252,21 +1208,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   1,800
                 </p>
               </div>
-              <div
-                class="tss-1f3h2yl-tick"
-                style="left: 999px;"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
-                >
-                  2,000
-                </p>
-              </div>
             </div>
-            <div
-              class="tss-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 1024px;"
-            />
           </div>
         </div>
         <p
@@ -1373,11 +1315,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             <div
               class="tss-d6gpow-linearBlocks"
               data-testid="Blockset"
-              style="left: -1024px;"
+              style="left: -800px;"
             >
               <div
                 class="tss-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 1024px;"
+                style="background: none; width: 800px;"
               />
               <div
                 class="tss-1dmfa10-contentBlock"
@@ -1395,18 +1337,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
               <div
                 class="tss-1dmfa10-contentBlock"
-                style="width: 1000px;"
+                style="width: 800px;"
               >
                 <svg
                   data-testid="svgfeatures"
                   height="100"
-                  width="1000"
+                  width="800"
                 />
               </div>
-              <div
-                class="tss-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 1024px;"
-              />
             </div>
           </div>
         </div>
@@ -1509,11 +1447,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             <div
               class="tss-d6gpow-linearBlocks"
               data-testid="Blockset"
-              style="left: -1024px;"
+              style="left: -800px;"
             >
               <div
                 class="tss-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 1024px;"
+                style="background: none; width: 800px;"
               />
               <div
                 class="tss-1dmfa10-contentBlock"
@@ -1531,18 +1469,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               />
               <div
                 class="tss-1dmfa10-contentBlock"
-                style="width: 1000px;"
+                style="width: 800px;"
               >
                 <svg
                   data-testid="svgfeatures"
                   height="100"
-                  width="1000"
+                  width="800"
                 />
               </div>
-              <div
-                class="tss-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 1024px;"
-              />
             </div>
           </div>
         </div>

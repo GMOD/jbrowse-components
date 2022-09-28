@@ -8,7 +8,7 @@ import Figure from '../../figure'
 
 Now that our environment is set up and running, we're going to add our own pluggable element to the project and observe it running in JBrowse.
 
-For this tutorial, we're going to be creating a custom [widget](../../developer_guide/#widgets), and using a [Jexl](https://github.com/TomFrost/Jexl) callback to open it when we click a chord on the circular genome view.
+For this tutorial, we're going to be creating a custom [widget](../../../developer_guide/#widgets), and using a [Jexl](https://github.com/TomFrost/Jexl) callback to open it when we click a chord on the circular genome view.
 
 <Figure src="./img/plugin-dev-tutorial-final.png" caption="A screenshot of the finished product of this tutorial: a widget with a jexl callback on the circular view." />
 
@@ -439,7 +439,7 @@ Right now our test does two things:
 - copies our fixture `hello_view.json` into `.jbrowse` and,
 - visits our JBrowse URL (default configured to `localhost:8999`) with that configuration and a circular view open
 
-Notice the use of [URL params](../../api_guide/#url-params) to speed up the test setup; using URL params like this can come in handy for larger suites.
+Notice the use of [URL params](../../../urlparams) to speed up the test setup; using URL params like this can come in handy for larger suites.
 
 Take a moment to add the track specification to `hello_view.json` for testing purposes:
 

@@ -37,7 +37,7 @@ on desktop.
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
 use `yarn storybook` instead of `yarn start`.
 
-For a more extensive tutorial, see [Developing with JBrowse web and desktop](/docs/tutorials/dev/develop_web_and_desktop_tutorial).
+For a more extensive tutorial, see [Developing with JBrowse web and desktop](../tutorials/develop_web_and_desktop_tutorial).
 
 ### General
 

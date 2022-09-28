@@ -3,11 +3,11 @@ import FormHelperText from '@mui/material/FormHelperText'
 import InputLabel from '@mui/material/InputLabel'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
-import { makeStyles } from '@mui/material/styles'
+import { makeStyles } from 'tss-react/mui'
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   formControl: {
     minWidth: 192,
     marginLeft: theme.spacing(2),
@@ -22,7 +22,7 @@ function SelectBox({
   label,
   helpText,
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <FormControl className={classes.formControl}>
       <InputLabel>{label}</InputLabel>

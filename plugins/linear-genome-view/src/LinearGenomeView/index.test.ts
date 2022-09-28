@@ -636,8 +636,8 @@ test('can perform pxToBp on human genome things with ellided blocks (zoomed out)
 
   // chrX after an ellided block, this tests a specific coord but should just be
   // probably somewhat around here
-  expect(model.pxToBp(1228).coord).toBe(118604872)
-  expect(model.pxToBp(1228).refName).toBe('X')
+  expect(model.pxToBp(1228).coord).toBe(1075410)
+  expect(model.pxToBp(1228).refName).toBe('Y')
 
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')

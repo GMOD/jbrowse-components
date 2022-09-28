@@ -6,7 +6,7 @@ title: About assemblies
 :::danger Out of date
 
 Please see the
-[updated version of this tutorial](../embed_linear_genome_view/01_introduction).
+[updated version of this tutorial](../../embed_linear_genome_view/01_introduction).
 
 :::
 
@@ -91,7 +91,7 @@ We also need to define some reference sequence name aliases so that any files we
 want to use that use "chr1" instead of "1" will display correctly. In VS Code,
 create a new file called "GRCh38.aliases.txt" in the same location as
 "index.html" and paste into it the data found on
-[this page](bcc2020_embedding_jbrowse_aliases).
+[this page](../bcc2020_embedding_jbrowse_aliases).
 
 This aliases file has on each line a name from the reference sequence and then a
 tab-separated list of aliases for that name.

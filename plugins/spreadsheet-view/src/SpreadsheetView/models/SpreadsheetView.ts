@@ -163,4 +163,7 @@ const model = types
 
 const SpreadsheetView = types.compose(BaseViewModel, model)
 
+export type SpreadsheetViewStateModel = typeof SpreadsheetView
+export type SpreadsheetViewModel = Instance<SpreadsheetViewStateModel>
+
 export default SpreadsheetView

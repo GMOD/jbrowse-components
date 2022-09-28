@@ -155,4 +155,7 @@ const Spreadsheet = types
     },
   }))
 
+export type SpreadsheetStateModel = typeof Spreadsheet
+export type SpreadsheetModel = Instance<SpreadsheetStateModel>
+
 export default Spreadsheet

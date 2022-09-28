@@ -1,24 +1,18 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()({
-  errorMessage: {},
-  errorBackground: {},
-  errorText: {},
-})
-
-// 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
 const DisplayError = observer(
   ({
-    model: {
+    model,
+  }: {
+    model: { renderProps: { radius: number }; error: unknown }
+  }) => {
+    const {
       renderProps: { radius },
       error,
-    },
-  }) => {
-    const { classes } = useStyles()
+    } = model
     return (
-      <g className={classes.errorMessage}>
+      <g>
         <defs>
           <pattern
             id="diagonalHatch"
@@ -36,22 +30,9 @@ const DisplayError = observer(
             />
           </pattern>
         </defs>
-        <circle
-          className={classes.errorBackground}
-          cx="0"
-          cy="0"
-          r={radius}
-          fill="#ffb4b4"
-        />
-        <circle
-          className={classes.errorPattern}
-          cx="0"
-          cy="0"
-          r={radius}
-          fill="url(#diagonalHatch)"
-        />
+        <circle cx="0" cy="0" r={radius} fill="#ffb4b4" />
+        <circle cx="0" cy="0" r={radius} fill="url(#diagonalHatch)" />
         <text
-          className={classes.errorText}
           x="0"
           y="0"
           transform="rotate(90 0 0)"

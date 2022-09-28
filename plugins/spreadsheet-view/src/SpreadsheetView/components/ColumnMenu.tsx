@@ -2,6 +2,10 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { iterMap } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
+import { MenuItem } from '@jbrowse/core/ui/Menu'
+import { SvgIcon } from '@mui/material'
+import { SpreadsheetModel } from '../models/Spreadsheet'
+import { SpreadsheetViewModel } from '../models/SpreadsheetView'
 
 // icons
 import CheckIcon from '@mui/icons-material/Check'
@@ -10,19 +14,26 @@ import PermDataSettingIcon from '@mui/icons-material/PermDataSetting'
 import SortIcon from '@mui/icons-material/Sort'
 
 const ColumnMenu = observer(
-  ({ viewModel, spreadsheetModel, currentColumnMenu, setColumnMenu }) => {
+  ({
+    viewModel,
+    spreadsheetModel,
+    currentColumnMenu,
+    setColumnMenu,
+  }: {
+    spreadsheetModel: SpreadsheetModel
+    viewModel: SpreadsheetViewModel
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    currentColumnMenu: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setColumnMenu: (arg: any) => void
+  }) => {
     const columnMenuClose = () => {
       setColumnMenu(null)
     }
 
-    function handleMenuItemClick(event, callback) {
-      callback()
-      columnMenuClose(null)
-    }
-
     const columnNumber = currentColumnMenu && currentColumnMenu.colNumber
 
-    const sortMenuClick = descending => {
+    const sortMenuClick = (descending: boolean) => {
       spreadsheetModel.setSortColumns([
         {
           columnNumber,
@@ -114,6 +125,7 @@ const ColumnMenu = observer(
             if (typeName) {
               const menuEntry = {
                 label: displayName || typeName,
+                icon: undefined as typeof SvgIcon | undefined,
                 onClick: () => {
                   spreadsheetModel.setColumnType(columnNumber, typeName)
                 },
@@ -126,11 +138,19 @@ const ColumnMenu = observer(
             if (subMenuItems) {
               return {
                 label: displayName,
-                icon: subMenuItems.find(i => i.typeName === dataTypeName)
+                icon: subMenuItems.find(
+                  (i: { typeName: string }) => i.typeName === dataTypeName,
+                )
                   ? CheckIcon
                   : undefined,
                 subMenu: subMenuItems.map(
-                  ({ typeName: subTypeName, displayName: subDisplayName }) => ({
+                  ({
+                    typeName: subTypeName,
+                    displayName: subDisplayName,
+                  }: {
+                    typeName: string
+                    displayName: string
+                  }) => ({
                     label: subDisplayName,
                     icon: subTypeName === dataTypeName ? CheckIcon : undefined,
                     onClick: () => {
@@ -144,7 +164,7 @@ const ColumnMenu = observer(
           },
         ).filter(Boolean),
       },
-    ]
+    ] as MenuItem[]
 
     // don't display the filter item if this data type doesn't have filtering
     // implemented
@@ -160,7 +180,10 @@ const ColumnMenu = observer(
       <Menu
         anchorEl={currentColumnMenu && currentColumnMenu.anchorEl}
         open={Boolean(currentColumnMenu)}
-        onMenuItemClick={handleMenuItemClick}
+        onMenuItemClick={(_event, callback) => {
+          callback()
+          columnMenuClose()
+        }}
         onClose={columnMenuClose}
         menuItems={menuItems}
         anchorOrigin={{

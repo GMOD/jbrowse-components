@@ -1,21 +1,24 @@
+import React, { useEffect, useState } from 'react'
 import { openLocation } from '@jbrowse/core/util/io'
 import { HubFile } from '@gmod/ucsc-hub'
-import Card from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
-import CardContent from '@mui/material/CardContent'
-import CardHeader from '@mui/material/CardHeader'
-import IconButton from '@mui/material/IconButton'
-import LinearProgress from '@mui/material/LinearProgress'
-import Typography from '@mui/material/Typography'
+import {
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  IconButton,
+  LinearProgress,
+  Typography,
+} from '@mui/material'
 import EmailIcon from '@mui/icons-material/Email'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import PropTypes from 'prop-types'
-import DOMPurify from 'dompurify'
-import React, { useEffect, useState } from 'react'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 
-function HubDetails(props) {
-  const [hubFile, setHubFile] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)
+function HubDetails(props: {
+  hub: { url: string; longLabel: string; shortLabel: string }
+}) {
+  const [hubFile, setHubFile] = useState<Map<string, string>>()
+  const [error, setError] = useState<unknown>()
 
   const { hub } = props
 
@@ -23,43 +26,28 @@ function HubDetails(props) {
 
   useEffect(() => {
     async function getHubTxt() {
-      let hubTxt
       try {
         const hubHandle = openLocation({
           uri: hubUrl,
           locationType: 'UriLocation',
         })
-        hubTxt = await hubHandle.readFile('utf8')
-      } catch (error) {
-        setErrorMessage(
-          <span>
-            <strong>Error retrieving hub</strong> {error.message} <br />
-            {hubUrl}
-          </span>,
-        )
-        return
-      }
-      try {
+        const hubTxt = await hubHandle.readFile('utf8')
         const newHubFile = new HubFile(hubTxt)
         setHubFile(newHubFile)
       } catch (error) {
-        setErrorMessage(
-          <span>
-            <strong>Could not parse genomes file:</strong> <br />
-            {error.message} <br />
-            {hubUrl}
-          </span>,
-        )
+        console.error(error)
+        setError(error)
       }
     }
 
     getHubTxt()
   }, [hubUrl])
-  if (errorMessage) {
+
+  if (error) {
     return (
       <Card>
         <CardContent>
-          <Typography color="error">{errorMessage}</Typography>
+          <Typography color="error">{`${error}`}</Typography>
         </CardContent>
       </Card>
     )
@@ -69,7 +57,7 @@ function HubDetails(props) {
       <Card>
         <CardHeader title={shortLabel} />
         <CardContent>
-          <div __dangerouslySetInnerHTML={DOMPurify.sanitize(longLabel)} />
+          <SanitizedHTML html={longLabel} />
         </CardContent>
         <CardActions>
           <IconButton
@@ -83,7 +71,8 @@ function HubDetails(props) {
           {hubFile.get('descriptionUrl') ? (
             <IconButton
               href={
-                new URL(hubFile.get('descriptionUrl'), new URL(hubUrl)).href
+                new URL(hubFile.get('descriptionUrl') || '', new URL(hubUrl))
+                  .href
               }
               rel="noopener noreferrer"
               target="_blank"
@@ -96,10 +85,6 @@ function HubDetails(props) {
     )
   }
   return <LinearProgress variant="query" />
-}
-
-HubDetails.propTypes = {
-  hub: PropTypes.shape().isRequired,
 }
 
 export default HubDetails

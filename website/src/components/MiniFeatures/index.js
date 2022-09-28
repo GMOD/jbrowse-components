@@ -8,7 +8,7 @@ const FeatureList = [
     title:
       'Download a sample configuration file to quick start using JBrowse 2 for cancer workflows',
     img: '../img/sv_inspector_importform_loaded.png',
-    link: '/jb2/download',
+    link: 'https://gist.github.com/carolinebridge-oicr/eddc3a519a9244cfa3cf10983e2fa51a',
     description:
       'Includes hg19 and hg38 as default assemblies, the plugins highlighted below, and some sample data for exemplar purposes.',
   },
@@ -64,17 +64,14 @@ export default function MiniFeatures() {
                 width={408}
                 height={275}
                 controls
-                url="https://www.youtube.com/watch?v=rYqTYcZ56xs"
+                url="https://www.youtube.com/watch?v=PmJGO26qXV4&list=PLq5A53v4jGTE8NWhSG9F2G5ckj5S3GH6p"
               />
             </div>
             <div className="text--center padding-horiz--md">
               <h3>Check out the video tutorial series</h3>
               <p>
                 Also checkout our{' '}
-                <a href="/jb2/docs/tutorials/user/guided_cancer_tutorial">
-                  written guides
-                </a>
-                .
+                <a href="/jb2/docs/tutorials/plugin_usage/">written guides</a>.
               </p>
             </div>
           </div>
