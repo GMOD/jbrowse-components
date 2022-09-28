@@ -474,28 +474,35 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           Foo Track
         </span>
-        <button
-          aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
-          data-testid="track_menu_icon"
-          tabindex="0"
-          type="button"
+        <span
+          class="MuiBadge-root BaseBadge-root css-1c32n2y-MuiBadge-root"
         >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-            data-testid="MoreVertIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
+          <button
+            aria-haspopup="true"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="track_menu_icon"
+            tabindex="0"
+            type="button"
           >
-            <path
-              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              data-testid="MoreVertIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
-          </svg>
+          </button>
           <span
-            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            class="MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-anchorOriginTopRight MuiBadge-anchorOriginTopRightCircular MuiBadge-overlapCircular MuiBadge-colorError BaseBadge-badge BaseBadge-invisible css-1wplykf-MuiBadge-badge"
           />
-        </button>
+        </span>
       </div>
       <div
         class="tss-1ql7uaq-trackRenderingContainer"
@@ -1276,28 +1283,35 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           Foo Track
         </span>
-        <button
-          aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
-          data-testid="track_menu_icon"
-          tabindex="0"
-          type="button"
+        <span
+          class="MuiBadge-root BaseBadge-root css-1c32n2y-MuiBadge-root"
         >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-            data-testid="MoreVertIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
+          <button
+            aria-haspopup="true"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="track_menu_icon"
+            tabindex="0"
+            type="button"
           >
-            <path
-              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              data-testid="MoreVertIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
-          </svg>
+          </button>
           <span
-            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            class="MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-anchorOriginTopRight MuiBadge-anchorOriginTopRightCircular MuiBadge-overlapCircular MuiBadge-colorError BaseBadge-badge BaseBadge-invisible css-1wplykf-MuiBadge-badge"
           />
-        </button>
+        </span>
       </div>
       <div
         class="tss-1ql7uaq-trackRenderingContainer"
@@ -1408,28 +1422,35 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           Bar Track
         </span>
-        <button
-          aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
-          data-testid="track_menu_icon"
-          tabindex="0"
-          type="button"
+        <span
+          class="MuiBadge-root BaseBadge-root css-1c32n2y-MuiBadge-root"
         >
-          <svg
-            aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
-            data-testid="MoreVertIcon"
-            focusable="false"
-            viewBox="0 0 24 24"
+          <button
+            aria-haspopup="true"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="track_menu_icon"
+            tabindex="0"
+            type="button"
           >
-            <path
-              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+              data-testid="MoreVertIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
             />
-          </svg>
+          </button>
           <span
-            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            class="MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-anchorOriginTopRight MuiBadge-anchorOriginTopRightCircular MuiBadge-overlapCircular MuiBadge-colorError BaseBadge-badge BaseBadge-invisible css-1wplykf-MuiBadge-badge"
           />
-        </button>
+        </span>
       </div>
       <div
         class="tss-1ql7uaq-trackRenderingContainer"

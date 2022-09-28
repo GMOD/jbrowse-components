@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react'
-import { Button, alpha } from '@mui/material'
+import { Button, Badge, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
-import Menu, { MenuItem } from './Menu'
+import Menu, { MenuItem, hasEmphasized } from './Menu'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -50,6 +50,8 @@ function DropDownMenu({
     setOpen(false)
   }
 
+  const emphasized = hasEmphasized(menuItems)
+
   return (
     <div className={classes.root}>
       <Button
@@ -59,7 +61,14 @@ function DropDownMenu({
         data-testid="dropDownMenuButton"
         classes={{ root: classes.buttonRoot }}
       >
-        {menuTitle}
+        <Badge
+          color="error"
+          variant="dot"
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          invisible={!emphasized}
+        >
+          {menuTitle}
+        </Badge>
         <ArrowDropDown />
       </Button>
       <Menu

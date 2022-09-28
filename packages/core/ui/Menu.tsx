@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
+  Badge,
   Divider,
   Grow,
   ListItemIcon,
@@ -12,11 +13,12 @@ import {
   Paper,
   Popover,
   PopoverProps,
+  SvgIcon,
   SvgIconProps,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 // icons
-import ArrowRightIcon from '@mui/icons-material/ArrowRight'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
@@ -71,7 +73,7 @@ export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
   }
   let icon
   if (type === 'subMenu') {
-    icon = <ArrowRightIcon color="action" />
+    icon = <ChevronRightIcon color="action" />
   } else if (type === 'checkbox') {
     if (checked) {
       const color = disabled ? 'inherit' : 'secondary'
@@ -107,6 +109,7 @@ export interface BaseMenuItem {
   subLabel?: string
   icon?: React.ComponentType<SvgIconProps>
   disabled?: boolean
+  emphasized?: boolean
 }
 
 export interface NormalMenuItem extends BaseMenuItem {
@@ -156,6 +159,29 @@ interface MenuPageProps {
 }
 
 type MenuItemStyleProp = MenuItemProps['style']
+
+export function EmptyIcon(props: SvgIconProps) {
+  return (
+    <SvgIcon {...props}>
+      <path d="" />
+    </SvgIcon>
+  )
+}
+
+export function hasEmphasized(menuItems: MenuItem[]): boolean {
+  for (const menuItem of menuItems) {
+    if ('emphasized' in menuItem) {
+      return true
+    }
+    if ('subMenu' in menuItem) {
+      const emphasized = hasEmphasized(menuItem.subMenu)
+      if (emphasized) {
+        return emphasized
+      }
+    }
+  }
+  return false
+}
 
 function findNextValidIdx(menuItems: MenuItem[], currentIdx: number) {
   const idx = menuItems
@@ -275,6 +301,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
               }
               let icon = null
               let endDecoration = null
+              let { emphasized } = menuItem
               if (menuItem.icon) {
                 const Icon = menuItem.icon
                 icon = (
@@ -285,6 +312,7 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
               }
               if ('subMenu' in menuItem) {
                 endDecoration = <MenuItemEndDecoration type="subMenu" />
+                emphasized = emphasized || hasEmphasized(menuItem.subMenu)
               } else if (
                 menuItem.type === 'checkbox' ||
                 menuItem.type === 'radio'
@@ -343,11 +371,21 @@ const MenuPage = React.forwardRef<HTMLDivElement, MenuPageProps>(
                   disabled={Boolean(menuItem.disabled)}
                 >
                   {icon}
-                  <ListItemText
-                    primary={menuItem.label}
-                    secondary={menuItem.subLabel}
-                    inset={hasIcon && !menuItem.icon}
-                  />
+                  <Badge
+                    color="error"
+                    variant="dot"
+                    anchorOrigin={{
+                      vertical: 'top',
+                      horizontal: 'left',
+                    }}
+                    invisible={!emphasized}
+                  >
+                    <ListItemText
+                      primary={menuItem.label}
+                      secondary={menuItem.subLabel}
+                      inset={hasIcon && !menuItem.icon}
+                    />
+                  </Badge>
                   {endDecoration}
                 </MUIMenuItem>
               )

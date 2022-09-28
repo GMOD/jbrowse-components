@@ -966,28 +966,35 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   Reference Sequence (volvox)
                 </span>
-                <button
-                  aria-haspopup="true"
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-17dsj6n-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
-                  data-testid="track_menu_icon"
-                  tabindex="0"
-                  type="button"
+                <span
+                  class="MuiBadge-root BaseBadge-root mui-1c32n2y-MuiBadge-root"
                 >
-                  <svg
-                    aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall mui-196n7va-MuiSvgIcon-root"
-                    data-testid="MoreVertIcon"
-                    focusable="false"
-                    viewBox="0 0 24 24"
+                  <button
+                    aria-haspopup="true"
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-17dsj6n-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+                    data-testid="track_menu_icon"
+                    tabindex="0"
+                    type="button"
                   >
-                    <path
-                      d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall mui-196n7va-MuiSvgIcon-root"
+                      data-testid="MoreVertIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                      />
+                    </svg>
+                    <span
+                      class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
                     />
-                  </svg>
+                  </button>
                   <span
-                    class="MuiTouchRipple-root mui-8je8zh-MuiTouchRipple-root"
+                    class="MuiBadge-badge MuiBadge-dot MuiBadge-invisible MuiBadge-anchorOriginTopRight MuiBadge-anchorOriginTopRightCircular MuiBadge-overlapCircular MuiBadge-colorError BaseBadge-badge BaseBadge-invisible mui-idh8tj-MuiBadge-badge"
                   />
-                </button>
+                </span>
               </div>
               <div
                 class="tss-1ql7uaq-trackRenderingContainer"
