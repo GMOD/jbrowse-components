@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Typography, Button, Alert, Stack } from '@mui/material'
+import { Typography, Tooltip, Button, Alert } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
 const useStyles = makeStyles()(theme => ({
@@ -17,10 +16,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     textAlign: 'center',
   },
-  blockMessage: {
-    margin: theme.spacing(2),
-    whiteSpace: 'normal',
-  },
+  blockMessage: {},
   dots: {
     '&::after': {
       display: 'inline-block',
@@ -42,15 +38,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-function Repeater({ children }: { children: React.ReactNode }) {
-  return (
-    <Stack direction="row">
-      <div style={{ width: '50%' }}>{children}</div>
-      <div style={{ width: '50%' }}>{children}</div>
-    </Stack>
-  )
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LoadingMessage = observer(({ model }: { model: any }) => {
@@ -90,49 +77,63 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
 function BlockMessage({
   messageContent,
 }: {
-  messageContent: string | React.ReactNode
+  messageContent?: React.ReactNode
 }) {
   const { classes } = useStyles()
+  const [width, setWidth] = useState(0)
 
   return (
-    <div className={classes.blockMessage}>
+    <div
+      ref={ref => {
+        if (ref) {
+          setWidth(ref.getBoundingClientRect().width)
+        }
+      }}
+      className={classes.blockMessage}
+    >
       {React.isValidElement(messageContent) ? (
         messageContent
+      ) : width < 500 ? (
+        <Tooltip title={`${messageContent}`}>
+          <Alert severity="info" />
+        </Tooltip>
       ) : (
-        <Alert severity="info">{messageContent}</Alert>
+        <Alert severity="info">{`${messageContent}`}</Alert>
       )}
     </div>
   )
 }
 
-function BlockError({
-  error,
-  reload,
-  displayHeight,
-}: {
-  error: Error
-  reload: () => void
-  displayHeight: number
-}) {
+function BlockError({ error, reload }: { error: unknown; reload: () => void }) {
   const { classes } = useStyles()
+  const [width, setWidth] = useState(0)
+  const action = reload ? (
+    <Button
+      data-testid="reload_button"
+      onClick={reload}
+      startIcon={<RefreshIcon />}
+    >
+      Reload
+    </Button>
+  ) : null
   return (
-    <div className={classes.blockMessage}>
-      <Alert
-        severity="error"
-        action={
-          reload ? (
-            <Button
-              data-testid="reload_button"
-              onClick={reload}
-              startIcon={<RefreshIcon />}
-            >
-              Reload
-            </Button>
-          ) : null
+    <div
+      ref={ref => {
+        if (ref) {
+          setWidth(ref.getBoundingClientRect().width)
         }
-      >
-        {error.message}
-      </Alert>
+      }}
+      className={classes.blockMessage}
+    >
+      {width < 500 ? (
+        <Tooltip title={`${error}`}>
+          <Alert severity="error" action={action} />
+        </Tooltip>
+      ) : (
+        <Alert severity="error" action={action}>
+          {`${error}`}
+        </Alert>
+      )}
     </div>
   )
 }
@@ -145,29 +146,13 @@ const ServerSideRenderedBlockContent = observer(
     model: any
   }) => {
     if (model.error) {
-      return (
-        <Repeater>
-          <BlockError
-            error={model.error}
-            reload={model.reload}
-            displayHeight={getParentRenderProps(model).displayModel.height}
-          />
-        </Repeater>
-      )
+      return <BlockError error={model.error} reload={model.reload} />
     }
     if (model.message) {
-      return (
-        <Repeater>
-          <BlockMessage messageContent={model.message} />
-        </Repeater>
-      )
+      return <BlockMessage messageContent={model.message} />
     }
     if (!model.filled) {
-      return (
-        <Repeater>
-          <LoadingMessage model={model} />
-        </Repeater>
-      )
+      return <LoadingMessage model={model} />
     }
     return model.reactElement
   },
