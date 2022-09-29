@@ -75,6 +75,7 @@ function AddConnectionWidget({ model }: { model: unknown }) {
           <ConfigureConnection
             connectionType={connectionType}
             model={configModel}
+            session={session}
           />
         ) : null
 
