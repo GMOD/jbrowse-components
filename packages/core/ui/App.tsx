@@ -276,15 +276,12 @@ const App = observer(
             {views.length ? (
               views.map(view => (
                 <ErrorBoundary
+                  key={`view-${view.id}`}
                   FallbackComponent={({ error }) => (
                     <ErrorMessage error={error} />
                   )}
                 >
-                  <ViewPanel
-                    key={`view-${view.id}`}
-                    view={view}
-                    session={session}
-                  />
+                  <ViewPanel view={view} session={session} />
                 </ErrorBoundary>
               ))
             ) : (
