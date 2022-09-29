@@ -651,6 +651,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setScaleFactor(factor: number) {
         self.scaleFactor = factor
       },
+      // this "clears the view" and makes the view return to the import form
+      clearView() {
+        this.setDisplayedRegions([])
+        self.tracks.clear()
+        // it is necessary to run these after setting displayed regions empty
+        // or else model.offsetPx gets set to Infinity and breaks
+        // mobx-state-tree snapshot
+        self.scrollTo(0)
+        self.zoomTo(10)
+      },
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
     }))
     .actions(self => {
       let cancelLastAnimation = () => {}
@@ -899,16 +915,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
-      // this "clears the view" and makes the view return to the import form
-      clearView() {
-        self.setDisplayedRegions([])
-        self.tracks.clear()
-        // it is necessary to run these after setting displayed regions empty
-        // or else model.offsetPx gets set to Infinity and breaks
-        // mobx-state-tree snapshot
-        self.scrollTo(0)
-        self.zoomTo(10)
-      },
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
@@ -928,12 +934,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
-      },
       /**
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view

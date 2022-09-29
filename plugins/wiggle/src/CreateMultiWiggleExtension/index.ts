@@ -50,8 +50,8 @@ export default function (pm: PluginManager) {
                     ConfirmDialog,
                     {
                       tracks,
-                      onClose: (arg: boolean, arg1: { name: string }) => {
-                        if (arg) {
+                      onClose: (arg: boolean, arg1?: { name: string }) => {
+                        if (arg && arg1) {
                           makeTrack(arg1)
                         }
                         handleClose()

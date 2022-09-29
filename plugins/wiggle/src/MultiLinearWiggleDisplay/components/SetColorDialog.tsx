@@ -61,7 +61,7 @@ export default function SetColorDialog({
   handleClose,
 }: {
   model: {
-    sources: Source[]
+    sources?: Source[]
     setLayout: (s: Source[]) => void
     clearLayout: () => void
   }
@@ -132,7 +132,7 @@ export default function SetColorDialog({
           color="inherit"
           onClick={() => {
             model.clearLayout()
-            setCurrLayout(model.sources)
+            setCurrLayout(model.sources || [])
           }}
         >
           Clear custom settings
@@ -142,7 +142,7 @@ export default function SetColorDialog({
           color="secondary"
           onClick={() => {
             handleClose()
-            setCurrLayout([...model.sources])
+            setCurrLayout([...(model.sources || [])])
           }}
         >
           Cancel
