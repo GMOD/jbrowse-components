@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { getEnv } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   Button,
@@ -56,6 +57,11 @@ export default function AboutDialog({
     ...readConfObject(config, ['formatAbout', 'conf'], { conf }),
     ...getConf(session, ['formatAbout', 'conf'], { conf }),
   }
+
+  const { pluginManager } = getEnv(session)
+  pluginManager.evaluateExtensionPoist('Core-customizeAbout', confPost, {
+    session,
+  })
 
   useEffect(() => {
     const aborter = new AbortController()
