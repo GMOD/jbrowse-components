@@ -85,7 +85,7 @@ export default function AboutDialog({
     }
   }, [config, rpcManager])
 
-  let trackName = getTrackName(config, session)
+  const trackName = getTrackName(config, session)
 
   const details =
     typeof info === 'string'

@@ -29,20 +29,23 @@ export default function (configSchema: LinearVariantDisplayConfigModel) {
           const { rpcManager } = session
           const sessionId = getRpcSessionId(self)
           const track = getContainingTrack(self)
+          const view = getContainingView(self)
           const adapterConfig = getConf(track, 'adapter')
-          const header = await rpcManager.call(sessionId, 'CoreGetMetadata', {
-            adapterConfig,
-          })
-          const featureWidget = session.addWidget(
-            'VariantFeatureWidget',
-            'variantFeature',
+          const descriptions = await rpcManager.call(
+            sessionId,
+            'CoreGetMetadata',
             {
-              featureData: feature.toJSON(),
-              view: getContainingView(self),
-              descriptions: header,
+              adapterConfig,
             },
           )
-          session.showWidget(featureWidget)
+          session.showWidget(
+            session.addWidget('VariantFeatureWidget', 'variantFeature', {
+              featureData: feature.toJSON(),
+              view,
+              track,
+              descriptions,
+            }),
+          )
         }
 
         session.setSelection(feature)
