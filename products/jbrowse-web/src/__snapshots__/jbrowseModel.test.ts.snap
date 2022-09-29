@@ -96,6 +96,10 @@ Object {
             "type": "LinearReferenceSequenceDisplay",
           },
         ],
+        "formatAbout": Object {
+          "conf": "jexl:{extraField:'important data'}",
+          "hideUris": true,
+        },
         "metadata": Object {
           "date": "2020-08-20",
         },
