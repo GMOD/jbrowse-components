@@ -54,7 +54,7 @@ const Chord = observer(function Chord({
     feature: Feature,
     reg: AnyRegion,
     endBlock: AnyRegion,
-    evt: any,
+    evt: unknown,
   ) => void
 }) {
   // find the blocks that our start and end points belong to
@@ -144,18 +144,16 @@ const Chord = observer(function Chord({
 
 function StructuralVariantChords(props: {
   features: Map<string, Feature>
-  blocksForRefs: { [key: string]: Block }
   radius: number
   config: AnyConfigurationModel
-  displayModel: any
+  displayModel: { id: string; selectedFeatureId: string }
   blockDefinitions: Block[]
   bezierRadius: number
-  selected: boolean
   onChordClick: (
     feature: Feature,
     reg: AnyRegion,
     endBlock: AnyRegion,
-    evt: any,
+    evt: unknown,
   ) => void
 }) {
   const {
