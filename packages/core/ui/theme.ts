@@ -1,5 +1,5 @@
 import { blue, green, red, amber } from '@mui/material/colors'
-import { createTheme } from '@mui/material/styles'
+import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type { PaletteOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
@@ -54,7 +54,7 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
     components: {
       MuiButton: {
         defaultProps: {
-          size: 'small',
+          size: 'small' as const,
         },
       },
       MuiAccordion: {
@@ -65,44 +65,44 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
       },
       MuiFilledInput: {
         defaultProps: {
-          margin: 'dense',
+          margin: 'dense' as const,
         },
       },
       MuiFormControl: {
         defaultProps: {
-          margin: 'dense',
-          size: 'small',
+          margin: 'dense' as const,
+          size: 'small' as const,
         },
       },
       MuiFormHelperText: {
         defaultProps: {
-          margin: 'dense',
+          margin: 'dense' as const,
         },
       },
 
       MuiIconButton: {
         defaultProps: {
-          size: 'small',
+          size: 'small' as const,
         },
       },
       MuiInputBase: {
         defaultProps: {
-          margin: 'dense',
+          margin: 'dense' as const,
         },
       },
       MuiAutocomplete: {
         defaultProps: {
-          size: 'small',
+          size: 'small' as const,
         },
       },
       MuiInputLabel: {
         defaultProps: {
-          margin: 'dense',
+          margin: 'dense' as const,
         },
       },
       MuiToolbar: {
         defaultProps: {
-          variant: 'dense',
+          variant: 'dense' as const,
         },
       },
       MuiListItem: {
@@ -112,17 +112,17 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
       },
       MuiOutlinedInput: {
         defaultProps: {
-          margin: 'dense',
+          margin: 'dense' as const,
         },
       },
       MuiFab: {
         defaultProps: {
-          size: 'small',
+          size: 'small' as const,
         },
       },
       MuiTable: {
         defaultProps: {
-          size: 'small',
+          size: 'small' as const,
         },
       },
       MuiMenuList: {
@@ -138,8 +138,8 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
 
       MuiTextField: {
         defaultProps: {
-          margin: 'dense',
-          variant: 'standard',
+          margin: 'dense' as const,
+          variant: 'standard' as const,
         },
       },
     },
@@ -193,24 +193,26 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
   }
 }
 
-export const jbrowseBaseTheme = {
-  palette: jbrowseDefaultPalette,
-  typography: { fontSize: 12 },
-  spacing: 4,
-  ...deepmerge(createJBrowseDefaultProps(), createJBrowseDefaultOverrides()),
+export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
+  return {
+    palette: jbrowseDefaultPalette,
+    typography: { fontSize: 12 },
+    spacing: 4,
+    ...deepmerge(
+      createJBrowseDefaultProps(),
+      createJBrowseDefaultOverrides(palette),
+    ),
+  }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createJBrowseTheme(theme?: any) {
+export function createJBrowseTheme(theme?: ThemeOptions) {
   if (theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
         tertiary: refTheme.palette.augmentColor(
-          theme.palette.tertiary?.color
+          'color' in theme.palette.tertiary
             ? theme.palette.tertiary
-            : {
-                color: theme.palette.tertiary,
-              },
+            : { color: theme.palette.tertiary },
         ),
       },
     })
@@ -219,16 +221,15 @@ export function createJBrowseTheme(theme?: any) {
     theme = deepmerge(theme, {
       palette: {
         quaternary: refTheme.palette.augmentColor(
-          theme.palette.quaternary?.color
+          'color' in theme.palette.quaternary
             ? theme.palette.quaternary
-            : {
-                color: theme.palette.quaternary,
-              },
+            : { color: theme.palette.quaternary },
         ),
       },
     })
   }
 
-  // @ts-ignore
-  return createTheme(deepmerge(jbrowseBaseTheme, theme || {}))
+  return createTheme(
+    deepmerge(createJBrowseBaseTheme(theme?.palette), theme || {}),
+  )
 }

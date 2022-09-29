@@ -23,8 +23,8 @@ describe('theme utils', () => {
   it('allows overriding tertiary and quaternary colors', () => {
     const theme = createJBrowseTheme({
       palette: {
-        tertiary: { color: { 500: '#888' } },
-        quaternary: { color: { main: 'hsl(0,0,54)' } },
+        tertiary: { 500: '#888' },
+        quaternary: { main: 'hsl(0,0,54)' },
       },
     })
     // @ts-ignore
