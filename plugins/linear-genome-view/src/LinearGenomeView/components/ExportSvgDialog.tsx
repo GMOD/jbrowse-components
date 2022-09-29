@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import CloseIcon from '@mui/icons-material/Close'
-import { LinearGenomeViewModel as LGV } from '..'
+import { ExportSvgOptions } from '..'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -39,7 +39,7 @@ export default function ExportSvgDlg({
   model,
   handleClose,
 }: {
-  model: LGV
+  model: { exportSvg(opts: ExportSvgOptions): void }
   handleClose: () => void
 }) {
   // @ts-ignore

@@ -114,10 +114,9 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogProps: any
-  queueDialog: (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    callback: (doneCallback: Function) => [DialogComponentType, any],
-  ) => void
+  queueDialog<T extends DialogComponentType>(
+    callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
+  ): void
   name: string
   id?: string
   tracks: AnyConfigurationModel[]

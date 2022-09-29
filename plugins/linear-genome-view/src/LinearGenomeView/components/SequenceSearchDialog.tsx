@@ -21,9 +21,6 @@ import { getSession } from '@jbrowse/core/util'
 // icons
 import CloseIcon from '@mui/icons-material/Close'
 
-// locals
-import { LinearGenomeViewModel } from '..'
-
 const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
@@ -40,7 +37,7 @@ function SequenceDialog({
   model,
   handleClose,
 }: {
-  model: LinearGenomeViewModel
+  model: { assemblyNames: string[]; toggleTrack(trackId: string): void }
   handleClose: () => void
 }) {
   const { classes } = useStyles()
