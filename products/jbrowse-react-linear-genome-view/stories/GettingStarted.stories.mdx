@@ -83,6 +83,28 @@ Example
   <Story id="linear-view--using-loc-object" />
 </Canvas>
 
+## Disabling the ability to add tracks
+
+By default users can add tracks, but you can add the `disableAddTracks` flag to
+prevent this. Note that this prevents the ability to create e.g. sequence search
+tracks or multi-wiggle tracks too.
+
+```js
+const state = createViewState({
+  assembly,
+  tracks,
+  location: '10:29,838,737..29,838,819',
+  defaultSession,
+  disableAddTracks: true,
+})
+```
+
+Example
+
+<Canvas withSource="open">
+  <Story id="linear-view--disable-add-tracks" />
+</Canvas>
+
 ## Opening up tracks by default
 
 You can use the "showTrack" function on the object returned by

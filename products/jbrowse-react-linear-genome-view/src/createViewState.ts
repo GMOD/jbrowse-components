@@ -27,6 +27,7 @@ interface ViewStateOptions {
   plugins?: PluginConstructor[]
   location?: string | Location
   defaultSession?: SessionSnapshot
+  disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
 }
 
@@ -39,6 +40,7 @@ export default function createViewState(opts: ViewStateOptions) {
     plugins,
     location,
     onChange,
+    disableAddTracks = false,
   } = opts
   const { model, pluginManager } = createModel(plugins || [])
   let { defaultSession } = opts
@@ -59,7 +61,7 @@ export default function createViewState(opts: ViewStateOptions) {
       aggregateTextSearchAdapters,
       defaultSession,
     },
-    assemblyManager: {},
+    disableAddTracks,
     session: defaultSession,
   }
   const stateTree = model.create(stateSnapshot, { pluginManager })

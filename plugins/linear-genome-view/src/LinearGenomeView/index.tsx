@@ -15,6 +15,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -721,7 +722,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       menuItems(): MenuItem[] {
         const { canShowCytobands, showCytobands } = self
-
+        const session = getSession(self)
         const menuItems: MenuItem[] = [
           {
             label: 'Return to import form',
@@ -733,15 +734,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             icon: FolderOpenIcon,
           },
-          {
-            label: 'Sequence search',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                SequenceSearchDialog,
-                { model: self, handleClose },
-              ])
-            },
-          },
+          ...(isSessionWithAddTracks(session)
+            ? [
+                {
+                  label: 'Sequence search',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SequenceSearchDialog,
+                      { model: self, handleClose },
+                    ])
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,

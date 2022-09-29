@@ -150,7 +150,10 @@ export interface SessionWithConfigEditing extends AbstractSessionModel {
 export function isSessionWithAddTracks(
   thing: unknown,
 ): thing is SessionWithConfigEditing {
-  return isSessionModel(thing) && 'addTrackConf' in thing
+  return (
+    // @ts-ignore
+    isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
+  )
 }
 
 export interface Widget {

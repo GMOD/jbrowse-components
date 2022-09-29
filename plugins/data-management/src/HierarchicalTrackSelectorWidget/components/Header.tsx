@@ -158,6 +158,8 @@ function HierarchicalTrackSelectorHeader({
 
   const items = getEnv(model).pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
+    [],
+    { session },
   ) as MenuItem[]
   return (
     <div

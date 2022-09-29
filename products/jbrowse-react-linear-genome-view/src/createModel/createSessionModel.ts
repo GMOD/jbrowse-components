@@ -51,6 +51,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       connectionInstances: types.array(
         pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
+      sessionTracks: types.array(
+        pluginManager.pluggableConfigSchemaType('track'),
+      ),
     })
     .volatile((/* self */) => ({
       /**
@@ -69,17 +72,18 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       queueOfDialogs: [] as [DialogComponentType, any][],
     }))
     .views(self => ({
+      get disableAddTracks() {
+        return getParent<any>(self).disableAddTracks
+      },
       get DialogComponent() {
         if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
+          return self.queueOfDialogs[0]?.[0]
         }
         return undefined
       },
       get DialogProps() {
         if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
+          return self.queueOfDialogs[0]?.[1]
         }
         return undefined
       },
@@ -155,6 +159,18 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      addTrackConf(trackConf: AnyConfigurationModel) {
+        const { trackId, type } = trackConf
+        if (!type) {
+          throw new Error(`unknown track type ${type}`)
+        }
+        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
+        if (track) {
+          return track
+        }
+        const length = self.sessionTracks.push(trackConf)
+        return self.sessionTracks[length - 1]
+      },
       queueDialog(
         callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
