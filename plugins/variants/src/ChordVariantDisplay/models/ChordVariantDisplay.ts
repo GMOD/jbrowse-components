@@ -9,8 +9,9 @@ import {
 import { types } from 'mobx-state-tree'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-const ChordVariantDisplayF = pluginManager => {
+const ChordVariantDisplayF = (pluginManager: PluginManager) => {
   const configSchema = ConfigurationSchema(
     'ChordVariantDisplay',
     {
@@ -36,7 +37,7 @@ const ChordVariantDisplayF = pluginManager => {
         return self.configuration.renderer.type
       },
 
-      renderProps() {
+      renderProps(): Record<string, unknown> {
         const view = getContainingView(self)
         return {
           ...getParentRenderProps(self),
@@ -44,6 +45,8 @@ const ChordVariantDisplayF = pluginManager => {
           displayModel: self,
           bezierRadius: view.radiusPx * self.bezierRadiusRatio,
           radius: view.radiusPx,
+
+          // @ts-ignore
           blockDefinitions: this.blockDefinitions,
           config: self.configuration.renderer,
           onChordClick: self.onChordClick,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React, { useRef, useState, useEffect } from 'react'
 import { observer, PropTypes } from 'mobx-react'
 import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPonyfill'
@@ -6,20 +7,31 @@ import { drawImageOntoCanvasContext } from '@jbrowse/core/util/offscreenCanvasPo
  * A block whose content is rendered outside of the main thread and hydrated by this
  * component.
  */
-function ServerSideSyntenyRendering(props) {
-  const { model } = props
+function ServerSideSyntenyRendering({
+  model,
+}: {
+  model: {
+    imageData: string
+    style: Record<string, string>
+    renderProps: {
+      width: number
+      height: number
+      highResolutionScaling?: number
+    }
+  }
+}) {
   const { imageData, style, renderProps } = model
   const { width, height, highResolutionScaling = 1 } = renderProps
 
-  const featureCanvas = useRef()
+  const featureCanvas = useRef<HTMLCanvasElement>(null)
   const [done, setDone] = useState(false)
 
   useEffect(() => {
     if (!imageData) {
       return
     }
-    const canvas = featureCanvas.current
-    const context = canvas.getContext('2d')
+    const canvas = featureCanvas.current!
+    const context = canvas.getContext('2d')!
     drawImageOntoCanvasContext(imageData, context)
     setDone(true)
   }, [height, imageData, width])

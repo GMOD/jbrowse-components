@@ -11,7 +11,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function BlockError({ error, reload }) {
+function BlockError({ error, reload }: { error: unknown; reload: () => void }) {
   // reload function gets passed here
   const { classes } = useStyles()
   return (
@@ -26,7 +26,7 @@ function BlockError({ error, reload }) {
         </Button>
       ) : null}
       <Typography color="error" variant="body2">
-        {error.message}
+        {`${error}`}
       </Typography>
     </div>
   )
