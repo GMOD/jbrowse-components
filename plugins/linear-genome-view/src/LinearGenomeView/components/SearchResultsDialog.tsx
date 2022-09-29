@@ -84,15 +84,9 @@ export default function SearchResultsDialog({
 
   function getTrackName(trackId: string | undefined) {
     if (trackId) {
-      const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-      const configuration = resolveIdentifier(
-        trackConfigSchema,
-        getRoot(model),
-        trackId,
-      )
-      if (configuration) {
-        return configuration.name?.value
-      }
+      const schema = pluginManager.pluggableConfigSchemaType('track')
+      const configuration = resolveIdentifier(schema, getRoot(model), trackId)
+      return configuration?.name?.value || ''
     }
     return ''
   }

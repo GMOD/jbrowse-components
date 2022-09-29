@@ -12,6 +12,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { makeStyles } from 'tss-react/mui'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import { getSession } from '../util'
+import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
@@ -71,18 +72,7 @@ export default function AboutDialog({
     }
   }, [config, rpcManager])
 
-  let trackName = readConfObject(config, 'name')
-  if (readConfObject(config, 'type') === 'ReferenceSequenceTrack') {
-    const asm = session.assemblies.find(
-      a => a.sequence === config.configuration,
-    )
-
-    trackName = asm
-      ? `Reference Sequence (${
-          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
-        })`
-      : 'Reference Sequence'
-  }
+  let trackName = getTrackName(config, session)
 
   const details =
     typeof info === 'string'
