@@ -40,16 +40,10 @@ test('opens the track menu and enables soft clipping', async () => {
   fireEvent.click(await findByText('Show soft clipping'))
 
   // wait for block to rerender
-  const { findByTestId: findByTestId1 } = within(
-    await findByTestId('Blockset-pileup'),
-  )
+  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
 
   expectCanvasMatch(
-    await findByTestId1(
-      pc('softclipped_{volvox}ctgA:2,849..2,864-0'),
-      {},
-      delay,
-    ),
+    await find1(pc('softclipped_{volvox}ctgA:2,849..2,864-0'), {}, delay),
   )
 }, 30000)
 
@@ -75,13 +69,9 @@ test('selects a sort, sort by strand', async () => {
   // wait for pileup track to render with sort
   await findAllByTestId('pileup-Read strand', {}, delay)
 
-  const { findByTestId: findByTestId1 } = within(
-    await findByTestId('Blockset-pileup'),
-  )
+  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
 
-  expectCanvasMatch(
-    await findByTestId1(pc('{volvox}ctgA:41,729..41,744-0'), {}, delay),
-  )
+  expectCanvasMatch(await find1(pc('{volvox}ctgA:41,729..41,744-0'), {}, delay))
 }, 35000)
 
 test('color by strand', async () => {
@@ -106,12 +96,8 @@ test('color by strand', async () => {
   await findAllByTestId('pileup-strand', {}, delay)
 
   // wait for pileup track to render
-  const { findByTestId: findByTestId1 } = within(
-    await findByTestId('Blockset-pileup'),
-  )
-  expectCanvasMatch(
-    await findByTestId1(pc('{volvox}ctgA:41,729..41,744-0'), {}, delay),
-  )
+  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
+  expectCanvasMatch(await find1(pc('{volvox}ctgA:41,729..41,744-0'), {}, delay))
 }, 30000)
 
 test('color by tag', async () => {
@@ -121,7 +107,7 @@ test('color by tag', async () => {
   view.setNewView(0.465, 85055)
 
   // load track
-  fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram', {}, delay))
+  fireEvent.click(await findByTestId(hts('volvox_cram'), {}, delay))
   await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
   expect(view.tracks[0]).toBeTruthy()
 
@@ -137,11 +123,7 @@ test('color by tag', async () => {
   await findAllByTestId('pileup-tagHP', {}, delay)
 
   // wait for pileup track to render
-  const { findByTestId: findByTestId1 } = within(
-    await findByTestId('Blockset-pileup'),
-  )
+  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
 
-  expectCanvasMatch(
-    await findByTestId1(pc('{volvox}ctgA:39,805..40,176-0'), {}, delay),
-  )
+  expectCanvasMatch(await find1(pc('{volvox}ctgA:39,805..40,176-0'), {}, delay))
 }, 30000)
