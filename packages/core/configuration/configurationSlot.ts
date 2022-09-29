@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { types, IAnyModelType, IAnyComplexType, getEnv } from 'mobx-state-tree'
+import { types, IAnyModelType, IAnyComplexType } from 'mobx-state-tree'
 import { stringToJexlExpression } from '../util/jexlStrings'
 import { FileLocation } from '../util/types/mst'
+import { getEnv } from '../util'
 
 function isValidColorString(/* str */) {
   // TODO: check all the crazy cases for whether it's a valid HTML/CSS color string

@@ -4,8 +4,7 @@ import { Link, Typography } from '@mui/material'
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-import { getSession } from '@jbrowse/core/util'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BreakendOptionDialog from './BreakendOptionDialog'
 

@@ -1,8 +1,8 @@
 import React from 'react'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { makeStyles } from 'tss-react/mui'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv } from '@jbrowse/core/util'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals

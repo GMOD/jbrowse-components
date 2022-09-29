@@ -1,7 +1,6 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { makeAdHocSvFeature } from './adhocFeatureUtils'
-import { getSession } from '@jbrowse/core/util'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv, getSession } from '@jbrowse/core/util'
 
 export function getSerializedFeatureForRow(
   session,

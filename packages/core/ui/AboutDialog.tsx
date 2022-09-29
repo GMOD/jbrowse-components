@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { getEnv } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   Button,
@@ -16,7 +15,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '../configuration'
-import { getSession } from '../util'
+import { getSession, getEnv } from '../util'
 import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
@@ -34,34 +33,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function AboutDialog({
-  config,
-  handleClose,
-}: {
-  config: AnyConfigurationModel
-  handleClose: () => void
-}) {
-  const { classes } = useStyles()
-  const [info, setInfo] = useState<FileInfo>()
+export function AboutContents({ config }: { config: AnyConfigurationModel }) {
   const [error, setError] = useState<unknown>()
   const [copied, setCopied] = useState(false)
+  const conf = readConfObject(config)
   const session = getSession(config)
   const { rpcManager } = session
-  const conf = readConfObject(config)
-  const hideUris =
-    readConfObject(config, ['formatAbout', 'hideUris']) ||
-    getConf(session, ['formatAbout', 'hideUris'])
-
-  const confPost = {
-    ...conf,
-    ...readConfObject(config, ['formatAbout', 'conf'], { conf }),
-    ...getConf(session, ['formatAbout', 'conf'], { conf }),
-  }
-
-  const { pluginManager } = getEnv(session)
-  pluginManager.evaluateExtensionPoist('Core-customizeAbout', confPost, {
-    session,
-  })
+  const [info, setInfo] = useState<FileInfo>()
 
   useEffect(() => {
     const aborter = new AbortController()
@@ -91,7 +69,29 @@ export default function AboutDialog({
     }
   }, [config, rpcManager])
 
-  const trackName = getTrackName(config, session)
+  const hideUris =
+    getConf(session, ['formatAbout', 'hideUris']) ||
+    readConfObject(config, ['formatAbout', 'hideUris'])
+
+  const { pluginManager } = getEnv(session)
+
+  const confPostExt = pluginManager.evaluateExtensionPoint(
+    'Core-customizeAbout',
+    {
+      config: {
+        ...conf,
+        ...getConf(session, ['formatAbout', 'config'], { config: conf }),
+        ...readConfObject(config, ['formatAbout', 'config'], { config: conf }),
+      },
+    },
+    { session, config },
+  ) as Record<string, unknown>
+
+  const ExtraPanel = pluginManager.evaluateExtensionPoint(
+    'Core-extraAboutPanel',
+    null,
+    { session, config },
+  ) as React.FC<any> | null
 
   const details =
     typeof info === 'string'
@@ -101,6 +101,67 @@ export default function AboutDialog({
             .replace(/>/g, '&gt;')}</pre>`,
         }
       : info || {}
+
+  return (
+    <>
+      <BaseCard title="Configuration">
+        {!hideUris ? (
+          <Button
+            variant="contained"
+            style={{ float: 'right' }}
+            onClick={() => {
+              copy(JSON.stringify(conf, null, 2))
+              setCopied(true)
+              setTimeout(() => setCopied(false), 1000)
+            }}
+          >
+            {copied ? 'Copied to clipboard!' : 'Copy config'}
+          </Button>
+        ) : null}
+        <Attributes
+          attributes={confPostExt}
+          omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+          hideUris={hideUris}
+        />
+      </BaseCard>
+      )
+      {info !== null ? (
+        <BaseCard title="File info">
+          {error ? (
+            <Typography color="error">{`${error}`}</Typography>
+          ) : info === undefined ? (
+            'Loading file data...'
+          ) : (
+            <Attributes attributes={details} />
+          )}
+        </BaseCard>
+      ) : null}
+      {ExtraPanel ? (
+        <BaseCard title="More info">
+          <ExtraPanel config={config} />
+        </BaseCard>
+      ) : null}
+    </>
+  )
+}
+
+export default function AboutDialog({
+  config,
+  handleClose,
+}: {
+  config: AnyConfigurationModel
+  handleClose: () => void
+}) {
+  const { classes } = useStyles()
+  const session = getSession(config)
+  const trackName = getTrackName(config, session)
+  const { pluginManager } = getEnv(session)
+
+  const AboutComponent = pluginManager.evaluateExtensionPoint(
+    'Core-replaceAbout',
+    AboutContents,
+    { session, config },
+  ) as React.FC<any>
 
   return (
     <Dialog open onClose={handleClose} maxWidth="xl">
@@ -115,37 +176,7 @@ export default function AboutDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent className={classes.content}>
-        <BaseCard title="Configuration">
-          {!hideUris ? (
-            <Button
-              variant="contained"
-              style={{ float: 'right' }}
-              onClick={() => {
-                copy(JSON.stringify(confPost, null, 2))
-                setCopied(true)
-                setTimeout(() => setCopied(false), 1000)
-              }}
-            >
-              {copied ? 'Copied to clipboard!' : 'Copy config'}
-            </Button>
-          ) : null}
-          <Attributes
-            attributes={confPost}
-            omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
-            hideUris={hideUris}
-          />
-        </BaseCard>
-        {info !== null ? (
-          <BaseCard title="File info">
-            {error ? (
-              <Typography color="error">{`${error}`}</Typography>
-            ) : info === undefined ? (
-              'Loading file data...'
-            ) : (
-              <Attributes attributes={details} />
-            )}
-          </BaseCard>
-        ) : null}
+        <AboutComponent config={config} />
       </DialogContent>
     </Dialog>
   )

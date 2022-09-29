@@ -1,10 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { readConfObject } from '@jbrowse/core/configuration'
-import {
-  supportedIndexingAdapters,
-  getSession,
-  isElectron,
-} from '@jbrowse/core/util'
 import {
   Card,
   CardContent,
@@ -24,19 +18,23 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  supportedIndexingAdapters,
+  getSession,
+  getEnv,
+  isElectron,
+} from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { observer } from 'mobx-react'
+import { UNKNOWN } from '@jbrowse/core/util/tracks'
+import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material//Add'
-// other
-import PluginManager from '@jbrowse/core/PluginManager'
-import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
-import { UNKNOWN } from '@jbrowse/core/util/tracks'
-
 // locals
 import { AddTrackModel } from '../model'
-import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 const useStyles = makeStyles()(theme => ({
   spacing: {

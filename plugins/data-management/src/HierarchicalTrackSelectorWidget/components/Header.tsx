@@ -1,16 +1,11 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { Badge, IconButton, InputAdornment, TextField } from '@mui/material'
-// icons
-import ClearIcon from '@mui/icons-material/Clear'
-import MenuIcon from '@mui/icons-material/Menu'
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-import { Cable } from '@jbrowse/core/ui/Icons'
-
-// other
+import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 import JBrowseMenu, { MenuItem } from '@jbrowse/core/ui/Menu'
 import {
   getSession,
+  getEnv,
   isSessionModelWithWidgets,
   isSessionModelWithConnections,
   isSessionWithAddTracks,
@@ -19,8 +14,12 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+
+// icons
+import ClearIcon from '@mui/icons-material/Clear'
+import MenuIcon from '@mui/icons-material/Menu'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import { Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../model'

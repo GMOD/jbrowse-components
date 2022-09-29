@@ -15,7 +15,7 @@
         },
         "formatAbout": {
           "hideUris": true,
-          "conf": "jexl:{extraField:'important data'}"
+          "config": "jexl:{extraField:'important data'}"
         },
         "adapter": {
           "type": "TwoBitAdapter",

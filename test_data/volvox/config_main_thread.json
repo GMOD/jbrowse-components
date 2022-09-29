@@ -5,7 +5,7 @@
     },
     "formatAbout": {
       "hideUris": true,
-      "conf": "jexl:{extraField:'important data'}"
+      "config": "jexl:{extraField:'important data'}"
     },
     "formatDetails": {
       "feature": "jexl:{extraField:'important data'}"

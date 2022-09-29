@@ -1,10 +1,10 @@
-import { types, getEnv, getSnapshot, Instance } from 'mobx-state-tree'
+import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   getConf,
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { AbstractSessionModel, getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel, getSession, getEnv } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'

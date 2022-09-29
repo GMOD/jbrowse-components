@@ -269,7 +269,15 @@ type: synchronous
 
 used to extend the session model itself with new features
 
-- `session: AbstractSessionModel` - instance of the session model to extend
+- `session: AbstractSessionModel` - instance of the session model to customize
+  the about dialog
+
+### Core-customizeAbout
+
+type: synchronous
+
+- `conf: Record<string,unknown>` - a snapshot of a configuration object that is
+  displayed in the about dialog
 
 ### TrackSelector-multiTrackMenuItems
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import {
   Button,
   Step,
@@ -10,7 +10,6 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals
@@ -51,9 +50,11 @@ function AddConnectionWidget({ model }: { model: unknown }) {
       case 0:
         return (
           <ConnectionTypeSelect
-            connectionTypeChoices={pluginManager.getElementTypesInGroup(
-              'connection',
-            )}
+            connectionTypeChoices={
+              pluginManager.getElementTypesInGroup(
+                'connection',
+              ) as ConnectionType[]
+            }
             connectionType={connectionType}
             setConnectionType={c => {
               setConnectionType(c)

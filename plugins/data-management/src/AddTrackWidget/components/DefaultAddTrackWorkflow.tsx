@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { getRoot } from 'mobx-state-tree'
 
 import {
   getSession,
@@ -17,7 +18,6 @@ import {
 } from '@jbrowse/core/util'
 import { getConf } from '@jbrowse/core/configuration'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 
 // locals
 import ConfirmTrack from './ConfirmTrack'
@@ -52,9 +52,9 @@ const steps = ['Enter track data', 'Confirm track type']
 function AddTrackWorkflow({ model }: { model: AddTrackModel }) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
-  const { pluginManager } = getEnv(model)
-  const { rootModel } = pluginManager
-  const { jobsManager } = rootModel
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { jobsManager } = getRoot<any>(model)
   const session = getSession(model)
   const {
     assembly,

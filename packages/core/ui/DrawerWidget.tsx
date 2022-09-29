@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv } from '../util'
 import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
@@ -58,7 +58,7 @@ const DrawerHeader = observer(
     const { visibleWidget, activeWidgets, drawerPosition } = session
     const { classes } = useStyles()
 
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
     return (
       <AppBar
@@ -211,11 +211,13 @@ const DrawerWidget = observer(
           <ErrorBoundary
             FallbackComponent={({ error }) => <ErrorMessage error={error} />}
           >
-            <DrawerComponent
-              model={visibleWidget}
-              session={session}
-              toolbarHeight={toolbarHeight}
-            />
+            {DrawerComponent ? (
+              <DrawerComponent
+                model={visibleWidget}
+                session={session}
+                toolbarHeight={toolbarHeight}
+              />
+            ) : null}
           </ErrorBoundary>
         </Suspense>
       </Drawer>

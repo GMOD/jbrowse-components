@@ -1,5 +1,5 @@
 import React, { lazy } from 'react'
-import { addDisposer, getEnv, isAlive, types, Instance } from 'mobx-state-tree'
+import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import { autorun, when } from 'mobx'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import deepEqual from 'fast-deep-equal'
@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   getSession,
+  getEnv,
   getContainingView,
   isSelectionContainer,
   Feature,

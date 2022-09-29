@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { resolveIdentifier, getRoot } from 'mobx-state-tree'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import {
   Button,
   Dialog,
