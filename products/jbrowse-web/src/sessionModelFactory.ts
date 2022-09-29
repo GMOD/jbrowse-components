@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import shortid from 'shortid'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   readConfObject,
   getConf,
   isConfigurationModel,
+  AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import {
   Region,
@@ -39,11 +40,12 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+
+// icons
 import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
-import shortid from 'shortid'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 

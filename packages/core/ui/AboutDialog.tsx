@@ -10,7 +10,11 @@ import {
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { makeStyles } from 'tss-react/mui'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
+import {
+  getConf,
+  readConfObject,
+  AnyConfigurationModel,
+} from '../configuration'
 import { getSession } from '../util'
 import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
@@ -43,10 +47,14 @@ export default function AboutDialog({
   const session = getSession(config)
   const { rpcManager } = session
   const conf = readConfObject(config)
-  const hideUris = readConfObject(config, ['formatAbout', 'hideUris'])
+  const hideUris =
+    readConfObject(config, ['formatAbout', 'hideUris']) ||
+    getConf(session, ['formatAbout', 'hideUris'])
+
   const confPost = {
     ...conf,
     ...readConfObject(config, ['formatAbout', 'conf'], { conf }),
+    ...getConf(session, ['formatAbout', 'conf'], { conf }),
   }
 
   useEffect(() => {
@@ -102,7 +110,7 @@ export default function AboutDialog({
       </DialogTitle>
       <DialogContent className={classes.content}>
         <BaseCard title="Configuration">
-          {hideUris ? (
+          {!hideUris ? (
             <Button
               variant="contained"
               style={{ float: 'right' }}

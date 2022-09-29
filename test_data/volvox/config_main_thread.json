@@ -2,6 +2,10 @@
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
+    },
+    "formatAbout": {
+      "hideUris": true,
+      "conf": "jexl:{extraField:'important data'}"
     }
   },
   "assemblies": [

@@ -62,6 +62,37 @@ export default function JBrowseWeb(
             defaultValue: ['mRNA', 'transcript', 'gene', 'CDS'],
           },
         }),
+        formatDetails: ConfigurationSchema('FormatDetails', {
+          feature: {
+            type: 'frozen',
+            description: 'adds extra fields to the feature details',
+            defaultValue: {},
+            contextVariable: ['feature'],
+          },
+          subfeatures: {
+            type: 'frozen',
+            description: 'adds extra fields to the subfeatures of a feature',
+            defaultValue: {},
+            contextVariable: ['feature'],
+          },
+          depth: {
+            type: 'number',
+            defaultValue: 2,
+            description: 'depth to iterate on subfeatures',
+          },
+        }),
+        formatAbout: ConfigurationSchema('FormatAbout', {
+          conf: {
+            type: 'frozen',
+            description: 'formats configuration object in about dialog',
+            defaultValue: {},
+            contextVariable: ['conf'],
+          },
+          hideUris: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+        }),
         disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
