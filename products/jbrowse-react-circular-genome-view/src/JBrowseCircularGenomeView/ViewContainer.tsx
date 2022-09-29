@@ -18,7 +18,6 @@ import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 const AboutDialog = lazy(() => import('./AboutDialog'))
-
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
@@ -141,7 +140,11 @@ const ViewContainer = observer(
           </IconButton>
         </div>
         <Paper>{children}</Paper>
-        <AboutDialog open={dlgOpen} onClose={() => setDlgOpen(false)} />
+        {dlgOpen ? (
+          <Suspense fallback={<div />}>
+            <AboutDialog open onClose={() => setDlgOpen(false)} />
+          </Suspense>
+        ) : null}
       </Paper>
     )
   },
