@@ -1,17 +1,38 @@
 import React, { useMemo } from 'react'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { polarToCartesian } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { PropTypes as CommonPropTypes } from '@jbrowse/core/util/types/mst'
+import { observer } from 'mobx-react'
+import { polarToCartesian, Feature } from '@jbrowse/core/util'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { parseBreakend } from '@gmod/vcf'
-import PropTypes from 'prop-types'
 
-function bpToRadians(block, pos) {
+interface Region {
+  end: number
+  start: number
+  refName: string
+  elided?: false
+}
+
+interface ElidedRegion {
+  elided: true
+  regions: Region[]
+}
+
+type AnyRegion = Region | ElidedRegion
+
+interface Block {
+  flipped: boolean
+  bpPerRadian: number
+  startRadians: number
+  region: AnyRegion
+}
+
+function bpToRadians(block: Block, pos: number) {
   const blockStart = block.region.elided ? 0 : block.region.start
   const blockEnd = block.region.elided ? 0 : block.region.end
   const bpOffset = block.flipped ? blockEnd - pos : pos - blockStart
-  const radians = bpOffset / block.bpPerRadian + block.startRadians
-  return radians
+  return bpOffset / block.bpPerRadian + block.startRadians
 }
 
 const Chord = observer(function Chord({
@@ -22,6 +43,19 @@ const Chord = observer(function Chord({
   bezierRadius,
   selected,
   onClick,
+}: {
+  feature: Feature
+  blocksForRefs: { [key: string]: Block }
+  radius: number
+  config: AnyConfigurationModel
+  bezierRadius: number
+  selected: boolean
+  onClick: (
+    feature: Feature,
+    reg: AnyRegion,
+    endBlock: AnyRegion,
+    evt: any,
+  ) => void
 }) {
   // find the blocks that our start and end points belong to
   const startBlock = blocksForRefs[feature.get('refName')]
@@ -35,7 +69,7 @@ const Chord = observer(function Chord({
     svType = 'mate'
   }
   let endPosition
-  let endBlock
+  let endBlock: Block | undefined
   const alt = feature.get('ALT')?.[0]
   const bnd = alt && parseBreakend(alt)
   if (bnd) {
@@ -80,18 +114,24 @@ const Chord = observer(function Chord({
         data-testid={`chord-${feature.id()}`}
         d={['M', ...startXY, 'Q', ...controlXY, ...endXY].join(' ')}
         style={{ stroke: strokeColor }}
-        onClick={evt =>
-          onClick(feature, startBlock.region, endBlock.region, evt)
-        }
+        onClick={evt => {
+          if (endBlock && startBlock) {
+            onClick(feature, startBlock.region, endBlock.region, evt)
+          }
+        }}
         onMouseOver={evt => {
           if (!selected) {
+            // @ts-ignore
             evt.target.style.stroke = hoverStrokeColor
+            // @ts-ignore
             evt.target.style.strokeWidth = 3
           }
         }}
         onMouseOut={evt => {
           if (!selected) {
+            // @ts-ignore
             evt.target.style.stroke = strokeColor
+            // @ts-ignore
             evt.target.style.strokeWidth = 1
           }
         }}
@@ -102,7 +142,22 @@ const Chord = observer(function Chord({
   return null
 })
 
-function StructuralVariantChords(props) {
+function StructuralVariantChords(props: {
+  features: Map<string, Feature>
+  blocksForRefs: { [key: string]: Block }
+  radius: number
+  config: AnyConfigurationModel
+  displayModel: any
+  blockDefinitions: Block[]
+  bezierRadius: number
+  selected: boolean
+  onChordClick: (
+    feature: Feature,
+    reg: AnyRegion,
+    endBlock: AnyRegion,
+    evt: any,
+  ) => void
+}) {
   const {
     features,
     config,
@@ -111,12 +166,11 @@ function StructuralVariantChords(props) {
     radius,
     bezierRadius,
     displayModel: { selectedFeatureId },
-
     onChordClick,
   } = props
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
-    const blocksForRefs = {}
+    const blocksForRefs = {} as { [key: string]: Block }
     blockDefinitions.forEach(block => {
       const regions = block.region.elided
         ? block.region.regions
@@ -136,7 +190,6 @@ function StructuralVariantChords(props) {
         key={id}
         feature={feature}
         config={config}
-        displayModel={displayModel}
         radius={radius}
         bezierRadius={bezierRadius}
         blocksForRefs={blocksForRefsMemo}
@@ -162,24 +215,6 @@ function StructuralVariantChords(props) {
       {chords}
     </g>
   )
-}
-
-StructuralVariantChords.propTypes = {
-  features: PropTypes.instanceOf(Map).isRequired,
-  config: CommonPropTypes.ConfigSchema.isRequired,
-  displayModel: MobxPropTypes.objectOrObservableObject,
-  blockDefinitions: PropTypes.arrayOf(MobxPropTypes.objectOrObservableObject)
-    .isRequired,
-  radius: PropTypes.number.isRequired,
-  bezierRadius: PropTypes.number.isRequired,
-  selectedFeatureId: PropTypes.string,
-  onChordClick: PropTypes.oneOfType([PropTypes.func, PropTypes.string]),
-}
-
-StructuralVariantChords.defaultProps = {
-  displayModel: undefined,
-  selectedFeatureId: '',
-  onChordClick: undefined,
 }
 
 export default observer(StructuralVariantChords)

@@ -1,8 +1,10 @@
 import ChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import PluginManager from '@jbrowse/core/PluginManager'
+
 import ReactComponent from './ReactComponent'
 
-const ChordRendererConfigF = pluginManager => {
+const ChordRendererConfigF = (pluginManager: PluginManager) => {
   const configSchema = ConfigurationSchema(
     'StructuralVariantChordRenderer',
     {

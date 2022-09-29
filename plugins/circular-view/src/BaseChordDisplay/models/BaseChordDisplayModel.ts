@@ -1,3 +1,4 @@
+import React from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import CircularChordRendererType from '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType'
@@ -16,8 +17,7 @@ import {
 } from '@jbrowse/core/util/tracks'
 import { Region } from '@jbrowse/core/util/types'
 import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
-import React from 'react'
-import renderReactionFactory from './renderReaction'
+import { renderReactionData, renderReactionEffect } from './renderReaction'
 import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 export const BaseChordDisplayModel = types
@@ -185,54 +185,51 @@ export const BaseChordDisplayModel = types
       self.refNameMap = refNameMap
     },
   }))
-  .actions(self => {
-    const { pluginManager } = getEnv(self)
-    const { renderReactionData, renderReactionEffect } =
-      pluginManager.jbrequire(renderReactionFactory)
-    return {
-      afterAttach() {
-        makeAbortableReaction(
-          self,
-          renderReactionData,
-          renderReactionEffect,
-          {
-            name: `${self.type} ${self.id} rendering`,
-            // delay: self.renderDelay || 300,
-            fireImmediately: true,
-          },
-          self.renderStarted,
-          self.renderSuccess,
-          self.renderError,
-        )
-        makeAbortableReaction(
-          self,
-          () => ({
-            assemblyNames: getTrackAssemblyNames(self.parentTrack) as string[],
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            adapter: getConf(getParent<any>(self, 2), 'adapter'),
-            assemblyManager: getSession(self).assemblyManager,
-          }),
+  .actions(self => ({
+    afterAttach() {
+      makeAbortableReaction(
+        self,
+        renderReactionData,
+
+        // @ts-ignore
+        renderReactionEffect,
+        {
+          name: `${self.type} ${self.id} rendering`,
+          // delay: self.renderDelay || 300,
+          fireImmediately: true,
+        },
+        self.renderStarted,
+        self.renderSuccess,
+        self.renderError,
+      )
+      makeAbortableReaction(
+        self,
+        () => ({
+          assemblyNames: getTrackAssemblyNames(self.parentTrack) as string[],
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          async ({ assemblyNames, adapter, assemblyManager }: any, signal) => {
-            return assemblyManager.getRefNameMapForAdapter(
-              adapter,
-              assemblyNames[0],
-              { signal, sessionId: getRpcSessionId(self) },
-            )
-          },
-          {
-            name: `${self.type} ${self.id} getting refNames`,
-            fireImmediately: true,
-          },
-          () => {},
-          refNameMap => {
-            self.setRefNameMap(refNameMap)
-          },
-          error => {
-            console.error(error)
-            self.setError(error)
-          },
-        )
-      },
-    }
-  })
+          adapter: getConf(getParent<any>(self, 2), 'adapter'),
+          assemblyManager: getSession(self).assemblyManager,
+        }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        async ({ assemblyNames, adapter, assemblyManager }: any, signal) => {
+          return assemblyManager.getRefNameMapForAdapter(
+            adapter,
+            assemblyNames[0],
+            { signal, sessionId: getRpcSessionId(self) },
+          )
+        },
+        {
+          name: `${self.type} ${self.id} getting refNames`,
+          fireImmediately: true,
+        },
+        () => {},
+        refNameMap => {
+          self.setRefNameMap(refNameMap)
+        },
+        error => {
+          console.error(error)
+          self.setError(error)
+        },
+      )
+    },
+  }))
