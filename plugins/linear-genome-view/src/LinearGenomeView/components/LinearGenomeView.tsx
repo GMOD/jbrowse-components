@@ -101,9 +101,10 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
         ) : (
           tracks.map(track => (
             <ErrorBoundary
+              key={track.id}
               FallbackComponent={({ error }) => <ErrorMessage error={error} />}
             >
-              <TrackContainer key={track.id} model={model} track={track} />
+              <TrackContainer model={model} track={track} />
             </ErrorBoundary>
           ))
         )}
