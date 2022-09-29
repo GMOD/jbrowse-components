@@ -11,9 +11,9 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { isAbortException } from '@jbrowse/core/util'
+import { AbstractSessionModel, isAbortException } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
+import { AssemblySelector, SanitizedHTML } from '@jbrowse/core/ui'
 
 // locals
 import HubDetails from './HubDetails'
@@ -58,16 +58,19 @@ interface HubAssembly {
 
 function TrackHubRegistrySelect({
   model: trackHubConfig,
+  session,
 }: {
   model: AnyConfigurationModel
+  session: AbstractSessionModel
 }) {
   const [error, setError] = useState<unknown>()
   const [assemblies, setAssemblies] = useState<Record<string, HubAssembly[]>>()
   const [selectedSpecies, setSelectedSpecies] = useState('')
-  const [selectedAssembly, setSelectedAssembly] = useState('')
+  const [selectedTrackhubAssembly, setSelectedTrackhubAssembly] = useState('')
   const [hubs, setHubs] = useState(new Map())
   const [allHubsRetrieved, setAllHubsRetrieved] = useState(false)
   const [selectedHub, setSelectedHub] = useState('')
+  const [selectedLocalAssembly, setSelectedLocalAssembly] = useState<string>()
   const { classes } = useStyles()
 
   useEffect(() => {
@@ -114,7 +117,10 @@ function TrackHubRegistrySelect({
         const response = await post_with_params(
           'https://www.trackhubregistry.org/api/search',
           { page, entries_per_page: entriesPerPage },
-          { body: JSON.stringify({ assembly: selectedAssembly }), signal },
+          {
+            body: JSON.stringify({ assembly: selectedTrackhubAssembly }),
+            signal,
+          },
         )
         if (response) {
           for (const item of response.items) {
@@ -148,7 +154,7 @@ function TrackHubRegistrySelect({
 
     ;(async () => {
       if (!error) {
-        if (selectedAssembly && !hubs.size) {
+        if (selectedTrackhubAssembly && !hubs.size) {
           getHubs(true)
         } else if (hubs.size && !allHubsRetrieved) {
           getHubs()
@@ -159,7 +165,7 @@ function TrackHubRegistrySelect({
     return () => {
       controller.abort()
     }
-  }, [selectedAssembly, error, hubs, allHubsRetrieved])
+  }, [selectedTrackhubAssembly, error, hubs, allHubsRetrieved])
 
   const renderItems = [
     <Typography key="heading" variant="h6">
@@ -192,7 +198,7 @@ function TrackHubRegistrySelect({
       selectedItem={selectedSpecies}
       handleSelect={event => {
         setSelectedSpecies(event.target.value)
-        setSelectedAssembly('')
+        setSelectedTrackhubAssembly('')
         setHubs(new Map())
         setSelectedHub('')
         setAllHubsRetrieved(false)
@@ -203,6 +209,7 @@ function TrackHubRegistrySelect({
   )
 
   if (selectedSpecies) {
+    // trackhubregistry has this nonsense hg19 with alias hg38 entry, filter it out
     const ret = assemblies[selectedSpecies].filter(
       s => !(s.name === 'GRCh37' && s.synonyms[0] === 'hg38'),
     )
@@ -210,9 +217,9 @@ function TrackHubRegistrySelect({
       <SelectBox
         key="assemblySelect"
         selectList={ret}
-        selectedItem={selectedAssembly}
+        selectedItem={selectedTrackhubAssembly}
         handleSelect={event => {
-          setSelectedAssembly(event.target.value)
+          setSelectedTrackhubAssembly(event.target.value)
           setHubs(new Map())
           setSelectedHub('')
           setAllHubsRetrieved(false)
@@ -223,9 +230,19 @@ function TrackHubRegistrySelect({
     )
   }
 
-  if (selectedAssembly) {
+  if (selectedTrackhubAssembly) {
     renderItems.push(
       <div key="hubSelect">
+        <Typography>
+          Select an assembly from our local tracklist if it doesn't match the
+          assembly name on the remote trackhub
+        </Typography>
+        <AssemblySelector
+          session={session}
+          onChange={val => setSelectedLocalAssembly(val)}
+          selected={selectedLocalAssembly || selectedTrackhubAssembly}
+        />
+        <br />
         <FormControl>
           <FormLabel>Hubs:</FormLabel>
           <div className={classes.hubList}>
@@ -237,22 +254,21 @@ function TrackHubRegistrySelect({
 
                 // set values on a trackhub registry configSchema
                 trackHubConfig.target.name.set(hubs.get(newHub).hub.shortLabel)
-                trackHubConfig.target.assemblyNames.set([selectedAssembly])
+                trackHubConfig.target.assemblyNames.set([
+                  selectedTrackhubAssembly,
+                ])
                 trackHubConfig.target.trackDbId.set(newHub)
               }}
             >
               {Array.from(hubs.values())
                 .filter(
-                  hub =>
-                    hub.assembly.name === selectedAssembly ||
-                    hub.assembly.synonyms.includes(selectedAssembly),
+                  ({ assembly }) =>
+                    assembly.name === selectedTrackhubAssembly ||
+                    assembly.synonyms.includes(selectedTrackhubAssembly),
                 )
-                .map(hub => {
-                  const {
-                    error,
-                    id,
-                    hub: { shortLabel, longLabel },
-                  } = hub
+                .map(h => {
+                  const { error, id, hub } = h
+                  const { shortLabel, longLabel } = hub
                   return (
                     <Wire key={id} value={id}>
                       {formControlProps => (
