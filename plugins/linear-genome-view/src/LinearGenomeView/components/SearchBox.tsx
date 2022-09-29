@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { useTheme, alpha } from '@mui/material/styles'
+import { useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getSession } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -51,13 +51,11 @@ function SearchBox({
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(option: BaseResult) {
     try {
-      // @ts-ignore
       if (option.hasLocation()) {
         navToOption(option)
       } else {
         const input = option.getLabel()
         const [ref, rest] = splitLast(input, ':')
-        // @ts-ignore
         const allRefs = assembly?.allRefNamesWithLowerCase || []
         if (
           allRefs.includes(input) ||

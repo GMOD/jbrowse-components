@@ -32,7 +32,7 @@ export default class ViewType extends PluggableElementBase {
     super(stuff)
     this.ReactComponent = stuff.ReactComponent
     this.stateModel = stuff.stateModel
-    this.extendedName = stuff.extendedName ? stuff.extendedName : undefined
+    this.extendedName = stuff.extendedName
     if (!this.ReactComponent) {
       throw new Error(`no ReactComponent defined for view ${this.name}`)
     }
