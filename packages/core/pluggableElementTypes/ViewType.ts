@@ -18,9 +18,12 @@ export default class ViewType extends PluggableElementBase {
 
   displayTypes: DisplayType[] = []
 
-  // allows for views that are 'extended' from other views to be added as a new view type in the plugin manager
-  // without this, the plugin manager cannot distinguish whether relevant displays have been added to the view type's list
-  // and thus will not display tracks that should be accessible within a view that has been extended from another
+  // extendedName can be used for when you extend a given view type, and want
+  // to register all of that view types displays to yourself e.g. you create a
+  // linear-genome-view subtype, and want all the tracks that are compatible
+  // display types for the linear-genome-view to be compatible with your type
+  // also (without this, display types are only registered to a single view
+  // type)
   extendedName?: string
 
   constructor(stuff: {
