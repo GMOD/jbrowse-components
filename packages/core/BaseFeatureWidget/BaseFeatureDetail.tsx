@@ -312,6 +312,7 @@ interface AttributeProps {
   formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
+  hideUris?: boolean
 }
 
 export function UriLink({
@@ -322,6 +323,7 @@ export function UriLink({
   const href = getUriLink(value)
   return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
 }
+
 const DataGridDetails = ({
   value,
   prefix,
@@ -454,6 +456,7 @@ export function Attributes(props: AttributeProps) {
     omit = [],
     descriptions,
     formatter = val => val,
+    hideUris,
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
@@ -494,12 +497,14 @@ export function Attributes(props: AttributeProps) {
             )
           } else if (isObject(value)) {
             return isUriLocation(value) ? (
-              <UriAttribute
-                key={key}
-                name={key}
-                prefix={prefix}
-                value={value}
-              />
+              hideUris ? null : (
+                <UriAttribute
+                  key={key}
+                  name={key}
+                  prefix={prefix}
+                  value={value}
+                />
+              )
             ) : (
               <Attributes
                 {...props}

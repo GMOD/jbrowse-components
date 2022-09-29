@@ -24,6 +24,19 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
         description: 'anything to add about this track',
         defaultValue: {},
       },
+
+      formatAbout: ConfigurationSchema('FormatAbout', {
+        conf: {
+          type: 'frozen',
+          description: 'formats configuration in about dialog',
+          defaultValue: {},
+          contextVariable: ['conf'],
+        },
+        hideUris: {
+          type: 'boolean',
+          defaultValue: false,
+        },
+      }),
     },
     {
       preProcessSnapshot: s => {

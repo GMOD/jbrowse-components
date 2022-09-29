@@ -13,6 +13,10 @@
         "metadata": {
           "date": "2020-08-20"
         },
+        "formatAbout": {
+          "hideUris": true,
+          "conf": "jexl:{extraField:'important data'}"
+        },
         "adapter": {
           "type": "TwoBitAdapter",
           "twoBitLocation": {

@@ -43,6 +43,11 @@ export default function AboutDialog({
   const session = getSession(config)
   const { rpcManager } = session
   const conf = readConfObject(config)
+  const hideUris = readConfObject(config, ['formatAbout', 'hideUris'])
+  const confPost = {
+    ...conf,
+    ...readConfObject(config, ['formatAbout', 'conf'], { conf }),
+  }
 
   useEffect(() => {
     const aborter = new AbortController()
@@ -97,20 +102,23 @@ export default function AboutDialog({
       </DialogTitle>
       <DialogContent className={classes.content}>
         <BaseCard title="Configuration">
-          <Button
-            variant="contained"
-            style={{ float: 'right' }}
-            onClick={() => {
-              copy(JSON.stringify(conf, null, 2))
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1000)
-            }}
-          >
-            {copied ? 'Copied to clipboard!' : 'Copy config'}
-          </Button>
+          {hideUris ? (
+            <Button
+              variant="contained"
+              style={{ float: 'right' }}
+              onClick={() => {
+                copy(JSON.stringify(confPost, null, 2))
+                setCopied(true)
+                setTimeout(() => setCopied(false), 1000)
+              }}
+            >
+              {copied ? 'Copied to clipboard!' : 'Copy config'}
+            </Button>
+          ) : null}
           <Attributes
-            attributes={conf}
-            omit={['displays', 'baseUri', 'refNames']}
+            attributes={confPost}
+            omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+            hideUris={hideUris}
           />
         </BaseCard>
         {info !== null ? (
