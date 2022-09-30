@@ -39,8 +39,8 @@ export default function (/* config?: any*/): JexlNonBuildable {
   j.addFunction('parseInt', Number.parseInt)
   j.addFunction('parseFloat', Number.parseFloat)
 
-  //useful for dynamically calculating colors
-  j.addFunction('hex', (num1) => {
+  // useful for dynamically calculating colors
+  j.addFunction('hex', num1 => {
     return num1.toString(16);
   })
 
