@@ -90,7 +90,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="tss-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -117,7 +117,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -137,7 +137,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -651,7 +651,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="tss-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -678,7 +678,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
@@ -698,7 +698,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
             tabindex="0"
             type="button"
           >
