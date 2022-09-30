@@ -371,7 +371,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
             Gene w/ {upDownBp}bp up+down stream
           </MenuItem>
           <MenuItem value="gene_updownstream_collapsed_intron">
-            Gene w/ {upDownBp}bp up+down stream w/ 10bp intron
+            Gene w/ {upDownBp}bp up+down stream w/ {intronBp}bp intron
           </MenuItem>
           <MenuItem value="cdna">cDNA</MenuItem>
         </Select>
