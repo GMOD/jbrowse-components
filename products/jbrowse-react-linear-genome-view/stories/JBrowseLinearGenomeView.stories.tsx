@@ -481,11 +481,14 @@ export const WithInlinePlugins = () => {
 export const WithExternalPlugins = () => {
   // usage with buildtime plugins
   // this plugins array is then passed to the createViewState constructor
+  //
   // import UCSCPlugin from 'jbrowse-plugin-ucsc'
   // const plugins = [UCSCPlugin]
-
-  // usage with runtime plugins
-  // this plugins array is then passed to the createViewState constructor
+  //
+  // note: the loadPlugins function is from
+  // import {loadPlugins} from '@jbrowse/react-linear-genome-view'
+  //
+  // we manually call loadPlugins, and pass the result to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     async function getPlugins() {
