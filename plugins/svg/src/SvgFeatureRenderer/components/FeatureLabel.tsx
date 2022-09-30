@@ -83,7 +83,12 @@ export default observer(
       viewLeft + featureWidthBp < fend
     ) {
       x = params.offsetPx
-    } else if (fstart < viewLeft && viewLeft + featureWidthBp < fend) {
+    } else if (
+      fstart < viewLeft &&
+      viewLeft + featureWidthBp < fend &&
+      viewLeft + featureWidthBp > rstart &&
+      viewLeft + featureWidthBp < rend
+    ) {
       x = params.offsetPx1
     }
 
