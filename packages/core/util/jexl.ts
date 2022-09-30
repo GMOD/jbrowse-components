@@ -41,7 +41,7 @@ export default function (/* config?: any*/): JexlNonBuildable {
 
   // useful for dynamically calculating colors
   j.addFunction('hex', num1 => {
-    return num1.toString(16);
+    return num1.toString(16)
   })
 
   // string
