@@ -1,7 +1,18 @@
 import React from 'react'
 import BlockMsg from '../components/BlockMsg'
 
-function TooLargeMessage({ model }: { model: any }) {
+type Stats = unknown
+
+function TooLargeMessage({
+  model,
+}: {
+  model: {
+    regionTooLargeReason: string
+    estimatedRegionStats: Stats
+    updateStatsLimit: (s: Stats) => void
+    reload: () => void
+  }
+}) {
   const { regionTooLargeReason } = model
   return (
     <BlockMsg
