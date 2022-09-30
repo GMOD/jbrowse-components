@@ -6,7 +6,7 @@ title: Other options
 :::danger Out of date
 
 Please see the
-[updated version of this tutorial](../embed_linear_genome_view/01_introduction).
+[updated version of this tutorial](../../embed_linear_genome_view/01_introduction).
 
 :::
 
@@ -28,7 +28,7 @@ example, if you wanted to have the view open to chromosome 1 from position
 
 JBrowse 2 allows you to provide plugins to add new features or modify behavior.
 We won't get into them today, but you can read more about creating a plugin
-[here](developer_guide#creating-a-new-plugin).
+[here](../../devguide_pluggable_elements/).
 
 ## defaultSession
 

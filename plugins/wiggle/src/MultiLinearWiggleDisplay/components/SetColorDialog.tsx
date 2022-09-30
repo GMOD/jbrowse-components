@@ -61,7 +61,7 @@ export default function SetColorDialog({
   handleClose,
 }: {
   model: {
-    sources: Source[]
+    sources?: Source[]
     setLayout: (s: Source[]) => void
     clearLayout: () => void
   }
@@ -70,11 +70,7 @@ export default function SetColorDialog({
   const { classes } = useStyles()
   const { sources } = model
   const [currLayout, setCurrLayout] = useState(clone(sources || []))
-  const [showTipsTmp, setShowTips] = useLocalStorage(
-    'multiwiggle-showTips',
-    'true',
-  )
-  const showTips = showTipsTmp === 'true'
+  const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', true)
   return (
     <Dialog
       PaperComponent={PaperComponent}
@@ -93,7 +89,7 @@ export default function SetColorDialog({
         <Button
           variant="contained"
           style={{ float: 'right' }}
-          onClick={() => setShowTips(showTips ? 'false' : 'true')}
+          onClick={() => setShowTips(!showTips)}
         >
           {showTips ? 'Hide tips' : 'Show tips'}
         </Button>
@@ -136,7 +132,7 @@ export default function SetColorDialog({
           color="inherit"
           onClick={() => {
             model.clearLayout()
-            setCurrLayout(model.sources)
+            setCurrLayout(model.sources || [])
           }}
         >
           Clear custom settings
@@ -146,7 +142,7 @@ export default function SetColorDialog({
           color="secondary"
           onClick={() => {
             handleClose()
-            setCurrLayout([...model.sources])
+            setCurrLayout([...(model.sources || [])])
           }}
         >
           Cancel

@@ -118,7 +118,7 @@ Interaction data is often displayed using arcs to connect enhancer to gene. We
 will create a custom renderer to illustrate this
 
 But what is a renderer? It is code that performs drawing. See the renderer docs
-here for more details [on creating renderers](../developer_guide#creating-custom-renderers)
+here for more details [on creating renderers](../../../devguide_pluggable_elements/#creating-custom-renderers)
 
 Let's clone a working arc renderer plugin
 

@@ -93,13 +93,13 @@ const stateModelFactory = (
           self.statsReady = true
         }
       },
-      setColor(color: string) {
+      setColor(color?: string) {
         self.color = color
       },
-      setPosColor(color: string) {
+      setPosColor(color?: string) {
         self.posColor = color
       },
-      setNegColor(color: string) {
+      setNegColor(color?: string) {
         self.negColor = color
       },
 

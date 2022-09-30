@@ -435,28 +435,6 @@
       }
     }
   ],
-  "connections": [
-    {
-      "type": "JBrowse1Connection",
-      "connectionId": "COSMIC_connection_grch37",
-      "name": "COSMIC (GRCh37)",
-      "assemblyNames": ["hg19"],
-      "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch37/v90/cosmic",
-        "locationType": "UriLocation"
-      }
-    },
-    {
-      "type": "JBrowse1Connection",
-      "connectionId": "COSMIC_connection_grch38",
-      "name": "COSMIC (GRCh38)",
-      "assemblyNames": ["hg38"],
-      "dataDirLocation": {
-        "uri": "https://cancer.sanger.ac.uk/jbrowse/data/json/grch38/v90/cosmic",
-        "locationType": "UriLocation"
-      }
-    }
-  ],
   "defaultSession": {
     "name": "New Session"
   },

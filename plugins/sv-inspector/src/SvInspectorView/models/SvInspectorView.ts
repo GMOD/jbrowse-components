@@ -9,7 +9,7 @@ import {
 
 import { autorun, reaction } from 'mobx'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { types, getParent, addDisposer } from 'mobx-state-tree'
+import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -53,7 +53,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
   const CircularModel = CircularViewType.stateModel as CircularViewStateModel
 
   const minHeight = 400
-  const defaultHeight = 500
+  const defaultHeight = 550
   const headerHeight = 52
   const circularViewOptionsBarHeight = 52
   const model = types
@@ -288,9 +288,8 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
           self,
           reaction(
             () => ({
-              generatedTrackConf:
-                self && self.featuresCircularTrackConfiguration,
-              assemblyName: self && self.assemblyName,
+              generatedTrackConf: self?.featuresCircularTrackConfiguration,
+              assemblyName: self?.assemblyName,
             }),
             data => {
               if (!data) {
@@ -298,11 +297,9 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
               }
               const { assemblyName, generatedTrackConf } = data
               // hide any visible tracks
-              if (self.circularView.tracks.length) {
-                self.circularView.tracks.forEach(track => {
-                  self.circularView.hideTrack(track.configuration.trackId)
-                })
-              }
+              self.circularView.tracks.forEach(track => {
+                self.circularView.hideTrack(track.configuration.trackId)
+              })
 
               // put our track in as the only track
               if (assemblyName && generatedTrackConf) {
@@ -360,9 +357,12 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
       },
     }))
 
-  const stateModel = types.compose(BaseViewModel, model)
-
-  return { stateModel }
+  return { stateModel: types.compose(BaseViewModel, model) }
 }
+
+export type SvInspectorViewStateModel = ReturnType<
+  typeof SvInspectorViewF
+>['stateModel']
+export type SvInspectorViewModel = Instance<SvInspectorViewStateModel>
 
 export default SvInspectorViewF

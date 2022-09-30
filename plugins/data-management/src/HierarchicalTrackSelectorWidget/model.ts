@@ -1,4 +1,10 @@
-import { types, getParent, getEnv, Instance } from 'mobx-state-tree'
+import {
+  types,
+  getParent,
+  getEnv,
+  getSnapshot,
+  Instance,
+} from 'mobx-state-tree'
 import {
   getConf,
   readConfObject,
@@ -55,12 +61,9 @@ function filterTracks(
   if (!assembly) {
     return []
   }
+  const { allAliases } = assembly
   return tracks
-    .filter(c => {
-      const trackConfAssemblies = readConfObject(c, 'assemblyNames')
-      const { allAliases } = assembly
-      return hasAnyOverlap(allAliases, trackConfAssemblies)
-    })
+    .filter(c => hasAnyOverlap(allAliases, readConfObject(c, 'assemblyNames')))
     .filter(c => {
       const { displayTypes } = pluginManager.getViewType(self.view.type)
       const compatDisplays = displayTypes.map((d: { name: string }) => d.name)
@@ -226,24 +229,26 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         )
 
         const session = getSession(self)
-        const { connections, connectionInstances } = session
+        const { connectionInstances } = session
+
+        const { assemblyManager } = getSession(self)
+        const assembly = assemblyManager.get(assemblyName)
         const conns =
-          connectionInstances
-            ?.filter(c => {
-              const names = getConf(c, 'assemblyNames')
-              return names.length === 0 ? true : names.includes(assemblyName)
-            })
-            .map((conn, index) => {
-              const c = connections[index]
-              return {
-                id: c.connectionId,
-                name: readConfObject(c, 'name'),
-                children: this.connectionHierarchy(assemblyName, conn),
+          (assembly &&
+            connectionInstances
+              ?.filter(c =>
+                hasAnyOverlap(assembly.allAliases, getConf(c, 'assemblyNames')),
+              )
+              .map(c => ({
+                // @ts-ignore
+                id: getSnapshot(c).configuration,
+                name: getConf(c, 'name'),
+                children: this.connectionHierarchy(assemblyName, c),
                 state: {
                   expanded: true,
                 },
-              }
-            }) || []
+              }))) ||
+          []
 
         return {
           name: 'Root',

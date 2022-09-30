@@ -6,7 +6,7 @@ toplevel: true
 
 import Figure from '../figure'
 
-The following will provide a short tutorial on how to use some of the [many plugins available](/plugins) for JBrowse 2.
+The following will provide a short tutorial on how to use some of the [many plugins available](/plugin_store) for JBrowse 2.
 
 Those plugins featured here are a part of the cancer-related database plugins on the [cancer portal](/cancer).
 

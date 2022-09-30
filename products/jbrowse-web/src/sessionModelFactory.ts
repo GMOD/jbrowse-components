@@ -57,7 +57,7 @@ export declare interface ReactProps {
 
 export default function sessionModelFactory(
   pluginManager: PluginManager,
-  assemblyConfigSchemasType = types.frozen(), // if not using sessionAssemblies
+  assemblyConfigSchemasType = types.frozen(),
 ) {
   const minDrawerWidth = 128
   const sessionModel = types
@@ -88,6 +88,7 @@ export default function sessionModelFactory(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      temporaryAssemblies: types.array(assemblyConfigSchemasType),
       sessionPlugins: types.array(types.frozen()),
       minimized: types.optional(types.boolean, false),
 
@@ -142,7 +143,11 @@ export default function sessionModelFactory(
         return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
-        return getParent<any>(self).jbrowse.assemblyNames
+        const { assemblyNames } = getParent<any>(self).jbrowse
+        const sessionAssemblyNames = self.sessionAssemblies.map(assembly =>
+          readConfObject(assembly, 'name'),
+        )
+        return [...assemblyNames, ...sessionAssemblyNames]
       },
       get tracks() {
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
@@ -247,6 +252,19 @@ export default function sessionModelFactory(
         const length = self.sessionAssemblies.push(assemblyConfig)
         return self.sessionAssemblies[length - 1]
       },
+
+      // used for read vs ref type assemblies.
+      addTemporaryAssembly(assemblyConfig: AnyConfigurationModel) {
+        const asm = self.sessionAssemblies.find(
+          f => f.name === assemblyConfig.name,
+        )
+        if (asm) {
+          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          return asm
+        }
+        const length = self.temporaryAssemblies.push(assemblyConfig)
+        return self.temporaryAssemblies[length - 1]
+      },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
@@ -260,6 +278,14 @@ export default function sessionModelFactory(
         )
         if (index !== -1) {
           self.sessionAssemblies.splice(index, 1)
+        }
+      },
+      removeTemporaryAssembly(assemblyName: string) {
+        const index = self.temporaryAssemblies.findIndex(
+          asm => asm.name === assemblyName,
+        )
+        if (index !== -1) {
+          self.temporaryAssemblies.splice(index, 1)
         }
       },
       removeSessionPlugin(pluginDefinition: PluginDefinition) {

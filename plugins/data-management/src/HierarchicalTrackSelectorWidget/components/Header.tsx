@@ -74,7 +74,6 @@ function HierarchicalTrackSelectorHeader({
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const { assemblyNames } = model
-  const assemblyName = assemblyNames[assemblyIdx]
 
   function breakConnection(
     connectionConf: AnyConfigurationModel,
@@ -159,6 +158,8 @@ function HierarchicalTrackSelectorHeader({
 
   const items = getEnv(model).pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
+    [],
+    { session },
   ) as MenuItem[]
   return (
     <div
@@ -276,7 +277,6 @@ function HierarchicalTrackSelectorHeader({
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}
-            assemblyName={assemblyName}
           />
         ) : null}
       </Suspense>

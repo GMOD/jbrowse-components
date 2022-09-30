@@ -207,13 +207,15 @@ call or add to.
 The API is
 
 ```js
-pluginManager.evaluateExtensionPoint(extensionPointName, args)
+// extra props are optional, can pass an extra context object your extension point receives
+pluginManager.evaluateExtensionPoint(extensionPointName, args, props)
 ```
 
 There is also an async method:
 
 ```js
-pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args)
+// extra props are optional, can pass an extra context object your extension point receives
+pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args, props)
 ```
 
 Users can additionally add to extension points, so that when they are evaluated,
@@ -223,44 +225,152 @@ it runs a chain of callbacks that are registered to that extension point:
 pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
 ```
 
+The newArgs returned by your callback are passed on as the args to the next in
+the chain.
+
 Here are the extension points in the core codebase:
 
 ### Core-extendPluggableElement
 
-(sync) used to add extra functionality to existing state tree models, for
-example, extra right-click context menus
+`args`:
+
+- `pluggableElement:PluggableElement` - this
+
+type: synchronous
+
+used to add extra functionality to e.g state tree models, for example,
+extra right-click context menus. your callback will receive every pluggable
+element registered to the system
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
 
 ### Core-guessAdapterForLocation
 
-(sync) used to infer an adapter type given a location type from the "Add track"
-workflow
+type: synchronous
+
+used to infer an adapter type given a location type from the "Add track"
+workflow. you will receive a callback asking if you can provide an adapter
+config given a location object
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/gff3/src/index.ts#L27-L53
 
 ### Core-guessTrackTypeForLocation
 
-(sync) used to infer a track type given a location type from the "Add track
+type: synchronous
+
+used to infer a track type given a location type from the "Add track
 workflow"
+
+example https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/alignments/src/index.ts#L108-L118
+
+### Core-extendSession
+
+type: synchronous
+
+used to extend the session model itself with new features
+
+- `session: AbstractSessionModel` - instance of the session model to extend
 
 ### TrackSelector-multiTrackMenuItems
 
-(sync) used to add new menu items to the "shopping cart" in the header of the
+type: synchronous
+
+used to add new menu items to the "shopping cart" in the header of the
 hierarchical track menu when tracks are added to the selection
+
+example https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
 
 ### LaunchView-LinearGenomeView
 
-(async) launches a linear genome view given parameters
+type: async
 
-- session:AbstractSessionModel - instance of the session which you can call
+launches a linear genome view given parameters. it is not common to
+extend this extension point, but you can use it as an example to create a
+LaunchView type for your own view
+
+- `session: AbstractSessionModel` - instance of the session which you can call
   actions on
-- assembly:string - assembly name
-- loc:string - a locstring
-- tracks:string[] - array of trackIds
+- `assembly: string` - assembly name
+- `loc: string` - a locstring
+- `tracks: string[]` - array of trackIds
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-genome-view/src/index.ts#L131-L189
 
 ### LaunchView-CircularView
 
-- session:AbstractSessionModel - instance of the session which you can call
+type: async
+
+similar to LaunchView-LinearGenomeView, this is not common to extend, but you
+can use it as an example to create a LaunchView type for your own view
+
+- `session: AbstractSessionModel` - instance of the session which you can call
   actions on
-- assembly:string - assembly name
-- tracks:string[] - array of trackIds
+- `assembly: string` - assembly name
+- `tracks: string[]` - array of trackIds
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/circular-view/src/index.ts#L30-L66
+
+### LaunchView-SvInspectorView
+
+type: async
+
+launches a sv inspector with given parameters. it is not common to
+extend this extension point, but you can use it as an example to create a
+LaunchView type for your own view
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+  actions on
+- `assembly: string` - assembly name
+- `uri: string` - a url to load
+- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE, etc)
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/sv-inspector/src/index.ts#L21-L61
+
+### LaunchView-SpreadsheetView
+
+type: async
+
+launches a sv inspector with given parameters. it is not common to
+extend this extension point, but you can use it as an example to create a
+LaunchView type for your own view
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+  actions on
+- `assembly: string` - assembly name
+- `uri: string` - a url to load
+- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE, etc)
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/spreadsheet-view/src/index.ts#L26-L59
+
+### LaunchView-DotplotView
+
+type: async
+
+launches a dotplot with given parameters. it is not common to
+extend this extension point, but you can use it as an example to create a
+LaunchView type for your own view
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+  actions on
+- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params for vertical and horizontal
+- `tracks: string[]` - trackIds to turn on
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/LaunchDotplotView.ts#L7-L46
+
+### LaunchView-DotplotView
+
+type: async
+
+launches a linear synteny view with given parameters. it is not common to
+extend this extension point, but you can use it as an example to create a
+LaunchView type for your own view
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+  actions on
+- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params for vertical and horizontal
+- `tracks: string[]` - trackIds to turn on
+
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
 
 ### Extension point footnote
 

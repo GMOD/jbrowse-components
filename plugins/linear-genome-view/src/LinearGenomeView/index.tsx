@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import React, { lazy } from 'react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { Region } from '@jbrowse/core/util/types'
@@ -15,6 +15,7 @@ import {
   measureText,
   parseLocString,
   springAnimate,
+  isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -53,6 +54,10 @@ import { renderToSvg } from './components/LinearGenomeViewSvg'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
+import MiniControls from './components/MiniControls'
+import Header from './components/Header'
+import ZoomControls from './components/ZoomControls'
+import LinearGenomeView from './components/LinearGenomeView'
 
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
@@ -192,6 +197,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      MiniControlsComponent(): React.FC<any> {
+        return MiniControls
+      },
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      HeaderComponent(): React.FC<any> {
+        return Header
+      },
+
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         const { assemblyNames } = self
@@ -636,6 +651,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       setScaleFactor(factor: number) {
         self.scaleFactor = factor
       },
+      // this "clears the view" and makes the view return to the import form
+      clearView() {
+        this.setDisplayedRegions([])
+        self.tracks.clear()
+        // it is necessary to run these after setting displayed regions empty
+        // or else model.offsetPx gets set to Infinity and breaks
+        // mobx-state-tree snapshot
+        self.scrollTo(0)
+        self.zoomTo(10)
+      },
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
     }))
     .actions(self => {
       let cancelLastAnimation = () => {}
@@ -707,7 +738,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       menuItems(): MenuItem[] {
         const { canShowCytobands, showCytobands } = self
-
+        const session = getSession(self)
         const menuItems: MenuItem[] = [
           {
             label: 'Return to import form',
@@ -719,15 +750,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             icon: FolderOpenIcon,
           },
-          {
-            label: 'Sequence search',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                SequenceSearchDialog,
-                { model: self, handleClose },
-              ])
-            },
-          },
+          ...(isSessionWithAddTracks(session)
+            ? [
+                {
+                  label: 'Sequence search',
+                  onClick: () => {
+                    getSession(self).queueDialog(handleClose => [
+                      SequenceSearchDialog,
+                      { model: self, handleClose },
+                    ])
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
@@ -880,16 +915,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .actions(self => ({
-      // this "clears the view" and makes the view return to the import form
-      clearView() {
-        self.setDisplayedRegions([])
-        self.tracks.clear()
-        // it is necessary to run these after setting displayed regions empty
-        // or else model.offsetPx gets set to Infinity and breaks
-        // mobx-state-tree snapshot
-        self.scrollTo(0)
-        self.zoomTo(10)
-      },
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
@@ -909,12 +934,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async exportSvg(opts: ExportSvgOptions = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const html = await renderToSvg(self as any, opts)
-        const blob = new Blob([html], { type: 'image/svg+xml' })
-        saveAs(blob, opts.filename || 'image.svg')
-      },
       /**
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
@@ -1220,7 +1239,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export { renderToSvg, RefNameAutocomplete, SearchBox }
+export {
+  renderToSvg,
+  RefNameAutocomplete,
+  SearchBox,
+  ZoomControls,
+  LinearGenomeView,
+}
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
 export { default as ReactComponent } from './components/LinearGenomeView'

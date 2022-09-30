@@ -1,16 +1,16 @@
 import React from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { ErrorBoundary } from 'react-error-boundary'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
-import MiniControls from './MiniControls'
 import GetSequenceDialog from './GetSequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
 
@@ -45,7 +45,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
+  const { tracks, error, initialized, hasDisplayedRegions } = model
   const { classes } = useStyles()
 
   if (!initialized && !error) {
@@ -58,6 +58,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />
   }
+
+  const MiniControlsComponent = model.MiniControlsComponent()
+  const HeaderComponent = model.HeaderComponent()
 
   return (
     <div style={{ position: 'relative' }}>
@@ -73,19 +76,8 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           handleClose={() => model.setSearchResults(undefined, undefined)}
         />
       ) : null}
-      {!hideHeader ? (
-        <Header model={model} />
-      ) : (
-        <div
-          style={{
-            position: 'absolute',
-            right: 0,
-            zIndex: 1001,
-          }}
-        >
-          <MiniControls model={model} />
-        </div>
-      )}
+      <HeaderComponent model={model} />
+      <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
           <Paper variant="outlined" className={classes.note}>
@@ -108,7 +100,12 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           </Paper>
         ) : (
           tracks.map(track => (
-            <TrackContainer key={track.id} model={model} track={track} />
+            <ErrorBoundary
+              key={track.id}
+              FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+            >
+              <TrackContainer model={model} track={track} />
+            </ErrorBoundary>
           ))
         )}
       </TracksContainer>

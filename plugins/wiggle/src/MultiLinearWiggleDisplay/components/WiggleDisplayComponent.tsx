@@ -51,7 +51,7 @@ const Wrapper = observer(
             left: 0,
             pointerEvents: 'none',
             height,
-            width: 1800,
+            width: getContainingView(model).width,
           }}
         >
           {children}

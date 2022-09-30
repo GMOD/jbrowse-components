@@ -3,7 +3,6 @@
 exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
 <div
   class="tss-jn2cxo-avoidParentStyle"
-  style=""
 >
   <div
     class="MuiScopedCssBaseline-root mui-1pa2gw3-MuiScopedCssBaseline-root"

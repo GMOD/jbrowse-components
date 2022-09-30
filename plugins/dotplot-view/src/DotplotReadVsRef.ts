@@ -106,6 +106,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
           },
         ],
       },
+
       viewTrackConfigs: [
         {
           type: 'SyntenyTrack',
@@ -116,19 +117,6 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
           },
           trackId,
           name: trackName,
-        },
-      ],
-      viewAssemblyConfigs: [
-        {
-          name: readAssembly,
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: `${readName}_${Date.now()}`,
-            adapter: {
-              type: 'FromConfigSequenceAdapter',
-              features: [feature.toJSON()],
-            },
-          },
         },
       ],
       assemblyNames,
@@ -144,6 +132,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
           ],
         },
       ],
+
       displayName: `${readName} vs ${trackAssembly}`,
     })
   } catch (e) {

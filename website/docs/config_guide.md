@@ -9,7 +9,7 @@ import Figure from './figure'
 The following guide provides comprehensive information regarding the anatomy and usage of the `config.json` file that is critical for running a JBrowse 2 session.
 
 :::info
-To learn how to configure JBrowse with assemblies and tracks using the [CLI](./tutorials/config_cli) or the [GUI](./tutorials/config_gui) checkout those respective tutorials.
+To learn how to configure JBrowse with assemblies and tracks using the [CLI](../tutorials/config_cli) or the [GUI](../tutorials/config_gui) checkout those respective tutorials.
 :::
 
 ## Intro to the config.json
@@ -1478,4 +1478,4 @@ If you have an unpublished plugin running locally, you can add that plugin to yo
 }
 ```
 
-Checkout our [developer guide](../developer_guide/) for more information on developing plugins, or our [plugins page](/plugins) to browse currently published plugins.
+Checkout our [developer guide](../developer_guide/) for more information on developing plugins, or our [plugins page](/plugin_store) to browse currently published plugins.

@@ -3,8 +3,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { FileLocation } from '@jbrowse/core/util/types'
 import {
   AdapterGuesser,
-  getFileName,
   TrackTypeGuesser,
+  getFileName,
 } from '@jbrowse/core/util/tracks'
 
 // locals

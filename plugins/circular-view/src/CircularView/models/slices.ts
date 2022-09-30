@@ -62,10 +62,11 @@ function calculateStaticSlices(self: any) {
   return slices
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sliceIsVisible(self: any, slice: Slice) {
+function sliceIsVisible(
+  self: { offsetRadians: number; visibleSection: { theta: [number, number] } },
+  slice: Slice,
+) {
   const {
-    // rho: visibleRhoRange,
     theta: [visibleThetaMin, visibleThetaMax],
   } = self.visibleSection
 

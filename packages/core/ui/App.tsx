@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import LaunchIcon from '@mui/icons-material/Launch'
+import { ErrorBoundary } from 'react-error-boundary'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
@@ -19,11 +20,13 @@ import { getEnv } from 'mobx-state-tree'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
+import ErrorMessage from './ErrorMessage'
 import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
 import {
+  AbstractViewModel,
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
@@ -100,11 +103,118 @@ const Logo = observer(
 
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
+type AppSession = SessionWithDrawerWidgets & {
+  savedSessionNames: string[]
+  menus: { label: string; menuItems: JBMenuItem[] }[]
+  renameCurrentSession: (arg: string) => void
+  snackbarMessages: SnackbarMessage[]
+  popSnackbarMessage: () => unknown
+}
+
+const AppToolbar = ({
+  session,
+  HeaderButtons = <div />,
+}: {
+  HeaderButtons?: React.ReactElement
+  session: AppSession
+}) => {
+  const { classes } = useStyles()
+  const { savedSessionNames, name, menus } = session
+
+  function handleNameChange(newName: string) {
+    if (savedSessionNames?.includes(newName)) {
+      session.notify(
+        `Cannot rename session to "${newName}", a saved session with that name already exists`,
+        'warning',
+      )
+    } else {
+      session.renameCurrentSession(newName)
+    }
+  }
+  return (
+    <Toolbar>
+      {menus.map(menu => (
+        <DropDownMenu
+          key={menu.label}
+          menuTitle={menu.label}
+          menuItems={menu.menuItems}
+          session={session}
+        />
+      ))}
+      <div className={classes.grow} />
+      <Tooltip title="Rename Session" arrow>
+        <EditableTypography
+          value={name}
+          setValue={handleNameChange}
+          variant="body1"
+          classes={{
+            inputBase: classes.inputBase,
+            inputRoot: classes.inputRoot,
+            inputFocused: classes.inputFocused,
+          }}
+        />
+      </Tooltip>
+      {HeaderButtons}
+      <div className={classes.grow} />
+      <div style={{ width: 150, maxHeight: 48 }}>
+        <Logo session={session} />
+      </div>
+    </Toolbar>
+  )
+}
+
+const ViewLauncher = observer(({ session }: { session: AppSession }) => {
+  const { classes } = useStyles()
+  const { pluginManager } = getEnv(session)
+  const viewTypes = pluginManager.getElementTypeRecord('view').all()
+  const [value, setValue] = useState(viewTypes[0]?.name)
+  return (
+    <Paper className={classes.selectPaper}>
+      <Typography>Select a view to launch</Typography>
+      <Select value={value} onChange={event => setValue(event.target.value)}>
+        {viewTypes.map(({ name }: { name: string }) => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+      </Select>
+      <Button
+        onClick={() => {
+          session.addView(value, {})
+        }}
+        variant="contained"
+        color="primary"
+      >
+        Launch view
+      </Button>
+    </Paper>
+  )
+})
+
+const ViewPanel = observer(
+  ({ view, session }: { view: AbstractViewModel; session: AppSession }) => {
+    const { pluginManager } = getEnv(session)
+    const viewType = pluginManager.getViewType(view.type)
+    if (!viewType) {
+      throw new Error(`unknown view type ${view.type}`)
+    }
+    const { ReactComponent } = viewType
+    return (
+      <ViewContainer view={view} onClose={() => session.removeView(view)}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ReactComponent
+            model={view}
+            session={session}
+            getTrackType={pluginManager.getTrackType}
+          />
+        </Suspense>
+      </ViewContainer>
+    )
+  },
+)
+
 const App = observer(
-  ({
-    session,
-    HeaderButtons = <div />,
-  }: {
+  (props: {
     HeaderButtons?: React.ReactElement
     session: SessionWithDrawerWidgets & {
       savedSessionNames: string[]
@@ -114,32 +224,17 @@ const App = observer(
       popSnackbarMessage: () => unknown
     }
   }) => {
+    const { session } = props
     const { classes } = useStyles()
-    const { pluginManager } = getEnv(session)
-    const viewTypes = pluginManager.getElementTypeRecord('view').all()
-    const [value, setValue] = useState(viewTypes[0]?.name)
+
     const {
+      minimized,
       visibleWidget,
       drawerWidth,
-      minimized,
       activeWidgets,
-      savedSessionNames,
-      name,
-      menus,
       views,
       drawerPosition,
     } = session
-
-    function handleNameChange(newName: string) {
-      if (savedSessionNames?.includes(newName)) {
-        session.notify(
-          `Cannot rename session to "${newName}", a saved session with that name already exists`,
-          'warning',
-        )
-      } else {
-        session.renameCurrentSession(newName)
-      }
-    }
 
     const drawerVisible = visibleWidget && !minimized
 
@@ -174,91 +269,23 @@ const App = observer(
         <div className={classes.menuBarAndComponents}>
           <div className={classes.menuBar}>
             <AppBar className={classes.appBar} position="static">
-              <Toolbar>
-                {menus.map(menu => (
-                  <DropDownMenu
-                    key={menu.label}
-                    menuTitle={menu.label}
-                    menuItems={menu.menuItems}
-                    session={session}
-                  />
-                ))}
-                <div className={classes.grow} />
-                <Tooltip title="Rename Session" arrow>
-                  <EditableTypography
-                    value={name}
-                    setValue={handleNameChange}
-                    variant="body1"
-                    classes={{
-                      inputBase: classes.inputBase,
-                      inputRoot: classes.inputRoot,
-                      inputFocused: classes.inputFocused,
-                    }}
-                  />
-                </Tooltip>
-                {HeaderButtons}
-                <div className={classes.grow} />
-                <div style={{ width: 150, maxHeight: 48 }}>
-                  <Logo session={session} />
-                </div>
-              </Toolbar>
+              <AppToolbar {...props} />
             </AppBar>
           </div>
           <div className={classes.components}>
             {views.length ? (
-              views.map(view => {
-                const viewType = pluginManager.getViewType(view.type)
-                if (!viewType) {
-                  throw new Error(`unknown view type ${view.type}`)
-                }
-                const { ReactComponent } = viewType
-                return (
-                  <ViewContainer
-                    key={`view-${view.id}`}
-                    view={view}
-                    onClose={() => {
-                      session.removeView(view)
-                      session.notify(`A view has been closed`, 'info', {
-                        name: 'undo',
-                        onClick: () => {
-                          pluginManager.rootModel.history.undo()
-                        },
-                      })
-                    }}
-                  >
-                    <Suspense fallback={<div>Loading...</div>}>
-                      <ReactComponent
-                        model={view}
-                        session={session}
-                        getTrackType={pluginManager.getTrackType}
-                      />
-                    </Suspense>
-                  </ViewContainer>
-                )
-              })
+              views.map(view => (
+                <ErrorBoundary
+                  key={`view-${view.id}`}
+                  FallbackComponent={({ error }) => (
+                    <ErrorMessage error={error} />
+                  )}
+                >
+                  <ViewPanel view={view} session={session} />
+                </ErrorBoundary>
+              ))
             ) : (
-              <Paper className={classes.selectPaper}>
-                <Typography>Select a view to launch</Typography>
-                <Select
-                  value={value}
-                  onChange={event => setValue(event.target.value)}
-                >
-                  {viewTypes.map(({ name }: { name: string }) => (
-                    <MenuItem key={name} value={name}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <Button
-                  onClick={() => {
-                    session.addView(value, {})
-                  }}
-                  variant="contained"
-                  color="primary"
-                >
-                  Launch view
-                </Button>
-              </Paper>
+              <ViewLauncher {...props} />
             )}
 
             {/* blank space at the bottom of screen allows scroll */}

@@ -24,6 +24,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 // locals
 import SlotEditor from './SlotEditor'
 import TypeSelector from './TypeSelector'
+import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {
@@ -139,7 +140,12 @@ const Schema = observer(
 )
 
 const ConfigurationEditor = observer(
-  ({ model }: { model: { target: AnyConfigurationModel } }) => {
+  ({
+    model,
+  }: {
+    model: { target: AnyConfigurationModel }
+    session?: AbstractSessionModel
+  }) => {
     const { classes } = useStyles()
     // key forces a re-render, otherwise the same field can end up being used
     // for different tracks since only the backing model changes for example

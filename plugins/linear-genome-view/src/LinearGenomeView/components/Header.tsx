@@ -119,13 +119,15 @@ const Controls = ({ model }: { model: LGV }) => {
 }
 
 const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
-  return model.hideHeaderOverview ? (
-    <Controls model={model} />
-  ) : (
-    <OverviewScaleBar model={model}>
+  return !model.hideHeader ? (
+    model.hideHeaderOverview ? (
       <Controls model={model} />
-    </OverviewScaleBar>
-  )
+    ) : (
+      <OverviewScaleBar model={model}>
+        <Controls model={model} />
+      </OverviewScaleBar>
+    )
+  ) : null
 })
 
 export default LinearGenomeViewHeader
