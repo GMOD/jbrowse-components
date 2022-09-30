@@ -1,14 +1,13 @@
 import React from 'react'
 import BlockMsg from '../components/BlockMsg'
-
-type Stats = unknown
+import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function TooLargeMessage({
   model,
 }: {
   model: {
     regionTooLargeReason: string
-    estimatedRegionStats: Stats
+    estimatedRegionStats?: Stats
     updateStatsLimit: (s: Stats) => void
     reload: () => void
   }

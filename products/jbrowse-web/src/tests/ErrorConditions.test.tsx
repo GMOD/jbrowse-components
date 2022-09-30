@@ -16,12 +16,7 @@ test('404 sequence file', async () => {
 })
 
 test('wrong assembly', async () => {
-  console.error = jest.fn()
   const { view, findAllByText } = createView()
   view.showTrack('volvox_wrong_assembly')
-  await findAllByText(
-    'region assembly (volvox) does not match track assemblies (wombat)',
-    {},
-    delay,
-  )
+  await findAllByText(/does not match/, {}, delay)
 }, 15000)

@@ -98,7 +98,7 @@ const ServerSideRenderedBlockContent = observer(
       return React.isValidElement(model.message) ? (
         model.message
       ) : (
-        <BlockMsg message={`${model.message}`} />
+        <BlockMsg message={`${model.message}`} severity="info" />
       )
     }
     if (!model.filled) {
