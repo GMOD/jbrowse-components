@@ -49,7 +49,7 @@ test('test stats estimation pileup, force load to see', async () => {
   )
 
   await findAllByText(/Requested too much data/, {}, delay)
-  const buttons = await findAllByText(/Force Load/, {}, delay)
+  const buttons = await findAllByText(/Force load/, {}, delay)
   fireEvent.click(buttons[0])
 
   expectCanvasMatch(
@@ -84,7 +84,7 @@ test('test stats estimation on vcf track, force load to see', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', {}, delay))
 
   await findAllByText(/Zoom in to see features/, {}, delay)
-  const buttons = await findAllByText(/Force Load/, {}, delay)
+  const buttons = await findAllByText(/Force load/, {}, delay)
   fireEvent.click(buttons[0])
   await findByTestId('box-test-vcf-605223', {}, delay)
 }, 30000)

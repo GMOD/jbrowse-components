@@ -522,11 +522,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               <div
                 class="tss-1dmfa10-contentBlock"
                 style="width: 100px;"
-              >
-                <div
-                  style="display: flex;"
-                />
-              </div>
+              />
               <div
                 class="tss-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
