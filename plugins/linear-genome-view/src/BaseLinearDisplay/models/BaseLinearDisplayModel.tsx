@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { Alert, Button } from '@mui/material'
+import TooLargeMessage from './TooLargeMessage'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
@@ -498,34 +498,8 @@ export const BaseLinearDisplay = types
      *  react node allows user to force load at current setting
      */
     regionCannotBeRendered(_region: Region) {
-      const { regionTooLarge, regionTooLargeReason } = self
-
-      if (regionTooLarge) {
-        return (
-          <Alert
-            severity="warning"
-            action={
-              <Button
-                data-testid="force_reload_button"
-                onClick={() => {
-                  if (!self.estimatedRegionStats) {
-                    console.error('No global stats?')
-                  } else {
-                    self.updateStatsLimit(self.estimatedRegionStats)
-                    self.reload()
-                  }
-                }}
-              >
-                Force Load
-              </Button>
-            }
-          >
-            {regionTooLargeReason ? regionTooLargeReason + '. ' : ''}
-            Zoom in to see features or force load (may be slow).
-          </Alert>
-        )
-      }
-      return undefined
+      const { regionTooLarge } = self
+      return regionTooLarge ? <TooLargeMessage model={self} /> : null
     },
 
     trackMenuItems(): MenuItem[] {

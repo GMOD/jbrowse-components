@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Typography, Tooltip, Button, Alert } from '@mui/material'
+import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import RefreshIcon from '@mui/icons-material/Refresh'
+
+import BlockMsg from './BlockMsg'
 
 const useStyles = makeStyles()(theme => ({
   loading: {
@@ -16,7 +18,6 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     textAlign: 'center',
   },
-  blockMessage: {},
   dots: {
     '&::after': {
       display: 'inline-block',
@@ -74,70 +75,6 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   )
 })
 
-function BlockMessage({
-  messageContent,
-}: {
-  messageContent?: React.ReactNode
-}) {
-  const { classes } = useStyles()
-  const [width, setWidth] = useState(0)
-
-  return (
-    <div
-      ref={ref => {
-        if (ref) {
-          setWidth(ref.getBoundingClientRect().width)
-        }
-      }}
-      className={classes.blockMessage}
-    >
-      {React.isValidElement(messageContent) ? (
-        messageContent
-      ) : width < 500 ? (
-        <Tooltip title={`${messageContent}`}>
-          <Alert severity="info" />
-        </Tooltip>
-      ) : (
-        <Alert severity="info">{`${messageContent}`}</Alert>
-      )}
-    </div>
-  )
-}
-
-function BlockError({ error, reload }: { error: unknown; reload: () => void }) {
-  const { classes } = useStyles()
-  const [width, setWidth] = useState(0)
-  const action = reload ? (
-    <Button
-      data-testid="reload_button"
-      onClick={reload}
-      startIcon={<RefreshIcon />}
-    >
-      Reload
-    </Button>
-  ) : null
-  return (
-    <div
-      ref={ref => {
-        if (ref) {
-          setWidth(ref.getBoundingClientRect().width)
-        }
-      }}
-      className={classes.blockMessage}
-    >
-      {width < 500 ? (
-        <Tooltip title={`${error}`}>
-          <Alert severity="error" action={action} />
-        </Tooltip>
-      ) : (
-        <Alert severity="error" action={action}>
-          {`${error}`}
-        </Alert>
-      )}
-    </div>
-  )
-}
-
 const ServerSideRenderedBlockContent = observer(
   ({
     model,
@@ -146,10 +83,23 @@ const ServerSideRenderedBlockContent = observer(
     model: any
   }) => {
     if (model.error) {
-      return <BlockError error={model.error} reload={model.reload} />
+      return (
+        <BlockMsg
+          message={`${model.error}`}
+          severity="error"
+          buttonText="reload"
+          icon={<RefreshIcon />}
+          action={model.reload}
+        />
+      )
     }
     if (model.message) {
-      return <BlockMessage messageContent={model.message} />
+      // the message can be a fully rendered react component, e.g. the region too large message
+      return React.isValidElement(model.message) ? (
+        model.message
+      ) : (
+        <BlockMsg message={`${model.message}`} />
+      )
     }
     if (!model.filled) {
       return <LoadingMessage model={model} />
