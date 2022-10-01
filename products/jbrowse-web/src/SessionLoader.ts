@@ -236,7 +236,7 @@ const SessionLoader = types
 
     // passed
     async setSessionSnapshot(
-      snap: { sessionPlugins?: PluginDefinition[] },
+      snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
     ) {
       try {
@@ -300,22 +300,21 @@ const SessionLoader = types
           return
         }
       }
+
       if (self.bc1) {
         self.bc1.postMessage(query)
-        const resultP = new Promise((resolve, reject) => {
-          if (self.bc2) {
-            self.bc2.onmessage = msg => {
-              resolve(msg.data)
-            }
-          }
-          setTimeout(() => reject(), 1000)
-        })
-
         try {
-          const result = await resultP
-          // @ts-ignore
-          await self.setSessionSnapshot({ ...result, id: shortid() })
-          return
+          const result = await new Promise<Record<string, unknown>>(
+            (resolve, reject) => {
+              if (self.bc2) {
+                self.bc2.onmessage = msg => {
+                  resolve(msg.data)
+                }
+              }
+              setTimeout(() => reject(), 1000)
+            },
+          )
+          return this.setSessionSnapshot({ ...result, id: shortid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
@@ -333,7 +332,6 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
@@ -416,6 +414,17 @@ const SessionLoader = types
               return
             }
 
+            if (self.bc1) {
+              self.bc1.onmessage = msg => {
+                const r =
+                  JSON.parse(sessionStorage.getItem('current') || '{}')
+                    .session || {}
+                if (r.id === msg.data && self.bc2) {
+                  self.bc2.postMessage(r)
+                }
+              }
+            }
+
             if (isSharedSession) {
               await this.fetchSharedSession()
             } else if (isSpecSession) {
@@ -434,18 +443,6 @@ const SessionLoader = types
             } else {
               // placeholder for session loaded, but none found
               self.setBlankSession(true)
-            }
-            if (self.bc1) {
-              self.bc1.onmessage = msg => {
-                const ret =
-                  JSON.parse(sessionStorage.getItem('current') || '{}')
-                    .session || {}
-                if (ret.id === msg.data) {
-                  if (self.bc2) {
-                    self.bc2.postMessage(ret)
-                  }
-                }
-              }
             }
           } catch (e) {
             console.error(e)
