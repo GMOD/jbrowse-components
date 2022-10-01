@@ -8,7 +8,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
     class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-1z10yd4-MuiFormControl-root-MuiTextField-root"
   >
     <label
-      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
+      class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard MuiFormLabel-colorPrimary MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-sizeSmall MuiInputLabel-standard css-1s1jvl0-MuiFormLabel-root-MuiInputLabel-root"
       data-shrink="false"
       for="mui-1"
       id="mui-1-label"
@@ -834,7 +834,7 @@ exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
                 class="MuiCardActions-root MuiCardActions-spacing css-1t6e9jv-MuiCardActions-root"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeSmall MuiButton-containedSizeSmall css-1cpxz0y-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   type="button"
                 >

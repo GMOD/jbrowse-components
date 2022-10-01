@@ -180,7 +180,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="tss-ig8oez-headerBar"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall tss-fnrte0-toggleButton mui-1vn1biu-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall tss-fnrte0-toggleButton mui-1vn1biu-MuiButtonBase-root-MuiButton-root"
                   tabindex="0"
                   title="Open track selector"
                   type="button"
@@ -207,7 +207,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm mui-qfz70r-MuiFormGroup-root"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
@@ -227,7 +227,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
                     tabindex="0"
                     type="button"
                   >
