@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
@@ -33,7 +32,7 @@ const assemblyConf = {
 
 describe('<LinearGenomeView />', () => {
   it('renders setup wizard', async () => {
-    const session = createTestSession()!
+    const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
@@ -49,7 +48,7 @@ describe('<LinearGenomeView />', () => {
   }, 15000)
 
   it('renders one track, one region', async () => {
-    const session = createTestSession()!
+    const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
     session.addTrackConf({
       trackId: 'testConfig',
@@ -101,12 +100,8 @@ describe('<LinearGenomeView />', () => {
   })
 
   it('renders two tracks, two regions', async () => {
-    const session = createTestSession()!
-
-    // @ts-ignore
+    const session = createTestSession()
     session.addAssemblyConf(assemblyConf)
-
-    // @ts-ignore
     session.addTrackConf({
       trackId: 'testConfig',
       name: 'Foo Track',
@@ -115,7 +110,6 @@ describe('<LinearGenomeView />', () => {
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
 
-    // @ts-ignore
     session.addTrackConf({
       trackId: 'testConfig2',
       name: 'Bar Track',
@@ -123,7 +117,7 @@ describe('<LinearGenomeView />', () => {
       type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    session!.addView('LinearGenomeView', {
+    session.addView('LinearGenomeView', {
       id: 'lgv',
       offsetPx: 0,
       bpPerPx: 1,
