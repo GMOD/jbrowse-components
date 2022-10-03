@@ -1650,10 +1650,10 @@
     generic-filehandle "^3.0.0"
     long "^4.0.0"
 
-"@gmod/ucsc-hub@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.4.tgz#79518ef6e14459e874d431b66aa42955a0448721"
-  integrity sha512-ziL8sOQzancz4wSx8m/B/bYwBRV5gPADNtqKo0jPdxO+7A9sqV02g746gkdOYItMv0ECNURbDQPH86JOTY067w==
+"@gmod/ucsc-hub@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.6.tgz#62c3ef806c542f255381d7fe59faa16ab2f95bf5"
+  integrity sha512-7WggfnPpNsELg0GGszEpXJhlGK3jnKcJsyGY6oPIfKwf7M+1a9gLbeqperuLlINPXuM4oQ0H4hlad9YUNYEGeg==
 
 "@gmod/vcf@^5.0.5":
   version "5.0.7"
