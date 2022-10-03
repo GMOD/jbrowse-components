@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 import React from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
@@ -20,7 +18,7 @@ describe('HierarchicalTrackSelector widget', () => {
 
   it('renders nothing with no assembly', () => {
     const session = createTestSession()
-    const firstView = session!.addView('LinearGenomeView')
+    const firstView = session.addView('LinearGenomeView')
     const model = firstView.activateTrackSelector()
 
     const { container } = render(
@@ -34,7 +32,6 @@ describe('HierarchicalTrackSelector widget', () => {
 
   it('renders with a couple of uncategorized tracks', async () => {
     const session = createTestSession()
-    // @ts-ignore
     session.addAssemblyConf({
       name: 'volMyt1',
       sequence: {
@@ -54,21 +51,19 @@ describe('HierarchicalTrackSelector widget', () => {
         },
       },
     })
-    // @ts-ignore
     session.addTrackConf({
       trackId: 'fooC',
       assemblyNames: ['volMyt1'],
       type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    // @ts-ignore
     session.addTrackConf({
       trackId: 'barC',
       assemblyNames: ['volMyt1'],
       type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    const firstView = session!.addView('LinearGenomeView', {
+    const firstView = session.addView('LinearGenomeView', {
       displayedRegions: [
         {
           assemblyName: 'volMyt1',
@@ -78,8 +73,8 @@ describe('HierarchicalTrackSelector widget', () => {
         },
       ],
     })
-    firstView.showTrack(session!.sessionTracks[0].trackId)
-    firstView.showTrack(session!.sessionTracks[1].trackId)
+    firstView.showTrack(session.sessionTracks[0].trackId)
+    firstView.showTrack(session.sessionTracks[1].trackId)
     const model = firstView.activateTrackSelector()
 
     const { container, findByTestId } = render(
@@ -94,7 +89,6 @@ describe('HierarchicalTrackSelector widget', () => {
 
   it('renders with a couple of categorized tracks', async () => {
     const session = createTestSession()
-    // @ts-ignore
     session.addAssemblyConf({
       name: 'volMyt1',
       sequence: {
@@ -115,21 +109,19 @@ describe('HierarchicalTrackSelector widget', () => {
       },
     })
 
-    // @ts-ignore
     session.addTrackConf({
       trackId: 'fooC',
       assemblyNames: ['volMyt1'],
       type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    // @ts-ignore
     session.addTrackConf({
       trackId: 'barC',
       assemblyNames: ['volMyt1'],
       type: 'FeatureTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    const firstView = session!.addView('LinearGenomeView', {
+    const firstView = session.addView('LinearGenomeView', {
       displayedRegions: [
         {
           assemblyName: 'volMyt1',
@@ -139,8 +131,8 @@ describe('HierarchicalTrackSelector widget', () => {
         },
       ],
     })
-    firstView.showTrack(session!.sessionTracks[0].trackId)
-    firstView.showTrack(session!.sessionTracks[1].trackId)
+    firstView.showTrack(session.sessionTracks[0].trackId)
+    firstView.showTrack(session.sessionTracks[1].trackId)
     firstView.tracks[0].configuration.category.set(['Foo Category'])
     firstView.tracks[1].configuration.category.set([
       'Foo Category',
