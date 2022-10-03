@@ -1,9 +1,14 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import '@testing-library/jest-dom/extend-expect'
 import 'requestidlecallback-polyfill'
+
+// locals
 import LinearGenomeView from './LinearGenomeView'
+
+// mock
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 const assemblyConf = {
@@ -28,7 +33,7 @@ const assemblyConf = {
 
 describe('<LinearGenomeView />', () => {
   it('renders setup wizard', async () => {
-    const session = createTestSession()
+    const session = createTestSession()!
     session.addAssemblyConf(assemblyConf)
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
@@ -38,11 +43,13 @@ describe('<LinearGenomeView />', () => {
     const elt = await findByText('Open')
     await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
     fireEvent.click(elt)
-    await waitFor(() => expect(model.displayedRegions.length).toEqual(1), 15000)
+    await waitFor(() => expect(model.displayedRegions.length).toEqual(1), {
+      timeout: 15000,
+    })
   }, 15000)
 
   it('renders one track, one region', async () => {
-    const session = createTestSession()
+    const session = createTestSession()!
     session.addAssemblyConf(assemblyConf)
     session.addTrackConf({
       trackId: 'testConfig',
@@ -76,7 +83,7 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, getByPlaceholderText, findByText } = render(
+    const { container, queryByText, getByPlaceholderText, findByText } = render(
       <LinearGenomeView model={model} />,
     )
     await findByText('Foo Track')
@@ -85,16 +92,21 @@ describe('<LinearGenomeView />', () => {
     await findByText('100bp')
 
     await waitFor(() => {
-      expect(getByPlaceholderText('Search for location').value).toEqual(
-        'ctgA:1..100',
-      )
+      expect(
+        (getByPlaceholderText('Search for location') as HTMLInputElement).value,
+      ).toEqual('ctgA:1..100')
     })
+    await waitFor(() => expect(queryByText('Loading')).not.toBeInTheDocument())
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('renders two tracks, two regions', async () => {
-    const session = createTestSession()
+    const session = createTestSession()!
+
+    // @ts-ignore
     session.addAssemblyConf(assemblyConf)
+
+    // @ts-ignore
     session.addTrackConf({
       trackId: 'testConfig',
       name: 'Foo Track',
@@ -102,6 +114,8 @@ describe('<LinearGenomeView />', () => {
       type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
+
+    // @ts-ignore
     session.addTrackConf({
       trackId: 'testConfig2',
       name: 'Bar Track',
@@ -109,7 +123,7 @@ describe('<LinearGenomeView />', () => {
       type: 'BasicTrack',
       adapter: { type: 'FromConfigAdapter', features: [] },
     })
-    session.addView('LinearGenomeView', {
+    session!.addView('LinearGenomeView', {
       id: 'lgv',
       offsetPx: 0,
       bpPerPx: 1,
@@ -151,12 +165,13 @@ describe('<LinearGenomeView />', () => {
     })
     const model = session.views[0]
     model.setWidth(800)
-    const { container, findByText, findAllByTestId } = render(
+    const { container, findByText, queryByText, findAllByTestId } = render(
       <LinearGenomeView model={model} />,
     )
     await findByText('Foo Track')
     await findByText('798bp')
     await findAllByTestId('svgfeatures')
+    await waitFor(() => expect(queryByText('Loading')).not.toBeInTheDocument())
 
     expect(container.firstChild).toMatchSnapshot()
   })
