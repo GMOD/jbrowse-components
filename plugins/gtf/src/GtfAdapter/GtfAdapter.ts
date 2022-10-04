@@ -34,7 +34,9 @@ export default class extends BaseFeatureDataAdapter {
     }
     const data = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    const lines = data.split('\n').filter(f => !!f && !f.startsWith('#'))
+    const lines = data
+      .split(/\n|\r\n|\r/)
+      .filter(f => !!f && !f.startsWith('#'))
     const feats = {} as { [key: string]: string[] }
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]

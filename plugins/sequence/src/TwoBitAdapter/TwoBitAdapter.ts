@@ -26,7 +26,7 @@ export default class TwoBitAdapter extends BaseSequenceAdapter {
       const data = await file.readFile('utf8')
       return Object.fromEntries(
         data
-          ?.split('\n')
+          ?.split(/\n|\r\n|\r/)
           .filter(line => !!line.trim())
           .map(line => {
             const [name, length] = line.split('\t')

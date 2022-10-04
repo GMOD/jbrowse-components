@@ -20,7 +20,7 @@ export default class MashMapAdapter extends PAFAdapter {
 
     // mashmap produces PAF-like data that is space separated instead of tab
     return text
-      .split('\n')
+      .split(/\n|\r\n|\r/)
       .filter(line => !!line)
       .map(line => {
         const fields = line.split(' ')

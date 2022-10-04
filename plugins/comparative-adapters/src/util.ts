@@ -9,7 +9,7 @@ export function isGzip(buf: Buffer) {
 export function parseBed(text: string) {
   return new Map(
     text
-      .split('\n')
+      .split(/\n|\r\n|\r/)
       .filter(f => !!f || f.startsWith('#'))
       .map(line => {
         const [refName, start, end, name, score, strand] = line.split('\t')

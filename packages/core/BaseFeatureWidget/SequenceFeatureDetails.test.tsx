@@ -35,7 +35,7 @@ test('test using the sequence feature panel', () => {
 const readFasta = (filename: string) => {
   return fs
     .readFileSync(require.resolve(filename), 'utf8')
-    .split('\n')
+    .split(/\n|\r\n|\r/)
     .slice(1)
     .join('')
 }

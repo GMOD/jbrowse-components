@@ -30,7 +30,7 @@ export default class extends BaseFeatureDataAdapter {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
     const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
-    const lines = data.split('\n')
+    const lines = data.split(/\n|\r\n|\r/)
     const headerLines = []
     for (let i = 0; i < lines.length && lines[i].startsWith('#'); i++) {
       headerLines.push(lines[i])

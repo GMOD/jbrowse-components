@@ -42,7 +42,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
     const data = new TextDecoder('utf8', { fatal: true }).decode(buffer)
-    const lines = data.split('\n').filter(f => !!f)
+    const lines = data.split(/\n|\r\n|\r/).filter(f => !!f)
     const headerLines = []
     let i = 0
     for (; i < lines.length && lines[i].startsWith('#'); i++) {
@@ -106,7 +106,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
     if (columnNames.length) {
       return columnNames
     }
-    const defs = header.split('\n').filter(f => !!f)
+    const defs = header.split(/\n|\r\n|\r/).filter(f => !!f)
     const defline = defs[defs.length - 1]
     return defline?.includes('\t')
       ? defline
