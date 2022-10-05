@@ -24,15 +24,8 @@ import {
 import { BaseProps } from './types'
 import { getConf } from '../configuration'
 import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
-import {
-  Feat,
-  ParentFeat,
-  SeqState,
-  calculateUTRs,
-  stitch,
-  dedupe,
-  revlist,
-} from './util'
+import { ParentFeat, SeqState, calculateUTRs, dedupe, revlist } from './util'
+import { GenecDNA, GeneProtein, GeneCDS, Genomic } from './GeneSequencePanel'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -55,99 +48,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// note that these are currently put into the style section instead of being
-// defined in classes to aid copy and paste to an external document e.g. word
-const proteinColor = 'rgb(220,160,220)'
-const intronColor = undefined
-const cdsColor = 'rgb(220,220,180)'
-const updownstreamColor = 'rgba(250,200,200)'
-const utrColor = 'rgb(200,240,240)'
-
-function GeneCDS({ cds, sequence }: { cds: Feat[]; sequence: string }) {
-  return <span style={{ background: cdsColor }}>{stitch(cds, sequence)}</span>
-}
-
-function GeneProtein({
-  cds,
-  sequence,
-  codonTable,
-}: {
-  cds: Feat[]
-  sequence: string
-  codonTable: { [key: string]: string }
-}) {
-  const str = stitch(cds, sequence)
-  let protein = ''
-  for (let i = 0; i < str.length; i += 3) {
-    // use & symbol for undefined codon, or partial slice
-    protein += codonTable[str.slice(i, i + 3)] || '&'
-  }
-
-  return <span style={{ background: proteinColor }}>{protein}</span>
-}
-
-function GenecDNA({
-  utr,
-  cds,
-  exons,
-  sequence,
-  upstream,
-  downstream,
-  includeIntrons,
-  collapseIntron,
-  intronBp,
-}: {
-  utr: Feat[]
-  cds: Feat[]
-  exons: Feat[]
-  sequence: string
-  upstream?: string
-  downstream?: string
-  includeIntrons?: boolean
-  collapseIntron?: boolean
-  intronBp: number
-}) {
-  const chunks = cds.length
-    ? [...cds, ...utr].sort((a, b) => a.start - b.start)
-    : exons
-  return (
-    <>
-      {upstream ? (
-        <span style={{ background: updownstreamColor }}>{upstream}</span>
-      ) : null}
-
-      {chunks
-        .filter(f => f.start !== f.end)
-        .map((chunk, index) => {
-          const intron = sequence.slice(chunk.end, chunks[index + 1]?.start)
-          return (
-            <React.Fragment key={JSON.stringify(chunk)}>
-              <span
-                style={{
-                  background: chunk.type === 'CDS' ? cdsColor : utrColor,
-                }}
-              >
-                {sequence.slice(chunk.start, chunk.end)}
-              </span>
-              {includeIntrons && index < chunks.length - 1 ? (
-                <span style={{ background: intronColor }}>
-                  {collapseIntron && intron.length > intronBp * 2
-                    ? `${intron.slice(0, intronBp)}...${intron.slice(
-                        -intronBp,
-                      )}`
-                    : intron}
-                </span>
-              ) : null}
-            </React.Fragment>
-          )
-        })}
-
-      {downstream ? (
-        <span style={{ background: updownstreamColor }}>{downstream}</span>
-      ) : null}
-    </>
-  )
-}
 interface SequencePanelProps {
   sequence: SeqState
   feature: ParentFeat
@@ -162,11 +62,7 @@ export const SequencePanel = React.forwardRef<
   let {
     sequence: { seq, upstream = '', downstream = '' },
   } = props
-  const { subfeatures } = feature
-
-  if (!subfeatures) {
-    return null
-  }
+  const { subfeatures = [] } = feature
 
   const children = subfeatures
     .sort((a, b) => a.start - b.start)
@@ -218,8 +114,14 @@ export const SequencePanel = React.forwardRef<
           maxWidth: 600,
         }}
       >
-        {`>${feature.name || feature.id || 'unknown'}-${mode}\n`}
-        {mode === 'cds' ? (
+        {`>${
+          feature.name || feature.id || feature.parentId || 'unknown'
+        }-${mode}\n`}
+        {mode === 'genomic' ? (
+          <Genomic sequence={seq} />
+        ) : mode === 'genomic_sequence_updown' ? (
+          <Genomic sequence={seq} upstream={upstream} downstream={downstream} />
+        ) : mode === 'cds' ? (
           <GeneCDS cds={cds} sequence={seq} />
         ) : mode === 'cdna' ? (
           <GenecDNA
@@ -286,14 +188,14 @@ export const SequencePanel = React.forwardRef<
 export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const { classes } = useStyles()
   const parentFeature = feature as unknown as ParentFeat
-  const hasCDS = parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
+  const hasCDS = !!parentFeature.subfeatures?.find(sub => sub.type === 'CDS')
+  const isGene = feature.type === 'gene'
   const seqPanelRef = useRef<HTMLDivElement>(null)
   const [settingsDlgOpen, setSettingsDlgOpen] = useState(false)
 
   const { ref, inView } = useInView()
   const [sequence, setSequence] = useState<SeqState>()
   const [error, setError] = useState<unknown>()
-  const [mode, setMode] = useState(hasCDS ? 'cds' : 'cdna')
   const [copied, setCopied] = useState(false)
   const [copiedHtml, setCopiedHtml] = useState(false)
   const [intronBp, setIntronBp] = useLocalStorage('intronBp', 10)
@@ -353,34 +255,65 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   const loading = !sequence
 
-  return !model ? null : (
+  const session = getSession(model)
+  const defaultSeqTypes = ['mRNA', 'transcript', 'gene']
+  const sequenceTypes =
+    getConf(session, ['featureDetails', 'sequenceTypes']) || defaultSeqTypes
+
+  // only attempt fetching gene type sequence on a bare CDS if it has no parent
+  const attemptGeneType =
+    feature.type === 'CDS'
+      ? sequenceTypes.includes('CDS') && !feature.parentId
+      : sequenceTypes.includes(feature.type)
+
+  const [mode, setMode] = useState(
+    attemptGeneType ? (hasCDS ? 'cds' : 'cdna') : 'genomic',
+  )
+
+  const rest = {
+    gene: 'Gene w/ introns',
+    gene_collapsed_intron: `Gene w/ ${intronBp} of intron`,
+    gene_updownstream: `Gene w/ ${upDownBp}bp up+down stream`,
+    gene_updownstream_collapsed_intron: `Gene w/ ${upDownBp}bp up+down stream w/ ${intronBp}bp intron`,
+    cdna: 'cDNA',
+  }
+
+  const arg = attemptGeneType
+    ? hasCDS
+      ? {
+          cds: 'CDS',
+          protein: 'Protein',
+          ...rest,
+        }
+      : rest
+    : {
+        genomic: 'Feature sequence',
+        genomic_sequence_updown: `Feature sequence w/ ${upDownBp}bp up+down stream`,
+      }
+
+  console.log({
+    isGene,
+    h: !hasCDS,
+    m: !model,
+    k: (isGene && !hasCDS) || !model,
+    model,
+  })
+
+  return (isGene && !hasCDS) || !model ? null : (
     <div ref={ref} className={classes.container}>
       <FormControl className={classes.formControl}>
-        <Select
-          style={{ margin: 0 }}
-          value={mode}
-          onChange={event => setMode(event.target.value)}
-        >
-          {hasCDS ? <MenuItem value="cds">CDS</MenuItem> : null}
-          {hasCDS ? <MenuItem value="protein">Protein</MenuItem> : null}
-          <MenuItem value="gene">Gene w/ introns</MenuItem>
-          <MenuItem value="gene_collapsed_intron">
-            Gene w/ {intronBp}bp of intron
-          </MenuItem>
-          <MenuItem value="gene_updownstream">
-            Gene w/ {upDownBp}bp up+down stream
-          </MenuItem>
-          <MenuItem value="gene_updownstream_collapsed_intron">
-            Gene w/ {upDownBp}bp up+down stream w/ {intronBp}bp intron
-          </MenuItem>
-          <MenuItem value="cdna">cDNA</MenuItem>
+        <Select value={mode} onChange={event => setMode(event.target.value)}>
+          {Object.entries(arg).map(([key, val]) => (
+            <MenuItem key={key} value={key}>
+              {val}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
 
       <FormControl className={classes.formControl}>
         <Button
           className={classes.button}
-          type="button"
           variant="contained"
           onClick={() => {
             const ref = seqPanelRef.current
@@ -398,7 +331,6 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         <Tooltip title="Note that 'Copy as HTML' can retain the colors but cannot be pasted into some programs like notepad that only expect plain text">
           <Button
             className={classes.button}
-            type="button"
             variant="contained"
             onClick={() => {
               const ref = seqPanelRef.current
@@ -414,10 +346,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         </Tooltip>
       </FormControl>
       <FormControl className={classes.formControl}>
-        <IconButton
-          onClick={() => setSettingsDlgOpen(true)}
-          style={{ margin: 0, padding: 0 }}
-        >
+        <IconButton onClick={() => setSettingsDlgOpen(true)}>
           <SettingsIcon />
         </IconButton>
       </FormControl>

@@ -8,6 +8,7 @@ export interface Feat {
 export interface ParentFeat extends Feat {
   strand?: number
   subfeatures?: Feat[]
+  parentId?: string
 }
 export interface SeqState {
   seq: string
