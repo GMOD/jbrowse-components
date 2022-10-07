@@ -189,6 +189,9 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                   </div>
                 </div>
               </div>
+              <div
+                class="tss-1j73vx7-container"
+              />
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import fs from 'fs'
-import { SequencePanel } from './SequenceFeatureDetails'
+import SequencePanel from './SequencePanel'
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
 
@@ -119,6 +119,6 @@ test('single exon cDNA should not have duplicate sequences', () => {
   const element = getByTestId('sequence_panel')
 
   expect(element.children[0].textContent).toEqual(
-    '>unknown-cdna\natgtcacctcgggtactgcctctattacagaggtatcttaatggcgcatccagccttgtggctgggtctacgtacgcgtgggcaccatacgtatgttggcaggaaaggtcaatcatgcttgtttcctcgtcgcagaaacgttcacactattggctcgcgggatcgaacgggcctgattatttttccagctcctgcgttcctatcacgccaactgtcgctaataaaatgttatatagagataacccattgctatgcaaggatggagaaaccgcttcacaacaccctagaattacttcagca',
+    '>chr1:1201-1500-cdna\natgtcacctcgggtactgcctctattacagaggtatcttaatggcgcatccagccttgtggctgggtctacgtacgcgtgggcaccatacgtatgttggcaggaaaggtcaatcatgcttgtttcctcgtcgcagaaacgttcacactattggctcgcgggatcgaacgggcctgattatttttccagctcctgcgttcctatcacgccaactgtcgctaataaaatgttatatagagataacccattgctatgcaaggatggagaaaccgcttcacaacaccctagaattacttcagca',
   )
 })

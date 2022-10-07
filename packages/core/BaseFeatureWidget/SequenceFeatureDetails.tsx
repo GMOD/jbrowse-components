@@ -14,26 +14,12 @@ import copy from 'copy-to-clipboard'
 
 // locals
 import SettingsDlg from './SequenceFeatureSettingsDialog'
-import {
-  defaultCodonTable,
-  generateCodonTable,
-  revcom,
-  getSession,
-  useLocalStorage,
-} from '../util'
+import SequencePanel from './SequencePanel'
+import { getSession, useLocalStorage } from '../util'
 import { BaseProps } from './types'
 import { getConf } from '../configuration'
 import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
-import {
-  ParentFeat,
-  SeqState,
-  ErrorState,
-  calculateUTRs,
-  calculateUTRs2,
-  dedupe,
-  revlist,
-} from './util'
-import { GenecDNA, GeneProtein, GeneCDS, Genomic } from './SequenceBox'
+import { ParentFeat, SeqState, ErrorState } from './util'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -58,150 +44,6 @@ const useStyles = makeStyles()(theme => ({
 
 const BPLIMIT = 500_000
 
-interface SequencePanelProps {
-  sequence: SeqState
-  feature: ParentFeat
-  mode: string
-  intronBp?: number
-}
-export const SequencePanel = React.forwardRef<
-  HTMLDivElement,
-  SequencePanelProps
->((props, ref) => {
-  const { feature, mode, intronBp = 10 } = props
-  let {
-    sequence: { seq, upstream = '', downstream = '' },
-  } = props
-  const { subfeatures = [] } = feature
-
-  const children = subfeatures
-    .sort((a, b) => a.start - b.start)
-    .map(sub => ({
-      ...sub,
-      start: sub.start - feature.start,
-      end: sub.end - feature.start,
-    }))
-
-  // we filter duplicate entries in cds and exon lists duplicate entries may be
-  // rare but was seen in Gencode v36 track NCList, likely a bug on GFF3 or
-  // probably worth ignoring here (produces broken protein translations if
-  // included)
-  //
-  // position 1:224,800,006..225,203,064 gene ENSG00000185842.15 first
-  // transcript ENST00000445597.6
-  //
-  // http://localhost:3000/?config=test_data%2Fconfig.json&session=share-FUl7G1isvF&password=HXh5Y
-
-  let cds = dedupe(children.filter(sub => sub.type === 'CDS'))
-  let utr = dedupe(children.filter(sub => sub.type.match(/utr/i)))
-  let exons = dedupe(children.filter(sub => sub.type === 'exon'))
-
-  if (!utr.length && cds.length && exons.length) {
-    utr = calculateUTRs(cds, exons)
-  }
-  if (!utr.length && cds.length && !exons.length) {
-    utr = calculateUTRs2(cds, {
-      start: 0,
-      end: feature.end - feature.start,
-      type: 'gene',
-    })
-  }
-
-  if (feature.strand === -1) {
-    // doing this in a single assignment is needed because downstream and
-    // upstream are swapped so this avoids a temp variable
-    ;[seq, upstream, downstream] = [
-      revcom(seq),
-      revcom(downstream),
-      revcom(upstream),
-    ]
-    cds = revlist(cds, seq.length)
-    exons = revlist(exons, seq.length)
-    utr = revlist(utr, seq.length)
-  }
-  const codonTable = generateCodonTable(defaultCodonTable)
-
-  return (
-    <div ref={ref} data-testid="sequence_panel">
-      <div
-        style={{
-          fontFamily: 'monospace',
-          wordWrap: 'break-word',
-          fontSize: 12,
-          maxWidth: 600,
-        }}
-      >
-        {`>${
-          feature.name ||
-          feature.id ||
-          feature.refName + ':' + feature.start + '-' + feature.end
-        }-${mode}\n`}
-        <br />
-        {mode === 'genomic' ? (
-          <Genomic sequence={seq} />
-        ) : mode === 'genomic_sequence_updown' ? (
-          <Genomic sequence={seq} upstream={upstream} downstream={downstream} />
-        ) : mode === 'cds' ? (
-          <GeneCDS cds={cds} sequence={seq} />
-        ) : mode === 'cdna' ? (
-          <GenecDNA
-            exons={exons}
-            cds={cds}
-            utr={utr}
-            sequence={seq}
-            intronBp={intronBp}
-          />
-        ) : mode === 'protein' ? (
-          <GeneProtein cds={cds} codonTable={codonTable} sequence={seq} />
-        ) : mode === 'gene' ? (
-          <GenecDNA
-            exons={exons}
-            cds={cds}
-            utr={utr}
-            sequence={seq}
-            includeIntrons
-            intronBp={intronBp}
-          />
-        ) : mode === 'gene_collapsed_intron' ? (
-          <GenecDNA
-            exons={exons}
-            cds={cds}
-            sequence={seq}
-            utr={utr}
-            includeIntrons
-            collapseIntron
-            intronBp={intronBp}
-          />
-        ) : mode === 'gene_updownstream' ? (
-          <GenecDNA
-            exons={exons}
-            cds={cds}
-            sequence={seq}
-            utr={utr}
-            upstream={upstream}
-            downstream={downstream}
-            includeIntrons
-            intronBp={intronBp}
-          />
-        ) : mode === 'gene_updownstream_collapsed_intron' ? (
-          <GenecDNA
-            exons={exons}
-            cds={cds}
-            sequence={seq}
-            utr={utr}
-            upstream={upstream}
-            downstream={downstream}
-            includeIntrons
-            collapseIntron
-            intronBp={intronBp}
-          />
-        ) : (
-          <div>Unknown type</div>
-        )}
-      </div>
-    </div>
-  )
-})
 // display the stitched-together sequence of a gene's CDS, cDNA, or protein
 // sequence. this is a best effort and weird genomic phenomena could lead these
 // to not be 100% accurate
@@ -337,99 +179,106 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   return (isGene && !hasCDS) || !model ? null : (
     <div ref={ref} className={classes.container}>
-      <FormControl className={classes.formControl}>
-        <Select value={mode} onChange={event => setMode(event.target.value)}>
-          {Object.entries(arg).map(([key, val]) => (
-            <MenuItem key={key} value={key}>
-              {val}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {inView ? (
+        <>
+          <FormControl className={classes.formControl}>
+            <Select
+              value={mode}
+              onChange={event => setMode(event.target.value)}
+            >
+              {Object.entries(arg).map(([key, val]) => (
+                <MenuItem key={key} value={key}>
+                  {val}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-      <FormControl className={classes.formControl}>
-        <Button
-          className={classes.button}
-          variant="contained"
-          onClick={() => {
-            const ref = seqPanelRef.current
-            if (ref) {
-              copy(ref.textContent || '', { format: 'text/plain' })
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1000)
-            }
-          }}
-        >
-          {copied ? 'Copied to clipboard!' : 'Copy plaintext'}
-        </Button>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <Tooltip title="Note that 'Copy as HTML' can retain the colors but cannot be pasted into some programs like notepad that only expect plain text">
-          <Button
-            className={classes.button}
-            variant="contained"
-            onClick={() => {
-              const ref = seqPanelRef.current
-              if (ref) {
-                copy(ref.innerHTML, { format: 'text/html' })
-                setCopiedHtml(true)
-                setTimeout(() => setCopiedHtml(false), 1000)
-              }
-            }}
-          >
-            {copiedHtml ? 'Copied to clipboard!' : 'Copy HTML'}
-          </Button>
-        </Tooltip>
-      </FormControl>
-      <FormControl className={classes.formControl}>
-        <IconButton onClick={() => setSettingsDlgOpen(true)}>
-          <SettingsIcon />
-        </IconButton>
-      </FormControl>
-      <br />
-      <>
-        {error ? (
-          <Typography color="error">{`${error}`}</Typography>
-        ) : loading ? (
-          <Typography>Loading gene sequence...</Typography>
-        ) : sequence ? (
-          'error' in sequence ? (
-            <>
-              <Typography color="error">{sequence.error}</Typography>
+          <FormControl className={classes.formControl}>
+            <Button
+              className={classes.button}
+              variant="contained"
+              onClick={() => {
+                const ref = seqPanelRef.current
+                if (ref) {
+                  copy(ref.textContent || '', { format: 'text/plain' })
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 1000)
+                }
+              }}
+            >
+              {copied ? 'Copied to clipboard!' : 'Copy plaintext'}
+            </Button>
+          </FormControl>
+          <FormControl className={classes.formControl}>
+            <Tooltip title="Note that 'Copy as HTML' can retain the colors but cannot be pasted into some programs like notepad that only expect plain text">
               <Button
+                className={classes.button}
                 variant="contained"
-                color="inherit"
-                onClick={() => setForceLoad({ ...forceLoad, force: true })}
+                onClick={() => {
+                  const ref = seqPanelRef.current
+                  if (ref) {
+                    copy(ref.innerHTML, { format: 'text/html' })
+                    setCopiedHtml(true)
+                    setTimeout(() => setCopiedHtml(false), 1000)
+                  }
+                }}
               >
-                Force load
+                {copiedHtml ? 'Copied to clipboard!' : 'Copy HTML'}
               </Button>
-            </>
-          ) : (
-            <SequencePanel
-              ref={seqPanelRef}
-              feature={parentFeature}
-              mode={mode}
-              sequence={sequence}
+            </Tooltip>
+          </FormControl>
+          <FormControl className={classes.formControl}>
+            <IconButton onClick={() => setSettingsDlgOpen(true)}>
+              <SettingsIcon />
+            </IconButton>
+          </FormControl>
+          <br />
+          <>
+            {error ? (
+              <Typography color="error">{`${error}`}</Typography>
+            ) : loading ? (
+              <Typography>Loading gene sequence...</Typography>
+            ) : sequence ? (
+              'error' in sequence ? (
+                <>
+                  <Typography color="error">{sequence.error}</Typography>
+                  <Button
+                    variant="contained"
+                    color="inherit"
+                    onClick={() => setForceLoad({ ...forceLoad, force: true })}
+                  >
+                    Force load
+                  </Button>
+                </>
+              ) : (
+                <SequencePanel
+                  ref={seqPanelRef}
+                  feature={parentFeature}
+                  mode={mode}
+                  sequence={sequence}
+                  intronBp={intronBp}
+                />
+              )
+            ) : (
+              <Typography>No sequence found</Typography>
+            )}
+          </>
+          {settingsDlgOpen ? (
+            <SettingsDlg
+              handleClose={arg => {
+                if (arg) {
+                  const { upDownBp, intronBp } = arg
+                  setIntronBp(intronBp)
+                  setUpDownBp(upDownBp)
+                }
+                setSettingsDlgOpen(false)
+              }}
+              upDownBp={upDownBp}
               intronBp={intronBp}
             />
-          )
-        ) : (
-          <Typography>No sequence found</Typography>
-        )}
-      </>
-      {settingsDlgOpen ? (
-        <SettingsDlg
-          handleClose={arg => {
-            if (arg) {
-              const { upDownBp, intronBp } = arg
-              setIntronBp(intronBp)
-              setUpDownBp(upDownBp)
-            }
-            setSettingsDlgOpen(false)
-          }}
-          upDownBp={upDownBp}
-          intronBp={intronBp}
-        />
+          ) : null}
+        </>
       ) : null}
     </div>
   )
