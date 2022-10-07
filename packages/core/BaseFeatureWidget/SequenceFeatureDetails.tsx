@@ -9,7 +9,6 @@ import {
   Tooltip,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { useInView } from 'react-intersection-observer'
 import copy from 'copy-to-clipboard'
 
 // locals
@@ -40,6 +39,9 @@ const useStyles = makeStyles()(theme => ({
   container: {
     margin: theme.spacing(1),
   },
+  container2: {
+    marginTop: theme.spacing(1),
+  },
 }))
 
 const BPLIMIT = 500_000
@@ -55,7 +57,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const seqPanelRef = useRef<HTMLDivElement>(null)
   const [settingsDlgOpen, setSettingsDlgOpen] = useState(false)
 
-  const { ref, inView } = useInView()
+  const [shown, setShown] = useState(false)
   const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
   const [copied, setCopied] = useState(false)
@@ -73,7 +75,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   useEffect(() => {
     let finished = false
-    if (!model || !inView) {
+    if (!model || !shown) {
       return () => {}
     }
     const { assemblyManager, rpcManager } = getSession(model)
@@ -131,7 +133,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     return () => {
       finished = true
     }
-  }, [feature, inView, model, upDownBp, forceLoad])
+  }, [feature, shown, model, upDownBp, forceLoad])
 
   const loading = !sequence
 
@@ -178,9 +180,13 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       }
 
   return (isGene && !hasCDS) || !model ? null : (
-    <div ref={ref} className={classes.container}>
-      {inView ? (
-        <>
+    <div className={classes.container2}>
+      <Button variant="contained" onClick={() => setShown(!shown)}>
+        {shown ? 'Hide feature sequence' : 'Show feature sequence'}
+      </Button>
+      <br />
+      {shown ? (
+        <div className={classes.container2}>
           <FormControl className={classes.formControl}>
             <Select
               value={mode}
@@ -198,6 +204,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
             <Button
               className={classes.button}
               variant="contained"
+              color="inherit"
               onClick={() => {
                 const ref = seqPanelRef.current
                 if (ref) {
@@ -211,10 +218,11 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
             </Button>
           </FormControl>
           <FormControl className={classes.formControl}>
-            <Tooltip title="Note that 'Copy as HTML' can retain the colors but cannot be pasted into some programs like notepad that only expect plain text">
+            <Tooltip title="The 'Copy HTML' function retains the colors from the sequence panel but cannot be pasted into some programs like notepad that only expect plain text">
               <Button
                 className={classes.button}
                 variant="contained"
+                color="inherit"
                 onClick={() => {
                   const ref = seqPanelRef.current
                   if (ref) {
@@ -264,21 +272,22 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
               <Typography>No sequence found</Typography>
             )}
           </>
-          {settingsDlgOpen ? (
-            <SettingsDlg
-              handleClose={arg => {
-                if (arg) {
-                  const { upDownBp, intronBp } = arg
-                  setIntronBp(intronBp)
-                  setUpDownBp(upDownBp)
-                }
-                setSettingsDlgOpen(false)
-              }}
-              upDownBp={upDownBp}
-              intronBp={intronBp}
-            />
-          ) : null}
-        </>
+        </div>
+      ) : null}
+
+      {settingsDlgOpen ? (
+        <SettingsDlg
+          handleClose={arg => {
+            if (arg) {
+              const { upDownBp, intronBp } = arg
+              setIntronBp(intronBp)
+              setUpDownBp(upDownBp)
+            }
+            setSettingsDlgOpen(false)
+          }}
+          upDownBp={upDownBp}
+          intronBp={intronBp}
+        />
       ) : null}
     </div>
   )

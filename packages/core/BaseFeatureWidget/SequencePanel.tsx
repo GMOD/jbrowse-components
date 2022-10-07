@@ -82,7 +82,6 @@ const SequencePanel = React.forwardRef<HTMLDivElement, SequencePanelProps>(
             fontSize: 12,
             maxWidth: 600,
             maxHeight: 500,
-            marginBottom: 50,
           }}
         >
           {`>${
