@@ -108,7 +108,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
         if (!forceLoad.force && end - start > BPLIMIT) {
           setSequence({
-            error: `Feature sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
+            error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
           })
         } else {
           const seq = await fetchSeq(start, end, refName)
@@ -173,8 +173,8 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         }
       : rest
     : {
-        genomic: 'Feature seq',
-        genomic_sequence_updown: `Feature seq w/ ${upDownBp}bp up+down stream`,
+        genomic: 'Genomic seq',
+        genomic_sequence_updown: `Genomic seq w/ ${upDownBp}bp up+down stream`,
       }
 
   return (isGene && !hasCDS) || !model ? null : (

@@ -78,8 +78,11 @@ const SequencePanel = React.forwardRef<HTMLDivElement, SequencePanelProps>(
           style={{
             fontFamily: 'monospace',
             wordWrap: 'break-word',
+            overflow: 'auto',
             fontSize: 12,
             maxWidth: 600,
+            maxHeight: 500,
+            marginBottom: 50,
           }}
         >
           {`>${
