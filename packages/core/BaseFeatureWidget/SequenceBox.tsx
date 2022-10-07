@@ -8,6 +8,7 @@ const intronColor = undefined
 const cdsColor = 'rgb(220,220,180)'
 const updownstreamColor = 'rgba(250,200,200)'
 const utrColor = 'rgb(200,240,240)'
+const genomeColor = 'rgb(200,280,200)'
 
 export function GeneCDS({ cds, sequence }: { cds: Feat[]; sequence: string }) {
   return <span style={{ background: cdsColor }}>{stitch(cds, sequence)}</span>
@@ -112,7 +113,7 @@ export function Genomic({
 
       <span
         style={{
-          background: utrColor,
+          background: genomeColor,
         }}
       >
         {sequence}

@@ -24,7 +24,7 @@ import {
   getUriLink,
   isUriLocation,
 } from '../util'
-import SanitizedHTML from '../ui/SanitizedHTML'
+import { ErrorMessage, SanitizedHTML } from '../ui'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerializedNoId } from '../util/simpleFeature'
@@ -576,15 +576,13 @@ export const FeatureDetails = (props: {
       />
 
       <ErrorBoundary
-        FallbackComponent={({ error }) => (
-          <Typography color="error">{`${error}`}</Typography>
-        )}
+        FallbackComponent={({ error }) => <ErrorMessage error={error} />}
       >
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 
       {subfeatures?.length ? (
-        <BaseCard title="Subfeatures">
+        <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
           {subfeatures.map(sub => (
             <FeatureDetails
               key={JSON.stringify(sub)}

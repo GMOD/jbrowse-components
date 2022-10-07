@@ -24,8 +24,16 @@ import {
 import { BaseProps } from './types'
 import { getConf } from '../configuration'
 import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
-import { ParentFeat, SeqState, calculateUTRs, dedupe, revlist } from './util'
-import { GenecDNA, GeneProtein, GeneCDS, Genomic } from './GeneSequencePanel'
+import {
+  ParentFeat,
+  SeqState,
+  ErrorState,
+  calculateUTRs,
+  calculateUTRs2,
+  dedupe,
+  revlist,
+} from './util'
+import { GenecDNA, GeneProtein, GeneCDS, Genomic } from './SequenceBox'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -47,6 +55,8 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(1),
   },
 }))
+
+const BPLIMIT = 500_000
 
 interface SequencePanelProps {
   sequence: SeqState
@@ -88,6 +98,13 @@ export const SequencePanel = React.forwardRef<
 
   if (!utr.length && cds.length && exons.length) {
     utr = calculateUTRs(cds, exons)
+  }
+  if (!utr.length && cds.length && !exons.length) {
+    utr = calculateUTRs2(cds, {
+      start: 0,
+      end: feature.end - feature.start,
+      type: 'gene',
+    })
   }
 
   if (feature.strand === -1) {
@@ -197,12 +214,20 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const [settingsDlgOpen, setSettingsDlgOpen] = useState(false)
 
   const { ref, inView } = useInView()
-  const [sequence, setSequence] = useState<SeqState>()
+  const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
   const [copied, setCopied] = useState(false)
   const [copiedHtml, setCopiedHtml] = useState(false)
   const [intronBp, setIntronBp] = useLocalStorage('intronBp', 10)
   const [upDownBp, setUpDownBp] = useLocalStorage('upDownBp', 500)
+  const [forceLoad, setForceLoad] = useState({
+    id: feature.uniqueId,
+    force: false,
+  })
+
+  useEffect(() => {
+    setForceLoad({ id: feature.uniqueId, force: false })
+  }, [feature])
 
   useEffect(() => {
     let finished = false
@@ -217,6 +242,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         throw new Error('assembly not found')
       }
       const sessionId = 'getSequence'
+
       const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
         adapterConfig: getConf(assembly, ['sequence', 'adapter']),
         sessionId,
@@ -232,15 +258,27 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       const [feat] = feats as Feature[]
       return (feat?.get('seq') as string) || ''
     }
+
     ;(async () => {
       try {
         setError(undefined)
         const { start, end, refName } = feature as CoordFeat
-        const seq = await fetchSeq(start, end, refName)
-        const up = await fetchSeq(Math.max(0, start - upDownBp), start, refName)
-        const down = await fetchSeq(end, end + upDownBp, refName)
-        if (!finished) {
-          setSequence({ seq, upstream: up, downstream: down })
+
+        if (!forceLoad.force && end - start > BPLIMIT) {
+          setSequence({
+            error: `Feature sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
+          })
+        } else {
+          const seq = await fetchSeq(start, end, refName)
+          const up = await fetchSeq(
+            Math.max(0, start - upDownBp),
+            start,
+            refName,
+          )
+          const down = await fetchSeq(end, end + upDownBp, refName)
+          if (!finished) {
+            setSequence({ seq, upstream: up, downstream: down })
+          }
         }
       } catch (e) {
         console.error(e)
@@ -251,7 +289,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     return () => {
       finished = true
     }
-  }, [feature, inView, model, upDownBp])
+  }, [feature, inView, model, upDownBp, forceLoad])
 
   const loading = !sequence
 
@@ -265,6 +303,12 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
     feature.type === 'CDS'
       ? sequenceTypes.includes('CDS') && !feature.parentId
       : sequenceTypes.includes(feature.type)
+  const val = attemptGeneType ? (hasCDS ? 'cds' : 'cdna') : 'genomic'
+
+  // this useEffect is needed to reset the mode/setMode useState because the contents of the select box can completely change depending on whether we click on a gene feature or non-gene feature, so the current value in the select box must change accordingly
+  useEffect(() => {
+    setMode(val)
+  }, [attemptGeneType, val])
 
   const [mode, setMode] = useState(
     attemptGeneType ? (hasCDS ? 'cds' : 'cdna') : 'genomic',
@@ -272,7 +316,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
 
   const rest = {
     gene: 'Gene w/ introns',
-    gene_collapsed_intron: `Gene w/ ${intronBp} of intron`,
+    gene_collapsed_intron: `Gene w/ ${intronBp}bp of intron`,
     gene_updownstream: `Gene w/ ${upDownBp}bp up+down stream`,
     gene_updownstream_collapsed_intron: `Gene w/ ${upDownBp}bp up+down stream w/ ${intronBp}bp intron`,
     cdna: 'cDNA',
@@ -287,8 +331,8 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         }
       : rest
     : {
-        genomic: 'Feature sequence',
-        genomic_sequence_updown: `Feature sequence w/ ${upDownBp}bp up+down stream`,
+        genomic: 'Feature seq',
+        genomic_sequence_updown: `Feature seq w/ ${upDownBp}bp up+down stream`,
       }
 
   return (isGene && !hasCDS) || !model ? null : (
@@ -316,7 +360,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
             }
           }}
         >
-          {copied ? 'Copied to clipboard!' : 'Copy as plaintext'}
+          {copied ? 'Copied to clipboard!' : 'Copy plaintext'}
         </Button>
       </FormControl>
       <FormControl className={classes.formControl}>
@@ -333,7 +377,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
               }
             }}
           >
-            {copiedHtml ? 'Copied to clipboard!' : 'Copy as HTML'}
+            {copiedHtml ? 'Copied to clipboard!' : 'Copy HTML'}
           </Button>
         </Tooltip>
       </FormControl>
@@ -349,13 +393,26 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         ) : loading ? (
           <Typography>Loading gene sequence...</Typography>
         ) : sequence ? (
-          <SequencePanel
-            ref={seqPanelRef}
-            feature={parentFeature}
-            mode={mode}
-            sequence={sequence}
-            intronBp={intronBp}
-          />
+          'error' in sequence ? (
+            <>
+              <Typography color="error">{sequence.error}</Typography>
+              <Button
+                variant="contained"
+                color="inherit"
+                onClick={() => setForceLoad({ ...forceLoad, force: true })}
+              >
+                Force load
+              </Button>
+            </>
+          ) : (
+            <SequencePanel
+              ref={seqPanelRef}
+              feature={parentFeature}
+              mode={mode}
+              sequence={sequence}
+              intronBp={intronBp}
+            />
+          )
         ) : (
           <Typography>No sequence found</Typography>
         )}
