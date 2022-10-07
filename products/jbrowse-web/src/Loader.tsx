@@ -25,6 +25,7 @@ import SessionLoader, {
   SessionLoaderModel,
   loadSessionSpec,
 } from './SessionLoader'
+import { getURL } from './util'
 
 // lazy components
 const SessionWarningDialog = lazy(() => import('./SessionWarningDialog'))
@@ -116,7 +117,7 @@ export function Loader({
   const [tracks, setTracks] = useQueryParam('tracks', Str)
 
   const loader = SessionLoader.create({
-    configPath: load(config) || load(data) + '/config.json',
+    configPath: load(config) || getURL(data || '', 'config.json'),
     sessionQuery: load(session),
     password: load(password),
     adminKey: load(adminKey),
@@ -257,12 +258,10 @@ const Renderer = observer(
           // error Assuming that the query changes self.sessionError or
           // self.sessionSnapshot or self.blankSession
           const pluginManager = new PluginManager([
-            ...corePlugins.map(P => {
-              return {
-                plugin: new P(),
-                metadata: { isCore: true },
-              } as PluginLoadRecord
-            }),
+            ...corePlugins.map(P => ({
+              plugin: new P(),
+              metadata: { isCore: true },
+            })),
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
               definition,

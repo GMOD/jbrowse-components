@@ -117,3 +117,11 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
     })
   }
 }
+
+export function getURL(...args: string[]) {
+  let u: URL | string = window.location.href
+  for (let i = 0; i < args.length; i++) {
+    u = new URL(args[i], u)
+  }
+  return `${u}`
+}

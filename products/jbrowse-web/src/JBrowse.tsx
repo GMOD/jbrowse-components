@@ -14,6 +14,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
 import { SessionModel } from './sessionModelFactory'
+import { getURL } from './util'
 
 import './JBrowse.css'
 
@@ -42,32 +43,27 @@ const JBrowse = observer(
         return
       }
       onSnapshot(jbrowse, async snapshot => {
+        if (!adminKey) {
+          return
+        }
         try {
-          if (adminKey) {
-            const response = await fetch(adminServer || `/updateConfig`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                adminKey,
-                configPath: configPath || dataPath + '/config.json',
-                config: snapshot,
-              }),
-            })
-            if (!response.ok) {
-              const message = await response.text()
-              throw new Error(
-                `Admin server error: ${response.status} (${
-                  response.statusText
-                }) ${message || ''}`,
-              )
-            }
+          const response = await fetch(getURL(adminServer || '/updateConfig'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              adminKey,
+              configPath: configPath || getURL(dataPath || '', 'config.json'),
+              config: snapshot,
+            }),
+          })
+          if (!response.ok) {
+            const message = await response.text()
+            throw new Error(`Admin server error: ${response.status} ${message}`)
           }
         } catch (e) {
-          if (session) {
-            session.notify(`${e}`, 'error')
-          }
+          session?.notify(`${e}`, 'error')
         }
       })
     }, [jbrowse, session, adminKey, adminServer, configPath, dataPath])
