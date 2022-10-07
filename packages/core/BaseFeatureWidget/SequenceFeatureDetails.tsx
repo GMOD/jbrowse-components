@@ -230,15 +230,11 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       })
 
       const [feat] = feats as Feature[]
-      if (!feat) {
-        throw new Error(
-          `sequence not found for feature with refName:${refName}`,
-        )
-      }
-      return feat.get('seq') as string
+      return (feat?.get('seq') as string) || ''
     }
     ;(async () => {
       try {
+        setError(undefined)
         const { start, end, refName } = feature as CoordFeat
         const seq = await fetchSeq(start, end, refName)
         const up = await fetchSeq(Math.max(0, start - upDownBp), start, refName)
@@ -247,6 +243,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
           setSequence({ seq, upstream: up, downstream: down })
         }
       } catch (e) {
+        console.error(e)
         setError(e)
       }
     })()
@@ -293,14 +290,6 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
         genomic: 'Feature sequence',
         genomic_sequence_updown: `Feature sequence w/ ${upDownBp}bp up+down stream`,
       }
-
-  console.log({
-    isGene,
-    h: !hasCDS,
-    m: !model,
-    k: (isGene && !hasCDS) || !model,
-    model,
-  })
 
   return (isGene && !hasCDS) || !model ? null : (
     <div ref={ref} className={classes.container}>
