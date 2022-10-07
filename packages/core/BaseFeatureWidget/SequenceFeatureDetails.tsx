@@ -115,8 +115,11 @@ export const SequencePanel = React.forwardRef<
         }}
       >
         {`>${
-          feature.name || feature.id || feature.parentId || 'unknown'
+          feature.name ||
+          feature.id ||
+          feature.refName + ':' + feature.start + '-' + feature.end
         }-${mode}\n`}
+        <br />
         {mode === 'genomic' ? (
           <Genomic sequence={seq} />
         ) : mode === 'genomic_sequence_updown' ? (

@@ -2,6 +2,7 @@ export interface Feat {
   start: number
   end: number
   type: string
+  refName: string
   name?: string
   id?: string
 }
