@@ -65,7 +65,7 @@ export default function RootModel(
       jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: types.optional(assemblyManagerType, {}),
       version: types.maybe(types.string),
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
