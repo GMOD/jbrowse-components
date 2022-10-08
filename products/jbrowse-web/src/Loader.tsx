@@ -8,6 +8,7 @@ import {
   QueryParamProvider,
   useQueryParam,
 } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
@@ -414,7 +415,7 @@ const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     // @ts-ignore
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-      <QueryParamProvider>
+      <QueryParamProvider adapter={WindowHistoryAdapter}>
         <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>

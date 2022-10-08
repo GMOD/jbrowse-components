@@ -24,6 +24,7 @@ import corePlugins from '../corePlugins'
 import { Image, createCanvas } from 'canvas'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 type LGV = LinearGenomeViewModel
 
@@ -136,7 +137,7 @@ export function expectCanvasMatch(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function JBrowse(props: any) {
   return (
-    <QueryParamProvider>
+    <QueryParamProvider adapter={WindowHistoryAdapter}>
       <JBrowseWithoutQueryParamProvider {...props} />
     </QueryParamProvider>
   )
