@@ -23,9 +23,7 @@ class WebWorkerHandle extends Rpc.Client {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${shortid.generate()}`
     const listener = (message: string) => {
-      if (statusCallback) {
-        statusCallback(message)
-      }
+      statusCallback?.(message)
     }
     this.on(channel, listener)
     const result = await super.call(
@@ -37,6 +35,8 @@ class WebWorkerHandle extends Rpc.Client {
     return result
   }
 }
+
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 
 export default class WebWorkerRpcDriver extends BaseRpcDriver {
   name = 'WebWorkerRpcDriver'
@@ -58,6 +58,13 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     const instance = this.makeWorkerInstance()
 
     const worker = new WebWorkerHandle({ workers: [instance] })
+    if (isSafari) {
+      // eslint-disable-next-line no-console
+      console.log(
+        'console logging the webworker handle avoids the track going into an infinite loading state, this is a hacky workaround for safari',
+        instance,
+      )
+    }
 
     // send the worker its boot configuration using info from the pluginManager
     const p = new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
