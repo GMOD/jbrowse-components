@@ -36,8 +36,6 @@ class WebWorkerHandle extends Rpc.Client {
   }
 }
 
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-
 export default class WebWorkerRpcDriver extends BaseRpcDriver {
   name = 'WebWorkerRpcDriver'
 
@@ -58,6 +56,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     const instance = this.makeWorkerInstance()
 
     const worker = new WebWorkerHandle({ workers: [instance] })
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
       // eslint-disable-next-line no-console
       console.log(

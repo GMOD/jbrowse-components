@@ -1,10 +1,11 @@
-import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import PropTypes from 'prop-types'
 import React, { useState } from 'react'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material'
 import FactoryResetDialog from './FactoryResetDialog'
 
 const ResetComponent = ({
@@ -34,28 +35,25 @@ const ResetComponent = ({
     </>
   )
 }
-ResetComponent.propTypes = {
-  onFactoryReset: PropTypes.func.isRequired,
-  resetButtonText: PropTypes.string.isRequired,
-}
 
 const FatalErrorDialog = ({
   componentStack,
-  error,
+  error = 'No error message provided',
   onFactoryReset,
-  resetButtonText,
+  resetButtonText = 'Factory Reset',
 }: {
-  componentStack: string
-  error: Error
+  componentStack?: string
+  error?: unknown
   onFactoryReset: Function
-  resetButtonText: string
+  resetButtonText?: string
 }) => {
+  console.error(error)
   return (
     <Dialog open>
-      <DialogTitle style={{ backgroundColor: '#e88' }}>Fatal error</DialogTitle>
+      <DialogTitle style={{ background: '#e88' }}>Fatal error</DialogTitle>
       <DialogContent>
         <pre>
-          {error.toString()}
+          {`${error}`}
           {componentStack}
         </pre>
       </DialogContent>
@@ -74,19 +72,6 @@ const FatalErrorDialog = ({
       </DialogActions>
     </Dialog>
   )
-}
-
-FatalErrorDialog.propTypes = {
-  componentStack: PropTypes.string,
-  error: PropTypes.shape({}),
-  onFactoryReset: PropTypes.func.isRequired,
-  resetButtonText: PropTypes.string,
-}
-
-FatalErrorDialog.defaultProps = {
-  error: { message: 'No error message provided' },
-  componentStack: '',
-  resetButtonText: 'Factory Reset',
 }
 
 export default FatalErrorDialog
