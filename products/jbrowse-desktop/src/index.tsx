@@ -3,33 +3,29 @@ import ReactDOM from 'react-dom'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import { ErrorBoundary } from 'react-error-boundary'
 import { QueryParamProvider } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import '@fontsource/roboto'
 
 import factoryReset from './factoryReset'
 import Loader from './Loader'
 
-const initialTimestamp = Date.now()
-
-if (window && window.name.startsWith('JBrowseAuthWindow')) {
-  const parent = window.opener
-  if (parent) {
-    parent.postMessage({
-      name: window.name,
-      redirectUri: window.location.href,
-    })
-  }
+if (window?.name.startsWith('JBrowseAuthWindow')) {
+  window.opener?.postMessage({
+    name: window.name,
+    redirectUri: window.location.href,
+  })
   window.close()
 }
 
-const PlatformSpecificFatalErrorDialog = props => {
-  return <FatalErrorDialog onFactoryReset={factoryReset} {...props} />
+const PlatformSpecificFatalErrorDialog = (props: { error?: unknown }) => {
+  return <FatalErrorDialog {...props} onFactoryReset={factoryReset} />
 }
 
 ReactDOM.render(
   <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-    <QueryParamProvider>
-      <Loader initialTimestamp={initialTimestamp} />
+    <QueryParamProvider adapter={WindowHistoryAdapter}>
+      <Loader />
     </QueryParamProvider>
   </ErrorBoundary>,
   document.getElementById('root'),
