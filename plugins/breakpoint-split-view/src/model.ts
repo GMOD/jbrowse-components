@@ -239,16 +239,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(async () => {
-            const res = Object.fromEntries(
-              await Promise.all(
-                self.matchedTracks.map(async track => [
-                  track.configuration.trackId,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  await getBlockFeatures(self as any, track),
-                ]),
-              ),
-            )
-            self.setMatchedTrackFeatures(res)
+            try {
+              if (!self.views.every(view => view.initialized)) {
+                return
+              }
+              self.setMatchedTrackFeatures(
+                Object.fromEntries(
+                  await Promise.all(
+                    self.matchedTracks.map(async track => [
+                      track.configuration.trackId,
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      await getBlockFeatures(self as any, track),
+                    ]),
+                  ),
+                ),
+              )
+            } catch (e) {
+              console.error(e)
+              getSession(self).notify(`${e}`, 'error')
+            }
           }),
         )
       },
