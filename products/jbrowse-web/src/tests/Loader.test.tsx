@@ -1,6 +1,5 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import React from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { render, waitFor } from '@testing-library/react'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'
