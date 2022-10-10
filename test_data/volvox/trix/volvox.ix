@@ -64,6 +64,7 @@ fingerprinted ["ctgA%3A1000..20000"|"gff3tabix_genes"|"b101.2"|"b101.2"|"Fingerp
 form ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1 ["ctgA%3A1050..9000"|"gff3tabix_genes"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],2 ["ctgA%3A1300..9000"|"gff3tabix_genes"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],3
 gene1 ["ctgA%3A1201..1500"|"single_exon_gene"|"gene1"],1
 gene2 ["ctgA%3A1201..3902"|"single_exon_gene"|"gene2"],1
+gene3 ["ctgA%3A2201..2500"|"single_exon_gene"|"gene3"],1
 gene:hga ["ctgA%3A1100..2000"|"gff3tabix_genes"|"Gene%3Ahga"],1
 gene:hgb ["ctgA%3A1600..3000"|"gff3tabix_genes"|"Gene%3Ahgb"],1
 get ["ctgA%3A4715..5968"|"gff3tabix_genes"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1

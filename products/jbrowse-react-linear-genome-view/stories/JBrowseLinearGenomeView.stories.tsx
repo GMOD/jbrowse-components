@@ -35,14 +35,19 @@ addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
 const supportedTrackTypes = [
   'AlignmentsTrack',
   'PileupTrack',
+  'FeatureTrack',
   'SNPCoverageTrack',
   'VariantTrack',
   'WiggleTrack',
 ]
 
+const excludeIds = ['gtf_plain_text_test', 'lollipop_track', 'arc_track']
+
 const assembly = volvoxConfig.assemblies[0]
-const tracks = volvoxConfig.tracks.filter(track =>
-  supportedTrackTypes.includes(track.type),
+const tracks = volvoxConfig.tracks.filter(
+  track =>
+    supportedTrackTypes.includes(track.type) &&
+    !excludeIds.includes(track.trackId),
 )
 const defaultSession = {
   name: 'Storybook',
