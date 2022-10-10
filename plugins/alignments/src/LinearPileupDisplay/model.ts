@@ -177,24 +177,22 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                   adapterConfig,
                   rendererType,
                 } = self
+
+                if (
+                  !view.initialized ||
+                  !self.estimatedStatsReady ||
+                  self.regionTooLarge
+                ) {
+                  return
+                }
+
                 const { staticBlocks, bpPerPx } = view
-
-                if (!self.estimatedStatsReady) {
-                  return
-                }
-                if (self.regionTooLarge) {
-                  return
-                }
-
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
-                  const uniqueTagSet = await getUniqueTagValues(
-                    self,
-                    colorBy,
-                    staticBlocks,
+                  self.updateColorTagMap(
+                    await getUniqueTagValues(self, colorBy, staticBlocks),
                   )
-                  self.updateColorTagMap(uniqueTagSet)
                 }
 
                 if (colorBy?.type === 'modifications') {
@@ -211,7 +209,6 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
 
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
-
                   // render just the sorted region first
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,

@@ -85,7 +85,7 @@ export default class extends BaseFeatureDataAdapter {
       const { refName, start, end } = query
       const { vcf, parser } = await this.configure()
       await vcf.getLines(refName, start, end, {
-        lineCallback: (line: string, fileOffset: number) => {
+        lineCallback: (line, fileOffset) => {
           observer.next(
             new VcfFeature({
               variant: parser.parseLine(line),

@@ -1537,10 +1537,10 @@
     object.entries-ponyfill "^1.0.1"
     quick-lru "^2.0.0"
 
-"@gmod/bbi@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-2.0.2.tgz#33f343ad46cce789d3e8e1de348bf1a69d19f538"
-  integrity sha512-6sReScRL9it2jCjMFRjLOFiU4+gS8Uzx2d7rBcnb1izktAxMFvR1TPXtzP4MPvYYSiv1W/rxtOOz2iItKDkq/A==
+"@gmod/bbi@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@gmod/bbi/-/bbi-2.0.3.tgz#961a0beb0b7406289d6c4ba4977939610668a09c"
+  integrity sha512-dFZi1SHBLhVPhsaGXE9yP5gRGQyoBp6u3TthkoYYLee5p7RJI0imzlVrF1/tYSAV484Rd985s04gwjBjbWVfzA==
   dependencies:
     abortable-promise-cache "^1.4.1"
     binary-parser "^2.1.0"
