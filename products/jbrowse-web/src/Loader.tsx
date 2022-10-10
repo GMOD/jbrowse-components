@@ -1,5 +1,5 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
-import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { inDevelopment } from '@jbrowse/core/util'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
@@ -8,6 +8,7 @@ import {
   QueryParamProvider,
   useQueryParam,
 } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
@@ -169,11 +170,11 @@ const SessionTriaged = ({
   )
 }
 
-const ErrMessage = ({ err }: { err: unknown }) => {
+const StartScreenErrorMessage = ({ error }: { error: unknown }) => {
   return (
     <>
       <NoConfigMessage />
-      {`${err}`.match(/HTTP 404 fetching config.json/) ? (
+      {`${error}`.match(/HTTP 404 fetching config.json/) ? (
         <div
           style={{
             margin: 8,
@@ -191,7 +192,7 @@ const ErrMessage = ({ err }: { err: unknown }) => {
         </div>
       ) : (
         <Suspense fallback={<div>Loading...</div>}>
-          <ErrorMessage error={err} />
+          <ErrorMessage error={error} />
         </Suspense>
       )}
     </>
@@ -256,12 +257,10 @@ const Renderer = observer(
           // error Assuming that the query changes self.sessionError or
           // self.sessionSnapshot or self.blankSession
           const pluginManager = new PluginManager([
-            ...corePlugins.map(P => {
-              return {
-                plugin: new P(),
-                metadata: { isCore: true },
-              } as PluginLoadRecord
-            }),
+            ...corePlugins.map(P => ({
+              plugin: new P(),
+              metadata: { isCore: true },
+            })),
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
               definition,
@@ -280,7 +279,6 @@ const Renderer = observer(
             const rootModel = RootModel.create(
               {
                 jbrowse: configSnapshot,
-                assemblyManager: {},
                 version: packageJSON.version,
                 configPath,
               },
@@ -368,7 +366,7 @@ const Renderer = observer(
     const err = configError || error
 
     if (err) {
-      return <ErrMessage err={err} />
+      return <StartScreenErrorMessage error={err} />
     }
 
     if (loader.sessionTriaged) {
@@ -385,17 +383,13 @@ const Renderer = observer(
       )
     }
     if (pm) {
-      if (!pm.rootModel?.session) {
-        return (
-          <Suspense fallback={<div>Loading...</div>}>
-            <StartScreen
-              rootModel={pm.rootModel}
-              onFactoryReset={factoryReset}
-            />
-          </Suspense>
-        )
-      }
-      return <JBrowse pluginManager={pm} />
+      return !pm.rootModel?.session ? (
+        <Suspense fallback={<div>Loading...</div>}>
+          <StartScreen rootModel={pm.rootModel} onFactoryReset={factoryReset} />
+        </Suspense>
+      ) : (
+        <JBrowse pluginManager={pm} />
+      )
     }
     return <Loading />
   },
@@ -414,7 +408,7 @@ const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
     // @ts-ignore
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-      <QueryParamProvider>
+      <QueryParamProvider adapter={WindowHistoryAdapter}>
         <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>

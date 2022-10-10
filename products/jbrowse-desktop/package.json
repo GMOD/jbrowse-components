@@ -99,7 +99,7 @@
     "sanitize-filename": "^1.6.3",
     "timeago.js": "^4.0.2",
     "tss-react": "^3.7.0",
-    "use-query-params": "1.2.3",
+    "use-query-params": "^2.0.0",
     "webpack": "^5.72.0"
   },
   "devDependencies": {
