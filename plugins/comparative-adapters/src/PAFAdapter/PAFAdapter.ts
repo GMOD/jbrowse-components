@@ -160,7 +160,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
     return text
-      .split('\n')
+      .split(/\n|\r\n|\r/)
       .filter(line => !!line)
       .map(line => {
         const [

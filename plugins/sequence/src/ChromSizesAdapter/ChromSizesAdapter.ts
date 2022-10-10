@@ -14,7 +14,7 @@ export default class extends BaseAdapter implements RegionsAdapter {
     const data = await file.readFile('utf8')
     return Object.fromEntries(
       data
-        .split('\n')
+        .split(/\n|\r\n|\r/)
         .map(f => f.trim())
         .filter(f => !!f)
         .map((line: string) => {

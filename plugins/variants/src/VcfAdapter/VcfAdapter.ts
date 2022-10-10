@@ -14,7 +14,7 @@ import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 const readVcf = (f: string) => {
   const header: string[] = []
   const rest: string[] = []
-  f.split('\n')
+  f.split(/\n|\r\n|\r/)
     .map(f => f.trim())
     .filter(f => !!f)
     .forEach(line => {

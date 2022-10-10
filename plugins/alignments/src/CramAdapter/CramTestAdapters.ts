@@ -10,7 +10,7 @@ export function parseSmallFasta(text: string) {
     .split('>')
     .filter(t => /\S/.test(t))
     .map(entryText => {
-      const [defLine, ...seqLines] = entryText.split('\n')
+      const [defLine, ...seqLines] = entryText.split(/\n|\r\n|\r/)
       const [id, ...descriptionLines] = defLine.split(' ')
       const description = descriptionLines.join(' ')
       const sequence = seqLines.join('').replace(/\s/g, '')

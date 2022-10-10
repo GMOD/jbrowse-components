@@ -151,6 +151,6 @@ export default class DeltaAdapter extends PAFAdapter {
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    return paf_delta2paf(text.split('\n').filter(line => !!line))
+    return paf_delta2paf(text.split(/\n|\r\n|\r/).filter(line => !!line))
   }
 }
