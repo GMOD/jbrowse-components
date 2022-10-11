@@ -1357,6 +1357,84 @@ jexl: cast({ mRNA: 'green', pseudogene: 'purple' })[get(feature, 'type')] // ret
 jexl: get(feature, 'flags') & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```
 
+### Making sophisticated color callbacks
+
+If you have a color callback that has a lot of logic in it, then using jexl to
+express all that logic may be hard. Instead, you can make a small plugin which
+adds a function to the jexl language, and call that function in your jexl
+callback.
+
+For example, create a file named "myplugin.js" (see also Footnote 1)
+
+```js
+// myplugin.js
+class MyPlugin {
+  install() {}
+  configure(pluginManager) {
+    pluginManager.jexl.addFunction('colorFeature', feature => {
+      let type = feature.get('type')
+      if (type === 'CDS') {
+        return 'red'
+      } else if (type === 'exon') {
+        return 'green'
+      } else {
+        return 'purple'
+      }
+    })
+  }
+}
+```
+
+Then you can use the custom jexl function in your config callbacks as follows:
+
+```json
+{
+  "plugins": [
+    {
+      "name": "MyPlugin",
+      "url": "myplugin.js"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "my_track",
+      "name": "my track",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffLocation": {
+          "uri": "volvox.filtered.gff"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "mytrack-LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:colorFeature(feature)"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+The feature is of a "SimpleFeature" type object, and you can call
+`feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
+`feature.get('other_attribute')` for e.g. maybe a field in a GFF3 column 9
+
+Footnote 1. myplugin.js does not have to use the jbrowse-plugin-template if it
+is small and self contained like this, and does not import other modules. if
+you import other modules from your plugin, then it can be worth it to use the
+jbrowse-plugin-template.
+
+Footnote 2. if you are using embedded, there are also other methods of
+including plugins, see
+https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page
+
 ## Customizing the feature details panel
 
 Every track has a configuration called `formatDetails`.
@@ -1414,12 +1492,16 @@ In the example above we return an object with:
 
 ### Making sophisticated customizations to feature detail panels
 
-If your feature detail panel customization is complex, you can create a custom javascript function in a plugin that is registered with the jexl system e.g.
+If your feature detail panel customization is complex, you can create a custom
+javascript function in a plugin that is registered with the jexl system.
+
+You can make a small plugin file "myplugin.js"
 
 ```js
+// myplugin.js
 class MyPlugin {
   install() {}
-  configure(pluginManager: PluginManager) {
+  configure(pluginManager) {
     pluginManager.jexl.addFunction('formatName', feature => {
       return `<a href="${feature.name}">${feature.name}</a>`
     })
@@ -1427,22 +1509,48 @@ class MyPlugin {
 }
 ```
 
-Then you can use the custom jexl function in your config callbacks as follows:
+Then you can put my.js in your jbrowse root directory, and can use the custom
+jexl function in your config callbacks as follows:
 
 ```json
 {
-  "type": "FeatureTrack",
-  "trackId": "genes",
-  "assemblyNames": ["hg19"],
-  "name": "Genes",
-  "formatDetails": {
-    "feature": "jexl:{name:formatName(feature)}"
-  },
-   ...
+  "plugins": [
+    {
+      "name": "MyPlugin",
+      "url": "myplugin.js"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "genes",
+      "assemblyNames": ["hg19"],
+      "name": "Genes",
+      "formatDetails": {
+        "feature": "jexl:{name:formatName(feature)}"
+      }
+    }
+  ]
 }
 ```
 
-See our [developer guides](../developer_guide/) for more information regarding plugin development.
+See our [developer guides](../developer_guide/) for more information regarding
+plugin development.
+
+Note that the feature for feature detail panels is different from that in the
+color callback: it is a plain JS object. So instead of `feature.get('start')`,
+you can say just `feature.start`.
+
+The reason it is different for the feature details callbacks (compared with
+e.g. the color callbacks) is that the feature is serialized into the session.
+
+You might also ask why aren't all features serialized or plain JSON objects
+normally? Well, some feature types like alignments features benefit from only
+being partially serialized e.g. getting only a couple attributes via
+`feature.get('attribute')` (completely converting them to a raw JSON expression
+is expensive). It is a little confusing, but that is why in the feature
+details, you can access the plain JS object e.g. `feature.start` while in color
+callbacks you use e.g. `feature.get('start')`.
 
 ## Configuring plugins
 
