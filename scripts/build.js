@@ -33,7 +33,12 @@ function main() {
       process.exit(status || 1)
     }
   })
-  fs.mkdirSync(path.join('component_test', 'packed'), { recursive: true })
+  fs.mkdirSync(path.join('component_tests', 'cgv', 'packed'), {
+    recursive: true,
+  })
+  fs.mkdirSync(path.join('component_tests', 'lgv', 'packed'), {
+    recursive: true,
+  })
   Object.values(packages).forEach(packageInfo => {
     let { location } = packageInfo
     if (location === 'packages/core') {
@@ -57,10 +62,15 @@ function main() {
       return
     }
     const newTarballName = tarball.replace(/-v\d+\.\d+\.\d+/, '')
-    fs.renameSync(
+    fs.copyFileSync(
       path.join(location, tarball),
-      path.join('component_test', 'packed', newTarballName),
+      path.join('component_tests', 'cgv', 'packed', newTarballName),
     )
+    fs.copyFileSync(
+      path.join(location, tarball),
+      path.join('component_tests', 'lgv', 'packed', newTarballName),
+    )
+    fs.rmSync(path.join(location, tarball))
   })
 }
 

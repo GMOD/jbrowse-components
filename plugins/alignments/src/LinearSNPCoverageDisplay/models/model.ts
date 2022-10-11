@@ -160,22 +160,26 @@ const stateModelFactory = (
             async () => {
               try {
                 const { colorBy } = self
-                const { staticBlocks } = getContainingView(self) as LGV
+                const view = getContainingView(self) as LGV
 
-                if (!self.estimatedStatsReady) {
+                if (
+                  !view.initialized ||
+                  !self.estimatedStatsReady ||
+                  self.regionTooLarge
+                ) {
                   return
                 }
-                if (self.regionTooLarge) {
-                  return
-                }
+                const { staticBlocks } = view
                 if (colorBy?.type === 'modifications') {
-                  const vals = await getUniqueModificationValues(
-                    self,
-                    getConf(self.parentTrack, 'adapter'),
-                    colorBy,
-                    staticBlocks,
+                  const adapter = getConf(self.parentTrack, 'adapter')
+                  self.updateModificationColorMap(
+                    await getUniqueModificationValues(
+                      self,
+                      adapter,
+                      colorBy,
+                      staticBlocks,
+                    ),
                   )
-                  self.updateModificationColorMap(vals)
                 }
               } catch (error) {
                 console.error(error)
@@ -222,25 +226,19 @@ const stateModelFactory = (
               label: 'Draw insertion/clipping indicators',
               type: 'checkbox',
               checked: self.drawIndicatorsSetting,
-              onClick: () => {
-                self.toggleDrawIndicators()
-              },
+              onClick: () => self.toggleDrawIndicators(),
             },
             {
               label: 'Draw insertion/clipping counts',
               type: 'checkbox',
               checked: self.drawInterbaseCountsSetting,
-              onClick: () => {
-                self.toggleDrawInterbaseCounts()
-              },
+              onClick: () => self.toggleDrawInterbaseCounts(),
             },
             {
               label: 'Draw arcs',
               type: 'checkbox',
               checked: self.drawArcsSetting,
-              onClick: () => {
-                self.toggleDrawArcs()
-              },
+              onClick: () => self.toggleDrawArcs(),
             },
           ]
         },

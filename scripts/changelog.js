@@ -7,7 +7,7 @@ function main(changed, version) {
     ['--silent', 'lerna-changelog', '--next-version', version],
     { encoding: 'utf8' },
   ).stdout
-  const changelogLines = lernaChangelog.split('\n')
+  const changelogLines = lernaChangelog.split(/\n|\r\n|\r/)
   const changedPackages = JSON.parse(changed)
   const updatesTable = ['| Package | Download |', '| --- | --- |']
   changedPackages.forEach(changedPackage => {

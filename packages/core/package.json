@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -52,7 +52,6 @@
     "material-ui-popup-state": "^3.0.0",
     "rbush": "^3.0.1",
     "react-error-boundary": "^3.0.0",
-    "react-intersection-observer": "^9.3.0",
     "react-use-measure": "^2.1.1",
     "shortid": "^2.2.13",
     "svg-path-generator": "^1.1.0"

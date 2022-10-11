@@ -112,7 +112,7 @@ function ImportBookmarks({
                 }
                 const data = await openLocation(location).readFile('utf8')
                 const regions = data
-                  .split('\n')
+                  .split(/\n|\r\n|\r/)
                   .filter(f => !!f.trim())
                   .filter(
                     f =>

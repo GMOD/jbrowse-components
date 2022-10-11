@@ -50,7 +50,7 @@ export default function JBrowseDesktop(
         featureDetails: ConfigurationSchema('FeatureDetails', {
           sequenceTypes: {
             type: 'stringArray',
-            defaultValue: ['mRNA', 'transcript'],
+            defaultValue: ['mRNA', 'transcript', 'gene'],
           },
         }),
         disableAnalytics: {

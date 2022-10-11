@@ -2,7 +2,6 @@ import React from 'react'
 import { Typography, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
@@ -79,7 +78,7 @@ const Polygon = observer(
     useOffset = true,
   }: {
     model: LGV
-    overview: Instance<Base1DViewModel>
+    overview: Base1DViewModel
     useOffset?: boolean
   }) => {
     const theme = useTheme()
@@ -305,7 +304,7 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const { classes, cx } = useStyles()
-    const { cytobandOffset, bpPerPx, showCytobands } = model
+    const { cytobandOffset, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
@@ -361,7 +360,7 @@ const OverviewBox = observer(
                     color: refNameColor,
                   }}
                 >
-                  {getTickDisplayStr(tickLabel, bpPerPx)}
+                  {getTickDisplayStr(tickLabel, overview.bpPerPx)}
                 </Typography>
               ))
             : null}

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Typography, Button } from '@mui/material'
+import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import RefreshIcon from '@mui/icons-material/Refresh'
+
+import BlockMsg from './BlockMsg'
 
 const useStyles = makeStyles()(theme => ({
   loading: {
@@ -15,26 +16,6 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     width: '100%',
     pointerEvents: 'none',
-    textAlign: 'center',
-  },
-  blockMessage: {
-    width: '100%',
-    background: theme.palette.action.disabledBackground,
-    padding: theme.spacing(2),
-    pointerEvents: 'none',
-    textAlign: 'center',
-  },
-  blockError: {
-    padding: theme.spacing(2),
-    width: '100%',
-    whiteSpace: 'normal',
-    color: theme.palette.error.main,
-    overflowY: 'auto',
-  },
-  blockReactNodeMessage: {
-    width: '100%',
-    background: theme.palette.action.disabledBackground,
-    padding: theme.spacing(2),
     textAlign: 'center',
   },
   dots: {
@@ -58,15 +39,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-function Repeater({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex' }}>
-      {children}
-      {children}
-    </div>
-  )
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LoadingMessage = observer(({ model }: { model: any }) => {
@@ -103,50 +75,6 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   )
 })
 
-function BlockMessage({
-  messageContent,
-}: {
-  messageContent: string | React.ReactNode
-}) {
-  const { classes } = useStyles()
-
-  return React.isValidElement(messageContent) ? (
-    <div className={classes.blockReactNodeMessage}>{messageContent}</div>
-  ) : (
-    <Typography variant="body2" className={classes.blockMessage}>
-      {messageContent}
-    </Typography>
-  )
-}
-
-function BlockError({
-  error,
-  reload,
-  displayHeight,
-}: {
-  error: Error
-  reload: () => void
-  displayHeight: number
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.blockError} style={{ height: displayHeight }}>
-      {reload ? (
-        <Button
-          data-testid="reload_button"
-          onClick={reload}
-          startIcon={<RefreshIcon />}
-        >
-          Reload
-        </Button>
-      ) : null}
-      <Typography color="error" variant="body2" display="inline">
-        {`${error}`}
-      </Typography>
-    </div>
-  )
-}
-
 const ServerSideRenderedBlockContent = observer(
   ({
     model,
@@ -156,28 +84,25 @@ const ServerSideRenderedBlockContent = observer(
   }) => {
     if (model.error) {
       return (
-        <Repeater>
-          <BlockError
-            error={model.error}
-            reload={model.reload}
-            displayHeight={getParentRenderProps(model).displayModel.height}
-          />
-        </Repeater>
+        <BlockMsg
+          message={`${model.error}`}
+          severity="error"
+          buttonText="reload"
+          icon={<RefreshIcon />}
+          action={model.reload}
+        />
       )
     }
     if (model.message) {
-      return (
-        <Repeater>
-          <BlockMessage messageContent={model.message} />
-        </Repeater>
+      // the message can be a fully rendered react component, e.g. the region too large message
+      return React.isValidElement(model.message) ? (
+        model.message
+      ) : (
+        <BlockMsg message={`${model.message}`} severity="info" />
       )
     }
     if (!model.filled) {
-      return (
-        <Repeater>
-          <LoadingMessage model={model} />
-        </Repeater>
-      )
+      return <LoadingMessage model={model} />
     }
     return model.reactElement
   },

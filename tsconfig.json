@@ -26,7 +26,7 @@
     "**/umd/",
     "**/tmp/",
     "**/demos/",
-    "**/component_test/",
+    "**/component_tests/",
     "**/plugin-development-tools/",
     "**/webpack.config.js"
   ]

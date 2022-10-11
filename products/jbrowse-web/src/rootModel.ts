@@ -65,7 +65,7 @@ export default function RootModel(
       jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      assemblyManager: types.optional(assemblyManagerType, {}),
       version: types.maybe(types.string),
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
@@ -733,10 +733,11 @@ export function createTestSession(snapshot = {}, adminMode = false) {
     name: 'testSession',
     ...snapshot,
   })
-  // @ts-ignore
-  root.session.views.map(view => view.setWidth(800))
-  pluginManager.setRootModel(root)
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const session = root.session!
+  session.views.map(view => view.setWidth(800))
+  pluginManager.setRootModel(root)
   pluginManager.configure()
-  return root.session
+  return session
 }

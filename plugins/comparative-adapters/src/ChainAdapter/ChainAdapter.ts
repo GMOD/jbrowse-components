@@ -177,6 +177,6 @@ export default class ChainAdapter extends PAFAdapter {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
-    return paf_chain2paf(text.split('\n').filter(line => !!line))
+    return paf_chain2paf(text.split(/\n|\r\n|\r/).filter(line => !!line))
   }
 }

@@ -18,7 +18,7 @@ export default class RefNameAliasAdapter
     const refColumn = readConfObject(this.config, 'refNameColumn')
     return results
       .trim()
-      .split('\n')
+      .split(/\n|\r\n|\r/)
       .filter(f => !!f && !f.startsWith('#'))
       .map(row => {
         const aliases = row.split('\t')

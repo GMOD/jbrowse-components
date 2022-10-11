@@ -56,7 +56,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
     const bed1Map = parseBed(bed1text)
     const bed2Map = parseBed(bed2text)
     const feats = mcscantext
-      .split('\n')
+      .split(/\n|\r\n|\r/)
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
         const [n11, n12, n21, n22, score, strand] = line.split('\t')

@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import fs from 'fs'
-import { SequencePanel } from './SequenceFeatureDetails'
+import SequencePanel from './SequencePanel'
 import DLGAP3 from './test_data/DLGAP3'
 import NCDN from './test_data/NCDN'
 
@@ -35,7 +35,7 @@ test('test using the sequence feature panel', () => {
 const readFasta = (filename: string) => {
   return fs
     .readFileSync(require.resolve(filename), 'utf8')
-    .split('\n')
+    .split(/\n|\r\n|\r/)
     .slice(1)
     .join('')
 }
@@ -105,7 +105,9 @@ test('single exon cDNA should not have duplicate sequences', () => {
       feature={{
         start: 1200,
         end: 1500,
+        refName: 'chr1',
         type: 'mRNA',
+        uniqueId: 'unique',
         subfeatures: [
           { start: 1200, end: 1500, type: 'exon' },
           { start: 1200, end: 1500, type: 'CDS' },
@@ -117,6 +119,6 @@ test('single exon cDNA should not have duplicate sequences', () => {
   const element = getByTestId('sequence_panel')
 
   expect(element.children[0].textContent).toEqual(
-    '>unknown-cdna\natgtcacctcgggtactgcctctattacagaggtatcttaatggcgcatccagccttgtggctgggtctacgtacgcgtgggcaccatacgtatgttggcaggaaaggtcaatcatgcttgtttcctcgtcgcagaaacgttcacactattggctcgcgggatcgaacgggcctgattatttttccagctcctgcgttcctatcacgccaactgtcgctaataaaatgttatatagagataacccattgctatgcaaggatggagaaaccgcttcacaacaccctagaattacttcagca',
+    '>chr1:1201-1500-cdna\natgtcacctcgggtactgcctctattacagaggtatcttaatggcgcatccagccttgtggctgggtctacgtacgcgtgggcaccatacgtatgttggcaggaaaggtcaatcatgcttgtttcctcgtcgcagaaacgttcacactattggctcgcgggatcgaacgggcctgattatttttccagctcctgcgttcctatcacgccaactgtcgctaataaaatgttatatagagataacccattgctatgcaaggatggagaaaccgcttcacaacaccctagaattacttcagca',
   )
 })

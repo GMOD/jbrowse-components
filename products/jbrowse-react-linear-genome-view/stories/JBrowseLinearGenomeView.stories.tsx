@@ -35,14 +35,19 @@ addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
 const supportedTrackTypes = [
   'AlignmentsTrack',
   'PileupTrack',
+  'FeatureTrack',
   'SNPCoverageTrack',
   'VariantTrack',
   'WiggleTrack',
 ]
 
+const excludeIds = ['gtf_plain_text_test', 'lollipop_track', 'arc_track']
+
 const assembly = volvoxConfig.assemblies[0]
-const tracks = volvoxConfig.tracks.filter(track =>
-  supportedTrackTypes.includes(track.type),
+const tracks = volvoxConfig.tracks.filter(
+  track =>
+    supportedTrackTypes.includes(track.type) &&
+    !excludeIds.includes(track.trackId),
 )
 const defaultSession = {
   name: 'Storybook',
@@ -481,11 +486,14 @@ export const WithInlinePlugins = () => {
 export const WithExternalPlugins = () => {
   // usage with buildtime plugins
   // this plugins array is then passed to the createViewState constructor
+  //
   // import UCSCPlugin from 'jbrowse-plugin-ucsc'
   // const plugins = [UCSCPlugin]
-
-  // usage with runtime plugins
-  // this plugins array is then passed to the createViewState constructor
+  //
+  // note: the loadPlugins function is from
+  // import {loadPlugins} from '@jbrowse/react-linear-genome-view'
+  //
+  // we manually call loadPlugins, and pass the result to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     async function getPlugins() {

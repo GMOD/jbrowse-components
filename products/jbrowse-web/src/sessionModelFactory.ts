@@ -34,6 +34,7 @@ import {
   IAnyStateTreeNode,
   Instance,
   SnapshotIn,
+  SnapshotOut,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -54,6 +55,10 @@ export declare interface ReferringNode {
 export declare interface ReactProps {
   [key: string]: any
 }
+
+type AnyConfiguration =
+  | AnyConfigurationModel
+  | SnapshotOut<AnyConfigurationModel>
 
 export default function sessionModelFactory(
   pluginManager: PluginManager,
@@ -139,7 +144,7 @@ export default function sessionModelFactory(
       get configuration() {
         return getParent<any>(self).jbrowse.configuration
       },
-      get assemblies() {
+      get assemblies(): AnyConfigurationModel[] {
         return getParent<any>(self).jbrowse.assemblies
       },
       get assemblyNames() {
@@ -241,7 +246,8 @@ export default function sessionModelFactory(
         self.name = str
       },
 
-      addAssembly(assemblyConfig: AnyConfigurationModel) {
+      // snapshotin can be undefined
+      addAssembly(assemblyConfig: AnyConfiguration) {
         const asm = self.sessionAssemblies.find(
           f => f.name === assemblyConfig.name,
         )
@@ -254,7 +260,7 @@ export default function sessionModelFactory(
       },
 
       // used for read vs ref type assemblies.
-      addTemporaryAssembly(assemblyConfig: AnyConfigurationModel) {
+      addTemporaryAssembly(assemblyConfig: AnyConfiguration) {
         const asm = self.sessionAssemblies.find(
           f => f.name === assemblyConfig.name,
         )
@@ -462,11 +468,11 @@ export default function sessionModelFactory(
         self.views.remove(view)
       },
 
-      addAssemblyConf(assemblyConf: AnyConfigurationModel) {
+      addAssemblyConf(assemblyConf: AnyConfiguration) {
         return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
-      addTrackConf(trackConf: AnyConfigurationModel) {
+      addTrackConf(trackConf: AnyConfiguration) {
         if (self.adminMode) {
           return getParent<any>(self).jbrowse.addTrackConf(trackConf)
         }
@@ -536,8 +542,7 @@ export default function sessionModelFactory(
         initialState: any = {},
       ) {
         const assembly = self.assemblies.find(
-          (s: AnyConfigurationModel) =>
-            readConfObject(s, 'name') === assemblyName,
+          s => readConfObject(s, 'name') === assemblyName,
         )
         if (!assembly) {
           throw new Error(

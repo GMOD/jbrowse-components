@@ -1,13 +1,12 @@
 // we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import React from 'react'
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import { render, waitFor } from '@testing-library/react'
 import { TextEncoder, TextDecoder } from 'web-encoding'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
 import { Image, createCanvas } from 'canvas'
-
 import { QueryParamProvider } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 import { Loader } from '../Loader'
 
@@ -27,10 +26,10 @@ if (!window.TextDecoder) {
   window.TextDecoder = TextDecoder
 }
 
-const getFile = (url: string) => {
-  url = url.replace(/http:\/\/localhost\//, '')
-  return new LocalFile(require.resolve(`../../${url}`))
-}
+const getFile = (url: string) =>
+  new LocalFile(
+    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
+  )
 
 const readBuffer = async (url: string, args: RequestInit) => {
   if (url.match('plugin-store')) {
@@ -107,232 +106,127 @@ const readBuffer = async (url: string, args: RequestInit) => {
 // @ts-ignore
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
 
-function FallbackComponent({ error }: FallbackProps) {
-  return <div>there was an error: {String(error)}</div>
+function App({ search }: { search: string }) {
+  const location = {
+    ...window.location,
+    search,
+  }
+  Object.defineProperty(window, 'location', {
+    writable: true,
+    value: location,
+  })
+  return (
+    <QueryParamProvider adapter={WindowHistoryAdapter}>
+      <Loader />
+    </QueryParamProvider>
+  )
 }
 
-describe('<Loader />', () => {
-  afterEach(() => {
-    localStorage.clear()
-    sessionStorage.clear()
-  })
-  it('errors with config in URL that does not exist', async () => {
-    console.error = jest.fn()
-    const { findByText } = render(
-      // @ts-ignore
-      <ErrorBoundary FallbackComponent={FallbackComponent}>
-        {/* @ts-ignore */}
-        <QueryParamProvider location={{ search: '?config=doesNotExist.json' }}>
-          <Loader />
-        </QueryParamProvider>
-      </ErrorBoundary>,
-    )
-    expect(
-      await findByText('HTTP 404 fetching doesNotExist.json', {
-        exact: false,
-      }),
-    ).toBeTruthy()
-  })
-
-  it('can use config from a url with session param+sessionStorage', async () => {
-    sessionStorage.setItem(
-      'current',
-      `{"id": "abcdefg", "name": "testSession"}`,
-    )
-    const { findByText } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=abcdefg',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-  }, 20000)
-
-  it('can use config from a url with shared session ', async () => {
-    const { findByText } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=share-testid&password=Z42aq',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-    await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), delay)
-  }, 20000)
-
-  // minimal session with plugin in our plugins.json
-  // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
-  it('can warn of callbacks in json session', async () => {
-    render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-    await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), {
-      timeout: 30000,
-    })
-  }, 30000)
-
-  // minimal session,
-  // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
-  it('pops up a warning for evil plugin', async () => {
-    const { findByTestId } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://evil.com/evil.js"}]}}',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-    await findByTestId('session-warning-modal')
-  }, 20000)
-
-  it('can use config from a url with nonexistent share param ', async () => {
-    const { findAllByText } = render(
-      // @ts-ignore
-      <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
-        <QueryParamProvider
-          // @ts-ignore
-          location={{
-            search:
-              '?config=test_data/volvox/config_main_thread.json&session=share-nonexist',
-          }}
-        >
-          <Loader />
-        </QueryParamProvider>
-      </ErrorBoundary>,
-    )
-    await findAllByText(/Error/, {}, delay)
-  }, 20000)
-
-  it('can catch error from loading a bad config', async () => {
-    const { findAllByText } = render(
-      // @ts-ignore
-      <ErrorBoundary FallbackComponent={({ error }) => <div>{`${error}`}</div>}>
-        <QueryParamProvider
-          // @ts-ignore
-          location={{
-            search:
-              '?config=test_data/bad_config_for_testing_error_catcher.json',
-          }}
-        >
-          <Loader />
-        </QueryParamProvider>
-      </ErrorBoundary>,
-    )
-    await findAllByText(/Failed to load/)
-  }, 20000)
-
-  it('can use a spec url for lgv', async () => {
-    const { findByText, findByPlaceholderText } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-
-    await findByText(/volvox-sorted.bam/, {}, delay)
-    const elt = await findByPlaceholderText('Search for location', {}, delay)
-
-    // @ts-ignore
-    await waitFor(() => expect(elt.value).toBe('ctgA:5,999..6,999'), delay)
-  }, 40000)
-
-  it('can use a spec url for dotplot view', async () => {
-    const { findByText, findByTestId } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-    await findByTestId('prerendered_canvas_done', {}, delay)
-  }, 40000)
-
-  it('can use a spec url for synteny view', async () => {
-    console.warn = jest.fn()
-    const { findByText, findByTestId } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-    await findByTestId('synteny_canvas', {}, delay)
-  }, 40000)
-
-  it('can use a spec url for spreadsheet view', async () => {
-    console.warn = jest.fn()
-    const { findByText } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SpreadsheetView","uri":"test_data/volvox/volvox.filtered.vcf.gz","assembly":"volvox"}]}',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-    await findByText('ctgA:8470..8471', {}, delay)
-  }, 40000)
-
-  it('can use a spec url for sv inspector view', async () => {
-    console.warn = jest.fn()
-    const { findByText } = render(
-      <QueryParamProvider
-        // @ts-ignore
-        location={{
-          search:
-            '?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}',
-        }}
-      >
-        <Loader />
-      </QueryParamProvider>,
-    )
-
-    await findByText('Help', {}, delay)
-    await findByText('ctgB:1982..1983', {}, delay)
-  }, 40000)
+afterEach(() => {
+  localStorage.clear()
+  sessionStorage.clear()
 })
+test('errors with config in URL that does not exist', async () => {
+  console.error = jest.fn()
+  const { findByText } = render(<App search="?config=doesNotExist.json" />)
+  await findByText(/HTTP 404 fetching doesNotExist.json/)
+})
+
+test('can use config from a url with session param+sessionStorage', async () => {
+  sessionStorage.setItem('current', `{"id": "abcdefg", "name": "testSession"}`)
+  const { findByText } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&session=abcdefg" />,
+  )
+
+  await findByText('Help', {}, delay)
+}, 20000)
+
+test('can use config from a url with shared session ', async () => {
+  render(
+    <App search="?config=test_data/volvox/config_main_thread.json&session=share-testid&password=Z42aq" />,
+  )
+
+  await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), delay)
+}, 20000)
+
+// minimal session with plugin in our plugins.json
+// {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
+test('can warn of callbacks in json session', async () => {
+  render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}' />,
+  )
+  await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), {
+    timeout: 30000,
+  })
+}, 30000)
+
+// minimal session,
+// {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
+test('pops up a warning for evil plugin', async () => {
+  const { findByTestId } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://evil.com/evil.js"}]}}' />,
+  )
+  await findByTestId('session-warning-modal')
+}, 20000)
+
+test('can use config from a url with nonexistent share param ', async () => {
+  const { findAllByText } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&session=share-nonexist" />,
+  )
+  await findAllByText(/Error/, {}, delay)
+}, 20000)
+
+test('can catch error from loading a bad config', async () => {
+  const { findAllByText } = render(
+    <App search="?config=test_data/bad_config_for_testing_error_catcher.json" />,
+  )
+  await findAllByText(/Failed to load/)
+}, 20000)
+
+test('can use a spec url for lgv', async () => {
+  const { findByText, findByPlaceholderText } = render(
+    <App search="?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup" />,
+  )
+
+  await findByText(/volvox-sorted.bam/, {}, delay)
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(
+    () => expect((elt as HTMLInputElement).value).toBe('ctgA:5,999..6,999'),
+    delay,
+  )
+}, 40000)
+
+test('can use a spec url for dotplot view', async () => {
+  const { findByTestId } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}' />,
+  )
+
+  await findByTestId('prerendered_canvas_done', {}, delay)
+}, 40000)
+
+test('can use a spec url for synteny view', async () => {
+  console.warn = jest.fn()
+  const { findByTestId } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}' />,
+  )
+
+  await findByTestId('synteny_canvas', {}, delay)
+}, 40000)
+
+test('can use a spec url for spreadsheet view', async () => {
+  console.warn = jest.fn()
+  const { findByText } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SpreadsheetView","uri":"test_data/volvox/volvox.filtered.vcf.gz","assembly":"volvox"}]}' />,
+  )
+
+  await findByText('ctgA:8470..8471', {}, delay)
+}, 40000)
+
+test('can use a spec url for sv inspector view', async () => {
+  console.warn = jest.fn()
+  const { findByText } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"}]}' />,
+  )
+
+  await findByText('ctgB:1982..1983', {}, delay)
+}, 40000)
