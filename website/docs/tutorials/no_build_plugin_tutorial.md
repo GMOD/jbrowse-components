@@ -90,6 +90,13 @@ const { types } = pluginManager.jbrequire('mobx-state-tree')
 
 which would provide the functionality of mobx-state-tree through that value.
 
+:::info
+Importing `React` with a direct reference is for example only for the purposes of this tutorial. It's best practice to always use `jbrequire` when you can to reference packages.
+
+Make sure to reference the [list of exported packages](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts) accessible
+through `jbrequire` before moving forward with importing a package directly.
+:::
+
 ### Executing some functionality
 
 Using our new imports, we're going to add a small functionality to this plugin; we're going to add a widget that opens up with some text.
@@ -99,8 +106,8 @@ Our final no-build plugin looks as follows:
 `MyNoBuildPlugin.js`
 
 ```js
-// adding our import for React, we'll need this to add elements to the DOM
-import React from 'https://unpkg.com/es-react@latest/dev/react.js'
+// if you have any libraries external to what is available using jbrequire make sure to import them at the top of your js file
+// import React from 'https://unpkg.com/es-react@latest/dev/react.js'
 
 export default class MyNoBuildPlugin {
   name = 'MyNoBuildPlugin'
@@ -118,6 +125,25 @@ export default class MyNoBuildPlugin {
       '@jbrowse/core/util/types/mst',
     )
     const { types } = pluginManager.jbrequire('mobx-state-tree')
+
+    const React = pluginManager.jbrequire('react')
+
+    // this is our react component
+    const CiteWidget = props => {
+      // React.createElement can be used to add html to our widget component
+      const header = React.createElement(
+        'h1',
+        null,
+        'Cite this JBrowse session',
+      )
+      const content = React.createElement(
+        'p',
+        null,
+        `Diesh, Colin, et al. "JBrowse 2: A modular genome browser with views of synteny and structural variation. bioRxiv. 2022.`,
+      )
+
+      return React.createElement('div', null, [header, content])
+    }
 
     // we're adding a widget that we can open upon clicking on our menu item
     pluginManager.addWidgetType(() => {
@@ -150,19 +176,6 @@ export default class MyNoBuildPlugin {
       },
     })
   }
-}
-
-// this is our react component
-const CiteWidget = props => {
-  // React.createElement can be used to add html to our widget component
-  const header = React.createElement('h1', null, 'Cite this JBrowse session')
-  const content = React.createElement(
-    'p',
-    null,
-    `Diesh, Colin, et al. "JBrowse 2: A modular genome browser with views of synteny and structural variation. bioRxiv. 2022.`,
-  )
-
-  return React.createElement('div', null, [header, content])
 }
 ```
 
