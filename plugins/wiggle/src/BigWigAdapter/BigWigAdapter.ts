@@ -50,24 +50,18 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts?: BaseOptions) {
-    const {
-      header: { refsByName },
-    } = await this.setup(opts)
-    return Object.keys(refsByName)
+    const { header } = await this.setup(opts)
+    return Object.keys(header.refsByName)
   }
 
   public async refIdToName(refId: number) {
-    const {
-      header: { refsByNumber },
-    } = await this.setup()
-    return refsByNumber[refId]?.name
+    const { header } = await this.setup()
+    return header.refsByNumber[refId]?.name
   }
 
   public async getGlobalStats(opts?: BaseOptions) {
-    const {
-      header: { totalSummary },
-    } = await this.setup(opts)
-    return rectifyStats(totalSummary as UnrectifiedFeatureStats)
+    const { header } = await this.setup(opts)
+    return rectifyStats(header.totalSummary as UnrectifiedFeatureStats)
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
