@@ -19,6 +19,7 @@ if (typeof __webpack_require__ === 'function') {
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
+  windowHref: string
 }
 
 let jbPluginManager: PluginManager | undefined
@@ -47,7 +48,7 @@ async function getPluginManager() {
     fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   pluginLoader.installGlobalReExports(self)
-  const runtimePlugins = await pluginLoader.load()
+  const runtimePlugins = await pluginLoader.load(config.windowHref)
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
   pluginManager.createPluggableElements()
@@ -80,31 +81,22 @@ function wrapForRpc(func: RpcFunc) {
   }
 }
 
-getPluginManager()
-  .then(pluginManager => {
-    const rpcConfig = Object.fromEntries(
-      pluginManager.getElementTypesInGroup('rpc method').map(entry => {
-        const { execute, name } = entry as RpcMethodType
-        return [name, wrapForRpc((execute as RpcFunc).bind(entry))]
-      }),
-    )
+getPluginManager().then(pluginManager => {
+  const rpcConfig = Object.fromEntries(
+    pluginManager.getElementTypesInGroup('rpc method').map(entry => {
+      const { execute, name } = entry as RpcMethodType
+      return [name, wrapForRpc((execute as RpcFunc).bind(entry))]
+    }),
+  )
 
-    // @ts-ignore
-    self.rpcServer = new RpcServer.Server({
-      ...rpcConfig,
-      ...remoteAbortRpcHandler(),
-      ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
-    })
-    postMessage('ready')
+  // @ts-ignore
+  self.rpcServer = new RpcServer.Server({
+    ...rpcConfig,
+    ...remoteAbortRpcHandler(),
+    ping: () => {}, // < the ping method is required by the worker driver for checking the health of the worker
   })
-  .catch(error => {
-    // @ts-ignore
-    self.rpcServer = new RpcServer.Server({
-      ping: () => {
-        throw error
-      },
-    })
-  })
+  postMessage('ready')
+})
 
 export default () => {
   /* do nothing */

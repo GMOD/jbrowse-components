@@ -18,6 +18,7 @@ if (typeof __webpack_require__ === 'function') {
 
 interface WorkerConfiguration {
   plugins: PluginDefinition[]
+  windowHref: string
 }
 
 let jbPluginManager: PluginManager | undefined
@@ -46,7 +47,7 @@ async function getPluginManager() {
     fetchESM: url => import(/* webpackIgnore:true */ url),
   })
   pluginLoader.installGlobalReExports(self)
-  const runtimePlugins = await pluginLoader.load()
+  const runtimePlugins = await pluginLoader.load(config.windowHref)
   const plugins = [...corePlugins.map(p => ({ plugin: p })), ...runtimePlugins]
   const pluginManager = new PluginManager(plugins.map(P => new P.plugin()))
   pluginManager.createPluggableElements()
