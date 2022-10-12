@@ -542,24 +542,22 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
 
       afterCreate() {
-        document.addEventListener('keydown', event => {
+        document.addEventListener('keydown', e => {
           if (self.history.canRedo) {
             if (
               // ctrl+shift+z or cmd+shift+z
-              ((event.ctrlKey || event.metaKey) &&
-                event.shiftKey &&
-                event.code === 'KeyZ') ||
+              ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
               // ctrl+y
-              (event.ctrlKey && !event.shiftKey && event.code === 'KeyY')
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
             ) {
               self.history.redo()
             }
           } else if (self.history.canUndo) {
             if (
               // ctrl+z or cmd+z
-              (event.ctrlKey || event.metaKey) &&
-              !event.shiftKey &&
-              event.code === 'KeyZ'
+              (e.ctrlKey || e.metaKey) &&
+              !e.shiftKey &&
+              e.code === 'KeyZ'
             ) {
               self.history.undo()
             }

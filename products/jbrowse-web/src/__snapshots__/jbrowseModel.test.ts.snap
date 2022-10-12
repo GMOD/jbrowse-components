@@ -97,7 +97,6 @@ Object {
           },
         ],
         "formatAbout": Object {
-          "conf": "jexl:{extraField:'important data'}",
           "hideUris": true,
         },
         "metadata": Object {
