@@ -1,10 +1,8 @@
 import PluginManager from '../PluginManager'
-import { readConfObject } from '../configuration'
-
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 import rpcConfigSchema from './configSchema'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
 type BackendConfigurations = {
@@ -64,7 +62,10 @@ export default class RpcManager {
       }
       newDriver = new WebWorkerRpcDriver(
         { ...backendConfiguration, config },
-        { plugins: this.pluginManager.runtimePluginDefinitions },
+        {
+          plugins: this.pluginManager.runtimePluginDefinitions,
+          windowHref: window.location.href,
+        },
       )
     } else {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
