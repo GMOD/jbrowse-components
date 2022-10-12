@@ -15,3 +15,4 @@ class HexPlugin {
 console.log('uuu')
 
 window.JBrowsePluginHexPlugin = { default: HexPlugin }
+self.JBrowsePluginHexPlugin = { default: HexPlugin }
