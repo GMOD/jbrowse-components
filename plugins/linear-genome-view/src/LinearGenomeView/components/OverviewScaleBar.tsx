@@ -304,12 +304,17 @@ const OverviewBox = observer(
     overview: Base1DViewModel
   }) => {
     const { classes, cx } = useStyles()
+    const theme = useTheme()
     const { cytobandOffset, showCytobands } = model
     const { start, end, reversed, refName, assemblyName } = block
     const { majorPitch } = chooseGridPitch(scale, 120, 15)
     const { assemblyManager } = getSession(model)
     const assembly = assemblyManager.get(assemblyName)
-    const refNameColor = assembly?.getRefNameColor(refName)
+    const refNameIndex = assembly?.refNames?.findIndex(r => r === refName)
+    const refNameColor =
+      refNameIndex !== undefined
+        ? theme.palette.refNames[refNameIndex % theme.palette.refNames.length]
+        : theme.palette.text.primary
 
     const tickLabels = []
     for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {

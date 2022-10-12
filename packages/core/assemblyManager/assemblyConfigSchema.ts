@@ -12,13 +12,6 @@ export default (pluginManager: PluginManager) => {
       },
       sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
         .configSchema,
-
-      refNameColors: {
-        type: 'stringArray',
-        defaultValue: [],
-        description:
-          'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
-      },
       refNameAliases: ConfigurationSchema(
         'RefNameAliases',
         {

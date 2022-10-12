@@ -95,7 +95,6 @@ export interface Assembly {
   refNameAliases?: {
     adapter: RefNameAliasAdapter | CustomRefNameAliasAdapter
   }
-  refNameColors?: string[]
 }
 
 export interface TrixTextSearchAdapter {

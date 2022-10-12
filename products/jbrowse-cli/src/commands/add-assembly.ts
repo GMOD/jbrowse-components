@@ -111,10 +111,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
       options: ['aliases', 'custom'],
       dependsOn: ['refNameAliases'],
     }),
-    refNameColors: flags.string({
-      description:
-        'A comma-separated list of color strings for the reference sequence names; will cycle\nthrough colors if there are fewer colors than sequences',
-    }),
     target: flags.string({
       description:
         'path to config file in JB2 installation directory to write out to.\nCreates ./config.json if nonexistent',
@@ -402,14 +398,6 @@ custom         Either a JSON file location or inline JSON that defines a custom
     if (runFlags.alias && runFlags.alias.length) {
       this.debug(`Adding assembly aliases: ${runFlags.alias}`)
       assembly.aliases = runFlags.alias
-    }
-
-    if (runFlags.refNameColors) {
-      const colors = runFlags.refNameColors
-        .split(',')
-        .map(color => color.trim())
-      this.debug(`Adding refName colors: ${colors}`)
-      assembly.refNameColors = colors
     }
 
     if (runFlags.refNameAliases) {

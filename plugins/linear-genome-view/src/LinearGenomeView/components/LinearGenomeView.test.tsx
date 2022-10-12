@@ -1,6 +1,8 @@
 import React from 'react'
+import { ThemeProvider } from '@mui/material/styles'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import '@testing-library/jest-dom/extend-expect'
 import 'requestidlecallback-polyfill'
 
@@ -37,7 +39,11 @@ describe('<LinearGenomeView />', () => {
     session.addView('LinearGenomeView', { id: 'lgv' })
     const model = session.views[0]
     model.setWidth(800)
-    const { findByText } = render(<LinearGenomeView model={model} />)
+    const { findByText } = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <LinearGenomeView model={model} />
+      </ThemeProvider>,
+    )
     expect(model.displayedRegions.length).toEqual(0)
     const elt = await findByText('Open')
     await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
@@ -83,7 +89,9 @@ describe('<LinearGenomeView />', () => {
     const model = session.views[0]
     model.setWidth(800)
     const { container, queryByText, getByPlaceholderText, findByText } = render(
-      <LinearGenomeView model={model} />,
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <LinearGenomeView model={model} />
+      </ThemeProvider>,
     )
     await findByText('Foo Track')
     // test needs to wait until it's updated to display 100 bp in the header to
@@ -160,7 +168,9 @@ describe('<LinearGenomeView />', () => {
     const model = session.views[0]
     model.setWidth(800)
     const { container, findByText, queryByText, findAllByTestId } = render(
-      <LinearGenomeView model={model} />,
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <LinearGenomeView model={model} />
+      </ThemeProvider>,
     )
     await findByText('Foo Track')
     await findByText('798bp')

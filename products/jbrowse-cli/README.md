@@ -119,10 +119,6 @@ OPTIONS
       Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either
       a JSON file location or inline JSON that defines a custom sequence adapter
 
-  --refNameColors=refNameColors
-      A comma-separated list of color strings for the reference sequence names; will cycle
-      through colors if there are fewer colors than sequences
-
   --skipCheck
       Don't check whether or not the sequence file or URL exists or if you are in a JBrowse directory
 

@@ -197,7 +197,13 @@ const RegionRulerArc = observer(
     let color
     const assembly = session.assemblyManager.get(slice.region.assemblyName)
     if (assembly) {
-      color = assembly.getRefNameColor(region.refName)
+      const refNameIndex = assembly.refNames?.findIndex(
+        r => r === region.refName,
+      )
+      if (refNameIndex !== undefined) {
+        color =
+          theme.palette.refNames[refNameIndex % theme.palette.refNames.length]
+      }
     }
     if (color) {
       try {

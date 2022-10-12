@@ -750,8 +750,6 @@ describe('add-assembly', () => {
       '{"type":"CustomAdapter"}',
       '--name',
       'simple',
-      '--refNameColors',
-      'red,orange,yellow, green, blue, purple',
       '--load',
       'copy',
     ])
@@ -765,14 +763,6 @@ describe('add-assembly', () => {
         assemblies: [
           {
             ...baseAssembly,
-            refNameColors: [
-              'red',
-              'orange',
-              'yellow',
-              'green',
-              'blue',
-              'purple',
-            ],
             sequence: {
               ...baseSequence,
               adapter: { type: 'CustomAdapter' },
