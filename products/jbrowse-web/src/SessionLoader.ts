@@ -53,25 +53,25 @@ async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
     if (isUMDPluginDefinition(p)) {
       return Boolean(
         storePlugins.plugins.find(
-          p =>
+          pp =>
             isUMDPluginDefinition(p) &&
-            (('url' in p && 'url' in p && p.url === p.url) ||
-              ('umdUrl' in p && 'umdUrl' in p && p.umdUrl === p.umdUrl)),
+            (('url' in pp && 'url' in p && p.url === pp.url) ||
+              ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
         ),
       )
     }
     if (isESMPluginDefinition(p)) {
       return Boolean(
         storePlugins.plugins.find(
-          p =>
-            isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === p.esmUrl,
+          pp =>
+            isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
         ),
       )
     }
     if (isCJSPluginDefinition(p)) {
       return Boolean(
         storePlugins.plugins.find(
-          p => isCJSPluginDefinition(p) && p.cjsUrl === p.cjsUrl,
+          pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
         ),
       )
     }

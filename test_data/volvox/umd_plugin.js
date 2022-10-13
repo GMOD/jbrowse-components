@@ -1,11 +1,19 @@
-class MyClass {
-  name = 'UMDLocPlugin'
-  install(pluginManager) {}
-  configure() {}
-}
+/* eslint-disable no-restricted-globals */
+// we put the code in a function to avoid variable name collisions with the
+// global scope
+;(function () {
+  class Plugin {
+    name = 'UMDLocPlugin'
+    version = '1.0'
 
-// the plugin will be included in both the main thread and web worker, so
-// install plugin to either window or self (webworker global scope)
-;(typeof self !== 'undefined' ? self : window).JBrowsePluginUMDLocPlugin = {
-  default: MyClass,
-}
+    install(/* pluginManager */) {}
+
+    configure(/* pluginManager */) {}
+  }
+
+  // the plugin will be included in both the main thread and web worker, so
+  // install plugin to either window or self (webworker global scope)
+  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginUMDLocPlugin = {
+    default: Plugin,
+  }
+})()

@@ -229,7 +229,7 @@ export default class PluginLoader {
     )
   }
 
-  async load(windowHref: string = '') {
+  async load(windowHref = '') {
     return Promise.all(
       this.definitions.map(async definition => ({
         plugin: await this.loadPlugin(definition, windowHref),

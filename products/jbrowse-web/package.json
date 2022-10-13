@@ -67,6 +67,7 @@
     "react-error-boundary": "^3.0.0",
     "requestidlecallback-polyfill": "^1.0.2",
     "rxjs": "^6.5.2",
+    "serialize-error": "^8.0.0",
     "shortid": "^2.2.15",
     "tss-react": "^3.7.0",
     "use-query-params": "^2.0.0",

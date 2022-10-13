@@ -345,6 +345,10 @@ export default class PluginManager {
     return this.getElementTypeRecord(groupName).all()
   }
 
+  getRpcElements() {
+    return this.getElementTypesInGroup('rpc method') as RpcMethodType[]
+  }
+
   /** get a MST type for the union of all specified pluggable MST types */
   pluggableMstType(
     groupName: PluggableElementTypeGroup,

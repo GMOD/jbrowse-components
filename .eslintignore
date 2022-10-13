@@ -18,3 +18,4 @@ webpack.config.js
 craco.config.js
 packages/core/util/QuickLRU.js
 packages/core/util/QuickLRU.d.ts
+**/umd_plugin.js

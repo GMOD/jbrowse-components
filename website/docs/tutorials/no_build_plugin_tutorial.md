@@ -6,56 +6,116 @@ toplevel: true
 
 import Figure from '../figure'
 
-The following guide will provide a short tutorial on how to create a single page no-build plugin for JBrowse 2.
+The following guide will provide a short tutorial on how to create a single
+page no-build plugin for JBrowse 2.
 
 ## Prerequisites
 
-- you can run an instance of JBrowse 2 on the web, see [any of our quickstart guides](../../quickstart_cli) for details
-- A stable and recent version of [node](https://nodejs.org/en/)
+- you can run an instance of JBrowse 2 on the web, see [any of our quickstart
+  guides](../../quickstart_cli) for details
+- a stable and recent version of [node](https://nodejs.org/en/)
 - basic familiarity with the command line and navigating the file system
 
 ## What is the difference between a no-build plugin and a regular plugin?
 
-A no-build plugin can be a single file that executes all the required code to plug into JBrowse and supplement the functionality of the application with new (simple) features.
-
-This is in contrast to a "regular" JBrowse plugin that might have a large dependency tree, have substantial adapter logic, or other components that require the entire application build process to execute for the plugin to run properly.
-
-:::info No-build plugins are great for simple additions to JBrowse
-
-A single file can easily be hosted in an AWS bucket or otherwise hosted online with minimal resources, and adding it to a JBrowse session is as simple as the "regular" plugin process.
-
-:::
+A "regular" JBrowse plugin often uses our plugin template
+https://github.com/GMOD/jbrowse-plugin-template which uses `rollup` to compile
+extra dependencies that your plugin might use. In contrast, "no-build" plugins
+have no build step and can be hand edited. This can be useful for adding [extra
+jexl config callbacks for making extra config callbacks or similar
+modifications](../config_guide/#making-sophisticated-color-callbacks).
 
 ## Writing a no-build plugin
 
-In this tutorial, we're going to add a menu item to our toolbar that opens up a JBrowse widget with citation information.
+### Adding a callback function which you can use in your config
 
-### Set up
+A common method for a no-build plugin might be making a custom function that
+you can use to simplify `jexl` callbacks in your config. We will create a file
+`myplugin.js`, which will contain a ["UMD"](https://github.com/umdjs/umd)
+module providing a single "Plugin" class [1].
 
-Create a single `.js` file in an accessible directory.
-
-The only critical component of this file is an exported class that will act as our plugin, your template for this file might look like the following:
-
-`MyNoBuildPlugin.js`
+`myplugin.js`
 
 ```js
-export default class MyNoBuildPlugin {
-  name = 'MyNoBuildPlugin'
-  version = '1.0'
+// the plugin will be a simplified UMD module, and we put the code in a
+function to avoid variable name collisions with the global scope
+;(function () {
+  class Plugin {
+    name = 'MyNoBuildPlugin'
+    version = '1.0'
 
-  install(pluginManager) {}
+    install(pluginManager) {
+      pluginManager.jexl.addFunction('customColor', feature => {
+        if (feature.get('type') === 'exon') {
+          return 'red'
+        } else if (feature.get('type') === 'CDS') {
+          return 'green'
+        }
+      })
+    }
 
-  configure(pluginManager) {}
+    configure(pluginManager) {}
+  }
+
+  // the plugin will be included in both the main thread and web worker, so
+  // install plugin to either window or self (webworker global scope)
+  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyNoBuildPlugin =
+    {
+      default: Plugin,
+    }
+})()
+```
+
+Put this file `myplugin.js` in the same folder as your config file, and then,
+you can refer to this plugin and the custom function you added in your config.
+
+```json
+{
+  "plugins": [{ "name": "UMDLocPlugin", "umdLoc": { "uri": "myplugin.js" } }],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "mytrack",
+      "name": "mytrack",
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "file.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "file.gff.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "mytrack-LinearBasicDisplay",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:customColor(feature)"
+          }
+        }
+      ]
+    }
+  ]
 }
 ```
 
-### Adding a menu item
+[1] Note that you can also provide an ESM module that has just `export default class` but this is not supported by all browsers, notably firefox, which cannot
+import ESM files in webworkers, so for maximum compatibility, we show are using
+the UMD format still. Once firefox gains support for ESM modules, we will
+update this!
 
-A simple no-build plugin is perfect for adding small features to JBrowse, like menu items or minor extension points.
+### Adding a global menu item
 
-Here, we're going to add a menu item using the `configure` method in the plugin class.
+Another example of a no-build plugin is to add menu items or minor extension
+points. Here, we're going to add a menu item using the `configure` method in
+the plugin class.
 
-`MyNoBuildPlugin.js`
+`myplugin.js`
 
 ```js
 // ...
@@ -74,15 +134,15 @@ Here, we're going to add a menu item using the `configure` method in the plugin 
 
 ### Importing with jbrequire
 
-Because our plugin is not going to be built with any dependencies, the process for referencing external libraries is a little different.
+Because our plugin is not going to be built with any dependencies, the process
+for referencing external libraries is a little different.
 
-The first way to do this is to reference the packages directly; typically the easiest way to do this is to use the library's unpkg, as follows:
-
-```js
-import React from 'https://unpkg.com/es-react@latest/dev/react.js'
-```
-
-If a package you need to use is found within the JBrowse core project, a special function `jbrequire` can provide your plugin access to these packages. Click [here](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts) for a full list of packages accessible through `jbrequire`. Using `jbrequire` might look like this:
+If a package you need to use is found within the JBrowse core project, a
+special function `jbrequire` can provide your plugin access to these packages.
+Click
+[here](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts)
+for a full list of packages accessible through `jbrequire`. Using `jbrequire`
+might look like this:
 
 ```js
 const { types } = pluginManager.jbrequire('mobx-state-tree')
@@ -90,25 +150,11 @@ const { types } = pluginManager.jbrequire('mobx-state-tree')
 
 which would provide the functionality of mobx-state-tree through that value.
 
-:::info
-Importing `React` with a direct reference is for example only for the purposes of this tutorial. It's best practice to always use `jbrequire` when you can to reference packages.
-
-Make sure to reference the [list of exported packages](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts) accessible
-through `jbrequire` before moving forward with importing a package directly.
-:::
-
-### Executing some functionality
-
-Using our new imports, we're going to add a small functionality to this plugin; we're going to add a widget that opens up with some text.
-
 Our final no-build plugin looks as follows:
 
-`MyNoBuildPlugin.js`
+`myplugin.js`
 
 ```js
-// if you have any libraries external to what is available using jbrequire make sure to import them at the top of your js file
-// import React from 'https://unpkg.com/es-react@latest/dev/react.js'
-
 export default class MyNoBuildPlugin {
   name = 'MyNoBuildPlugin'
   version = '1.0'
@@ -179,48 +225,8 @@ export default class MyNoBuildPlugin {
 }
 ```
 
-## Adding the plugin to the config
-
-We'll need to add our plugin to our config file. You can add to an existing file, or create a new one (e.g. `touch jbrowse_config.json`).
-
-With a file processor, open your `jbrowse_config.json` and add the following to the configuration:
-
-```json
-{
-  "plugins": [
-    {
-      "name": "MyNoBuildPlugin",
-      "esmUrl": "http://localhost:9000/MyNoBuildPlugin.js"
-    }
-  ]
-}
-```
-
-It's important to note that the `name` and `esmUrl` must be accurate to the name of your plugin and the name of your file respectively. If localhost:9000 is in use, change the port in the following step.
-
-Now, for the purposes of this tutorial, we can access our file through localhost to make sure it's working. In production, you'll want this file to be accessible through the web.
-
-To start a simple webserver to host our files, run the following in the directory containing your `.js` file and your config (if applicable):
-
-```bash
-npx serve --cors --listen 9000 .
-```
-
-<Figure caption="Screenshot of what your directory might look like when served on a localhost." src="/img/no_build_localhost.png"/>
-
-## Running with JBrowse
-
-Now we can test our plugin by running our config against an instance of JBrowse.
-
-Spin up JBrowse web through your method of choice (see one of our [quickstart guides](../../quickstart_cli) if you have not done this already).
-
-Navigate to your JBrowse web instance, and provide it your configuration using the URL parameters. It might look something like the following:
-
-```
-http://localhost:3000/?config=http://localhost:9000/jbrowse_config.json
-```
-
-With JBrowse running and your plugin added to your config, your JBrowse session should look like the following:
+With JBrowse running and your plugin added to your config, your JBrowse session
+should look like the following:
 
 <Figure caption="Screenshot of a running JBrowse instance with the simple no build plugin added. Note our top level menu item has been added, and upon clicking it our widget opens." src="/img/no_build_final.png"/>
 
@@ -228,6 +234,8 @@ With JBrowse running and your plugin added to your config, your JBrowse session 
 
 Congratulations! You built and ran a single file no-build plugin in JBrowse.
 
-If you'd like some general development information, checkout the series of [developer guides](../../developer_guide) available.
+If you'd like some general development information, checkout the series of
+[developer guides](../../developer_guide) available.
 
-Have some questions? [Contact us](/contact) through our various communication channels.
+Have some questions? [Contact us](/contact) through our various communication
+channels.
