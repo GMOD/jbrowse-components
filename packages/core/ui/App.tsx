@@ -111,57 +111,59 @@ type AppSession = SessionWithDrawerWidgets & {
   popSnackbarMessage: () => unknown
 }
 
-const AppToolbar = ({
-  session,
-  HeaderButtons = <div />,
-}: {
-  HeaderButtons?: React.ReactElement
-  session: AppSession
-}) => {
-  const { classes } = useStyles()
-  const { savedSessionNames, name, menus } = session
+const AppToolbar = observer(
+  ({
+    session,
+    HeaderButtons = <div />,
+  }: {
+    HeaderButtons?: React.ReactElement
+    session: AppSession
+  }) => {
+    const { classes } = useStyles()
+    const { savedSessionNames, name, menus } = session
 
-  function handleNameChange(newName: string) {
-    if (savedSessionNames?.includes(newName)) {
-      session.notify(
-        `Cannot rename session to "${newName}", a saved session with that name already exists`,
-        'warning',
-      )
-    } else {
-      session.renameCurrentSession(newName)
+    function handleNameChange(newName: string) {
+      if (savedSessionNames?.includes(newName)) {
+        session.notify(
+          `Cannot rename session to "${newName}", a saved session with that name already exists`,
+          'warning',
+        )
+      } else {
+        session.renameCurrentSession(newName)
+      }
     }
-  }
-  return (
-    <Toolbar>
-      {menus.map(menu => (
-        <DropDownMenu
-          key={menu.label}
-          menuTitle={menu.label}
-          menuItems={menu.menuItems}
-          session={session}
-        />
-      ))}
-      <div className={classes.grow} />
-      <Tooltip title="Rename Session" arrow>
-        <EditableTypography
-          value={name}
-          setValue={handleNameChange}
-          variant="body1"
-          classes={{
-            inputBase: classes.inputBase,
-            inputRoot: classes.inputRoot,
-            inputFocused: classes.inputFocused,
-          }}
-        />
-      </Tooltip>
-      {HeaderButtons}
-      <div className={classes.grow} />
-      <div style={{ width: 150, maxHeight: 48 }}>
-        <Logo session={session} />
-      </div>
-    </Toolbar>
-  )
-}
+    return (
+      <Toolbar>
+        {menus.map(menu => (
+          <DropDownMenu
+            key={menu.label}
+            menuTitle={menu.label}
+            menuItems={menu.menuItems}
+            session={session}
+          />
+        ))}
+        <div className={classes.grow} />
+        <Tooltip title="Rename Session" arrow>
+          <EditableTypography
+            value={name}
+            setValue={handleNameChange}
+            variant="body1"
+            classes={{
+              inputBase: classes.inputBase,
+              inputRoot: classes.inputRoot,
+              inputFocused: classes.inputFocused,
+            }}
+          />
+        </Tooltip>
+        {HeaderButtons}
+        <div className={classes.grow} />
+        <div style={{ width: 150, maxHeight: 48 }}>
+          <Logo session={session} />
+        </div>
+      </Toolbar>
+    )
+  },
+)
 
 const ViewLauncher = observer(({ session }: { session: AppSession }) => {
   const { classes } = useStyles()
