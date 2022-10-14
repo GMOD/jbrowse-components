@@ -33,13 +33,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export function AboutContents({ config }: { config: AnyConfigurationModel }) {
+export function FileInfo({ config }: { config: AnyConfigurationModel }) {
   const [error, setError] = useState<unknown>()
-  const [copied, setCopied] = useState(false)
-  const conf = readConfObject(config)
+  const [info, setInfo] = useState<FileInfo>()
   const session = getSession(config)
   const { rpcManager } = session
-  const [info, setInfo] = useState<FileInfo>()
 
   useEffect(() => {
     const aborter = new AbortController()
@@ -69,6 +67,33 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
     }
   }, [config, rpcManager])
 
+  const details =
+    typeof info === 'string'
+      ? {
+          header: `<pre>${info
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')}</pre>`,
+        }
+      : info || {}
+
+  return info !== null ? (
+    <BaseCard title="File info">
+      {error ? (
+        <Typography color="error">{`${error}`}</Typography>
+      ) : info === undefined ? (
+        'Loading file data...'
+      ) : (
+        <Attributes attributes={details} />
+      )}
+    </BaseCard>
+  ) : null
+}
+
+export function AboutContents({ config }: { config: AnyConfigurationModel }) {
+  const [copied, setCopied] = useState(false)
+  const conf = readConfObject(config)
+  const session = getSession(config)
+
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
     readConfObject(config, ['formatAbout', 'hideUris'])
@@ -91,16 +116,7 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
     'Core-extraAboutPanel',
     null,
     { session, config },
-  ) as React.FC<any> | null
-
-  const details =
-    typeof info === 'string'
-      ? {
-          header: `<pre>${info
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')}</pre>`,
-        }
-      : info || {}
+  ) as { name: string; component: React.FC<any> }
 
   return (
     <>
@@ -124,23 +140,12 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
           hideUris={hideUris}
         />
       </BaseCard>
-      )
-      {info !== null ? (
-        <BaseCard title="File info">
-          {error ? (
-            <Typography color="error">{`${error}`}</Typography>
-          ) : info === undefined ? (
-            'Loading file data...'
-          ) : (
-            <Attributes attributes={details} />
-          )}
-        </BaseCard>
-      ) : null}
       {ExtraPanel ? (
-        <BaseCard title="More info">
-          <ExtraPanel config={config} />
+        <BaseCard title={ExtraPanel.name}>
+          <ExtraPanel.component config={config} />
         </BaseCard>
       ) : null}
+      <FileInfo config={config} />
     </>
   )
 }

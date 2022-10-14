@@ -6,7 +6,32 @@
     name = 'UMDLocPlugin'
     version = '1.0'
 
-    install(/* pluginManager */) {}
+    install(pluginManager) {
+      const React = pluginManager.jbrequire('react')
+      function NewAboutComponent() {
+        return React.createElement('div', null, 'This is a custom about dialog')
+      }
+      function ExtraAboutPanel() {
+        return React.createElement('div', null, 'This is a custom about dialog')
+      }
+      pluginManager.addToExtensionPoint(
+        'Core-replaceAbout',
+        (DefaultAboutComponent, { /*session,*/ config }) => {
+          return config.trackId === 'volvox.inv.vcf'
+            ? NewAboutComponent
+            : DefaultAboutComponent
+        },
+      )
+
+      pluginManager.addToExtensionPoint(
+        'Core-extraAboutPanel',
+        (DefaultAboutExtra, { /*session,*/ config }) => {
+          return config.trackId === 'volvox_sv_test'
+            ? { name: 'More info', component: ExtraAboutPanel }
+            : DefaultAboutExtra
+        },
+      )
+    }
 
     configure(/* pluginManager */) {}
   }

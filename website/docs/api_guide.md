@@ -380,6 +380,64 @@ LaunchView type for your own view
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
 
+### Core-replaceAbout
+
+type: synchronous
+
+adds option to provide a different component for the "About this track" dialog
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+- `config: AnyConfigurationModel` - a configuration object for the track
+
+Return value:
+The new React component you want to use
+
+example: replaces about dialog for a particular track ID
+
+```js
+pluginManager.addToExtensionPoint(
+  'Core-replaceAbout',
+  (DefaultAboutComponent, { session, config }) => {
+    return config.trackId === 'volvox.inv.vcf'
+      ? NewAboutComponent
+      : DefaultAboutComponent
+  },
+)
+```
+
+### Core-extraAboutPanel
+
+type: synchronous
+
+adds option to provide a different component for the "About this track" dialog
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+- `config: AnyConfigurationModel` - a configuration object for the track
+
+Return value:
+An object with the name of the panel and the React component to use for the panel
+
+example: adds an extra about dialog panel for a particular track ID
+
+```js
+pluginManager.addToExtensionPoint(
+  'Core-extraAboutPanel',
+  (DefaultAboutExtra, { /*session,*/ config }) => {
+    return config.trackId === 'volvox_sv_test'
+      ? { name: 'More info', component: ExtraAboutPanel }
+      : DefaultAboutExtra
+  },
+)
+```
+
+### Core-customizeAbout
+
+- `config: Record<string, unknown>` a snapshot of a configuration object for
+  the track, with `formatAbout` already applied to it
+
+Return value:
+New config snapshot object
+
 ### Extension point footnote
 
 Users that want to add further extension points can do so. The naming system,
