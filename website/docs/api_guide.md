@@ -424,7 +424,7 @@ pluginManager.addToExtensionPoint(
   'Core-extraAboutPanel',
   (DefaultAboutExtra, { /*session,*/ config }) => {
     return config.trackId === 'volvox_sv_test'
-      ? { name: 'More info', component: ExtraAboutPanel }
+      ? { name: 'More info', Component: ExtraAboutPanel }
       : DefaultAboutExtra
   },
 )
@@ -432,14 +432,81 @@ pluginManager.addToExtensionPoint(
 
 ### Core-customizeAbout
 
+type: synchronous
+
 - `config: Record<string, unknown>` a snapshot of a configuration object for
   the track, with `formatAbout` already applied to it
 
 Return value:
 New config snapshot object
 
+### Core-replaceWidget
+
+type: synchronous
+
+adds option to provide a different component for the "About this track" dialog
+
+- `session: AbstractSessionModel` - instance of the session which you can call
+- `model: WidgetModel` - a widget model. this is called for every widget type,
+  including configuration, feature details, about panel, and more. The feature
+  details may be a common one. See `Core-extraFeaturePanel` also, matches the
+  model attribute from there
+
+Return value:
+The new React component you want to use
+
+example: replaces about feature details widget for a particular track ID
+
+```js
+pluginManager.addToExtensionPoint(
+  'Core-replaceAbout',
+  (DefaultAboutComponent, { model }) => {
+    return model.trackId === 'volvox.inv.vcf'
+      ? NewAboutComponent
+      : DefaultAboutComponent
+  },
+)
+```
+
+Note: it is not always possible to retrieve the configuration associated with a
+track that produced the feature details. Therefore, we check model.trackId that
+produced the popup instead. note that if you want copies of your track to get
+same treatment, might use a regex to loose match the trackId (the copy of a
+track will have a timestamp and -sessionTrack added to it).
+
+### Core-extraFeaturePanel
+
+type: synchronous
+
+- `model: BaseFeatureWidget` - the BaseFeatureWidget model. This has properties
+  `model.trackId`, `model.trackType`, and `model.track`, though track may be
+  undefined if the user closed the track, while trackId and trackType will be
+  defined even if user closed the track
+- `feature: Record<string, unknown>` a snapshot of a feature object
+- `session: AbstractSessionModel` - instance of the session which you can call
+
+Return value:
+An object with the name of the panel and the React component to use for the panel
+
+example
+
+```js
+pluginManager.addToExtensionPoint(
+  'Core-extraFeaturePanel',
+  (DefaultFeatureExtra, { model }) => {
+    return model.trackId === 'volvox_filtered_vcf'
+      ? { name: 'Extra info', Component: ExtraFeaturePanel }
+      : DefaultFeatureExtra
+  },
+)
+```
+
 ### Extension point footnote
 
 Users that want to add further extension points can do so. The naming system,
 "Core-" just refers to the fact that these extension points are from our core
 codebase. Plugin developers may choose their own prefix to avoid collisions.
+
+```
+
+```

@@ -8,11 +8,30 @@
 
     install(pluginManager) {
       const React = pluginManager.jbrequire('react')
+
       function NewAboutComponent() {
-        return React.createElement('div', null, 'This is a custom about dialog')
+        return React.createElement(
+          'div',
+          null,
+          'This is a replaced about dialog',
+        )
       }
       function ExtraAboutPanel() {
         return React.createElement('div', null, 'This is a custom about dialog')
+      }
+      function ExtraFeaturePanel() {
+        return React.createElement(
+          'div',
+          null,
+          'This is a custom feature panel',
+        )
+      }
+      function ReplaceFeatureWidget() {
+        return React.createElement(
+          'div',
+          null,
+          'This is a replaced feature panel',
+        )
       }
       pluginManager.addToExtensionPoint(
         'Core-replaceAbout',
@@ -27,8 +46,26 @@
         'Core-extraAboutPanel',
         (DefaultAboutExtra, { /*session,*/ config }) => {
           return config.trackId === 'volvox_sv_test'
-            ? { name: 'More info', component: ExtraAboutPanel }
+            ? { name: 'More info', Component: ExtraAboutPanel }
             : DefaultAboutExtra
+        },
+      )
+
+      pluginManager.addToExtensionPoint(
+        'Core-extraFeaturePanel',
+        (DefaultFeatureExtra, { model }) => {
+          return model.trackId === 'volvox_filtered_vcf'
+            ? { name: 'Extra info', Component: ExtraFeaturePanel }
+            : DefaultFeatureExtra
+        },
+      )
+
+      pluginManager.addToExtensionPoint(
+        'Core-replaceWidget',
+        (DefaultWidget, { model }) => {
+          return model.trackId === 'volvox.inv.vcf'
+            ? ReplaceFeatureWidget
+            : DefaultWidget
         },
       )
     }

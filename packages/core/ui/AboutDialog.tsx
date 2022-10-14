@@ -116,7 +116,8 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
     'Core-extraAboutPanel',
     null,
     { session, config },
-  ) as { name: string; component: React.FC<any> }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as { name: string; Component: React.FC<any> }
 
   return (
     <>
@@ -142,7 +143,7 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
       </BaseCard>
       {ExtraPanel ? (
         <BaseCard title={ExtraPanel.name}>
-          <ExtraPanel.component config={config} />
+          <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
       <FileInfo config={config} />
@@ -166,6 +167,7 @@ export default function AboutDialog({
     'Core-replaceAbout',
     AboutContents,
     { session, config },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ) as React.FC<any>
 
   return (

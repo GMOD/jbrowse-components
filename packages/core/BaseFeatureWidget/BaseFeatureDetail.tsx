@@ -21,6 +21,8 @@ import {
   measureText,
   measureGridWidth,
   getStr,
+  getEnv,
+  getSession,
   getUriLink,
   isUriLocation,
 } from '../util'
@@ -567,13 +569,22 @@ export const FeatureDetails = (props: {
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
+  const { pluginManager } = getEnv(model)
+  const session = getSession(model)
 
+  const ExtraPanel = pluginManager.evaluateExtensionPoint(
+    'Core-extraFeaturePanel',
+    null,
+    { session, feature, model },
+  ) as { name: string; Component: React.FC<any> }
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
+
       <Typography>Attributes</Typography>
+
       <Attributes
         attributes={feature}
         {...props}
@@ -585,6 +596,15 @@ export const FeatureDetails = (props: {
       >
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
+
+      {ExtraPanel ? (
+        <>
+          <Divider />
+          <BaseCard title={ExtraPanel.name}>
+            <ExtraPanel.Component {...props} />
+          </BaseCard>
+        </>
+      ) : null}
 
       {subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
@@ -618,7 +638,6 @@ const BaseFeatureDetails = observer(({ model }: BaseInputProps) => {
       typeof v === 'undefined' ? null : v,
     ),
   )
-
   return isEmpty(feature) ? null : (
     <FeatureDetails model={model} feature={feature} />
   )

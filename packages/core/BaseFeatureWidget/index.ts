@@ -49,8 +49,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       track: types.safeReference(
         pluginManager.pluggableMstType('track', 'stateModel'),
       ),
+      trackId: types.maybe(types.string),
+      trackType: types.maybe(types.string),
     })
-    .volatile(() => ({}))
     .actions(self => ({
       setFeatureData(featureData: Record<string, unknown>) {
         self.unformattedFeatureData = featureData
@@ -61,12 +62,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       setFormattedData(feat: Record<string, unknown>) {
         self.featureData = feat
       },
+      setExtra(type?: string, trackId?: string) {
+        self.trackId = trackId
+        self.trackType = type
+      },
     }))
     .actions(self => ({
       afterCreate() {
         addDisposer(
           self,
           autorun(() => {
+            self.setExtra(self.track?.type, self.track?.configuration.trackId)
             const { unformattedFeatureData, track } = self
             const session = getSession(self)
             if (unformattedFeatureData) {
