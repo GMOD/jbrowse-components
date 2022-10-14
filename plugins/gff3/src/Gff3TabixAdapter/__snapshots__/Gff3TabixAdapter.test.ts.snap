@@ -3,6 +3,7 @@
 exports[`adapter can fetch features from volvox.gff3 test getfeatures on gff plain text adapter 1`] = `
 Array [
   Object {
+    "derived_features": Array [],
     "end": 6079,
     "name": "ctgB",
     "phase": 0,
@@ -14,6 +15,7 @@ Array [
     "uniqueId": "test-offset-794327",
   },
   Object {
+    "derived_features": Array [],
     "end": 1984,
     "name": "f07",
     "note": "This is an example",
@@ -26,6 +28,7 @@ Array [
     "uniqueId": "test-offset-794370",
   },
   Object {
+    "derived_features": Array [],
     "end": 6130,
     "name": "f06",
     "note": "This is another example",
@@ -38,6 +41,7 @@ Array [
     "uniqueId": "test-offset-794439",
   },
   Object {
+    "derived_features": Array [],
     "end": 5968,
     "name": "f05",
     "note": "ああ、この機能は、世界中を旅しています！",

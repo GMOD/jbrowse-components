@@ -158,7 +158,7 @@ export default class extends BaseFeatureDataAdapter {
 
     delete f.child_features
     delete f.data
-    delete f.derived_features
+    // delete f.derived_features
     delete f.attributes
     delete f.seq_id
     return f
