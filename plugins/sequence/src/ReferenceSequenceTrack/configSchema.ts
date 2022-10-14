@@ -26,11 +26,11 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       },
 
       formatAbout: ConfigurationSchema('FormatAbout', {
-        conf: {
+        config: {
           type: 'frozen',
           description: 'formats configuration in about dialog',
           defaultValue: {},
-          contextVariable: ['conf'],
+          contextVariable: ['config'],
         },
         hideUris: {
           type: 'boolean',

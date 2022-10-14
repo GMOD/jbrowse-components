@@ -71,11 +71,11 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         },
       }),
       formatAbout: ConfigurationSchema('FormatAbout', {
-        conf: {
+        config: {
           type: 'frozen',
           description: 'formats configuration object in about dialog',
           defaultValue: {},
-          contextVariable: ['conf'],
+          contextVariable: ['config'],
         },
         hideUris: {
           type: 'boolean',

@@ -39,11 +39,11 @@ export default function createConfigModel(
           },
         }),
         formatAbout: ConfigurationSchema('FormatAbout', {
-          conf: {
+          config: {
             type: 'frozen',
             description: 'formats configuration object in about dialog',
             defaultValue: {},
-            contextVariable: ['conf'],
+            contextVariable: ['config'],
           },
           hideUris: {
             type: 'boolean',

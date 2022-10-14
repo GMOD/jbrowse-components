@@ -276,7 +276,7 @@ used to extend the session model itself with new features
 
 type: synchronous
 
-- `conf: Record<string,unknown>` - a snapshot of a configuration object that is
+- `config: Record<string,unknown>` - a snapshot of a configuration object that is
   displayed in the about dialog
 
 ### TrackSelector-multiTrackMenuItems
@@ -503,10 +503,33 @@ pluginManager.addToExtensionPoint(
 
 ### Extension point footnote
 
-Users that want to add further extension points can do so. The naming system,
-"Core-" just refers to the fact that these extension points are from our core
-codebase. Plugin developers may choose their own prefix to avoid collisions.
+Users that want to add further extension points can do so, by simply calling
 
+```js
+const returnVal = pluginManager.evaluateExtensionPoint(
+  'YourCustomNameHere',
+  processThisValue,
+  extraContext,
+)
 ```
 
+Then, any code that had used:
+
+```js
+pluginManager.addToExtensionPoint(
+  'YourCustomNameHere',
+  (processThisValue, extraContext) => {
+    /* the first arg is the "processThisValue" from the extension point, it may
+    get mutated if multiple extension points are chained together
+
+    the second argument to the extension point is the extra context from
+    evaluating the extension point. it does not get mutated even if there is a
+    chain of values, it is passed as is to each one*/
+    return processThisValue
+  },
+)
 ```
+
+The naming system, "Core-" just refers to the fact that these extension points
+are from our core codebase. Plugin developers may choose their own prefix to
+avoid collisions.

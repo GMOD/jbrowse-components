@@ -572,11 +572,11 @@ export const FeatureDetails = (props: {
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
 
-  const ExtraPanel = pluginManager.evaluateExtensionPoint(
+  const ExtraPanel = pluginManager?.evaluateExtensionPoint(
     'Core-extraFeaturePanel',
     null,
     { session, feature, model },
-  ) as { name: string; Component: React.FC<any> }
+  ) as { name: string; Component: React.FC<any> } | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
