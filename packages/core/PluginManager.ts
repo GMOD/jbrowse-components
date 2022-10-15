@@ -219,10 +219,12 @@ export default class PluginManager {
       throw new Error('JBrowse already configured, cannot add plugins')
     }
 
-    // if 'load'  is an object with a 'plugin' attrbute, then we assume
-    // 'plugin' is the plugin class. else, 'load' itself is the plugin class
+    // check for availability of 'install' and 'configure' as a proxy for being
+    // an 'instanceof Plugin'
     const [plugin, metadata = {}] =
-      'plugin' in load ? [load.plugin, load.metadata] : [load, {}]
+      'install' in load && 'configure' in load
+        ? [load, {}]
+        : [load.plugin, load.metadata]
 
     if (this.plugins.includes(plugin)) {
       throw new Error('plugin already installed')
@@ -230,7 +232,8 @@ export default class PluginManager {
 
     this.pluginMetadata[plugin.name] = metadata
     if ('definition' in load) {
-      this.runtimePluginDefinitions.push(load.definition)
+      // @ts-ignore
+      this.runtimePluginDefinitions.push(load.definition as PluginDefinition)
     }
     plugin.install(this)
     this.plugins.push(plugin)
