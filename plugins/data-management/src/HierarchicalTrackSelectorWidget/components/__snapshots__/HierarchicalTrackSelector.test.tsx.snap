@@ -2,7 +2,7 @@
 
 exports[`HierarchicalTrackSelector widget renders nothing with no assembly 1`] = `
 <button
-  class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary tss-805w6w-fab css-10w0o2e-MuiButtonBase-root-MuiFab-root"
+  class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary tss-805w6w-fab css-10w0o2e-MuiButtonBase-root-MuiFab-root"
   tabindex="0"
   type="button"
 >

@@ -46,6 +46,21 @@ const tracks = [
       },
     },
   },
+
+  {
+    type: 'FeatureTrack',
+    trackId: 'repeats_hg38',
+    name: 'Repeats',
+    assemblyNames: ['hg38'],
+    category: ['Annotation'],
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: {
+        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+        locationType: 'UriLocation',
+      },
+    },
+  },
   {
     type: 'VariantTrack',
     trackId:
@@ -62,6 +77,20 @@ const tracks = [
         location: {
           uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz.tbi',
         },
+      },
+    },
+  },
+  {
+    type: 'QuantitativeTrack',
+    trackId: 'hg38.100way.phyloP100way',
+    name: 'hg38.100way.phyloP100way',
+    category: ['Conservation'],
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'BigWigAdapter',
+      bigWigLocation: {
+        uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+        locationType: 'UriLocation',
       },
     },
   },
