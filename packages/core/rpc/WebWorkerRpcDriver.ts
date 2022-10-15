@@ -1,5 +1,8 @@
 import Rpc from 'librpc-web-mod'
 import shortid from 'shortid'
+import { deserializeError } from 'serialize-error'
+
+// locals
 import BaseRpcDriver, { RpcDriverConstructorArgs } from './BaseRpcDriver'
 import { PluginDefinition } from '../PluginLoader'
 
@@ -43,7 +46,10 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
 
   constructor(
     args: WebWorkerRpcDriverConstructorArgs,
-    public workerBootConfiguration: { plugins: PluginDefinition[] },
+    public workerBootConfiguration: {
+      plugins: PluginDefinition[]
+      windowHref: string
+    },
   ) {
     super(args)
     this.makeWorkerInstance = args.makeWorkerInstance
@@ -58,6 +64,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     const worker = new WebWorkerHandle({ workers: [instance] })
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     if (isSafari) {
+      // xref https://github.com/GMOD/jbrowse-components/issues/3245
       // eslint-disable-next-line no-console
       console.log(
         'console logging the webworker handle avoids the track going into an infinite loading state, this is a hacky workaround for safari',
@@ -66,18 +73,21 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     }
 
     // send the worker its boot configuration using info from the pluginManager
-    const p = new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
-      worker.workers[0].onmessage = e => {
-        if (e.data === 'ready') {
+    return new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
+      const listener = (e: MessageEvent) => {
+        if (e.data.message === 'ready') {
           resolve(worker)
-        } else if (e.data === 'readyForConfig') {
-          worker.workers[0].postMessage(this.workerBootConfiguration)
-        } else {
-          reject()
+          worker.workers[0].removeEventListener('message', listener)
+        } else if (e.data.message === 'readyForConfig') {
+          worker.workers[0].postMessage({
+            message: 'config',
+            config: this.workerBootConfiguration,
+          })
+        } else if (e.data.message === 'error') {
+          reject(deserializeError(e.data.error))
         }
       }
+      worker.workers[0].addEventListener('message', listener)
     })
-
-    return p
   }
 }

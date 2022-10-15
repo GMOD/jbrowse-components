@@ -276,7 +276,18 @@ Object {
       "type": "GoogleDriveOAuthInternetAccount",
     },
   ],
-  "plugins": Array [],
+  "plugins": Array [
+    Object {
+      "name": "UMDLocPlugin",
+      "umdLoc": Object {
+        "uri": "umd_plugin.js",
+      },
+    },
+    Object {
+      "name": "UMDUrlPlugin",
+      "umdUrl": "umd_plugin.js",
+    },
+  ],
   "tracks": Array [
     Object {
       "adapter": Object {

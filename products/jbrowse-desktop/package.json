@@ -97,6 +97,7 @@
     "react-error-boundary": "^3.0.0",
     "rxjs": "^6.5.2",
     "sanitize-filename": "^1.6.3",
+    "serialize-error": "^8.0.0",
     "timeago.js": "^4.0.2",
     "tss-react": "^3.7.0",
     "use-query-params": "^2.0.0",

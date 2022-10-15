@@ -1368,31 +1368,40 @@ For example, create a file named "myplugin.js" (see also Footnote 1)
 
 ```js
 // myplugin.js
-class MyPlugin {
-  install() {}
-  configure(pluginManager) {
-    pluginManager.jexl.addFunction('colorFeature', feature => {
-      let type = feature.get('type')
-      if (type === 'CDS') {
-        return 'red'
-      } else if (type === 'exon') {
-        return 'green'
-      } else {
-        return 'purple'
-      }
-    })
+;(function () {
+  class MyPlugin {
+    install() {}
+    configure(pluginManager) {
+      pluginManager.jexl.addFunction('colorFeature', feature => {
+        let type = feature.get('type')
+        if (type === 'CDS') {
+          return 'red'
+        } else if (type === 'exon') {
+          return 'green'
+        } else {
+          return 'purple'
+        }
+      })
+    }
   }
-}
+
+  // the plugin will be included in both the main thread and web worker, so
+  // install plugin to either window or self (webworker global scope)
+  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
+    default: Plugin,
+  }
+})()
 ```
 
-Then you can use the custom jexl function in your config callbacks as follows:
+Then put `myplugin.js` in the same folder as your config file, and then you can
+use the custom `jexl` function in your config callbacks as follows:
 
 ```json
 {
   "plugins": [
     {
       "name": "MyPlugin",
-      "url": "myplugin.js"
+      "umdLoc": { "uri": "myplugin.js" }
     }
   ],
   "tracks": [
@@ -1422,12 +1431,15 @@ Then you can use the custom jexl function in your config callbacks as follows:
 }
 ```
 
-The feature is of a "SimpleFeature" type object, and you can call
+The feature in the callback is a "SimpleFeature" type object, and you can call
 `feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
 `feature.get('other_attribute')` for e.g. maybe a field in a GFF3 column 9
 
-Footnote 1. myplugin.js does not have to use the jbrowse-plugin-template if it
-is small and self contained like this, and does not import other modules. if
+Footnote 0. See [our no-build plugin tutorial](../tutorials/no_build_plugin_tutorial/) for
+more info on setting up a simple plugin for doing these customizations.
+
+Footnote 1. `myplugin.js` does not have to use the jbrowse-plugin-template if
+it is small and self contained like this, and does not import other modules. if
 you import other modules from your plugin, then it can be worth it to use the
 jbrowse-plugin-template.
 
@@ -1499,25 +1511,33 @@ You can make a small plugin file "myplugin.js"
 
 ```js
 // myplugin.js
-class MyPlugin {
-  install() {}
-  configure(pluginManager) {
-    pluginManager.jexl.addFunction('formatName', feature => {
-      return `<a href="${feature.name}">${feature.name}</a>`
-    })
+;(function () {
+  class MyPlugin {
+    install() {}
+    configure(pluginManager) {
+      pluginManager.jexl.addFunction('formatName', feature => {
+        return `<a href="${feature.name}">${feature.name}</a>`
+      })
+    }
   }
-}
+
+  // the plugin will be included in both the main thread and web worker, so
+  // install plugin to either window or self (webworker global scope)
+  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
+    default: Plugin,
+  }
+})()
 ```
 
-Then you can put my.js in your jbrowse root directory, and can use the custom
-jexl function in your config callbacks as follows:
+Then you can put myplugin.js in the same directory as your config file, and can
+use the custom `jexl` function in your config callbacks as follows:
 
 ```json
 {
   "plugins": [
     {
       "name": "MyPlugin",
-      "url": "myplugin.js"
+      "umdLoc": { "uri": "myplugin.js" }
     }
   ],
   "tracks": [
@@ -1534,27 +1554,25 @@ jexl function in your config callbacks as follows:
 }
 ```
 
-See our [developer guides](../developer_guide/) for more information regarding
-plugin development.
+Footnote 0. See [our no-build plugin tutorial](../tutorials/no_build_plugin_tutorial/) for
+more info on setting up a simple plugin for doing these customizations.
 
-Note that the feature for feature detail panels is different from that in the
-color callback: it is a plain JS object. So instead of `feature.get('start')`,
-you can say just `feature.start`.
-
-The reason it is different for the feature details callbacks (compared with
-e.g. the color callbacks) is that the feature is serialized into the session.
-
-You might also ask why aren't all features serialized or plain JSON objects
-normally? Well, some feature types like alignments features benefit from only
-being partially serialized e.g. getting only a couple attributes via
-`feature.get('attribute')` (completely converting them to a raw JSON expression
-is expensive). It is a little confusing, but that is why in the feature
-details, you can access the plain JS object e.g. `feature.start` while in color
-callbacks you use e.g. `feature.get('start')`.
+Footnote 1. Note that the feature for feature detail panels is different from
+that in the color callback: it is a plain JS object. So instead of
+`feature.get('start')`, you can say just `feature.start`. The reason it is
+different for the feature details callbacks (compared with e.g. the color
+callbacks) is that the feature is serialized into the session. You might also
+ask why aren't all features serialized or plain JSON objects normally? Well,
+some feature types like alignments features benefit from only being partially
+serialized e.g. getting only a couple attributes via `feature.get('attribute')`
+(completely converting them to a raw JSON expression is expensive). It is a
+little confusing, but that is why in the feature details, you can access the
+plain JS object e.g. `feature.start` while in color callbacks you use e.g.
+`feature.get('start')`.
 
 ## Configuring plugins
 
-External published plugins can be added to the configuration like so:
+External plugins can be added to the configuration like so:
 
 ```json
 {
@@ -1567,23 +1585,115 @@ External published plugins can be added to the configuration like so:
 }
 ```
 
-Published plugins are typically hosted on unpkg and can be referenced as above.
+Our plugin store lists the URLs for unpkg URLs for these plugins
+https://jbrowse.org/jb2/plugin_store/. You can also download the plugin files
+from e.g. the unpkg URLs to your local server and serve them.
 
-Any tools that are available via that plugin will then be added to JBrowse. You can verify the plugin is installed properly by checking the Plugin Store:
+There are several other ways to plugins in the config, that have particular
+ways of being resolved from your local server.
 
-<Figure src="/img/plugin-store.png" caption="Example screenshot showing how installed plugins are represented in the plugin store interface. Plugins installed via the config are shown with a lock icon, indicating they cannot be removed via the GUI."/>
-
-If you have an unpublished plugin running locally, you can add that plugin to your configuration using the localhost the plugin is running on:
+#### umdUrl
 
 ```json
 {
   "plugins": [
     {
       "name": "GDC",
-      "url": "http://localhost:9000/dist/jbrowse-plugin-gdc.umd.development.js"
+      "umdUrl": "https://unpkg.com/jbrowse-plugin-gdc/dist/jbrowse-plugin-gdc.umd.production.min.js"
     }
   ]
 }
 ```
 
-Checkout our [developer guide](../developer_guide/) for more information on developing plugins, or our [plugins page](/plugin_store) to browse currently published plugins.
+`umdUrl` is resolved relative to the index.html of the file, so can be a
+relative path in your root directory or an absolute URL to somewhere on the web
+
+#### umdLoc
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GDC",
+      "umdLoc": { "uri": "plugin.js" }
+    }
+  ]
+}
+```
+
+`umdLoc` is resolved relative to the config.json that is being loaded, so is
+helpful for storing the plugin.js in the same folder as your config
+
+#### esmUrl
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GDC",
+      "umdLoc": { "uri": "http://unpkg.com/path/to/esm/module.js" }
+    }
+  ]
+}
+```
+
+`esmUrl` is resolved relative to the index.html of the file, so can be a
+relative path in your root directory or an absolute URL to somewhere on the
+web. Note that ESM modules are currently not supported in web workers in
+firefox, so you can use MainThreadRpc, or use alternative module formats like
+UMD for broad compatibility.
+
+#### esmLoc
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GDC",
+      "esmLoc": { "uri": "module.js" }
+    }
+  ]
+}
+```
+
+`esmLoc` is resolved relative to the config.json that is being loaded, so is
+helpful for storing the plugin.js in the same folder as your config. Note that
+ESM modules are currently not supported in web workers in firefox, so you can
+use MainThreadRpc, or use alternative module formats like UMD for broad
+compatibility.
+
+#### cjsUrl
+
+```json
+{
+  "plugins": [
+    {
+      "name": "GDC",
+      "cjsUrl": "http://unpkg.com/path/to/cjs/module.js"
+    }
+  ]
+}
+```
+
+`cjsUrl` is used for desktop plugins specifically, since Electron (as of
+writing) does not support ESM, and since the jbrowse-plugin-template will not
+output some code that is helpful for desktop like true require() calls for
+desktop modules. See the [desktop plugin
+tutorial](../tutorials/desktop_spec_plugin_tutorial/) for more info.
+
+### Plugin store
+
+We recommend developers that create plugins add their plugins to our plugin
+store: https://github.com/GMOD/jbrowse-plugin-list you can create a PR to add
+your plugin there.
+
+You can verify the plugin is installed properly by checking the Plugin Store:
+
+<Figure src="/img/plugin-store.png" caption="Example screenshot showing how
+installed plugins are represented in the plugin store interface. Plugins
+installed via the config are shown with a lock icon, indicating they cannot be
+removed via the GUI."/>
+
+See our [developer guide](../developer_guide/) for more information on
+developing plugins, or our [plugins page](/plugin_store) to browse currently
+published plugins.

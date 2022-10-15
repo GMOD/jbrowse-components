@@ -1,4 +1,8 @@
 {
+  "plugins": [
+    { "name": "UMDLocPlugin", "umdLoc": { "uri": "umd_plugin.js" } },
+    { "name": "UMDUrlPlugin", "umdUrl": "umd_plugin.js" }
+  ],
   "assemblies": [
     {
       "name": "volvox",
