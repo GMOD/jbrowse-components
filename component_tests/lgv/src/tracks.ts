@@ -47,6 +47,34 @@ const tracks = [
     },
   },
   {
+    type: 'FeatureTrack',
+    trackId: 'repeats_hg38',
+    name: 'Repeats',
+    assemblyNames: ['hg38'],
+    category: ['Annotation'],
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: {
+        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+  {
+    type: 'FeatureTrack',
+    trackId: 'clinvar_cnv_hg38',
+    name: 'ClinVar CNV (UCSC)',
+    assemblyNames: ['hg38'],
+    category: ['Annotation'],
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: {
+        uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+  {
     type: 'VariantTrack',
     trackId:
       'ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf',

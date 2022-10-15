@@ -18,6 +18,21 @@ const tracks = [
       },
     },
   },
+
+  {
+    type: 'FeatureTrack',
+    trackId: 'repeats_hg38',
+    name: 'Repeats',
+    assemblyNames: ['hg38'],
+    category: ['Annotation'],
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: {
+        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+        locationType: 'UriLocation',
+      },
+    },
+  },
   {
     type: 'AlignmentsTrack',
     trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
@@ -46,6 +61,7 @@ const tracks = [
       },
     },
   },
+
   {
     type: 'VariantTrack',
     trackId:
