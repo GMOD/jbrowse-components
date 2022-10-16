@@ -34,30 +34,19 @@ interface RowState<T> {
 }
 // a single row in the layout
 class LayoutRow<T> {
-  private padding: number
+  private padding = 1
 
   private allFilled?: Record<string, T> | string
 
-  private widthLimit: number
+  private widthLimit = 1_000_000
 
   private rowState?: RowState<T>
 
-  constructor() {
-    this.padding = 1
-    this.widthLimit = 1000000
-
-    // this.rowState.offset is the offset of the bits array relative to the genomic coordinates
-    //      (modified by pitchX, but we don't know that in this class)
-    // this.rowState.bits is the array of items in the layout row, indexed by (x - this.offset)
-    // this.rowState.min is the leftmost edge of all the rectangles we have in the layout
-    // this.rowState.max is the rightmost edge of all the rectangles we have in the layout
-  }
-
-  // log(msg: string): void {
-  //   // if (this.rowNumber === 0)
-  //   // eslint-disable-next-line no-console
-  //   console.log(`r${this.rowNumber}: ${msg}`)
-  // }
+  // this.rowState.bits is the array of items in the layout row, indexed by (x - this.offset)
+  // this.rowState.min is the leftmost edge of all the rectangles we have in the layout
+  // this.rowState.max is the rightmost edge of all the rectangles we have in the layout
+  // this.rowState.offset is the offset of the bits array relative to the genomic coordinates
+  //      (modified by pitchX, but we don't know that in this class)
 
   setAllFilled(data: Record<string, T> | string): void {
     this.allFilled = data
@@ -67,56 +56,42 @@ class LayoutRow<T> {
     if (this.allFilled) {
       return this.allFilled
     }
-    if (!this.rowState) {
+    if (
+      this.rowState?.min === undefined ||
+      x < this.rowState.min ||
+      x >= this.rowState.max
+    ) {
       return undefined
     }
-
-    if (this.rowState.min === undefined) {
-      return undefined
-    }
-    if (x < this.rowState.min) {
-      return undefined
-    }
-    if (x >= this.rowState.max) {
-      return undefined
-    }
-    const offset = x - this.rowState.offset
-    // if (offset < 0)
-    //     debugger
-    // if (offset >= this.rowState.bits.length)
-    //     debugger
-    return this.rowState.bits[offset]
+    return this.rowState.bits[x - this.rowState.offset]
   }
 
-  isRangeClear(left: number, right: number): boolean {
+  isRangeClear(left: number, right: number) {
     if (this.allFilled) {
       return false
     }
 
-    if (!this.rowState) {
+    if (
+      this.rowState === undefined ||
+      right <= this.rowState.min ||
+      left >= this.rowState.max
+    ) {
       return true
     }
+    const { min, max, offset, bits } = this.rowState
 
-    const { min, max } = this.rowState
-
-    if (right <= min || left >= max) {
-      return true
+    const maxX = Math.min(max, right) - offset
+    let flag = true
+    for (let x = Math.max(min, left) - offset; x < maxX && flag; x++) {
+      flag = bits[x] === undefined
     }
 
-    // TODO: check right and middle before looping
-    const maxX = Math.min(max, right)
-    let x = Math.max(min, left)
-    for (; x < right && x < maxX; x += 1) {
-      if (this.getItemAt(x)) {
-        return false
-      }
-    }
-
-    return true
+    return flag
   }
 
+  // NOTE: this.rowState.min, this.rowState.max, and this.rowState.offset are
+  // interbase coordinates
   initialize(left: number, right: number): RowState<T> {
-    // NOTE: this.rowState.min, this.rowState.max, and this.rowState.offset are interbase coordinates
     const rectWidth = right - left
     return {
       offset: left - rectWidth,
@@ -124,7 +99,6 @@ class LayoutRow<T> {
       max: right,
       bits: new Array(3 * rectWidth),
     }
-    // this.log(`initialize ${this.rowState.min} - ${this.rowState.max} (${this.rowState.bits.length})`)
   }
 
   addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
@@ -415,13 +389,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return top * this.pitchY
   }
 
-  collides(rect: Rectangle<T>, top: number): boolean {
+  collides(rect: Rectangle<T>, top: number) {
     const { bitmap } = this
 
     const maxY = top + rect.h
     for (let y = top; y < maxY; y += 1) {
       const row = bitmap[y]
-      if (row && !row.isRangeClear(rect.l, rect.r)) {
+      if (row !== undefined && !row.isRangeClear(rect.l, rect.r)) {
         return true
       }
     }
@@ -432,7 +406,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * make a subarray if it does not exist
    */
-  private autovivifyRow(bitmap: LayoutRow<T>[], y: number): LayoutRow<T> {
+  private autovivifyRow(bitmap: LayoutRow<T>[], y: number) {
     let row = bitmap[y]
     if (!row) {
       if (y > this.hardRowLimit) {
@@ -448,7 +422,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return row
   }
 
-  addRectToBitmap(rect: Rectangle<T>): void {
+  addRectToBitmap(rect: Rectangle<T>) {
     if (rect.top === null) {
       return
     }
@@ -475,7 +449,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    *  Given a range of X coordinates, deletes all data dealing with
    *  the features.
    */
-  discardRange(left: number, right: number): void {
+  discardRange(left: number, right: number) {
     // console.log( 'discard', left, right );
     const pLeft = Math.floor(left / this.pitchX)
     const pRight = Math.floor(right / this.pitchX)
@@ -488,11 +462,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     }
   }
 
-  hasSeen(id: string): boolean {
+  hasSeen(id: string) {
     return this.rectangles.has(id)
   }
 
-  getByCoord(x: number, y: number): Record<string, T> | string | undefined {
+  getByCoord(x: number, y: number) {
     const pY = Math.floor(y / this.pitchY)
     const row = this.bitmap[pY]
     if (!row) {
@@ -502,23 +476,28 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return row.getItemAt(pX)
   }
 
-  getByID(id: string): RectTuple | undefined {
+  getByID(id: string) {
     const r = this.rectangles.get(id)
     if (r) {
       const t = (r.top as number) * this.pitchY
-      return [r.l * this.pitchX, t, r.r * this.pitchX, t + r.originalHeight]
+      return [
+        r.l * this.pitchX,
+        t,
+        r.r * this.pitchX,
+        t + r.originalHeight,
+      ] as RectTuple
     }
 
     return undefined
   }
 
-  getDataByID(id: string): unknown {
+  getDataByID(id: string) {
     return this.rectangles.get(id)?.data
   }
 
-  cleanup(): void {}
+  cleanup() {}
 
-  getTotalHeight(): number {
+  getTotalHeight() {
     return this.pTotalHeight * this.pitchY
   }
 

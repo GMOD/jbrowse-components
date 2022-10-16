@@ -9,7 +9,6 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
-import { readConfObject } from '@jbrowse/core/configuration'
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 interface Header {
@@ -21,51 +20,52 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   private samHeader?: Header
 
   private setupP?: Promise<Header>
-
-  protected configured?: Promise<{
+  private configureP?: Promise<{
     bam: BamFile
     sequenceAdapter?: BaseFeatureDataAdapter
   }>
 
   // derived classes may not use the same configuration so a custom
   // configure method allows derived classes to override this behavior
-  protected async configure() {
-    if (!this.configured) {
-      const bamLocation = readConfObject(this.config, 'bamLocation')
-      const location = readConfObject(this.config, ['index', 'location'])
-      const indexType = readConfObject(this.config, ['index', 'indexType'])
-      const bam = new BamFile({
-        bamFilehandle: openLocation(bamLocation, this.pluginManager),
-        csiFilehandle:
-          indexType === 'CSI'
-            ? openLocation(location, this.pluginManager)
-            : undefined,
-        baiFilehandle:
-          indexType !== 'CSI'
-            ? openLocation(location, this.pluginManager)
-            : undefined,
+  protected async configurePre() {
+    const bamLocation = this.getConf('bamLocation')
+    const location = this.getConf(['index', 'location'])
+    const indexType = this.getConf(['index', 'indexType'])
+    const pm = this.pluginManager
+    const csi = indexType === 'CSI'
+    const bam = new BamFile({
+      bamFilehandle: openLocation(bamLocation, pm),
+      csiFilehandle: csi ? openLocation(location, pm) : undefined,
+      baiFilehandle: !csi ? openLocation(location, pm) : undefined,
 
-        // chunkSizeLimit and fetchSizeLimit are more troublesome than
-        // helpful, and have given overly large values on the ultra long
-        // nanopore reads even with 500MB limits, so disabled with infinity
-        chunkSizeLimit: Infinity,
-        fetchSizeLimit: Infinity,
-        yieldThreadTime: Infinity,
-      })
+      // chunkSizeLimit and fetchSizeLimit are more troublesome than
+      // helpful, and have given overly large values on the ultra long
+      // nanopore reads even with 500MB limits, so disabled with infinity
+      chunkSizeLimit: Infinity,
+      fetchSizeLimit: Infinity,
+      yieldThreadTime: Infinity,
+    })
 
-      const adapterConfig = readConfObject(this.config, 'sequenceAdapter')
-      if (adapterConfig && this.getSubAdapter) {
-        this.configured = this.getSubAdapter(adapterConfig).then(
-          ({ dataAdapter }) => ({
-            bam,
-            sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
-          }),
-        )
-      } else {
-        this.configured = Promise.resolve({ bam })
+    const adapterConfig = this.getConf('sequenceAdapter')
+    if (adapterConfig && this.getSubAdapter) {
+      const { dataAdapter } = await this.getSubAdapter(adapterConfig)
+      return {
+        bam,
+        sequenceAdapter: dataAdapter as BaseFeatureDataAdapter,
       }
+    } else {
+      return { bam }
     }
-    return this.configured
+  }
+
+  protected async configure() {
+    if (!this.configureP) {
+      this.configureP = this.configurePre().catch(e => {
+        this.configureP = undefined
+        throw e
+      })
+    }
+    return this.configureP
   }
 
   async getHeader(opts?: BaseOptions) {
@@ -231,7 +231,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
     // @ts-ignore
     if (bam.index.filehandle !== '?') {
       const bytes = await bytesForRegions(regions, bam)
-      const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+      const fetchSizeLimit = this.getConf('fetchSizeLimit')
       return { bytes, fetchSizeLimit }
     } else {
       return super.estimateRegionsStats(regions, opts)
@@ -241,7 +241,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
   freeResources(/* { region } */): void {}
 
   // depends on setup being called before the BAM constructor
-  refIdToName(refId: number): string | undefined {
+  refIdToName(refId: number) {
     return this.samHeader?.idToName[refId]
   }
 }
