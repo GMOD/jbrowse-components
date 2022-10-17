@@ -141,6 +141,7 @@ export default class extends BaseFeatureDataAdapter {
         parseComments: false,
         parseDirectives: false,
         parseSequences: false,
+        disableDerivesFromReferences: true,
       })
 
       features.forEach(featureLocs =>

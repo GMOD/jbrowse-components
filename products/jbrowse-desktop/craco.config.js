@@ -53,7 +53,6 @@ module.exports = {
       // worker chunks xref
       // https://github.com/webpack/webpack/issues/13791#issuecomment-897579223
       config.output.publicPath = 'auto'
-      config.cache = false
       return config
     },
   },

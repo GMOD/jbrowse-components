@@ -42,6 +42,7 @@ export default class extends BaseFeatureDataAdapter {
       parseComments: false,
       parseDirectives: false,
       parseSequences: false,
+      disableDerivesFromReferences: true,
     })
 
     const intervalTree = feats
