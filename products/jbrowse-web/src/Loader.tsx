@@ -298,6 +298,7 @@ const Renderer = observer(
             try {
               if (sessionError) {
                 rootModel.setDefaultSession()
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 rootModel.session!.notify(
                   `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you

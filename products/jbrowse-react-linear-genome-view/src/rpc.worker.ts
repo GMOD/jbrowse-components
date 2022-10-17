@@ -10,8 +10,6 @@ import { remoteAbortRpcHandler } from '@jbrowse/core/rpc/remoteAbortSignals'
 import PluginLoader, { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import { serializeError } from 'serialize-error'
 
-console.log('t1')
-
 // locals
 import corePlugins from './corePlugins'
 

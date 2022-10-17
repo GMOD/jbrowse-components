@@ -8,7 +8,12 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 
 // locals
-import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '../src'
+import {
+  createViewState,
+  loadPlugins,
+  makeWorkerInstance,
+  JBrowseLinearGenomeView,
+} from '../src'
 
 // configs
 import volvoxConfig from '../public/test_data/volvox/config.json'
@@ -59,15 +64,16 @@ export const WithWebWorker = () => {
   const state = createViewState({
     assembly,
     tracks,
-    defaultSession: longReadsSession,
-    // use 1-based coordinates for locstring
     location: 'ctgA:1105..1221',
     configuration: {
       rpc: {
         defaultDriver: 'WebWorkerRpcDriver',
       },
     },
+    makeWorkerInstance,
   })
+  state.session.view.showTrack('Deep sequencing')
+
   return <JBrowseLinearGenomeView viewState={state} />
 }
 

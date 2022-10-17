@@ -12,9 +12,10 @@ import createSessionModel from './createSessionModel'
 
 export default function createModel(
   runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => any,
+  makeWorkerInstance: () => any = () => {
+    throw new Error('no makeWorkerInstance supplied')
+  },
 ) {
-  console.log({ makeWorkerInstance })
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   )

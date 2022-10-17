@@ -3045,7 +3045,7 @@ Object {
           "type": "LinearSNPCoverageDisplay",
         },
       ],
-      "name": "deep_sequencing",
+      "name": "Deep sequencing",
       "trackId": "Deep sequencing",
       "type": "AlignmentsTrack",
     },

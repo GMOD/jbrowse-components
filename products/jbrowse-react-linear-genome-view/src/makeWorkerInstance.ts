@@ -10,6 +10,5 @@
 // also note: the craco config for webpack publicPath: 'auto' is needed for
 // these workers
 export default function makeWorkerInstance() {
-  console.log('t2')
   return new Worker(new URL('./rpc.worker.ts', import.meta.url))
 }
