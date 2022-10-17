@@ -45,9 +45,7 @@ const excludeIds = ['gtf_plain_text_test', 'lollipop_track', 'arc_track']
 
 const assembly = volvoxConfig.assemblies[0]
 const tracks = volvoxConfig.tracks.filter(
-  track =>
-    supportedTrackTypes.includes(track.type) &&
-    !excludeIds.includes(track.trackId),
+  t => supportedTrackTypes.includes(t.type) && !excludeIds.includes(t.trackId),
 )
 const defaultSession = {
   name: 'Storybook',
@@ -57,6 +55,22 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
+export const WithWebWorker = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession: longReadsSession,
+    // use 1-based coordinates for locstring
+    location: 'ctgA:1105..1221',
+    configuration: {
+      rpc: {
+        defaultDriver: 'WebWorkerRpcDriver',
+      },
+    },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
