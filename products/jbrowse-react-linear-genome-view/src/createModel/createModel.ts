@@ -12,7 +12,7 @@ import createSessionModel from './createSessionModel'
 
 export default function createModel(
   runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => any = () => {
+  makeWorkerInstance: () => Worker = () => {
     throw new Error('no makeWorkerInstance supplied')
   },
 ) {

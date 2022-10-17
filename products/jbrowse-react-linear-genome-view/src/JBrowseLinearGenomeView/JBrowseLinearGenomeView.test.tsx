@@ -2,6 +2,10 @@ import React, { Suspense } from 'react'
 import { render } from '@testing-library/react'
 import { createViewState } from '..'
 import JBrowseLinearGenomeView from './JBrowseLinearGenomeView'
+jest.mock(
+  '@jbrowse/react-linear-genome-view/src/makeWorkerInstance',
+  () => () => {},
+)
 
 window.requestIdleCallback = (
   cb: (deadline: { didTimeout: boolean; timeRemaining: () => number }) => void,

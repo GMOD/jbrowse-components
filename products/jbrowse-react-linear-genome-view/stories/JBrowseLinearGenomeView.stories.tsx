@@ -8,12 +8,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
 
 // locals
-import {
-  createViewState,
-  loadPlugins,
-  makeWorkerInstance,
-  JBrowseLinearGenomeView,
-} from '../src'
+import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '../src'
+
+import makeWorkerInstance from '../src/makeWorkerInstance'
 
 // configs
 import volvoxConfig from '../public/test_data/volvox/config.json'

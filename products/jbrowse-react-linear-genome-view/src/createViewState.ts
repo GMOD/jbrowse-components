@@ -29,7 +29,7 @@ interface ViewStateOptions {
   defaultSession?: SessionSnapshot
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
-  makeWorkerInstance?: () => any
+  makeWorkerInstance?: () => Worker
 }
 
 export default function createViewState(opts: ViewStateOptions) {
