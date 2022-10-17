@@ -13,6 +13,7 @@ import copy from 'copy-to-clipboard'
 
 // locals
 import SettingsDlg from './SequenceFeatureSettingsDialog'
+import HelpDlg from './SequenceHelpDialog'
 import SequencePanel from './SequencePanel'
 import { getSession, useLocalStorage } from '../util'
 import { BaseProps } from './types'
@@ -22,6 +23,7 @@ import { ParentFeat, SeqState, ErrorState } from './util'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
+import HelpIcon from '@mui/icons-material/Help'
 
 interface CoordFeat extends SimpleFeatureSerialized {
   refName: string
@@ -58,6 +60,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
   const [settingsDlgOpen, setSettingsDlgOpen] = useState(false)
 
   const [shown, setShown] = useState(false)
+  const [helpShown, setHelpShown] = useState(false)
   const [sequence, setSequence] = useState<SeqState | ErrorState>()
   const [error, setError] = useState<unknown>()
   const [copied, setCopied] = useState(false)
@@ -184,6 +187,11 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       <Button variant="contained" onClick={() => setShown(!shown)}>
         {shown ? 'Hide feature sequence' : 'Show feature sequence'}
       </Button>
+      <FormControl className={classes.formControl}>
+        <IconButton onClick={() => setHelpShown(true)}>
+          <HelpIcon />
+        </IconButton>
+      </FormControl>
       <br />
       {shown ? (
         <div className={classes.container2}>
@@ -241,6 +249,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
               <SettingsIcon />
             </IconButton>
           </FormControl>
+
           <br />
           <>
             {error ? (
@@ -289,6 +298,8 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
           intronBp={intronBp}
         />
       ) : null}
+
+      {helpShown ? <HelpDlg handleClose={() => setHelpShown(false)} /> : null}
     </div>
   )
 }
