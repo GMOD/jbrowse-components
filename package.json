@@ -22,8 +22,10 @@
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
     "prepare": "husky install",
-    "pregeneratedocs": "yarn tsc --build docs/tsconfig.json",
-    "generatedocs": "node docs/dist/generateDocs.js > website/docs/config_reference.md"
+    "preconfigdocs": "yarn tsc --build docs/tsconfig.json",
+    "configdocs": "node docs/dist/generateDocs.js > website/docs/config_reference.md",
+    "prestatedocs": "yarn tsc --build docs/tsconfig.json",
+    "statedocs": "node docs/dist/generateStateModelDocs.js > website/docs/state_model_reference.md"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

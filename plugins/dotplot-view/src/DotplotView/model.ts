@@ -36,6 +36,9 @@ type Coord = [number, number]
 
 // Used in the renderer
 // ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
+//
+//
+
 export const Dotplot1DView = Base1DView.extend(self => {
   const scaleFactor = observable.box(1)
   return {
@@ -75,33 +78,84 @@ const DotplotVView = Dotplot1DView.extend(self => ({
   },
 }))
 
+/**
+ * !stateModel DotplotView
+ */
 export default function stateModelFactory(pm: PluginManager) {
   return types
     .compose(
       BaseViewModel,
       types.model('DotplotView', {
+        /**
+         * !property
+         */
         id: ElementId,
+        /**
+         * !property
+         */
         type: types.literal('DotplotView'),
+        /**
+         * !property
+         */
         height: 600,
+        /**
+         * !property
+         */
         borderSize: 20,
+        /**
+         * !property
+         */
         tickSize: 5,
+        /**
+         * !property
+         */
         vtextRotation: 0,
+        /**
+         * !property
+         */
         htextRotation: -90,
+        /**
+         * !property
+         */
         fontSize: 15,
+        /**
+         * !property
+         */
         trackSelectorType: 'hierarchical',
+        /**
+         * !property
+         */
         assemblyNames: types.array(types.string),
+        /**
+         * !property
+         */
         drawCigar: true,
+        /**
+         * !property
+         */
         hview: types.optional(DotplotHView, {}),
+        /**
+         * !property
+         */
         vview: types.optional(DotplotVView, {}),
+        /**
+         * !property
+         */
         cursorMode: 'crosshair',
 
+        /**
+         * !property
+         */
         tracks: types.array(
           pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
         ),
 
-        // this represents tracks specific to this view specifically used for
-        // read vs ref dotplots where this track would not really apply
-        // elsewhere
+        /**
+         * !property
+         * this represents tracks specific to this view specifically used
+         * for read vs ref dotplots where this track would not really apply
+         * elsewhere
+         */
         viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track')),
       }),
     )
@@ -112,6 +166,9 @@ export default function stateModelFactory(pm: PluginManager) {
       borderY: 100,
     }))
     .views(self => ({
+      /**
+       * !getter
+       */
       get width(): number {
         if (!self.volatileWidth) {
           throw new Error('width not initialized')
@@ -120,6 +177,9 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * !getter
+       */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         return self.assemblyNames
@@ -127,6 +187,9 @@ export default function stateModelFactory(pm: PluginManager) {
           .filter(f => !!f)
           .join(', ')
       },
+      /**
+       * !getter
+       */
       get assembliesInitialized() {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
@@ -136,6 +199,9 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * !getter
+       */
       get initialized() {
         return (
           self.volatileWidth !== undefined &&
@@ -144,7 +210,9 @@ export default function stateModelFactory(pm: PluginManager) {
           self.assembliesInitialized
         )
       },
-
+      /**
+       * !getter
+       */
       get hticks() {
         const { hview } = self
         const { dynamicBlocks, staticBlocks, bpPerPx } = hview
@@ -152,7 +220,9 @@ export default function stateModelFactory(pm: PluginManager) {
           ? []
           : makeTicks(staticBlocks.contentBlocks, bpPerPx)
       },
-
+      /**
+       * !getter
+       */
       get vticks() {
         const { vview } = self
         const { dynamicBlocks, staticBlocks, bpPerPx } = vview
@@ -160,20 +230,34 @@ export default function stateModelFactory(pm: PluginManager) {
           ? []
           : makeTicks(staticBlocks.contentBlocks, bpPerPx)
       },
-
+      /**
+       * !getter
+       */
       get loading() {
         return self.assemblyNames.length > 0 && !this.initialized
       },
+      /**
+       * !getter
+       */
       get viewWidth() {
         return self.width - self.borderX
       },
+      /**
+       * !getter
+       */
       get viewHeight() {
         return self.height - self.borderY
       },
+      /**
+       * !getter
+       */
       get views() {
         return [self.hview, self.vview]
       },
 
+      /**
+       * !method
+       */
       renderProps() {
         return {
           ...getParentRenderProps(self),
@@ -186,49 +270,87 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * !action
+       */
       setCursorMode(str: string) {
         self.cursorMode = str
       },
+      /**
+       * !action
+       */
       setDrawCigar(flag: boolean) {
         self.drawCigar = flag
       },
+      /**
+       * !action
+       * returns to the import form
+       */
       clearView() {
         self.hview.setDisplayedRegions([])
         self.vview.setDisplayedRegions([])
         self.assemblyNames = cast([])
       },
+      /**
+       * !action
+       */
       setBorderX(n: number) {
         self.borderX = n
       },
+      /**
+       * !action
+       */
       setBorderY(n: number) {
         self.borderY = n
       },
+      /**
+       * !action
+       */
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
         return self.volatileWidth
       },
+      /**
+       * !action
+       */
       setHeight(newHeight: number) {
         self.height = newHeight
         return self.height
       },
 
+      /**
+       * !action
+       */
       setError(e: unknown) {
         self.volatileError = e
       },
 
+      /**
+       * !action
+       * removes the view itself from the state tree entirely by calling the parent removeView
+       */
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
+      /**
+       * !action
+       */
       zoomOutButton() {
         self.hview.zoomOut()
         self.vview.zoomOut()
       },
+      /**
+       * !action
+       */
       zoomInButton() {
         self.hview.zoomIn()
         self.vview.zoomIn()
       },
+      /**
+       * !action
+       */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -244,6 +366,9 @@ export default function stateModelFactory(pm: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
+      /**
+       * !action
+       */
       showTrack(trackId: string, initialSnapshot = {}) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
@@ -269,6 +394,9 @@ export default function stateModelFactory(pm: PluginManager) {
         self.tracks.push(track)
       },
 
+      /**
+       * !action
+       */
       hideTrack(trackId: string) {
         const schema = pm.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
@@ -276,7 +404,9 @@ export default function stateModelFactory(pm: PluginManager) {
         transaction(() => t.forEach(t => self.tracks.remove(t)))
         return t.length
       },
-
+      /**
+       * !action
+       */
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
@@ -285,14 +415,23 @@ export default function stateModelFactory(pm: PluginManager) {
           this.showTrack(trackId)
         }
       },
+      /**
+       * !action
+       */
       setAssemblyNames(target: string, query: string) {
         self.assemblyNames = cast([target, query])
       },
+      /**
+       * !action
+       */
       setViews(arr: SnapshotIn<Base1DViewModel>[]) {
         self.hview = cast(arr[0])
         self.vview = cast(arr[1])
       },
 
+      /**
+       * !action
+       */
       getCoords(mousedown: Coord, mouseup: Coord) {
         const [xmin, xmax] = minmax(mouseup[0], mousedown[0])
         const [ymin, ymax] = minmax(mouseup[1], mousedown[1])
@@ -306,6 +445,10 @@ export default function stateModelFactory(pm: PluginManager) {
           : undefined
       },
 
+      /**
+       * !action
+       * zooms into clicked and dragged region
+       */
       zoomIn(mousedown: Coord, mouseup: Coord) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
@@ -314,6 +457,10 @@ export default function stateModelFactory(pm: PluginManager) {
           self.vview.moveTo(y2, y1)
         }
       },
+      /**
+       * !action
+       * creates a linear synteny view from the clicked and dragged region
+       */
       onDotplotView(mousedown: Coord, mouseup: Coord) {
         const result = this.getCoords(mousedown, mouseup)
         if (result) {
@@ -451,6 +598,9 @@ export default function stateModelFactory(pm: PluginManager) {
           }),
         )
       },
+      /**
+       * !action
+       */
       squareView() {
         const { hview, vview } = self
         const avg = (hview.bpPerPx + vview.bpPerPx) / 2
@@ -461,6 +611,9 @@ export default function stateModelFactory(pm: PluginManager) {
         vview.setBpPerPx(avg)
         vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
+      /**
+       * !action
+       */
       squareViewProportional() {
         const { hview, vview } = self
         const ratio = hview.width / vview.width
@@ -474,6 +627,9 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * !method
+       */
       menuItems() {
         const session = getSession(self)
         return [
@@ -506,6 +662,9 @@ export default function stateModelFactory(pm: PluginManager) {
             : []),
         ]
       },
+      /**
+       * !getter
+       */
       get error() {
         return self.volatileError || self.assemblyErrors
       },

@@ -9,6 +9,7 @@
     "user_guide",
     "config_guide",
     "config_reference",
+    "state_model_reference",
     {
       "type": "category",
       "label": "Developer guides",
