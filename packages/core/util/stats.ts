@@ -103,6 +103,14 @@ export function calcPerBaseStats(
   return scores
 }
 
+interface Seed {
+  scoreMin: number
+  scoreMax: number
+  scoreSum: number
+  scoreSumSquares: number
+  featureCount: number
+}
+
 /*
  * transform a list of scores to summary statistics
  * @param region - object with start, end
@@ -112,34 +120,21 @@ export function calcPerBaseStats(
 export async function scoresToStats(
   region: NoAssemblyRegion,
   features: Observable<Feature>,
-): Promise<FeatureStats> {
+) {
   const { start, end } = region
 
   const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
     await features
       .pipe(
         reduce(
-          (
-            seed: {
-              scoreMin: number
-              scoreMax: number
-              scoreSum: number
-              scoreSumSquares: number
-              featureCount: number
-            },
-            f: Feature,
-          ) => {
-            const score = f.get('score')
-            seed.scoreMax = Math.max(
-              seed.scoreMax,
-              f.get('summary') ? f.get('maxScore') : score,
-            )
-            seed.scoreMin = Math.min(
-              seed.scoreMin,
-              f.get('summary') ? f.get('minScore') : score,
-            )
-            seed.scoreSum += score
-            seed.scoreSumSquares += score * score
+          (seed: Seed, f: Feature) => {
+            const s = f.get('score')
+            const summary = f.get('summary')
+            const { scoreMax, scoreMin } = seed
+            seed.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
+            seed.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
+            seed.scoreSum += s
+            seed.scoreSumSquares += s * s
             seed.featureCount += 1
 
             return seed

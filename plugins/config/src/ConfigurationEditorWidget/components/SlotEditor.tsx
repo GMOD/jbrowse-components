@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { getPropertyMembers, getEnv, IAnyType } from 'mobx-state-tree'
+import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
+import { getEnv, FileLocation } from '@jbrowse/core/util'
 import { FileSelector, SanitizedHTML } from '@jbrowse/core/ui'
 import {
   getPropertyType,
@@ -36,7 +37,6 @@ import StringArrayEditor from './StringArrayEditor'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
-import { FileLocation } from '@jbrowse/core/util'
 
 // adds ability to have html in helperText. note that FormHelperTextProps is
 // div because the default is p which does not like div children

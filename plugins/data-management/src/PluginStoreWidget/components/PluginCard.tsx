@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
-import { getEnv, getParent } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { getParent } from 'mobx-state-tree'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import {
   JBrowsePlugin,
   isSessionWithSessionPlugins,
@@ -52,7 +51,7 @@ function PluginCard({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(model) as { pluginManager: PluginManager }
+  const { pluginManager } = getEnv(model)
   const isInstalled = Boolean(
     pluginManager.runtimePluginDefinitions.find(def => def.url === plugin.url),
   )

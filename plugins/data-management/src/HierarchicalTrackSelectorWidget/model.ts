@@ -1,16 +1,11 @@
-import {
-  types,
-  getParent,
-  getEnv,
-  getSnapshot,
-  Instance,
-} from 'mobx-state-tree'
+import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   getConf,
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { AbstractSessionModel, getSession, getEnv } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -18,25 +13,16 @@ function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   return !!a1.find(value => a2.includes(value))
 }
 
-function passesFilter(filter: string, config: AnyConfigurationModel) {
+function passesFilter(
+  filter: string,
+  config: AnyConfigurationModel,
+  session: AbstractSessionModel,
+) {
   const categories = readConfObject(config, 'category') as string[] | undefined
   const filterLower = filter.toLowerCase()
   return (
-    getTrackName(config).toLowerCase().includes(filterLower) ||
+    getTrackName(config, session).toLowerCase().includes(filterLower) ||
     !!categories?.filter(c => c.toLowerCase().includes(filterLower)).length
-  )
-}
-
-function getTrackName(config: AnyConfigurationModel): string {
-  if (!config.trackId) {
-    throw new Error('not a track')
-  }
-  return (
-    readConfObject(config, 'name') ||
-    `Reference sequence (${
-      readConfObject(getParent(config), 'displayName') ||
-      readConfObject(getParent(config), 'name')
-    })`
   )
 }
 
@@ -79,9 +65,10 @@ export function generateHierarchy(
 ) {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
+  const session = getSession(model)
 
   trackConfigurations
-    .filter(conf => passesFilter(filterText, conf))
+    .filter(conf => passesFilter(filterText, conf, session))
     .forEach(conf => {
       // copy the categories since this array can be mutated downstream
       const categories = [...(readConfObject(conf, 'category') || [])]
@@ -121,7 +108,7 @@ export function generateHierarchy(
         0,
         {
           id: conf.trackId,
-          name: getTrackName(conf),
+          name: getTrackName(conf, session),
           conf,
           checked: !!tracks.find(f => f.configuration === conf),
           children: [],

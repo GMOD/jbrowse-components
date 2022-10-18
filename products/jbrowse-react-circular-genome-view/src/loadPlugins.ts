@@ -11,6 +11,5 @@ export default async function loadPlugins(
 ) {
   const pluginLoader = new PluginLoader(pluginDefinitions, args)
   pluginLoader.installGlobalReExports(window)
-  const runtimePlugins = await pluginLoader.load()
-  return runtimePlugins
+  return pluginLoader.load('')
 }

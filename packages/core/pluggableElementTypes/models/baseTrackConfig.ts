@@ -70,6 +70,18 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           description: 'depth to iterate on subfeatures',
         },
       }),
+      formatAbout: ConfigurationSchema('FormatAbout', {
+        config: {
+          type: 'frozen',
+          description: 'formats configuration object in about dialog',
+          defaultValue: {},
+          contextVariable: ['config'],
+        },
+        hideUris: {
+          type: 'boolean',
+          defaultValue: false,
+        },
+      }),
     },
     {
       preProcessSnapshot: s => {
@@ -96,18 +108,18 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
       actions: (self: any) => ({
-        addDisplayConf(displayConf: { type: string; displayId: string }) {
-          const { type } = displayConf
+        addDisplayConf(conf: { type: string; displayId: string }) {
+          const { type } = conf
           if (!type) {
             throw new Error(`unknown display type ${type}`)
           }
           const display = self.displays.find(
-            (d: any) => d && d.displayId === displayConf.displayId,
+            (d: any) => d && d.displayId === conf.displayId,
           )
           if (display) {
             return display
           }
-          const length = self.displays.push(displayConf)
+          const length = self.displays.push(conf)
           return self.displays[length - 1]
         },
       }),

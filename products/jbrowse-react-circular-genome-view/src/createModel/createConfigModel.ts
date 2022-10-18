@@ -19,6 +19,37 @@ export default function createConfigModel(
           defaultValue: 2,
         },
         theme: { type: 'frozen', defaultValue: {} },
+        formatDetails: ConfigurationSchema('FormatDetails', {
+          feature: {
+            type: 'frozen',
+            description: 'adds extra fields to the feature details',
+            defaultValue: {},
+            contextVariable: ['feature'],
+          },
+          subfeatures: {
+            type: 'frozen',
+            description: 'adds extra fields to the subfeatures of a feature',
+            defaultValue: {},
+            contextVariable: ['feature'],
+          },
+          depth: {
+            type: 'number',
+            defaultValue: 2,
+            description: 'depth to iterate on subfeatures',
+          },
+        }),
+        formatAbout: ConfigurationSchema('FormatAbout', {
+          config: {
+            type: 'frozen',
+            description: 'formats configuration object in about dialog',
+            defaultValue: {},
+            contextVariable: ['config'],
+          },
+          hideUris: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+        }),
       }),
       assembly: assemblyConfigSchemasType,
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),

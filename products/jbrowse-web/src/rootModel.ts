@@ -10,8 +10,6 @@ import {
   IAnyModelType,
 } from 'mobx-state-tree'
 
-import makeWorkerInstance from './makeWorkerInstance'
-
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
@@ -40,6 +38,7 @@ import RedoIcon from '@mui/icons-material/Redo'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
+import makeWorkerInstance from './makeWorkerInstance'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
@@ -56,7 +55,7 @@ export default function RootModel(
 ) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
-  const assemblyManagerType = assemblyManagerFactory(
+  const AssemblyManager = assemblyManagerFactory(
     assemblyConfigSchema,
     pluginManager,
   )
@@ -65,7 +64,7 @@ export default function RootModel(
       jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
       configPath: types.maybe(types.string),
       session: types.maybe(Session),
-      assemblyManager: types.optional(assemblyManagerType, {}),
+      assemblyManager: types.optional(AssemblyManager, {}),
       version: types.maybe(types.string),
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
@@ -117,25 +116,20 @@ export default function RootModel(
 
     .actions(self => ({
       afterCreate() {
-        document.addEventListener('keydown', event => {
+        document.addEventListener('keydown', e => {
+          const cm = e.ctrlKey || e.metaKey
           if (self.history.canRedo) {
             if (
               // ctrl+shift+z or cmd+shift+z
-              ((event.ctrlKey || event.metaKey) &&
-                event.shiftKey &&
-                event.code === 'KeyZ') ||
+              (cm && e.shiftKey && e.code === 'KeyZ') ||
               // ctrl+y
-              (event.ctrlKey && !event.shiftKey && event.code === 'KeyY')
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
             ) {
               self.history.redo()
             }
           } else if (self.history.canUndo) {
-            if (
-              // ctrl+z or cmd+z
-              (event.ctrlKey || event.metaKey) &&
-              !event.shiftKey &&
-              event.code === 'KeyZ'
-            ) {
+            // ctrl+z or cmd+z
+            if (cm && !e.shiftKey && e.code === 'KeyZ') {
               self.history.undo()
             }
           }
@@ -143,9 +137,7 @@ export default function RootModel(
 
         Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(
-            ([key, _val]) => key.indexOf(self.configPath || 'undefined') !== -1,
-          )
+          .filter(([key]) => key.indexOf(self.configPath || 'undefined') !== -1)
           .forEach(([key, val]) => {
             try {
               const { session } = JSON.parse(val)

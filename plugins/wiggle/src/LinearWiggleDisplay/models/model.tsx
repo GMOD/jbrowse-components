@@ -6,6 +6,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import {
+  getEnv,
   getSession,
   getContainingView,
   isSelectionContainer,
@@ -15,7 +16,7 @@ import {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
-import { isAlive, types, getEnv, Instance } from 'mobx-state-tree'
+import { isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 import { Feature } from '@jbrowse/core/util/simpleFeature'

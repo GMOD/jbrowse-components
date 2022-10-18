@@ -21,6 +21,8 @@ import {
   measureText,
   measureGridWidth,
   getStr,
+  getEnv,
+  getSession,
   getUriLink,
   isUriLocation,
 } from '../util'
@@ -312,6 +314,7 @@ interface AttributeProps {
   formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
+  hideUris?: boolean
 }
 
 export function UriLink({
@@ -322,6 +325,7 @@ export function UriLink({
   const href = getUriLink(value)
   return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
 }
+
 const DataGridDetails = ({
   value,
   prefix,
@@ -454,6 +458,7 @@ export function Attributes(props: AttributeProps) {
     omit = [],
     descriptions,
     formatter = val => val,
+    hideUris,
     prefix = [],
   } = props
   const omits = [...omit, ...globalOmit]
@@ -494,12 +499,14 @@ export function Attributes(props: AttributeProps) {
             )
           } else if (isObject(value)) {
             return isUriLocation(value) ? (
-              <UriAttribute
-                key={key}
-                name={key}
-                prefix={prefix}
-                value={value}
-              />
+              hideUris ? null : (
+                <UriAttribute
+                  key={key}
+                  name={key}
+                  prefix={prefix}
+                  value={value}
+                />
+              )
             ) : (
               <Attributes
                 {...props}
@@ -562,13 +569,22 @@ export const FeatureDetails = (props: {
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
+  const { pluginManager } = getEnv(model)
+  const session = getSession(model)
 
+  const ExtraPanel = pluginManager?.evaluateExtensionPoint(
+    'Core-extraFeaturePanel',
+    null,
+    { session, feature, model },
+  ) as { name: string; Component: React.FC<any> } | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
       <Divider />
+
       <Typography>Attributes</Typography>
+
       <Attributes
         attributes={feature}
         {...props}
@@ -580,6 +596,15 @@ export const FeatureDetails = (props: {
       >
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
+
+      {ExtraPanel ? (
+        <>
+          <Divider />
+          <BaseCard title={ExtraPanel.name}>
+            <ExtraPanel.Component {...props} />
+          </BaseCard>
+        </>
+      ) : null}
 
       {subfeatures?.length ? (
         <BaseCard title="Subfeatures" defaultExpanded={depth < 1}>
@@ -613,7 +638,6 @@ const BaseFeatureDetails = observer(({ model }: BaseInputProps) => {
       typeof v === 'undefined' ? null : v,
     ),
   )
-
   return isEmpty(feature) ? null : (
     <FeatureDetails model={model} feature={feature} />
   )

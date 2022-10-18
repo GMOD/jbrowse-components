@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { lazy } from 'react'
 import clone from 'clone'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import shortid from 'shortid'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   readConfObject,
   getConf,
   isConfigurationModel,
+  AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import {
   Region,
@@ -39,11 +40,12 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+
+// icons
 import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
-import shortid from 'shortid'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -141,32 +143,32 @@ export default function sessionModelFactory(
       get rpcManager() {
         return getParent<any>(self).jbrowse.rpcManager as RpcManager
       },
-      get configuration() {
+      get configuration(): AnyConfigurationModel {
         return getParent<any>(self).jbrowse.configuration
       },
       get assemblies(): AnyConfigurationModel[] {
         return getParent<any>(self).jbrowse.assemblies
       },
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         const { assemblyNames } = getParent<any>(self).jbrowse
         const sessionAssemblyNames = self.sessionAssemblies.map(assembly =>
           readConfObject(assembly, 'name'),
         )
         return [...assemblyNames, ...sessionAssemblyNames]
       },
-      get tracks() {
+      get tracks(): AnyConfigurationModel[] {
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
       get textSearchManager(): TextSearchManager {
         return getParent<any>(self).textSearchManager
       },
-      get connections() {
+      get connections(): AnyConfigurationModel[] {
         return [
           ...self.sessionConnections,
           ...getParent<any>(self).jbrowse.connections,
         ]
       },
-      get adminMode() {
+      get adminMode(): boolean {
         return getParent<any>(self).adminMode
       },
       get savedSessions() {
@@ -192,7 +194,7 @@ export default function sessionModelFactory(
       },
 
       renderProps() {
-        return { theme: readConfObject(this.configuration, 'theme') }
+        return { theme: getConf(self, 'theme') }
       },
 
       get visibleWidget() {
@@ -246,29 +248,24 @@ export default function sessionModelFactory(
         self.name = str
       },
 
-      // snapshotin can be undefined
-      addAssembly(assemblyConfig: AnyConfiguration) {
-        const asm = self.sessionAssemblies.find(
-          f => f.name === assemblyConfig.name,
-        )
+      addAssembly(conf: AnyConfiguration) {
+        const asm = self.sessionAssemblies.find(f => f.name === conf.name)
         if (asm) {
-          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          console.warn(`Assembly ${conf.name} was already existing`)
           return asm
         }
-        const length = self.sessionAssemblies.push(assemblyConfig)
+        const length = self.sessionAssemblies.push(conf)
         return self.sessionAssemblies[length - 1]
       },
 
       // used for read vs ref type assemblies.
-      addTemporaryAssembly(assemblyConfig: AnyConfiguration) {
-        const asm = self.sessionAssemblies.find(
-          f => f.name === assemblyConfig.name,
-        )
+      addTemporaryAssembly(conf: AnyConfiguration) {
+        const asm = self.sessionAssemblies.find(f => f.name === conf.name)
         if (asm) {
-          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
+          console.warn(`Assembly ${conf.name} was already existing`)
           return asm
         }
-        const length = self.temporaryAssemblies.push(assemblyConfig)
+        const length = self.temporaryAssemblies.push(conf)
         return self.temporaryAssemblies[length - 1]
       },
       addSessionPlugin(plugin: JBrowsePlugin) {

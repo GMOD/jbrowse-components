@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { resolveIdentifier, getRoot } from 'mobx-state-tree'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import {
   Button,
   Dialog,
@@ -84,15 +84,9 @@ export default function SearchResultsDialog({
 
   function getTrackName(trackId: string | undefined) {
     if (trackId) {
-      const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-      const configuration = resolveIdentifier(
-        trackConfigSchema,
-        getRoot(model),
-        trackId,
-      )
-      if (configuration) {
-        return configuration.name?.value
-      }
+      const schema = pluginManager.pluggableConfigSchemaType('track')
+      const configuration = resolveIdentifier(schema, getRoot(model), trackId)
+      return configuration?.name?.value || ''
     }
     return ''
   }

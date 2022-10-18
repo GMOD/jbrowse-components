@@ -13,7 +13,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv } from '../util'
 import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
@@ -58,7 +58,7 @@ const DrawerHeader = observer(
     const { visibleWidget, activeWidgets, drawerPosition } = session
     const { classes } = useStyles()
 
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
     return (
       <AppBar
@@ -195,8 +195,17 @@ const DrawerWidget = observer(
   ({ session }: { session: SessionWithDrawerWidgets }) => {
     const { visibleWidget } = session
     const { pluginManager } = getEnv(session)
+
     const DrawerComponent = visibleWidget
-      ? pluginManager.getWidgetType(visibleWidget.type).ReactComponent
+      ? (pluginManager.evaluateExtensionPoint(
+          'Core-replaceWidget',
+          pluginManager.getWidgetType(visibleWidget.type).ReactComponent,
+          {
+            session,
+            model: visibleWidget,
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ) as React.FC<any>)
       : null
 
     // we track the toolbar height because components that use virtualized
@@ -211,11 +220,13 @@ const DrawerWidget = observer(
           <ErrorBoundary
             FallbackComponent={({ error }) => <ErrorMessage error={error} />}
           >
-            <DrawerComponent
-              model={visibleWidget}
-              session={session}
-              toolbarHeight={toolbarHeight}
-            />
+            {DrawerComponent ? (
+              <DrawerComponent
+                model={visibleWidget}
+                session={session}
+                toolbarHeight={toolbarHeight}
+              />
+            ) : null}
           </ErrorBoundary>
         </Suspense>
       </Drawer>

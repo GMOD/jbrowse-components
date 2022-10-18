@@ -2,8 +2,7 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { FormControl, FormHelperText, Select, MenuItem } from '@mui/material'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
-import { useLocalStorage } from '@jbrowse/core/util'
-import { getEnv } from 'mobx-state-tree'
+import { getEnv, useLocalStorage } from '@jbrowse/core/util'
 
 // locals
 import { AddTrackModel } from '../model'

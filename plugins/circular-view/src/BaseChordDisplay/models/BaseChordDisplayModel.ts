@@ -6,6 +6,7 @@ import RendererType from '@jbrowse/core/pluggableElementTypes/renderers/Renderer
 import {
   getContainingView,
   getSession,
+  getEnv,
   makeAbortableReaction,
   AnyReactComponentType,
 } from '@jbrowse/core/util'
@@ -16,7 +17,7 @@ import {
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
 import { Region } from '@jbrowse/core/util/types'
-import { getParent, isAlive, types, getEnv } from 'mobx-state-tree'
+import { getParent, isAlive, types } from 'mobx-state-tree'
 import { renderReactionData, renderReactionEffect } from './renderReaction'
 import { CircularViewModel } from '../../CircularView/models/CircularView'
 

@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 import { autorun, observable } from 'mobx'
-import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
+import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
+  getEnv,
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
@@ -210,6 +211,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
                   // render just the sorted region first
+                  // @ts-ignore
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [

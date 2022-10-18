@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from 'react'
 import isObject from 'is-object'
+import PluginManager from '../PluginManager'
 import {
   addDisposer,
   getParent,
   getSnapshot,
+  getEnv as getEnvMST,
   isAlive,
   isStateTreeNode,
   hasParent,
@@ -1172,4 +1174,8 @@ export function measureGridWidth(elements: string[]) {
       Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
     ),
   )
+}
+
+export function getEnv(obj: any) {
+  return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }

@@ -1,16 +1,12 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-import {
-  AnyConfigurationModel,
-  getConf,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
-import { getSession, getContainingView } from '@jbrowse/core/util'
-import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
+import { getConf } from '@jbrowse/core/configuration'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
+import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getTrackName } from '@jbrowse/core/util/tracks'
+import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 import {
   bindTrigger,
@@ -23,7 +19,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DragIcon from '@mui/icons-material/DragIndicator'
 import CloseIcon from '@mui/icons-material/Close'
 
-import { LinearGenomeViewStateModel } from '..'
+import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -55,28 +51,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
 interface Props {
   track: BaseTrackModel
   className?: string
 }
 
-function getTrackName(
-  track: BaseTrackModel,
-  session: { assemblies: AnyConfigurationModel[] },
-) {
-  const trackName = getConf(track, 'name')
-  if (!trackName && getConf(track, 'type') === 'ReferenceSequenceTrack') {
-    const asm = session.assemblies.find(a => a.sequence === track.configuration)
-    return asm
-      ? `Reference Sequence (${
-          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
-        })`
-      : 'Reference Sequence'
-  }
-  return trackName
-}
 const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
   ({ track, className }, ref) => {
     const { classes, cx } = useStyles()
@@ -84,21 +65,12 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
     const session = getSession(track)
     const trackConf = track.configuration
     const trackId = getConf(track, 'trackId')
-    const trackName = getTrackName(track, session)
+    const trackName = getTrackName(trackConf, session)
 
     const popupState = usePopupState({
       popupId: 'trackLabelMenu',
       variant: 'popover',
     })
-
-    const onDragStart = (event: React.DragEvent<HTMLSpanElement>) => {
-      const target = event.currentTarget
-      if (target.parentNode) {
-        const parent = target.parentNode as HTMLElement
-        event.dataTransfer.setDragImage(parent, 20, 20)
-        view.setDraggingTrackId(track.id)
-      }
-    }
 
     const items = [
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
@@ -110,7 +82,14 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
         <span
           draggable
           className={classes.dragHandle}
-          onDragStart={onDragStart}
+          onDragStart={event => {
+            const target = event.currentTarget
+            if (target.parentNode) {
+              const parent = target.parentNode as HTMLElement
+              event.dataTransfer.setDragImage(parent, 20, 20)
+              view.setDraggingTrackId(track.id)
+            }
+          }}
           onDragEnd={() => view.setDraggingTrackId(undefined)}
           data-testid={`dragHandle-${view.id}-${trackId}`}
         >

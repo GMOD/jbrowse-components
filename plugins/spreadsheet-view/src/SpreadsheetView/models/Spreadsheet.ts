@@ -1,11 +1,10 @@
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import {
   addDisposer,
   types,
   getParent,
-  getEnv,
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'

@@ -964,7 +964,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 <span
                   class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName mui-k0xfey-MuiTypography-root"
                 >
-                  Reference Sequence (volvox)
+                  Reference sequence (volvox)
                 </span>
                 <button
                   aria-haspopup="true"

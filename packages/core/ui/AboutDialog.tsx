@@ -10,8 +10,13 @@ import {
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import { makeStyles } from 'tss-react/mui'
-import { readConfObject, AnyConfigurationModel } from '../configuration'
-import { getSession } from '../util'
+import {
+  getConf,
+  readConfObject,
+  AnyConfigurationModel,
+} from '../configuration'
+import { getSession, getEnv } from '../util'
+import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
@@ -28,20 +33,11 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function AboutDialog({
-  config,
-  handleClose,
-}: {
-  config: AnyConfigurationModel
-  handleClose: () => void
-}) {
-  const { classes } = useStyles()
-  const [info, setInfo] = useState<FileInfo>()
+export function FileInfo({ config }: { config: AnyConfigurationModel }) {
   const [error, setError] = useState<unknown>()
-  const [copied, setCopied] = useState(false)
+  const [info, setInfo] = useState<FileInfo>()
   const session = getSession(config)
   const { rpcManager } = session
-  const conf = readConfObject(config)
 
   useEffect(() => {
     const aborter = new AbortController()
@@ -71,19 +67,6 @@ export default function AboutDialog({
     }
   }, [config, rpcManager])
 
-  let trackName = readConfObject(config, 'name')
-  if (readConfObject(config, 'type') === 'ReferenceSequenceTrack') {
-    const asm = session.assemblies.find(
-      a => a.sequence === config.configuration,
-    )
-
-    trackName = asm
-      ? `Reference Sequence (${
-          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
-        })`
-      : 'Reference Sequence'
-  }
-
   const details =
     typeof info === 'string'
       ? {
@@ -92,6 +75,100 @@ export default function AboutDialog({
             .replace(/>/g, '&gt;')}</pre>`,
         }
       : info || {}
+
+  return info !== null ? (
+    <BaseCard title="File info">
+      {error ? (
+        <Typography color="error">{`${error}`}</Typography>
+      ) : info === undefined ? (
+        'Loading file data...'
+      ) : (
+        <Attributes attributes={details} />
+      )}
+    </BaseCard>
+  ) : null
+}
+
+export function AboutContents({ config }: { config: AnyConfigurationModel }) {
+  const [copied, setCopied] = useState(false)
+  const conf = readConfObject(config)
+  const session = getSession(config)
+
+  const hideUris =
+    getConf(session, ['formatAbout', 'hideUris']) ||
+    readConfObject(config, ['formatAbout', 'hideUris'])
+
+  const { pluginManager } = getEnv(session)
+
+  const confPostExt = pluginManager.evaluateExtensionPoint(
+    'Core-customizeAbout',
+    {
+      config: {
+        ...conf,
+        ...getConf(session, ['formatAbout', 'config'], { config: conf }),
+        ...readConfObject(config, ['formatAbout', 'config'], { config: conf }),
+      },
+    },
+    { session, config },
+  ) as Record<string, unknown>
+
+  const ExtraPanel = pluginManager.evaluateExtensionPoint(
+    'Core-extraAboutPanel',
+    null,
+    { session, config },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as { name: string; Component: React.FC<any> }
+
+  return (
+    <>
+      <BaseCard title="Configuration">
+        {!hideUris ? (
+          <Button
+            variant="contained"
+            style={{ float: 'right' }}
+            onClick={() => {
+              copy(JSON.stringify(conf, null, 2))
+              setCopied(true)
+              setTimeout(() => setCopied(false), 1000)
+            }}
+          >
+            {copied ? 'Copied to clipboard!' : 'Copy config'}
+          </Button>
+        ) : null}
+        <Attributes
+          attributes={confPostExt}
+          omit={['displays', 'baseUri', 'refNames', 'formatAbout']}
+          hideUris={hideUris}
+        />
+      </BaseCard>
+      {ExtraPanel ? (
+        <BaseCard title={ExtraPanel.name}>
+          <ExtraPanel.Component config={config} />
+        </BaseCard>
+      ) : null}
+      <FileInfo config={config} />
+    </>
+  )
+}
+
+export default function AboutDialog({
+  config,
+  handleClose,
+}: {
+  config: AnyConfigurationModel
+  handleClose: () => void
+}) {
+  const { classes } = useStyles()
+  const session = getSession(config)
+  const trackName = getTrackName(config, session)
+  const { pluginManager } = getEnv(session)
+
+  const AboutComponent = pluginManager.evaluateExtensionPoint(
+    'Core-replaceAbout',
+    AboutContents,
+    { session, config },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as React.FC<any>
 
   return (
     <Dialog open onClose={handleClose} maxWidth="xl">
@@ -106,34 +183,7 @@ export default function AboutDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent className={classes.content}>
-        <BaseCard title="Configuration">
-          <Button
-            variant="contained"
-            style={{ float: 'right' }}
-            onClick={() => {
-              copy(JSON.stringify(conf, null, 2))
-              setCopied(true)
-              setTimeout(() => setCopied(false), 1000)
-            }}
-          >
-            {copied ? 'Copied to clipboard!' : 'Copy config'}
-          </Button>
-          <Attributes
-            attributes={conf}
-            omit={['displays', 'baseUri', 'refNames']}
-          />
-        </BaseCard>
-        {info !== null ? (
-          <BaseCard title="File info">
-            {error ? (
-              <Typography color="error">{`${error}`}</Typography>
-            ) : info === undefined ? (
-              'Loading file data...'
-            ) : (
-              <Attributes attributes={details} />
-            )}
-          </BaseCard>
-        ) : null}
+        <AboutComponent config={config} />
       </DialogContent>
     </Dialog>
   )

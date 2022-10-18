@@ -1,11 +1,5 @@
 import { transaction } from 'mobx'
-import {
-  getEnv,
-  getRoot,
-  resolveIdentifier,
-  types,
-  Instance,
-} from 'mobx-state-tree'
+import { getRoot, resolveIdentifier, types, Instance } from 'mobx-state-tree'
 import {
   getConf,
   AnyConfigurationModel,
@@ -14,7 +8,7 @@ import {
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession } from '../../util'
+import { getContainingView, getSession, getEnv } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 

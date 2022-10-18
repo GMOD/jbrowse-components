@@ -1,25 +1,27 @@
-import { getParent, isRoot, IAnyStateTreeNode, getEnv } from 'mobx-state-tree'
-import { getSession, objectHash } from './index'
+import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
+import { getSession, objectHash, getEnv } from './index'
 import { PreFileLocation, FileLocation } from './types'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { readConfObject } from '../configuration'
+import {
+  getConf,
+  readConfObject,
+  AnyConfigurationModel,
+} from '../configuration'
 
 /* utility functions for use by track models and so forth */
 
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  const trackConf = track.configuration
-  const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
+  const trackAssemblyNames = getConf(track, 'assemblyNames') as string[]
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parent = getParent<any>(track.configuration)
     if ('sequence' in parent) {
-      return [readConfObject(parent, 'name')]
+      return [readConfObject(parent, 'name') as string]
     }
   }
-  return trackAssemblyNames as string[]
+  return trackAssemblyNames
 }
 
 /** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */
@@ -247,4 +249,20 @@ export function generateUnknownTrackConf(
   }
   conf.trackId = objectHash(conf)
   return conf
+}
+
+export function getTrackName(
+  conf: AnyConfigurationModel,
+  session: { assemblies: AnyConfigurationModel[] },
+) {
+  const trackName = readConfObject(conf, 'name')
+  if (!trackName && readConfObject(conf, 'type') === 'ReferenceSequenceTrack') {
+    const asm = session.assemblies.find(a => a.sequence === conf)
+    return asm
+      ? `Reference sequence (${
+          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
+        })`
+      : 'Reference sequence'
+  }
+  return trackName
 }
