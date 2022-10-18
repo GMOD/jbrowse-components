@@ -1,11 +1,7 @@
 import { lazy } from 'react'
 import { when } from 'mobx'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import Plugin from '@jbrowse/core/Plugin'
@@ -38,6 +34,9 @@ import {
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
 
+import FeatureTrackF from './FeatureTrack'
+import BasicTrackF from './BasicTrack'
+
 type LGV = LinearGenomeViewModel
 
 export default class LinearGenomeViewPlugin extends Plugin {
@@ -53,46 +52,8 @@ export default class LinearGenomeViewPlugin extends Plugin {
   }
 
   install(pluginManager: PluginManager) {
-    pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'FeatureTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
-      return new TrackType({
-        name: 'FeatureTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'FeatureTrack',
-          configSchema,
-        ),
-      })
-    })
-
-    pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'BasicTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
-      return new TrackType({
-        name: 'BasicTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'BasicTrack',
-          configSchema,
-        ),
-      })
-    })
-
+    FeatureTrackF(pluginManager)
+    BasicTrackF(pluginManager)
     pluginManager.addDisplayType(() => {
       const configSchema = linearBareDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({

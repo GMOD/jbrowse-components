@@ -5,11 +5,20 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+
+/**
+ * !config AlignmentsTrack
+ */
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'AlignmentsTrack',
     {},
-    { baseConfiguration: createBaseTrackConfig(pluginManager) },
+    {
+      /**
+       * !baseConfiguration
+       */
+      baseConfiguration: createBaseTrackConfig(pluginManager),
+    },
   )
 }
 export default function register(pluginManager: PluginManager) {

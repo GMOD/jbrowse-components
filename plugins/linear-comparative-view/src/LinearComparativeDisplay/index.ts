@@ -37,11 +37,25 @@ export default (pluginManager: PluginManager) => {
   })
 }
 
+/**
+ * !config LinearComparativeDisplay
+ */
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearComparativeDisplay',
-    { renderer: pluginManager.pluggableConfigSchemaType('renderer') },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {
+      /**
+       * !slot
+       */
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+    },
+    {
+      /**
+       * !baseConfiguration
+       */
+      baseConfiguration: baseLinearDisplayConfigSchema,
+      explicitlyTyped: true,
+    },
   )
 }
 

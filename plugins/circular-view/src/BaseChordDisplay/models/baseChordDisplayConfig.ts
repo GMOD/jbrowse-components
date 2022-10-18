@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+/**
+ * !config BaseChordDisplay
+ */
 const baseChordDisplayConfig = ConfigurationSchema(
   'BaseChordDisplay',
   {
+    /**
+     * !slot
+     */
     onChordClick: {
       type: 'boolean',
       description:

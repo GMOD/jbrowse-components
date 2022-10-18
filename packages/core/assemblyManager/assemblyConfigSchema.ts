@@ -1,27 +1,44 @@
 import { ConfigurationSchema } from '../configuration'
 import PluginManager from '../PluginManager'
 
-export default (pluginManager: PluginManager) => {
+/**
+ * !config BaseAssembly
+ */
+const assemblyConfigSchema = (pluginManager: PluginManager) => {
   return ConfigurationSchema(
     'BaseAssembly',
     {
+      /**
+       * !slot
+       */
       aliases: {
         type: 'stringArray',
         defaultValue: [],
         description: 'Other possible names for the assembly',
       },
+
+      /**
+       * !slot
+       */
       sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
         .configSchema,
 
+      /**
+       * !slot
+       */
       refNameColors: {
         type: 'stringArray',
         defaultValue: [],
         description:
           'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
       },
+
       refNameAliases: ConfigurationSchema(
         'RefNameAliases',
         {
+          /**
+           * !slot refNameAliases.adapter
+           */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
@@ -38,6 +55,9 @@ export default (pluginManager: PluginManager) => {
       cytobands: ConfigurationSchema(
         'Cytoband',
         {
+          /**
+           * !slot cytobands.adapter
+           */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
         {
@@ -51,6 +71,10 @@ export default (pluginManager: PluginManager) => {
           },
         },
       ),
+
+      /**
+       * !slot
+       */
       displayName: {
         type: 'string',
         defaultValue: '',
@@ -63,3 +87,5 @@ export default (pluginManager: PluginManager) => {
     },
   )
 }
+
+export default assemblyConfigSchema

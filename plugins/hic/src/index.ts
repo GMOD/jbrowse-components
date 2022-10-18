@@ -1,15 +1,12 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
+import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { FileLocation } from '@jbrowse/core/util/types'
+import configSchemaF from './configSchema'
 import Color from 'color'
 import HicRenderer, {
   configSchema as hicRendererConfigSchema,
@@ -85,14 +82,7 @@ export default class HicPlugin extends Plugin {
         }),
     )
     pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'HicTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
+      const configSchema = configSchemaF(pluginManager)
       return new TrackType({
         name: 'HicTrack',
         configSchema,

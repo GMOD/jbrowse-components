@@ -1,15 +1,11 @@
-import {
-  baseChordDisplayConfig,
-  BaseChordDisplayModel,
-} from '@jbrowse/plugin-circular-view'
-import {
-  ConfigurationSchema,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
+import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
 import configSchemaF from './configSchema'
 
 const ChordVariantDisplayF = (pluginManager: PluginManager) => {

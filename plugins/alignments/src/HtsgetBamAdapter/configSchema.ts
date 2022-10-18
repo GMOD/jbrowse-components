@@ -2,8 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 /**
  * !config
- * Used to fetch data from Htsget endpoints in BAM format
- * Uses @gmod/bam
+ * Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
  */
 const HtsgetBamAdapter = types.late(() =>
   ConfigurationSchema(
