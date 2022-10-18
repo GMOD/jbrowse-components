@@ -3,9 +3,15 @@ import { ConfigurationSchema, readConfObject } from '../configuration'
 import { openLocation } from '../util/io'
 import { BaseAdapter } from './BaseAdapter'
 
+/**
+ * !config CytobandAdapter
+ */
 const configSchema = ConfigurationSchema(
   'CytobandAdapter',
   {
+    /**
+     * !slot
+     */
     cytobandLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/cytoband.txt.gz' },

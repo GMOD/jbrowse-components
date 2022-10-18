@@ -69,8 +69,19 @@ function extractWithComment(
   }
 }
 
+console.log(`---
+id: config_reference
+title: Config reference
+toplevel: true
+---`)
+
 extractWithComment(
   [
+    'packages/core/pluggableElementTypes/models/baseTrackConfig.ts',
+    'packages/core/pluggableElementTypes/models/baseConnectionConfig.ts',
+    'packages/core/pluggableElementTypes/models/baseInternetAccountConfig.ts',
+    'packages/core/rpc/configSchema.ts',
+    'packages/core/data_adapters/CytobandAdapter.ts',
     'plugins/alignments/src/BamAdapter/configSchema.ts',
     'plugins/alignments/src/CramAdapter/configSchema.ts',
     'plugins/alignments/src/HtsgetBamAdapter/configSchema.ts',
@@ -157,7 +168,7 @@ extractWithComment(
   ],
   obj => {
     if (obj.type === 'baseConfiguration') {
-      console.log(`### derives from: `)
+      console.log(`#### derives from: `)
       console.log('\n')
       console.log('```js')
       console.log(obj.node)
@@ -169,7 +180,7 @@ extractWithComment(
         ?.replace('* !slot', '')
         .trim()
 
-      console.log(`### slot: ${name || obj.name}`)
+      console.log(`#### slot: ${name || obj.name}`)
       console.log('\n')
       console.log('```js')
       console.log(obj.node)

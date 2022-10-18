@@ -1,9 +1,15 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
 
+/**
+ * !config BaseRpcDriver
+ */
 const BaseRpcDriverConfigSchema = ConfigurationSchema(
   'BaseRpcDriver',
   {
+    /**
+     * !slot
+     */
     workerCount: {
       type: 'number',
       description:
@@ -13,26 +19,55 @@ const BaseRpcDriverConfigSchema = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+/**
+ * !config MainThreadRpcDriver
+ */
 const MainThreadRpcDriverConfigSchema = ConfigurationSchema(
   'MainThreadRpcDriver',
   {},
-  { explicitlyTyped: true, baseConfiguration: BaseRpcDriverConfigSchema },
+  {
+    /**
+     * !baseConfiguration
+     */
+    baseConfiguration: BaseRpcDriverConfigSchema,
+    explicitlyTyped: true,
+  },
 )
+
+/**
+ * !config WebWorkerRpcDriver
+ */
 const WebWorkerRpcDriverConfigSchema = ConfigurationSchema(
   'WebWorkerRpcDriver',
   {},
-  { explicitlyTyped: true, baseConfiguration: BaseRpcDriverConfigSchema },
+  {
+    /**
+     * !baseConfiguration
+     */
+    baseConfiguration: BaseRpcDriverConfigSchema,
+    explicitlyTyped: true,
+  },
 )
 
+/**
+ * !config RpcOptions
+ */
 export default ConfigurationSchema(
   'RpcOptions',
   {
+    /**
+     * !slot
+     */
     defaultDriver: {
       type: 'string',
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
       defaultValue: 'MainThreadRpcDriver',
     },
+    /**
+     * !slot
+     */
     drivers: types.optional(
       types.map(
         types.union(

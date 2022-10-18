@@ -1,29 +1,48 @@
 import { ConfigurationSchema } from '../../configuration'
 import { Instance } from 'mobx-state-tree'
 
+/**
+ * !config InternetAccount
+ * the "base" internet account type
+ */
 export const BaseInternetAccountConfig = ConfigurationSchema(
   'InternetAccount',
   {
+    /**
+     * !slot
+     */
     name: {
       description: 'descriptive name of the internet account',
       type: 'string',
       defaultValue: '',
     },
+    /**
+     * !slot
+     */
     description: {
       description: 'a description of the internet account',
       type: 'string',
       defaultValue: '',
     },
+    /**
+     * !slot
+     */
     authHeader: {
       description: 'request header for credentials',
       type: 'string',
       defaultValue: 'Authorization',
     },
+    /**
+     * !slot
+     */
     tokenType: {
       description: 'a custom name for a token to include in the header',
       type: 'string',
       defaultValue: '',
     },
+    /**
+     * !slot
+     */
     domains: {
       description:
         'array of valid domains the url can contain to use this account',
@@ -31,7 +50,10 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitIdentifier: 'internetAccountId', explicitlyTyped: true },
+  {
+    explicitIdentifier: 'internetAccountId',
+    explicitlyTyped: true,
+  },
 )
 
 export type BaseInternetAccountConfigModel = typeof BaseInternetAccountConfig

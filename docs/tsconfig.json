@@ -8,16 +8,9 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "module": "commonjs",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react",
-    "downlevelIteration": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "moduleResolution": "node"
   },
-  "include": ["parseFile.ts"]
+  "include": ["generateDocs.ts"]
 }

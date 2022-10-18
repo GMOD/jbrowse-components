@@ -21,7 +21,9 @@
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && jest --env node --testMatch '**/*testmod.js'",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "pregeneratedocs": "yarn tsc --build docs/tsconfig.json",
+    "generatedocs": "node docs/dist/generateDocs.js > website/docs/config_reference.md"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

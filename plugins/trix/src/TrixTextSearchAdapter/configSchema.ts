@@ -7,7 +7,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
   'TrixTextSearchAdapter',
   {
     /**
-     * !config
+     * !slot
      */
     ixFilePath: {
       type: 'fileLocation',
@@ -15,7 +15,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'the location of the trix ix file',
     },
     /**
-     * !config
+     * !slot
      */
     ixxFilePath: {
       type: 'fileLocation',
@@ -23,7 +23,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'the location of the trix ixx file',
     },
     /**
-     * !config
+     * !slot
      */
     metaFilePath: {
       type: 'fileLocation',
@@ -31,7 +31,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'the location of the metadata json file for the trix index',
     },
     /**
-     * !config
+     * !slot
      */
     tracks: {
       type: 'stringArray',
@@ -39,7 +39,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'List of tracks covered by text search adapter',
     },
     /**
-     * !config
+     * !slot
      */
     assemblyNames: {
       type: 'stringArray',
