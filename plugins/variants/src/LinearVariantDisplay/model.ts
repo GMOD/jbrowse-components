@@ -12,17 +12,31 @@ import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-vi
 import { types } from 'mobx-state-tree'
 import { LinearVariantDisplayConfigModel } from './configSchema'
 
+/**
+ * !stateModel LinearVariantDisplay
+ * extends `LinearBasicDisplay`
+ * very similar to basic display, but provides custom widget on feature click
+ */
 export default function (configSchema: LinearVariantDisplayConfigModel) {
   return types
     .compose(
       'LinearVariantDisplay',
       linearBasicDisplayModelFactory(configSchema),
       types.model({
+        /**
+         * !property
+         */
         type: types.literal('LinearVariantDisplay'),
+        /**
+         * !property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .actions(self => ({
+      /**
+       * !action
+       */
       async selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {

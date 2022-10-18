@@ -21,12 +21,22 @@ import { getParent, isAlive, types } from 'mobx-state-tree'
 import { renderReactionData, renderReactionEffect } from './renderReaction'
 import { CircularViewModel } from '../../CircularView/models/CircularView'
 
+/**
+ * !stateModel BaseChordDisplay
+ * extends `BaseDisplay`
+ */
 export const BaseChordDisplayModel = types
   .compose(
     'BaseChordDisplay',
     BaseDisplay,
     types.model({
+      /**
+       * !property
+       */
       bezierRadiusRatio: 0.1,
+      /**
+       * !property
+       */
       assemblyName: types.maybe(types.string),
     }),
   )
@@ -46,12 +56,18 @@ export const BaseChordDisplayModel = types
     const { pluginManager } = getEnv(self)
     const track = self
     return {
+      /**
+       * !action
+       */
       onChordClick(feature: Feature) {
         getConf(self, 'onChordClick', { feature, track, pluginManager })
       },
     }
   })
   .views(self => ({
+    /**
+     * !getter
+     */
     get blockDefinitions() {
       const origSlices = (getContainingView(self) as CircularViewModel)
         .staticSlices
@@ -76,6 +92,9 @@ export const BaseChordDisplayModel = types
       return slices
     },
 
+    /**
+     * !method
+     */
     renderProps() {
       const view = getContainingView(self) as CircularViewModel
       return {
@@ -90,6 +109,7 @@ export const BaseChordDisplayModel = types
     },
 
     /**
+     * !getter
      * the pluggable element type object for this diplay's
      * renderer
      */
@@ -110,11 +130,15 @@ export const BaseChordDisplayModel = types
       return ThisRendererType
     },
 
+    /**
+     * !method
+     */
     isCompatibleWithRenderer(renderer: RendererType) {
       return !!(renderer instanceof CircularChordRendererType)
     },
 
     /**
+     * !getter
      * returns a string feature ID if the globally-selected object
      * is probably a feature
      */
@@ -135,6 +159,9 @@ export const BaseChordDisplayModel = types
     },
   }))
   .actions(self => ({
+    /**
+     * !action
+     */
     renderStarted() {
       self.filled = false
       self.message = ''
@@ -143,6 +170,9 @@ export const BaseChordDisplayModel = types
       self.error = undefined
       self.renderingComponent = undefined
     },
+    /**
+     * !action
+     */
     renderSuccess({
       message,
       data,
@@ -171,6 +201,9 @@ export const BaseChordDisplayModel = types
         self.renderingComponent = renderingComponent
       }
     },
+    /**
+     * !action
+     */
     renderError(error: unknown) {
       console.error(error)
       // the rendering failed for some reason
@@ -182,6 +215,9 @@ export const BaseChordDisplayModel = types
       self.renderingComponent = undefined
     },
 
+    /**
+     * !action
+     */
     setRefNameMap(refNameMap: Record<string, string>) {
       self.refNameMap = refNameMap
     },

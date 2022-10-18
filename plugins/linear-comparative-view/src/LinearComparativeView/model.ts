@@ -302,10 +302,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * !action
        */
       squareView() {
-        const bpPerPxs =
-          self.viewplugins / linear -
-          comparative -
-          view / src / LinearSyntenyView / model.tss.map(v => v.bpPerPx)
+        const bpPerPxs = self.views.map(v => v.bpPerPx)
         const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
         self.views.forEach(view => {
           const center = view.pxToBp(view.width / 2)

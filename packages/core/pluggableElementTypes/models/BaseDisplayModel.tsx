@@ -1,16 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
 import React from 'react'
+import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
+
+// locals
 import { getConf } from '../../configuration'
 import { MenuItem } from '../../ui'
 import { getParentRenderProps } from '../../util/tracks'
 import { getEnv } from '../../util'
 import { ElementId } from '../../util/types/mst'
 
+/**
+ * !stateModel BaseDisplay
+ */
 export const BaseDisplay = types
   .model('BaseDisplay', {
+    /**
+     * !property
+     */
     id: ElementId,
+    /**
+     * !property
+     */
     type: types.string,
+    /**
+     * !property
+     */
     rpcDriverName: types.maybe(types.string),
   })
   .volatile(() => ({
@@ -18,6 +32,9 @@ export const BaseDisplay = types
     error: undefined as unknown,
   }))
   .views(self => ({
+    /**
+     * !getter
+     */
     get RenderingComponent(): React.FC<{
       model: typeof self
       onHorizontalScroll?: Function
@@ -32,14 +49,23 @@ export const BaseDisplay = types
       }>
     },
 
+    /**
+     * !getter
+     */
     get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
       return null
     },
 
+    /**
+     * !getter
+     */
     get adapterConfig() {
       return getConf(this.parentTrack, 'adapter')
     },
 
+    /**
+     * !getter
+     */
     get parentTrack() {
       let track = getParent<any>(self)
       while (!(track.configuration && getConf(track, 'trackId'))) {
@@ -52,6 +78,7 @@ export const BaseDisplay = types
     },
 
     /**
+     * !method
      * the react props that are passed to the Renderer when data
      * is rendered in this display
      */
@@ -64,6 +91,7 @@ export const BaseDisplay = types
     },
 
     /**
+     * !getter
      * the pluggable element type object for this display's
      * renderer
      */
@@ -82,21 +110,28 @@ export const BaseDisplay = types
     },
 
     /**
+     * !getter
      * if a display-level message should be displayed instead,
      * make this return a react component
      */
     get DisplayMessageComponent() {
       return undefined as undefined | React.FC<any>
     },
-
+    /**
+     * !method
+     */
     trackMenuItems(): MenuItem[] {
       return []
     },
 
+    /**
+     * !getter
+     */
     get viewMenuActions(): MenuItem[] {
       return []
     },
     /**
+     * !method
      * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
      *  return a react node + string of text.
@@ -108,13 +143,22 @@ export const BaseDisplay = types
     },
   }))
   .actions(self => ({
+    /**
+     * !action
+     */
     setError(error?: unknown) {
       self.error = error
     },
+    /**
+     * !action
+     */
     setRpcDriverName(rpcDriverName: string) {
       self.rpcDriverName = rpcDriverName
     },
-    // base display reload does nothing, see specialized displays for details
+    /**
+     * !action
+     * base display reload does nothing, see specialized displays for details
+     */
     reload() {},
   }))
 

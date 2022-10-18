@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { extractWithComment } from './util'
 
 function generateConfigDocs() {
@@ -119,6 +120,7 @@ toplevel: true
 
         console.log(`#### slot: ${name || obj.name}`)
         console.log('\n')
+        console.log('\n')
         console.log('```js')
         console.log(obj.node)
         console.log('```')
@@ -138,14 +140,6 @@ toplevel: true
         console.log('\n')
         console.log(rest)
         console.log('\n')
-
-        // const rest = obj.node
-        //   .split('\n')
-        //   .filter(x => !x.includes('!config'))
-        //   .join('\n')
-        // console.log('```js')
-        // console.log(rest)
-        // console.log('```')
       }
     },
   )

@@ -151,11 +151,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * !property
-         * currently displayed region, can be a single chromosome or the entire
-         * set of chromosomes in the genome:
-         * {start:number,end:number,refName:string,assemblyName:string}[]
+         * currently displayed region, can be a single chromosome, arbitrary subsections,
+         * or the entire  set of chromosomes in the genome, but it not advised to use the
+         * entire set of chromosomes if your assembly is very fragmented
          */
-        displayedRegions: types.array(MyRegion),
+        displayedRegions: types.array(MUIRegion),
 
         /**
          * !property

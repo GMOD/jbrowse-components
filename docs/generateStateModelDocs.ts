@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { extractWithComment } from './util'
 
 const alreadySeen = {} as { [key: string]: { [key: string]: boolean } }
@@ -15,6 +16,18 @@ toplevel: true
       'plugins/dotplot-view/src/DotplotView/model.ts',
       'plugins/linear-comparative-view/src/LinearSyntenyView/model.ts',
       'plugins/linear-comparative-view/src/LinearComparativeView/model.ts',
+      'packages/core/pluggableElementTypes/models/BaseDisplayModel.tsx',
+      'plugins/alignments/src/LinearAlignmentsDisplay/models/model.tsx',
+      'plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx',
+      'plugins/alignments/src/LinearPileupDisplay/model.ts',
+      'plugins/alignments/src/LinearSNPCoverageDisplay/models/model.ts',
+      'plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx',
+      'plugins/linear-genome-view/src/LinearBareDisplay/model.ts',
+      'plugins/linear-genome-view/src/LinearBasicDisplay/model.ts',
+      'plugins/circular-view/src/CircularView/models/CircularView.ts',
+      'plugins/circular-view/src/BaseChordDisplay/models/BaseChordDisplayModel.ts',
+      'plugins/variants/src/LinearVariantDisplay/model.ts',
+      'plugins/variants/src/ChordVariantDisplay/models/ChordVariantDisplay.ts',
     ],
     obj => {
       if (alreadySeen[currStateModel]?.[obj.name]) {

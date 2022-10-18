@@ -8,6 +8,10 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // locals
 import configSchemaF from './configSchema'
 
+/**
+ * !stateModel ChordVariantDisplay
+ * extends `BaseChordDisplay`
+ */
 const ChordVariantDisplayF = (pluginManager: PluginManager) => {
   const configSchema = configSchemaF(pluginManager)
   const stateModel = types
@@ -15,15 +19,27 @@ const ChordVariantDisplayF = (pluginManager: PluginManager) => {
       'ChordVariantDisplay',
       BaseChordDisplayModel,
       types.model({
+        /**
+         * !property
+         */
         type: types.literal('ChordVariantDisplay'),
+        /**
+         * !property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
+      /**
+       * !getter
+       */
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
 
+      /**
+       * !method
+       */
       renderProps(): Record<string, unknown> {
         const view = getContainingView(self)
         return {

@@ -64,11 +64,18 @@ function getDisplayStr(totalBytes: number) {
 const minDisplayHeight = 20
 const defaultDisplayHeight = 100
 
+/**
+ * !stateModel BaseLinearDisplay
+ * extends `BaseDisplay`
+ */
 export const BaseLinearDisplay = types
   .compose(
     'BaseLinearDisplay',
     BaseDisplay,
     types.model({
+      /**
+       * !property
+       */
       height: types.optional(
         types.refinement(
           'displayHeight',
@@ -77,8 +84,18 @@ export const BaseLinearDisplay = types
         ),
         defaultDisplayHeight,
       ),
+      /**
+       * !property
+       * updated via autorun
+       */
       blockState: types.map(BlockState),
+      /**
+       * !property
+       */
       userBpPerPxLimit: types.maybe(types.number),
+      /**
+       * !property
+       */
       userByteSizeLimit: types.maybe(types.number),
     }),
   )
@@ -92,9 +109,15 @@ export const BaseLinearDisplay = types
     estimatedRegionStats: undefined as undefined | Stats,
   }))
   .views(self => ({
+    /**
+     * !getter
+     */
     get blockType(): 'staticBlocks' | 'dynamicBlocks' {
       return 'staticBlocks'
     },
+    /**
+     * !getter
+     */
     get blockDefinitions() {
       const { blockType } = this
       const view = getContainingView(self) as LGV
@@ -106,6 +129,7 @@ export const BaseLinearDisplay = types
   }))
   .views(self => ({
     /**
+     * !getter
      * how many milliseconds to wait for the display to
      * "settle" before re-rendering a block
      */
@@ -113,11 +137,15 @@ export const BaseLinearDisplay = types
       return 50
     },
 
+    /**
+     * !getter
+     */
     get TooltipComponent(): React.FC<any> {
       return Tooltip as unknown as React.FC
     },
 
     /**
+     * !getter
      * returns a string feature ID if the globally-selected object
      * is probably a feature
      */
@@ -132,6 +160,7 @@ export const BaseLinearDisplay = types
       return undefined
     },
     /**
+     * !getter
      * if a display-level message should be displayed instead of the blocks,
      * make this return a react component
      */
@@ -141,6 +170,7 @@ export const BaseLinearDisplay = types
   }))
   .views(self => ({
     /**
+     * !getter
      * a CompositeMap of `featureId -> feature obj` that
      * just looks in all the block data for that feature
      */
@@ -154,20 +184,31 @@ export const BaseLinearDisplay = types
       return new CompositeMap(featureMaps)
     },
 
+    /**
+     * !getter
+     */
     get featureUnderMouse() {
       const feat = self.featureIdUnderMouse
       return feat ? this.features.get(feat) : undefined
     },
 
+    /**
+     * !getter
+     */
     getFeatureOverlapping(blockKey: string, x: number, y: number) {
       return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
     },
 
+    /**
+     * !getter
+     */
     getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
       return self.blockState.get(blockKey)?.layout?.getByID(id)
     },
 
-    // if block key is not supplied, can look at all blocks
+    /**
+     * !getter
+     */
     searchFeatureByID(id: string): LayoutRecord | undefined {
       let ret
       self.blockState.forEach(block => {
@@ -179,22 +220,37 @@ export const BaseLinearDisplay = types
       return ret
     },
 
+    /**
+     * !getter
+     */
     get currentBytesRequested() {
       return self.estimatedRegionStats?.bytes || 0
     },
 
+    /**
+     * !getter
+     */
     get currentFeatureScreenDensity() {
       const view = getContainingView(self) as LGV
       return (self.estimatedRegionStats?.featureDensity || 0) * view.bpPerPx
     },
 
+    /**
+     * !getter
+     */
     get maxFeatureScreenDensity() {
       return getConf(self, 'maxFeatureScreenDensity')
     },
+    /**
+     * !getter
+     */
     get estimatedStatsReady() {
       return !!self.estimatedRegionStats
     },
 
+    /**
+     * !getter
+     */
     get maxAllowableBytes() {
       return (
         self.userByteSizeLimit ||
@@ -204,7 +260,9 @@ export const BaseLinearDisplay = types
     },
   }))
   .actions(self => ({
-    // base display reload does nothing, see specialized displays for details
+    /**
+     * !action
+     */
     setMessage(message: string) {
       self.message = message
     },
@@ -234,6 +292,9 @@ export const BaseLinearDisplay = types
       addDisposer(self, blockWatchDisposer)
     },
 
+    /**
+     * !action
+     */
     estimateRegionsStats(
       regions: Region[],
       opts: {
@@ -276,16 +337,28 @@ export const BaseLinearDisplay = types
 
       return self.estimatedRegionStatsP
     },
+    /**
+     * !action
+     */
     setRegionStatsP(p?: Promise<Stats>) {
       self.estimatedRegionStatsP = p
     },
+    /**
+     * !action
+     */
     setRegionStats(estimatedRegionStats?: Stats) {
       self.estimatedRegionStats = estimatedRegionStats
     },
+    /**
+     * !action
+     */
     clearRegionStats() {
       self.estimatedRegionStatsP = undefined
       self.estimatedRegionStats = undefined
     },
+    /**
+     * !action
+     */
     setHeight(displayHeight: number) {
       if (displayHeight > minDisplayHeight) {
         self.height = displayHeight
@@ -294,16 +367,25 @@ export const BaseLinearDisplay = types
       }
       return self.height
     },
+    /**
+     * !action
+     */
     resizeHeight(distance: number) {
       const oldHeight = self.height
       const newHeight = this.setHeight(self.height + distance)
       return newHeight - oldHeight
     },
 
+    /**
+     * !action
+     */
     setScrollTop(scrollTop: number) {
       self.scrollTop = scrollTop
     },
 
+    /**
+     * !action
+     */
     updateStatsLimit(stats: Stats) {
       const view = getContainingView(self) as LGV
       if (stats.bytes) {
@@ -313,6 +395,9 @@ export const BaseLinearDisplay = types
       }
     },
 
+    /**
+     * !action
+     */
     addBlock(key: string, block: BaseBlock) {
       self.blockState.set(
         key,
@@ -322,12 +407,21 @@ export const BaseLinearDisplay = types
         }),
       )
     },
+    /**
+     * !action
+     */
     setCurrBpPerPx(n: number) {
       self.currBpPerPx = n
     },
+    /**
+     * !action
+     */
     deleteBlock(key: string) {
       self.blockState.delete(key)
     },
+    /**
+     * !action
+     */
     selectFeature(feature: Feature) {
       const session = getSession(self)
       if (isSessionModelWithWidgets(session)) {
@@ -347,25 +441,40 @@ export const BaseLinearDisplay = types
         session.setSelection(feature)
       }
     },
+    /**
+     * !action
+     */
     clearFeatureSelection() {
       const session = getSession(self)
       session.clearSelection()
     },
+    /**
+     * !action
+     */
     setFeatureIdUnderMouse(feature: string | undefined) {
       self.featureIdUnderMouse = feature
     },
+    /**
+     * !action
+     */
     reload() {
       ;[...self.blockState.values()].map(val => val.doReload())
     },
+    /**
+     * !action
+     */
     setContextMenuFeature(feature?: Feature) {
       self.contextMenuFeature = feature
     },
   }))
   .views(self => ({
-    // region is too large if:
-    // - stats are ready
-    // - region is greater than 20kb (don't warn when zoomed in less than that)
-    // - and bytes > max allowed bytes || curr density>max density
+    /**
+     * !getter
+     * region is too large if:
+     * - stats are ready
+     * - region is greater than 20kb (don't warn when zoomed in less than that)
+     * - and bytes is greater than max allowed bytes or density greater than max density
+     */
     get regionTooLarge() {
       const view = getContainingView(self) as LGV
       if (!self.estimatedStatsReady || view.dynamicBlocks.totalBp < 20_000) {
@@ -380,8 +489,11 @@ export const BaseLinearDisplay = types
       )
     },
 
-    // only shows a message of bytes requested is defined, the feature density
-    // based stats don't produce any helpful message besides to zoom in
+    /**
+     * !getter
+     * only shows a message of bytes requested is defined, the feature density
+     * based stats don't produce any helpful message besides to zoom in
+     */
     get regionTooLargeReason() {
       const req = self.currentBytesRequested
       const max = self.maxAllowableBytes
@@ -395,6 +507,9 @@ export const BaseLinearDisplay = types
     const { reload: superReload } = self
 
     return {
+      /**
+       * !action
+       */
       async reload() {
         self.setError()
         const aborter = new AbortController()
@@ -486,11 +601,15 @@ export const BaseLinearDisplay = types
     }
   })
   .views(self => ({
+    /**
+     * !method
+     */
     regionCannotBeRenderedText(_region: Region) {
       return self.regionTooLarge ? 'Force load to see features' : ''
     },
 
     /**
+     * !method
      * @param region -
      * @returns falsy if the region is fine to try rendering. Otherwise,
      *  return a react node + string of text.
@@ -502,10 +621,16 @@ export const BaseLinearDisplay = types
       return regionTooLarge ? <TooLargeMessage model={self} /> : null
     },
 
+    /**
+     * !method
+     */
     trackMenuItems(): MenuItem[] {
       return []
     },
 
+    /**
+     * !method
+     */
     contextMenuItems() {
       return self.contextMenuFeature
         ? [
@@ -521,6 +646,9 @@ export const BaseLinearDisplay = types
           ]
         : []
     },
+    /**
+     * !method
+     */
     renderProps() {
       const view = getContainingView(self) as LGV
       return {
@@ -570,6 +698,9 @@ export const BaseLinearDisplay = types
     },
   }))
   .actions(self => ({
+    /**
+     * !method
+     */
     async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
       const { height, id } = self
       const { overrideHeight } = opts

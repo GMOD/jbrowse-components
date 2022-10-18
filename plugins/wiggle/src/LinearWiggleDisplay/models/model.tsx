@@ -44,6 +44,10 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
+/**
+ * !stateModel LinearWiggleDisplay
+ * Extends `BaseLinearDisplay`
+ */
 const stateModelFactory = (
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
@@ -53,20 +57,65 @@ const stateModelFactory = (
       'LinearWiggleDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * !property
+         */
         type: types.literal('LinearWiggleDisplay'),
+        /**
+         * !property
+         */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * !property
+         */
         selectedRendering: types.optional(types.string, ''),
+        /**
+         * !property
+         */
         resolution: types.optional(types.number, 1),
+        /**
+         * !property
+         */
         fill: types.maybe(types.boolean),
+        /**
+         * !property
+         */
         minSize: types.maybe(types.number),
+        /**
+         * !property
+         */
         color: types.maybe(types.string),
+        /**
+         * !property
+         */
         posColor: types.maybe(types.string),
+        /**
+         * !property
+         */
         negColor: types.maybe(types.string),
+        /**
+         * !property
+         */
         summaryScoreMode: types.maybe(types.string),
+        /**
+         * !property
+         */
         rendererTypeNameState: types.maybe(types.string),
+        /**
+         * !property
+         */
         scale: types.maybe(types.string),
+        /**
+         * !property
+         */
         autoscale: types.maybe(types.string),
+        /**
+         * !property
+         */
         displayCrossHatches: types.maybe(types.boolean),
+        /**
+         * !property
+         */
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -83,6 +132,9 @@ const stateModelFactory = (
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
+      /**
+       * !action
+       */
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
@@ -94,16 +146,28 @@ const stateModelFactory = (
           self.statsReady = true
         }
       },
+      /**
+       * !action
+       */
       setColor(color?: string) {
         self.color = color
       },
+      /**
+       * !action
+       */
       setPosColor(color?: string) {
         self.posColor = color
       },
+      /**
+       * !action
+       */
       setNegColor(color?: string) {
         self.negColor = color
       },
 
+      /**
+       * !action
+       */
       setLoading(aborter: AbortController) {
         const { statsFetchInProgress: statsFetch } = self
         if (statsFetch !== undefined && !statsFetch.signal.aborted) {
@@ -112,19 +176,29 @@ const stateModelFactory = (
         self.statsFetchInProgress = aborter
       },
 
-      // this overrides the BaseLinearDisplayModel to avoid popping up a
-      // feature detail display, but still sets the feature selection on the
-      // model so listeners can detect a click
+      /*
+       * !action
+       * this overrides the BaseLinearDisplayModel to avoid popping up a
+       * feature detail display, but still sets the feature selection on the
+       * model so listeners can detect a click
+       */
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
         }
       },
+
+      /**
+       * !action
+       */
       setResolution(res: number) {
         self.resolution = res
       },
 
+      /**
+       * !action
+       */
       setFill(fill: number) {
         if (fill === 0) {
           self.fill = true
@@ -138,6 +212,9 @@ const stateModelFactory = (
         }
       },
 
+      /**
+       * !action
+       */
       toggleLogScale() {
         if (self.scale !== 'log') {
           self.scale = 'log'
@@ -146,51 +223,87 @@ const stateModelFactory = (
         }
       },
 
+      /**
+       * !action
+       */
       setScaleType(scale?: string) {
         self.scale = scale
       },
 
+      /**
+       * !action
+       */
       setSummaryScoreMode(val: string) {
         self.summaryScoreMode = val
       },
 
+      /**
+       * !action
+       */
       setAutoscale(val: string) {
         self.autoscale = val
       },
 
+      /**
+       * !action
+       */
       setMaxScore(val?: number) {
         self.constraints.max = val
       },
 
+      /**
+       * !action
+       */
       setRendererType(val: string) {
         self.rendererTypeNameState = val
       },
 
+      /**
+       * !action
+       */
       setMinScore(val?: number) {
         self.constraints.min = val
       },
 
+      /**
+       * !action
+       */
       toggleCrossHatches() {
         self.displayCrossHatches = !self.displayCrossHatches
       },
 
+      /**
+       * !action
+       */
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
       },
     }))
     .views(self => ({
+      /**
+       * !getter
+       */
       get TooltipComponent() {
         return Tooltip as unknown as React.FC
       },
 
+      /**
+       * !getter
+       */
       get adapterTypeName() {
         return self.adapterConfig.type
       },
 
+      /**
+       * !getter
+       */
       get rendererTypeNameSimple() {
         return self.rendererTypeNameState || getConf(self, 'defaultRendering')
       },
 
+      /**
+       * !getter
+       */
       get rendererTypeName() {
         const name = this.rendererTypeNameSimple
         const rendererType = rendererTypes.get(name)
@@ -200,24 +313,39 @@ const stateModelFactory = (
         return rendererType
       },
 
-      // subclasses can define these, as snpcoverage track does
+      /*
+       * !getter
+       * subclasses can define these, as snpcoverage track does
+       */
       get filters() {
         return undefined
       },
 
+      /**
+       * !getter
+       */
       get scaleType() {
         return self.scale || getConf(self, 'scaleType')
       },
 
+      /**
+       * !getter
+       */
       get maxScore() {
         return self.constraints.max ?? getConf(self, 'maxScore')
       },
 
+      /**
+       * !getter
+       */
       get minScore() {
         return self.constraints.min ?? getConf(self, 'minScore')
       },
     }))
     .views(self => ({
+      /**
+       * !getter
+       */
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -254,14 +382,23 @@ const stateModelFactory = (
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+        /**
+         * !getter
+         */
         get filled() {
           const { fill, rendererConfig: conf } = self
           return fill ?? readConfObject(conf, 'filled')
         },
+        /**
+         * !getter
+         */
         get summaryScoreModeSetting() {
           const { summaryScoreMode, rendererConfig: conf } = self
           return summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode')
         },
+        /**
+         * !getter
+         */
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
 
@@ -284,12 +421,18 @@ const stateModelFactory = (
           return oldDomain
         },
 
+        /**
+         * !getter
+         */
         get needsScalebar() {
           return (
             self.rendererTypeName === 'XYPlotRenderer' ||
             self.rendererTypeName === 'LinePlotRenderer'
           )
         },
+        /**
+         * !getter
+         */
         get scaleOpts() {
           return {
             domain: this.domain,
@@ -300,14 +443,23 @@ const stateModelFactory = (
           }
         },
 
+        /**
+         * !getter
+         */
         get canHaveFill() {
           return self.rendererTypeName === 'XYPlotRenderer'
         },
 
+        /**
+         * !getter
+         */
         get autoscaleType() {
           return self.autoscale ?? getConf(self, 'autoscale')
         },
 
+        /**
+         * !getter
+         */
         get displayCrossHatchesSetting() {
           const { displayCrossHatches: hatches, rendererConfig: conf } = self
           return hatches ?? readConfObject(conf, 'displayCrossHatches')
@@ -315,6 +467,9 @@ const stateModelFactory = (
       }
     })
     .views(self => ({
+      /**
+       * !getter
+       */
       get ticks() {
         const { scaleType, domain, height } = self
         const minimalTicks = getConf(self, 'minimalTicks')
@@ -332,6 +487,9 @@ const stateModelFactory = (
           : ticks
       },
 
+      /**
+       * !getter
+       */
       get adapterCapabilities() {
         return pluginManager.getAdapterType(self.adapterTypeName)
           .adapterCapabilities
@@ -340,6 +498,9 @@ const stateModelFactory = (
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * !method
+         */
         renderProps() {
           const superProps = superRenderProps()
           const { filters, ticks, height, resolution, scaleOpts } = self
@@ -357,14 +518,23 @@ const stateModelFactory = (
             filters,
           }
         },
+        /**
+         * !getter
+         */
         get hasResolution() {
           return self.adapterCapabilities.includes('hasResolution')
         },
 
+        /**
+         * !getter
+         */
         get hasGlobalStats() {
           return self.adapterCapabilities.includes('hasGlobalStats')
         },
 
+        /**
+         * !getter
+         */
         get fillSetting() {
           if (self.filled) {
             return 0
@@ -380,6 +550,9 @@ const stateModelFactory = (
       const { trackMenuItems: superTrackMenuItems } = self
       const hasRenderings = getConf(self, 'defaultRendering')
       return {
+        /**
+         * !method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
@@ -501,7 +674,10 @@ const stateModelFactory = (
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
       return {
-        // re-runs stats and refresh whole display on reload
+        /**
+         * !action
+         * re-runs stats and refresh whole display on reload
+         */
         async reload() {
           self.setError()
           const aborter = new AbortController()
@@ -522,6 +698,9 @@ const stateModelFactory = (
         afterAttach() {
           statsAutorun(self)
         },
+        /**
+         * !action
+         */
         async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self

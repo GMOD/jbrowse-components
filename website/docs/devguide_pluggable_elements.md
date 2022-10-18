@@ -18,8 +18,7 @@ Desktop. By default, there are `File`, `Add`, `Tools`, and `Help` menus.
 You can add your own menu, or you can add menu items or sub-menus to the existing menus and
 sub-menus. Sub-menus can be arbitrarily deep.
 
-<Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place
-to consider adding your own custom view type."/>
+<Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 
 You add menus in the `configure` method of your plugin. Not all JBrowse
 products will have top-level menus, though. JBrowse Web and JBrowse Desktop

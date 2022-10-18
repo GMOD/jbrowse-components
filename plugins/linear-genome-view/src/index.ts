@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 import { when } from 'mobx'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'

@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ts from 'typescript'
 
 interface Node {
-  signature?: any
+  signature?: string
   type:
     | 'config'
     | 'slot'

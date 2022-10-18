@@ -6,7 +6,7 @@ toplevel: true
 
 ## LinearGenomeView
 
-#### property: id
+### property: id
 
 ```js
 /**
@@ -15,7 +15,7 @@ toplevel: true
 id: ElementId
 ```
 
-#### property: type
+### property: type
 
 ```js
 /**
@@ -24,7 +24,7 @@ id: ElementId
 type: types.literal('LinearGenomeView')
 ```
 
-#### property: offsetPx
+### property: offsetPx
 
 ```js
 /**
@@ -34,7 +34,7 @@ type: types.literal('LinearGenomeView')
 offsetPx: 0
 ```
 
-#### property: bpPerPx
+### property: bpPerPx
 
 ```js
 /**
@@ -44,19 +44,19 @@ offsetPx: 0
 bpPerPx: 1
 ```
 
-#### property: displayedRegions
+### property: displayedRegions
 
 ```js
 /**
  * !property
- * currently displayed region, can be a single chromosome or the entire
- * set of chromosomes in the genome:
- * {start:number,end:number,refName:string,assemblyName:string}[]
+ * currently displayed region, can be a single chromosome, arbitrary subsections,
+ * or the entire  set of chromosomes in the genome, but it not advised to use the
+ * entire set of chromosomes if your assembly is very fragmented
  */
-displayedRegions: types.array(MyRegion)
+displayedRegions: types.array(MUIRegion)
 ```
 
-#### property: tracks
+### property: tracks
 
 ```js
 /**
@@ -66,7 +66,7 @@ displayedRegions: types.array(MyRegion)
 tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 ```
 
-#### property: hideHeader
+### property: hideHeader
 
 ```js
 /**
@@ -76,7 +76,7 @@ tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 hideHeader: false
 ```
 
-#### property: hideHeaderOverview
+### property: hideHeaderOverview
 
 ```js
 /**
@@ -85,7 +85,7 @@ hideHeader: false
 hideHeaderOverview: false
 ```
 
-#### property: hideNoTracksActive
+### property: hideNoTracksActive
 
 ```js
 /**
@@ -94,7 +94,7 @@ hideHeaderOverview: false
 hideNoTracksActive: false
 ```
 
-#### property: trackSelectorType
+### property: trackSelectorType
 
 ```js
 /**
@@ -106,7 +106,7 @@ trackSelectorType: types.optional(
 )
 ```
 
-#### property: trackLabels
+### property: trackLabels
 
 ```js
 /**
@@ -119,7 +119,7 @@ trackLabels: types.optional(
 )
 ```
 
-#### property: showCenterLine
+### property: showCenterLine
 
 ```js
 /**
@@ -132,7 +132,7 @@ showCenterLine: types.optional(types.boolean, () => {
 })
 ```
 
-#### property: showCytobandsSetting
+### property: showCytobandsSetting
 
 ```js
 /**
@@ -145,7 +145,7 @@ showCytobandsSetting: types.optional(types.boolean, () => {
 })
 ```
 
-#### property: showGridlines
+### property: showGridlines
 
 ```js
 /**
@@ -155,91 +155,91 @@ showCytobandsSetting: types.optional(types.boolean, () => {
 showGridlines: true
 ```
 
-#### getter: width
+### getter: width
 
 ```js
 // Type
 number
 ```
 
-#### getter: interRegionPaddingWidth
+### getter: interRegionPaddingWidth
 
 ```js
 // Type
 number
 ```
 
-#### getter: assemblyNames
+### getter: assemblyNames
 
 ```js
 // Type
 any[]
 ```
 
-#### action: setShowCytobands
+### action: setShowCytobands
 
 ```js
 // Type signature
 setShowCytobands: (flag: boolean) => void
 ```
 
-#### action: setWidth
+### action: setWidth
 
 ```js
 // Type signature
 setWidth: (newWidth: number) => void
 ```
 
-#### action: setError
+### action: setError
 
 ```js
 // Type signature
 setError: (error: Error) => void
 ```
 
-#### action: toggleHeader
+### action: toggleHeader
 
 ```js
 // Type signature
 toggleHeader: () => void
 ```
 
-#### action: toggleHeaderOverview
+### action: toggleHeaderOverview
 
 ```js
 // Type signature
 toggleHeaderOverview: () => void
 ```
 
-#### action: toggleNoTracksActive
+### action: toggleNoTracksActive
 
 ```js
 // Type signature
 toggleNoTracksActive: () => void
 ```
 
-#### action: toggleShowGridlines
+### action: toggleShowGridlines
 
 ```js
 // Type signature
 toggleShowGridlines: () => void
 ```
 
-#### action: scrollTo
+### action: scrollTo
 
 ```js
 // Type signature
 scrollTo: (offsetPx: number) => number
 ```
 
-#### action: zoomTo
+### action: zoomTo
 
 ```js
 // Type signature
 zoomTo: (bpPerPx: number) => number
 ```
 
-#### action: setOffsets
+### action: setOffsets
 
 sets offsets used in the get sequence dialog
 
@@ -248,35 +248,35 @@ sets offsets used in the get sequence dialog
 setOffsets: (left?: BpOffset, right?: BpOffset) => void
 ```
 
-#### action: setSearchResults
+### action: setSearchResults
 
 ```js
 // Type signature
 setSearchResults: (results?: BaseResult[], query?: string) => void
 ```
 
-#### action: setGetSequenceDialogOpen
+### action: setGetSequenceDialogOpen
 
 ```js
 // Type signature
 setGetSequenceDialogOpen: (open: boolean) => void
 ```
 
-#### action: setNewView
+### action: setNewView
 
 ```js
 // Type signature
 setNewView: (bpPerPx: number, offsetPx: number) => void
 ```
 
-#### action: horizontallyFlip
+### action: horizontallyFlip
 
 ```js
 // Type signature
 horizontallyFlip: () => void
 ```
 
-#### action: showTrack
+### action: showTrack
 
 ```js
 // Type signature
@@ -287,56 +287,56 @@ showTrack: (
 ) => any
 ```
 
-#### action: moveTrack
+### action: moveTrack
 
 ```js
 // Type signature
 moveTrack: (movingId: string, targetId: string) => void
 ```
 
-#### action: closeView
+### action: closeView
 
 ```js
 // Type signature
 closeView: () => void
 ```
 
-#### action: toggleTrack
+### action: toggleTrack
 
 ```js
 // Type signature
 toggleTrack: (trackId: string) => void
 ```
 
-#### action: setTrackLabels
+### action: setTrackLabels
 
 ```js
 // Type signature
 setTrackLabels: (setting: "overlapping" | "offset" | "hidden") => void
 ```
 
-#### action: toggleCenterLine
+### action: toggleCenterLine
 
 ```js
 // Type signature
 toggleCenterLine: () => void
 ```
 
-#### action: setDisplayedRegions
+### action: setDisplayedRegions
 
 ```js
 // Type signature
 setDisplayedRegions: (regions: Region[]) => void
 ```
 
-#### action: activateTrackSelector
+### action: activateTrackSelector
 
 ```js
 // Type signature
 activateTrackSelector: () => Widget
 ```
 
-#### method: getSelectedRegions
+### method: getSelectedRegions
 
 Helper method for the fetchSequence.
 Retrieves the corresponding regions that were selected by the rubberband
@@ -346,7 +346,7 @@ Retrieves the corresponding regions that were selected by the rubberband
 getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => BaseBlock[]
 ```
 
-#### action: afterDisplayedRegionsSet
+### action: afterDisplayedRegionsSet
 
 schedule something to be run after the next time displayedRegions is set
 
@@ -355,49 +355,49 @@ schedule something to be run after the next time displayedRegions is set
 afterDisplayedRegionsSet: (cb: Function) => void
 ```
 
-#### action: horizontalScroll
+### action: horizontalScroll
 
 ```js
 // Type signature
 horizontalScroll: (distance: number) => number
 ```
 
-#### action: center
+### action: center
 
 ```js
 // Type signature
 center: () => void
 ```
 
-#### action: showAllRegions
+### action: showAllRegions
 
 ```js
 // Type signature
 showAllRegions: () => void
 ```
 
-#### action: showAllRegionsInAssembly
+### action: showAllRegionsInAssembly
 
 ```js
 // Type signature
 showAllRegionsInAssembly: (assemblyName?: string) => void
 ```
 
-#### action: setDraggingTrackId
+### action: setDraggingTrackId
 
 ```js
 // Type signature
 setDraggingTrackId: (idx?: string) => void
 ```
 
-#### action: setScaleFactor
+### action: setScaleFactor
 
 ```js
 // Type signature
 setScaleFactor: (factor: number) => void
 ```
 
-#### action: clearView
+### action: clearView
 
 this "clears the view" and makes the view return to the import form
 
@@ -406,7 +406,7 @@ this "clears the view" and makes the view return to the import form
 clearView: () => void
 ```
 
-#### action: exportSvg
+### action: exportSvg
 
 creates an svg export and save using FileSaver
 
@@ -415,7 +415,7 @@ creates an svg export and save using FileSaver
 exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 ```
 
-#### action: slide
+### action: slide
 
 perform animated slide
 
@@ -424,7 +424,7 @@ perform animated slide
 slide: (viewWidths: number) => void
 ```
 
-#### action: zoom
+### action: zoom
 
 perform animated zoom
 
@@ -433,28 +433,28 @@ perform animated zoom
 zoom: (targetBpPerPx: number) => void
 ```
 
-#### getter: canShowCytobands
+### getter: canShowCytobands
 
 ```js
 // Type
 any
 ```
 
-#### getter: showCytobands
+### getter: showCytobands
 
 ```js
 // Type
 boolean
 ```
 
-#### getter: anyCytobandsExist
+### getter: anyCytobandsExist
 
 ```js
 // Type
 boolean
 ```
 
-#### getter: cytobandOffset
+### getter: cytobandOffset
 
 the cytoband is displayed to the right of the chromosome name,
 and that offset is calculated manually with this method
@@ -464,7 +464,7 @@ and that offset is calculated manually with this method
 number
 ```
 
-#### method: menuItems
+### method: menuItems
 
 return the view menu items
 
@@ -473,7 +473,7 @@ return the view menu items
 menuItems: () => MenuItem[]
 ```
 
-#### getter: staticBlocks
+### getter: staticBlocks
 
 static blocks are an important concept jbrowse uses to avoid
 re-rendering when you scroll to the side. when you horizontally
@@ -487,7 +487,7 @@ the block
 BlockSet
 ```
 
-#### getter: dynamicBlocks
+### getter: dynamicBlocks
 
 dynamic blocks represent the exact coordinates of the currently
 visible genome regions on the screen. they are similar to static
@@ -499,7 +499,7 @@ represent exactly what is on screen
 BlockSet
 ```
 
-#### getter: roundedDynamicBlocks
+### getter: roundedDynamicBlocks
 
 rounded dynamic blocks are dynamic blocks without fractions of bp
 
@@ -508,7 +508,7 @@ rounded dynamic blocks are dynamic blocks without fractions of bp
 any
 ```
 
-#### getter: visibleLocStrings
+### getter: visibleLocStrings
 
 a single "combo-locstring" representing all the regions visible
 on the screen
@@ -518,7 +518,7 @@ on the screen
 string
 ```
 
-#### getter: coarseVisibleLocStrings
+### getter: coarseVisibleLocStrings
 
 same as visibleLocStrings, but only updated every 300ms
 
@@ -527,14 +527,14 @@ same as visibleLocStrings, but only updated every 300ms
 string
 ```
 
-#### action: setCoarseDynamicBlocks
+### action: setCoarseDynamicBlocks
 
 ```js
 // Type signature
 setCoarseDynamicBlocks: (blocks: BlockSet) => void
 ```
 
-#### action: moveTo
+### action: moveTo
 
 offset is the base-pair-offset in the displayed region, index is the index of the
 displayed region in the linear genome view
@@ -544,7 +544,7 @@ displayed region in the linear genome view
 moveTo: (start?: BpOffset, end?: BpOffset) => void
 ```
 
-#### action: navToLocString
+### action: navToLocString
 
 navigate to the given locstring
 
@@ -553,7 +553,7 @@ navigate to the given locstring
 navToLocString: (locString: string, optAssemblyName?: string) => void
 ```
 
-#### action: navTo
+### action: navTo
 
 Navigate to a location based on its refName and optionally start, end,
 and assemblyName. Can handle if there are multiple displayedRegions
@@ -568,21 +568,21 @@ Throws an error if navigation was unsuccessful
 navTo: (query: NavLocation) => void
 ```
 
-#### action: navToMultiple
+### action: navToMultiple
 
 ```js
 // Type signature
 navToMultiple: (locations: NavLocation[]) => void
 ```
 
-#### method: rubberBandMenuItems
+### method: rubberBandMenuItems
 
 ```js
 // Type signature
 rubberBandMenuItems: () => MenuItem[]
 ```
 
-#### method: bpToPx
+### method: bpToPx
 
 ```js
 // Type signature
@@ -600,7 +600,7 @@ bpToPx: ({
 }
 ```
 
-#### method: centerAt
+### method: centerAt
 
 scrolls the view to center on the given bp. if that is not in any
 of the displayed regions, does nothing
@@ -610,7 +610,7 @@ of the displayed regions, does nothing
 centerAt: (coord: number, refName: string, regionNumber: number) => void
 ```
 
-#### method: pxToBp
+### method: pxToBp
 
 ```js
 // Type signature
@@ -627,7 +627,7 @@ pxToBp: (px: number) => {
 }
 ```
 
-#### getter: centerLineInfo
+### getter: centerLineInfo
 
 ```js
 // Type
@@ -636,7 +636,7 @@ any
 
 ## DotplotView
 
-#### property: id
+### property: id
 
 ```js
 /**
@@ -645,7 +645,7 @@ any
 id: ElementId
 ```
 
-#### property: type
+### property: type
 
 ```js
 /**
@@ -654,7 +654,7 @@ id: ElementId
 type: types.literal('DotplotView')
 ```
 
-#### property: height
+### property: height
 
 ```js
 /**
@@ -663,7 +663,7 @@ type: types.literal('DotplotView')
 height: 600
 ```
 
-#### property: borderSize
+### property: borderSize
 
 ```js
 /**
@@ -672,7 +672,7 @@ height: 600
 borderSize: 20
 ```
 
-#### property: tickSize
+### property: tickSize
 
 ```js
 /**
@@ -681,7 +681,7 @@ borderSize: 20
 tickSize: 5
 ```
 
-#### property: vtextRotation
+### property: vtextRotation
 
 ```js
 /**
@@ -690,7 +690,7 @@ tickSize: 5
 vtextRotation: 0
 ```
 
-#### property: htextRotation
+### property: htextRotation
 
 ```js
 /**
@@ -699,7 +699,7 @@ vtextRotation: 0
 htextRotation: -90
 ```
 
-#### property: fontSize
+### property: fontSize
 
 ```js
 /**
@@ -708,7 +708,7 @@ htextRotation: -90
 fontSize: 15
 ```
 
-#### property: trackSelectorType
+### property: trackSelectorType
 
 ```js
 /**
@@ -717,7 +717,7 @@ fontSize: 15
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: assemblyNames
+### property: assemblyNames
 
 ```js
 /**
@@ -726,7 +726,7 @@ trackSelectorType: 'hierarchical'
 assemblyNames: types.array(types.string)
 ```
 
-#### property: drawCigar
+### property: drawCigar
 
 ```js
 /**
@@ -735,7 +735,7 @@ assemblyNames: types.array(types.string)
 drawCigar: true
 ```
 
-#### property: hview
+### property: hview
 
 ```js
 /**
@@ -744,7 +744,7 @@ drawCigar: true
 hview: types.optional(DotplotHView, {})
 ```
 
-#### property: vview
+### property: vview
 
 ```js
 /**
@@ -753,7 +753,7 @@ hview: types.optional(DotplotHView, {})
 vview: types.optional(DotplotVView, {})
 ```
 
-#### property: cursorMode
+### property: cursorMode
 
 ```js
 /**
@@ -762,7 +762,7 @@ vview: types.optional(DotplotVView, {})
 cursorMode: 'crosshair'
 ```
 
-#### property: tracks
+### property: tracks
 
 ```js
 
@@ -775,7 +775,7 @@ cursorMode: 'crosshair'
         )
 ```
 
-#### property: viewTrackConfigs
+### property: viewTrackConfigs
 
 ```js
 /**
@@ -787,98 +787,98 @@ cursorMode: 'crosshair'
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
-#### getter: width
+### getter: width
 
 ```js
 // Type
 number
 ```
 
-#### getter: assemblyErrors
+### getter: assemblyErrors
 
 ```js
 // Type
 string
 ```
 
-#### getter: assembliesInitialized
+### getter: assembliesInitialized
 
 ```js
 // Type
 boolean
 ```
 
-#### getter: initialized
+### getter: initialized
 
 ```js
 // Type
 boolean
 ```
 
-#### getter: hticks
+### getter: hticks
 
 ```js
 // Type
 any[]
 ```
 
-#### getter: vticks
+### getter: vticks
 
 ```js
 // Type
 any[]
 ```
 
-#### getter: loading
+### getter: loading
 
 ```js
 // Type
 boolean
 ```
 
-#### getter: viewWidth
+### getter: viewWidth
 
 ```js
 // Type
 number
 ```
 
-#### getter: viewHeight
+### getter: viewHeight
 
 ```js
 // Type
 number
 ```
 
-#### getter: views
+### getter: views
 
 ```js
 // Type
 (({ id: string; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: numbe...
 ```
 
-#### method: renderProps
+### method: renderProps
 
 ```js
 // Type signature
 renderProps: () => any
 ```
 
-#### action: setCursorMode
+### action: setCursorMode
 
 ```js
 // Type signature
 setCursorMode: (str: string) => void
 ```
 
-#### action: setDrawCigar
+### action: setDrawCigar
 
 ```js
 // Type signature
 setDrawCigar: (flag: boolean) => void
 ```
 
-#### action: clearView
+### action: clearView
 
 returns to the import form
 
@@ -887,42 +887,42 @@ returns to the import form
 clearView: () => void
 ```
 
-#### action: setBorderX
+### action: setBorderX
 
 ```js
 // Type signature
 setBorderX: (n: number) => void
 ```
 
-#### action: setBorderY
+### action: setBorderY
 
 ```js
 // Type signature
 setBorderY: (n: number) => void
 ```
 
-#### action: setWidth
+### action: setWidth
 
 ```js
 // Type signature
 setWidth: (newWidth: number) => number
 ```
 
-#### action: setHeight
+### action: setHeight
 
 ```js
 // Type signature
 setHeight: (newHeight: number) => number
 ```
 
-#### action: setError
+### action: setError
 
 ```js
 // Type signature
 setError: (e: unknown) => void
 ```
 
-#### action: closeView
+### action: closeView
 
 removes the view itself from the state tree entirely by calling the parent removeView
 
@@ -931,70 +931,70 @@ removes the view itself from the state tree entirely by calling the parent remov
 closeView: () => void
 ```
 
-#### action: zoomOutButton
+### action: zoomOutButton
 
 ```js
 // Type signature
 zoomOutButton: () => void
 ```
 
-#### action: zoomInButton
+### action: zoomInButton
 
 ```js
 // Type signature
 zoomInButton: () => void
 ```
 
-#### action: activateTrackSelector
+### action: activateTrackSelector
 
 ```js
 // Type signature
 activateTrackSelector: () => any
 ```
 
-#### action: showTrack
+### action: showTrack
 
 ```js
 // Type signature
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
-#### action: hideTrack
+### action: hideTrack
 
 ```js
 // Type signature
 hideTrack: (trackId: string) => number
 ```
 
-#### action: toggleTrack
+### action: toggleTrack
 
 ```js
 // Type signature
 toggleTrack: (trackId: string) => void
 ```
 
-#### action: setAssemblyNames
+### action: setAssemblyNames
 
 ```js
 // Type signature
 setAssemblyNames: (target: string, query: string) => void
 ```
 
-#### action: setViews
+### action: setViews
 
 ```js
 // Type signature
 setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx...
 ```
 
-#### action: getCoords
+### action: getCoords
 
 ```js
 // Type signature
 getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }[]
 ```
 
-#### action: zoomIn
+### action: zoomIn
 
 zooms into clicked and dragged region
 
@@ -1003,7 +1003,7 @@ zooms into clicked and dragged region
 zoomIn: (mousedown: Coord, mouseup: Coord) => void
 ```
 
-#### action: onDotplotView
+### action: onDotplotView
 
 creates a linear synteny view from the clicked and dragged region
 
@@ -1012,35 +1012,229 @@ creates a linear synteny view from the clicked and dragged region
 onDotplotView: (mousedown: Coord, mouseup: Coord) => void
 ```
 
-#### action: squareView
+### action: squareView
 
 ```js
 // Type signature
 squareView: () => void
 ```
 
-#### action: squareViewProportional
+### action: squareViewProportional
 
 ```js
 // Type signature
 squareViewProportional: () => void
 ```
 
-#### method: menuItems
+### method: menuItems
 
 ```js
 // Type signature
 menuItems: () => ({ label: string; onClick: () => void; icon?: undefined; } | { label: string; onClick: () => any; icon: any; })[]
 ```
 
-#### getter: error
+### getter: error
 
 ```js
 // Type
 unknown
 ```
 
-#### action: navToLocString
+## LinearBareDisplay
+
+extends `BaseLinearDisplay`
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('LinearBareDisplay')
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+### property: rpcDriverName
+
+```js
+self.rpcDriverName
+```
+
+### getter: rendererTypeName
+
+```js
+// Type
+any
+```
+
+## LinearBasicDisplay
+
+used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('LinearBasicDisplay')
+```
+
+### property: trackShowLabels
+
+```js
+/**
+ * !property
+ */
+trackShowLabels: types.maybe(types.boolean)
+```
+
+### property: trackShowDescriptions
+
+```js
+/**
+ * !property
+ */
+trackShowDescriptions: types.maybe(types.boolean)
+```
+
+### property: trackDisplayMode
+
+```js
+/**
+ * !property
+ */
+trackDisplayMode: types.maybe(types.string)
+```
+
+### property: trackMaxHeight
+
+```js
+/**
+ * !property
+ */
+trackMaxHeight: types.maybe(types.number)
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### getter: rendererTypeName
+
+```js
+// Type
+any
+```
+
+### getter: showLabels
+
+```js
+// Type
+any
+```
+
+### getter: showDescriptions
+
+```js
+// Type
+any
+```
+
+### getter: maxHeight
+
+```js
+// Type
+any
+```
+
+### getter: displayMode
+
+```js
+// Type
+any
+```
+
+### getter: rendererConfig
+
+```js
+// Type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+### getter: rendererType
+
+the pluggable element type object for this display's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+### action: toggleShowLabels
+
+```js
+// Type signature
+toggleShowLabels: () => void
+```
+
+### action: toggleShowDescriptions
+
+```js
+// Type signature
+toggleShowDescriptions: () => void
+```
+
+### action: setDisplayMode
+
+```js
+// Type signature
+setDisplayMode: (val: string) => void
+```
+
+### action: setMaxHeight
+
+```js
+// Type signature
+setMaxHeight: (val: number) => void
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; }
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => MenuItem[]
+```
+
+### action: navToLocString
 
 navigate to the given locstring
 
@@ -1049,9 +1243,20 @@ navigate to the given locstring
 navToLocString: (locString: string, optAssemblyName?: string) => void
 ```
 
+### action: showTrack
+
+```js
+// Type signature
+showTrack: (
+  trackId: string,
+  initialSnapshot?: {},
+  displayInitialSnapshot?: {},
+) => any
+```
+
 ## LinearComparativeView
 
-#### property: id
+### property: id
 
 ```js
 /**
@@ -1060,7 +1265,7 @@ navToLocString: (locString: string, optAssemblyName?: string) => void
 id: ElementId
 ```
 
-#### property: type
+### property: type
 
 ```js
 /**
@@ -1069,7 +1274,7 @@ id: ElementId
 type: types.literal('LinearComparativeView')
 ```
 
-#### property: height
+### property: height
 
 ```js
 /**
@@ -1078,7 +1283,7 @@ type: types.literal('LinearComparativeView')
 height: defaultHeight
 ```
 
-#### property: trackSelectorType
+### property: trackSelectorType
 
 ```js
 /**
@@ -1087,7 +1292,7 @@ height: defaultHeight
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: showIntraviewLinks
+### property: showIntraviewLinks
 
 ```js
 /**
@@ -1096,7 +1301,7 @@ trackSelectorType: 'hierarchical'
 showIntraviewLinks: true
 ```
 
-#### property: linkViews
+### property: linkViews
 
 ```js
 /**
@@ -1105,7 +1310,7 @@ showIntraviewLinks: true
 linkViews: false
 ```
 
-#### property: interactToggled
+### property: interactToggled
 
 ```js
 /**
@@ -1114,7 +1319,7 @@ linkViews: false
 interactToggled: false
 ```
 
-#### property: middleComparativeHeight
+### property: middleComparativeHeight
 
 ```js
 /**
@@ -1123,7 +1328,7 @@ interactToggled: false
 middleComparativeHeight: 100
 ```
 
-#### property: tracks
+### property: tracks
 
 ```js
 /**
@@ -1132,7 +1337,7 @@ middleComparativeHeight: 100
 tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 ```
 
-#### property: views
+### property: views
 
 ```js
 
@@ -1146,7 +1351,7 @@ tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
         )
 ```
 
-#### property: viewTrackConfigs
+### property: viewTrackConfigs
 
 ```js
 /**
@@ -1158,28 +1363,28 @@ tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 viewTrackConfigs: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
-#### getter: highResolutionScaling
+### getter: highResolutionScaling
 
 ```js
 // Type
 number
 ```
 
-#### getter: initialized
+### getter: initialized
 
 ```js
 // Type
 boolean
 ```
 
-#### getter: refNames
+### getter: refNames
 
 ```js
 // Type
 any[][]
 ```
 
-#### getter: staticBlocks
+### getter: staticBlocks
 
 static blocks are an important concept jbrowse uses to avoid
 re-rendering when you scroll to the side. when you horizontally
@@ -1193,42 +1398,42 @@ the block
 BlockSet
 ```
 
-#### getter: assemblyNames
+### getter: assemblyNames
 
 ```js
 // Type
 any[]
 ```
 
-#### action: setWidth
+### action: setWidth
 
 ```js
 // Type signature
 setWidth: (newWidth: number) => void
 ```
 
-#### action: setHeight
+### action: setHeight
 
 ```js
 // Type signature
 setHeight: (newHeight: number) => void
 ```
 
-#### action: setViews
+### action: setViews
 
 ```js
 // Type signature
 setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; } & { id: IOptionalIType<ISimpleType<string>, [...]>; ... 12 more ...; showGridlines: IType<...>; }>>[]) => void
 ```
 
-#### action: removeView
+### action: removeView
 
 ```js
 // Type signature
-removeView: (view: { id: string; displayName: string; type: "LinearGenomeView"; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<any> & IStateTreeNode<IArrayType<any>>; ... 8 more ...; showGridlines: boolean; } & ... 17 more ... & IStateTreeNode<...>) => void
+removeView: (view: { id: string; displayName: string; type: "LinearGenomeView"; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IS...
 ```
 
-#### action: closeView
+### action: closeView
 
 removes the view itself from the state tree entirely by calling the parent removeView
 
@@ -1237,56 +1442,62 @@ removes the view itself from the state tree entirely by calling the parent remov
 closeView: () => void
 ```
 
-#### action: setMiddleComparativeHeight
+### action: setMiddleComparativeHeight
 
 ```js
 // Type signature
 setMiddleComparativeHeight: (n: number) => number
 ```
 
-#### action: toggleLinkViews
+### action: toggleLinkViews
 
 ```js
 // Type signature
 toggleLinkViews: () => void
 ```
 
-#### action: activateTrackSelector
+### action: activateTrackSelector
 
 ```js
 // Type signature
 activateTrackSelector: () => Widget
 ```
 
-#### action: toggleTrack
+### action: toggleTrack
 
 ```js
 // Type signature
 toggleTrack: (trackId: string) => void
 ```
 
-#### action: showTrack
+### action: showTrack
 
 ```js
 // Type signature
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
-#### action: hideTrack
+### action: hideTrack
 
 ```js
 // Type signature
 hideTrack: (trackId: string) => number
 ```
 
-#### action: squareView
+### action: squareView
 
 ```js
 // Type signature
 squareView: () => void
 ```
 
-#### method: pxToBp
+### property: bpPerPx
+
+```js
+v.bpPerPx
+```
+
+### method: pxToBp
 
 ```js
 // Type signature
@@ -1303,27 +1514,27 @@ pxToBp: (px: number) => {
 }
 ```
 
-#### getter: width
+### getter: width
 
 ```js
 // Type
 any
 ```
 
-#### action: setNewView
+### action: setNewView
 
 ```js
 // Type signature
 setNewView: (bpPerPx: number, offsetPx: number) => void
 ```
 
-#### property: offsetPx
+### property: offsetPx
 
 ```js
 view.offsetPx
 ```
 
-#### method: centerAt
+### method: centerAt
 
 scrolls the view to center on the given bp. if that is not in any
 of the displayed regions, does nothing
@@ -1333,28 +1544,28 @@ of the displayed regions, does nothing
 centerAt: (coord: number, refName: string, regionNumber: number) => void
 ```
 
-#### action: clearView
+### action: clearView
 
 ```js
 // Type signature
 clearView: () => void
 ```
 
-#### method: menuItems
+### method: menuItems
 
 ```js
 // Type signature
 menuItems: () => MenuItem[]
 ```
 
-#### method: rubberBandMenuItems
+### method: rubberBandMenuItems
 
 ```js
 // Type signature
 rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
-#### action: moveTo
+### action: moveTo
 
 offset is the base-pair-offset in the displayed region, index is the index of the
 displayed region in the linear genome view
@@ -1368,7 +1579,7 @@ moveTo: (start?: BpOffset, end?: BpOffset) => void
 
 extends the LinearComparativeView base model
 
-#### property: type
+### property: type
 
 ```js
 /**
@@ -1377,7 +1588,7 @@ extends the LinearComparativeView base model
 type: types.literal('LinearSyntenyView')
 ```
 
-#### property: drawCurves
+### property: drawCurves
 
 ```js
 /**
@@ -1386,36 +1597,2565 @@ type: types.literal('LinearSyntenyView')
 drawCurves: false
 ```
 
-#### action: toggleCurves
+### action: toggleCurves
 
 ```js
 // Type signature
 toggleCurves: () => void
 ```
 
-#### method: menuItems
+### method: menuItems
 
 ```js
 // Type signature
 menuItems: any
 ```
 
-#### action: squareView
+### action: squareView
 
 ```js
 // Type signature
 squareView: () => void
 ```
 
-#### property: linkViews
+### property: linkViews
 
 ```js
 self.linkViews
 ```
 
-#### action: toggleLinkViews
+### action: toggleLinkViews
 
 ```js
 // Type signature
 toggleLinkViews: () => void
+```
+
+## BaseDisplay
+
+### property: id
+
+```js
+/**
+ * !property
+ */
+id: ElementId
+```
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.string
+```
+
+### property: rpcDriverName
+
+```js
+/**
+ * !property
+ */
+rpcDriverName: types.maybe(types.string)
+```
+
+### getter: RenderingComponent
+
+```js
+// Type
+React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>; onHo...
+```
+
+### getter: DisplayBlurb
+
+```js
+// Type
+any
+```
+
+### getter: adapterConfig
+
+```js
+// Type
+any
+```
+
+### getter: parentTrack
+
+```js
+// Type
+any
+```
+
+### method: renderProps
+
+the react props that are passed to the Renderer when data
+is rendered in this display
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+### getter: rendererType
+
+the pluggable element type object for this display's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead,
+make this return a react component
+
+```js
+// Type
+any
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => MenuItem[]
+```
+
+### getter: viewMenuActions
+
+```js
+// Type
+MenuItem[]
+```
+
+### method: regionCannotBeRendered
+
+```js
+// Type signature
+regionCannotBeRendered: () => any
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error?: unknown) => void
+```
+
+### action: setRpcDriverName
+
+```js
+// Type signature
+setRpcDriverName: (rpcDriverName: string) => void
+```
+
+### action: reload
+
+base display reload does nothing, see specialized displays for details
+
+```js
+// Type signature
+reload: () => void
+```
+
+## LinearAlignmentsDisplay
+
+extends `BaseDisplay`
+
+### property: PileupDisplay
+
+```js
+/**
+ * !property
+ * refers to LinearPileupDisplay sub-display model
+ */
+PileupDisplay: types.maybe(
+  pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
+)
+```
+
+### property: SNPCoverageDisplay
+
+```js
+/**
+ * !property
+ * refers to LinearSNPCoverageDisplay sub-display model
+ */
+SNPCoverageDisplay: types.maybe(
+  pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+)
+```
+
+### property: snpCovHeight
+
+```js
+/**
+ * !property
+ */
+snpCovHeight: 45
+```
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('LinearAlignmentsDisplay')
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### property: height
+
+```js
+/**
+ * !property
+ */
+height: 250
+```
+
+### property: showCoverage
+
+```js
+/**
+ * !property
+ */
+showCoverage: true
+```
+
+### property: showPileup
+
+```js
+/**
+ * !property
+ */
+showPileup: true
+```
+
+### property: userFeatureScreenDensity
+
+```js
+/**
+ * !property
+ */
+userFeatureScreenDensity: types.maybe(types.number)
+```
+
+### action: toggleCoverage
+
+```js
+// Type signature
+toggleCoverage: () => void
+```
+
+### action: togglePileup
+
+```js
+// Type signature
+togglePileup: () => void
+```
+
+### action: setScrollTop
+
+```js
+// Type signature
+setScrollTop: (scrollTop: number) => void
+```
+
+### action: setSNPCoverageHeight
+
+```js
+// Type signature
+setSNPCoverageHeight: (n: number) => void
+```
+
+### getter: pileupDisplayConfig
+
+```js
+// Type
+any
+```
+
+### method: getFeatureByID
+
+```js
+// Type signature
+getFeatureByID: (blockKey: string, id: string) => any
+```
+
+### method: searchFeatureByID
+
+```js
+// Type signature
+searchFeatureByID: (id: string) => any
+```
+
+### getter: features
+
+```js
+// Type
+any
+```
+
+### getter: DisplayBlurb
+
+```js
+// Type
+any
+```
+
+### getter: sortedBy
+
+```js
+// Type
+any
+```
+
+### getter: sortedByPosition
+
+```js
+// Type
+any
+```
+
+### getter: sortedByRefName
+
+```js
+// Type
+any
+```
+
+### getter: snpCoverageDisplayConfig
+
+```js
+// Type
+any
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => MenuItem[]
+```
+
+### action: setSNPCoverageDisplay
+
+```js
+// Type signature
+setSNPCoverageDisplay: (displayConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+### action: setUserFeatureScreenDensity
+
+```js
+// Type signature
+setUserFeatureScreenDensity: (limit: number) => void
+```
+
+### action: setPileupDisplay
+
+```js
+// Type signature
+setPileupDisplay: (displayConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+### action: setHeight
+
+```js
+// Type signature
+setHeight: (displayHeight: number) => number
+```
+
+### action: resizeHeight
+
+```js
+// Type signature
+resizeHeight: (distance: number) => number
+```
+
+### action: renderSvg
+
+```js
+// Type signature
+renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
+```
+
+## BaseLinearDisplay
+
+extends `BaseDisplay`
+
+### property: height
+
+```js
+/**
+ * !property
+ */
+height: types.optional(
+  types.refinement('displayHeight', types.number, n => n >= minDisplayHeight),
+  defaultDisplayHeight,
+)
+```
+
+### property: blockState
+
+```js
+/**
+ * !property
+ * updated via autorun
+ */
+blockState: types.map(BlockState)
+```
+
+### property: userBpPerPxLimit
+
+```js
+/**
+ * !property
+ */
+userBpPerPxLimit: types.maybe(types.number)
+```
+
+### property: userByteSizeLimit
+
+```js
+/**
+ * !property
+ */
+userByteSizeLimit: types.maybe(types.number)
+```
+
+### getter: blockType
+
+```js
+// Type
+'dynamicBlocks' | 'staticBlocks'
+```
+
+### getter: blockDefinitions
+
+```js
+// Type
+any
+```
+
+### getter: renderDelay
+
+how many milliseconds to wait for the display to
+"settle" before re-rendering a block
+
+```js
+// Type
+number
+```
+
+### getter: TooltipComponent
+
+```js
+// Type
+React.FC<any>
+```
+
+### getter: selectedFeatureId
+
+returns a string feature ID if the globally-selected object
+is probably a feature
+
+```js
+// Type
+string
+```
+
+### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead of the blocks,
+make this return a react component
+
+```js
+// Type
+any
+```
+
+### getter: features
+
+a CompositeMap of `featureId -> feature obj` that
+just looks in all the block data for that feature
+
+```js
+// Type
+CompositeMap<unknown, unknown>
+```
+
+### getter: featureUnderMouse
+
+```js
+// Type
+any
+```
+
+### getter: getFeatureOverlapping
+
+```js
+// Type
+;(blockKey: string, x: number, y: number) => any
+```
+
+### getter: getFeatureByID
+
+```js
+// Type
+;(blockKey: string, id: string) => LayoutRecord
+```
+
+### getter: searchFeatureByID
+
+```js
+// Type
+;(id: string) => LayoutRecord
+```
+
+### getter: currentBytesRequested
+
+```js
+// Type
+number
+```
+
+### getter: currentFeatureScreenDensity
+
+```js
+// Type
+number
+```
+
+### property: bpPerPx
+
+```js
+view.bpPerPx
+```
+
+### getter: maxFeatureScreenDensity
+
+```js
+// Type
+any
+```
+
+### getter: estimatedStatsReady
+
+```js
+// Type
+boolean
+```
+
+### getter: maxAllowableBytes
+
+```js
+// Type
+number
+```
+
+### action: setMessage
+
+```js
+// Type signature
+setMessage: (message: string) => void
+```
+
+### action: estimateRegionsStats
+
+```js
+// Type signature
+estimateRegionsStats: (regions: Region[], opts: { headers?: Record<string, string>; signal?: AbortSignal; filters?: string[]; }) => Promise<{}>
+```
+
+### action: setRegionStatsP
+
+```js
+// Type signature
+setRegionStatsP: (p?: Promise<Stats>) => void
+```
+
+### action: setRegionStats
+
+```js
+// Type signature
+setRegionStats: (estimatedRegionStats?: Stats) => void
+```
+
+### action: clearRegionStats
+
+```js
+// Type signature
+clearRegionStats: () => void
+```
+
+### action: setHeight
+
+```js
+// Type signature
+setHeight: (displayHeight: number) => number
+```
+
+### action: resizeHeight
+
+```js
+// Type signature
+resizeHeight: (distance: number) => number
+```
+
+### action: setScrollTop
+
+```js
+// Type signature
+setScrollTop: (scrollTop: number) => void
+```
+
+### action: updateStatsLimit
+
+```js
+// Type signature
+updateStatsLimit: (stats: Stats) => void
+```
+
+### action: addBlock
+
+```js
+// Type signature
+addBlock: (key: string, block: BaseBlock) => void
+```
+
+### action: setCurrBpPerPx
+
+```js
+// Type signature
+setCurrBpPerPx: (n: number) => void
+```
+
+### action: deleteBlock
+
+```js
+// Type signature
+deleteBlock: (key: string) => void
+```
+
+### action: selectFeature
+
+```js
+// Type signature
+selectFeature: (feature: Feature) => void
+```
+
+### action: clearFeatureSelection
+
+```js
+// Type signature
+clearFeatureSelection: () => void
+```
+
+### action: setFeatureIdUnderMouse
+
+```js
+// Type signature
+setFeatureIdUnderMouse: (feature: string) => void
+```
+
+### action: reload
+
+```js
+// Type signature
+reload: () => void
+```
+
+### action: setContextMenuFeature
+
+```js
+// Type signature
+setContextMenuFeature: (feature?: Feature) => void
+```
+
+### getter: regionTooLarge
+
+region is too large if:
+
+- stats are ready
+- region is greater than 20kb (don't warn when zoomed in less than that)
+- and bytes is greater than max allowed bytes or density greater than max density
+
+```js
+// Type
+boolean
+```
+
+### getter: dynamicBlocks
+
+dynamic blocks represent the exact coordinates of the currently
+visible genome regions on the screen. they are similar to static
+blocks, but statcic blocks can go offscreen while dynamic blocks
+represent exactly what is on screen
+
+```js
+// Type
+BlockSet
+```
+
+### getter: regionTooLargeReason
+
+only shows a message of bytes requested is defined, the feature density
+based stats don't produce any helpful message besides to zoom in
+
+```js
+// Type
+string
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error?: unknown) => void
+```
+
+### getter: staticBlocks
+
+static blocks are an important concept jbrowse uses to avoid
+re-rendering when you scroll to the side. when you horizontally
+scroll to the right, old blocks to the left may be removed, and
+new blocks may be instantiated on the right. tracks may use the
+static blocks to render their data for the region represented by
+the block
+
+```js
+// Type
+BlockSet
+```
+
+### method: regionCannotBeRenderedText
+
+```js
+// Type signature
+regionCannotBeRenderedText: (_region: Region) =>
+  '' | 'Force load to see features'
+```
+
+### method: regionCannotBeRendered
+
+```js
+// Type signature
+regionCannotBeRendered: (_region: Region) => Element
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => MenuItem[]
+```
+
+### method: contextMenuItems
+
+```js
+// Type signature
+contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+### property: rpcDriverName
+
+```js
+self.rpcDriverName
+```
+
+### method: renderSvg
+
+```js
+// Type signature
+renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; }) => Promise<Element>
+```
+
+## LinearPileupDisplay
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('LinearPileupDisplay')
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### property: showSoftClipping
+
+```js
+/**
+ * !property
+ */
+showSoftClipping: false
+```
+
+### property: featureHeight
+
+```js
+/**
+ * !property
+ */
+featureHeight: types.maybe(types.number)
+```
+
+### property: noSpacing
+
+```js
+/**
+ * !property
+ */
+noSpacing: types.maybe(types.boolean)
+```
+
+### property: fadeLikelihood
+
+```js
+/**
+ * !property
+ */
+fadeLikelihood: types.maybe(types.boolean)
+```
+
+### property: trackMaxHeight
+
+```js
+/**
+ * !property
+ */
+trackMaxHeight: types.maybe(types.number)
+```
+
+### property: mismatchAlpha
+
+```js
+/**
+ * !property
+ */
+mismatchAlpha: types.maybe(types.boolean)
+```
+
+### property: sortedBy
+
+```js
+/**
+ * !property
+ */
+sortedBy: types.maybe(
+  types.model({
+    type: types.string,
+    pos: types.number,
+    tag: types.maybe(types.string),
+    refName: types.string,
+    assemblyName: types.string,
+  }),
+)
+```
+
+### property: colorBy
+
+```js
+/**
+ * !property
+ */
+colorBy: types.maybe(
+  types.model({
+    type: types.string,
+    tag: types.maybe(types.string),
+    extra: types.frozen(),
+  }),
+)
+```
+
+### action: setReady
+
+```js
+// Type signature
+setReady: (flag: boolean) => void
+```
+
+### action: setMaxHeight
+
+```js
+// Type signature
+setMaxHeight: (n: number) => void
+```
+
+### action: setFeatureHeight
+
+```js
+// Type signature
+setFeatureHeight: (n: number) => void
+```
+
+### action: setNoSpacing
+
+```js
+// Type signature
+setNoSpacing: (flag: boolean) => void
+```
+
+### action: setColorScheme
+
+```js
+// Type signature
+setColorScheme: (colorScheme: { type: string; tag?: string; }) => void
+```
+
+### action: updateModificationColorMap
+
+```js
+// Type signature
+updateModificationColorMap: (uniqueModifications: string[]) => void
+```
+
+### action: updateColorTagMap
+
+```js
+// Type signature
+updateColorTagMap: (uniqueTag: string[]) => void
+```
+
+### action: setFeatureUnderMouse
+
+```js
+// Type signature
+setFeatureUnderMouse: (feat?: Feature) => void
+```
+
+### getter: estimatedStatsReady
+
+```js
+// Type
+boolean
+```
+
+### getter: regionTooLarge
+
+region is too large if:
+
+- stats are ready
+- region is greater than 20kb (don't warn when zoomed in less than that)
+- and bytes is greater than max allowed bytes or density greater than max density
+
+```js
+// Type
+boolean
+```
+
+### getter: rendererType
+
+the pluggable element type object for this display's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+### property: id
+
+```js
+view.id
+```
+
+### method: renderProps
+
+the react props that are passed to the Renderer when data
+is rendered in this display
+
+```js
+// Type signature
+renderProps: any
+```
+
+### action: setCurrBpPerPx
+
+```js
+// Type signature
+setCurrBpPerPx: (n: number) => void
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error?: unknown) => void
+```
+
+### getter: featureUnderMouse
+
+```js
+// Type
+any
+```
+
+### action: selectFeature
+
+```js
+// Type signature
+selectFeature: (feature: Feature) => void
+```
+
+### action: clearSelected
+
+```js
+// Type signature
+clearSelected: () => void
+```
+
+### action: copyFeatureToClipboard
+
+uses copy-to-clipboard and generates notification
+
+```js
+// Type signature
+copyFeatureToClipboard: (feature: Feature) => void
+```
+
+### action: toggleSoftClipping
+
+```js
+// Type signature
+toggleSoftClipping: () => void
+```
+
+### action: toggleMismatchAlpha
+
+```js
+// Type signature
+toggleMismatchAlpha: () => void
+```
+
+### action: setConfig
+
+```js
+// Type signature
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+### action: setSortedBy
+
+```js
+// Type signature
+setSortedBy: (type: string, tag?: string) => void
+```
+
+### action: reload
+
+base display reload does nothing, see specialized displays for details
+
+```js
+// Type signature
+reload: any
+```
+
+### getter: maxHeight
+
+```js
+// Type
+any
+```
+
+### getter: rendererConfig
+
+```js
+// Type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+### getter: featureHeightSetting
+
+```js
+// Type
+any
+```
+
+### getter: mismatchAlphaSetting
+
+```js
+// Type
+any
+```
+
+### getter: rendererTypeName
+
+```js
+// Type
+string
+```
+
+### method: contextMenuItems
+
+```js
+// Type signature
+contextMenuItems: () => { label: string; icon: any; onClick: () => void; }[]
+```
+
+### action: clearFeatureSelection
+
+```js
+// Type signature
+clearFeatureSelection: () => void
+```
+
+### getter: DisplayBlurb
+
+```js
+// Type
+any
+```
+
+### property: bpPerPx
+
+```js
+view.bpPerPx
+```
+
+### action: setContextMenuFeature
+
+```js
+// Type signature
+setContextMenuFeature: (feature?: Feature) => void
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => any[]
+```
+
+### getter: dynamicBlocks
+
+dynamic blocks represent the exact coordinates of the currently
+visible genome regions on the screen. they are similar to static
+blocks, but statcic blocks can go offscreen while dynamic blocks
+represent exactly what is on screen
+
+```js
+// Type
+BlockSet
+```
+
+## LinearSNPCoverageDisplay
+
+extends `LinearWiggleDisplay`
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('LinearSNPCoverageDisplay')
+```
+
+### property: drawInterbaseCounts
+
+```js
+/**
+ * !property
+ */
+drawInterbaseCounts: types.maybe(types.boolean)
+```
+
+### property: drawIndicators
+
+```js
+/**
+ * !property
+ */
+drawIndicators: types.maybe(types.boolean)
+```
+
+### property: drawArcs
+
+```js
+/**
+ * !property
+ */
+drawArcs: types.maybe(types.boolean)
+```
+
+### property: filterBy
+
+```js
+/**
+ * !property
+ */
+filterBy: types.optional(
+  types.model({
+    flagInclude: types.optional(types.number, 0),
+    flagExclude: types.optional(types.number, 1540),
+    readName: types.maybe(types.string),
+    tagFilter: types.maybe(
+      types.model({ tag: types.string, value: types.string }),
+    ),
+  }),
+  {},
+)
+```
+
+### property: colorBy
+
+```js
+/**
+ * !property
+ */
+colorBy: types.maybe(
+  types.model({
+    type: types.string,
+    tag: types.maybe(types.string),
+  }),
+)
+```
+
+### action: setConfig
+
+```js
+// Type signature
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+### property: configuration
+
+```js
+self.configuration
+```
+
+### action: setFilterBy
+
+```js
+// Type signature
+setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: string; tagFilter?: { tag: string; value: string; }; }) => void
+```
+
+### action: setColorBy
+
+```js
+// Type signature
+setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+```
+
+### action: updateModificationColorMap
+
+```js
+// Type signature
+updateModificationColorMap: (uniqueModifications: string[]) => void
+```
+
+### getter: rendererConfig
+
+```js
+// Type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+### getter: rendererTypeName
+
+```js
+// Type
+any
+```
+
+### getter: rendererType
+
+the pluggable element type object for this display's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+### getter: drawArcsSetting
+
+```js
+// Type
+any
+```
+
+### getter: drawInterbaseCountsSetting
+
+```js
+// Type
+any
+```
+
+### getter: drawIndicatorsSetting
+
+```js
+// Type
+any
+```
+
+### getter: modificationsReady
+
+```js
+// Type
+boolean
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+### action: toggleDrawIndicators
+
+```js
+// Type signature
+toggleDrawIndicators: () => void
+```
+
+### action: toggleDrawInterbaseCounts
+
+```js
+// Type signature
+toggleDrawInterbaseCounts: () => void
+```
+
+### action: toggleDrawArcs
+
+```js
+// Type signature
+toggleDrawArcs: () => void
+```
+
+### getter: estimatedStatsReady
+
+```js
+// Type
+boolean
+```
+
+### getter: regionTooLarge
+
+region is too large if:
+
+- stats are ready
+- region is greater than 20kb (don't warn when zoomed in less than that)
+- and bytes is greater than max allowed bytes or density greater than max density
+
+```js
+// Type
+boolean
+```
+
+### getter: parentTrack
+
+```js
+// Type
+any
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error?: unknown) => void
+```
+
+### getter: TooltipComponent
+
+```js
+// Type
+any
+```
+
+### getter: adapterConfig
+
+```js
+// Type
+{
+  type: string
+  subadapter: any
+}
+```
+
+### getter: needsScalebar
+
+```js
+// Type
+boolean
+```
+
+### method: contextMenuItems
+
+```js
+// Type signature
+contextMenuItems: () => any[]
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => any[]
+```
+
+## LinearWiggleDisplay
+
+Extends `BaseLinearDisplay`
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('LinearWiggleDisplay')
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### property: selectedRendering
+
+```js
+/**
+ * !property
+ */
+selectedRendering: types.optional(types.string, '')
+```
+
+### property: resolution
+
+```js
+/**
+ * !property
+ */
+resolution: types.optional(types.number, 1)
+```
+
+### property: fill
+
+```js
+/**
+ * !property
+ */
+fill: types.maybe(types.boolean)
+```
+
+### property: minSize
+
+```js
+/**
+ * !property
+ */
+minSize: types.maybe(types.number)
+```
+
+### property: color
+
+```js
+/**
+ * !property
+ */
+color: types.maybe(types.string)
+```
+
+### property: posColor
+
+```js
+/**
+ * !property
+ */
+posColor: types.maybe(types.string)
+```
+
+### property: negColor
+
+```js
+/**
+ * !property
+ */
+negColor: types.maybe(types.string)
+```
+
+### property: summaryScoreMode
+
+```js
+/**
+ * !property
+ */
+summaryScoreMode: types.maybe(types.string)
+```
+
+### property: rendererTypeNameState
+
+```js
+/**
+ * !property
+ */
+rendererTypeNameState: types.maybe(types.string)
+```
+
+### property: scale
+
+```js
+/**
+ * !property
+ */
+scale: types.maybe(types.string)
+```
+
+### property: autoscale
+
+```js
+/**
+ * !property
+ */
+autoscale: types.maybe(types.string)
+```
+
+### property: displayCrossHatches
+
+```js
+/**
+ * !property
+ */
+displayCrossHatches: types.maybe(types.boolean)
+```
+
+### property: constraints
+
+```js
+/**
+ * !property
+ */
+constraints: types.optional(
+  types.model({
+    max: types.maybe(types.number),
+    min: types.maybe(types.number),
+  }),
+  {},
+)
+```
+
+### action: updateStats
+
+```js
+// Type signature
+updateStats: (stats: { scoreMin: number; scoreMax: number; }) => void
+```
+
+### action: setColor
+
+```js
+// Type signature
+setColor: (color?: string) => void
+```
+
+### action: setPosColor
+
+```js
+// Type signature
+setPosColor: (color?: string) => void
+```
+
+### action: setNegColor
+
+```js
+// Type signature
+setNegColor: (color?: string) => void
+```
+
+### action: setLoading
+
+```js
+// Type signature
+setLoading: (aborter: AbortController) => void
+```
+
+### action: setResolution
+
+```js
+// Type signature
+setResolution: (res: number) => void
+```
+
+### action: setFill
+
+```js
+// Type signature
+setFill: (fill: number) => void
+```
+
+### action: toggleLogScale
+
+```js
+// Type signature
+toggleLogScale: () => void
+```
+
+### action: setScaleType
+
+```js
+// Type signature
+setScaleType: (scale?: string) => void
+```
+
+### action: setSummaryScoreMode
+
+```js
+// Type signature
+setSummaryScoreMode: (val: string) => void
+```
+
+### action: setAutoscale
+
+```js
+// Type signature
+setAutoscale: (val: string) => void
+```
+
+### action: setMaxScore
+
+```js
+// Type signature
+setMaxScore: (val?: number) => void
+```
+
+### action: setRendererType
+
+```js
+// Type signature
+setRendererType: (val: string) => void
+```
+
+### action: setMinScore
+
+```js
+// Type signature
+setMinScore: (val?: number) => void
+```
+
+### action: toggleCrossHatches
+
+```js
+// Type signature
+toggleCrossHatches: () => void
+```
+
+### action: setCrossHatches
+
+```js
+// Type signature
+setCrossHatches: (cross: boolean) => void
+```
+
+### getter: TooltipComponent
+
+```js
+// Type
+React.FC
+```
+
+### getter: adapterTypeName
+
+```js
+// Type
+any
+```
+
+### getter: adapterConfig
+
+```js
+// Type
+any
+```
+
+### getter: rendererTypeNameSimple
+
+```js
+// Type
+any
+```
+
+### getter: rendererTypeName
+
+```js
+// Type
+string
+```
+
+### getter: scaleType
+
+```js
+// Type
+any
+```
+
+### getter: maxScore
+
+```js
+// Type
+any
+```
+
+### getter: minScore
+
+```js
+// Type
+any
+```
+
+### getter: rendererConfig
+
+```js
+// Type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+### getter: rendererType
+
+the pluggable element type object for this display's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+### getter: filled
+
+```js
+// Type
+any
+```
+
+### getter: summaryScoreModeSetting
+
+```js
+// Type
+any
+```
+
+### getter: domain
+
+```js
+// Type
+number[]
+```
+
+### getter: needsScalebar
+
+```js
+// Type
+boolean
+```
+
+### getter: scaleOpts
+
+```js
+// Type
+{
+  domain: any
+  stats: {
+    scoreMin: number
+    scoreMax: number
+  }
+  autoscaleType: any
+  scaleType: any
+  inverted: any
+}
+```
+
+### getter: canHaveFill
+
+```js
+// Type
+boolean
+```
+
+### getter: autoscaleType
+
+```js
+// Type
+any
+```
+
+### getter: displayCrossHatchesSetting
+
+```js
+// Type
+any
+```
+
+### getter: ticks
+
+```js
+// Type
+{ range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
+```
+
+### getter: adapterCapabilities
+
+```js
+// Type
+string[]
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+### property: rpcDriverName
+
+```js
+self.rpcDriverName
+```
+
+### getter: hasResolution
+
+```js
+// Type
+boolean
+```
+
+### getter: hasGlobalStats
+
+```js
+// Type
+boolean
+```
+
+### getter: fillSetting
+
+```js
+// Type
+;2 | 0 | 1
+```
+
+### method: trackMenuItems
+
+```js
+// Type signature
+trackMenuItems: () => any[]
+```
+
+### action: reload
+
+re-runs stats and refresh whole display on reload
+
+```js
+// Type signature
+reload: () => Promise<void>
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error?: unknown) => void
+```
+
+### action: renderSvg
+
+```js
+// Type signature
+renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; }) => Promise<Element>
+```
+
+### method: regionCannotBeRenderedText
+
+```js
+// Type signature
+regionCannotBeRenderedText: (_region: Region) =>
+  '' | 'Force load to see features'
+```
+
+## CircularView
+
+extends `BaseViewModel`
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('CircularView')
+```
+
+### property: offsetRadians
+
+```js
+/**
+ * !property
+ * similar to offsetPx in linear genome view
+ */
+offsetRadians: -Math.PI / 2
+```
+
+### property: bpPerPx
+
+```js
+/**
+ * !property
+ */
+bpPerPx: 2000000
+```
+
+### property: tracks
+
+```js
+/**
+ * !property
+ */
+tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
+```
+
+### property: hideVerticalResizeHandle
+
+```js
+/**
+ * !property
+ */
+hideVerticalResizeHandle: false
+```
+
+### property: hideTrackSelectorButton
+
+```js
+/**
+ * !property
+ */
+hideTrackSelectorButton: false
+```
+
+### property: lockedFitToWindow
+
+```js
+/**
+ * !property
+ */
+lockedFitToWindow: true
+```
+
+### property: disableImportForm
+
+```js
+/**
+ * !property
+ */
+disableImportForm: false
+```
+
+### property: height
+
+```js
+/**
+ * !property
+ */
+height: types.optional(
+  types.refinement('trackHeight', types.number, n => n >= minHeight),
+  defaultHeight,
+)
+```
+
+### property: displayedRegions
+
+```js
+/**
+ * !property
+ */
+displayedRegions: types.array(Region)
+```
+
+### property: scrollX
+
+```js
+/**
+ * !property
+ */
+scrollX: 0
+```
+
+### property: scrollY
+
+```js
+/**
+ * !property
+ */
+scrollY: 0
+```
+
+### getter: staticSlices
+
+```js
+// Type
+any[]
+```
+
+### getter: visibleSection
+
+```js
+// Type
+{
+  rho: [number, number]
+  theta: [number, number]
+}
+```
+
+### getter: circumferencePx
+
+```js
+// Type
+number
+```
+
+### getter: radiusPx
+
+```js
+// Type
+number
+```
+
+### getter: bpPerRadian
+
+```js
+// Type
+number
+```
+
+### getter: pxPerRadian
+
+```js
+// Type
+any
+```
+
+### getter: centerXY
+
+```js
+// Type
+;[number, number]
+```
+
+### getter: totalBp
+
+```js
+// Type
+number
+```
+
+### getter: maximumRadiusPx
+
+```js
+// Type
+number
+```
+
+### getter: maxBpPerPx
+
+```js
+// Type
+number
+```
+
+### getter: minBpPerPx
+
+```js
+// Type
+number
+```
+
+### getter: atMaxBpPerPx
+
+```js
+// Type
+boolean
+```
+
+### getter: atMinBpPerPx
+
+```js
+// Type
+boolean
+```
+
+### getter: tooSmallToLock
+
+```js
+// Type
+boolean
+```
+
+### getter: figureDimensions
+
+```js
+// Type
+;[number, number]
+```
+
+### getter: figureWidth
+
+```js
+// Type
+any
+```
+
+### getter: figureHeight
+
+```js
+// Type
+any
+```
+
+### getter: elidedRegions
+
+this is displayedRegions, post-processed to
+elide regions that are too small to see reasonably
+
+```js
+// Type
+any[]
+```
+
+### getter: assemblyNames
+
+```js
+// Type
+string[]
+```
+
+### getter: initialized
+
+```js
+// Type
+any
+```
+
+### getter: visibleStaticSlices
+
+```js
+// Type
+any[]
+```
+
+### action: setWidth
+
+```js
+// Type signature
+setWidth: (newWidth: number) => number
+```
+
+### action: setHeight
+
+```js
+// Type signature
+setHeight: (newHeight: number) => number
+```
+
+### action: resizeHeight
+
+```js
+// Type signature
+resizeHeight: (distance: number) => number
+```
+
+### action: resizeWidth
+
+```js
+// Type signature
+resizeWidth: (distance: number) => number
+```
+
+### action: rotateClockwiseButton
+
+```js
+// Type signature
+rotateClockwiseButton: () => void
+```
+
+### action: rotateCounterClockwiseButton
+
+```js
+// Type signature
+rotateCounterClockwiseButton: () => void
+```
+
+### action: rotateClockwise
+
+```js
+// Type signature
+rotateClockwise: (distance?: number) => void
+```
+
+### action: rotateCounterClockwise
+
+```js
+// Type signature
+rotateCounterClockwise: (distance?: number) => void
+```
+
+### action: zoomInButton
+
+```js
+// Type signature
+zoomInButton: () => void
+```
+
+### action: zoomOutButton
+
+```js
+// Type signature
+zoomOutButton: () => void
+```
+
+### action: setBpPerPx
+
+```js
+// Type signature
+setBpPerPx: (newVal: number) => void
+```
+
+### action: setModelViewWhenAdjust
+
+```js
+// Type signature
+setModelViewWhenAdjust: (secondCondition: boolean) => void
+```
+
+### action: closeView
+
+```js
+// Type signature
+closeView: () => void
+```
+
+### action: setDisplayedRegions
+
+```js
+// Type signature
+setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
+```
+
+### action: activateTrackSelector
+
+```js
+// Type signature
+activateTrackSelector: () => Widget
+```
+
+### action: toggleTrack
+
+```js
+// Type signature
+toggleTrack: (trackId: string) => void
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error: unknown) => void
+```
+
+### action: showTrack
+
+```js
+// Type signature
+showTrack: (trackId: string, initialSnapshot?: {}) => void
+```
+
+### action: addTrackConf
+
+```js
+// Type signature
+addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
+```
+
+### action: hideTrack
+
+```js
+// Type signature
+hideTrack: (trackId: string) => number
+```
+
+### action: toggleFitToWindowLock
+
+```js
+// Type signature
+toggleFitToWindowLock: () => boolean
+```
+
+## BaseChordDisplay
+
+extends `BaseDisplay`
+
+### property: bezierRadiusRatio
+
+```js
+/**
+ * !property
+ */
+bezierRadiusRatio: 0.1
+```
+
+### property: assemblyName
+
+```js
+/**
+ * !property
+ */
+assemblyName: types.maybe(types.string)
+```
+
+### action: onChordClick
+
+```js
+// Type signature
+onChordClick: (feature: Feature) => void
+```
+
+### getter: blockDefinitions
+
+```js
+// Type
+any
+```
+
+### getter: staticSlices
+
+```js
+// Type
+any[]
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+### property: rpcDriverName
+
+```js
+self.rpcDriverName
+```
+
+### getter: radiusPx
+
+```js
+// Type
+number
+```
+
+### getter: rendererType
+
+the pluggable element type object for this diplay's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+### method: isCompatibleWithRenderer
+
+```js
+// Type signature
+isCompatibleWithRenderer: (renderer: RendererType) => boolean
+```
+
+### getter: selectedFeatureId
+
+returns a string feature ID if the globally-selected object
+is probably a feature
+
+```js
+// Type
+string
+```
+
+### action: renderStarted
+
+```js
+// Type signature
+renderStarted: () => void
+```
+
+### action: renderSuccess
+
+```js
+// Type signature
+renderSuccess: ({ message, data, reactElement, renderingComponent, }: { message: string; data: any; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
+```
+
+### action: renderError
+
+```js
+// Type signature
+renderError: (error: unknown) => void
+```
+
+### action: setRefNameMap
+
+```js
+// Type signature
+setRefNameMap: (refNameMap: Record<string, string>) => void
+```
+
+### property: type
+
+```js
+self.type
+```
+
+### property: id
+
+```js
+self.id
+```
+
+### getter: parentTrack
+
+```js
+// Type
+any
+```
+
+### action: setError
+
+```js
+// Type signature
+setError: (error?: unknown) => void
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### action: selectFeature
+
+```js
+// Type signature
+selectFeature: (feature: Feature) => Promise<void>
+```
+
+### getter: initialized
+
+```js
+// Type
+any
+```
+
+### action: setDisplayedRegions
+
+```js
+// Type signature
+setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
+```
+
+### action: showTrack
+
+```js
+// Type signature
+showTrack: (trackId: string, initialSnapshot?: {}) => void
+```
+
+## ChordVariantDisplay
+
+extends `BaseChordDisplay`
+
+### property: type
+
+```js
+/**
+ * !property
+ */
+type: types.literal('ChordVariantDisplay')
+```
+
+### property: configuration
+
+```js
+/**
+ * !property
+ */
+configuration: ConfigurationReference(configSchema)
+```
+
+### getter: rendererTypeName
+
+```js
+// Type
+any
+```
+
+### method: renderProps
+
+```js
+// Type signature
+renderProps: () => Record<string, unknown>
+```
+
+### property: rpcDriverName
+
+```js
+self.rpcDriverName
+```
+
+### property: bezierRadiusRatio
+
+```js
+self.bezierRadiusRatio
+```
+
+### action: onChordClick
+
+```js
+// Type signature
+onChordClick: (feature: Feature) => void
 ```
