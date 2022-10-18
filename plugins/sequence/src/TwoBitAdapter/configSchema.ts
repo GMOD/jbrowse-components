@@ -1,12 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const TwoBitAdapter = ConfigurationSchema(
   'TwoBitAdapter',
   {
+    /**
+     * !slot
+     */
     twoBitLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
     },
+    /**
+     * !slot
+     */
     chromSizesLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -19,3 +28,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default TwoBitAdapter

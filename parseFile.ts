@@ -114,6 +114,7 @@ extractWithComment(
     'plugins/legacy-jbrowse/src/JBrowse1TextSeachAdapter/configSchema.ts',
     'plugins/legacy-jbrowse/src/NCListAdapter/configSchema.ts',
     'plugins/linear-comparative-view/src/LinearSyntenyRenderer/configSchema.ts',
+    'plugins/linear-comparative-view/src/SyntenyTrack/configSchema.ts',
     'plugins/linear-genome-view/src/LinearBareDisplay/configSchema.ts',
     'plugins/linear-genome-view/src/LinearBasicDisplay/configSchema.ts',
     'plugins/lollipop/src/LinearLollipopDisplay/configSchema.ts',
@@ -136,11 +137,15 @@ extractWithComment(
     'plugins/variants/src/LinearVariantDisplay/configSchema.ts',
     'plugins/variants/src/VcfAdapter/configSchema.ts',
     'plugins/variants/src/VcfTabixAdapter/configSchema.ts',
+    'plugins/variants/src/StructuralVariantChordRenderer/configSchema.ts',
+    'plugins/variants/src/ChordVariantDisplay/models/configSchema.ts',
     'plugins/wiggle/src/BigWigAdapter/configSchema.ts',
     'plugins/wiggle/src/DensityRenderer/configSchema.ts',
     'plugins/wiggle/src/LinePlotRenderer/configSchema.ts',
     'plugins/wiggle/src/LinearWiggleDisplay/models/configSchema.ts',
     'plugins/wiggle/src/MultiDensityRenderer/configSchema.ts',
+    'plugins/wiggle/src/MultiQuantitativeTrack/configSchema.ts',
+    'plugins/wiggle/src/QuantitativeTrack/configSchema.ts',
     'plugins/wiggle/src/MultiLineRenderer/configSchema.ts',
     'plugins/wiggle/src/MultiLinearWiggleDisplay/models/configSchema.ts',
     'plugins/wiggle/src/MultiRowLineRenderer/configSchema.ts',
@@ -153,6 +158,7 @@ extractWithComment(
   obj => {
     if (obj.type === 'baseConfiguration') {
       console.log(`### derives from: `)
+      console.log('\n')
       console.log('```js')
       console.log(obj.node)
       console.log('```')
@@ -164,6 +170,7 @@ extractWithComment(
         .trim()
 
       console.log(`### slot: ${name || obj.name}`)
+      console.log('\n')
       console.log('```js')
       console.log(obj.node)
       console.log('```')
@@ -180,6 +187,7 @@ extractWithComment(
         .join('\n')
 
       console.log(`## ${name || obj.name}`)
+      console.log('\n')
       console.log(rest)
       console.log('\n')
 

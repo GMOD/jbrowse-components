@@ -10,19 +10,10 @@ import { types } from 'mobx-state-tree'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import PluginManager from '@jbrowse/core/PluginManager'
+import configSchemaF from './configSchema'
 
 const ChordVariantDisplayF = (pluginManager: PluginManager) => {
-  const configSchema = ConfigurationSchema(
-    'ChordVariantDisplay',
-    {
-      renderer: types.optional(
-        pluginManager.pluggableConfigSchemaType('renderer'),
-        { type: 'StructuralVariantChordRenderer' },
-      ),
-    },
-    { baseConfiguration: baseChordDisplayConfig, explicitlyTyped: true },
-  )
-
+  const configSchema = configSchemaF(pluginManager)
   const stateModel = types
     .compose(
       'ChordVariantDisplay',

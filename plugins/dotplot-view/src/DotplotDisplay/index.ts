@@ -22,10 +22,16 @@ export default (pm: PluginManager) => {
   })
 }
 
+/**
+ * !config DotplotDisplay
+ */
 export function configSchemaFactory(pm: any) {
   return ConfigurationSchema(
     'DotplotDisplay',
     {
+      /**
+       * !slot
+       */
       renderer: types.optional(pm.pluggableConfigSchemaType('renderer'), {
         type: 'DotplotRenderer',
       }),

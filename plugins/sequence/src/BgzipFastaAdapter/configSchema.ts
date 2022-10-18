@@ -1,12 +1,20 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const BgzipFastaAdapter = ConfigurationSchema(
   'BgzipFastaAdapter',
   {
+    /**
+     * !slot
+     */
     fastaLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
     },
+    /**
+     * !slot
+     */
     faiLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -14,6 +22,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * !slot
+     */
     metadataLocation: {
       description: 'Optional metadata file',
       type: 'fileLocation',
@@ -22,6 +33,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * !slot
+     */
     gziLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -32,3 +46,4 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+export default BgzipFastaAdapter

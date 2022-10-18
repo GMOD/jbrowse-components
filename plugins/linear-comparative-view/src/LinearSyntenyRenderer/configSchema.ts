@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const LinearSyntenyRenderer = ConfigurationSchema(
   'LinearSyntenyRenderer',
   {
+    /**
+     * !slot
+     */
     color: {
       type: 'color',
       description: 'the color of each feature in a synteny',
@@ -11,3 +17,4 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+export default LinearSyntenyRenderer

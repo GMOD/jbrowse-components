@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const BigWigAdapter = ConfigurationSchema(
   'BigWigAdapter',
   {
+    /**
+     * !slot
+     */
     bigWigLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -10,6 +16,10 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+
+    /**
+     * !slot
+     */
     source: {
       type: 'string',
       defaultValue: '',
@@ -18,3 +28,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default BigWigAdapter

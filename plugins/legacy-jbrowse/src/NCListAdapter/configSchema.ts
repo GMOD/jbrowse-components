@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const NCListAdapter = ConfigurationSchema(
   'NCListAdapter',
   {
+    /**
+     * !slot
+     */
     rootUrlTemplate: {
       type: 'fileLocation',
       defaultValue: {
@@ -10,6 +16,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * !slot
+     */
     refNames: {
       type: 'stringArray',
       defaultValue: [],
@@ -18,3 +27,4 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+export default NCListAdapter

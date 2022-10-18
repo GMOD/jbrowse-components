@@ -3,15 +3,22 @@ import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * !config LinearVariantDisplay
+ */
 export function LinearVariantDisplayConfigFactory(
   pluginManager: PluginManager,
 ) {
-  const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
-
   return ConfigurationSchema(
     'LinearVariantDisplay',
     {},
-    { baseConfiguration: configSchema, explicitlyTyped: true },
+    {
+      /**
+       * !baseConfiguration
+       */
+      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      explicitlyTyped: true,
+    },
   )
 }
 

@@ -1,10 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import ConfigSchema from '../configSchema'
+import baseWiggleRendererConfigSchema from '../configSchema'
 
+/**
+ * !config MultiDensityRenderer
+ */
 const configSchema = ConfigurationSchema(
   'MultiDensityRenderer',
   {},
-  { baseConfiguration: ConfigSchema, explicitlyTyped: true },
+  {
+    /**
+     * !baseConfiguration
+     */
+    baseConfiguration: baseWiggleRendererConfigSchema,
+    explicitlyTyped: true,
+  },
 )
 
 export default configSchema

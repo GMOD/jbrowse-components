@@ -1,16 +1,28 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const IndexedFastaAdapter = ConfigurationSchema(
   'IndexedFastaAdapter',
   {
+    /**
+     * !slot
+     */
     fastaLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
     },
+    /**
+     * !slot
+     */
     faiLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     },
+    /**
+     * !slot
+     */
     metadataLocation: {
       description: 'Optional metadata file',
       type: 'fileLocation',
@@ -22,3 +34,4 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+export default IndexedFastaAdapter
