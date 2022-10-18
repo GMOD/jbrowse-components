@@ -1,6 +1,4 @@
 {
-  // This config is for emitting declarations (.d.ts) only
-  // Actual .ts source files are transpiled via babel. This file is based on examples from the MUI github repo
   "extends": "./tsconfig",
   "compilerOptions": {
     "noEmit": false,
@@ -11,7 +9,12 @@
     "composite": true
   },
   "include": ["./src/**/*.ts*", "./src/**/*.js*"],
-  "exclude": ["src/**/*.test.ts*", "src/**/*.test.js*"],
+  "exclude": [
+    "src/**/*.test.ts*",
+    "src/**/*.test.js*",
+    "src/makeWorkerInstance.ts",
+    "src/indexESM.ts"
+  ],
   "references": [
     { "path": "../../packages/core/tsconfig.build.json" },
     { "path": "../../plugins/alignments/tsconfig.build.es5.json" },

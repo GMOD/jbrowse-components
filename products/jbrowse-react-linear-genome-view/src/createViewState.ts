@@ -29,6 +29,7 @@ interface ViewStateOptions {
   defaultSession?: SessionSnapshot
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
+  makeWorkerInstance?: () => Worker
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -41,8 +42,12 @@ export default function createViewState(opts: ViewStateOptions) {
     location,
     onChange,
     disableAddTracks = false,
+    makeWorkerInstance,
   } = opts
-  const { model, pluginManager } = createModel(plugins || [])
+  const { model, pluginManager } = createModel(
+    plugins || [],
+    makeWorkerInstance,
+  )
   let { defaultSession } = opts
   if (!defaultSession) {
     defaultSession = {

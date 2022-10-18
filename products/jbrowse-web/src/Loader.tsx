@@ -284,20 +284,10 @@ const Renderer = observer(
               },
               { pluginManager },
             )
-            if (
-              !rootModel.jbrowse.configuration.rpc.drivers.get(
-                'WebWorkerRpcDriver',
-              )
-            ) {
-              rootModel.jbrowse.configuration.rpc.addDriverConfig(
-                'WebWorkerRpcDriver',
-                { type: 'WebWorkerRpcDriver' },
-              )
-            }
-            if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
-              rootModel.jbrowse.configuration.rpc.defaultDriver.set(
-                'WebWorkerRpcDriver',
-              )
+
+            if (!configSnapshot?.configuration?.rpc?.defaultDriver) {
+              const { rpc } = rootModel.jbrowse.configuration
+              rpc.defaultDriver.set('WebWorkerRpcDriver')
             }
 
             let afterInitializedCb = () => {}
@@ -308,16 +298,13 @@ const Renderer = observer(
             try {
               if (sessionError) {
                 rootModel.setDefaultSession()
-                // make typescript happy by checking for session after
-                // setDefaultSession, even though we know this exists now
-                if (rootModel.session) {
-                  rootModel.session.notify(
-                    `Error loading session: ${sessionError}. If you
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                rootModel.session!.notify(
+                  `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you
                 a session generated with the "Share" button instead of copying
                 and pasting their URL`,
-                  )
-                }
+                )
               } else if (sessionSnapshot && !shareWarningOpen) {
                 rootModel.setSession(sessionSnapshot)
               } else if (sessionSpec) {

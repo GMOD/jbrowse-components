@@ -15,8 +15,8 @@
     "directory": "products/jbrowse-react-linear-genome-view"
   },
   "author": "JBrowse Team",
-  "main": "dist/index.js",
-  "module": "esm/index.js",
+  "main": "dist/indexES5.js",
+  "module": "esm/indexESM.js",
   "files": [
     "dist",
     "src",
@@ -59,12 +59,14 @@
     "@jbrowse/plugin-wiggle": "^2.1.5",
     "@mui/icons-material": "^5.0.0",
     "@mui/material": "^5.0.0",
+    "librpc-web-mod": "^1.1.5",
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react-use-measure": "^2.1.1",
     "rxjs": "^6.0.0",
+    "serialize-error": "^8.0.0",
     "tss-react": "^3.7.0"
   },
   "peerDependencies": {

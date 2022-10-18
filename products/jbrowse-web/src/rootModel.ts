@@ -88,7 +88,6 @@ export default function RootModel(
       ),
       savedSessionsVolatile: observable.map({}),
       textSearchManager: new TextSearchManager(pluginManager),
-      pluginManager,
       error: undefined as unknown,
     }))
     .views(self => ({

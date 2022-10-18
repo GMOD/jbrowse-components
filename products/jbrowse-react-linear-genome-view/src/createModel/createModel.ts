@@ -10,7 +10,12 @@ import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
 import createSessionModel from './createSessionModel'
 
-export default function createModel(runtimePlugins: PluginConstructor[]) {
+export default function createModel(
+  runtimePlugins: PluginConstructor[],
+  makeWorkerInstance: () => Worker = () => {
+    throw new Error('no makeWorkerInstance supplied')
+  },
+) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   )
@@ -25,9 +30,17 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
       assemblyManager: types.optional(AssemblyManager, {}),
       disableAddTracks: types.optional(types.boolean, false),
     })
-    .volatile(() => ({
+    .volatile(self => ({
       error: undefined as Error | undefined,
+      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+        WebWorkerRpcDriver: {
+          makeWorkerInstance,
+        },
+        MainThreadRpcDriver: {},
+      }),
+      textSearchManager: new TextSearchManager(pluginManager),
     }))
+
     .actions(self => ({
       setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.session = cast(sessionSnapshot)
@@ -43,16 +56,11 @@ export default function createModel(runtimePlugins: PluginConstructor[]) {
         self.error = errorMessage
       },
     }))
+
     .views(self => ({
       get jbrowse() {
         return self.config
       },
-    }))
-    .volatile(self => ({
-      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-        MainThreadRpcDriver: {},
-      }),
-      textSearchManager: new TextSearchManager(pluginManager),
     }))
   return { model: rootModel, pluginManager }
 }

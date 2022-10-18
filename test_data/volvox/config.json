@@ -1642,7 +1642,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "Deep sequencing",
-      "name": "deep_sequencing",
+      "name": "Deep sequencing",
       "category": ["Alignments"],
       "assemblyNames": ["volvox"],
       "adapter": {

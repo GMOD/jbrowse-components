@@ -40,7 +40,10 @@ export default ConfigurationSchema(
           WebWorkerRpcDriverConfigSchema,
         ),
       ),
-      { MainThreadRpcDriver: { type: 'MainThreadRpcDriver' } },
+      {
+        MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
+        WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
+      },
     ),
   },
   {
