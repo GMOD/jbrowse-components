@@ -1,9 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
+/**
+ * !config
+ */
 export default ConfigurationSchema(
   'DotplotRenderer',
   {
+    /**
+     * !slot
+     */
     color: {
       type: 'color',
       description:
@@ -11,21 +17,36 @@ export default ConfigurationSchema(
       defaultValue: 'black',
       contextVariable: ['feature'],
     },
+
+    /**
+     * !slot
+     */
     posColor: {
       type: 'color',
       description: 'the color for forward alignments, used with colorBy:strand',
       defaultValue: 'blue',
     },
+    /**
+     * !slot
+     */
     negColor: {
       type: 'color',
       description: 'the color for reverse alignments, used with colorBy:strand',
       defaultValue: 'red',
     },
+
+    /**
+     * !slot
+     */
     lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
       defaultValue: 2.5, // 2.5 is similar to D-GENIES
     },
+
+    /**
+     * !slot
+     */
     colorBy: {
       type: 'stringEnum',
       model: types.enumeration('colorBy', [
@@ -45,11 +66,19 @@ export default ConfigurationSchema(
 </ul>`,
       defaultValue: 'default',
     },
+
+    /**
+     * !slot
+     */
     thresholdsPalette: {
       type: 'stringArray',
       defaultValue: ['#094b09', '#2ebd40', '#d5670b', '#ffd84b'],
       description: 'threshold colors, used with colorBy:identity',
     },
+
+    /**
+     * !slot
+     */
     thresholds: {
       type: 'stringArray',
       defaultValue: ['0.75', '0.5', '0.25', '0'],

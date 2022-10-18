@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const Gff3Adapter = ConfigurationSchema(
   'Gff3Adapter',
   {
+    /**
+     * !slot
+     */
     gffLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.gff', locationType: 'UriLocation' },
@@ -10,3 +16,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default Gff3Adapter

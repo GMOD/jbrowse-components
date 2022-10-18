@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const BigBedAdapter = ConfigurationSchema(
   'BigBedAdapter',
   {
+    /**
+     * !slot
+     */
     bigBedLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
@@ -10,3 +16,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default BigBedAdapter

@@ -1,30 +1,48 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const SNPCoverageRenderer = ConfigurationSchema(
   'SNPCoverageRenderer',
   {
+    /**
+     * !slot
+     */
     clipColor: {
       type: 'color',
       description: 'the color of the clipping marker',
       defaultValue: 'red',
     },
+    /**
+     * !slot
+     */
     indicatorThreshold: {
       type: 'number',
       description:
         'the proportion of reads containing a insertion/clip indicator',
       defaultValue: 0.4,
     },
+    /**
+     * !slot
+     */
     drawArcs: {
       type: 'boolean',
       description: 'Draw sashimi-style arcs for intron features',
       defaultValue: true,
     },
+    /**
+     * !slot
+     */
     drawInterbaseCounts: {
       type: 'boolean',
       description:
         'draw count "upsidedown histogram" of the interbase events that don\'t contribute to the coverage count so are not drawn in the normal histogram',
       defaultValue: true,
     },
+    /**
+     * !slot
+     */
     drawIndicators: {
       type: 'boolean',
       description:
@@ -34,3 +52,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default SNPCoverageRenderer

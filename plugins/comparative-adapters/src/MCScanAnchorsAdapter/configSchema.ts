@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const MCScanAnchorsAdapter = ConfigurationSchema(
   'MCScanAnchorsAdapter',
   {
+    /**
+     * !slot
+     */
     mcscanAnchorsLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -10,6 +16,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * !slot
+     */
     bed1Location: {
       type: 'fileLocation',
       defaultValue: {
@@ -17,6 +26,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * !slot
+     */
     bed2Location: {
       type: 'fileLocation',
       defaultValue: {
@@ -24,7 +36,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-
+    /**
+     * !slot
+     */
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
@@ -32,3 +46,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default MCScanAnchorsAdapter

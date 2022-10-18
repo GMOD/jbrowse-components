@@ -1,12 +1,23 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const HicAdapter = ConfigurationSchema(
   'HicAdapter',
   {
+    /**
+     * !slot
+     */
     hicLocation: {
       type: 'fileLocation',
-      defaultValue: { uri: '/path/to/my.hic', locationType: 'UriLocation' },
+      defaultValue: {
+        uri: '/path/to/my.hic',
+        locationType: 'UriLocation',
+      },
     },
   },
   { explicitlyTyped: true },
 )
+
+export default HicAdapter

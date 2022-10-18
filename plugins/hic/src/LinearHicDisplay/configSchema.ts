@@ -3,14 +3,25 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
+/**
+ * !config LinearHicDisplay
+ */
 const HicTrackConfigFactory = (pluginManager: PluginManager) => {
-  const HicRendererConfigSchema =
-    pluginManager.getRendererType('HicRenderer').configSchema
-
   return ConfigurationSchema(
     'LinearHicDisplay',
-    { renderer: HicRendererConfigSchema },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {
+      /**
+       * !slot
+       */
+      renderer: pluginManager.getRendererType('HicRenderer').configSchema,
+    },
+    {
+      /**
+       * !baseConfiguration
+       */
+      baseConfiguration: baseLinearDisplayConfigSchema,
+      explicitlyTyped: true,
+    },
   )
 }
 

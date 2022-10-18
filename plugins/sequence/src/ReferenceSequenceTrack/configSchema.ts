@@ -3,22 +3,45 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-/*
-Note: this is primarily a copy of createBaseTrackConfig, except with a subset
-of the config slots, to avoid including fields that don't make sense for the
-ReferenceSequenceTrack
-*/
+// Note: this is primarily a copy of createBaseTrackConfig, except with a
+// subset of the config slots, to avoid including fields that don't make sense
+// for the ReferenceSequenceTrack
+
+/**
+ * !config ReferenceSequenceTrack
+ * used to display base level DNA sequence tracks
+ */
 export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ReferenceSequenceTrack',
     {
+      /**
+       * !slot adapter
+       * !type AdapterType
+       * configuration for track adapter
+       */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+
+      /**
+       * !slot displays
+       * !type DisplayType[]
+       * configuration for the displays e.g. LinearReferenceSequenceDisplay
+       */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
+
+      /**
+       * !slot name
+       */
       name: {
         type: 'string',
-        description: 'optional track name',
+        description:
+          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
         defaultValue: '',
       },
+
+      /**
+       * !slot metadata
+       */
       metadata: {
         type: 'frozen',
         description: 'anything to add about this track',

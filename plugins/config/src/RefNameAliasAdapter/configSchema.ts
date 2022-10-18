@@ -1,8 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const RefNameAliasAdapter = ConfigurationSchema(
   'RefNameAliasAdapter',
   {
+    /**
+     * !slot
+     */
     location: {
       type: 'fileLocation',
       defaultValue: {
@@ -10,6 +16,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * !slot
+     */
     refNameColumn: {
       type: 'number',
       defaultValue: 0,
@@ -17,3 +26,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default RefNameAliasAdapter

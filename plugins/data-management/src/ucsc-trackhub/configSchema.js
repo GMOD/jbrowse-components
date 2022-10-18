@@ -1,9 +1,15 @@
 import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * !config
+ */
+const UCSCTrackHubConnection = ConfigurationSchema(
   'UCSCTrackHubConnection',
   {
+    /**
+     * !slot
+     */
     hubTxtLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -12,6 +18,9 @@ export default ConfigurationSchema(
       },
       description: 'location of the hub file (usually called hub.txt)',
     },
+    /**
+     * !slot
+     */
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
@@ -19,5 +28,12 @@ export default ConfigurationSchema(
         'optional list of genomes to import from this track hub, if empty all genomes will be imported',
     },
   },
-  { baseConfiguration: baseConnectionConfig },
+  {
+    /**
+     * !baseConfiguration
+     */
+    baseConfiguration: baseConnectionConfig,
+  },
 )
+
+export default UCSCTrackHubConnection
