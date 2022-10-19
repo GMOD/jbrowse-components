@@ -64,12 +64,6 @@ colorBy: types.maybe(
 setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
-#### property: configuration
-
-```js
-self.configuration
-```
-
 #### action: setFilterBy
 
 ```js

@@ -164,12 +164,6 @@ renderer
 RendererType
 ```
 
-#### property: id
-
-```js
-view.id
-```
-
 #### method: renderProps
 
 the react props that are passed to the Renderer when data
@@ -315,14 +309,6 @@ clearFeatureSelection: () => void
 ```js
 // Type
 any
-```
-
-#### property: bpPerPx
-
-bpPerPx corresponds roughly to the zoom level, base-pairs per pixel
-
-```js
-view.bpPerPx
 ```
 
 #### action: setContextMenuFeature

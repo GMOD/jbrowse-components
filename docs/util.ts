@@ -4,16 +4,7 @@ import * as ts from 'typescript'
 interface Node {
   signature?: string
   code?: string
-  type:
-    | 'config'
-    | 'slot'
-    | 'baseConfiguration'
-    | 'stateModel'
-    | 'property'
-    | 'baseModel'
-    | 'method'
-    | 'getter'
-    | 'action'
+  type: string
   node: string
   name: string
   comment: string
@@ -56,91 +47,33 @@ export function extractWithComment(
     const comment = ts.displayPartsToString(
       symbol.getDocumentationComment(checker),
     )
+    const ft = node.getFullText()
+    const r = {
+      name: symbol.getName(),
+      comment,
+      signature: checker.typeToString(
+        checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
+      ),
+      node: ft,
+      filename: node.getSourceFile().fileName,
+    }
 
-    if (comment?.includes('!config')) {
-      cb({
-        type: 'config',
-        name: symbol.getName(),
-        comment,
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!slot')) {
-      cb({
-        type: 'slot',
-        name: symbol.getName(),
-        comment,
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!baseConfiguration')) {
-      cb({
-        type: 'baseConfiguration',
-        name: symbol.getName(),
-        comment,
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!stateModel')) {
-      cb({
-        type: 'stateModel',
-        name: symbol.getName(),
-        comment,
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!property')) {
-      cb({
-        type: 'property',
-        name: symbol.getName(),
-        comment,
-        signature: checker.typeToString(
-          checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
-        ),
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!getter')) {
-      cb({
-        type: 'getter',
-        name: symbol.getName(),
-        comment,
-        signature: checker.typeToString(
-          checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
-        ),
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!method')) {
-      cb({
-        type: 'method',
-        name: symbol.getName(),
-        comment,
-        signature: checker.typeToString(
-          checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
-        ),
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!baseModel')) {
-      cb({
-        type: 'baseModel',
-        name: symbol.getName(),
-        comment,
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
-    } else if (comment?.includes('!action')) {
-      cb({
-        type: 'action',
-        name: symbol.getName(),
-        comment,
-        signature: checker.typeToString(
-          checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
-        ),
-        node: node.getFullText(),
-        filename: node.getSourceFile().fileName,
-      })
+    const list = [
+      'stateModel',
+      'config',
+      'slot',
+      'baseConfiguration',
+      'property',
+      'getter',
+      'baseModel',
+      'action',
+      'method',
+    ]
+    for (let i = 0; i < list.length; i++) {
+      const type = '!' + list[i]
+      if (comment?.includes(type) && ft.includes(type)) {
+        cb({ type: list[i], ...r })
+      }
     }
   }
 }

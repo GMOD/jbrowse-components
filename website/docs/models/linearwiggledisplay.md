@@ -373,12 +373,6 @@ string[]
 renderProps: () => any
 ```
 
-#### property: rpcDriverName
-
-```js
-self.rpcDriverName
-```
-
 #### getter: hasResolution
 
 ```js

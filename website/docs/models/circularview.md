@@ -382,3 +382,136 @@ hideTrack: (trackId: string) => number
 // Type signature
 toggleFitToWindowLock: () => boolean
 ```
+
+#### property: bezierRadiusRatio
+
+```js
+bezierRadiusRatio: 0.1
+```
+
+#### property: assemblyName
+
+```js
+assemblyName: types.maybe(types.string)
+```
+
+#### action: onChordClick
+
+```js
+// Type signature
+onChordClick: (feature: Feature) => void
+```
+
+#### getter: blockDefinitions
+
+```js
+// Type
+any
+```
+
+#### method: renderProps
+
+```js
+// Type signature
+renderProps: () => any
+```
+
+#### getter: rendererType
+
+the pluggable element type object for this diplay's
+renderer
+
+```js
+// Type
+RendererType
+```
+
+#### method: isCompatibleWithRenderer
+
+```js
+// Type signature
+isCompatibleWithRenderer: (renderer: RendererType) => boolean
+```
+
+#### getter: selectedFeatureId
+
+returns a string feature ID if the globally-selected object
+is probably a feature
+
+```js
+// Type
+string
+```
+
+#### action: renderStarted
+
+```js
+// Type signature
+renderStarted: () => void
+```
+
+#### action: renderSuccess
+
+```js
+// Type signature
+renderSuccess: ({ message, data, reactElement, renderingComponent, }: { message: string; data: any; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
+```
+
+#### action: renderError
+
+```js
+// Type signature
+renderError: (error: unknown) => void
+```
+
+#### action: setRefNameMap
+
+```js
+// Type signature
+setRefNameMap: (refNameMap: Record<string, string>) => void
+```
+
+#### property: type
+
+```js
+type: types.literal('LinearVariantDisplay')
+```
+
+#### property: configuration
+
+```js
+configuration: ConfigurationReference(configSchema)
+```
+
+#### action: selectFeature
+
+```js
+// Type signature
+selectFeature: (feature: Feature) => Promise<void>
+```
+
+#### property: type
+
+```js
+type: types.literal('ChordVariantDisplay')
+```
+
+#### property: configuration
+
+```js
+configuration: ConfigurationReference(configSchema)
+```
+
+#### getter: rendererTypeName
+
+```js
+// Type
+any
+```
+
+#### method: renderProps
+
+```js
+// Type signature
+renderProps: () => Record<string, unknown>
+```

@@ -138,14 +138,6 @@ number
 number
 ```
 
-#### property: bpPerPx
-
-bpPerPx corresponds roughly to the zoom level, base-pairs per pixel
-
-```js
-view.bpPerPx
-```
-
 #### getter: maxFeatureScreenDensity
 
 ```js
@@ -376,12 +368,6 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 ```js
 // Type signature
 renderProps: () => any
-```
-
-#### property: rpcDriverName
-
-```js
-self.rpcDriverName
 ```
 
 #### method: renderSvg

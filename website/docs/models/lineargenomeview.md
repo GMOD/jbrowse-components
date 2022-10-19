@@ -18,7 +18,7 @@ type: types.literal('LinearGenomeView')
 
 #### property: offsetPx
 
-bpPerPx corresponds roughly to the horizontal scroll of the LGV
+corresponds roughly to the horizontal scroll of the LGV
 
 ```js
 offsetPx: 0
@@ -26,7 +26,7 @@ offsetPx: 0
 
 #### property: bpPerPx
 
-bpPerPx corresponds roughly to the zoom level, base-pairs per pixel
+corresponds roughly to the zoom level, base-pairs per pixel
 
 ```js
 bpPerPx: 1
@@ -34,7 +34,7 @@ bpPerPx: 1
 
 #### property: displayedRegions
 
-currently displayed region, can be a single chromosome, arbitrary subsections,
+currently displayed regions, can be a single chromosome, arbitrary subsections,
 or the entire set of chromosomes in the genome, but it not advised to use the
 entire set of chromosomes if your assembly is very fragmented
 

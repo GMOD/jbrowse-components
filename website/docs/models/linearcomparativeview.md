@@ -100,20 +100,6 @@ boolean
 any[][]
 ```
 
-#### getter: staticBlocks
-
-static blocks are an important concept jbrowse uses to avoid
-re-rendering when you scroll to the side. when you horizontally
-scroll to the right, old blocks to the left may be removed, and
-new blocks may be instantiated on the right. tracks may use the
-static blocks to render their data for the region represented by
-the block
-
-```js
-// Type
-BlockSet
-```
-
 #### getter: assemblyNames
 
 ```js
@@ -207,63 +193,6 @@ hideTrack: (trackId: string) => number
 squareView: () => void
 ```
 
-#### property: bpPerPx
-
-bpPerPx corresponds roughly to the zoom level, base-pairs per pixel
-
-```js
-v.bpPerPx
-```
-
-#### method: pxToBp
-
-```js
-// Type signature
-pxToBp: (px: number) => {
-  coord: number
-  index: number
-  refName: string
-  oob: boolean
-  assemblyName: string
-  offset: number
-  start: number
-  end: number
-  reversed: boolean
-}
-```
-
-#### getter: width
-
-```js
-// Type
-any
-```
-
-#### action: setNewView
-
-```js
-// Type signature
-setNewView: (bpPerPx: number, offsetPx: number) => void
-```
-
-#### property: offsetPx
-
-bpPerPx corresponds roughly to the horizontal scroll of the LGV
-
-```js
-view.offsetPx
-```
-
-#### method: centerAt
-
-scrolls the view to center on the given bp. if that is not in any
-of the displayed regions, does nothing
-
-```js
-// Type signature
-centerAt: (coord: number, refName: string, regionNumber: number) => void
-```
-
 #### action: clearView
 
 ```js
@@ -283,14 +212,4 @@ menuItems: () => MenuItem[]
 ```js
 // Type signature
 rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
-```
-
-#### action: moveTo
-
-offset is the base-pair-offset in the displayed region, index is the index of the
-displayed region in the linear genome view
-
-```js
-// Type signature
-moveTo: (start?: BpOffset, end?: BpOffset) => void
 ```

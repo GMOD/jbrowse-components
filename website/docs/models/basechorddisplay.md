@@ -46,12 +46,6 @@ any[]
 renderProps: () => any
 ```
 
-#### property: rpcDriverName
-
-```js
-self.rpcDriverName
-```
-
 #### getter: radiusPx
 
 ```js
@@ -112,18 +106,6 @@ renderError: (error: unknown) => void
 ```js
 // Type signature
 setRefNameMap: (refNameMap: Record<string, string>) => void
-```
-
-#### property: type
-
-```js
-self.type
-```
-
-#### property: id
-
-```js
-self.id
 ```
 
 #### getter: parentTrack

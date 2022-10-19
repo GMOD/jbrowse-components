@@ -32,18 +32,6 @@ any
 renderProps: () => Record<string, unknown>
 ```
 
-#### property: rpcDriverName
-
-```js
-self.rpcDriverName
-```
-
-#### property: bezierRadiusRatio
-
-```js
-self.bezierRadiusRatio
-```
-
 #### action: onChordClick
 
 ```js

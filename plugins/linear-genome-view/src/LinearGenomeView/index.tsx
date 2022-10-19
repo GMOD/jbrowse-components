@@ -139,19 +139,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * !property
-         * bpPerPx corresponds roughly to the horizontal scroll of the LGV
+         * corresponds roughly to the horizontal scroll of the LGV
          */
         offsetPx: 0,
 
         /**
          * !property
-         * bpPerPx corresponds roughly to the zoom level, base-pairs per pixel
+         * corresponds roughly to the zoom level, base-pairs per pixel
          */
         bpPerPx: 1,
 
         /**
          * !property
-         * currently displayed region, can be a single chromosome, arbitrary subsections,
+         * currently displayed regions, can be a single chromosome, arbitrary subsections,
          * or the entire  set of chromosomes in the genome, but it not advised to use the
          * entire set of chromosomes if your assembly is very fragmented
          */
