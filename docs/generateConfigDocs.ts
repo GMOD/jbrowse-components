@@ -1,13 +1,15 @@
 /* eslint-disable no-console */
-import { extractWithComment } from './util'
+import slugify from 'slugify'
+import { rm, filter, removeComments, extractWithComment } from './util'
+import fs from 'fs'
+
+let currentGuide = ''
+
+function write(s: string) {
+  fs.appendFileSync(currentGuide, s)
+}
 
 function generateConfigDocs() {
-  console.log(`---
-id: config_reference
-title: Config reference
-toplevel: true
----`)
-
   extractWithComment(
     [
       'packages/core/pluggableElementTypes/models/baseTrackConfig.ts',
@@ -106,40 +108,33 @@ toplevel: true
     ],
     obj => {
       if (obj.type === 'baseConfiguration') {
-        console.log(`#### derives from: `)
-        console.log('\n')
-        console.log('```js')
-        console.log(obj.node)
-        console.log('```')
+        write(`#### derives from: \n`)
+        write(filter(obj.comment, '!baseConfiguration'))
+        write('\n')
+        write(`\`\`\`js\n${removeComments(obj.node)}\n\`\`\`\n`)
       } else if (obj.type === 'slot') {
-        const name = obj.node
-          .split('\n')
-          .find(x => x.includes('!slot'))
-          ?.replace('* !slot', '')
-          .trim()
+        const name = rm(obj.comment, '!slot') || obj.name
 
-        console.log(`#### slot: ${name || obj.name}`)
-        console.log('\n')
-        console.log('\n')
-        console.log('```js')
-        console.log(obj.node)
-        console.log('```')
+        write(`#### slot: ${name}\n`)
+        write(filter(obj.comment, '!slot'))
+        write('\n')
+        write(`\`\`\`js\n${removeComments(obj.node)}\n\`\`\`\n`)
       } else if (obj.type === 'config') {
-        const name = obj.comment
-          .split('\n')
-          .find(x => x.includes('!config'))
-          ?.replace('!config', '')
-          .trim()
+        const name = rm(obj.comment, '!config') || obj.name
+        const rest = filter(obj.comment, '!config')
+        const id = slugify(name, { lower: true })
+        currentGuide = `website/docs/config/${id}.md`
+        fs.writeFileSync(currentGuide, '')
 
-        const rest = obj.comment
-          .split('\n')
-          .filter(x => !x.includes('!config'))
-          .join('\n')
+        write(`---
+id: ${id}
+title: ${name}
+toplevel: true
+---`)
 
-        console.log(`## ${name || obj.name}`)
-        console.log('\n')
-        console.log(rest)
-        console.log('\n')
+        write('\n')
+        write(rest)
+        write('\n')
       }
     },
   )
