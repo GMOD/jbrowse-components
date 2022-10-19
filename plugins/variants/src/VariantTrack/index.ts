@@ -4,8 +4,8 @@ import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models
 import configSchemaF from './configSchema'
 
 export default (pluginManager: PluginManager) => {
-  const configSchema = configSchemaF(pluginManager)
   pluginManager.addTrackType(() => {
+    const configSchema = configSchemaF(pluginManager)
     return new TrackType({
       name: 'VariantTrack',
       configSchema,

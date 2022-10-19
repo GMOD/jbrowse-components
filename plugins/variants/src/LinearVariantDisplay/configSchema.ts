@@ -6,9 +6,7 @@ import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-ge
 /**
  * !config LinearVariantDisplay
  */
-export function LinearVariantDisplayConfigFactory(
-  pluginManager: PluginManager,
-) {
+function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearVariantDisplay',
     {},
@@ -21,9 +19,8 @@ export function LinearVariantDisplayConfigFactory(
     },
   )
 }
+export default configSchemaF
 
-export type LinearVariantDisplayConfigModel = ReturnType<
-  typeof LinearVariantDisplayConfigFactory
->
+export type LinearVariantDisplayConfigModel = ReturnType<typeof configSchemaF>
 export type LinearVariantDisplayConfig =
   Instance<LinearVariantDisplayConfigModel>

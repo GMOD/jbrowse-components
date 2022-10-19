@@ -6,12 +6,13 @@ toplevel: true
 
 ## BaseAssembly
 
-### slot: aliases
+#### slot: aliases
 
 ```js
 
       /**
        * !slot
+       * aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
        */
       aliases: {
         type: 'stringArray',
@@ -20,16 +21,18 @@ toplevel: true
       }
 ```
 
-### slot: sequence
+#### slot: sequence
 
 ```js
 /**
  * !slot
+ * sequence refers to a reference sequence track that has an adapter containing,
+ * importantly, a sequence adapter such as IndexedFastaAdapter
  */
 sequence: pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 ```
 
-### slot: refNameColors
+#### slot: refNameColors
 
 ```js
 
@@ -45,25 +48,30 @@ sequence: pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
       }
 ```
 
-### slot: refNameAliases.adapter
+#### slot: refNameAliases.adapter
 
 ```js
 /**
  * !slot refNameAliases.adapter
+ * refNameAliases help resolve e.g. chr1 and 1 as the same entity
+ * the data for refNameAliases are fetched from an adapter, that is
+ * commonly a tsv like chromAliases.txt from UCSC or similar
  */
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
-### slot: cytobands.adapter
+#### slot: cytobands.adapter
 
 ```js
 /**
  * !slot cytobands.adapter
+ * cytoband data is fetched from an adapter, and can be displayed by a
+ * view type as ideograms
  */
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
-### slot: displayName
+#### slot: displayName
 
 ```js
 
@@ -81,7 +89,7 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## BaseRpcDriver
 
-### slot: workerCount
+#### slot: workerCount
 
 ```js
 
@@ -98,7 +106,7 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## MainThreadRpcDriver
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -109,7 +117,7 @@ baseConfiguration: BaseRpcDriverConfigSchema
 
 ## WebWorkerRpcDriver
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -118,7 +126,7 @@ baseConfiguration: BaseRpcDriverConfigSchema
 baseConfiguration: BaseRpcDriverConfigSchema
 ```
 
-### slot: defaultDriver
+#### slot: defaultDriver
 
 ```js
 
@@ -133,7 +141,7 @@ baseConfiguration: BaseRpcDriverConfigSchema
     }
 ```
 
-### slot: drivers
+#### slot: drivers
 
 ```js
 /**
@@ -153,7 +161,7 @@ drivers: types.optional(
 )
 ```
 
-### slot: name
+#### slot: name
 
 ```js
 
@@ -167,7 +175,7 @@ drivers: types.optional(
     }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -185,7 +193,7 @@ drivers: types.optional(
 
 the "base" internet account type
 
-### slot: name
+#### slot: name
 
 ```js
 
@@ -199,7 +207,7 @@ the "base" internet account type
     }
 ```
 
-### slot: description
+#### slot: description
 
 ```js
 
@@ -213,7 +221,7 @@ the "base" internet account type
     }
 ```
 
-### slot: authHeader
+#### slot: authHeader
 
 ```js
 
@@ -227,7 +235,7 @@ the "base" internet account type
     }
 ```
 
-### slot: tokenType
+#### slot: tokenType
 
 ```js
 
@@ -241,7 +249,7 @@ the "base" internet account type
     }
 ```
 
-### slot: domains
+#### slot: domains
 
 ```js
 
@@ -262,7 +270,7 @@ the "base" internet account type
 
 ## CytobandAdapter
 
-### slot: cytobandLocation
+#### slot: cytobandLocation
 
 ```js
 
@@ -277,7 +285,7 @@ the "base" internet account type
 
 ## BaseTrack
 
-### slot: name
+#### slot: name
 
 ```js
 
@@ -291,7 +299,7 @@ the "base" internet account type
       }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -305,7 +313,7 @@ the "base" internet account type
       }
 ```
 
-### slot: description
+#### slot: description
 
 ```js
 
@@ -319,7 +327,7 @@ the "base" internet account type
       }
 ```
 
-### slot: category
+#### slot: category
 
 ```js
 
@@ -333,7 +341,7 @@ the "base" internet account type
       }
 ```
 
-### slot: metadata
+#### slot: metadata
 
 ```js
 
@@ -347,7 +355,7 @@ the "base" internet account type
       }
 ```
 
-### slot: adapter
+#### slot: adapter
 
 ```js
 /**
@@ -356,7 +364,7 @@ the "base" internet account type
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
-### slot: textSearching.indexedAttributes
+#### slot: textSearching.indexedAttributes
 
 ```js
 
@@ -371,7 +379,7 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
         }
 ```
 
-### slot: textSearching.indexingFeatureTypesToExclude
+#### slot: textSearching.indexingFeatureTypesToExclude
 
 ```js
 
@@ -385,7 +393,7 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
         }
 ```
 
-### slot: textSearching.textSearchAdapter
+#### slot: textSearching.textSearchAdapter
 
 ```js
 /**
@@ -396,7 +404,7 @@ textSearchAdapter: pluginManager.pluggableConfigSchemaType(
 )
 ```
 
-### slot: displays
+#### slot: displays
 
 ```js
 /**
@@ -405,7 +413,7 @@ textSearchAdapter: pluginManager.pluggableConfigSchemaType(
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
-### slot: formatDetails.feature
+#### slot: formatDetails.feature
 
 ```js
 
@@ -420,7 +428,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
         }
 ```
 
-### slot: formatDetails.subfeatures
+#### slot: formatDetails.subfeatures
 
 ```js
 
@@ -436,7 +444,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
         }
 ```
 
-### slot: formatDetails.depth
+#### slot: formatDetails.depth
 
 ```js
 
@@ -454,7 +462,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 ## AlignmentsTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -467,7 +475,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 used to configure BAM adapter
 
-### slot: bamLocation
+#### slot: bamLocation
 
 ```js
 
@@ -480,7 +488,7 @@ used to configure BAM adapter
     }
 ```
 
-### slot: index.indexType
+#### slot: index.indexType
 
 ```js
 
@@ -494,7 +502,7 @@ used to configure BAM adapter
       }
 ```
 
-### slot: index.location
+#### slot: index.location
 
 ```js
 
@@ -510,7 +518,7 @@ used to configure BAM adapter
       }
 ```
 
-### slot: fetchSizeLimit
+#### slot: fetchSizeLimit
 
 ```js
 
@@ -525,7 +533,7 @@ used to configure BAM adapter
     }
 ```
 
-### slot: sequenceAdapter
+#### slot: sequenceAdapter
 
 ```js
 
@@ -546,7 +554,7 @@ used to configure BAM adapter
 
 used to configure CRAM adapter
 
-### slot: fetchSizeLimit
+#### slot: fetchSizeLimit
 
 ```js
 
@@ -561,7 +569,7 @@ used to configure CRAM adapter
     }
 ```
 
-### slot: cramLocation
+#### slot: cramLocation
 
 ```js
 
@@ -578,7 +586,7 @@ used to configure CRAM adapter
     }
 ```
 
-### slot: craiLocation
+#### slot: craiLocation
 
 ```js
 
@@ -595,7 +603,7 @@ used to configure CRAM adapter
     }
 ```
 
-### slot: sequenceAdapter
+#### slot: sequenceAdapter
 
 ```js
 
@@ -617,7 +625,7 @@ used to configure CRAM adapter
 
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
 
-### slot: htsgetBase
+#### slot: htsgetBase
 
 ```js
 
@@ -631,7 +639,7 @@ Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam libra
       }
 ```
 
-### slot: htsgetTrackId
+#### slot: htsgetTrackId
 
 ```js
 
@@ -645,7 +653,7 @@ Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam libra
       }
 ```
 
-### slot: sequenceAdapter
+#### slot: sequenceAdapter
 
 ```js
 
@@ -666,7 +674,7 @@ BaseLinearDisplay is a "base" config that is extended by classes like
 "LinearBasicDisplay" (used for feature tracks, etc) and "LinearBareDisplay"
 (more stripped down than even the basic display, not commonly used)
 
-### slot: maxFeatureScreenDensity
+#### slot: maxFeatureScreenDensity
 
 ```js
 
@@ -681,7 +689,7 @@ BaseLinearDisplay is a "base" config that is extended by classes like
     }
 ```
 
-### slot: fetchSizeLimit
+#### slot: fetchSizeLimit
 
 ```js
 
@@ -698,7 +706,7 @@ BaseLinearDisplay is a "base" config that is extended by classes like
 
 ## LinearBareDisplay
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -707,7 +715,7 @@ BaseLinearDisplay is a "base" config that is extended by classes like
 renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -718,7 +726,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## LinearBasicDisplay
 
-### slot: mouseover
+#### slot: mouseover
 
 ```js
 
@@ -734,7 +742,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
       }
 ```
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -743,7 +751,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -754,7 +762,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## FeatureTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -767,7 +775,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 synonym for FeatureTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -781,7 +789,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 has a "pileup" sub-display, where you can see individual reads and a
 quantitative "snpcoverage" sub-display track showing SNP frequencies
 
-### slot: pileupDisplay
+#### slot: pileupDisplay
 
 ```js
 /**
@@ -790,7 +798,7 @@ quantitative "snpcoverage" sub-display track showing SNP frequencies
 pileupDisplay: pluginManager.getDisplayType('LinearPileupDisplay').configSchema
 ```
 
-### slot: snpCoverageDisplay
+#### slot: snpCoverageDisplay
 
 ```js
 /**
@@ -800,7 +808,7 @@ snpCoverageDisplay: pluginManager.getDisplayType('LinearSNPCoverageDisplay')
   .configSchema
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -811,7 +819,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## LinearPileupDisplay
 
-### slot: defaultRendering
+#### slot: defaultRendering
 
 ```js
 
@@ -825,7 +833,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
       }
 ```
 
-### slot: renderers
+#### slot: renderers
 
 ```js
 /**
@@ -836,7 +844,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-### slot: maxFeatureScreenDensity
+#### slot: maxFeatureScreenDensity
 
 ```js
 
@@ -850,7 +858,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
       }
 ```
 
-### slot: colorScheme
+#### slot: colorScheme
 
 ```js
 
@@ -873,7 +881,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
       }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -884,7 +892,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 
 ## LinearSNPCoverageDisplay
 
-### slot: autoscale
+#### slot: autoscale
 
 ```js
 
@@ -900,7 +908,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: minScore
+#### slot: minScore
 
 ```js
 
@@ -914,7 +922,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: maxScore
+#### slot: maxScore
 
 ```js
 
@@ -928,7 +936,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: scaleType
+#### slot: scaleType
 
 ```js
 
@@ -943,7 +951,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: inverted
+#### slot: inverted
 
 ```js
 
@@ -956,7 +964,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: multiTicks
+#### slot: multiTicks
 
 ```js
 
@@ -970,7 +978,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: renderers
+#### slot: renderers
 
 ```js
 /**
@@ -982,7 +990,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -993,7 +1001,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## PileupRenderer
 
-### slot: color
+#### slot: color
 
 ```js
 
@@ -1009,7 +1017,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: orientationType
+#### slot: orientationType
 
 ```js
 
@@ -1026,7 +1034,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: displayMode
+#### slot: displayMode
 
 ```js
 
@@ -1045,7 +1053,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: minSubfeatureWidth
+#### slot: minSubfeatureWidth
 
 ```js
 
@@ -1060,7 +1068,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: maxHeight
+#### slot: maxHeight
 
 ```js
 
@@ -1074,7 +1082,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: maxClippingSize
+#### slot: maxClippingSize
 
 ```js
 
@@ -1088,7 +1096,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: height
+#### slot: height
 
 ```js
 
@@ -1103,7 +1111,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: noSpacing
+#### slot: noSpacing
 
 ```js
 
@@ -1117,7 +1125,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: largeInsertionIndicatorScale
+#### slot: largeInsertionIndicatorScale
 
 ```js
 
@@ -1132,7 +1140,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: mismatchAlpha
+#### slot: mismatchAlpha
 
 ```js
 
@@ -1148,7 +1156,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## SNPCoverageAdapter
 
-### slot: subadapter
+#### slot: subadapter
 
 ```js
 /**
@@ -1160,7 +1168,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## SNPCoverageRenderer
 
-### slot: clipColor
+#### slot: clipColor
 
 ```js
 
@@ -1174,7 +1182,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: indicatorThreshold
+#### slot: indicatorThreshold
 
 ```js
 
@@ -1189,7 +1197,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: drawArcs
+#### slot: drawArcs
 
 ```js
 
@@ -1203,7 +1211,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: drawInterbaseCounts
+#### slot: drawInterbaseCounts
 
 ```js
 
@@ -1218,7 +1226,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: drawIndicators
+#### slot: drawIndicators
 
 ```js
 
@@ -1235,7 +1243,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## ArcRenderer
 
-### slot: color
+#### slot: color
 
 ```js
 
@@ -1250,7 +1258,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: thickness
+#### slot: thickness
 
 ```js
 
@@ -1265,7 +1273,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: label
+#### slot: label
 
 ```js
 
@@ -1280,7 +1288,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: height
+#### slot: height
 
 ```js
 
@@ -1295,7 +1303,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: caption
+#### slot: caption
 
 ```js
 
@@ -1313,7 +1321,7 @@ subadapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## LinearArcDisplay
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -1324,7 +1332,7 @@ renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
 })
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -1335,7 +1343,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## OAuthConfigSchema
 
-### slot: tokenType
+#### slot: tokenType
 
 ```js
 
@@ -1349,7 +1357,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: authEndpoint
+#### slot: authEndpoint
 
 ```js
 
@@ -1363,7 +1371,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: tokenEndpoint
+#### slot: tokenEndpoint
 
 ```js
 
@@ -1377,7 +1385,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: needsPKCE
+#### slot: needsPKCE
 
 ```js
 
@@ -1391,7 +1399,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: clientId
+#### slot: clientId
 
 ```js
 
@@ -1405,7 +1413,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: scopes
+#### slot: scopes
 
 ```js
 
@@ -1419,7 +1427,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: responseType
+#### slot: responseType
 
 ```js
 
@@ -1433,7 +1441,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: hasRefreshToken
+#### slot: hasRefreshToken
 
 ```js
 
@@ -1447,7 +1455,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -1458,7 +1466,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## DropboxOAuthConfigSchema
 
-### slot: authEndpoint
+#### slot: authEndpoint
 
 ```js
 
@@ -1472,7 +1480,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: tokenEndpoint
+#### slot: tokenEndpoint
 
 ```js
 
@@ -1486,7 +1494,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: needsPKCE
+#### slot: needsPKCE
 
 ```js
 
@@ -1500,7 +1508,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: domains
+#### slot: domains
 
 ```js
 
@@ -1523,7 +1531,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: hasRefreshToken
+#### slot: hasRefreshToken
 
 ```js
 
@@ -1537,7 +1545,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -1548,7 +1556,7 @@ baseConfiguration: OAuthConfigSchema
 
 ## ExternalTokenConfigSchema
 
-### slot: validateWithHEAD
+#### slot: validateWithHEAD
 
 ```js
 
@@ -1562,7 +1570,7 @@ baseConfiguration: OAuthConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -1573,7 +1581,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## GoogleDriveOAuthConfigSchema
 
-### slot: authEndpoint
+#### slot: authEndpoint
 
 ```js
 
@@ -1587,7 +1595,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: scopes
+#### slot: scopes
 
 ```js
 
@@ -1601,7 +1609,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: domains
+#### slot: domains
 
 ```js
 
@@ -1616,7 +1624,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: responseType
+#### slot: responseType
 
 ```js
 
@@ -1630,7 +1638,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -1641,7 +1649,7 @@ baseConfiguration: OAuthConfigSchema
 
 ## HTTPBasicConfigSchema
 
-### slot: tokenType
+#### slot: tokenType
 
 ```js
 
@@ -1655,7 +1663,7 @@ baseConfiguration: OAuthConfigSchema
     }
 ```
 
-### slot: validateWithHEAD
+#### slot: validateWithHEAD
 
 ```js
 
@@ -1669,7 +1677,7 @@ baseConfiguration: OAuthConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -1680,7 +1688,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## BedAdapter
 
-### slot: bedLocation
+#### slot: bedLocation
 
 ```js
 
@@ -1693,7 +1701,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: columnNames
+#### slot: columnNames
 
 ```js
 
@@ -1707,7 +1715,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: scoreColumn
+#### slot: scoreColumn
 
 ```js
 
@@ -1721,7 +1729,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: autoSql
+#### slot: autoSql
 
 ```js
 
@@ -1735,7 +1743,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: colRef
+#### slot: colRef
 
 ```js
 
@@ -1749,7 +1757,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: colStart
+#### slot: colStart
 
 ```js
 
@@ -1763,7 +1771,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: colEnd
+#### slot: colEnd
 
 ```js
 
@@ -1779,7 +1787,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## BedTabixAdapter
 
-### slot: bedGzLocation
+#### slot: bedGzLocation
 
 ```js
 
@@ -1792,7 +1800,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: index.indexType
+#### slot: index.indexType
 
 ```js
 
@@ -1806,7 +1814,7 @@ baseConfiguration: BaseInternetAccountConfig
       }
 ```
 
-### slot: index.location
+#### slot: index.location
 
 ```js
 
@@ -1822,7 +1830,7 @@ baseConfiguration: BaseInternetAccountConfig
       }
 ```
 
-### slot: columnNames
+#### slot: columnNames
 
 ```js
 
@@ -1837,7 +1845,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: scoreColumn
+#### slot: scoreColumn
 
 ```js
 
@@ -1852,7 +1860,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: autoSql
+#### slot: autoSql
 
 ```js
 
@@ -1869,7 +1877,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## BigBedAdapter
 
-### slot: bigBedLocation
+#### slot: bigBedLocation
 
 ```js
 
@@ -1884,7 +1892,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## BaseChordDisplay
 
-### slot: onChordClick
+#### slot: onChordClick
 
 ```js
 
@@ -1902,7 +1910,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## ChainAdapter
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -1917,7 +1925,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: targetAssembly
+#### slot: targetAssembly
 
 ```js
 
@@ -1932,7 +1940,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: queryAssembly
+#### slot: queryAssembly
 
 ```js
 
@@ -1947,7 +1955,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: chainLocation
+#### slot: chainLocation
 
 ```js
 
@@ -1962,7 +1970,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## DeltaAdapter
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -1977,7 +1985,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: targetAssembly
+#### slot: targetAssembly
 
 ```js
 
@@ -1992,7 +2000,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: queryAssembly
+#### slot: queryAssembly
 
 ```js
 
@@ -2007,7 +2015,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: deltaLocation
+#### slot: deltaLocation
 
 ```js
 
@@ -2022,7 +2030,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## MCScanAnchorsAdapter
 
-### slot: mcscanAnchorsLocation
+#### slot: mcscanAnchorsLocation
 
 ```js
 
@@ -2038,7 +2046,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: bed1Location
+#### slot: bed1Location
 
 ```js
 
@@ -2054,7 +2062,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: bed2Location
+#### slot: bed2Location
 
 ```js
 
@@ -2070,7 +2078,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -2085,7 +2093,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## MCScanSimpleAnchorsAdapter
 
-### slot: mcscanSimpleAnchorsLocation
+#### slot: mcscanSimpleAnchorsLocation
 
 ```js
 
@@ -2101,7 +2109,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: bed1Location
+#### slot: bed1Location
 
 ```js
 
@@ -2117,7 +2125,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: bed2Location
+#### slot: bed2Location
 
 ```js
 
@@ -2133,7 +2141,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -2149,7 +2157,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## MashMapAdapter
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -2164,7 +2172,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: targetAssembly
+#### slot: targetAssembly
 
 ```js
 
@@ -2179,7 +2187,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: queryAssembly
+#### slot: queryAssembly
 
 ```js
 
@@ -2193,7 +2201,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: outLocation
+#### slot: outLocation
 
 ```js
 
@@ -2211,7 +2219,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## PAFAdapter
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -2226,7 +2234,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: targetAssembly
+#### slot: targetAssembly
 
 ```js
 
@@ -2240,7 +2248,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: queryAssembly
+#### slot: queryAssembly
 
 ```js
 
@@ -2254,7 +2262,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: pafLocation
+#### slot: pafLocation
 
 ```js
 
@@ -2272,7 +2280,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 ## FromConfigAdapter
 
-### slot: features
+#### slot: features
 
 ```js
 
@@ -2285,7 +2293,7 @@ baseConfiguration: BaseInternetAccountConfig
     }
 ```
 
-### slot: featureClass
+#### slot: featureClass
 
 ```js
 
@@ -2302,7 +2310,7 @@ baseConfiguration: BaseInternetAccountConfig
 
 used for specifying refNames+sizes of an assembly
 
-### slot: features
+#### slot: features
 
 ```js
 
@@ -2315,7 +2323,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: featureClass
+#### slot: featureClass
 
 ```js
 
@@ -2330,7 +2338,7 @@ used for specifying refNames+sizes of an assembly
 
 ## FromConfigSequenceAdapter
 
-### slot: features
+#### slot: features
 
 ```js
 
@@ -2343,7 +2351,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: featureClass
+#### slot: featureClass
 
 ```js
 
@@ -2358,7 +2366,7 @@ used for specifying refNames+sizes of an assembly
 
 ## RefNameAliasAdapter
 
-### slot: location
+#### slot: location
 
 ```js
 
@@ -2374,7 +2382,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: refNameColumn
+#### slot: refNameColumn
 
 ```js
 
@@ -2387,7 +2395,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: color
+#### slot: color
 
 ```js
 
@@ -2403,7 +2411,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: posColor
+#### slot: posColor
 
 ```js
 
@@ -2418,7 +2426,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: negColor
+#### slot: negColor
 
 ```js
 
@@ -2432,7 +2440,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: lineWidth
+#### slot: lineWidth
 
 ```js
 
@@ -2447,7 +2455,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: colorBy
+#### slot: colorBy
 
 ```js
 
@@ -2476,7 +2484,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: thresholdsPalette
+#### slot: thresholdsPalette
 
 ```js
 
@@ -2491,7 +2499,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: thresholds
+#### slot: thresholds
 
 ```js
 
@@ -2508,7 +2516,7 @@ used for specifying refNames+sizes of an assembly
 
 ## Gff3Adapter
 
-### slot: gffLocation
+#### slot: gffLocation
 
 ```js
 
@@ -2523,7 +2531,7 @@ used for specifying refNames+sizes of an assembly
 
 ## Gff3TabixAdapter
 
-### slot: gffGzLocation
+#### slot: gffGzLocation
 
 ```js
 
@@ -2536,7 +2544,7 @@ used for specifying refNames+sizes of an assembly
     }
 ```
 
-### slot: index.indexType
+#### slot: index.indexType
 
 ```js
 
@@ -2550,7 +2558,7 @@ used for specifying refNames+sizes of an assembly
       }
 ```
 
-### slot: index.indexType
+#### slot: index.indexType
 
 ```js
 
@@ -2566,7 +2574,7 @@ used for specifying refNames+sizes of an assembly
       }
 ```
 
-### slot: dontRedispatch
+#### slot: dontRedispatch
 
 ```js
 
@@ -2585,7 +2593,7 @@ used for specifying refNames+sizes of an assembly
 
 ## GtfAdapter
 
-### slot: gtfLocation
+#### slot: gtfLocation
 
 ```js
 
@@ -2600,7 +2608,7 @@ used for specifying refNames+sizes of an assembly
 
 ## HicTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -2611,7 +2619,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 ## HicRenderer
 
-### slot: baseColor
+#### slot: baseColor
 
 ```js
 
@@ -2625,7 +2633,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
     }
 ```
 
-### slot: color
+#### slot: color
 
 ```js
 
@@ -2640,7 +2648,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
     }
 ```
 
-### slot: maxHeight
+#### slot: maxHeight
 
 ```js
 
@@ -2657,7 +2665,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 ## LinearHicDisplay
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -2666,7 +2674,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 renderer: pluginManager.getRendererType('HicRenderer').configSchema
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -2677,7 +2685,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## HicAdapter
 
-### slot: hicLocation
+#### slot: hicLocation
 
 ```js
 
@@ -2695,7 +2703,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## JBrowse1Connection
 
-### slot: dataDirLocation
+#### slot: dataDirLocation
 
 ```js
 
@@ -2713,7 +2721,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -2728,7 +2736,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -2737,7 +2745,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 baseConfiguration: baseConnectionConfig
 ```
 
-### slot: namesIndexLocation
+#### slot: namesIndexLocation
 
 ```js
 
@@ -2751,7 +2759,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: tracks
+#### slot: tracks
 
 ```js
 
@@ -2765,7 +2773,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -2781,7 +2789,7 @@ baseConfiguration: baseConnectionConfig
 
 ## NCListAdapter
 
-### slot: rootUrlTemplate
+#### slot: rootUrlTemplate
 
 ```js
 
@@ -2797,7 +2805,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: refNames
+#### slot: refNames
 
 ```js
 
@@ -2813,7 +2821,7 @@ baseConfiguration: baseConnectionConfig
 
 ## LinearSyntenyRenderer
 
-### slot: color
+#### slot: color
 
 ```js
 
@@ -2829,7 +2837,7 @@ baseConfiguration: baseConnectionConfig
 
 ## SyntenyTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -2840,7 +2848,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 ## LinearComparativeDisplay
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -2849,7 +2857,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -2860,7 +2868,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## BgzipFastaAdapter
 
-### slot: fastaLocation
+#### slot: fastaLocation
 
 ```js
 
@@ -2873,7 +2881,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: faiLocation
+#### slot: faiLocation
 
 ```js
 
@@ -2889,7 +2897,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: metadataLocation
+#### slot: metadataLocation
 
 ```js
 
@@ -2906,7 +2914,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: gziLocation
+#### slot: gziLocation
 
 ```js
 
@@ -2924,7 +2932,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## ChromSizesAdapter
 
-### slot: chromSizesLocation
+#### slot: chromSizesLocation
 
 ```js
 
@@ -2942,7 +2950,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## DivSequenceRenderer
 
-### slot: height
+#### slot: height
 
 ```js
 
@@ -2958,7 +2966,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## GCContentAdapter
 
-### slot: sequenceAdapter
+#### slot: sequenceAdapter
 
 ```js
 /**
@@ -2969,7 +2977,7 @@ sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## IndexedFastaAdapter
 
-### slot: fastaLocation
+#### slot: fastaLocation
 
 ```js
 
@@ -2982,7 +2990,7 @@ sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: faiLocation
+#### slot: faiLocation
 
 ```js
 
@@ -2995,7 +3003,7 @@ sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter')
     }
 ```
 
-### slot: metadataLocation
+#### slot: metadataLocation
 
 ```js
 
@@ -3014,7 +3022,7 @@ sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 ## LinearReferenceSequenceDisplay
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -3027,7 +3035,7 @@ renderer: divSequenceRendererConfigSchema
 
 used to display base level DNA sequence tracks
 
-### slot: adapter
+#### slot: adapter
 
 ```js
 /**
@@ -3038,7 +3046,7 @@ used to display base level DNA sequence tracks
 adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
-### slot: displays
+#### slot: displays
 
 ```js
 /**
@@ -3049,7 +3057,7 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
-### slot: name
+#### slot: name
 
 ```js
 
@@ -3065,7 +3073,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
       }
 ```
 
-### slot: metadata
+#### slot: metadata
 
 ```js
 
@@ -3082,7 +3090,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 ## TwoBitAdapter
 
-### slot: twoBitLocation
+#### slot: twoBitLocation
 
 ```js
 
@@ -3095,7 +3103,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: chromSizesLocation
+#### slot: chromSizesLocation
 
 ```js
 
@@ -3115,7 +3123,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 ## SvgFeatureRenderer
 
-### slot: color1
+#### slot: color1
 
 ```js
 
@@ -3130,7 +3138,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: color2
+#### slot: color2
 
 ```js
 
@@ -3146,7 +3154,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: color3
+#### slot: color3
 
 ```js
 
@@ -3162,7 +3170,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: outline
+#### slot: outline
 
 ```js
 
@@ -3178,7 +3186,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: height
+#### slot: height
 
 ```js
 
@@ -3193,7 +3201,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: showLabels
+#### slot: showLabels
 
 ```js
 
@@ -3206,7 +3214,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: showDescriptions
+#### slot: showDescriptions
 
 ```js
 
@@ -3220,7 +3228,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: labels.name
+#### slot: labels.name
 
 ```js
 
@@ -3236,7 +3244,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
       }
 ```
 
-### slot: labels.nameColor
+#### slot: labels.nameColor
 
 ```js
 
@@ -3251,7 +3259,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
       }
 ```
 
-### slot: labels.description
+#### slot: labels.description
 
 ```js
 
@@ -3266,7 +3274,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
       }
 ```
 
-### slot: labels.descriptionColor
+#### slot: labels.descriptionColor
 
 ```js
 
@@ -3281,7 +3289,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
       }
 ```
 
-### slot: labels.fontSize
+#### slot: labels.fontSize
 
 ```js
 
@@ -3298,7 +3306,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
       }
 ```
 
-### slot: displayMode
+#### slot: displayMode
 
 ```js
 
@@ -3319,7 +3327,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: maxFeatureGlyphExpansion
+#### slot: maxFeatureGlyphExpansion
 
 ```js
 
@@ -3335,7 +3343,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: maxHeight
+#### slot: maxHeight
 
 ```js
 
@@ -3350,7 +3358,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: subParts
+#### slot: subParts
 
 ```js
 
@@ -3365,7 +3373,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: impliedUTRs
+#### slot: impliedUTRs
 
 ```js
 
@@ -3380,7 +3388,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### slot: trackDbId
+#### slot: trackDbId
 
 ```js
 
@@ -3394,7 +3402,7 @@ displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3405,7 +3413,7 @@ baseConfiguration: baseConnectionConfig
 
 ## TrixTextSearchAdapter
 
-### slot: ixFilePath
+#### slot: ixFilePath
 
 ```js
 
@@ -3419,7 +3427,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: ixxFilePath
+#### slot: ixxFilePath
 
 ```js
 
@@ -3433,7 +3441,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: metaFilePath
+#### slot: metaFilePath
 
 ```js
 
@@ -3447,7 +3455,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: tracks
+#### slot: tracks
 
 ```js
 
@@ -3461,7 +3469,7 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
-### slot: assemblyNames
+#### slot: assemblyNames
 
 ```js
 
@@ -3475,9 +3483,20 @@ baseConfiguration: baseConnectionConfig
     }
 ```
 
+## VariantTrack
+
+#### derives from:
+
+```js
+/**
+ * !baseConfiguration
+ */
+baseConfiguration: createBaseTrackConfig(pluginManager)
+```
+
 ## LinearVariantDisplay
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3488,7 +3507,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 
 ## VcfAdapter
 
-### slot: vcfLocation
+#### slot: vcfLocation
 
 ```js
 
@@ -3503,7 +3522,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 
 ## VcfTabixAdapter
 
-### slot: vcfGzLocation
+#### slot: vcfGzLocation
 
 ```js
 
@@ -3516,7 +3535,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
     }
 ```
 
-### slot: index.indexType
+#### slot: index.indexType
 
 ```js
 
@@ -3530,7 +3549,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
       }
 ```
 
-### slot: index.location
+#### slot: index.location
 
 ```js
 
@@ -3548,7 +3567,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 
 ## StructuralVariantChordRenderer
 
-### slot: strokeColor
+#### slot: strokeColor
 
 ```js
 
@@ -3563,7 +3582,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
     }
 ```
 
-### slot: strokeColorSelected
+#### slot: strokeColorSelected
 
 ```js
 
@@ -3578,7 +3597,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
     }
 ```
 
-### slot: strokeColorHover
+#### slot: strokeColorHover
 
 ```js
 
@@ -3596,7 +3615,7 @@ baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 
 ## ChordVariantDisplay
 
-### slot: renderer
+#### slot: renderer
 
 ```js
 /**
@@ -3607,7 +3626,7 @@ renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
 })
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3618,7 +3637,7 @@ baseConfiguration: baseChordDisplayConfig
 
 ## BigWigAdapter
 
-### slot: bigWigLocation
+#### slot: bigWigLocation
 
 ```js
 
@@ -3634,7 +3653,7 @@ baseConfiguration: baseChordDisplayConfig
     }
 ```
 
-### slot: source
+#### slot: source
 
 ```js
 
@@ -3653,7 +3672,7 @@ baseConfiguration: baseChordDisplayConfig
 
 this is the "base wiggle renderer config schema"
 
-### slot: color
+#### slot: color
 
 ```js
 
@@ -3667,7 +3686,7 @@ this is the "base wiggle renderer config schema"
     }
 ```
 
-### slot: posColor
+#### slot: posColor
 
 ```js
 
@@ -3681,7 +3700,7 @@ this is the "base wiggle renderer config schema"
     }
 ```
 
-### slot: negColor
+#### slot: negColor
 
 ```js
 
@@ -3695,7 +3714,7 @@ this is the "base wiggle renderer config schema"
     }
 ```
 
-### slot: clipColor
+#### slot: clipColor
 
 ```js
 
@@ -3709,7 +3728,7 @@ this is the "base wiggle renderer config schema"
     }
 ```
 
-### slot: bicolorPivot
+#### slot: bicolorPivot
 
 ```js
 
@@ -3729,7 +3748,7 @@ this is the "base wiggle renderer config schema"
     }
 ```
 
-### slot: bicolorPivotValue
+#### slot: bicolorPivotValue
 
 ```js
 
@@ -3745,7 +3764,7 @@ this is the "base wiggle renderer config schema"
 
 ## DensityRenderer
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3754,32 +3773,9 @@ this is the "base wiggle renderer config schema"
 baseConfiguration: baseWiggleRendererConfigSchema
 ```
 
-### slot: configSchema
+## LinePlotRenderer
 
-```js
-configSchema = ConfigurationSchema(
-  'LinePlotRenderer',
-  {
-    /**
-     * !slot
-     */
-    displayCrossHatches: {
-      type: 'boolean',
-      description: 'choose to draw cross hatches (sideways lines)',
-      defaultValue: false,
-    },
-  },
-  {
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: baseWiggleRendererConfigSchema,
-    explicitlyTyped: true,
-  },
-)
-```
-
-### slot: displayCrossHatches
+#### slot: displayCrossHatches
 
 ```js
 
@@ -3793,7 +3789,7 @@ configSchema = ConfigurationSchema(
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3804,7 +3800,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
 
 ## LinearWiggleDisplay
 
-### slot: autoscale
+#### slot: autoscale
 
 ```js
 
@@ -3826,7 +3822,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: minimalTicks
+#### slot: minimalTicks
 
 ```js
 
@@ -3841,7 +3837,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: minScore
+#### slot: minScore
 
 ```js
 
@@ -3856,7 +3852,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: maxScore
+#### slot: maxScore
 
 ```js
 
@@ -3870,7 +3866,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: numStdDev
+#### slot: numStdDev
 
 ```js
 
@@ -3885,7 +3881,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: scaleType
+#### slot: scaleType
 
 ```js
 
@@ -3900,7 +3896,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: inverted
+#### slot: inverted
 
 ```js
 
@@ -3914,7 +3910,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: defaultRendering
+#### slot: defaultRendering
 
 ```js
 
@@ -3929,7 +3925,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
       }
 ```
 
-### slot: renderers
+#### slot: renderers
 
 ```js
 /**
@@ -3942,7 +3938,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3953,7 +3949,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## MultiDensityRenderer
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3964,7 +3960,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
 
 ## MultiQuantitativeTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3975,7 +3971,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 ## QuantitativeTrack
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -3986,7 +3982,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
 
 ## MultiLinearWiggleDisplay
 
-### slot: autoscale
+#### slot: autoscale
 
 ```js
 
@@ -4008,7 +4004,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: minimalTicks
+#### slot: minimalTicks
 
 ```js
 
@@ -4023,7 +4019,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: minScore
+#### slot: minScore
 
 ```js
 
@@ -4038,7 +4034,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: maxScore
+#### slot: maxScore
 
 ```js
 
@@ -4052,7 +4048,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: numStdDev
+#### slot: numStdDev
 
 ```js
 
@@ -4067,7 +4063,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: scaleType
+#### slot: scaleType
 
 ```js
 
@@ -4082,7 +4078,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: inverted
+#### slot: inverted
 
 ```js
 
@@ -4097,7 +4093,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: defaultRendering
+#### slot: defaultRendering
 
 ```js
 
@@ -4118,7 +4114,7 @@ baseConfiguration: createBaseTrackConfig(pluginManager)
       }
 ```
 
-### slot: renderers
+#### slot: renderers
 
 ```js
 /**
@@ -4133,7 +4129,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -4144,7 +4140,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
 
 ## MultiRowLineRenderer
 
-### slot: displayCrossHatches
+#### slot: displayCrossHatches
 
 ```js
 
@@ -4158,7 +4154,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### slot: summaryScoreMode
+#### slot: summaryScoreMode
 
 ```js
 
@@ -4174,7 +4170,7 @@ baseConfiguration: baseLinearDisplayConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -4185,7 +4181,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
 
 ## MultiRowXYPlotRenderer
 
-### slot: filled
+#### slot: filled
 
 ```js
 
@@ -4198,7 +4194,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: displayCrossHatches
+#### slot: displayCrossHatches
 
 ```js
 
@@ -4212,7 +4208,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: summaryScoreMode
+#### slot: summaryScoreMode
 
 ```js
 
@@ -4228,7 +4224,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: minSize
+#### slot: minSize
 
 ```js
 
@@ -4241,7 +4237,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -4252,7 +4248,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
 
 ## MultiWiggleAdapter
 
-### slot: subadapters
+#### slot: subadapters
 
 ```js
 
@@ -4266,7 +4262,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: bigWigs
+#### slot: bigWigs
 
 ```js
 
@@ -4283,7 +4279,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
 
 ## MultiXYPlotRenderer
 
-### slot: filled
+#### slot: filled
 
 ```js
 
@@ -4296,7 +4292,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: displayCrossHatches
+#### slot: displayCrossHatches
 
 ```js
 
@@ -4310,7 +4306,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: summaryScoreMode
+#### slot: summaryScoreMode
 
 ```js
 
@@ -4326,7 +4322,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: minSize
+#### slot: minSize
 
 ```js
 
@@ -4339,7 +4335,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**
@@ -4350,7 +4346,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
 
 ## XYPlotRenderer
 
-### slot: filled
+#### slot: filled
 
 ```js
 
@@ -4363,7 +4359,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: displayCrossHatches
+#### slot: displayCrossHatches
 
 ```js
 
@@ -4377,7 +4373,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: summaryScoreMode
+#### slot: summaryScoreMode
 
 ```js
 
@@ -4393,7 +4389,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### slot: minSize
+#### slot: minSize
 
 ```js
 
@@ -4406,7 +4402,7 @@ baseConfiguration: baseWiggleRendererConfigSchema
     }
 ```
 
-### derives from:
+#### derives from:
 
 ```js
 /**

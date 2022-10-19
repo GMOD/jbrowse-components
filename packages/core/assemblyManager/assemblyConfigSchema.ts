@@ -10,6 +10,7 @@ const assemblyConfigSchema = (pluginManager: PluginManager) => {
     {
       /**
        * !slot
+       * aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
        */
       aliases: {
         type: 'stringArray',
@@ -19,6 +20,8 @@ const assemblyConfigSchema = (pluginManager: PluginManager) => {
 
       /**
        * !slot
+       * sequence refers to a reference sequence track that has an adapter containing,
+       * importantly, a sequence adapter such as IndexedFastaAdapter
        */
       sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
         .configSchema,
@@ -38,6 +41,9 @@ const assemblyConfigSchema = (pluginManager: PluginManager) => {
         {
           /**
            * !slot refNameAliases.adapter
+           * refNameAliases help resolve e.g. chr1 and 1 as the same entity
+           * the data for refNameAliases are fetched from an adapter, that is
+           * commonly a tsv like chromAliases.txt from UCSC or similar
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
@@ -57,6 +63,8 @@ const assemblyConfigSchema = (pluginManager: PluginManager) => {
         {
           /**
            * !slot cytobands.adapter
+           * cytoband data is fetched from an adapter, and can be displayed by a
+           * view type as ideograms
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },

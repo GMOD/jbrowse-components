@@ -2,7 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseWiggleRendererConfigSchema from '../configSchema'
 
 /**
- * !slot LinePlotRenderer
+ * !config LinePlotRenderer
  */
 const configSchema = ConfigurationSchema(
   'LinePlotRenderer',

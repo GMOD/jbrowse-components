@@ -4,12 +4,15 @@ import configSchema from './configSchema'
 import ReactComponent from './ReactComponent'
 
 const ChordRendererConfigF = (pluginManager: PluginManager) => {
-  return new ChordRendererType({
-    name: 'StructuralVariantChordRenderer',
-    ReactComponent,
-    configSchema,
-    pluginManager,
-  })
+  pluginManager.addRendererType(
+    () =>
+      new ChordRendererType({
+        name: 'StructuralVariantChordRenderer',
+        ReactComponent,
+        configSchema,
+        pluginManager,
+      }),
+  )
 }
 
 export default ChordRendererConfigF

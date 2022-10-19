@@ -3,6 +3,7 @@ import * as ts from 'typescript'
 
 interface Node {
   signature?: string
+  code?: string
   type:
     | 'config'
     | 'slot'
