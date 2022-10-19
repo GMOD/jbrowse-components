@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
 import slugify from 'slugify'
-import { extractWithComment } from './util'
+import { rm, filter, removeComments, extractWithComment } from './util'
 import fs from 'fs'
 
-const alreadySeen = {} as { [key: string]: { [key: string]: boolean } }
+let alreadySeen = {} as { [key: string]: { [key: string]: boolean } }
 let currStateModel = ''
 
 function write(s: string) {
@@ -38,17 +38,11 @@ toplevel: true
     ],
     obj => {
       if (obj.type === 'stateModel') {
-        const name =
-          obj.comment
-            .split('\n')
-            .find(x => x.includes('!stateModel'))
-            ?.replace('!stateModel', '')
-            .trim() || obj.name
-
+        const name = rm(obj.comment, '!stateModel') || obj.name
         const id = slugify(name, { lower: true })
         currStateModel = `website/docs/models/${id}.md`
         fs.writeFileSync(currStateModel, '')
-        alreadySeen[obj.name] = {}
+        alreadySeen[obj.filename] = alreadySeen[obj.filename] || {}
 
         write(`---
 id: ${id}
@@ -56,19 +50,19 @@ title: ${name}
 toplevel: true
 ---`)
 
-        const rest = obj.comment
-          .split('\n')
-          .filter(x => !x.includes('!stateModel'))
-          .join('\n')
-
+        const rest = filter(obj.comment, '!stateModel')
         write('\n')
         write(rest)
       } else {
+        if (alreadySeen[obj.filename]) {
+          if (alreadySeen[obj.filename][obj.name]) {
+            return
+          } else {
+            alreadySeen[obj.filename][obj.name] = true
+          }
+        }
         if (obj.type === 'getter') {
-          const rest = obj.comment
-            .split('\n')
-            .filter(x => !x.includes('!getter'))
-            .join('\n')
+          const rest = filter(obj.comment, '!getter')
           write(`#### getter: ${obj.name}`)
           write('\n')
           write(rest)
@@ -79,10 +73,7 @@ toplevel: true
         } else if (obj.type === 'method') {
           write(`#### method: ${obj.name}`)
 
-          const rest = obj.comment
-            .split('\n')
-            .filter(x => !x.includes('!method'))
-            .join('\n')
+          const rest = filter(obj.comment, '!method')
           write(rest)
           write('```js')
           write('// Type signature')
@@ -92,21 +83,18 @@ toplevel: true
           write(`#### action: ${obj.name}`)
           write('\n')
 
-          const rest = obj.comment
-            .split('\n')
-            .filter(x => !x.includes('!action'))
-            .join('\n')
+          const rest = filter(obj.comment, '!action')
           write(rest)
           write('```js')
-
           write('// Type signature')
           write(`${obj.name}: ${obj.signature}`)
           write('```')
         } else if (obj.type === 'property') {
           write(`#### property: ${obj.name}`)
           write('\n')
+          write(obj.comment.replace('!property', ''))
           write('```js')
-          write(obj.node)
+          write(removeComments(obj.node))
           write('```')
         }
       }

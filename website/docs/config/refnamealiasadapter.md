@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: location
-```js
 
-    /**
-     * !slot
-     */
-    location: {
+```js
+location: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/my/aliases.txt',
@@ -18,24 +15,20 @@ toplevel: true
       },
     }
 ```
-#### slot: refNameColumn
-```js
 
-    /**
-     * !slot
-     */
-    refNameColumn: {
+#### slot: refNameColumn
+
+```js
+refNameColumn: {
       type: 'number',
       defaultValue: 0,
     }
 ```
-#### slot: color
-```js
 
-    /**
-     * !slot
-     */
-    color: {
+#### slot: color
+
+```js
+color: {
       type: 'color',
       description:
         'the color of each feature in a synteny, used with colorBy:default',
@@ -43,52 +36,41 @@ toplevel: true
       contextVariable: ['feature'],
     }
 ```
+
 #### slot: posColor
+
 ```js
-
-
-    /**
-     * !slot
-     */
-    posColor: {
+posColor: {
       type: 'color',
       description: 'the color for forward alignments, used with colorBy:strand',
       defaultValue: 'blue',
     }
 ```
-#### slot: negColor
-```js
 
-    /**
-     * !slot
-     */
-    negColor: {
+#### slot: negColor
+
+```js
+negColor: {
       type: 'color',
       description: 'the color for reverse alignments, used with colorBy:strand',
       defaultValue: 'red',
     }
 ```
+
 #### slot: lineWidth
+
 ```js
-
-
-    /**
-     * !slot
-     */
-    lineWidth: {
+lineWidth: {
       type: 'number',
       description: 'width of the lines to be drawn',
-      defaultValue: 2.5, // 2.5 is similar to D-GENIES
+      defaultValue: 2.5,
     }
 ```
+
 #### slot: colorBy
+
 ```js
-
-
-    /**
-     * !slot
-     */
-    colorBy: {
+colorBy: {
       type: 'stringEnum',
       model: types.enumeration('colorBy', [
         'identity',
@@ -108,27 +90,21 @@ toplevel: true
       defaultValue: 'default',
     }
 ```
+
 #### slot: thresholdsPalette
+
 ```js
-
-
-    /**
-     * !slot
-     */
-    thresholdsPalette: {
+thresholdsPalette: {
       type: 'stringArray',
       defaultValue: ['#094b09', '#2ebd40', '#d5670b', '#ffd84b'],
       description: 'threshold colors, used with colorBy:identity',
     }
 ```
+
 #### slot: thresholds
+
 ```js
-
-
-    /**
-     * !slot
-     */
-    thresholds: {
+thresholds: {
       type: 'stringArray',
       defaultValue: ['0.75', '0.5', '0.25', '0'],
       description: 'threshold breakpoints, used with colorBy:identity',

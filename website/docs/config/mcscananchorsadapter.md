@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: mcscanAnchorsLocation
-```js
 
-    /**
-     * !slot
-     */
-    mcscanAnchorsLocation: {
+```js
+mcscanAnchorsLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/mcscan.anchors',
@@ -18,13 +15,11 @@ toplevel: true
       },
     }
 ```
+
 #### slot: bed1Location
-```js
 
-    /**
-     * !slot
-     */
-    bed1Location: {
+```js
+bed1Location: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/file.bed',
@@ -32,13 +27,11 @@ toplevel: true
       },
     }
 ```
+
 #### slot: bed2Location
-```js
 
-    /**
-     * !slot
-     */
-    bed2Location: {
+```js
+bed2Location: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/file.bed',
@@ -46,13 +39,11 @@ toplevel: true
       },
     }
 ```
-#### slot: assemblyNames
-```js
 
-    /**
-     * !slot
-     */
-    assemblyNames: {
+#### slot: assemblyNames
+
+```js
+assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
     }

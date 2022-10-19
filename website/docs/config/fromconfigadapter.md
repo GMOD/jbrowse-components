@@ -5,23 +5,18 @@ toplevel: true
 ---
 
 #### slot: features
-```js
 
-    /**
-     * !slot
-     */
-    features: {
+```js
+features: {
       type: 'frozen',
       defaultValue: [],
     }
 ```
-#### slot: featureClass
-```js
 
-    /**
-     * !slot
-     */
-    featureClass: {
+#### slot: featureClass
+
+```js
+featureClass: {
       type: 'string',
       defaultValue: 'SimpleFeature',
     }

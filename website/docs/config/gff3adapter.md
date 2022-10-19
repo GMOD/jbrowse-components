@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: gffLocation
-```js
 
-    /**
-     * !slot
-     */
-    gffLocation: {
+```js
+gffLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.gff', locationType: 'UriLocation' },
     }

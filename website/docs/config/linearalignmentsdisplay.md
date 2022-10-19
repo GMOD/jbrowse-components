@@ -10,18 +10,12 @@ quantitative "snpcoverage" sub-display track showing SNP frequencies
 #### slot: pileupDisplay
 
 ```js
-/**
- * !slot
- */
 pileupDisplay: pluginManager.getDisplayType('LinearPileupDisplay').configSchema
 ```
 
 #### slot: snpCoverageDisplay
 
 ```js
-/**
- * !slot
- */
 snpCoverageDisplay: pluginManager.getDisplayType('LinearSNPCoverageDisplay')
   .configSchema
 ```
@@ -29,8 +23,5 @@ snpCoverageDisplay: pluginManager.getDisplayType('LinearSNPCoverageDisplay')
 #### derives from:
 
 ```js
-/**
- * !baseConfiguration
- */
 baseConfiguration: baseLinearDisplayConfigSchema
 ```

@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: bigBedLocation
-```js
 
-    /**
-     * !slot
-     */
-    bigBedLocation: {
+```js
+bigBedLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bb', locationType: 'UriLocation' },
     }

@@ -5,60 +5,49 @@ toplevel: true
 ---
 
 #### slot: ixFilePath
-```js
 
-    /**
-     * !slot
-     */
-    ixFilePath: {
+```js
+ixFilePath: {
       type: 'fileLocation',
       defaultValue: { uri: 'out.ix', locationType: 'UriLocation' },
       description: 'the location of the trix ix file',
     }
 ```
-#### slot: ixxFilePath
-```js
 
-    /**
-     * !slot
-     */
-    ixxFilePath: {
+#### slot: ixxFilePath
+
+```js
+ixxFilePath: {
       type: 'fileLocation',
       defaultValue: { uri: 'out.ixx', locationType: 'UriLocation' },
       description: 'the location of the trix ixx file',
     }
 ```
-#### slot: metaFilePath
-```js
 
-    /**
-     * !slot
-     */
-    metaFilePath: {
+#### slot: metaFilePath
+
+```js
+metaFilePath: {
       type: 'fileLocation',
       defaultValue: { uri: 'meta.json', locationType: 'UriLocation' },
       description: 'the location of the metadata json file for the trix index',
     }
 ```
-#### slot: tracks
-```js
 
-    /**
-     * !slot
-     */
-    tracks: {
+#### slot: tracks
+
+```js
+tracks: {
       type: 'stringArray',
       defaultValue: [],
       description: 'List of tracks covered by text search adapter',
     }
 ```
-#### slot: assemblyNames
-```js
 
-    /**
-     * !slot
-     */
-    assemblyNames: {
+#### slot: assemblyNames
+
+```js
+assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description: 'List of assemblies covered by text search adapter',

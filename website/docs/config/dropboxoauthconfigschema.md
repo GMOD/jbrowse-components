@@ -5,48 +5,39 @@ toplevel: true
 ---
 
 #### slot: authEndpoint
-```js
 
-    /**
-     * !slot
-     */
-    authEndpoint: {
+```js
+authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https://www.dropbox.com/oauth2/authorize',
+      defaultValue: 'https:
     }
 ```
-#### slot: tokenEndpoint
-```js
 
-    /**
-     * !slot
-     */
-    tokenEndpoint: {
+#### slot: tokenEndpoint
+
+```js
+tokenEndpoint: {
       description: 'the token endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https://api.dropbox.com/oauth2/token',
+      defaultValue: 'https:
     }
 ```
-#### slot: needsPKCE
-```js
 
-    /**
-     * !slot
-     */
-    needsPKCE: {
+#### slot: needsPKCE
+
+```js
+needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
       type: 'boolean',
       defaultValue: true,
     }
 ```
-#### slot: domains
-```js
 
-    /**
-     * !slot
-     */
-    domains: {
+#### slot: domains
+
+```js
+domains: {
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
@@ -61,23 +52,19 @@ toplevel: true
       ],
     }
 ```
-#### slot: hasRefreshToken
-```js
 
-    /**
-     * !slot
-     */
-    hasRefreshToken: {
+#### slot: hasRefreshToken
+
+```js
+hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
       type: 'boolean',
       defaultValue: true,
     }
 ```
-#### derives from: 
-```js
 
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: OAuthConfigSchema
+#### derives from:
+
+```js
+baseConfiguration: OAuthConfigSchema
 ```

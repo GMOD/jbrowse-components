@@ -5,35 +5,28 @@ toplevel: true
 ---
 
 #### slot: filled
-```js
 
-    /**
-     * !slot
-     */
-    filled: {
+```js
+filled: {
       type: 'boolean',
       defaultValue: true,
     }
 ```
-#### slot: displayCrossHatches
-```js
 
-    /**
-     * !slot
-     */
-    displayCrossHatches: {
+#### slot: displayCrossHatches
+
+```js
+displayCrossHatches: {
       type: 'boolean',
       description: 'choose to draw cross hatches (sideways lines)',
       defaultValue: false,
     }
 ```
-#### slot: summaryScoreMode
-```js
 
-    /**
-     * !slot
-     */
-    summaryScoreMode: {
+#### slot: summaryScoreMode
+
+```js
+summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
       description:
@@ -41,22 +34,18 @@ toplevel: true
       defaultValue: 'avg',
     }
 ```
-#### slot: minSize
-```js
 
-    /**
-     * !slot
-     */
-    minSize: {
+#### slot: minSize
+
+```js
+minSize: {
       type: 'number',
       defaultValue: 0,
     }
 ```
-#### derives from: 
-```js
 
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: baseWiggleRendererConfigSchema
+#### derives from:
+
+```js
+baseConfiguration: baseWiggleRendererConfigSchema
 ```

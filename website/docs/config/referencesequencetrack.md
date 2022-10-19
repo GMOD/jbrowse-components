@@ -3,50 +3,42 @@ id: referencesequencetrack
 title: ReferenceSequenceTrack
 toplevel: true
 ---
+
 used to display base level DNA sequence tracks
+
 #### slot: adapter
-```js
 
-      /**
-       * !slot adapter
-       * !type AdapterType
-       * configuration for track adapter
-       */
-      adapter: pluginManager.pluggableConfigSchemaType('adapter')
+!type AdapterType
+configuration for track adapter
+
+```js
+adapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```
+
 #### slot: displays
+
+!type DisplayType[]
+configuration for the displays e.g. LinearReferenceSequenceDisplay
+
 ```js
-
-
-      /**
-       * !slot displays
-       * !type DisplayType[]
-       * configuration for the displays e.g. LinearReferenceSequenceDisplay
-       */
-      displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
+displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
+
 #### slot: name
+
 ```js
-
-
-      /**
-       * !slot name
-       */
-      name: {
+name: {
         type: 'string',
         description:
           'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
         defaultValue: '',
       }
 ```
+
 #### slot: metadata
+
 ```js
-
-
-      /**
-       * !slot metadata
-       */
-      metadata: {
+metadata: {
         type: 'frozen',
         description: 'anything to add about this track',
         defaultValue: {},

@@ -5,83 +5,68 @@ toplevel: true
 ---
 
 #### slot: bedLocation
-```js
 
-    /**
-     * !slot
-     */
-    bedLocation: {
+```js
+bedLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
     }
 ```
-#### slot: columnNames
-```js
 
-    /**
-     * !slot
-     */
-    columnNames: {
+#### slot: columnNames
+
+```js
+columnNames: {
       type: 'stringArray',
       description: 'List of column names',
       defaultValue: [],
     }
 ```
-#### slot: scoreColumn
-```js
 
-    /**
-     * !slot
-     */
-    scoreColumn: {
+#### slot: scoreColumn
+
+```js
+scoreColumn: {
       type: 'string',
       description: 'The column to use as a "score" attribute',
       defaultValue: '',
     }
 ```
-#### slot: autoSql
-```js
 
-    /**
-     * !slot
-     */
-    autoSql: {
+#### slot: autoSql
+
+```js
+autoSql: {
       type: 'string',
       description: 'The autoSql definition for the data fields in the file',
       defaultValue: '',
     }
 ```
-#### slot: colRef
-```js
 
-    /**
-     * !slot
-     */
-    colRef: {
+#### slot: colRef
+
+```js
+colRef: {
       type: 'number',
       description: 'The column to use as a "refName" attribute',
       defaultValue: 0,
     }
 ```
-#### slot: colStart
-```js
 
-    /**
-     * !slot
-     */
-    colStart: {
+#### slot: colStart
+
+```js
+colStart: {
       type: 'number',
       description: 'The column to use as a "start" attribute',
       defaultValue: 1,
     }
 ```
-#### slot: colEnd
-```js
 
-    /**
-     * !slot
-     */
-    colEnd: {
+#### slot: colEnd
+
+```js
+colEnd: {
       type: 'number',
       description: 'The column to use as a "end" attribute',
       defaultValue: 2,

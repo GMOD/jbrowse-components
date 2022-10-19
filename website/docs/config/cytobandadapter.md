@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: cytobandLocation
-```js
 
-    /**
-     * !slot
-     */
-    cytobandLocation: {
+```js
+cytobandLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/cytoband.txt.gz' },
     }

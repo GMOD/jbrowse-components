@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: mouseover
-```js
 
-      /**
-       * !slot
-       */
-      mouseover: {
+```js
+mouseover: {
         type: 'string',
         description: 'what to display in a given mouseover',
         defaultValue: `jexl:get(feature,'name')`,
@@ -18,19 +15,15 @@ toplevel: true
         contextVariable: ['feature'],
       }
 ```
+
 #### slot: renderer
-```js
 
-      /**
-       * !slot
-       */
-      renderer: pluginManager.pluggableConfigSchemaType('renderer')
+```js
+renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
-#### derives from: 
-```js
 
-      /**
-       * !baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema
+#### derives from:
+
+```js
+baseConfiguration: baseLinearDisplayConfigSchema
 ```

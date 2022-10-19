@@ -5,24 +5,19 @@ toplevel: true
 ---
 
 #### slot: displayCrossHatches
-```js
 
-    /**
-     * !slot
-     */
-    displayCrossHatches: {
+```js
+displayCrossHatches: {
       type: 'boolean',
       description: 'choose to draw cross hatches (sideways lines)',
       defaultValue: false,
     }
 ```
-#### slot: summaryScoreMode
-```js
 
-    /**
-     * !slot
-     */
-    summaryScoreMode: {
+#### slot: summaryScoreMode
+
+```js
+summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
       description:
@@ -30,11 +25,9 @@ toplevel: true
       defaultValue: 'avg',
     }
 ```
-#### derives from: 
-```js
 
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: baseWiggleRendererConfigSchema
+#### derives from:
+
+```js
+baseConfiguration: baseWiggleRendererConfigSchema
 ```

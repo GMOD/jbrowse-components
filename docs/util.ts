@@ -17,6 +17,7 @@ interface Node {
   node: string
   name: string
   comment: string
+  filename: string
 }
 
 export function extractWithComment(
@@ -62,6 +63,7 @@ export function extractWithComment(
         name: symbol.getName(),
         comment,
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!slot')) {
       cb({
@@ -69,6 +71,7 @@ export function extractWithComment(
         name: symbol.getName(),
         comment,
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!baseConfiguration')) {
       cb({
@@ -76,6 +79,7 @@ export function extractWithComment(
         name: symbol.getName(),
         comment,
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!stateModel')) {
       cb({
@@ -83,6 +87,7 @@ export function extractWithComment(
         name: symbol.getName(),
         comment,
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!property')) {
       cb({
@@ -93,6 +98,7 @@ export function extractWithComment(
           checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
         ),
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!getter')) {
       cb({
@@ -103,6 +109,7 @@ export function extractWithComment(
           checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
         ),
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!method')) {
       cb({
@@ -113,6 +120,7 @@ export function extractWithComment(
           checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
         ),
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!baseModel')) {
       cb({
@@ -120,6 +128,7 @@ export function extractWithComment(
         name: symbol.getName(),
         comment,
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     } else if (comment?.includes('!action')) {
       cb({
@@ -130,7 +139,28 @@ export function extractWithComment(
           checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
         ),
         node: node.getFullText(),
+        filename: node.getSourceFile().fileName,
       })
     }
   }
+}
+
+export function removeComments(string: string) {
+  //Takes a string of code, not an actual function.
+  return string.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim() //Strip comments
+}
+
+export function rm(str1: string, str2: string) {
+  return str1
+    .split('\n')
+    .find(x => x.includes(str2))
+    ?.replace(str2, '')
+    .trim()
+}
+
+export function filter(str1: string, str2: string) {
+  return str1
+    .split('\n')
+    .filter(x => !x.includes(str2))
+    .join('\n')
 }

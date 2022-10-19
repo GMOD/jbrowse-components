@@ -3,29 +3,26 @@ id: baselineardisplay
 title: BaseLinearDisplay
 toplevel: true
 ---
+
 BaseLinearDisplay is a "base" config that is extended by classes like
 "LinearBasicDisplay" (used for feature tracks, etc) and "LinearBareDisplay"
 (more stripped down than even the basic display, not commonly used)
-#### slot: maxFeatureScreenDensity
-```js
 
-    /**
-     * !slot
-     */
-    maxFeatureScreenDensity: {
+#### slot: maxFeatureScreenDensity
+
+```js
+maxFeatureScreenDensity: {
       type: 'number',
       description:
         'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
       defaultValue: 0.3,
     }
 ```
-#### slot: fetchSizeLimit
-```js
 
-    /**
-     * !slot
-     */
-    fetchSizeLimit: {
+#### slot: fetchSizeLimit
+
+```js
+fetchSizeLimit: {
       type: 'number',
       defaultValue: 1_000_000,
       description:

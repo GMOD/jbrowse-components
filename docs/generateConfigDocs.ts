@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import slugify from 'slugify'
-import { extractWithComment } from './util'
+import { rm, filter, removeComments, extractWithComment } from './util'
 import fs from 'fs'
 
 let currentGuide = ''
@@ -109,28 +109,19 @@ function generateConfigDocs() {
     obj => {
       if (obj.type === 'baseConfiguration') {
         write(`#### derives from: \n`)
-        write(`\`\`\`js\n${obj.node}\n\`\`\`\n`)
+        write(filter(obj.comment, '!baseConfiguration'))
+        write('\n')
+        write(`\`\`\`js\n${removeComments(obj.node)}\n\`\`\`\n`)
       } else if (obj.type === 'slot') {
-        const name = obj.node
-          .split('\n')
-          .find(x => x.includes('!slot'))
-          ?.replace('* !slot', '')
-          .trim()
+        const name = rm(obj.comment, '!slot') || obj.name
 
-        write(`#### slot: ${name || obj.name}\n`)
-        write(`\`\`\`js\n${obj.node}\n\`\`\`\n`)
+        write(`#### slot: ${name}\n`)
+        write(filter(obj.comment, '!slot'))
+        write('\n')
+        write(`\`\`\`js\n${removeComments(obj.node)}\n\`\`\`\n`)
       } else if (obj.type === 'config') {
-        const name =
-          obj.comment
-            .split('\n')
-            .find(x => x.includes('!config'))
-            ?.replace('!config', '')
-            .trim() || obj.name
-
-        const rest = obj.comment
-          .split('\n')
-          .filter(x => !x.includes('!config'))
-          .join('\n')
+        const name = rm(obj.comment, '!config') || obj.name
+        const rest = filter(obj.comment, '!config')
         const id = slugify(name, { lower: true })
         currentGuide = `website/docs/config/${id}.md`
         fs.writeFileSync(currentGuide, '')

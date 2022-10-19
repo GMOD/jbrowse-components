@@ -4,69 +4,47 @@ title: ChordVariantDisplay
 toplevel: true
 ---
 
-
 extends `BaseChordDisplay`
+
 #### property: type
 
-
 ```js
-
-        /**
-         * !property
-         */
-        type: types.literal('ChordVariantDisplay')
+type: types.literal('ChordVariantDisplay')
 ```
+
 #### property: configuration
 
-
 ```js
-
-        /**
-         * !property
-         */
-        configuration: ConfigurationReference(configSchema)
+configuration: ConfigurationReference(configSchema)
 ```
+
 #### getter: rendererTypeName
-
-
 
 ```js
 // Type
 any
 ```
-#### property: configuration
 
-
-```js
- self.configuration
-```
 #### method: renderProps
 
 ```js
 // Type signature
 renderProps: () => Record<string, unknown>
 ```
+
 #### property: rpcDriverName
 
-
 ```js
- self.rpcDriverName
+self.rpcDriverName
 ```
+
 #### property: bezierRadiusRatio
 
-
 ```js
- self.bezierRadiusRatio
+self.bezierRadiusRatio
 ```
-#### property: configuration
 
-
-```js
- self.configuration
-```
 #### action: onChordClick
-
-
 
 ```js
 // Type signature

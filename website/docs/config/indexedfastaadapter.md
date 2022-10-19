@@ -5,34 +5,27 @@ toplevel: true
 ---
 
 #### slot: fastaLocation
-```js
 
-    /**
-     * !slot
-     */
-    fastaLocation: {
+```js
+fastaLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
     }
 ```
-#### slot: faiLocation
-```js
 
-    /**
-     * !slot
-     */
-    faiLocation: {
+#### slot: faiLocation
+
+```js
+faiLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     }
 ```
-#### slot: metadataLocation
-```js
 
-    /**
-     * !slot
-     */
-    metadataLocation: {
+#### slot: metadataLocation
+
+```js
+metadataLocation: {
       description: 'Optional metadata file',
       type: 'fileLocation',
       defaultValue: {

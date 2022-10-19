@@ -5,24 +5,19 @@ toplevel: true
 ---
 
 #### slot: subadapters
-```js
 
-    /**
-     * !slot
-     */
-    subadapters: {
+```js
+subadapters: {
       type: 'frozen',
       defaultValue: [],
       description: 'array of subadapter JSON objects',
     }
 ```
-#### slot: bigWigs
-```js
 
-    /**
-     * !slot
-     */
-    bigWigs: {
+#### slot: bigWigs
+
+```js
+bigWigs: {
       type: 'frozen',
       description:
         'array of bigwig filenames, alternative to the subadapters slot',

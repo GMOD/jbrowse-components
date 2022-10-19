@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: autoscale
-```js
 
-      /**
-       * !slot
-       */
-      autoscale: {
+```js
+autoscale: {
         type: 'stringEnum',
         defaultValue: 'local',
         model: types.enumeration('Autoscale type', ['local']),
@@ -18,83 +15,69 @@ toplevel: true
           'performs local autoscaling (no other options for SNP Coverage available)',
       }
 ```
-#### slot: minScore
-```js
 
-      /**
-       * !slot
-       */
-      minScore: {
+#### slot: minScore
+
+```js
+minScore: {
         type: 'number',
         defaultValue: Number.MIN_VALUE,
         description: 'minimum value for the y-scale',
       }
 ```
-#### slot: maxScore
-```js
 
-      /**
-       * !slot
-       */
-      maxScore: {
+#### slot: maxScore
+
+```js
+maxScore: {
         type: 'number',
         description: 'maximum value for the y-scale',
         defaultValue: Number.MAX_VALUE,
       }
 ```
-#### slot: scaleType
-```js
 
-      /**
-       * !slot
-       */
-      scaleType: {
+#### slot: scaleType
+
+```js
+scaleType: {
         type: 'stringEnum',
-        model: types.enumeration('Scale type', ['linear', 'log']), // todo zscale
+        model: types.enumeration('Scale type', ['linear', 'log']),
         description: 'The type of scale to use',
         defaultValue: 'linear',
       }
 ```
-#### slot: inverted
-```js
 
-      /**
-       * !slot
-       */ inverted: {
+#### slot: inverted
+
+```js
+inverted: {
         type: 'boolean',
         description: 'draw upside down',
         defaultValue: false,
       }
 ```
-#### slot: multiTicks
-```js
 
-      /**
-       * !slot
-       */
-      multiTicks: {
+#### slot: multiTicks
+
+```js
+multiTicks: {
         type: 'boolean',
         description: 'Display multiple values for the ticks',
         defaultValue: false,
       }
 ```
+
 #### slot: renderers
-```js
 
-      /**
-       * !slot
-       */
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        SNPCoverageRenderer: pluginManager.getRendererType(
-          'SNPCoverageRenderer',
-        ).configSchema,
-      })
+```js
+renderers: ConfigurationSchema('RenderersConfiguration', {
+  SNPCoverageRenderer: pluginManager.getRendererType('SNPCoverageRenderer')
+    .configSchema,
+})
 ```
-#### derives from: 
-```js
 
-      /**
-       * !baseConfiguration
-       */
-      baseConfiguration: baseLinearDisplayConfigSchema
+#### derives from:
+
+```js
+baseConfiguration: baseLinearDisplayConfigSchema
 ```

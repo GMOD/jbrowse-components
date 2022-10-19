@@ -9,8 +9,5 @@ synonym for FeatureTrack
 #### derives from:
 
 ```js
-/**
- * !baseConfiguration
- */
 baseConfiguration: createBaseTrackConfig(pluginManager)
 ```

@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: chromSizesLocation
-```js
 
-    /**
-     * !slot
-     */
-    chromSizesLocation: {
+```js
+chromSizesLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/species.chrom.sizes',

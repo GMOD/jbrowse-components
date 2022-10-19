@@ -6,10 +6,8 @@ toplevel: true
 
 #### slot: subadapter
 
+normally refers to a BAM or CRAM adapter
+
 ```js
-/**
- * !slot
- * normally refers to a BAM or CRAM adapter
- */
 subadapter: pluginManager.pluggableConfigSchemaType('adapter')
 ```

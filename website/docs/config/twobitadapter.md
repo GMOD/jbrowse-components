@@ -5,23 +5,18 @@ toplevel: true
 ---
 
 #### slot: twoBitLocation
-```js
 
-    /**
-     * !slot
-     */
-    twoBitLocation: {
+```js
+twoBitLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
     }
 ```
-#### slot: chromSizesLocation
-```js
 
-    /**
-     * !slot
-     */
-    chromSizesLocation: {
+#### slot: chromSizesLocation
+
+```js
+chromSizesLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/default.chrom.sizes',

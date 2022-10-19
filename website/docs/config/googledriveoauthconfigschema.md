@@ -5,59 +5,48 @@ toplevel: true
 ---
 
 #### slot: authEndpoint
-```js
 
-    /**
-     * !slot
-     */
-    authEndpoint: {
+```js
+authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: 'https://accounts.google.com/o/oauth2/v2/auth',
+      defaultValue: 'https:
     }
 ```
-#### slot: scopes
-```js
 
-    /**
-     * !slot
-     */
-    scopes: {
+#### slot: scopes
+
+```js
+scopes: {
       description: 'optional scopes for the authorization call',
       type: 'string',
-      defaultValue: 'https://www.googleapis.com/auth/drive.readonly',
+      defaultValue: 'https:
     }
 ```
-#### slot: domains
-```js
 
-    /**
-     * !slot
-     */
-    domains: {
+#### slot: domains
+
+```js
+domains: {
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
       defaultValue: ['drive.google.com"'],
     }
 ```
-#### slot: responseType
-```js
 
-    /**
-     * !slot
-     */
-    responseType: {
+#### slot: responseType
+
+```js
+responseType: {
       description: 'the type of response from the authorization endpoint',
       type: 'string',
       defaultValue: 'token',
     }
 ```
-#### derives from: 
-```js
 
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: OAuthConfigSchema
+#### derives from:
+
+```js
+baseConfiguration: OAuthConfigSchema
 ```

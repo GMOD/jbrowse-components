@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: bigWigLocation
-```js
 
-    /**
-     * !slot
-     */
-    bigWigLocation: {
+```js
+bigWigLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/my.bw',
@@ -18,14 +15,11 @@ toplevel: true
       },
     }
 ```
+
 #### slot: source
+
 ```js
-
-
-    /**
-     * !slot
-     */
-    source: {
+source: {
       type: 'string',
       defaultValue: '',
       description: 'Used for multiwiggle',

@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: rootUrlTemplate
-```js
 
-    /**
-     * !slot
-     */
-    rootUrlTemplate: {
+```js
+rootUrlTemplate: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/my/{refseq}/trackData.json',
@@ -18,13 +15,11 @@ toplevel: true
       },
     }
 ```
-#### slot: refNames
-```js
 
-    /**
-     * !slot
-     */
-    refNames: {
+#### slot: refNames
+
+```js
+refNames: {
       type: 'stringArray',
       defaultValue: [],
       description: 'List of refNames used by the NCList used for aliasing',

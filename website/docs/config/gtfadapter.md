@@ -5,12 +5,9 @@ toplevel: true
 ---
 
 #### slot: gtfLocation
-```js
 
-    /**
-     * !slot
-     */
-    gtfLocation: {
+```js
+gtfLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
     }

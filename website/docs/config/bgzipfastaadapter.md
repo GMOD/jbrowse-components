@@ -5,23 +5,18 @@ toplevel: true
 ---
 
 #### slot: fastaLocation
-```js
 
-    /**
-     * !slot
-     */
-    fastaLocation: {
+```js
+fastaLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
     }
 ```
-#### slot: faiLocation
-```js
 
-    /**
-     * !slot
-     */
-    faiLocation: {
+#### slot: faiLocation
+
+```js
+faiLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/seq.fa.gz.fai',
@@ -29,13 +24,11 @@ toplevel: true
       },
     }
 ```
-#### slot: metadataLocation
-```js
 
-    /**
-     * !slot
-     */
-    metadataLocation: {
+#### slot: metadataLocation
+
+```js
+metadataLocation: {
       description: 'Optional metadata file',
       type: 'fileLocation',
       defaultValue: {
@@ -44,13 +37,11 @@ toplevel: true
       },
     }
 ```
-#### slot: gziLocation
-```js
 
-    /**
-     * !slot
-     */
-    gziLocation: {
+#### slot: gziLocation
+
+```js
+gziLocation: {
       type: 'fileLocation',
       defaultValue: {
         uri: '/path/to/seq.fa.gz.gzi',

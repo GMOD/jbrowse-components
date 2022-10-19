@@ -7,9 +7,6 @@ toplevel: true
 #### slot: renderer
 
 ```js
-/**
- * !slot
- */
 renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
   type: 'ArcRenderer',
 })
@@ -18,8 +15,5 @@ renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
 #### derives from:
 
 ```js
-/**
- * !baseConfiguration
- */
 baseConfiguration: baseLinearDisplayConfigSchema
 ```
