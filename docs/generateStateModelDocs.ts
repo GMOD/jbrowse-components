@@ -1,8 +1,15 @@
 /* eslint-disable no-console */
+import slugify from 'slugify'
 import { extractWithComment } from './util'
+import fs from 'fs'
 
 const alreadySeen = {} as { [key: string]: { [key: string]: boolean } }
 let currStateModel = ''
+
+function write(s: string) {
+  fs.appendFileSync(currStateModel, `${s}\n`)
+}
+
 function generateStateModelDocs() {
   console.log(`---
 id: state_model_reference
@@ -30,79 +37,77 @@ toplevel: true
       'plugins/variants/src/ChordVariantDisplay/models/ChordVariantDisplay.ts',
     ],
     obj => {
-      if (alreadySeen[currStateModel]?.[obj.name]) {
-        return
-      }
       if (obj.type === 'stateModel') {
-        currStateModel = obj.name
-        alreadySeen[currStateModel] = {}
-        const name = obj.comment
-          .split('\n')
-          .find(x => x.includes('!stateModel'))
-          ?.replace('!stateModel', '')
-          .trim()
+        const name =
+          obj.comment
+            .split('\n')
+            .find(x => x.includes('!stateModel'))
+            ?.replace('!stateModel', '')
+            .trim() || obj.name
+
+        const id = slugify(name, { lower: true })
+        currStateModel = `website/docs/models/${id}.md`
+        fs.writeFileSync(currStateModel, '')
+        alreadySeen[obj.name] = {}
+
+        write(`---
+id: ${id}
+title: ${name}
+toplevel: true
+---`)
 
         const rest = obj.comment
           .split('\n')
           .filter(x => !x.includes('!stateModel'))
           .join('\n')
 
-        console.log(`## ${name || obj.name}`)
-        console.log('\n')
-        console.log(rest)
-        console.log('\n')
+        write('\n')
+        write(rest)
       } else {
-        if (alreadySeen[currStateModel]) {
-          alreadySeen[currStateModel][obj.name] = true
-        }
         if (obj.type === 'getter') {
           const rest = obj.comment
             .split('\n')
             .filter(x => !x.includes('!getter'))
             .join('\n')
-          console.log(`#### getter: ${obj.name}`)
-          console.log('\n')
-          console.log(rest)
-          console.log('\n')
-          console.log('```js')
-          console.log('// Type')
-          console.log(obj.signature)
-          console.log('```')
+          write(`#### getter: ${obj.name}`)
+          write('\n')
+          write(rest)
+          write('```js')
+          write('// Type')
+          write(obj.signature || '')
+          write('```')
         } else if (obj.type === 'method') {
-          console.log(`#### method: ${obj.name}`)
-          console.log('\n')
+          write(`#### method: ${obj.name}`)
 
           const rest = obj.comment
             .split('\n')
             .filter(x => !x.includes('!method'))
             .join('\n')
-          console.log('\n')
-          console.log(rest)
-          console.log('\n')
-          console.log('```js')
-          console.log('// Type signature')
-          console.log(`${obj.name}: ${obj.signature}`)
-          console.log('```')
+          write(rest)
+          write('```js')
+          write('// Type signature')
+          write(`${obj.name}: ${obj.signature}`)
+          write('```')
         } else if (obj.type === 'action') {
-          console.log(`#### action: ${obj.name}`)
-          console.log('\n')
+          write(`#### action: ${obj.name}`)
+          write('\n')
 
           const rest = obj.comment
             .split('\n')
             .filter(x => !x.includes('!action'))
             .join('\n')
-          console.log(rest)
-          console.log('```js')
+          write(rest)
+          write('```js')
 
-          console.log('// Type signature')
-          console.log(`${obj.name}: ${obj.signature}`)
-          console.log('```')
+          write('// Type signature')
+          write(`${obj.name}: ${obj.signature}`)
+          write('```')
         } else if (obj.type === 'property') {
-          console.log(`#### property: ${obj.name}`)
-          console.log('\n')
-          console.log('```js')
-          console.log(obj.node)
-          console.log('```')
+          write(`#### property: ${obj.name}`)
+          write('\n')
+          write('```js')
+          write(obj.node)
+          write('```')
         }
       }
     },

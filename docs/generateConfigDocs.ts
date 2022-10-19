@@ -1,13 +1,15 @@
 /* eslint-disable no-console */
+import slugify from 'slugify'
 import { extractWithComment } from './util'
+import fs from 'fs'
+
+let currentGuide = ''
+
+function write(s: string) {
+  fs.appendFileSync(currentGuide, s)
+}
 
 function generateConfigDocs() {
-  console.log(`---
-id: config_reference
-title: Config reference
-toplevel: true
----`)
-
   extractWithComment(
     [
       'packages/core/pluggableElementTypes/models/baseTrackConfig.ts',
@@ -106,11 +108,8 @@ toplevel: true
     ],
     obj => {
       if (obj.type === 'baseConfiguration') {
-        console.log(`#### derives from: `)
-        console.log('\n')
-        console.log('```js')
-        console.log(obj.node)
-        console.log('```')
+        write(`#### derives from: \n`)
+        write(`\`\`\`js\n${obj.node}\n\`\`\`\n`)
       } else if (obj.type === 'slot') {
         const name = obj.node
           .split('\n')
@@ -118,28 +117,33 @@ toplevel: true
           ?.replace('* !slot', '')
           .trim()
 
-        console.log(`#### slot: ${name || obj.name}`)
-        console.log('\n')
-        console.log('\n')
-        console.log('```js')
-        console.log(obj.node)
-        console.log('```')
+        write(`#### slot: ${name || obj.name}\n`)
+        write(`\`\`\`js\n${obj.node}\n\`\`\`\n`)
       } else if (obj.type === 'config') {
-        const name = obj.comment
-          .split('\n')
-          .find(x => x.includes('!config'))
-          ?.replace('!config', '')
-          .trim()
+        const name =
+          obj.comment
+            .split('\n')
+            .find(x => x.includes('!config'))
+            ?.replace('!config', '')
+            .trim() || obj.name
 
         const rest = obj.comment
           .split('\n')
           .filter(x => !x.includes('!config'))
           .join('\n')
+        const id = slugify(name, { lower: true })
+        currentGuide = `website/docs/config/${id}.md`
+        fs.writeFileSync(currentGuide, '')
 
-        console.log(`## ${name || obj.name}`)
-        console.log('\n')
-        console.log(rest)
-        console.log('\n')
+        write(`---
+id: ${id}
+title: ${name}
+toplevel: true
+---`)
+
+        write('\n')
+        write(rest)
+        write('\n')
       }
     },
   )
