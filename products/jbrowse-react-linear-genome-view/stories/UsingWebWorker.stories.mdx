@@ -1,0 +1,43 @@
+import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import { isArrayLike } from 'lodash'
+
+<Meta title="Using WebWorker RPC" />
+
+## Web Worker RPC
+
+Developers can configure their instance of @jbrowse/react-linear-genome-view to use webworkers from v2.1.6 of jbrowse forward.
+
+The code snippet looks this
+
+```
+import { makeWorkerInstance, createViewState, loadPlugins, JBrowseLinearGenomeView } from '../src'
+
+...
+function YourApp() {
+ const state = createViewState({
+    assembly,
+    tracks,
+    location: 'ctgA:1105..1221',
+    configuration: {
+      rpc: {
+        defaultDriver: 'WebWorkerRpcDriver',
+      },
+    },
+    makeWorkerInstance,
+  })
+
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+```
+
+By importing makeWorkerInstance and adding the WebWorkerRpcDriver configuration 
+to createViewState, the app will use the WebWorker RPC
+
+Using WebWorker RPC can greatly reduce "hanging" of the main thread browsing 
+alignments datasets like BAM / CRAM
+
+
+<Canvas withSource="open">
+  <Story id="linear-view--with-web-worker" />
+</Canvas>
