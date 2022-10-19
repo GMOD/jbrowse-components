@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import slugify from 'slugify'
 import { rm, filter, removeComments, extractWithComment } from './util'
 import fs from 'fs'

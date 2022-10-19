@@ -12,6 +12,11 @@
     "currentVersion": "v2.1.5"
   },
   "themeConfig": {
+    "algolia": {
+      "appId": "DOROTQUASX",
+      "apiKey": "9f423a648882c638952498a98ad9b95e",
+      "indexName": "dev_jbrowse"
+    },
     "colorMode": {
       "disableSwitch": true
     },

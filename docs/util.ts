@@ -79,8 +79,7 @@ export function extractWithComment(
 }
 
 export function removeComments(string: string) {
-  //Takes a string of code, not an actual function.
-  return string.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim() //Strip comments
+  return string.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim()
 }
 
 export function rm(str1: string, str2: string) {

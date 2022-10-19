@@ -3,7 +3,6 @@ import slugify from 'slugify'
 import { rm, filter, removeComments, extractWithComment } from './util'
 import fs from 'fs'
 
-let alreadySeen = {} as { [key: string]: { [key: string]: boolean } }
 let currStateModel = ''
 
 function write(s: string) {
@@ -11,12 +10,6 @@ function write(s: string) {
 }
 
 function generateStateModelDocs() {
-  console.log(`---
-id: state_model_reference
-title: State-model reference
-toplevel: true
----`)
-
   extractWithComment(
     [
       'plugins/linear-genome-view/src/LinearGenomeView/index.tsx',
@@ -42,7 +35,6 @@ toplevel: true
         const id = slugify(name, { lower: true })
         currStateModel = `website/docs/models/${id}.md`
         fs.writeFileSync(currStateModel, '')
-        alreadySeen[obj.filename] = alreadySeen[obj.filename] || {}
 
         write(`---
 id: ${id}
@@ -54,13 +46,6 @@ toplevel: true
         write('\n')
         write(rest)
       } else {
-        if (alreadySeen[obj.filename]) {
-          if (alreadySeen[obj.filename][obj.name]) {
-            return
-          } else {
-            alreadySeen[obj.filename][obj.name] = true
-          }
-        }
         if (obj.type === 'getter') {
           const rest = filter(obj.comment, '!getter')
           write(`#### getter: ${obj.name}`)
