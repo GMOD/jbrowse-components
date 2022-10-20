@@ -39,6 +39,12 @@ to createViewState, the app will use the WebWorker RPC
 Using WebWorker RPC can greatly reduce "hanging" of the main thread browsing
 alignments datasets like BAM / CRAM.
 
+It may be important to use "publicPath":"auto" for your webpack config to
+properly resolve the web workers
+https://github.com/webpack/webpack/issues/13791#issuecomment-897579223 in
+create-react-app. See our demo projects for more examples
+https://jbrowse.org/jb2/docs/embedded_components/
+
 <Canvas withSource="open">
   <Story id="linear-view--with-web-worker" />
 </Canvas>

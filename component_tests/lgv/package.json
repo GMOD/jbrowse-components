@@ -24,6 +24,22 @@
     "typescript": "^4.6.3",
     "web-vitals": "^2.1.4"
   },
+  "resolutions": {
+    "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
+    "@jbrowse/plugin-alignments": "file:./packed/jbrowse-plugin-alignments.tgz",
+    "@jbrowse/plugin-bed": "file:./packed/jbrowse-plugin-bed.tgz",
+    "@jbrowse/plugin-circular-view": "file:./packed/jbrowse-plugin-circular-view.tgz",
+    "@jbrowse/plugin-config": "file:./packed/jbrowse-plugin-config.tgz",
+    "@jbrowse/plugin-data-management": "file:./packed/jbrowse-plugin-data-management.tgz",
+    "@jbrowse/plugin-gff3": "file:./packed/jbrowse-plugin-gff3.tgz",
+    "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
+    "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",
+    "@jbrowse/plugin-svg": "file:./packed/jbrowse-plugin-svg.tgz",
+    "@jbrowse/plugin-trix": "file:./packed/jbrowse-plugin-trix.tgz",
+    "@jbrowse/plugin-variants": "file:./packed/jbrowse-plugin-variants.tgz",
+    "@jbrowse/plugin-wiggle": "file:./packed/jbrowse-plugin-wiggle.tgz",
+    "@jbrowse/react-linear-genome-view": "file:./packed/jbrowse-react-linear-genome-view.tgz"
+  },
   "scripts": {
     "start": "craco start",
     "build": "craco build",
