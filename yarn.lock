@@ -1571,10 +1571,10 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.6.4":
-  version "1.6.4"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.6.4.tgz#4c585238ba201381f2e794785f6497b0b2c3bd1a"
-  integrity sha512-uj3BOukiQmL9JwJFMN7qqkvhfWMVVYhymrUA6+z6YMg3u107azw9Oxip6UEUHlVtrJhh2jyLDYgpewFLghJZew==
+"@gmod/cram@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.7.0.tgz#1b4546a465e633d9261fe0c66cabe1ff1ad9c514"
+  integrity sha512-TwOL/vF0p8FTpzmEUf2yaTG9E8kBKYXOAo7e4I6C6ICMOn0W/WH13AZPhVRVd4HZMCyuRakE93yatn5CTrWqAQ==
   dependencies:
     "@gmod/binary-parser" "^1.3.5"
     "@jkbonfield/htscodecs" "^0.5.1"
@@ -1582,11 +1582,10 @@
     buffer-crc32 "^0.2.13"
     bzip2 "^0.1.1"
     cross-fetch "^3.0.0"
-    es6-promisify "^6.0.1"
     long "^4.0.0"
     md5 "^2.2.1"
     pako "^1.0.4"
-    quick-lru "^2.0.0"
+    quick-lru "^4.0.1"
 
 "@gmod/faidx@^1.0.1":
   version "1.0.3"
