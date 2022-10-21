@@ -1571,10 +1571,10 @@
   dependencies:
     long "^4.0.0"
 
-"@gmod/cram@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.7.0.tgz#1b4546a465e633d9261fe0c66cabe1ff1ad9c514"
-  integrity sha512-TwOL/vF0p8FTpzmEUf2yaTG9E8kBKYXOAo7e4I6C6ICMOn0W/WH13AZPhVRVd4HZMCyuRakE93yatn5CTrWqAQ==
+"@gmod/cram@^1.7.1":
+  version "1.7.1"
+  resolved "https://registry.yarnpkg.com/@gmod/cram/-/cram-1.7.1.tgz#878f31bc5c038ec789fc0513d769fad5b964a806"
+  integrity sha512-RylBdSTLsKrwp9S1ZDa8hrSRYFRfvDHxH12vM4KrxlIRrpvH5uajGENMigqcL+TQhN9etZeZ+pEBi+lbz8kiXQ==
   dependencies:
     "@gmod/binary-parser" "^1.3.5"
     "@jkbonfield/htscodecs" "^0.5.1"

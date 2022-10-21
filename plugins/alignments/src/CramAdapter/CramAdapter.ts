@@ -1,4 +1,4 @@
-import { CraiIndex, IndexedCramFile } from '@gmod/cram'
+import { CraiIndex, IndexedCramFile, CramRecord } from '@gmod/cram'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -54,7 +54,6 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     }
     const pm = this.pluginManager
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cram = new IndexedCramFile({
       cramFilehandle: openLocation(cramLocation, pm),
       index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
@@ -245,29 +244,24 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
         readName,
       } = filterBy || {}
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let filtered = records.filter((record: any) => {
+      let filtered = records.filter(record => {
         const flags = record.flags
         return (flags & flagInclude) === flagInclude && !(flags & flagExclude)
       })
 
       if (tagFilter) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        filtered = filtered.filter((record: any) => {
+        filtered = filtered.filter(record => {
+          // @ts-ignore
           const val = record[tagFilter.tag]
           return val === '*' ? val !== undefined : val === tagFilter.value
         })
       }
 
       if (readName) {
-        filtered = filtered.filter(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (record: any) => record.readName === readName,
-        )
+        filtered = filtered.filter(record => record.readName === readName)
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      filtered.forEach((record: any) => {
+      filtered.forEach(record => {
         observer.next(this.cramRecordToFeature(record))
       })
       statusCallback('')
@@ -277,7 +271,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   freeResources(/* { region } */): void {}
 
-  cramRecordToFeature(record: unknown) {
+  cramRecordToFeature(record: CramRecord) {
     return new CramSlightlyLazyFeature(record, this)
   }
 
