@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-trackhub-registry",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "description": "Add a connection to The Track Hub Registry",
   "keywords": [
     "jbrowse",

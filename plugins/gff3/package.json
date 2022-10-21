@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-gff3",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 gff3.",
   "keywords": [
     "jbrowse",
@@ -39,7 +39,7 @@
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/gff": "^1.2.0",
+    "@gmod/gff": "^1.2.3",
     "@gmod/tabix": "^1.5.2"
   },
   "peerDependencies": {

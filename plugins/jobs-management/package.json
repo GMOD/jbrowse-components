@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-jobs-management",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 jobs management",
   "keywords": [
     "jbrowse",
@@ -37,7 +37,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/text-indexing": "^2.1.5",
+    "@jbrowse/text-indexing": "^2.1.7",
     "@mui/icons-material": "^5.0.0"
   },
   "peerDependencies": {

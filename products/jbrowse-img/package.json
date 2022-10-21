@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/img",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "main": "index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
-    "@jbrowse/plugin-linear-genome-view": "^2.1.5",
-    "@jbrowse/react-linear-genome-view": "^2.1.5",
+    "@jbrowse/plugin-linear-genome-view": "^2.1.7",
+    "@jbrowse/react-linear-genome-view": "^2.1.7",
     "abortcontroller-polyfill": "^1.7.3",
     "canvas": "^2.9.1",
     "jsdom": "^19.0.0",

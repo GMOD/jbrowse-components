@@ -4,6 +4,7 @@ import {
   createViewState,
   JBrowseLinearGenomeView,
 } from '@jbrowse/react-linear-genome-view'
+import makeWorkerInstance from '@jbrowse/react-linear-genome-view/esm/makeWorkerInstance'
 
 import assembly from './assembly'
 import tracks from './tracks'
@@ -82,6 +83,12 @@ function View() {
         setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
       defaultSession,
+      configuration: {
+        rpc: {
+          defaultDriver: 'WebWorkerRpcDriver',
+        },
+      },
+      makeWorkerInstance,
     })
     setViewState(state)
   }, [])

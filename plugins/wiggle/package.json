@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "2.1.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [
     "jbrowse",

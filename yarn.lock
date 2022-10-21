@@ -1596,10 +1596,10 @@
     pump "^3.0.0"
     split2 "^4.1.0"
 
-"@gmod/gff@^1.2.0":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.2.1.tgz#4d1e3694f2268215aa6c7bad366be84a1449034d"
-  integrity sha512-YUqPOfoaSfVVXs3Unwph4Ap3NxQIghNtNm+57DEhf+cMeUloFU6v44dKwSUcZZ+PBgAop1BD11QUVSVzmSqNgQ==
+"@gmod/gff@^1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@gmod/gff/-/gff-1.2.3.tgz#ae057592a14e3cd73a0ae430e94aa6a49e4312ca"
+  integrity sha512-ONnS+otYGLmrcd/c+j8IwRfm/gw0kWNxUOpGMap5G860LlFMYr4ltlQYucnTXDXnhcUsQHJlgLrQYhBnHf4y6A==
 
 "@gmod/gtf@^0.0.6":
   version "0.0.6"
