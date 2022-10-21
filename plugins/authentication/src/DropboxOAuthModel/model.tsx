@@ -59,15 +59,12 @@ async function getDescriptiveErrorMessage(response: Response) {
 const stateModelFactory = (
   configSchema: DropboxOAuthInternetAccountConfigModel,
 ) => {
-  return types
-    .compose(
-      'DropboxOAuthInternetAccount',
-      baseModel(OAuthConfigSchema),
-      types.model({
-        type: types.literal('DropboxOAuthInternetAccount'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
+  return baseModel(OAuthConfigSchema)
+    .named('DropboxOAuthInternetAccount')
+    .props({
+      type: types.literal('DropboxOAuthInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+    })
     .views(() => ({
       get toggleContents() {
         return <DropboxIcon />

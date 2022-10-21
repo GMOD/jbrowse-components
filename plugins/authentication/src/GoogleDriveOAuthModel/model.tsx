@@ -95,15 +95,12 @@ async function getDescriptiveErrorMessage(response: Response) {
 const stateModelFactory = (
   configSchema: GoogleDriveOAuthInternetAccountConfigModel,
 ) => {
-  return types
-    .compose(
-      'GoogleDriveOAuthInternetAccount',
-      baseModel(OAuthConfigSchema),
-      types.model({
-        type: types.literal('GoogleDriveOAuthInternetAccount'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
+  return baseModel(OAuthConfigSchema)
+    .named('GoogleDriveOAuthInternetAccount')
+    .props({
+      type: types.literal('GoogleDriveOAuthInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+    })
     .views(() => ({
       get toggleContents() {
         return <GoogleDriveIcon />
