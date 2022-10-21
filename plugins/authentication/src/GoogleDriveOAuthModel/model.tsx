@@ -15,7 +15,7 @@ import { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'
 
-interface RequestInitWithMetadata extends RequestInit {
+export interface RequestInitWithMetadata extends RequestInit {
   metadataOnly?: boolean
 }
 
@@ -40,7 +40,7 @@ interface GoogleDriveError {
   }
 }
 
-class GoogleDriveFile extends RemoteFileWithRangeCache {
+export class GoogleDriveFile extends RemoteFileWithRangeCache {
   private statsPromise: Promise<{ size: number }>
   constructor(source: string, opts: GoogleDriveFilehandleOptions) {
     super(source, opts)
