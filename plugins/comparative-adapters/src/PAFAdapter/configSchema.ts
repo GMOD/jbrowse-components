@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config PAFAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const PAFAdapter = ConfigurationSchema(
   'PAFAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -16,7 +18,7 @@ const PAFAdapter = ConfigurationSchema(
         'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
     },
     /**
-     * !slot
+     * #slot
      */
     targetAssembly: {
       type: 'string',
@@ -24,7 +26,7 @@ const PAFAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames: the target assembly name',
     },
     /**
-     * !slot
+     * #slot
      */
     queryAssembly: {
       type: 'string',
@@ -32,7 +34,7 @@ const PAFAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames: the query assembly name',
     },
     /**
-     * !slot
+     * #slot
      */
     pafLocation: {
       type: 'fileLocation',

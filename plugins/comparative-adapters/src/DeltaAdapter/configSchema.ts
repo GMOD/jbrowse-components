@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config DeltaAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const DeltaAdapter = ConfigurationSchema(
   'DeltaAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -16,7 +18,7 @@ const DeltaAdapter = ConfigurationSchema(
         'Array of assembly names to use for this file. The target assembly name is the first value in the array, query assembly name is the second',
     },
     /**
-     * !slot
+     * #slot
      * alternative to assembly names
      */
     targetAssembly: {
@@ -25,7 +27,7 @@ const DeltaAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames: the target assembly name',
     },
     /**
-     * !slot
+     * #slot
      * alternative to assembly names
      */
     queryAssembly: {
@@ -34,7 +36,7 @@ const DeltaAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames: the query assembly name',
     },
     /**
-     * !slot
+     * #slot
      */
     deltaLocation: {
       type: 'fileLocation',

@@ -4,7 +4,7 @@ title: MultiDensityRenderer
 toplevel: true
 ---
 
-## Derives from
+## MultiDensityRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

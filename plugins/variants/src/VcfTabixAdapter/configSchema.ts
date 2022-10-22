@@ -2,13 +2,15 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config VcfTabixAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const VcfTabixAdapter = ConfigurationSchema(
   'VcfTabixAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     vcfGzLocation: {
       type: 'fileLocation',
@@ -16,7 +18,7 @@ const VcfTabixAdapter = ConfigurationSchema(
     },
     index: ConfigurationSchema('VcfIndex', {
       /**
-       * !slot index.indexType
+       * #slot index.indexType
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -24,7 +26,7 @@ const VcfTabixAdapter = ConfigurationSchema(
         defaultValue: 'TBI',
       },
       /**
-       * !slot index.location
+       * #slot index.location
        */
       location: {
         type: 'fileLocation',

@@ -4,7 +4,7 @@ title: LinearComparativeDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearComparativeDisplay - Slots
 
 #### slot: renderer
 
@@ -12,7 +12,7 @@ toplevel: true
 renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
 
-## Derives from
+## LinearComparativeDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

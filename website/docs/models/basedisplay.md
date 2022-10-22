@@ -4,9 +4,9 @@ title: BaseDisplay
 toplevel: true
 ---
 
-### Properties
+### BaseDisplay - Properties
 
-#### properties: id
+#### property: id
 
 ```js
 // type signature
@@ -15,7 +15,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ ISimpleType<string>
 type: types.string
 ```
 
-#### properties: rpcDriverName
+#### property: rpcDriverName
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ IMaybe<ISimpleType<string>>
 rpcDriverName: types.maybe(types.string)
 ```
 
-### Getters
+### BaseDisplay - Getters
 
 #### getter: RenderingComponent
 
@@ -90,7 +90,7 @@ any
 MenuItem[]
 ```
 
-### Methods
+### BaseDisplay - Methods
 
 #### method: renderProps
 
@@ -116,7 +116,7 @@ trackMenuItems: () => MenuItem[]
 regionCannotBeRendered: () => any
 ```
 
-### Actions
+### BaseDisplay - Actions
 
 #### action: setError
 

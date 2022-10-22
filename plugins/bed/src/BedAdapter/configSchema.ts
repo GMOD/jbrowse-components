@@ -1,20 +1,22 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config BedAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const BedAdapter = ConfigurationSchema(
   'BedAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     bedLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.bed.gz', locationType: 'UriLocation' },
     },
     /**
-     * !slot
+     * #slot
      */
     columnNames: {
       type: 'stringArray',
@@ -22,7 +24,7 @@ const BedAdapter = ConfigurationSchema(
       defaultValue: [],
     },
     /**
-     * !slot
+     * #slot
      */
     scoreColumn: {
       type: 'string',
@@ -30,7 +32,7 @@ const BedAdapter = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     autoSql: {
       type: 'string',
@@ -38,7 +40,7 @@ const BedAdapter = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     colRef: {
       type: 'number',
@@ -46,7 +48,7 @@ const BedAdapter = ConfigurationSchema(
       defaultValue: 0,
     },
     /**
-     * !slot
+     * #slot
      */
     colStart: {
       type: 'number',
@@ -54,7 +56,7 @@ const BedAdapter = ConfigurationSchema(
       defaultValue: 1,
     },
     /**
-     * !slot
+     * #slot
      */
     colEnd: {
       type: 'number',

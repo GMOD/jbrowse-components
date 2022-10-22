@@ -6,7 +6,7 @@ toplevel: true
 
 this is the "base wiggle renderer config schema"
 
-### Slots
+### WiggleRenderer - Slots
 
 #### slot: color
 

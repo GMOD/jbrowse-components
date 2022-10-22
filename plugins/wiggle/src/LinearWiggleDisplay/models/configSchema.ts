@@ -4,8 +4,10 @@ import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config LinearWiggleDisplay
+ * #config LinearWiggleDisplay
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default function WiggleConfigFactory(pluginManager: PluginManager) {
   const XYPlotRendererConfigSchema =
     pluginManager.getRendererType('XYPlotRenderer').configSchema
@@ -18,7 +20,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
     'LinearWiggleDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       autoscale: {
         type: 'stringEnum',
@@ -35,7 +37,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !slot
+       * #slot
        */
       minimalTicks: {
         type: 'boolean',
@@ -44,7 +46,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !slot
+       * #slot
        */
       minScore: {
         type: 'number',
@@ -52,7 +54,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         description: 'minimum value for the y-scale',
       },
       /**
-       * !slot
+       * #slot
        */
       maxScore: {
         type: 'number',
@@ -60,7 +62,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         defaultValue: Number.MAX_VALUE,
       },
       /**
-       * !slot
+       * #slot
        */
       numStdDev: {
         type: 'number',
@@ -69,7 +71,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         defaultValue: 3,
       },
       /**
-       * !slot
+       * #slot
        */
       scaleType: {
         type: 'stringEnum',
@@ -78,7 +80,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         defaultValue: 'linear',
       },
       /**
-       * !slot
+       * #slot
        */
       inverted: {
         type: 'boolean',
@@ -87,7 +89,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !slot
+       * #slot
        */
       defaultRendering: {
         type: 'stringEnum',
@@ -95,7 +97,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         defaultValue: 'xyplot',
       },
       /**
-       * !slot
+       * #slot
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         DensityRenderer: DensityRendererConfigSchema,
@@ -105,7 +107,7 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

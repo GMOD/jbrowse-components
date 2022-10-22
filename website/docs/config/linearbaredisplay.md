@@ -4,7 +4,7 @@ title: LinearBareDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearBareDisplay - Slots
 
 #### slot: renderer
 
@@ -12,7 +12,7 @@ toplevel: true
 renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
 
-## Derives from
+## LinearBareDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

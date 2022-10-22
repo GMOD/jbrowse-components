@@ -2,14 +2,16 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseWiggleRendererConfigSchema from '../configSchema'
 
 /**
- * !config MultiDensityRenderer
+ * #config MultiDensityRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'MultiDensityRenderer',
   {},
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: baseWiggleRendererConfigSchema,
     explicitlyTyped: true,

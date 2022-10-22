@@ -6,9 +6,9 @@ toplevel: true
 
 extends `BaseViewModel`
 
-### Properties
+### CircularView - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ ISimpleType<"CircularView">
 type: types.literal('CircularView')
 ```
 
-#### properties: offsetRadians
+#### property: offsetRadians
 
 similar to offsetPx in linear genome view
 
@@ -28,7 +28,7 @@ number
 offsetRadians: -Math.PI / 2
 ```
 
-#### properties: bpPerPx
+#### property: bpPerPx
 
 ```js
 // type signature
@@ -37,7 +37,7 @@ number
 bpPerPx: 2000000
 ```
 
-#### properties: tracks
+#### property: tracks
 
 ```js
 // type signature
@@ -48,7 +48,7 @@ tracks: types.array(
         )
 ```
 
-#### properties: hideVerticalResizeHandle
+#### property: hideVerticalResizeHandle
 
 ```js
 // type signature
@@ -57,7 +57,7 @@ false
 hideVerticalResizeHandle: false
 ```
 
-#### properties: hideTrackSelectorButton
+#### property: hideTrackSelectorButton
 
 ```js
 // type signature
@@ -66,7 +66,7 @@ false
 hideTrackSelectorButton: false
 ```
 
-#### properties: lockedFitToWindow
+#### property: lockedFitToWindow
 
 ```js
 // type signature
@@ -75,7 +75,7 @@ true
 lockedFitToWindow: true
 ```
 
-#### properties: disableImportForm
+#### property: disableImportForm
 
 ```js
 // type signature
@@ -84,7 +84,7 @@ false
 disableImportForm: false
 ```
 
-#### properties: height
+#### property: height
 
 ```js
 // type signature
@@ -96,7 +96,7 @@ height: types.optional(
         )
 ```
 
-#### properties: displayedRegions
+#### property: displayedRegions
 
 ```js
 // type signature
@@ -105,7 +105,7 @@ IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>
 displayedRegions: types.array(Region)
 ```
 
-#### properties: scrollX
+#### property: scrollX
 
 ```js
 // type signature
@@ -114,7 +114,7 @@ number
 scrollX: 0
 ```
 
-#### properties: scrollY
+#### property: scrollY
 
 ```js
 // type signature
@@ -123,7 +123,7 @@ number
 scrollY: 0
 ```
 
-### Getters
+### CircularView - Getters
 
 #### getter: staticSlices
 
@@ -278,7 +278,7 @@ any
 any[]
 ```
 
-### Actions
+### CircularView - Actions
 
 #### action: setWidth
 

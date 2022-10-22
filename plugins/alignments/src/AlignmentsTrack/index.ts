@@ -7,17 +7,18 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 
 /**
- * !config AlignmentsTrack
- * the AlignmentsTrack type has very little config, most config and state
- * logic is on the display
+ * #config AlignmentsTrack
+ * has very little config; most config and state logic is on the display
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'AlignmentsTrack',
     {},
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: createBaseTrackConfig(pluginManager),
     },

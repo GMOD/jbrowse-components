@@ -4,7 +4,7 @@ title: BedAdapter
 toplevel: true
 ---
 
-### Slots
+### BedAdapter - Slots
 
 #### slot: bedLocation
 

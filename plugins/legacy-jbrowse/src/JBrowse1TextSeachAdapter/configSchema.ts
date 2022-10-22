@@ -1,14 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config JBrowse1TextSearchAdapternot
+ * #config JBrowse1TextSearchAdapternot
  * note: metadata about tracks and assemblies covered by text search adapter
  */
 export default ConfigurationSchema(
   'JBrowse1TextSearchAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     namesIndexLocation: {
       type: 'fileLocation',
@@ -16,7 +16,7 @@ export default ConfigurationSchema(
       description: 'the location of the JBrowse1 names index data directory',
     },
     /**
-     * !slot
+     * #slot
      */
     tracks: {
       type: 'stringArray',
@@ -24,7 +24,7 @@ export default ConfigurationSchema(
       description: 'List of tracks covered by text search adapter',
     },
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',

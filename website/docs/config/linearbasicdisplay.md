@@ -4,7 +4,7 @@ title: LinearBasicDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearBasicDisplay - Slots
 
 #### slot: mouseover
 
@@ -24,7 +24,7 @@ mouseover: {
 renderer: pluginManager.pluggableConfigSchemaType('renderer')
 ```
 
-## Derives from
+## LinearBasicDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

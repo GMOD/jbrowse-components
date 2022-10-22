@@ -4,7 +4,7 @@ title: Gff3TabixAdapter
 toplevel: true
 ---
 
-### Slots
+### Gff3TabixAdapter - Slots
 
 #### slot: gffGzLocation
 

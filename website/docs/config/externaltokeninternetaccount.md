@@ -1,10 +1,10 @@
 ---
-id: externaltokenconfigschema
-title: ExternalTokenConfigSchema
+id: externaltokeninternetaccount
+title: ExternalTokenInternetAccount
 toplevel: true
 ---
 
-### Slots
+### ExternalTokenInternetAccount - Slots
 
 #### slot: validateWithHEAD
 
@@ -16,7 +16,7 @@ validateWithHEAD: {
     }
 ```
 
-## Derives from
+## ExternalTokenInternetAccount - Derives from
 
 ```js
 baseConfiguration: BaseInternetAccountConfig

@@ -4,7 +4,7 @@ title: LinearSNPCoverageDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearSNPCoverageDisplay - Slots
 
 #### slot: autoscale
 
@@ -78,7 +78,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-## Derives from
+## LinearSNPCoverageDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

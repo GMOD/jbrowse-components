@@ -4,7 +4,7 @@ title: LinearPileupDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearPileupDisplay - Slots
 
 #### slot: defaultRendering
 
@@ -52,7 +52,7 @@ colorScheme: {
       }
 ```
 
-## Derives from
+## LinearPileupDisplay - Derives from
 
 ```js
 baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)

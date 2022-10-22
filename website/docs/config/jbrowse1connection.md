@@ -4,7 +4,7 @@ title: JBrowse1Connection
 toplevel: true
 ---
 
-### Slots
+### JBrowse1Connection - Slots
 
 #### slot: dataDirLocation
 
@@ -31,7 +31,7 @@ assemblyNames: {
     }
 ```
 
-## Derives from
+## JBrowse1Connection - Derives from
 
 ```js
 baseConfiguration: baseConnectionConfig

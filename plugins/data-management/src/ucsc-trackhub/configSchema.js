@@ -2,13 +2,13 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config
  */
 const UCSCTrackHubConnection = ConfigurationSchema(
   'UCSCTrackHubConnection',
   {
     /**
-     * !slot
+     * #slot
      */
     hubTxtLocation: {
       type: 'fileLocation',
@@ -19,7 +19,7 @@ const UCSCTrackHubConnection = ConfigurationSchema(
       description: 'location of the hub file (usually called hub.txt)',
     },
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -30,7 +30,7 @@ const UCSCTrackHubConnection = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
   },

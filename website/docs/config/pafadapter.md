@@ -4,7 +4,7 @@ title: PAFAdapter
 toplevel: true
 ---
 
-### Slots
+### PAFAdapter - Slots
 
 #### slot: assemblyNames
 

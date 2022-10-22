@@ -4,7 +4,7 @@ title: DivSequenceRenderer
 toplevel: true
 ---
 
-### Slots
+### DivSequenceRenderer - Slots
 
 #### slot: height
 

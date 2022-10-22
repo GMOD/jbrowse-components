@@ -40,11 +40,14 @@ function generateConfigDocs() {
       'plugins/comparative-adapters/src/MCScanSimpleAnchorsAdapter/configSchema.ts',
       'plugins/comparative-adapters/src/MashMapAdapter/configSchema.ts',
       'plugins/comparative-adapters/src/PAFAdapter/configSchema.ts',
-      'plugins/config/src/FromConfigAdapter/configSchema.ts',
+      'plugins/config/src/FromConfigAdapter/fromConfig.ts',
+      'plugins/config/src/FromConfigAdapter/fromConfigRegions.ts',
+      'plugins/config/src/FromConfigAdapter/fromConfigSequence.ts',
       'plugins/config/src/RefNameAliasAdapter/configSchema.ts',
       'plugins/data-management/src/HierarchicalTrackSelectorWidget/configSchema.ts',
       'plugins/data-management/src/ucsc-trackhub/configSchema.js',
       'plugins/dotplot-view/src/DotplotRenderer/configSchema.ts',
+      'plugins/dotplot-view/src/DotplotDisplay/index.ts',
       'plugins/gff3/src/Gff3Adapter/configSchema.ts',
       'plugins/gff3/src/Gff3TabixAdapter/configSchema.ts',
       'plugins/gtf/src/GtfAdapter/configSchema.ts',
@@ -112,8 +115,8 @@ function generateConfigDocs() {
         }
       }
       const current = contents[fn]
-      const name = rm(obj.comment, '!' + obj.type) || obj.name
-      const docs = filter(obj.comment, '!' + obj.type)
+      const name = rm(obj.comment, '#' + obj.type) || obj.name
+      const docs = filter(obj.comment, '#' + obj.type)
       const code = removeComments(obj.node)
       const id = slugify(name, { lower: true })
       if (obj.type === 'baseConfiguration') {
@@ -126,6 +129,15 @@ function generateConfigDocs() {
         current.config = { ...obj, name, docs, id }
       }
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (extra: any, type: string) => {
+      // this extra filter is needed because e.g. references anywhere to
+      // view.bpPerPx in LinearPileupDisplay will try to output the property
+      // bpPerPx in the LinearPileupDisplay doc. since we have this, we have to
+      // make sure that document comments are on actual functions like
+      // stateModelFactory, can't just comment `const Model` unfortunately
+      return extra.comment.includes(type)
+    },
   )
 }
 
@@ -135,12 +147,12 @@ Object.entries(contents).forEach(([key, value]) => {
   const { config, slots, id, derives } = value
   if (config) {
     const idstr = id
-      ? `### Identifier
+      ? `### ${config.name} - Identifier
 
 #### slot: ${id.name}`
       : ''
     const derivesstr = derives
-      ? `## Derives from
+      ? `## ${config.name} - Derives from
 
 
 ${derives.docs}
@@ -151,7 +163,7 @@ ${derives.code}
 `
       : ''
     const slotstr =
-      `${slots.length ? '### Slots' : ''}\n` +
+      `${slots.length ? `### ${config.name} - Slots` : ''}\n` +
       slots
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ name, docs, code }: any) => {

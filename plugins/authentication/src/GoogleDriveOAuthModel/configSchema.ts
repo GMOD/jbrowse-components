@@ -3,13 +3,15 @@ import { Instance } from 'mobx-state-tree'
 import OAuthConfigSchema from '../OAuthModel/configSchema'
 
 /**
- * !config
+ * #config GoogleDriveOAuthInternetAccount
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
   'GoogleDriveOAuthInternetAccount',
   {
     /**
-     * !slot
+     * #slot
      */
     authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
@@ -17,7 +19,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
       defaultValue: 'https://accounts.google.com/o/oauth2/v2/auth',
     },
     /**
-     * !slot
+     * #slot
      */
     scopes: {
       description: 'optional scopes for the authorization call',
@@ -25,7 +27,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
       defaultValue: 'https://www.googleapis.com/auth/drive.readonly',
     },
     /**
-     * !slot
+     * #slot
      */
     domains: {
       description:
@@ -34,7 +36,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
       defaultValue: ['drive.google.com"'],
     },
     /**
-     * !slot
+     * #slot
      */
     responseType: {
       description: 'the type of response from the authorization endpoint',
@@ -44,7 +46,7 @@ const GoogleDriveOAuthConfigSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: OAuthConfigSchema,
     explicitlyTyped: true,

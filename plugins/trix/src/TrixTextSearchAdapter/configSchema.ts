@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config TrixTextSearchAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const TrixTextSearchAdapter = ConfigurationSchema(
   'TrixTextSearchAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     ixFilePath: {
       type: 'fileLocation',
@@ -15,7 +17,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'the location of the trix ix file',
     },
     /**
-     * !slot
+     * #slot
      */
     ixxFilePath: {
       type: 'fileLocation',
@@ -23,7 +25,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'the location of the trix ixx file',
     },
     /**
-     * !slot
+     * #slot
      */
     metaFilePath: {
       type: 'fileLocation',
@@ -31,7 +33,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'the location of the metadata json file for the trix index',
     },
     /**
-     * !slot
+     * #slot
      */
     tracks: {
       type: 'stringArray',
@@ -39,7 +41,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
       description: 'List of tracks covered by text search adapter',
     },
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -49,6 +51,9 @@ const TrixTextSearchAdapter = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    /**
+     * #identifier
+     */
     explicitIdentifier: 'textSearchAdapterId',
   },
 )

@@ -8,7 +8,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // for the ReferenceSequenceTrack
 
 /**
- * !config ReferenceSequenceTrack
+ * #config ReferenceSequenceTrack
  * used to display base level DNA sequence tracks
  */
 export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
@@ -16,21 +16,21 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
     'ReferenceSequenceTrack',
     {
       /**
-       * !slot adapter
+       * #slot adapter
        * !type AdapterType
        * configuration for track adapter
        */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       /**
-       * !slot displays
+       * #slot displays
        * !type DisplayType[]
        * configuration for the displays e.g. LinearReferenceSequenceDisplay
        */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
       /**
-       * !slot name
+       * #slot name
        */
       name: {
         type: 'string',
@@ -40,7 +40,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       },
 
       /**
-       * !slot metadata
+       * #slot metadata
        */
       metadata: {
         type: 'frozen',
@@ -52,7 +52,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
 
       formatAbout: ConfigurationSchema('FormatAbout', {
         /**
-         * !slot formatAbout.config
+         * #slot formatAbout.config
          * a configuration callback that modifies a configuruation object.
          * receives config as a context variable.
          *
@@ -65,7 +65,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
           contextVariable: ['config'],
         },
         /**
-         * !slot formatAbout.hideUris
+         * #slot formatAbout.hideUris
          * hides the URIs from the about dialog, and the copy config button
          */
         hideUris: {

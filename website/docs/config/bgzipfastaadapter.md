@@ -4,7 +4,7 @@ title: BgzipFastaAdapter
 toplevel: true
 ---
 
-### Slots
+### BgzipFastaAdapter - Slots
 
 #### slot: fastaLocation
 

@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config MashMapAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const MashMapAdapter = ConfigurationSchema(
   'MashMapAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -17,7 +19,7 @@ const MashMapAdapter = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     targetAssembly: {
       type: 'string',
@@ -25,7 +27,7 @@ const MashMapAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames array: the target assembly',
     },
     /**
-     * !slot
+     * #slot
      */
     queryAssembly: {
       type: 'string',
@@ -33,7 +35,7 @@ const MashMapAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames array: the query assembly',
     },
     /**
-     * !slot
+     * #slot
      */
     outLocation: {
       type: 'fileLocation',

@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config
+ * #config SvgFeatureRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const SvgFeatureRenderer = ConfigurationSchema(
   'SvgFeatureRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     color1: {
       type: 'color',
@@ -17,7 +19,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     color2: {
       type: 'color',
@@ -27,7 +29,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     color3: {
       type: 'color',
@@ -38,7 +40,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     outline: {
       type: 'color',
@@ -47,7 +49,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     height: {
       type: 'number',
@@ -56,7 +58,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     showLabels: {
       type: 'boolean',
@@ -64,7 +66,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     showDescriptions: {
       type: 'boolean',
@@ -72,7 +74,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
     labels: ConfigurationSchema('SvgFeatureLabels', {
       /**
-       * !slot labels.name
+       * #slot labels.name
        */
       name: {
         type: 'string',
@@ -82,7 +84,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
         contextVariable: ['feature'],
       },
       /**
-       * !slot labels.nameColor
+       * #slot labels.nameColor
        */
       nameColor: {
         type: 'color',
@@ -91,7 +93,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
         contextVariable: ['feature'],
       },
       /**
-       * !slot labels.description
+       * #slot labels.description
        */
       description: {
         type: 'string',
@@ -100,7 +102,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
         contextVariable: ['feature'],
       },
       /**
-       * !slot labels.descriptionColor
+       * #slot labels.descriptionColor
        */
       descriptionColor: {
         type: 'color',
@@ -110,7 +112,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       },
 
       /**
-       * !slot labels.fontSize
+       * #slot labels.fontSize
        */
       fontSize: {
         type: 'number',
@@ -122,7 +124,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     }),
 
     /**
-     * !slot
+     * #slot
      */
     displayMode: {
       type: 'stringEnum',
@@ -137,7 +139,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     maxFeatureGlyphExpansion: {
       type: 'number',
@@ -147,7 +149,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     maxHeight: {
       type: 'integer',
@@ -156,7 +158,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     subParts: {
       type: 'string',
@@ -165,7 +167,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     impliedUTRs: {
       type: 'boolean',

@@ -4,7 +4,13 @@ title: FeatureTrack
 toplevel: true
 ---
 
-## Derives from
+used for basic gene and feature tracks, generally used with LinearBasicDisplay
+
+### FeatureTrack - Identifier
+
+#### slot: explicitIdentifier
+
+## FeatureTrack - Derives from
 
 ```js
 baseConfiguration: createBaseTrackConfig(pluginManager)

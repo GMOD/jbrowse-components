@@ -6,9 +6,9 @@ toplevel: true
 
 used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
 
-### Properties
+### LinearBasicDisplay - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ ISimpleType<"LinearBasicDisplay">
 type: types.literal('LinearBasicDisplay')
 ```
 
-#### properties: trackShowLabels
+#### property: trackShowLabels
 
 ```js
 // type signature
@@ -26,7 +26,7 @@ IMaybe<ISimpleType<boolean>>
 trackShowLabels: types.maybe(types.boolean)
 ```
 
-#### properties: trackShowDescriptions
+#### property: trackShowDescriptions
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IMaybe<ISimpleType<boolean>>
 trackShowDescriptions: types.maybe(types.boolean)
 ```
 
-#### properties: trackDisplayMode
+#### property: trackDisplayMode
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ IMaybe<ISimpleType<string>>
 trackDisplayMode: types.maybe(types.string)
 ```
 
-#### properties: trackMaxHeight
+#### property: trackMaxHeight
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### properties: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### Getters
+### LinearBasicDisplay - Getters
 
 #### getter: rendererTypeName
 
@@ -106,7 +106,7 @@ any
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
-### Methods
+### LinearBasicDisplay - Methods
 
 #### method: renderProps
 
@@ -122,7 +122,7 @@ renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubsc
 trackMenuItems: () => MenuItem[]
 ```
 
-### Actions
+### LinearBasicDisplay - Actions
 
 #### action: toggleShowLabels
 

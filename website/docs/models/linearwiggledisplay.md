@@ -6,9 +6,9 @@ toplevel: true
 
 Extends `BaseLinearDisplay`
 
-### Properties
+### LinearWiggleDisplay - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ ISimpleType<"LinearWiggleDisplay">
 type: types.literal('LinearWiggleDisplay')
 ```
 
-#### properties: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -26,7 +26,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### properties: selectedRendering
+#### property: selectedRendering
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 selectedRendering: types.optional(types.string, '')
 ```
 
-#### properties: resolution
+#### property: resolution
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 resolution: types.optional(types.number, 1)
 ```
 
-#### properties: fill
+#### property: fill
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ IMaybe<ISimpleType<boolean>>
 fill: types.maybe(types.boolean)
 ```
 
-#### properties: minSize
+#### property: minSize
 
 ```js
 // type signature
@@ -62,7 +62,7 @@ IMaybe<ISimpleType<number>>
 minSize: types.maybe(types.number)
 ```
 
-#### properties: color
+#### property: color
 
 ```js
 // type signature
@@ -71,7 +71,7 @@ IMaybe<ISimpleType<string>>
 color: types.maybe(types.string)
 ```
 
-#### properties: posColor
+#### property: posColor
 
 ```js
 // type signature
@@ -80,7 +80,7 @@ IMaybe<ISimpleType<string>>
 posColor: types.maybe(types.string)
 ```
 
-#### properties: negColor
+#### property: negColor
 
 ```js
 // type signature
@@ -89,7 +89,7 @@ IMaybe<ISimpleType<string>>
 negColor: types.maybe(types.string)
 ```
 
-#### properties: summaryScoreMode
+#### property: summaryScoreMode
 
 ```js
 // type signature
@@ -98,7 +98,7 @@ IMaybe<ISimpleType<string>>
 summaryScoreMode: types.maybe(types.string)
 ```
 
-#### properties: rendererTypeNameState
+#### property: rendererTypeNameState
 
 ```js
 // type signature
@@ -107,7 +107,7 @@ IMaybe<ISimpleType<string>>
 rendererTypeNameState: types.maybe(types.string)
 ```
 
-#### properties: scale
+#### property: scale
 
 ```js
 // type signature
@@ -116,7 +116,7 @@ IMaybe<ISimpleType<string>>
 scale: types.maybe(types.string)
 ```
 
-#### properties: autoscale
+#### property: autoscale
 
 ```js
 // type signature
@@ -125,7 +125,7 @@ IMaybe<ISimpleType<string>>
 autoscale: types.maybe(types.string)
 ```
 
-#### properties: displayCrossHatches
+#### property: displayCrossHatches
 
 ```js
 // type signature
@@ -134,7 +134,7 @@ IMaybe<ISimpleType<boolean>>
 displayCrossHatches: types.maybe(types.boolean)
 ```
 
-#### properties: constraints
+#### property: constraints
 
 ```js
 // type signature
@@ -149,7 +149,7 @@ constraints: types.optional(
         )
 ```
 
-### Getters
+### LinearWiggleDisplay - Getters
 
 #### getter: TooltipComponent
 
@@ -316,7 +316,7 @@ boolean
 ;1 | 2 | 0
 ```
 
-### Methods
+### LinearWiggleDisplay - Methods
 
 #### method: renderProps
 
@@ -332,7 +332,7 @@ renderProps: () => any
 trackMenuItems: () => any[]
 ```
 
-### Actions
+### LinearWiggleDisplay - Actions
 
 #### action: updateStats
 

@@ -4,9 +4,9 @@ title: LinearGenomeView
 toplevel: true
 ---
 
-### Properties
+### LinearGenomeView - Properties
 
-#### properties: id
+#### property: id
 
 ```js
 // type signature
@@ -15,7 +15,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ ISimpleType<"LinearGenomeView">
 type: types.literal('LinearGenomeView')
 ```
 
-#### properties: offsetPx
+#### property: offsetPx
 
 corresponds roughly to the horizontal scroll of the LGV
 
@@ -35,7 +35,7 @@ number
 offsetPx: 0
 ```
 
-#### properties: bpPerPx
+#### property: bpPerPx
 
 corresponds roughly to the zoom level, base-pairs per pixel
 
@@ -46,7 +46,7 @@ number
 bpPerPx: 1
 ```
 
-#### properties: displayedRegions
+#### property: displayedRegions
 
 currently displayed regions, can be a single chromosome, arbitrary subsections,
 or the entire set of chromosomes in the genome, but it not advised to use the
@@ -59,7 +59,7 @@ IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>
 displayedRegions: types.array(MUIRegion)
 ```
 
-#### properties: tracks
+#### property: tracks
 
 array of currently displayed tracks state models instances
 
@@ -72,7 +72,7 @@ tracks: types.array(
         )
 ```
 
-#### properties: hideHeader
+#### property: hideHeader
 
 array of currently displayed tracks state model's
 
@@ -83,7 +83,7 @@ false
 hideHeader: false
 ```
 
-#### properties: hideHeaderOverview
+#### property: hideHeaderOverview
 
 ```js
 // type signature
@@ -92,7 +92,7 @@ false
 hideHeaderOverview: false
 ```
 
-#### properties: hideNoTracksActive
+#### property: hideNoTracksActive
 
 ```js
 // type signature
@@ -101,7 +101,7 @@ false
 hideNoTracksActive: false
 ```
 
-#### properties: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -113,7 +113,7 @@ trackSelectorType: types.optional(
         )
 ```
 
-#### properties: trackLabels
+#### property: trackLabels
 
 how to display the track labels, can be "overlapping", "offset", or "hidden"
 
@@ -127,7 +127,7 @@ trackLabels: types.optional(
         )
 ```
 
-#### properties: showCenterLine
+#### property: showCenterLine
 
 show the "center line"
 
@@ -141,7 +141,7 @@ showCenterLine: types.optional(types.boolean, () => {
         })
 ```
 
-#### properties: showCytobandsSetting
+#### property: showCytobandsSetting
 
 show the "cytobands" in the overview scale bar
 
@@ -155,7 +155,7 @@ showCytobandsSetting: types.optional(types.boolean, () => {
         })
 ```
 
-#### properties: showGridlines
+#### property: showGridlines
 
 show the "gridlines" in the track area
 
@@ -166,7 +166,7 @@ true
 showGridlines: true
 ```
 
-### Getters
+### LinearGenomeView - Getters
 
 #### getter: width
 
@@ -281,7 +281,7 @@ string
 any
 ```
 
-### Methods
+### LinearGenomeView - Methods
 
 #### method: getSelectedRegions
 
@@ -354,7 +354,7 @@ pxToBp: (px: number) => {
 }
 ```
 
-### Actions
+### LinearGenomeView - Actions
 
 #### action: setShowCytobands
 

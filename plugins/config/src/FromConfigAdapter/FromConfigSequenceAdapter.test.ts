@@ -1,6 +1,7 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './FromConfigSequenceAdapter'
-import { sequenceConfigSchema } from './configSchema'
+import sequenceConfigSchema from './fromConfigSequence'
+
 test('adapter can fetch sequences when there is just one feature representing whole refseq', async () => {
   const features = [
     {

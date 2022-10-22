@@ -4,7 +4,7 @@ title: QuantitativeTrack
 toplevel: true
 ---
 
-## Derives from
+## QuantitativeTrack - Derives from
 
 ```js
 baseConfiguration: createBaseTrackConfig(pluginManager)

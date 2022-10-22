@@ -4,15 +4,17 @@ import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/model
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config SyntenyTrack
+ * #config SyntenyTrack
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = (pluginManager: PluginManager) =>
   ConfigurationSchema(
     'SyntenyTrack',
     {},
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: createBaseTrackConfig(pluginManager),
     },

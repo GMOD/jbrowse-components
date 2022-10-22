@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseWiggleRendererConfigSchema from '../configSchema'
 
 /**
- * !config LinePlotRenderer
+ * #config LinePlotRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'LinePlotRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     displayCrossHatches: {
       type: 'boolean',
@@ -18,7 +20,7 @@ const configSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: baseWiggleRendererConfigSchema,
     explicitlyTyped: true,

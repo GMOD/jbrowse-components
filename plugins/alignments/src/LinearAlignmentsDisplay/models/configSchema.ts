@@ -3,29 +3,29 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config LinearAlignmentsDisplay
+ * #config LinearAlignmentsDisplay
  * has a "pileup" sub-display, where you can see individual reads and a
  * quantitative "snpcoverage" sub-display track showing SNP frequencies
  */
-const configModelFactory = (pluginManager: PluginManager) => {
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const configModelFactory = (pm: PluginManager) => {
   return ConfigurationSchema(
     'LinearAlignmentsDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
-      pileupDisplay: pluginManager.getDisplayType('LinearPileupDisplay')
-        .configSchema,
+      pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema,
       /**
-       * !slot
+       * #slot
        */
-      snpCoverageDisplay: pluginManager.getDisplayType(
-        'LinearSNPCoverageDisplay',
-      ).configSchema,
+      snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay')
+        .configSchema,
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

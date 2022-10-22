@@ -4,7 +4,7 @@ title: ChromSizesAdapter
 toplevel: true
 ---
 
-### Slots
+### ChromSizesAdapter - Slots
 
 #### slot: chromSizesLocation
 

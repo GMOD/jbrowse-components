@@ -4,7 +4,7 @@ title: XYPlotRenderer
 toplevel: true
 ---
 
-### Slots
+### XYPlotRenderer - Slots
 
 #### slot: filled
 
@@ -46,7 +46,7 @@ minSize: {
     }
 ```
 
-## Derives from
+## XYPlotRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

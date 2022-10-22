@@ -11,7 +11,7 @@ import { Curves, StraightLines } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 
 /**
- * !stateModel LinearSyntenyView
+ * #stateModel LinearSyntenyView
  * extends the `LinearComparativeView` base model
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
@@ -21,17 +21,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       types
         .model('LinearSyntenyView', {
           /**
-           * !property
+           * #property
            */
           type: types.literal('LinearSyntenyView'),
           /**
-           * !property
+           * #property
            */
           drawCurves: false,
         })
         .actions(self => ({
           /**
-           * !action
+           * #action
            */
           toggleCurves() {
             self.drawCurves = !self.drawCurves
@@ -42,7 +42,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       const superMenuItems = self.menuItems
       return {
         /**
-         * !method
+         * #method
          * adds functions to draw curves and square the view
          */
         menuItems() {

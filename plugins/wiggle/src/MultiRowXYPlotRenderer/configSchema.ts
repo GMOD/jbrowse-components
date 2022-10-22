@@ -4,20 +4,22 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseWiggleRendererConfigSchema from '../configSchema'
 
 /**
- * !config MultiRowXYPlotRenderer
+ * #config MultiRowXYPlotRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'MultiRowXYPlotRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     filled: {
       type: 'boolean',
       defaultValue: true,
     },
     /**
-     * !slot
+     * #slot
      */
     displayCrossHatches: {
       type: 'boolean',
@@ -25,7 +27,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: false,
     },
     /**
-     * !slot
+     * #slot
      */
     summaryScoreMode: {
       type: 'stringEnum',
@@ -35,7 +37,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: 'whiskers',
     },
     /**
-     * !slot
+     * #slot
      */
     minSize: {
       type: 'number',
@@ -44,7 +46,7 @@ const configSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: baseWiggleRendererConfigSchema,
     explicitlyTyped: true,

@@ -4,7 +4,11 @@ title: TrixTextSearchAdapter
 toplevel: true
 ---
 
-### Slots
+### TrixTextSearchAdapter - Identifier
+
+#### slot: explicitIdentifier
+
+### TrixTextSearchAdapter - Slots
 
 #### slot: ixFilePath
 

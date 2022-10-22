@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config GtfAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const GtfAdapter = ConfigurationSchema(
   'GtfAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     gtfLocation: {
       type: 'fileLocation',

@@ -4,7 +4,7 @@ title: RefNameAliasAdapter
 toplevel: true
 ---
 
-### Slots
+### RefNameAliasAdapter - Slots
 
 #### slot: location
 

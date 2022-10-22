@@ -4,7 +4,7 @@ title: IndexedFastaAdapter
 toplevel: true
 ---
 
-### Slots
+### IndexedFastaAdapter - Slots
 
 #### slot: fastaLocation
 

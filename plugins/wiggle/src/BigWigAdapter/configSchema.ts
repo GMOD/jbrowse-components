@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config BigWigAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const BigWigAdapter = ConfigurationSchema(
   'BigWigAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     bigWigLocation: {
       type: 'fileLocation',
@@ -18,7 +20,7 @@ const BigWigAdapter = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     source: {
       type: 'string',

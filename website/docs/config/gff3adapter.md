@@ -4,7 +4,7 @@ title: Gff3Adapter
 toplevel: true
 ---
 
-### Slots
+### Gff3Adapter - Slots
 
 #### slot: gffLocation
 

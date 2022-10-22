@@ -4,20 +4,22 @@ import { Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config LinearHicDisplay
+ * #config LinearHicDisplay
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const HicTrackConfigFactory = (pluginManager: PluginManager) => {
   return ConfigurationSchema(
     'LinearHicDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       renderer: pluginManager.getRendererType('HicRenderer').configSchema,
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

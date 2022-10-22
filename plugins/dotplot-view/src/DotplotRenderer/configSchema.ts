@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config
+ * #config DotplotRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default ConfigurationSchema(
   'DotplotRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     color: {
       type: 'color',
@@ -19,7 +21,7 @@ export default ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     posColor: {
       type: 'color',
@@ -27,7 +29,7 @@ export default ConfigurationSchema(
       defaultValue: 'blue',
     },
     /**
-     * !slot
+     * #slot
      */
     negColor: {
       type: 'color',
@@ -36,7 +38,7 @@ export default ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     lineWidth: {
       type: 'number',
@@ -45,7 +47,7 @@ export default ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     colorBy: {
       type: 'stringEnum',
@@ -68,7 +70,7 @@ export default ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     thresholdsPalette: {
       type: 'stringArray',
@@ -77,7 +79,7 @@ export default ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     thresholds: {
       type: 'stringArray',

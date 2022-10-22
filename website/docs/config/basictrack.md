@@ -6,7 +6,7 @@ toplevel: true
 
 synonym for FeatureTrack
 
-## Derives from
+## BasicTrack - Derives from
 
 ```js
 baseConfiguration: createBaseTrackConfig(pluginManager)

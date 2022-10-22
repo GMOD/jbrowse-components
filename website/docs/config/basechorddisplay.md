@@ -4,7 +4,11 @@ title: BaseChordDisplay
 toplevel: true
 ---
 
-### Slots
+### BaseChordDisplay - Identifier
+
+#### slot: explicitIdentifier
+
+### BaseChordDisplay - Slots
 
 #### slot: onChordClick
 

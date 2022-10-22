@@ -6,9 +6,9 @@ toplevel: true
 
 extends `BaseDisplay`
 
-### Properties
+### BaseLinearDisplay - Properties
 
-#### properties: height
+#### property: height
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ height: types.optional(
         )
 ```
 
-#### properties: blockState
+#### property: blockState
 
 updated via autorun
 
@@ -35,7 +35,7 @@ IMapType<IModelType<{ key: ISimpleType<string>; region: IModelType<{ refName: IS
 blockState: types.map(BlockState)
 ```
 
-#### properties: userBpPerPxLimit
+#### property: userBpPerPxLimit
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ IMaybe<ISimpleType<number>>
 userBpPerPxLimit: types.maybe(types.number)
 ```
 
-#### properties: userByteSizeLimit
+#### property: userByteSizeLimit
 
 ```js
 // type signature
@@ -53,7 +53,7 @@ IMaybe<ISimpleType<number>>
 userByteSizeLimit: types.maybe(types.number)
 ```
 
-### Getters
+### BaseLinearDisplay - Getters
 
 #### getter: blockType
 
@@ -202,7 +202,7 @@ based stats don't produce any helpful message besides to zoom in
 string
 ```
 
-### Methods
+### BaseLinearDisplay - Methods
 
 #### method: regionCannotBeRenderedText
 
@@ -247,7 +247,7 @@ renderProps: () => any
 renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; }) => Promise<Element>
 ```
 
-### Actions
+### BaseLinearDisplay - Actions
 
 #### action: setMessage
 

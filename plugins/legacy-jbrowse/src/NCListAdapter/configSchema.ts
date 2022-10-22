@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config NCListAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const NCListAdapter = ConfigurationSchema(
   'NCListAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     rootUrlTemplate: {
       type: 'fileLocation',
@@ -17,7 +19,7 @@ const NCListAdapter = ConfigurationSchema(
       },
     },
     /**
-     * !slot
+     * #slot
      */
     refNames: {
       type: 'stringArray',

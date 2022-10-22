@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config
+ * #config PileupRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const PileupRenderer = ConfigurationSchema(
   'PileupRenderer',
   {
     /**
-     * !slot
+     * #slot
      * default magenta here is used to detect the user has not customized this
      */
     color: {
@@ -19,7 +21,7 @@ const PileupRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     orientationType: {
       type: 'stringEnum',
@@ -29,7 +31,7 @@ const PileupRenderer = ConfigurationSchema(
         'read sequencer orienation. fr is normal "reads pointing at each other ---> <--- while some other sequencers can use other options',
     },
     /**
-     * !slot
+     * #slot
      */
     displayMode: {
       type: 'stringEnum',
@@ -42,7 +44,7 @@ const PileupRenderer = ConfigurationSchema(
       defaultValue: 'normal',
     },
     /**
-     * !slot
+     * #slot
      */
     minSubfeatureWidth: {
       type: 'number',
@@ -51,7 +53,7 @@ const PileupRenderer = ConfigurationSchema(
       defaultValue: 0.7,
     },
     /**
-     * !slot
+     * #slot
      */
     maxHeight: {
       type: 'integer',
@@ -59,7 +61,7 @@ const PileupRenderer = ConfigurationSchema(
       defaultValue: 1200,
     },
     /**
-     * !slot
+     * #slot
      */
     maxClippingSize: {
       type: 'integer',
@@ -67,7 +69,7 @@ const PileupRenderer = ConfigurationSchema(
       defaultValue: 10000,
     },
     /**
-     * !slot
+     * #slot
      */
     height: {
       type: 'number',
@@ -76,7 +78,7 @@ const PileupRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     noSpacing: {
       type: 'boolean',
@@ -84,7 +86,7 @@ const PileupRenderer = ConfigurationSchema(
       defaultValue: false,
     },
     /**
-     * !slot
+     * #slot
      */
     largeInsertionIndicatorScale: {
       type: 'number',
@@ -93,7 +95,7 @@ const PileupRenderer = ConfigurationSchema(
       defaultValue: 10,
     },
     /**
-     * !slot
+     * #slot
      */
     mismatchAlpha: {
       type: 'boolean',

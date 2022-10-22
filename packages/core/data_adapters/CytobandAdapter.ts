@@ -4,13 +4,15 @@ import { openLocation } from '../util/io'
 import { BaseAdapter } from './BaseAdapter'
 
 /**
- * !config CytobandAdapter
+ * #config CytobandAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'CytobandAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     cytobandLocation: {
       type: 'fileLocation',

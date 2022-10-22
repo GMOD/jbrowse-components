@@ -4,7 +4,7 @@ title: MultiXYPlotRenderer
 toplevel: true
 ---
 
-### Slots
+### MultiXYPlotRenderer - Slots
 
 #### slot: filled
 
@@ -46,7 +46,7 @@ minSize: {
     }
 ```
 
-## Derives from
+## MultiXYPlotRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

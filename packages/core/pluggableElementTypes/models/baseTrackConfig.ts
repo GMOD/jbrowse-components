@@ -4,14 +4,14 @@ import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
 
 /**
- * !config BaseTrack
+ * #config BaseTrack
  */
 export function createBaseTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'BaseTrack',
     {
       /**
-       * !slot
+       * #slot
        */
       name: {
         description: 'descriptive name of the track',
@@ -19,7 +19,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: 'Track',
       },
       /**
-       * !slot
+       * #slot
        */
       assemblyNames: {
         description: 'name of the assembly (or assemblies) track belongs to',
@@ -27,7 +27,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: ['assemblyName'],
       },
       /**
-       * !slot
+       * #slot
        */
       description: {
         description: 'a description of the track',
@@ -35,7 +35,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: '',
       },
       /**
-       * !slot
+       * #slot
        */
       category: {
         description: 'the category and sub-categories of a track',
@@ -43,7 +43,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: [],
       },
       /**
-       * !slot
+       * #slot
        */
       metadata: {
         type: 'frozen',
@@ -51,13 +51,13 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         defaultValue: {},
       },
       /**
-       * !slot
+       * #slot
        */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       textSearching: ConfigurationSchema('textSearching', {
         /**
-         * !slot textSearching.indexedAttributes
+         * #slot textSearching.indexedAttributes
          */
         indexingAttributes: {
           type: 'stringArray',
@@ -66,7 +66,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
           defaultValue: ['Name', 'ID'],
         },
         /**
-         * !slot textSearching.indexingFeatureTypesToExclude
+         * #slot textSearching.indexingFeatureTypesToExclude
          */
         indexingFeatureTypesToExclude: {
           type: 'stringArray',
@@ -75,7 +75,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         },
 
         /**
-         * !slot textSearching.textSearchAdapter
+         * #slot textSearching.textSearchAdapter
          */
         textSearchAdapter: pluginManager.pluggableConfigSchemaType(
           'text search adapter',
@@ -83,13 +83,13 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       }),
 
       /**
-       * !slot
+       * #slot
        */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
       formatDetails: ConfigurationSchema('FormatDetails', {
         /**
-         * !slot formatDetails.feature
+         * #slot formatDetails.feature
          */
         feature: {
           type: 'frozen',
@@ -99,7 +99,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         },
 
         /**
-         * !slot formatDetails.subfeatures
+         * #slot formatDetails.subfeatures
          */
         subfeatures: {
           type: 'frozen',
@@ -109,7 +109,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         },
 
         /**
-         * !slot formatDetails.depth
+         * #slot formatDetails.depth
          */
         depth: {
           type: 'number',

@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config MultiWiggleAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const MultiWiggleAdapter = ConfigurationSchema(
   'MultiWiggleAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     subadapters: {
       type: 'frozen',
@@ -15,7 +17,7 @@ const MultiWiggleAdapter = ConfigurationSchema(
       description: 'array of subadapter JSON objects',
     },
     /**
-     * !slot
+     * #slot
      */
     bigWigs: {
       type: 'frozen',

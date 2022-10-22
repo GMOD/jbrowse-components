@@ -1,14 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config CramAdapter
+ * #config CramAdapter
  * used to configure CRAM adapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'CramAdapter',
   {
     /**
-     * !slot fetchSizeLimit
+     * #slot fetchSizeLimit
      */
     fetchSizeLimit: {
       type: 'number',
@@ -18,7 +20,7 @@ const configSchema = ConfigurationSchema(
     },
 
     /**
-     * !slot cramLocation
+     * #slot cramLocation
      */
     cramLocation: {
       type: 'fileLocation',
@@ -29,7 +31,7 @@ const configSchema = ConfigurationSchema(
     },
 
     /**
-     * !slot craiLocation
+     * #slot craiLocation
      */
     craiLocation: {
       type: 'fileLocation',
@@ -40,7 +42,7 @@ const configSchema = ConfigurationSchema(
     },
 
     /**
-     * !slot sequenceAdapter
+     * #slot sequenceAdapter
      * generally refers to the reference genome assembly's sequence adapter
      * currently needs to be manually added
      */

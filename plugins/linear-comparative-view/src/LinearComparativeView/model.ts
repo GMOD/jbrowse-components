@@ -28,7 +28,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 /**
- * !stateModel LinearComparativeView
+ * #stateModel LinearComparativeView
  */
 function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
@@ -38,45 +38,45 @@ function stateModelFactory(pluginManager: PluginManager) {
       BaseViewModel,
       types.model({
         /**
-         * !property
+         * #property
          */
         id: ElementId,
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearComparativeView'),
         /**
-         * !property
+         * #property
          */
         height: defaultHeight,
         /**
-         * !property
+         * #property
          */
         trackSelectorType: 'hierarchical',
         /**
-         * !property
+         * #property
          */
         showIntraviewLinks: true,
         /**
-         * !property
+         * #property
          */
         linkViews: false,
         /**
-         * !property
+         * #property
          */
         interactToggled: false,
         /**
-         * !property
+         * #property
          */
         middleComparativeHeight: 100,
         /**
-         * !property
+         * #property
          */
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
         /**
-         * !property
+         * #property
          * currently this is limited to an array of two
          */
         views: types.array(
@@ -85,7 +85,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         ),
 
         /**
-         * !property
+         * #property
          * this represents tracks specific to this view specifically used
          * for read vs ref dotplots where this track would not really apply
          * elsewhere
@@ -100,20 +100,20 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get highResolutionScaling() {
         return 2
       },
       /**
-       * !getter
+       * #getter
        */
       get initialized() {
         return self.views.length > 0
       },
 
       /**
-       * !getter
+       * #getter
        */
       get refNames() {
         return self.views.map(v => [
@@ -122,7 +122,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get assemblyNames() {
         return [...new Set(self.views.map(v => v.assemblyNames).flat())]
@@ -171,34 +171,34 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !action
+       * #action
        */
       setWidth(newWidth: number) {
         self.width = newWidth
       },
       /**
-       * !action
+       * #action
        */
       setHeight(newHeight: number) {
         self.height = newHeight
       },
 
       /**
-       * !action
+       * #action
        */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
       },
 
       /**
-       * !action
+       * #action
        */
       removeView(view: LinearGenomeViewModel) {
         self.views.remove(view)
       },
 
       /**
-       * !action
+       * #action
        * removes the view itself from the state tree entirely by calling the parent removeView
        */
       closeView() {
@@ -206,7 +206,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !action
+       * #action
        */
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
@@ -214,14 +214,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !action
+       * #action
        */
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
 
       /**
-       * !action
+       * #action
        */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
@@ -241,7 +241,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !action
+       * #action
        */
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
@@ -254,7 +254,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !action
+       * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
         const schema = pluginManager.pluggableConfigSchemaType(
@@ -289,7 +289,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !action
+       * #action
        */
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
@@ -299,7 +299,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         return shownTracks.length
       },
       /**
-       * !action
+       * #action
        */
       squareView() {
         const bpPerPxs = self.views.map(v => v.bpPerPx)
@@ -314,7 +314,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         })
       },
       /**
-       * !action
+       * #action
        */
       clearView() {
         self.views = cast([])
@@ -322,7 +322,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
-       * !method
+       * #method
        */
       menuItems() {
         const menuItems: MenuItem[] = []
@@ -352,7 +352,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         return menuItems
       },
       /**
-       * !method
+       * #method
        */
       rubberBandMenuItems() {
         return [

@@ -4,7 +4,7 @@ title: ArcRenderer
 toplevel: true
 ---
 
-### Slots
+### ArcRenderer - Slots
 
 #### slot: color
 

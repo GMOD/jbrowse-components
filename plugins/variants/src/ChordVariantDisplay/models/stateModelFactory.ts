@@ -8,7 +8,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 
 /**
- * !stateModel ChordVariantDisplay
+ * #stateModel ChordVariantDisplay
  * extends `BaseChordDisplay`
  */
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
@@ -18,25 +18,25 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       BaseChordDisplayModel,
       types.model({
         /**
-         * !property
+         * #property
          */
         type: types.literal('ChordVariantDisplay'),
         /**
-         * !property
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
 
       /**
-       * !method
+       * #method
        */
       renderProps(): Record<string, unknown> {
         const view = getContainingView(self)

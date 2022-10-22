@@ -2,14 +2,16 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config WiggleRenderer
+ * #config WiggleRenderer
  * this is the "base wiggle renderer config schema"
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const WiggleRenderer = ConfigurationSchema(
   'WiggleRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     color: {
       type: 'color',
@@ -17,7 +19,7 @@ const WiggleRenderer = ConfigurationSchema(
       defaultValue: '#f0f',
     },
     /**
-     * !slot
+     * #slot
      */
     posColor: {
       type: 'color',
@@ -25,7 +27,7 @@ const WiggleRenderer = ConfigurationSchema(
       defaultValue: 'blue',
     },
     /**
-     * !slot
+     * #slot
      */
     negColor: {
       type: 'color',
@@ -33,7 +35,7 @@ const WiggleRenderer = ConfigurationSchema(
       defaultValue: 'red',
     },
     /**
-     * !slot
+     * #slot
      */
     clipColor: {
       type: 'color',
@@ -41,7 +43,7 @@ const WiggleRenderer = ConfigurationSchema(
       defaultValue: 'red',
     },
     /**
-     * !slot
+     * #slot
      */
     bicolorPivot: {
       type: 'stringEnum',
@@ -55,7 +57,7 @@ const WiggleRenderer = ConfigurationSchema(
       defaultValue: 'numeric',
     },
     /**
-     * !slot
+     * #slot
      */
     bicolorPivotValue: {
       type: 'number',

@@ -6,9 +6,9 @@ toplevel: true
 
 extends `LinearWiggleDisplay`
 
-### Properties
+### LinearSNPCoverageDisplay - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ ISimpleType<"LinearSNPCoverageDisplay">
 type: types.literal('LinearSNPCoverageDisplay')
 ```
 
-#### properties: drawInterbaseCounts
+#### property: drawInterbaseCounts
 
 ```js
 // type signature
@@ -26,7 +26,7 @@ IMaybe<ISimpleType<boolean>>
 drawInterbaseCounts: types.maybe(types.boolean)
 ```
 
-#### properties: drawIndicators
+#### property: drawIndicators
 
 ```js
 // type signature
@@ -35,7 +35,7 @@ IMaybe<ISimpleType<boolean>>
 drawIndicators: types.maybe(types.boolean)
 ```
 
-#### properties: drawArcs
+#### property: drawArcs
 
 ```js
 // type signature
@@ -44,7 +44,7 @@ IMaybe<ISimpleType<boolean>>
 drawArcs: types.maybe(types.boolean)
 ```
 
-#### properties: filterBy
+#### property: filterBy
 
 ```js
 // type signature
@@ -63,7 +63,7 @@ filterBy: types.optional(
         )
 ```
 
-#### properties: colorBy
+#### property: colorBy
 
 ```js
 // type signature
@@ -77,7 +77,7 @@ colorBy: types.maybe(
         )
 ```
 
-### Getters
+### LinearSNPCoverageDisplay - Getters
 
 #### getter: rendererConfig
 
@@ -145,7 +145,7 @@ string
 boolean
 ```
 
-### Methods
+### LinearSNPCoverageDisplay - Methods
 
 #### method: renderProps
 
@@ -168,7 +168,7 @@ contextMenuItems: () => any[]
 trackMenuItems: () => any[]
 ```
 
-### Actions
+### LinearSNPCoverageDisplay - Actions
 
 #### action: setConfig
 

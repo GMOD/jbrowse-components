@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config ChainAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const ChainAdapter = ConfigurationSchema(
   'ChainAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',
@@ -16,7 +18,7 @@ const ChainAdapter = ConfigurationSchema(
         'Target is the first value in the array, query is the second',
     },
     /**
-     * !slot
+     * #slot
      * can be specified as alternative to assemblyNames
      */
     targetAssembly: {
@@ -25,7 +27,7 @@ const ChainAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames array: the target assembly',
     },
     /**
-     * !slot
+     * #slot
      * can be specified as alternative to assemblyNames
      */
     queryAssembly: {
@@ -34,7 +36,7 @@ const ChainAdapter = ConfigurationSchema(
       description: 'Alternative to assemblyNames array: the query assembly',
     },
     /**
-     * !slot
+     * #slot
      */
     chainLocation: {
       type: 'fileLocation',

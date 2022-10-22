@@ -1,22 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config VcfAdapter
+ * #config VcfAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const VcfAdapter = ConfigurationSchema(
   'VcfAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     vcfLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.vcf', locationType: 'UriLocation' },
     },
   },
-  /**
-   * !config VcfAdapter
-   */
   { explicitlyTyped: true },
 )
 

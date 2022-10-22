@@ -4,7 +4,7 @@ title: VcfAdapter
 toplevel: true
 ---
 
-### Slots
+### VcfAdapter - Slots
 
 #### slot: vcfLocation
 

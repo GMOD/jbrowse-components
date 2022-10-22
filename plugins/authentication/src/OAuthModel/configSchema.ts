@@ -3,13 +3,15 @@ import { Instance } from 'mobx-state-tree'
 import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
 /**
- * !config
+ * #config OAuthInternetAccount
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const OAuthConfigSchema = ConfigurationSchema(
   'OAuthInternetAccount',
   {
     /**
-     * !slot
+     * #slot
      */
     tokenType: {
       description: 'a custom name for a token to include in the header',
@@ -17,7 +19,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: 'Bearer',
     },
     /**
-     * !slot
+     * #slot
      */
     authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
@@ -25,7 +27,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     tokenEndpoint: {
       description: 'the token endpoint of the internet account',
@@ -33,7 +35,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
@@ -41,7 +43,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: false,
     },
     /**
-     * !slot
+     * #slot
      */
     clientId: {
       description: 'id for the OAuth application',
@@ -49,7 +51,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     scopes: {
       description: 'optional scopes for the authorization call',
@@ -57,7 +59,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     responseType: {
       description: 'the type of response from the authorization endpoint',
@@ -65,7 +67,7 @@ const OAuthConfigSchema = ConfigurationSchema(
       defaultValue: 'code',
     },
     /**
-     * !slot
+     * #slot
      */
     hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
@@ -75,7 +77,7 @@ const OAuthConfigSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: BaseInternetAccountConfig,
     explicitlyTyped: true,

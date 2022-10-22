@@ -4,7 +4,7 @@ title: BigWigAdapter
 toplevel: true
 ---
 
-### Slots
+### BigWigAdapter - Slots
 
 #### slot: bigWigLocation
 

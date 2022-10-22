@@ -4,7 +4,7 @@ title: HicRenderer
 toplevel: true
 ---
 
-### Slots
+### HicRenderer - Slots
 
 #### slot: baseColor
 

@@ -1,10 +1,10 @@
 ---
-id: googledriveoauthconfigschema
-title: GoogleDriveOAuthConfigSchema
+id: googledriveoauthinternetaccount
+title: GoogleDriveOAuthInternetAccount
 toplevel: true
 ---
 
-### Slots
+### GoogleDriveOAuthInternetAccount - Slots
 
 #### slot: authEndpoint
 
@@ -47,7 +47,7 @@ responseType: {
     }
 ```
 
-## Derives from
+## GoogleDriveOAuthInternetAccount - Derives from
 
 ```js
 baseConfiguration: OAuthConfigSchema

@@ -1,27 +1,29 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config IndexedFastaAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const IndexedFastaAdapter = ConfigurationSchema(
   'IndexedFastaAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     fastaLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa', locationType: 'UriLocation' },
     },
     /**
-     * !slot
+     * #slot
      */
     faiLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.fai', locationType: 'UriLocation' },
     },
     /**
-     * !slot
+     * #slot
      */
     metadataLocation: {
       description: 'Optional metadata file',

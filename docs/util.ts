@@ -73,7 +73,7 @@ export function extractWithComment(
       'method',
     ]
     for (let i = 0; i < list.length; i++) {
-      const type = '!' + list[i]
+      const type = '#' + list[i]
       if (fulltext.includes(type) && filterNode(r, type)) {
         cb({ type: list[i], ...r })
       }

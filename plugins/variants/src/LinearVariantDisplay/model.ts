@@ -13,7 +13,7 @@ import { types } from 'mobx-state-tree'
 import { LinearVariantDisplayConfigModel } from './configSchema'
 
 /**
- * !stateModel LinearVariantDisplay
+ * #stateModel LinearVariantDisplay
  * extends `LinearBasicDisplay`
  * very similar to basic display, but provides custom widget on feature click
  */
@@ -26,18 +26,18 @@ export default function stateModelFactory(
       linearBasicDisplayModelFactory(configSchema),
       types.model({
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearVariantDisplay'),
         /**
-         * !property
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       async selectFeature(feature: Feature) {
         const session = getSession(self)

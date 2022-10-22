@@ -17,7 +17,7 @@ import { BaseLinearDisplay } from '../BaseLinearDisplay'
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 /**
- * !stateModel LinearBasicDisplay
+ * #stateModel LinearBasicDisplay
  * used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
@@ -27,48 +27,48 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseLinearDisplay,
       types.model({
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearBasicDisplay'),
         /**
-         * !property
+         * #property
          */
         trackShowLabels: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         trackShowDescriptions: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         trackDisplayMode: types.maybe(types.string),
         /**
-         * !property
+         * #property
          */
         trackMaxHeight: types.maybe(types.number),
         /**
-         * !property
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get rendererTypeName() {
         return getConf(self, ['renderer', 'type'])
       },
 
       /**
-       * !getter
+       * #getter
        */
       get showLabels() {
         return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
       },
 
       /**
-       * !getter
+       * #getter
        */
       get showDescriptions() {
         return (
@@ -78,14 +78,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get maxHeight() {
         return self.trackMaxHeight ?? getConf(self, ['renderer', 'maxHeight'])
       },
 
       /**
-       * !getter
+       * #getter
        */
       get displayMode() {
         return (
@@ -95,7 +95,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
@@ -116,25 +116,25 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
       /**
-       * !action
+       * #action
        */
       toggleShowDescriptions() {
         self.trackShowDescriptions = !self.showDescriptions
       },
       /**
-       * !action
+       * #action
        */
       setDisplayMode(val: string) {
         self.trackDisplayMode = val
       },
       /**
-       * !action
+       * #action
        */
       setMaxHeight(val: number) {
         self.trackMaxHeight = val
@@ -147,7 +147,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
       return {
         /**
-         * !method
+         * #method
          */
         renderProps() {
           const config = self.rendererConfig
@@ -160,7 +160,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
 
         /**
-         * !method
+         * #method
          */
         trackMenuItems(): MenuItem[] {
           return [

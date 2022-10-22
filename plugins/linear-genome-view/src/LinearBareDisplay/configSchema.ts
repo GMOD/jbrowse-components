@@ -3,23 +3,25 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
 
 /**
- * !config LinearBareDisplay
+ * #config LinearBareDisplay
  */
-export function configSchemaFactory(pluginManager: PluginManager) {
+function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearBareDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )
 }
+
+export { configSchemaFactory }

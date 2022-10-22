@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config Gff3Adapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const Gff3Adapter = ConfigurationSchema(
   'Gff3Adapter',
   {
     /**
-     * !slot
+     * #slot
      */
     gffLocation: {
       type: 'fileLocation',

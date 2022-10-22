@@ -6,11 +6,14 @@ toplevel: true
 
 used to display base level DNA sequence tracks
 
-### Slots
+### ReferenceSequenceTrack - Identifier
+
+#### slot: explicitIdentifier
+
+### ReferenceSequenceTrack - Slots
 
 #### slot: adapter
 
-!type AdapterType
 configuration for track adapter
 
 ```js
@@ -19,7 +22,6 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 #### slot: displays
 
-!type DisplayType[]
 configuration for the displays e.g. LinearReferenceSequenceDisplay
 
 ```js
@@ -45,4 +47,24 @@ metadata: {
         description: 'anything to add about this track',
         defaultValue: {},
       }
+```
+
+#### slot: formatAbout.config
+
+```js
+config: {
+          type: 'frozen',
+          description: 'formats configuration in about dialog',
+          defaultValue: {},
+          contextVariable: ['config'],
+        }
+```
+
+#### slot: formatAbout.hideUris
+
+```js
+hideUris: {
+          type: 'boolean',
+          defaultValue: false,
+        }
 ```

@@ -14,6 +14,9 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 
+/**
+ * #stateModel DotplotDisplay
+ */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
@@ -21,7 +24,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseDisplay,
       types
         .model({
+          /**
+           * #property
+           */
           type: types.literal('DotplotDisplay'),
+          /**
+           * #property
+           */
           configuration: ConfigurationReference(configSchema),
         })
         .volatile(() => ({
@@ -37,9 +46,15 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         })),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererTypeName() {
         return getConf(self, ['renderer', 'type'])
       },
+      /**
+       * #method
+       */
       renderProps() {
         return {
           ...getParentRenderProps(self),
@@ -69,7 +84,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             this.setError,
           )
         },
-
+        /**
+         * #action
+         */
         setLoading(abortController: AbortController) {
           self.filled = false
           self.message = undefined
@@ -79,6 +96,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = undefined
           renderInProgress = abortController
         },
+        /**
+         * #action
+         */
         setMessage(messageText: string) {
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()
@@ -91,6 +111,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
+        /**
+         * #action
+         */
         setRendered(args?: {
           data: any
           reactElement: React.ReactElement
@@ -109,6 +132,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = renderingComponent
           renderInProgress = undefined
         },
+        /**
+         * #action
+         */
         setError(error: unknown) {
           console.error(error)
           if (renderInProgress && !renderInProgress.signal.aborted) {

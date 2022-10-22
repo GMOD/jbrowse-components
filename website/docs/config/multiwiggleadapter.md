@@ -4,7 +4,7 @@ title: MultiWiggleAdapter
 toplevel: true
 ---
 
-### Slots
+### MultiWiggleAdapter - Slots
 
 #### slot: subadapters
 

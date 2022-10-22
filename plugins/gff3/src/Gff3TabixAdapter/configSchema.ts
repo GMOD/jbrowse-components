@@ -2,13 +2,15 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config Gff3TabixAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const Gff3TabixAdapter = ConfigurationSchema(
   'Gff3TabixAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     gffGzLocation: {
       type: 'fileLocation',
@@ -17,7 +19,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
 
     index: ConfigurationSchema('Gff3TabixIndex', {
       /**
-       * !slot index.indexType
+       * #slot index.indexType
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -25,7 +27,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
         defaultValue: 'TBI',
       },
       /**
-       * !slot index.indexType
+       * #slot index.indexType
        */
       location: {
         type: 'fileLocation',
@@ -36,7 +38,7 @@ const Gff3TabixAdapter = ConfigurationSchema(
       },
     }),
     /**
-     * !slot
+     * #slot
      * the Gff3TabixAdapter has to "redispatch" if it fetches a region and
      * features it finds inside that region extend outside the region we requested.
      * you can disable this for certain feature types to avoid fetching e.g. the

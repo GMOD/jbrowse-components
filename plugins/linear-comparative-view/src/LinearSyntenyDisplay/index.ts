@@ -29,14 +29,14 @@ export default (pluginManager: PluginManager) => {
 }
 
 /**
- * !config LinearSyntenyDisplay
+ * #config LinearSyntenyDisplay
  */
 export function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearSyntenyDisplay',
     {
       /**
-       * !slot
+       * #slot
        * currently unused
        */
       trackIds: {
@@ -44,7 +44,7 @@ export function configSchemaFactory(pluginManager: PluginManager) {
         defaultValue: [],
       },
       /**
-       * !slot
+       * #slot
        */
       renderer: types.optional(
         pluginManager.pluggableConfigSchemaType('renderer'),
@@ -52,14 +52,14 @@ export function configSchemaFactory(pluginManager: PluginManager) {
       ),
 
       /**
-       * !slot
+       * #slot
        * currently unused
        */
       middle: { type: 'boolean', defaultValue: true },
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        * this refers to the base linear comparative display
        */
       baseConfiguration: baseConfigFactory(pluginManager),

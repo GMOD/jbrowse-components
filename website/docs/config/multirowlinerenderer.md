@@ -4,7 +4,7 @@ title: MultiRowLineRenderer
 toplevel: true
 ---
 
-### Slots
+### MultiRowLineRenderer - Slots
 
 #### slot: displayCrossHatches
 
@@ -28,7 +28,7 @@ summaryScoreMode: {
     }
 ```
 
-## Derives from
+## MultiRowLineRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

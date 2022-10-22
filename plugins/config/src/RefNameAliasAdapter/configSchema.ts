@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config RefNameAliasAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const RefNameAliasAdapter = ConfigurationSchema(
   'RefNameAliasAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     location: {
       type: 'fileLocation',
@@ -17,7 +19,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
       },
     },
     /**
-     * !slot
+     * #slot
      */
     refNameColumn: {
       type: 'number',

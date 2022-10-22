@@ -1,19 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
- * !config
+ * #config BgzipFastaAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const BgzipFastaAdapter = ConfigurationSchema(
   'BgzipFastaAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     fastaLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
     },
     /**
-     * !slot
+     * #slot
      */
     faiLocation: {
       type: 'fileLocation',
@@ -23,7 +25,7 @@ const BgzipFastaAdapter = ConfigurationSchema(
       },
     },
     /**
-     * !slot
+     * #slot
      */
     metadataLocation: {
       description: 'Optional metadata file',
@@ -34,7 +36,7 @@ const BgzipFastaAdapter = ConfigurationSchema(
       },
     },
     /**
-     * !slot
+     * #slot
      */
     gziLocation: {
       type: 'fileLocation',

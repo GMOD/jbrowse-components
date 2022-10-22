@@ -4,7 +4,7 @@ title: LinearArcDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearArcDisplay - Slots
 
 #### slot: renderer
 
@@ -14,7 +14,7 @@ renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
 })
 ```
 
-## Derives from
+## LinearArcDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

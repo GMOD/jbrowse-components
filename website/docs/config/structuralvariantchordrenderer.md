@@ -4,7 +4,7 @@ title: StructuralVariantChordRenderer
 toplevel: true
 ---
 
-### Slots
+### StructuralVariantChordRenderer - Slots
 
 #### slot: strokeColor
 

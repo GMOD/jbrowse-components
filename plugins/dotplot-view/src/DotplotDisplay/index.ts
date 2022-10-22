@@ -23,19 +23,25 @@ export default (pm: PluginManager) => {
 }
 
 /**
- * !config DotplotDisplay
+ * #config DotplotDisplay
  */
 export function configSchemaFactory(pm: any) {
   return ConfigurationSchema(
     'DotplotDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       renderer: types.optional(pm.pluggableConfigSchemaType('renderer'), {
         type: 'DotplotRenderer',
       }),
     },
-    { explicitIdentifier: 'displayId', explicitlyTyped: true },
+    {
+      /**
+       * #identifier
+       */
+      explicitIdentifier: 'displayId',
+      explicitlyTyped: true,
+    },
   )
 }

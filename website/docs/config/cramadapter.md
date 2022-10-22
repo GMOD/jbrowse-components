@@ -6,7 +6,7 @@ toplevel: true
 
 used to configure CRAM adapter
 
-### Slots
+### CramAdapter - Slots
 
 #### slot: fetchSizeLimit
 

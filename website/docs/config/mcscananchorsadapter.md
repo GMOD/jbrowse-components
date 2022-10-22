@@ -4,7 +4,7 @@ title: MCScanAnchorsAdapter
 toplevel: true
 ---
 
-### Slots
+### MCScanAnchorsAdapter - Slots
 
 #### slot: mcscanAnchorsLocation
 

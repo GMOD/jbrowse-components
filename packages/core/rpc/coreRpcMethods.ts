@@ -35,12 +35,9 @@ export class CoreGetRefNames extends RpcMethodType {
       args,
       rpcDriverClassName,
     )
+    const pm = this.pluginManager
     const { sessionId, adapterConfig } = deserializedArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     if (isFeatureAdapter(dataAdapter)) {
       return dataAdapter.getRefNames(deserializedArgs)

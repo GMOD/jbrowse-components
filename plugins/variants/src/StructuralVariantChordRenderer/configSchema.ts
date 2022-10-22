@@ -1,12 +1,14 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
- * !config StructuralVariantChordRenderer
+ * #config StructuralVariantChordRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'StructuralVariantChordRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     strokeColor: {
       type: 'color',
@@ -15,7 +17,7 @@ const configSchema = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     strokeColorSelected: {
       type: 'color',
@@ -24,7 +26,7 @@ const configSchema = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     strokeColorHover: {
       type: 'color',

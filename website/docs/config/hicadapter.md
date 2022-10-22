@@ -4,7 +4,7 @@ title: HicAdapter
 toplevel: true
 ---
 
-### Slots
+### HicAdapter - Slots
 
 #### slot: hicLocation
 

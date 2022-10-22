@@ -10,6 +10,7 @@ function generateStateModelDocs() {
     [
       'plugins/linear-genome-view/src/LinearGenomeView/index.tsx',
       'plugins/dotplot-view/src/DotplotView/model.ts',
+      'plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.ts',
       'plugins/linear-comparative-view/src/LinearSyntenyView/model.ts',
       'plugins/linear-comparative-view/src/LinearComparativeView/model.ts',
       'packages/core/pluggableElementTypes/models/BaseDisplayModel.tsx',
@@ -39,9 +40,8 @@ function generateStateModelDocs() {
         }
       }
       const current = contents[fn]
-
-      const name = rm(obj.comment, '!' + obj.type) || obj.name
-      const docs = filter(obj.comment, '!' + obj.type)
+      const name = rm(obj.comment, '#' + obj.type) || obj.name
+      const docs = filter(obj.comment, '#' + obj.type)
       const code = removeComments(obj.node)
       const id = slugify(name, { lower: true })
 
@@ -74,7 +74,7 @@ Object.entries(contents).forEach(([key, value]) => {
   const { model, getters, properties, actions, methods } = value
   if (model) {
     const getterstr =
-      `${getters.length ? '### Getters' : ''}\n` +
+      `${getters.length ? `### ${model.name} - Getters` : ''}\n` +
       getters
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ name, docs, signature }: any) => {
@@ -91,7 +91,7 @@ ${signature || ''}
         .join('\n')
 
     const methodstr =
-      `${methods.length ? '### Methods' : ''}\n` +
+      `${methods.length ? `### ${model.name} - Methods` : ''}\n` +
       methods
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ name, docs, signature }: any) => {
@@ -108,11 +108,11 @@ ${name}: ${signature || ''}
         .join('\n')
 
     const propertiesstr =
-      `${properties.length ? '### Properties' : ''}\n` +
+      `${properties.length ? `### ${model.name} - Properties` : ''}\n` +
       properties
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ name, docs, code, signature }: any) => {
-          return `#### properties: ${name}
+          return `#### property: ${name}
 
 ${docs}
 
@@ -127,7 +127,7 @@ ${code}
         .join('\n')
 
     const actionstr =
-      `${actions.length ? '### Actions' : ''}\n` +
+      `${actions.length ? `### ${model.name} - Actions` : ''}\n` +
       actions
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ name, docs, signature }: any) => {

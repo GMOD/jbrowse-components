@@ -4,7 +4,7 @@ title: GCContentAdapter
 toplevel: true
 ---
 
-### Slots
+### GCContentAdapter - Slots
 
 #### slot: sequenceAdapter
 

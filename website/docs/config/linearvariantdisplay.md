@@ -4,7 +4,11 @@ title: LinearVariantDisplay
 toplevel: true
 ---
 
-## Derives from
+mostly empty, this display type is very much
+like a `FeatureTrack` with a `LinearBasicDisplay` except it has a custom
+feature details widget
+
+## LinearVariantDisplay - Derives from
 
 ```js
 baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)

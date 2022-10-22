@@ -4,7 +4,7 @@ title: ChainAdapter
 toplevel: true
 ---
 
-### Slots
+### ChainAdapter - Slots
 
 #### slot: assemblyNames
 

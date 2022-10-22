@@ -4,7 +4,7 @@ title: CytobandAdapter
 toplevel: true
 ---
 
-### Slots
+### CytobandAdapter - Slots
 
 #### slot: cytobandLocation
 

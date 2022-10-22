@@ -3,14 +3,14 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
 
 /**
- * !config LinearBasicDisplay
+ * #config LinearBasicDisplay
  */
-export default function configSchemaFactory(pluginManager: PluginManager) {
+function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearBasicDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       mouseover: {
         type: 'string',
@@ -20,16 +20,18 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
         contextVariable: ['feature'],
       },
       /**
-       * !slot
+       * #slot
        */
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
     },
   )
 }
+
+export default configSchemaFactory

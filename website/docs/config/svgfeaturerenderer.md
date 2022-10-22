@@ -4,7 +4,7 @@ title: SvgFeatureRenderer
 toplevel: true
 ---
 
-### Slots
+### SvgFeatureRenderer - Slots
 
 #### slot: color1
 

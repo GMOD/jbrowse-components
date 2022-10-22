@@ -4,7 +4,7 @@ title: LinearWiggleDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearWiggleDisplay - Slots
 
 #### slot: autoscale
 
@@ -106,7 +106,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-## Derives from
+## LinearWiggleDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

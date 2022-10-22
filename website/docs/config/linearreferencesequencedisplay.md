@@ -4,7 +4,7 @@ title: LinearReferenceSequenceDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearReferenceSequenceDisplay - Slots
 
 #### slot: renderer
 

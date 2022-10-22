@@ -21,7 +21,7 @@ const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 type LGV = LinearGenomeViewModel
 
 /**
- * !stateModel LinearSNPCoverageDisplay
+ * #stateModel LinearSNPCoverageDisplay
  * extends `LinearWiggleDisplay`
  */
 function stateModelFactory(
@@ -34,23 +34,23 @@ function stateModelFactory(
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearSNPCoverageDisplay'),
         /**
-         * !property
+         * #property
          */
         drawInterbaseCounts: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         drawIndicators: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         drawArcs: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         filterBy: types.optional(
           types.model({
@@ -64,7 +64,7 @@ function stateModelFactory(
           {},
         ),
         /**
-         * !property
+         * #property
          */
         colorBy: types.maybe(
           types.model({
@@ -79,13 +79,13 @@ function stateModelFactory(
     }))
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
       /**
-       * !action
+       * #action
        */
       setFilterBy(filter: {
         flagInclude: number
@@ -96,14 +96,14 @@ function stateModelFactory(
         self.filterBy = cast(filter)
       },
       /**
-       * !action
+       * #action
        */
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
       },
 
       /**
-       * !action
+       * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
@@ -121,7 +121,7 @@ function stateModelFactory(
       const { renderProps: superRenderProps } = self
       return {
         /**
-         * !getter
+         * #getter
          */
         get rendererConfig() {
           const configBlob =
@@ -139,7 +139,7 @@ function stateModelFactory(
           )
         },
         /**
-         * !getter
+         * #getter
          */
         get drawArcsSetting() {
           return (
@@ -147,7 +147,7 @@ function stateModelFactory(
           )
         },
         /**
-         * !getter
+         * #getter
          */
         get drawInterbaseCountsSetting() {
           return (
@@ -156,7 +156,7 @@ function stateModelFactory(
           )
         },
         /**
-         * !getter
+         * #getter
          */
         get drawIndicatorsSetting() {
           return (
@@ -166,7 +166,7 @@ function stateModelFactory(
         },
 
         /**
-         * !getter
+         * #getter
          */
         get modificationsReady() {
           return self.colorBy?.type === 'modifications'
@@ -176,7 +176,7 @@ function stateModelFactory(
         },
 
         /**
-         * !method
+         * #method
          */
         renderProps() {
           const superProps = superRenderProps()
@@ -196,19 +196,19 @@ function stateModelFactory(
     })
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       toggleDrawIndicators() {
         self.drawIndicators = !self.drawIndicatorsSetting
       },
       /**
-       * !action
+       * #action
        */
       toggleDrawInterbaseCounts() {
         self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
       },
       /**
-       * !action
+       * #action
        */
       toggleDrawArcs() {
         self.drawArcs = !self.drawArcsSetting
@@ -256,14 +256,14 @@ function stateModelFactory(
       const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
-         * !getter
+         * #getter
          */
         get TooltipComponent() {
           return Tooltip
         },
 
         /**
-         * !getter
+         * #getter
          */
         get adapterConfig() {
           const subadapter = getConf(self.parentTrack, 'adapter')
@@ -274,28 +274,28 @@ function stateModelFactory(
         },
 
         /**
-         * !getter
+         * #getter
          */
         get rendererTypeName() {
           return rendererTypes.get('snpcoverage')
         },
 
         /**
-         * !getter
+         * #getter
          */
         get needsScalebar() {
           return true
         },
 
         /**
-         * !method
+         * #method
          */
         contextMenuItems() {
           return []
         },
 
         /**
-         * !method
+         * #method
          */
         trackMenuItems() {
           return [

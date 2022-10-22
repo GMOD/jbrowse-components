@@ -7,7 +7,7 @@ import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 /**
- * !stateModel LinearBareDisplay
+ * #stateModel LinearBareDisplay
  * extends `BaseLinearDisplay`
  */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
@@ -17,11 +17,11 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       BaseLinearDisplay,
       types.model({
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearBareDisplay'),
         /**
-         * !property
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
       }),
@@ -31,7 +31,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       const { renderProps: superRenderProps } = self
       return {
         /**
-         * !method
+         * #method
          */
         renderProps() {
           return {
@@ -43,7 +43,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
 
         /**
-         * !getter
+         * #getter
          */
         get rendererTypeName() {
           return self.configuration.renderer.type

@@ -4,9 +4,9 @@ title: LinearPileupDisplay
 toplevel: true
 ---
 
-### Properties
+### LinearPileupDisplay - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -15,7 +15,7 @@ ISimpleType<"LinearPileupDisplay">
 type: types.literal('LinearPileupDisplay')
 ```
 
-#### properties: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### properties: showSoftClipping
+#### property: showSoftClipping
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ false
 showSoftClipping: false
 ```
 
-#### properties: featureHeight
+#### property: featureHeight
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ IMaybe<ISimpleType<number>>
 featureHeight: types.maybe(types.number)
 ```
 
-#### properties: noSpacing
+#### property: noSpacing
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ IMaybe<ISimpleType<boolean>>
 noSpacing: types.maybe(types.boolean)
 ```
 
-#### properties: fadeLikelihood
+#### property: fadeLikelihood
 
 ```js
 // type signature
@@ -60,7 +60,7 @@ IMaybe<ISimpleType<boolean>>
 fadeLikelihood: types.maybe(types.boolean)
 ```
 
-#### properties: trackMaxHeight
+#### property: trackMaxHeight
 
 ```js
 // type signature
@@ -69,7 +69,7 @@ IMaybe<ISimpleType<number>>
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### properties: mismatchAlpha
+#### property: mismatchAlpha
 
 ```js
 // type signature
@@ -78,7 +78,7 @@ IMaybe<ISimpleType<boolean>>
 mismatchAlpha: types.maybe(types.boolean)
 ```
 
-#### properties: sortedBy
+#### property: sortedBy
 
 ```js
 // type signature
@@ -95,7 +95,7 @@ sortedBy: types.maybe(
         )
 ```
 
-#### properties: colorBy
+#### property: colorBy
 
 ```js
 // type signature
@@ -110,7 +110,7 @@ colorBy: types.maybe(
         )
 ```
 
-### Getters
+### LinearPileupDisplay - Getters
 
 #### getter: maxHeight
 
@@ -161,7 +161,7 @@ string
 any
 ```
 
-### Methods
+### LinearPileupDisplay - Methods
 
 #### method: contextMenuItems
 
@@ -184,7 +184,7 @@ renderProps: () => any
 trackMenuItems: () => any[]
 ```
 
-### Actions
+### LinearPileupDisplay - Actions
 
 #### action: setReady
 

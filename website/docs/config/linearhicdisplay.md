@@ -4,7 +4,7 @@ title: LinearHicDisplay
 toplevel: true
 ---
 
-### Slots
+### LinearHicDisplay - Slots
 
 #### slot: renderer
 
@@ -12,7 +12,7 @@ toplevel: true
 renderer: pluginManager.getRendererType('HicRenderer').configSchema
 ```
 
-## Derives from
+## LinearHicDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

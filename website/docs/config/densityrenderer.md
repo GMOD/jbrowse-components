@@ -4,7 +4,7 @@ title: DensityRenderer
 toplevel: true
 ---
 
-## Derives from
+## DensityRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

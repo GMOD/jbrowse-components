@@ -4,9 +4,9 @@ title: DotplotView
 toplevel: true
 ---
 
-### Properties
+### DotplotView - Properties
 
-#### properties: id
+#### property: id
 
 ```js
 // type signature
@@ -15,7 +15,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ ISimpleType<"DotplotView">
 type: types.literal('DotplotView')
 ```
 
-#### properties: height
+#### property: height
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ number
 height: 600
 ```
 
-#### properties: borderSize
+#### property: borderSize
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ number
 borderSize: 20
 ```
 
-#### properties: tickSize
+#### property: tickSize
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ number
 tickSize: 5
 ```
 
-#### properties: vtextRotation
+#### property: vtextRotation
 
 ```js
 // type signature
@@ -60,7 +60,7 @@ number
 vtextRotation: 0
 ```
 
-#### properties: htextRotation
+#### property: htextRotation
 
 ```js
 // type signature
@@ -69,7 +69,7 @@ number
 htextRotation: -90
 ```
 
-#### properties: fontSize
+#### property: fontSize
 
 ```js
 // type signature
@@ -78,7 +78,7 @@ number
 fontSize: 15
 ```
 
-#### properties: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -87,7 +87,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### properties: assemblyNames
+#### property: assemblyNames
 
 ```js
 // type signature
@@ -96,7 +96,7 @@ IArrayType<ISimpleType<string>>
 assemblyNames: types.array(types.string)
 ```
 
-#### properties: drawCigar
+#### property: drawCigar
 
 ```js
 // type signature
@@ -105,7 +105,7 @@ true
 drawCigar: true
 ```
 
-#### properties: hview
+#### property: hview
 
 ```js
 // type signature
@@ -114,7 +114,7 @@ IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>
 hview: types.optional(DotplotHView, {})
 ```
 
-#### properties: vview
+#### property: vview
 
 ```js
 // type signature
@@ -123,7 +123,7 @@ IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>
 vview: types.optional(DotplotVView, {})
 ```
 
-#### properties: cursorMode
+#### property: cursorMode
 
 ```js
 // type signature
@@ -132,7 +132,7 @@ string
 cursorMode: 'crosshair'
 ```
 
-#### properties: tracks
+#### property: tracks
 
 ```js
 // type signature
@@ -143,7 +143,7 @@ tracks: types.array(
         )
 ```
 
-#### properties: viewTrackConfigs
+#### property: viewTrackConfigs
 
 this represents tracks specific to this view specifically used
 for read vs ref dotplots where this track would not really apply
@@ -156,7 +156,7 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
-### Getters
+### DotplotView - Getters
 
 #### getter: width
 
@@ -235,7 +235,7 @@ number
 unknown
 ```
 
-### Methods
+### DotplotView - Methods
 
 #### method: renderProps
 
@@ -251,7 +251,7 @@ renderProps: () => any
 menuItems: () => ({ label: string; onClick: () => void; icon?: undefined; } | { label: string; onClick: () => any; icon: any; })[]
 ```
 
-### Actions
+### DotplotView - Actions
 
 #### action: setCursorMode
 

@@ -6,11 +6,11 @@ toplevel: true
 
 This corresponds to the assemblies section of the config
 
-### Identifier
+### BaseAssembly - Identifier
 
 #### slot: name
 
-### Slots
+### BaseAssembly - Slots
 
 #### slot: aliases
 

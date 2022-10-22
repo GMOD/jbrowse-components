@@ -8,29 +8,29 @@ import PluginManager from '@jbrowse/core/PluginManager'
 // for the ReferenceSequenceTrack
 
 /**
- * !config ReferenceSequenceTrack
+ * #config ReferenceSequenceTrack
  * used to display base level DNA sequence tracks
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ReferenceSequenceTrack',
     {
       /**
-       * !slot adapter
-       * !type AdapterType
+       * #slot
        * configuration for track adapter
        */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
 
       /**
-       * !slot displays
-       * !type DisplayType[]
+       * #slot
        * configuration for the displays e.g. LinearReferenceSequenceDisplay
        */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
       /**
-       * !slot name
+       * #slot
        */
       name: {
         type: 'string',
@@ -40,7 +40,7 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       },
 
       /**
-       * !slot metadata
+       * #slot
        */
       metadata: {
         type: 'frozen',
@@ -49,12 +49,19 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       },
 
       formatAbout: ConfigurationSchema('FormatAbout', {
+        /**
+         * #slot formatAbout.config
+         */
         config: {
           type: 'frozen',
           description: 'formats configuration in about dialog',
           defaultValue: {},
           contextVariable: ['config'],
         },
+
+        /**
+         * #slot formatAbout.hideUris
+         */
         hideUris: {
           type: 'boolean',
           defaultValue: false,
@@ -83,6 +90,10 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
         }
         return { ...snap, displays }
       },
+      /**
+       * #identifier
+       * all tracks have a globally unique 'trackId'
+       */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
       actions: (self: any) => ({

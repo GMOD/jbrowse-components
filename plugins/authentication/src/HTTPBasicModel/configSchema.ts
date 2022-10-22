@@ -3,13 +3,15 @@ import { Instance } from 'mobx-state-tree'
 import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
 /**
- * !config
+ * #config HTTPBasicInternetAccount
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const HTTPBasicConfigSchema = ConfigurationSchema(
   'HTTPBasicInternetAccount',
   {
     /**
-     * !slot
+     * #slot
      */
     tokenType: {
       description: 'a custom name for a token to include in the header',
@@ -17,7 +19,7 @@ const HTTPBasicConfigSchema = ConfigurationSchema(
       defaultValue: 'Basic',
     },
     /**
-     * !slot
+     * #slot
      */
     validateWithHEAD: {
       description: 'validate the token with a HEAD request before using it',
@@ -27,7 +29,7 @@ const HTTPBasicConfigSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: BaseInternetAccountConfig,
     explicitlyTyped: true,

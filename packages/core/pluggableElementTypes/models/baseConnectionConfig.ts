@@ -1,13 +1,13 @@
 import { ConfigurationSchema } from '../../configuration'
 
 /**
- * !config
+ * #config
  */
 export default ConfigurationSchema(
   'BaseConnection',
   {
     /**
-     * !slot
+     * #slot
      */
     name: {
       type: 'string',
@@ -15,7 +15,7 @@ export default ConfigurationSchema(
       description: 'a unique name for this connection',
     },
     /**
-     * !slot
+     * #slot
      */
     assemblyNames: {
       type: 'stringArray',

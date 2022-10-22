@@ -4,15 +4,17 @@ import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config LinearPileupDisplay
+ * #config LinearPileupDisplay
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 function PileupConfigFactory(pluginManager: PluginManager) {
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearPileupDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       defaultRendering: {
         type: 'stringEnum',
@@ -20,14 +22,14 @@ function PileupConfigFactory(pluginManager: PluginManager) {
         defaultValue: 'pileup',
       },
       /**
-       * !slot
+       * #slot
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         PileupRenderer:
           pluginManager.getRendererType('PileupRenderer').configSchema,
       }),
       /**
-       * !slot
+       * #slot
        */
       maxFeatureScreenDensity: {
         type: 'number',
@@ -36,7 +38,7 @@ function PileupConfigFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * !slot
+       * #slot
        */
       colorScheme: {
         type: 'stringEnum',
@@ -54,7 +56,7 @@ function PileupConfigFactory(pluginManager: PluginManager) {
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,

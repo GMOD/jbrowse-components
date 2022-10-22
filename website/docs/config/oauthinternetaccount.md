@@ -1,10 +1,10 @@
 ---
-id: oauthconfigschema
-title: OAuthConfigSchema
+id: oauthinternetaccount
+title: OAuthInternetAccount
 toplevel: true
 ---
 
-### Slots
+### OAuthInternetAccount - Slots
 
 #### slot: tokenType
 
@@ -86,7 +86,7 @@ hasRefreshToken: {
     }
 ```
 
-## Derives from
+## OAuthInternetAccount - Derives from
 
 ```js
 baseConfiguration: BaseInternetAccountConfig

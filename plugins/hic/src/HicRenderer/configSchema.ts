@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config HicRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const HicRenderer = ConfigurationSchema(
   'HicRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     baseColor: {
       type: 'color',
@@ -15,7 +17,7 @@ const HicRenderer = ConfigurationSchema(
       defaultValue: '#f00',
     },
     /**
-     * !slot
+     * #slot
      */
     color: {
       type: 'color',
@@ -25,7 +27,7 @@ const HicRenderer = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     maxHeight: {
       type: 'integer',

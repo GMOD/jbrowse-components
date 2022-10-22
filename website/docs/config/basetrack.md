@@ -4,7 +4,7 @@ title: BaseTrack
 toplevel: true
 ---
 
-### Slots
+### BaseTrack - Slots
 
 #### slot: name
 

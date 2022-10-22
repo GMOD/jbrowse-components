@@ -4,7 +4,7 @@ title: TwoBitAdapter
 toplevel: true
 ---
 
-### Slots
+### TwoBitAdapter - Slots
 
 #### slot: twoBitLocation
 

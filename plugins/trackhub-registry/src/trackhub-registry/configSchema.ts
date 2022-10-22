@@ -2,13 +2,15 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config TheTrackHubRegistryConnection
+ * #config TheTrackHubRegistryConnection
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default ConfigurationSchema(
   'TheTrackHubRegistryConnection',
   {
     /**
-     * !slot
+     * #slot
      */
     trackDbId: {
       type: 'string',
@@ -18,7 +20,7 @@ export default ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
   },

@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config BigBedAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const BigBedAdapter = ConfigurationSchema(
   'BigBedAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     bigBedLocation: {
       type: 'fileLocation',

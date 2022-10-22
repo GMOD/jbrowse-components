@@ -4,7 +4,7 @@ title: SNPCoverageAdapter
 toplevel: true
 ---
 
-### Slots
+### SNPCoverageAdapter - Slots
 
 #### slot: subadapter
 

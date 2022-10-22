@@ -4,7 +4,7 @@ title: NCListAdapter
 toplevel: true
 ---
 
-### Slots
+### NCListAdapter - Slots
 
 #### slot: rootUrlTemplate
 

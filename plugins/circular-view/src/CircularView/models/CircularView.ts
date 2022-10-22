@@ -26,7 +26,7 @@ import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
 
 /**
- * !stateModel CircularView
+ * #stateModel CircularView
  * extends `BaseViewModel`
  */
 function stateModelFactory(pluginManager: PluginManager) {
@@ -38,59 +38,59 @@ function stateModelFactory(pluginManager: PluginManager) {
     types
       .model('CircularView', {
         /**
-         * !property
+         * #property
          */
         type: types.literal('CircularView'),
         /**
-         * !property
+         * #property
          * similar to offsetPx in linear genome view
          */
         offsetRadians: -Math.PI / 2,
         /**
-         * !property
+         * #property
          */
         bpPerPx: 2000000,
         /**
-         * !property
+         * #property
          */
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
 
         /**
-         * !property
+         * #property
          */
         hideVerticalResizeHandle: false,
         /**
-         * !property
+         * #property
          */
         hideTrackSelectorButton: false,
         /**
-         * !property
+         * #property
          */
         lockedFitToWindow: true,
         /**
-         * !property
+         * #property
          */
         disableImportForm: false,
 
         /**
-         * !property
+         * #property
          */
         height: types.optional(
           types.refinement('trackHeight', types.number, n => n >= minHeight),
           defaultHeight,
         ),
         /**
-         * !property
+         * #property
          */
         displayedRegions: types.array(Region),
         /**
-         * !property
+         * #property
          */
         scrollX: 0,
         /**
-         * !property
+         * #property
          */
         scrollY: 0,
 
@@ -108,14 +108,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       }))
       .views(self => ({
         /**
-         * !getter
+         * #getter
          */
         get staticSlices() {
           return calculateStaticSlices(self)
         },
 
         /**
-         * !getter
+         * #getter
          */
         get visibleSection() {
           return viewportVisibleSection(
@@ -130,7 +130,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           )
         },
         /**
-         * !getter
+         * #getter
          */
         get circumferencePx() {
           let elidedBp = 0
@@ -142,25 +142,25 @@ function stateModelFactory(pluginManager: PluginManager) {
           )
         },
         /**
-         * !getter
+         * #getter
          */
         get radiusPx() {
           return this.circumferencePx / (2 * Math.PI)
         },
         /**
-         * !getter
+         * #getter
          */
         get bpPerRadian() {
           return self.bpPerPx * this.radiusPx
         },
         /**
-         * !getter
+         * #getter
          */
         get pxPerRadian() {
           return this.radiusPx
         },
         /**
-         * !getter
+         * #getter
          */
         get centerXY(): [number, number] {
           return [
@@ -169,7 +169,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           ]
         },
         /**
-         * !getter
+         * #getter
          */
         get totalBp() {
           let total = 0
@@ -179,7 +179,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           return total
         },
         /**
-         * !getter
+         * #getter
          */
         get maximumRadiusPx() {
           return self.lockedFitToWindow
@@ -187,14 +187,14 @@ function stateModelFactory(pluginManager: PluginManager) {
             : 1000000
         },
         /**
-         * !getter
+         * #getter
          */
         get maxBpPerPx() {
           const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
           return this.totalBp / minCircumferencePx
         },
         /**
-         * !getter
+         * #getter
          */
         get minBpPerPx() {
           // min depends on window dimensions, clamp between old min(0.01) and max
@@ -206,25 +206,25 @@ function stateModelFactory(pluginManager: PluginManager) {
           )
         },
         /**
-         * !getter
+         * #getter
          */
         get atMaxBpPerPx() {
           return self.bpPerPx >= this.maxBpPerPx
         },
         /**
-         * !getter
+         * #getter
          */
         get atMinBpPerPx() {
           return self.bpPerPx <= this.minBpPerPx
         },
         /**
-         * !getter
+         * #getter
          */
         get tooSmallToLock() {
           return this.minBpPerPx <= 0.0000000001
         },
         /**
-         * !getter
+         * #getter
          */
         get figureDimensions(): [number, number] {
           return [
@@ -233,19 +233,19 @@ function stateModelFactory(pluginManager: PluginManager) {
           ]
         },
         /**
-         * !getter
+         * #getter
          */
         get figureWidth() {
           return this.figureDimensions[0]
         },
         /**
-         * !getter
+         * #getter
          */
         get figureHeight() {
           return this.figureDimensions[1]
         },
         /**
-         * !getter
+         * #getter
          * this is displayedRegions, post-processed to
          * elide regions that are too small to see reasonably
          */
@@ -285,7 +285,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           return visible
         },
         /**
-         * !getter
+         * #getter
          */
         get assemblyNames() {
           const assemblyNames: string[] = []
@@ -297,7 +297,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           return assemblyNames
         },
         /**
-         * !getter
+         * #getter
          */
         get initialized() {
           const { assemblyManager } = getSession(self)
@@ -308,7 +308,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       }))
       .views(self => ({
         /**
-         * !getter
+         * #getter
          */
         get visibleStaticSlices() {
           return self.staticSlices.filter(s => sliceIsVisible(self, s))
@@ -319,21 +319,21 @@ function stateModelFactory(pluginManager: PluginManager) {
       }))
       .actions(self => ({
         /**
-         * !action
+         * #action
          */
         setWidth(newWidth: number) {
           self.width = Math.max(newWidth, minWidth)
           return self.width
         },
         /**
-         * !action
+         * #action
          */
         setHeight(newHeight: number) {
           self.height = Math.max(newHeight, minHeight)
           return self.height
         },
         /**
-         * !action
+         * #action
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height
@@ -342,7 +342,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           return newHeight - oldHeight
         },
         /**
-         * !action
+         * #action
          */
         resizeWidth(distance: number) {
           const oldWidth = self.width
@@ -351,56 +351,56 @@ function stateModelFactory(pluginManager: PluginManager) {
           return newWidth - oldWidth
         },
         /**
-         * !action
+         * #action
          */
         rotateClockwiseButton() {
           this.rotateClockwise(Math.PI / 6)
         },
 
         /**
-         * !action
+         * #action
          */
         rotateCounterClockwiseButton() {
           this.rotateCounterClockwise(Math.PI / 6)
         },
 
         /**
-         * !action
+         * #action
          */
         rotateClockwise(distance = 0.17) {
           self.offsetRadians += distance
         },
 
         /**
-         * !action
+         * #action
          */
         rotateCounterClockwise(distance = 0.17) {
           self.offsetRadians -= distance
         },
 
         /**
-         * !action
+         * #action
          */
         zoomInButton() {
           this.setBpPerPx(self.bpPerPx / 1.4)
         },
 
         /**
-         * !action
+         * #action
          */
         zoomOutButton() {
           this.setBpPerPx(self.bpPerPx * 1.4)
         },
 
         /**
-         * !action
+         * #action
          */
         setBpPerPx(newVal: number) {
           self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
         },
 
         /**
-         * !action
+         * #action
          */
         setModelViewWhenAdjust(secondCondition: boolean) {
           if (self.lockedFitToWindow && secondCondition) {
@@ -409,7 +409,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         closeView() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -417,7 +417,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
           const previouslyEmpty = self.displayedRegions.length === 0
@@ -431,7 +431,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         activateTrackSelector() {
           if (self.trackSelectorType === 'hierarchical') {
@@ -452,7 +452,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         toggleTrack(trackId: string) {
           // if we have any tracks with that configuration, turn them off
@@ -464,7 +464,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         setError(error: unknown) {
           console.error(error)
@@ -472,7 +472,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         showTrack(trackId: string, initialSnapshot = {}) {
           const schema = pluginManager.pluggableConfigSchemaType('track')
@@ -496,7 +496,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         addTrackConf(
           configuration: AnyConfigurationModel,
@@ -524,7 +524,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         hideTrack(trackId: string) {
           const schema = pluginManager.pluggableConfigSchemaType('track')
@@ -535,7 +535,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         },
 
         /**
-         * !action
+         * #action
          */
         toggleFitToWindowLock() {
           // when going unlocked -> locked and circle is cut off, set to the locked minBpPerPx

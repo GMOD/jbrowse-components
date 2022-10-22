@@ -4,7 +4,7 @@ title: BigBedAdapter
 toplevel: true
 ---
 
-### Slots
+### BigBedAdapter - Slots
 
 #### slot: bigBedLocation
 

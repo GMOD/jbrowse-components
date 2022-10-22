@@ -4,7 +4,7 @@ title: BedTabixAdapter
 toplevel: true
 ---
 
-### Slots
+### BedTabixAdapter - Slots
 
 #### slot: bedGzLocation
 

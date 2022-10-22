@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config HicAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const HicAdapter = ConfigurationSchema(
   'HicAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     hicLocation: {
       type: 'fileLocation',

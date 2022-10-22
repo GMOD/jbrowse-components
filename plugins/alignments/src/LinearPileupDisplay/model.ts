@@ -54,7 +54,7 @@ const rendererTypes = new Map([
 type LGV = LinearGenomeViewModel
 
 /**
- * !stateModel LinearPileupDisplay
+ * #stateModel LinearPileupDisplay
  */
 function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
   return types
@@ -63,39 +63,39 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       BaseLinearDisplay,
       types.model({
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearPileupDisplay'),
         /**
-         * !property
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
         /**
-         * !property
+         * #property
          */
         showSoftClipping: false,
         /**
-         * !property
+         * #property
          */
         featureHeight: types.maybe(types.number),
         /**
-         * !property
+         * #property
          */
         noSpacing: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         fadeLikelihood: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         trackMaxHeight: types.maybe(types.number),
         /**
-         * !property
+         * #property
          */
         mismatchAlpha: types.maybe(types.boolean),
         /**
-         * !property
+         * #property
          */
         sortedBy: types.maybe(
           types.model({
@@ -108,7 +108,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         ),
 
         /**
-         * !property
+         * #property
          */
         colorBy: types.maybe(
           types.model({
@@ -138,32 +138,32 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
     }))
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       setReady(flag: boolean) {
         self.ready = flag
       },
       /**
-       * !action
+       * #action
        */
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
       },
       /**
-       * !action
+       * #action
        */
       setFeatureHeight(n: number) {
         self.featureHeight = n
       },
       /**
-       * !action
+       * #action
        */
       setNoSpacing(flag: boolean) {
         self.noSpacing = flag
       },
 
       /**
-       * !action
+       * #action
        */
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
@@ -172,7 +172,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !action
+       * #action
        */
       updateModificationColorMap(uniqueModifications: string[]) {
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
@@ -186,7 +186,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !action
+       * #action
        */
       updateColorTagMap(uniqueTag: string[]) {
         // pale color scheme
@@ -214,7 +214,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         })
       },
       /**
-       * !action
+       * #action
        */
       setFeatureUnderMouse(feat?: Feature) {
         self.featureUnderMouseVolatile = feat
@@ -345,7 +345,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !action
+       * #action
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -361,14 +361,14 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !action
+       * #action
        */
       clearSelected() {
         self.sortedBy = undefined
       },
 
       /**
-       * !action
+       * #action
        * uses copy-to-clipboard and generates notification
        */
       copyFeatureToClipboard(feature: Feature) {
@@ -379,28 +379,28 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !action
+       * #action
        */
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
       },
 
       /**
-       * !action
+       * #action
        */
       toggleMismatchAlpha() {
         self.mismatchAlpha = !self.mismatchAlpha
       },
 
       /**
-       * !action
+       * #action
        */
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
 
       /**
-       * !action
+       * #action
        */
       setSortedBy(type: string, tag?: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
@@ -438,7 +438,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
 
       return {
         /**
-         * !action
+         * #action
          */
         reload() {
           self.clearSelected()
@@ -449,7 +449,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
 
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get maxHeight() {
         const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -459,7 +459,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get rendererConfig() {
         const configBlob =
@@ -477,7 +477,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get featureHeightSetting() {
         return (
@@ -485,7 +485,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         )
       },
       /**
-       * !getter
+       * #getter
        */
       get mismatchAlphaSetting() {
         return self.mismatchAlpha !== undefined
@@ -493,7 +493,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
           : readConfObject(this.rendererConfig, 'mismatchAlpha')
       },
       /**
-       * !getter
+       * #getter
        */
       get featureUnderMouse() {
         return self.featureUnderMouseVolatile
@@ -507,7 +507,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
 
       return {
         /**
-         * !getter
+         * #getter
          */
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
@@ -519,7 +519,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         },
 
         /**
-         * !method
+         * #method
          */
         contextMenuItems() {
           const feat = self.contextMenuFeature
@@ -550,13 +550,13 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         },
 
         /**
-         * !getter
+         * #getter
          */
         get DisplayBlurb() {
           return LinearPileupDisplayBlurb
         },
         /**
-         * !method
+         * #method
          */
         renderProps() {
           const view = getContainingView(self) as LGV
@@ -656,7 +656,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         },
 
         /**
-         * !method
+         * #method
          */
         trackMenuItems() {
           return [

@@ -2,14 +2,16 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config BamAdapter
+ * #config BamAdapter
  * used to configure BAM adapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'BamAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     bamLocation: {
       type: 'fileLocation',
@@ -18,7 +20,7 @@ const configSchema = ConfigurationSchema(
 
     index: ConfigurationSchema('BamIndex', {
       /**
-       * !slot index.indexType
+       * #slot index.indexType
        */
       indexType: {
         model: types.enumeration('IndexType', ['BAI', 'CSI']),
@@ -26,7 +28,7 @@ const configSchema = ConfigurationSchema(
         defaultValue: 'BAI',
       },
       /**
-       * !slot index.location
+       * #slot index.location
        */
       location: {
         type: 'fileLocation',
@@ -37,7 +39,7 @@ const configSchema = ConfigurationSchema(
       },
     }),
     /**
-     * !slot
+     * #slot
      */
     fetchSizeLimit: {
       type: 'number',
@@ -46,7 +48,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: 5_000_000,
     },
     /**
-     * !slot
+     * #slot
      * generally refers to the reference genome assembly's sequence adapter
      * currently needs to be manually added
      */

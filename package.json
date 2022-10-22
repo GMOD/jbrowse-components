@@ -23,9 +23,9 @@
     "test": "jest",
     "prepare": "husky install",
     "preconfigdocs": "yarn tsc --build docs/tsconfig.json",
-    "configdocs": "node docs/dist/generateConfigDocs.js",
+    "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node docs/dist/generateConfigDocs.js",
     "prestatedocs": "yarn tsc --build docs/tsconfig.json",
-    "statedocs": "node docs/dist/generateStateModelDocs.js"
+    "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node docs/dist/generateStateModelDocs.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

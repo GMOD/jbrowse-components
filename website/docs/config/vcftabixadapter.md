@@ -4,7 +4,7 @@ title: VcfTabixAdapter
 toplevel: true
 ---
 
-### Slots
+### VcfTabixAdapter - Slots
 
 #### slot: vcfGzLocation
 

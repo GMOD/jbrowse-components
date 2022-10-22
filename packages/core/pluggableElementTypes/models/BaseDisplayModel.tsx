@@ -10,21 +10,21 @@ import { getEnv } from '../../util'
 import { ElementId } from '../../util/types/mst'
 
 /**
- * !stateModel BaseDisplay
+ * #stateModel BaseDisplay
  */
 function stateModelFactory() {
   return types
     .model('BaseDisplay', {
       /**
-       * !property
+       * #property
        */
       id: ElementId,
       /**
-       * !property
+       * #property
        */
       type: types.string,
       /**
-       * !property
+       * #property
        */
       rpcDriverName: types.maybe(types.string),
     })
@@ -34,7 +34,7 @@ function stateModelFactory() {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get RenderingComponent(): React.FC<{
         model: typeof self
@@ -51,21 +51,21 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
         return null
       },
 
       /**
-       * !getter
+       * #getter
        */
       get adapterConfig() {
         return getConf(this.parentTrack, 'adapter')
       },
 
       /**
-       * !getter
+       * #getter
        */
       get parentTrack() {
         let track = getParent<any>(self)
@@ -79,7 +79,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !method
+       * #method
        * the react props that are passed to the Renderer when data
        * is rendered in this display
        */
@@ -92,7 +92,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        * the pluggable element type object for this display's
        * renderer
        */
@@ -113,7 +113,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        * if a display-level message should be displayed instead,
        * make this return a react component
        */
@@ -121,20 +121,20 @@ function stateModelFactory() {
         return undefined as undefined | React.FC<any>
       },
       /**
-       * !method
+       * #method
        */
       trackMenuItems(): MenuItem[] {
         return []
       },
 
       /**
-       * !getter
+       * #getter
        */
       get viewMenuActions(): MenuItem[] {
         return []
       },
       /**
-       * !method
+       * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
        *  return a react node + string of text.
@@ -147,19 +147,19 @@ function stateModelFactory() {
     }))
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       setError(error?: unknown) {
         self.error = error
       },
       /**
-       * !action
+       * #action
        */
       setRpcDriverName(rpcDriverName: string) {
         self.rpcDriverName = rpcDriverName
       },
       /**
-       * !action
+       * #action
        * base display reload does nothing, see specialized displays for details
        */
       reload() {},

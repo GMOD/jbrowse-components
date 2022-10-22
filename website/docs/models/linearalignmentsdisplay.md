@@ -6,9 +6,9 @@ toplevel: true
 
 extends `BaseDisplay`
 
-### Properties
+### LinearAlignmentsDisplay - Properties
 
-#### properties: PileupDisplay
+#### property: PileupDisplay
 
 refers to LinearPileupDisplay sub-display model
 
@@ -21,7 +21,7 @@ PileupDisplay: types.maybe(
         )
 ```
 
-#### properties: SNPCoverageDisplay
+#### property: SNPCoverageDisplay
 
 refers to LinearSNPCoverageDisplay sub-display model
 
@@ -34,7 +34,7 @@ SNPCoverageDisplay: types.maybe(
         )
 ```
 
-#### properties: snpCovHeight
+#### property: snpCovHeight
 
 ```js
 // type signature
@@ -43,7 +43,7 @@ number
 snpCovHeight: 45
 ```
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -52,7 +52,7 @@ ISimpleType<"LinearAlignmentsDisplay">
 type: types.literal('LinearAlignmentsDisplay')
 ```
 
-#### properties: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -61,7 +61,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### properties: height
+#### property: height
 
 ```js
 // type signature
@@ -70,7 +70,7 @@ number
 height: 250
 ```
 
-#### properties: showCoverage
+#### property: showCoverage
 
 ```js
 // type signature
@@ -79,7 +79,7 @@ true
 showCoverage: true
 ```
 
-#### properties: showPileup
+#### property: showPileup
 
 ```js
 // type signature
@@ -88,7 +88,7 @@ true
 showPileup: true
 ```
 
-#### properties: userFeatureScreenDensity
+#### property: userFeatureScreenDensity
 
 ```js
 // type signature
@@ -97,7 +97,7 @@ IMaybe<ISimpleType<number>>
 userFeatureScreenDensity: types.maybe(types.number)
 ```
 
-### Getters
+### LinearAlignmentsDisplay - Getters
 
 #### getter: pileupDisplayConfig
 
@@ -148,7 +148,7 @@ any
 any
 ```
 
-### Methods
+### LinearAlignmentsDisplay - Methods
 
 #### method: getFeatureByID
 
@@ -171,7 +171,7 @@ searchFeatureByID: (id: string) => any
 trackMenuItems: () => MenuItem[]
 ```
 
-### Actions
+### LinearAlignmentsDisplay - Actions
 
 #### action: toggleCoverage
 

@@ -4,25 +4,26 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * !config LinearVariantDisplay
+ * #config LinearVariantDisplay
  * mostly empty, this display type is very much
  * like a `FeatureTrack` with a `LinearBasicDisplay` except it has a custom
  * feature details widget
  */
-function configSchemaF(pluginManager: PluginManager) {
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+export default function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearVariantDisplay',
     {},
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )
 }
-export default configSchemaF
 
 export type LinearVariantDisplayConfigModel = ReturnType<typeof configSchemaF>
 export type LinearVariantDisplayConfig =

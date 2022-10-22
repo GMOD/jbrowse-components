@@ -2,14 +2,14 @@ import { ConfigurationSchema } from '../../configuration'
 import { Instance } from 'mobx-state-tree'
 
 /**
- * !config InternetAccount
+ * #config InternetAccount
  * the "base" internet account type
  */
 export const BaseInternetAccountConfig = ConfigurationSchema(
   'InternetAccount',
   {
     /**
-     * !slot
+     * #slot
      */
     name: {
       description: 'descriptive name of the internet account',
@@ -17,7 +17,7 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     description: {
       description: 'a description of the internet account',
@@ -25,7 +25,7 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     authHeader: {
       description: 'request header for credentials',
@@ -33,7 +33,7 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
       defaultValue: 'Authorization',
     },
     /**
-     * !slot
+     * #slot
      */
     tokenType: {
       description: 'a custom name for a token to include in the header',
@@ -41,7 +41,7 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
       defaultValue: '',
     },
     /**
-     * !slot
+     * #slot
      */
     domains: {
       description:

@@ -3,19 +3,21 @@ import { createBaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/model
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config QuantitativeTrack
+ * #config QuantitativeTrack
  */
-const configSchema = (pluginManager: PluginManager) => {
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'QuantitativeTrack',
     {},
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: createBaseTrackConfig(pluginManager),
     },
   )
 }
 
-export default configSchema
+export default configSchemaFactory

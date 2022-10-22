@@ -4,7 +4,7 @@ title: ChordVariantDisplay
 toplevel: true
 ---
 
-### Slots
+### ChordVariantDisplay - Slots
 
 #### slot: renderer
 
@@ -14,7 +14,7 @@ renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
 })
 ```
 
-## Derives from
+## ChordVariantDisplay - Derives from
 
 ```js
 baseConfiguration: baseChordDisplayConfig

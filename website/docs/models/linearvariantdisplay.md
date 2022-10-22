@@ -7,9 +7,9 @@ toplevel: true
 extends `LinearBasicDisplay`
 very similar to basic display, but provides custom widget on feature click
 
-### Properties
+### LinearVariantDisplay - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -18,7 +18,7 @@ ISimpleType<"LinearVariantDisplay">
 type: types.literal('LinearVariantDisplay')
 ```
 
-#### properties: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -27,7 +27,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### Actions
+### LinearVariantDisplay - Actions
 
 #### action: selectFeature
 

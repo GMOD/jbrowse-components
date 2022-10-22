@@ -6,9 +6,9 @@ toplevel: true
 
 extends the `LinearComparativeView` base model
 
-### Properties
+### LinearSyntenyView - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ ISimpleType<"LinearSyntenyView">
 type: types.literal('LinearSyntenyView')
 ```
 
-#### properties: drawCurves
+#### property: drawCurves
 
 ```js
 // type signature
@@ -26,7 +26,7 @@ false
 drawCurves: false
 ```
 
-### Methods
+### LinearSyntenyView - Methods
 
 #### method: menuItems
 
@@ -37,7 +37,7 @@ adds functions to draw curves and square the view
 menuItems: () => any[]
 ```
 
-### Actions
+### LinearSyntenyView - Actions
 
 #### action: toggleCurves
 

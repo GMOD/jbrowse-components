@@ -4,7 +4,7 @@ title: DeltaAdapter
 toplevel: true
 ---
 
-### Slots
+### DeltaAdapter - Slots
 
 #### slot: assemblyNames
 

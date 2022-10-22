@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config ArcRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const ArcRenderer = ConfigurationSchema(
   'ArcRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     color: {
       type: 'color',
@@ -16,7 +18,7 @@ const ArcRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     thickness: {
       type: 'number',
@@ -25,7 +27,7 @@ const ArcRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     label: {
       type: 'string',
@@ -34,7 +36,7 @@ const ArcRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     height: {
       type: 'number',
@@ -43,7 +45,7 @@ const ArcRenderer = ConfigurationSchema(
       contextVariable: ['feature'],
     },
     /**
-     * !slot
+     * #slot
      */
     caption: {
       type: 'string',

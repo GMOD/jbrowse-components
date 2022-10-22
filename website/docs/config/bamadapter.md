@@ -6,7 +6,7 @@ toplevel: true
 
 used to configure BAM adapter
 
-### Slots
+### BamAdapter - Slots
 
 #### slot: bamLocation
 

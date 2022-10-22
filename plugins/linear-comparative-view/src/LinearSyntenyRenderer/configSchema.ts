@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config LinearSyntenyRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const LinearSyntenyRenderer = ConfigurationSchema(
   'LinearSyntenyRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     color: {
       type: 'color',

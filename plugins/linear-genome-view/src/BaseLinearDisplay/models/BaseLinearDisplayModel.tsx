@@ -67,7 +67,7 @@ const minDisplayHeight = 20
 const defaultDisplayHeight = 100
 
 /**
- * !stateModel BaseLinearDisplay
+ * #stateModel BaseLinearDisplay
  * extends `BaseDisplay`
  */
 function stateModelFactory() {
@@ -77,7 +77,7 @@ function stateModelFactory() {
       BaseDisplay,
       types.model({
         /**
-         * !property
+         * #property
          */
         height: types.optional(
           types.refinement(
@@ -88,16 +88,16 @@ function stateModelFactory() {
           defaultDisplayHeight,
         ),
         /**
-         * !property
+         * #property
          * updated via autorun
          */
         blockState: types.map(BlockState),
         /**
-         * !property
+         * #property
          */
         userBpPerPxLimit: types.maybe(types.number),
         /**
-         * !property
+         * #property
          */
         userByteSizeLimit: types.maybe(types.number),
       }),
@@ -113,13 +113,13 @@ function stateModelFactory() {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get blockType(): 'staticBlocks' | 'dynamicBlocks' {
         return 'staticBlocks'
       },
       /**
-       * !getter
+       * #getter
        */
       get blockDefinitions() {
         const { blockType } = this
@@ -132,7 +132,7 @@ function stateModelFactory() {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        * how many milliseconds to wait for the display to
        * "settle" before re-rendering a block
        */
@@ -141,14 +141,14 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get TooltipComponent(): React.FC<any> {
         return Tooltip as unknown as React.FC
       },
 
       /**
-       * !getter
+       * #getter
        * returns a string feature ID if the globally-selected object
        * is probably a feature
        */
@@ -163,7 +163,7 @@ function stateModelFactory() {
         return undefined
       },
       /**
-       * !getter
+       * #getter
        * if a display-level message should be displayed instead of the blocks,
        * make this return a react component
        */
@@ -173,7 +173,7 @@ function stateModelFactory() {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        * a CompositeMap of `featureId -> feature obj` that
        * just looks in all the block data for that feature
        */
@@ -188,7 +188,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get featureUnderMouse() {
         const feat = self.featureIdUnderMouse
@@ -196,21 +196,21 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        */
       getFeatureOverlapping(blockKey: string, x: number, y: number) {
         return self.blockState.get(blockKey)?.layout?.getByCoord(x, y)
       },
 
       /**
-       * !getter
+       * #getter
        */
       getFeatureByID(blockKey: string, id: string): LayoutRecord | undefined {
         return self.blockState.get(blockKey)?.layout?.getByID(id)
       },
 
       /**
-       * !getter
+       * #getter
        */
       searchFeatureByID(id: string): LayoutRecord | undefined {
         let ret
@@ -224,14 +224,14 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get currentBytesRequested() {
         return self.estimatedRegionStats?.bytes || 0
       },
 
       /**
-       * !getter
+       * #getter
        */
       get currentFeatureScreenDensity() {
         const view = getContainingView(self) as LGV
@@ -239,20 +239,20 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        */
       get maxFeatureScreenDensity() {
         return getConf(self, 'maxFeatureScreenDensity')
       },
       /**
-       * !getter
+       * #getter
        */
       get estimatedStatsReady() {
         return !!self.estimatedRegionStats
       },
 
       /**
-       * !getter
+       * #getter
        */
       get maxAllowableBytes() {
         return (
@@ -264,7 +264,7 @@ function stateModelFactory() {
     }))
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       setMessage(message: string) {
         self.message = message
@@ -296,7 +296,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !action
+       * #action
        */
       estimateRegionsStats(
         regions: Region[],
@@ -341,26 +341,26 @@ function stateModelFactory() {
         return self.estimatedRegionStatsP
       },
       /**
-       * !action
+       * #action
        */
       setRegionStatsP(p?: Promise<Stats>) {
         self.estimatedRegionStatsP = p
       },
       /**
-       * !action
+       * #action
        */
       setRegionStats(estimatedRegionStats?: Stats) {
         self.estimatedRegionStats = estimatedRegionStats
       },
       /**
-       * !action
+       * #action
        */
       clearRegionStats() {
         self.estimatedRegionStatsP = undefined
         self.estimatedRegionStats = undefined
       },
       /**
-       * !action
+       * #action
        */
       setHeight(displayHeight: number) {
         if (displayHeight > minDisplayHeight) {
@@ -371,7 +371,7 @@ function stateModelFactory() {
         return self.height
       },
       /**
-       * !action
+       * #action
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
@@ -380,14 +380,14 @@ function stateModelFactory() {
       },
 
       /**
-       * !action
+       * #action
        */
       setScrollTop(scrollTop: number) {
         self.scrollTop = scrollTop
       },
 
       /**
-       * !action
+       * #action
        */
       updateStatsLimit(stats: Stats) {
         const view = getContainingView(self) as LGV
@@ -399,7 +399,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !action
+       * #action
        */
       addBlock(key: string, block: BaseBlock) {
         self.blockState.set(
@@ -411,19 +411,19 @@ function stateModelFactory() {
         )
       },
       /**
-       * !action
+       * #action
        */
       setCurrBpPerPx(n: number) {
         self.currBpPerPx = n
       },
       /**
-       * !action
+       * #action
        */
       deleteBlock(key: string) {
         self.blockState.delete(key)
       },
       /**
-       * !action
+       * #action
        */
       selectFeature(feature: Feature) {
         const session = getSession(self)
@@ -445,26 +445,26 @@ function stateModelFactory() {
         }
       },
       /**
-       * !action
+       * #action
        */
       clearFeatureSelection() {
         const session = getSession(self)
         session.clearSelection()
       },
       /**
-       * !action
+       * #action
        */
       setFeatureIdUnderMouse(feature: string | undefined) {
         self.featureIdUnderMouse = feature
       },
       /**
-       * !action
+       * #action
        */
       reload() {
         ;[...self.blockState.values()].map(val => val.doReload())
       },
       /**
-       * !action
+       * #action
        */
       setContextMenuFeature(feature?: Feature) {
         self.contextMenuFeature = feature
@@ -472,7 +472,7 @@ function stateModelFactory() {
     }))
     .views(self => ({
       /**
-       * !getter
+       * #getter
        * region is too large if:
        * - stats are ready
        * - region is greater than 20kb (don't warn when zoomed in less than that)
@@ -494,7 +494,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        * only shows a message of bytes requested is defined, the feature density
        * based stats don't produce any helpful message besides to zoom in
        */
@@ -512,7 +512,7 @@ function stateModelFactory() {
 
       return {
         /**
-         * !action
+         * #action
          */
         async reload() {
           self.setError()
@@ -606,14 +606,14 @@ function stateModelFactory() {
     })
     .views(self => ({
       /**
-       * !method
+       * #method
        */
       regionCannotBeRenderedText(_region: Region) {
         return self.regionTooLarge ? 'Force load to see features' : ''
       },
 
       /**
-       * !method
+       * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
        *  return a react node + string of text.
@@ -626,14 +626,14 @@ function stateModelFactory() {
       },
 
       /**
-       * !method
+       * #method
        */
       trackMenuItems(): MenuItem[] {
         return []
       },
 
       /**
-       * !method
+       * #method
        */
       contextMenuItems() {
         return self.contextMenuFeature
@@ -651,7 +651,7 @@ function stateModelFactory() {
           : []
       },
       /**
-       * !method
+       * #method
        */
       renderProps() {
         const view = getContainingView(self) as LGV
@@ -703,7 +703,7 @@ function stateModelFactory() {
     }))
     .actions(self => ({
       /**
-       * !method
+       * #method
        */
       async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
         const { height, id } = self

@@ -3,7 +3,7 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config LinearArcDisplay
+ * #config LinearArcDisplay
  */
 export function configSchemaFactory(pluginManager: PluginManager) {
   const LGVPlugin = pluginManager.getPlugin(
@@ -14,7 +14,7 @@ export function configSchemaFactory(pluginManager: PluginManager) {
     'LinearArcDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       renderer: types.optional(
         pluginManager.pluggableConfigSchemaType('renderer'),
@@ -23,7 +23,7 @@ export function configSchemaFactory(pluginManager: PluginManager) {
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

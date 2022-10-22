@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config SNPCoverageRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const SNPCoverageRenderer = ConfigurationSchema(
   'SNPCoverageRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     clipColor: {
       type: 'color',
@@ -15,7 +17,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
       defaultValue: 'red',
     },
     /**
-     * !slot
+     * #slot
      */
     indicatorThreshold: {
       type: 'number',
@@ -24,7 +26,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
       defaultValue: 0.4,
     },
     /**
-     * !slot
+     * #slot
      */
     drawArcs: {
       type: 'boolean',
@@ -32,7 +34,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
       defaultValue: true,
     },
     /**
-     * !slot
+     * #slot
      */
     drawInterbaseCounts: {
       type: 'boolean',
@@ -41,7 +43,7 @@ const SNPCoverageRenderer = ConfigurationSchema(
       defaultValue: true,
     },
     /**
-     * !slot
+     * #slot
      */
     drawIndicators: {
       type: 'boolean',

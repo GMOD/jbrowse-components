@@ -4,7 +4,7 @@ title: LinePlotRenderer
 toplevel: true
 ---
 
-### Slots
+### LinePlotRenderer - Slots
 
 #### slot: displayCrossHatches
 
@@ -16,7 +16,7 @@ displayCrossHatches: {
     }
 ```
 
-## Derives from
+## LinePlotRenderer - Derives from
 
 ```js
 baseConfiguration: baseWiggleRendererConfigSchema

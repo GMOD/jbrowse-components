@@ -4,7 +4,7 @@ title: HicTrack
 toplevel: true
 ---
 
-## Derives from
+## HicTrack - Derives from
 
 ```js
 baseConfiguration: createBaseTrackConfig(pluginManager)

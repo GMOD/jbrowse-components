@@ -4,7 +4,7 @@ title: MashMapAdapter
 toplevel: true
 ---
 
-### Slots
+### MashMapAdapter - Slots
 
 #### slot: assemblyNames
 

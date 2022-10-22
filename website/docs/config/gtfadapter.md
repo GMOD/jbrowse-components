@@ -4,7 +4,7 @@ title: GtfAdapter
 toplevel: true
 ---
 
-### Slots
+### GtfAdapter - Slots
 
 #### slot: gtfLocation
 

@@ -3,13 +3,15 @@ import { Instance } from 'mobx-state-tree'
 import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
 /**
- * !config
+ * #config ExternalTokenInternetAccount
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const ExternalTokenConfigSchema = ConfigurationSchema(
   'ExternalTokenInternetAccount',
   {
     /**
-     * !slot
+     * #slot
      */
     validateWithHEAD: {
       description: 'validate the token with a HEAD request before using it',
@@ -19,7 +21,7 @@ const ExternalTokenConfigSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: BaseInternetAccountConfig,
     explicitlyTyped: true,

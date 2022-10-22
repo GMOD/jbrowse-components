@@ -6,9 +6,9 @@ toplevel: true
 
 extends `BaseLinearDisplay`
 
-### Properties
+### LinearBareDisplay - Properties
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ ISimpleType<"LinearBareDisplay">
 type: types.literal('LinearBareDisplay')
 ```
 
-#### properties: configuration
+#### property: configuration
 
 ```js
 // type signature
@@ -26,7 +26,7 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### Getters
+### LinearBareDisplay - Getters
 
 #### getter: rendererTypeName
 
@@ -35,7 +35,7 @@ configuration: ConfigurationReference(configSchema)
 any
 ```
 
-### Methods
+### LinearBareDisplay - Methods
 
 #### method: renderProps
 

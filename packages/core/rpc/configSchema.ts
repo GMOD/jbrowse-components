@@ -1,63 +1,18 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
+import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'
+import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'
 
 /**
- * !config BaseRpcDriver
+ * #config RpcOptions
  */
-const BaseRpcDriverConfigSchema = ConfigurationSchema(
-  'BaseRpcDriver',
-  {
-    /**
-     * !slot
-     */
-    workerCount: {
-      type: 'number',
-      description:
-        'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
-      defaultValue: 0,
-    },
-  },
-  { explicitlyTyped: true },
-)
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-/**
- * !config MainThreadRpcDriver
- */
-const MainThreadRpcDriverConfigSchema = ConfigurationSchema(
-  'MainThreadRpcDriver',
-  {},
-  {
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: BaseRpcDriverConfigSchema,
-    explicitlyTyped: true,
-  },
-)
-
-/**
- * !config WebWorkerRpcDriver
- */
-const WebWorkerRpcDriverConfigSchema = ConfigurationSchema(
-  'WebWorkerRpcDriver',
-  {},
-  {
-    /**
-     * !baseConfiguration
-     */
-    baseConfiguration: BaseRpcDriverConfigSchema,
-    explicitlyTyped: true,
-  },
-)
-
-/**
- * !config RpcOptions
- */
 export default ConfigurationSchema(
   'RpcOptions',
   {
     /**
-     * !slot
+     * #slot
      */
     defaultDriver: {
       type: 'string',
@@ -66,7 +21,7 @@ export default ConfigurationSchema(
       defaultValue: 'MainThreadRpcDriver',
     },
     /**
-     * !slot
+     * #slot
      */
     drivers: types.optional(
       types.map(

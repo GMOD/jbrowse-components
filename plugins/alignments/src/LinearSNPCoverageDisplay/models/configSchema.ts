@@ -4,14 +4,16 @@ import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * !config LinearSNPCoverageDisplay
+ * #config LinearSNPCoverageDisplay
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearSNPCoverageDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       autoscale: {
         type: 'stringEnum',
@@ -21,7 +23,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
           'performs local autoscaling (no other options for SNP Coverage available)',
       },
       /**
-       * !slot
+       * #slot
        */
       minScore: {
         type: 'number',
@@ -29,7 +31,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         description: 'minimum value for the y-scale',
       },
       /**
-       * !slot
+       * #slot
        */
       maxScore: {
         type: 'number',
@@ -37,7 +39,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         defaultValue: Number.MAX_VALUE,
       },
       /**
-       * !slot
+       * #slot
        */
       scaleType: {
         type: 'stringEnum',
@@ -46,14 +48,14 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         defaultValue: 'linear',
       },
       /**
-       * !slot
+       * #slot
        */ inverted: {
         type: 'boolean',
         description: 'draw upside down',
         defaultValue: false,
       },
       /**
-       * !slot
+       * #slot
        */
       multiTicks: {
         type: 'boolean',
@@ -61,7 +63,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
         defaultValue: false,
       },
       /**
-       * !slot
+       * #slot
        */
       renderers: ConfigurationSchema('RenderersConfiguration', {
         SNPCoverageRenderer: pluginManager.getRendererType(
@@ -71,7 +73,7 @@ export default function SNPCoverageConfigFactory(pluginManager: PluginManager) {
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

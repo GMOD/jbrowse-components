@@ -24,7 +24,7 @@ import { renderReactionData, renderReactionEffect } from './renderReaction'
 import { CircularViewModel } from '../../CircularView/models/CircularView'
 
 /**
- * !stateModel BaseChordDisplay
+ * #stateModel BaseChordDisplay
  * extends `BaseDisplay`
  */
 function stateModelFactory() {
@@ -34,11 +34,11 @@ function stateModelFactory() {
       BaseDisplay,
       types.model({
         /**
-         * !property
+         * #property
          */
         bezierRadiusRatio: 0.1,
         /**
-         * !property
+         * #property
          */
         assemblyName: types.maybe(types.string),
       }),
@@ -60,7 +60,7 @@ function stateModelFactory() {
       const track = self
       return {
         /**
-         * !action
+         * #action
          */
         onChordClick(feature: Feature) {
           getConf(self, 'onChordClick', { feature, track, pluginManager })
@@ -69,7 +69,7 @@ function stateModelFactory() {
     })
     .views(self => ({
       /**
-       * !getter
+       * #getter
        */
       get blockDefinitions() {
         const origSlices = (getContainingView(self) as CircularViewModel)
@@ -96,7 +96,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !method
+       * #method
        */
       renderProps() {
         const view = getContainingView(self) as CircularViewModel
@@ -112,7 +112,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !getter
+       * #getter
        * the pluggable element type object for this diplay's
        * renderer
        */
@@ -134,14 +134,14 @@ function stateModelFactory() {
       },
 
       /**
-       * !method
+       * #method
        */
       isCompatibleWithRenderer(renderer: RendererType) {
         return !!(renderer instanceof CircularChordRendererType)
       },
 
       /**
-       * !getter
+       * #getter
        * returns a string feature ID if the globally-selected object
        * is probably a feature
        */
@@ -163,7 +163,7 @@ function stateModelFactory() {
     }))
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       renderStarted() {
         self.filled = false
@@ -174,7 +174,7 @@ function stateModelFactory() {
         self.renderingComponent = undefined
       },
       /**
-       * !action
+       * #action
        */
       renderSuccess({
         message,
@@ -205,7 +205,7 @@ function stateModelFactory() {
         }
       },
       /**
-       * !action
+       * #action
        */
       renderError(error: unknown) {
         console.error(error)
@@ -219,7 +219,7 @@ function stateModelFactory() {
       },
 
       /**
-       * !action
+       * #action
        */
       setRefNameMap(refNameMap: Record<string, string>) {
         self.refNameMap = refNameMap

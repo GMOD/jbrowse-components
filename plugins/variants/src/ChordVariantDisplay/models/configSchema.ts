@@ -4,14 +4,16 @@ import { baseChordDisplayConfig } from '@jbrowse/plugin-circular-view'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config ChordVariantDisplay
+ * #config ChordVariantDisplay
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 function stateModelFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordVariantDisplay',
     {
       /**
-       * !slot
+       * #slot
        */
       renderer: types.optional(
         pluginManager.pluggableConfigSchemaType('renderer'),
@@ -20,7 +22,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     },
     {
       /**
-       * !baseConfiguration
+       * #baseConfiguration
        */
       baseConfiguration: baseChordDisplayConfig,
       explicitlyTyped: true,

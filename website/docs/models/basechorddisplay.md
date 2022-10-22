@@ -6,9 +6,9 @@ toplevel: true
 
 extends `BaseDisplay`
 
-### Properties
+### BaseChordDisplay - Properties
 
-#### properties: bezierRadiusRatio
+#### property: bezierRadiusRatio
 
 ```js
 // type signature
@@ -17,7 +17,7 @@ number
 bezierRadiusRatio: 0.1
 ```
 
-#### properties: assemblyName
+#### property: assemblyName
 
 ```js
 // type signature
@@ -26,7 +26,7 @@ IMaybe<ISimpleType<string>>
 assemblyName: types.maybe(types.string)
 ```
 
-### Getters
+### BaseChordDisplay - Getters
 
 #### getter: blockDefinitions
 
@@ -55,7 +55,7 @@ is probably a feature
 string
 ```
 
-### Methods
+### BaseChordDisplay - Methods
 
 #### method: renderProps
 
@@ -71,7 +71,7 @@ renderProps: () => any
 isCompatibleWithRenderer: (renderer: RendererType) => boolean
 ```
 
-### Actions
+### BaseChordDisplay - Actions
 
 #### action: onChordClick
 

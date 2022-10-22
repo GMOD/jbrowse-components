@@ -4,7 +4,7 @@ title: PileupRenderer
 toplevel: true
 ---
 
-### Slots
+### PileupRenderer - Slots
 
 #### slot: color
 

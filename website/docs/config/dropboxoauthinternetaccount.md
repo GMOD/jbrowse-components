@@ -1,10 +1,10 @@
 ---
-id: dropboxoauthconfigschema
-title: DropboxOAuthConfigSchema
+id: dropboxoauthinternetaccount
+title: DropboxOAuthInternetAccount
 toplevel: true
 ---
 
-### Slots
+### DropboxOAuthInternetAccount - Slots
 
 #### slot: authEndpoint
 
@@ -65,7 +65,7 @@ hasRefreshToken: {
     }
 ```
 
-## Derives from
+## DropboxOAuthInternetAccount - Derives from
 
 ```js
 baseConfiguration: OAuthConfigSchema

@@ -4,9 +4,9 @@ title: JBrowseWebSessionModel
 toplevel: true
 ---
 
-### Properties
+### JBrowseWebSessionModel - Properties
 
-#### properties: id
+#### property: id
 
 ```js
 // type signature
@@ -15,7 +15,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: types.optional(types.identifier, shortid())
 ```
 
-#### properties: name
+#### property: name
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ ISimpleType<string>
 name: types.string
 ```
 
-#### properties: margin
+#### property: margin
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ number
 margin: 0
 ```
 
-#### properties: drawerWidth
+#### property: drawerWidth
 
 ```js
 // type signature
@@ -45,7 +45,7 @@ drawerWidth: types.optional(
       )
 ```
 
-#### properties: views
+#### property: views
 
 ```js
 // type signature
@@ -54,7 +54,7 @@ IArrayType<IAnyType>
 views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
-#### properties: widgets
+#### property: widgets
 
 ```js
 // type signature
@@ -65,7 +65,7 @@ widgets: types.map(
       )
 ```
 
-#### properties: activeWidgets
+#### property: activeWidgets
 
 ```js
 // type signature
@@ -78,7 +78,7 @@ activeWidgets: types.map(
       )
 ```
 
-#### properties: connectionInstances
+#### property: connectionInstances
 
 ```js
 // type signature
@@ -89,7 +89,7 @@ connectionInstances: types.array(
       )
 ```
 
-#### properties: sessionTracks
+#### property: sessionTracks
 
 ```js
 // type signature
@@ -100,7 +100,7 @@ sessionTracks: types.array(
       )
 ```
 
-#### properties: sessionConnections
+#### property: sessionConnections
 
 ```js
 // type signature
@@ -111,7 +111,7 @@ sessionConnections: types.array(
       )
 ```
 
-#### properties: sessionAssemblies
+#### property: sessionAssemblies
 
 ```js
 // type signature
@@ -120,7 +120,7 @@ IArrayType<IType<any, any, any>>
 sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
 
-#### properties: temporaryAssemblies
+#### property: temporaryAssemblies
 
 ```js
 // type signature
@@ -129,7 +129,7 @@ IArrayType<IType<any, any, any>>
 temporaryAssemblies: types.array(assemblyConfigSchemasType)
 ```
 
-#### properties: sessionPlugins
+#### property: sessionPlugins
 
 ```js
 // type signature
@@ -138,7 +138,7 @@ IArrayType<IType<any, any, any>>
 sessionPlugins: types.array(types.frozen())
 ```
 
-#### properties: minimized
+#### property: minimized
 
 ```js
 // type signature
@@ -147,7 +147,7 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 minimized: types.optional(types.boolean, false)
 ```
 
-#### properties: drawerPosition
+#### property: drawerPosition
 
 ```js
 // type signature
@@ -159,7 +159,7 @@ drawerPosition: types.optional(
       )
 ```
 
-### Getters
+### JBrowseWebSessionModel - Getters
 
 #### getter: DialogComponent
 
@@ -294,7 +294,7 @@ any
 any
 ```
 
-### Methods
+### JBrowseWebSessionModel - Methods
 
 #### method: renderProps
 
@@ -321,7 +321,7 @@ getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
 getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => ({ ...; } | { ...; })[]
 ```
 
-### Actions
+### JBrowseWebSessionModel - Actions
 
 #### action: setDrawerPosition
 

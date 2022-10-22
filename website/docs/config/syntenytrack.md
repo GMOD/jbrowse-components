@@ -4,7 +4,7 @@ title: SyntenyTrack
 toplevel: true
 ---
 
-## Derives from
+## SyntenyTrack - Derives from
 
 ```js
 baseConfiguration: createBaseTrackConfig(pluginManager)

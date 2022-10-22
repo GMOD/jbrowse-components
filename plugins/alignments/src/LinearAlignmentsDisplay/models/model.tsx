@@ -16,7 +16,7 @@ import deepEqual from 'fast-deep-equal'
 const minDisplayHeight = 20
 
 /**
- * !stateModel LinearAlignmentsDisplay
+ * #stateModel LinearAlignmentsDisplay
  * extends `BaseDisplay`
  */
 function stateModelFactory(
@@ -29,45 +29,45 @@ function stateModelFactory(
       BaseDisplay,
       types.model({
         /**
-         * !property
+         * #property
          * refers to LinearPileupDisplay sub-display model
          */
         PileupDisplay: types.maybe(
           pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
         ),
         /**
-         * !property
+         * #property
          * refers to LinearSNPCoverageDisplay sub-display model
          */
         SNPCoverageDisplay: types.maybe(
           pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
         ),
         /**
-         * !property
+         * #property
          */
         snpCovHeight: 45,
         /**
-         * !property
+         * #property
          */
         type: types.literal('LinearAlignmentsDisplay'),
         /**
-         * !property
+         * #property
          */
         configuration: ConfigurationReference(configSchema),
         /**
-         * !property
+         * #property
          */
         height: 250,
         /**
-         * !property
+         * #property
          */
         showCoverage: true,
         /**
-         * !property
+         * #property
          */
         showPileup: true,
         /**
-         * !property
+         * #property
          */
         userFeatureScreenDensity: types.maybe(types.number),
       }),
@@ -77,26 +77,26 @@ function stateModelFactory(
     }))
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       toggleCoverage() {
         self.showCoverage = !self.showCoverage
       },
       /**
-       * !action
+       * #action
        */
       togglePileup() {
         self.showPileup = !self.showPileup
       },
       /**
-       * !action
+       * #action
        */
       setScrollTop(scrollTop: number) {
         self.scrollTop = scrollTop
       },
 
       /**
-       * !action
+       * #action
        */
       setSNPCoverageHeight(n: number) {
         self.snpCovHeight = n
@@ -106,7 +106,7 @@ function stateModelFactory(
       const { trackMenuItems: superTrackMenuItems } = self
       return {
         /**
-         * !getter
+         * #getter
          */
         get pileupDisplayConfig() {
           const conf = getConf(self, 'pileupDisplay')
@@ -120,53 +120,53 @@ function stateModelFactory(
         },
 
         /**
-         * !method
+         * #method
          */
         getFeatureByID(blockKey: string, id: string) {
           return self.PileupDisplay.getFeatureByID(blockKey, id)
         },
         /**
-         * !method
+         * #method
          */
         searchFeatureByID(id: string) {
           return self.PileupDisplay.searchFeatureByID(id)
         },
 
         /**
-         * !getter
+         * #getter
          */
         get features() {
           return self.PileupDisplay.features
         },
 
         /**
-         * !getter
+         * #getter
          */
         get DisplayBlurb() {
           return self.PileupDisplay?.DisplayBlurb
         },
 
         /**
-         * !getter
+         * #getter
          */
         get sortedBy() {
           return self.PileupDisplay.sortedBy
         },
         /**
-         * !getter
+         * #getter
          */
         get sortedByPosition() {
           return self.PileupDisplay.sortedByPosition
         },
         /**
-         * !getter
+         * #getter
          */
         get sortedByRefName() {
           return self.PileupDisplay.sortedByRefName
         },
 
         /**
-         * !getter
+         * #getter
          */
         get snpCoverageDisplayConfig() {
           const conf = getConf(self, 'snpCoverageDisplay')
@@ -180,7 +180,7 @@ function stateModelFactory(
         },
 
         /**
-         * !method
+         * #method
          */
         trackMenuItems(): MenuItem[] {
           return [
@@ -201,7 +201,7 @@ function stateModelFactory(
     })
     .actions(self => ({
       /**
-       * !action
+       * #action
        */
       setSNPCoverageDisplay(displayConfig: AnyConfigurationModel) {
         self.SNPCoverageDisplay = {
@@ -211,14 +211,14 @@ function stateModelFactory(
         }
       },
       /**
-       * !action
+       * #action
        */
       setUserFeatureScreenDensity(limit: number) {
         self.PileupDisplay.setUserFeatureScreenDensity(limit)
         self.SNPCoverageDisplay.setUserFeatureScreenDensity(limit)
       },
       /**
-       * !action
+       * #action
        */
       setPileupDisplay(displayConfig: AnyConfigurationModel) {
         self.PileupDisplay = {
@@ -227,7 +227,7 @@ function stateModelFactory(
         }
       },
       /**
-       * !action
+       * #action
        */
       setHeight(displayHeight: number) {
         if (displayHeight > minDisplayHeight) {
@@ -238,7 +238,7 @@ function stateModelFactory(
         return self.height
       },
       /**
-       * !action
+       * #action
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
@@ -311,7 +311,7 @@ function stateModelFactory(
         )
       },
       /**
-       * !action
+       * #action
        */
       async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const pileupHeight = self.height - self.SNPCoverageDisplay.height

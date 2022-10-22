@@ -4,7 +4,7 @@ title: SNPCoverageRenderer
 toplevel: true
 ---
 
-### Slots
+### SNPCoverageRenderer - Slots
 
 #### slot: clipColor
 

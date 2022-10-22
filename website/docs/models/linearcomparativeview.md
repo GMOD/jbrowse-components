@@ -4,9 +4,9 @@ title: LinearComparativeView
 toplevel: true
 ---
 
-### Properties
+### LinearComparativeView - Properties
 
-#### properties: id
+#### property: id
 
 ```js
 // type signature
@@ -15,7 +15,7 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### properties: type
+#### property: type
 
 ```js
 // type signature
@@ -24,7 +24,7 @@ ISimpleType<"LinearComparativeView">
 type: types.literal('LinearComparativeView')
 ```
 
-#### properties: height
+#### property: height
 
 ```js
 // type signature
@@ -33,7 +33,7 @@ number
 height: defaultHeight
 ```
 
-#### properties: trackSelectorType
+#### property: trackSelectorType
 
 ```js
 // type signature
@@ -42,7 +42,7 @@ string
 trackSelectorType: 'hierarchical'
 ```
 
-#### properties: showIntraviewLinks
+#### property: showIntraviewLinks
 
 ```js
 // type signature
@@ -51,7 +51,7 @@ true
 showIntraviewLinks: true
 ```
 
-#### properties: linkViews
+#### property: linkViews
 
 ```js
 // type signature
@@ -60,7 +60,7 @@ false
 linkViews: false
 ```
 
-#### properties: interactToggled
+#### property: interactToggled
 
 ```js
 // type signature
@@ -69,7 +69,7 @@ false
 interactToggled: false
 ```
 
-#### properties: middleComparativeHeight
+#### property: middleComparativeHeight
 
 ```js
 // type signature
@@ -78,7 +78,7 @@ number
 middleComparativeHeight: 100
 ```
 
-#### properties: tracks
+#### property: tracks
 
 ```js
 // type signature
@@ -89,7 +89,7 @@ tracks: types.array(
         )
 ```
 
-#### properties: views
+#### property: views
 
 currently this is limited to an array of two
 
@@ -103,7 +103,7 @@ views: types.array(
         )
 ```
 
-#### properties: viewTrackConfigs
+#### property: viewTrackConfigs
 
 this represents tracks specific to this view specifically used
 for read vs ref dotplots where this track would not really apply
@@ -118,7 +118,7 @@ viewTrackConfigs: types.array(
         )
 ```
 
-### Getters
+### LinearComparativeView - Getters
 
 #### getter: highResolutionScaling
 
@@ -148,7 +148,7 @@ any[][]
 any[]
 ```
 
-### Methods
+### LinearComparativeView - Methods
 
 #### method: menuItems
 
@@ -164,7 +164,7 @@ menuItems: () => MenuItem[]
 rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
-### Actions
+### LinearComparativeView - Actions
 
 #### action: setWidth
 

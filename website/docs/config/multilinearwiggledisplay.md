@@ -4,7 +4,7 @@ title: MultiLinearWiggleDisplay
 toplevel: true
 ---
 
-### Slots
+### MultiLinearWiggleDisplay - Slots
 
 #### slot: autoscale
 
@@ -114,7 +114,7 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
-## Derives from
+## MultiLinearWiggleDisplay - Derives from
 
 ```js
 baseConfiguration: baseLinearDisplayConfigSchema

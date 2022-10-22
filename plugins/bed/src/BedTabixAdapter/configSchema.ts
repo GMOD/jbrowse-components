@@ -2,13 +2,15 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
 /**
- * !config
+ * #config BedTabixAdapter
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const BedTabixAdapter = ConfigurationSchema(
   'BedTabixAdapter',
   {
     /**
-     * !slot
+     * #slot
      */
     bedGzLocation: {
       type: 'fileLocation',
@@ -17,7 +19,7 @@ const BedTabixAdapter = ConfigurationSchema(
 
     index: ConfigurationSchema('TabixIndex', {
       /**
-       * !slot index.indexType
+       * #slot index.indexType
        */
       indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -25,7 +27,7 @@ const BedTabixAdapter = ConfigurationSchema(
         defaultValue: 'TBI',
       },
       /**
-       * !slot index.location
+       * #slot index.location
        */
       location: {
         type: 'fileLocation',
@@ -37,7 +39,7 @@ const BedTabixAdapter = ConfigurationSchema(
     }),
 
     /**
-     * !slot
+     * #slot
      */
     columnNames: {
       type: 'stringArray',
@@ -46,7 +48,7 @@ const BedTabixAdapter = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     scoreColumn: {
       type: 'string',
@@ -55,7 +57,7 @@ const BedTabixAdapter = ConfigurationSchema(
     },
 
     /**
-     * !slot
+     * #slot
      */
     autoSql: {
       type: 'string',

@@ -1,13 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * #config DivSequenceRenderer
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const DivSequenceRenderer = ConfigurationSchema(
   'DivSequenceRenderer',
   {
     /**
-     * !slot
+     * #slot
      */
     height: {
       type: 'number',

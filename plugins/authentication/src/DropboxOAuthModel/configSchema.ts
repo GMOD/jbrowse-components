@@ -3,13 +3,15 @@ import { Instance } from 'mobx-state-tree'
 import OAuthConfigSchema from '../OAuthModel/configSchema'
 
 /**
- * !config
+ * #config DropboxOAuthInternetAccount
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const DropboxOAuthConfigSchema = ConfigurationSchema(
   'DropboxOAuthInternetAccount',
   {
     /**
-     * !slot
+     * #slot
      */
     authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
@@ -17,7 +19,7 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
       defaultValue: 'https://www.dropbox.com/oauth2/authorize',
     },
     /**
-     * !slot
+     * #slot
      */
     tokenEndpoint: {
       description: 'the token endpoint of the internet account',
@@ -25,7 +27,7 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
       defaultValue: 'https://api.dropbox.com/oauth2/token',
     },
     /**
-     * !slot
+     * #slot
      */
     needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
@@ -33,7 +35,7 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
       defaultValue: true,
     },
     /**
-     * !slot
+     * #slot
      */
     domains: {
       description:
@@ -50,7 +52,7 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
       ],
     },
     /**
-     * !slot
+     * #slot
      */
     hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
@@ -60,7 +62,7 @@ const DropboxOAuthConfigSchema = ConfigurationSchema(
   },
   {
     /**
-     * !baseConfiguration
+     * #baseConfiguration
      */
     baseConfiguration: OAuthConfigSchema,
     explicitlyTyped: true,

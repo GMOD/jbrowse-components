@@ -1,10 +1,10 @@
 ---
-id: httpbasicconfigschema
-title: HTTPBasicConfigSchema
+id: httpbasicinternetaccount
+title: HTTPBasicInternetAccount
 toplevel: true
 ---
 
-### Slots
+### HTTPBasicInternetAccount - Slots
 
 #### slot: tokenType
 
@@ -26,7 +26,7 @@ validateWithHEAD: {
     }
 ```
 
-## Derives from
+## HTTPBasicInternetAccount - Derives from
 
 ```js
 baseConfiguration: BaseInternetAccountConfig

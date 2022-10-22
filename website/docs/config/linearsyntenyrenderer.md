@@ -4,7 +4,7 @@ title: LinearSyntenyRenderer
 toplevel: true
 ---
 
-### Slots
+### LinearSyntenyRenderer - Slots
 
 #### slot: color
 
