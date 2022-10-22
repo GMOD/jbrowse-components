@@ -38,6 +38,10 @@ Welcome to the JBrowse 2 documentation.
   components
 - [JBrowse Jupyter](jbrowse_jupyter) - docs for JBrowse Jupyter
 
+### PDF download
+
+A PDF version of the documentation is available at https://jbrowse.org/jb2/jbrowse2.pdf
+
 ### Contact information
 
 Feel free to [contact us](/contact) if you have questions, issues, suggestions,
