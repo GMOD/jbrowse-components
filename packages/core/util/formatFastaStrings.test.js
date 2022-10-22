@@ -24,7 +24,7 @@ describe('formatting seqChunks and strings into Fasta format', () => {
       { header: 'ctgB:1-81', seq: large },
     ]
     const formattedFastaFile = formatSeqFasta(chunks)
-    /*
+    /**
     >ctgA:1-10
     cattgttgcg
     >ctgB:1-81

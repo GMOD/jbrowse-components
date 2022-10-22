@@ -62,6 +62,7 @@ export function extractWithComment(
       'stateModel',
       'config',
       'slot',
+      'identifier',
       'baseConfiguration',
       'property',
       'getter',

@@ -550,7 +550,7 @@ function stateModelFactory(pluginManager: PluginManager) {
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>
 export type CircularViewModel = Instance<CircularViewStateModel>
 
-/*
+/**
 PLANS
 
 - tracks

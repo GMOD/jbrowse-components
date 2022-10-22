@@ -176,7 +176,7 @@ const stateModelFactory = (
         self.statsFetchInProgress = aborter
       },
 
-      /*
+      /**
        * !action
        * this overrides the BaseLinearDisplayModel to avoid popping up a
        * feature detail display, but still sets the feature selection on the
@@ -313,7 +313,7 @@ const stateModelFactory = (
         return rendererType
       },
 
-      /*
+      /**
        * !getter
        * subclasses can define these, as snpcoverage track does
        */

@@ -110,24 +110,28 @@ function generateConfigDocs() {
       // 'plugins/wiggle/src/configSchema.ts',
     ],
     obj => {
-      console.error(obj)
+      // console.error(obj)
       const fn = obj.filename
       if (!contents[fn]) {
         contents[fn] = {
-          derives: [],
-          id: [],
+          derives: undefined,
+          id: undefined,
           slots: [],
           config: undefined,
         }
       }
       let current = contents[fn]
       if (obj.type === 'baseConfiguration') {
-        current.derives.push(obj)
+        current.derives = obj
       } else if (obj.type === 'identifier') {
-        current.id.push(obj)
+        console.error('WTFFFF', obj)
+        const name = rm(obj.comment, '!identifier') || obj.name
+        current.id = { ...obj, name }
       } else if (obj.type === 'slot') {
-        current.slots.push(obj)
         const name = rm(obj.comment, '!slot') || obj.name
+        const docs = filter(obj.comment, '!slot')
+        const code = removeComments(obj.node)
+        current.slots.push({ ...obj, name, docs, code })
       } else if (obj.type === 'config') {
         const name = rm(obj.comment, '!config') || obj.name
         const docs = filter(obj.comment, '!config')
@@ -138,17 +142,51 @@ function generateConfigDocs() {
   )
 }
 
+generateConfigDocs()
+
+console.log({ contents })
 Object.entries(contents).map(([key, value]) => {
-  const { config, slots, identifier, derives } = value
-
-  fs.writeFileSync(`website/docs/config/${config.id}.md`, '')
-
-  write(`---
+  const { config, slots, id, derives } = value
+  if (config) {
+    fs.writeFileSync(
+      `website/docs/config/${config.id}.md`,
+      `---
 id: ${config.id}
 title: ${config.name}
 toplevel: true
 ---
-${config.docs}`)
-})
+${config.docs}
 
-generateConfigDocs()
+${
+  id
+    ? `## Identifier
+
+${id.name}`
+    : ''
+}
+
+${
+  derives
+    ? `## Derives from
+
+${derives.name}`
+    : ''
+}
+
+## Slots
+
+${slots
+  .map(({ name, docs, code }: any) => {
+    return `#### slot: ${name}
+
+${docs}
+
+\`\`\`js
+${code}
+\`\`\`
+`
+  })
+  .join('\n')}`,
+    )
+  }
+})

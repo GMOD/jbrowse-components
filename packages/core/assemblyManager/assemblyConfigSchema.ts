@@ -3,6 +3,7 @@ import PluginManager from '../PluginManager'
 
 /**
  * !config BaseAssembly
+ * This corresponds to the assemblies section of the config
  */
 function assemblyConfigSchema(pluginManager: PluginManager) {
   return ConfigurationSchema(
@@ -91,7 +92,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
       },
     },
     {
-      /*
+      /**
        * !identifier name
        */
       explicitIdentifier: 'name',

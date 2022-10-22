@@ -17,7 +17,7 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreStdDev: number
 }
 
-/*
+/**
  * calculate standard deviation using the 'shortcut method' that accepts
  * the sum and the sum squares of the elements
  *
@@ -51,7 +51,7 @@ export function calcStdFromSums(
   return variance < 0 ? 0 : Math.sqrt(variance)
 }
 
-/*
+/**
  * @param stats - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
  * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
  */
@@ -68,7 +68,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   }
 }
 
-/*
+/**
  * calculates per-base scores for variable width features over a region
  * @param region - object contains start, end
  * @param features - list of features with start, end, score
@@ -111,7 +111,7 @@ interface Seed {
   featureCount: number
 }
 
-/*
+/**
  * transform a list of scores to summary statistics
  * @param region - object with start, end
  * @param feats - array of features which are possibly summary features

@@ -78,7 +78,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     return !!(root && root.stats && root.stats.featureCount)
   }
 
-  /*
+  /**
    * NCList is unable to get list of ref names so returns empty
    * @return Promise<string[]> of empty list
    */
