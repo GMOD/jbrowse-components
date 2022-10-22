@@ -75,7 +75,7 @@ function Home() {
               <Typography variant="caption">
                 Also check out our{' '}
                 <Link href="/jb2/blog">latest release blogpost</Link>, our{' '}
-                <Link href="/jb2/download/#embedded-components">
+                <Link href="/jb2/docs/embedded_components/">
                   embedded components
                 </Link>
                 , and our{' '}
