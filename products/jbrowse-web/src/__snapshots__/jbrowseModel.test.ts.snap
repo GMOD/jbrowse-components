@@ -384,15 +384,7 @@ Object {
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -440,15 +432,7 @@ Object {
         },
         "fetchSizeLimit": 1000,
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -498,15 +482,7 @@ Object {
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -553,15 +529,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -608,15 +576,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -663,15 +623,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1488,15 +1440,7 @@ Object {
           "uri": "volvox-long-reads-sv.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1543,15 +1487,7 @@ Object {
           "uri": "volvox-long-reads.fastq.sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1640,15 +1576,7 @@ Object {
           "uri": "volvox-samspec.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1737,15 +1665,7 @@ Object {
           "uri": "volvox-sv.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1875,15 +1795,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -2572,15 +2484,7 @@ Object {
           "uri": "volvox-rg.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -3003,15 +2907,7 @@ Object {
           "uri": "deep_sequencing.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },

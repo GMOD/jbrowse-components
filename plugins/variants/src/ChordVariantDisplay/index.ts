@@ -5,18 +5,16 @@ import configSchemaF from './models/configSchema'
 import stateModelF from './models/stateModelFactory'
 
 export default (pluginManager: PluginManager) => {
-  const configSchema = configSchemaF(pluginManager)
-  const stateModel = stateModelF(configSchema)
-
-  pluginManager.addDisplayType(
-    () =>
-      new DisplayType({
-        name: 'ChordVariantDisplay',
-        configSchema,
-        stateModel,
-        trackType: 'VariantTrack',
-        viewType: 'CircularView',
-        ReactComponent: BaseChordDisplayComponent,
-      }),
-  )
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaF(pluginManager)
+    const stateModel = stateModelF(configSchema)
+    return new DisplayType({
+      name: 'ChordVariantDisplay',
+      configSchema,
+      stateModel,
+      trackType: 'VariantTrack',
+      viewType: 'CircularView',
+      ReactComponent: BaseChordDisplayComponent,
+    })
+  })
 }

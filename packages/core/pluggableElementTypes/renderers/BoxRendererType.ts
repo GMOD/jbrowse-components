@@ -1,7 +1,12 @@
 import deepEqual from 'fast-deep-equal'
+
+// layouts
 import GranularRectLayout from '../../util/layouts/GranularRectLayout'
 import MultiLayout from '../../util/layouts/MultiLayout'
+import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import PrecomputedLayout from '../../util/layouts/PrecomputedLayout'
+
+// other
 import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
   RenderArgsSerialized as FeatureRenderArgsSerialized,
@@ -11,7 +16,6 @@ import FeatureRendererType, {
   ResultsDeserialized as FeatureResultsDeserialized,
 } from './FeatureRendererType'
 import { getLayoutId, Region, Feature } from '../../util'
-import { SerializedLayout, BaseLayout } from '../../util/layouts/BaseLayout'
 import { readConfObject, AnyConfigurationModel } from '../../configuration'
 import SerializableFilterChain from './util/serializableFilterChain'
 import RpcManager from '../../rpc/RpcManager'

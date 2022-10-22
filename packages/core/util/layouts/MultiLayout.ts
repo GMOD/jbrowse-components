@@ -4,8 +4,6 @@ import { BaseLayout, SerializedLayout } from './BaseLayout'
 export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
   subLayouts: Map<string, SUB_LAYOUT_CLASS> = new Map()
 
-  subLayoutConstructorArgs: Record<string, any> = {}
-
   /**
    * layout class that just keeps a number of named sub-layouts.
    * basically just a fancier
@@ -13,11 +11,8 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
    */
   constructor(
     public SubLayoutClass: new (...args: any[]) => SUB_LAYOUT_CLASS,
-    layoutArgs: Record<string, any> = {},
-  ) {
-    this.subLayouts = new Map()
-    this.subLayoutConstructorArgs = layoutArgs
-  }
+    public subLayoutConstructorArgs: Record<string, any> = {},
+  ) {}
 
   getDataByID(id: string): unknown {
     for (const layout of this.subLayouts.values()) {
@@ -53,8 +48,7 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
   }
 
   discardRange(layoutName: string, left: number, right: number) {
-    const layout = this.subLayouts.get(layoutName)
-    return layout && layout.discardRange(left, right)
+    return this.subLayouts.get(layoutName)?.discardRange(left, right)
   }
 
   toJSON() {

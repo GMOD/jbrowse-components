@@ -150,7 +150,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   // get width and height of chars the height is an approximation: width
   // letter M is approximately the height
-  getCharWidthHeight(ctx: CanvasRenderingContext2D) {
+  getCharWidthHeight() {
     const charWidth = measureText('A')
     const charHeight = measureText('M') - 2
     return { charWidth, charHeight }
@@ -237,11 +237,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const maxClippingSize = readConfObject(config, 'maxClippingSize')
     const { start, end } = region
-    const len = end - start
-    const bpExpansion = Math.max(
-      len,
-      showSoftClip ? Math.round(maxClippingSize) : 0,
-    )
+    const bpExpansion = showSoftClip ? Math.round(maxClippingSize) : 0
 
     return {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
@@ -1058,7 +1054,7 @@ export default class PileupRenderer extends BoxRendererType {
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
     const mismatches: Mismatch[] = feature.get('mismatches')
     const seq = feature.get('seq')
-    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const { charWidth, charHeight } = this.getCharWidthHeight()
     const { bases } = theme.palette
     const colorForBase: { [key: string]: string } = {
       A: bases.A.main,
@@ -1161,7 +1157,7 @@ export default class PileupRenderer extends BoxRendererType {
     }
     ctx.font = 'bold 10px Courier New,monospace'
 
-    const { charWidth, charHeight } = this.getCharWidthHeight(ctx)
+    const { charWidth, charHeight } = this.getCharWidthHeight()
     const drawSNPsMuted = shouldDrawSNPsMuted(colorBy?.type)
     const drawIndels = shouldDrawIndels(colorBy?.type)
     for (let i = 0; i < layoutRecords.length; i++) {
@@ -1271,13 +1267,13 @@ export default class PileupRenderer extends BoxRendererType {
     const features = await this.getFeatures(renderProps)
     const layout = this.createLayoutInWorker(renderProps)
     const { regions, bpPerPx } = renderProps
+    const [region] = regions
 
     const layoutRecords = this.layoutFeats({
       ...renderProps,
       features,
       layout,
     })
-    const [region] = regions
 
     // only need reference sequence if there are features and only for some
     // cases
