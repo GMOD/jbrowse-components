@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * !config
+ * !config VcfAdapter
  */
 const VcfAdapter = ConfigurationSchema(
   'VcfAdapter',
@@ -14,6 +14,9 @@ const VcfAdapter = ConfigurationSchema(
       defaultValue: { uri: '/path/to/my.vcf', locationType: 'UriLocation' },
     },
   },
+  /**
+   * !config VcfAdapter
+   */
   { explicitlyTyped: true },
 )
 

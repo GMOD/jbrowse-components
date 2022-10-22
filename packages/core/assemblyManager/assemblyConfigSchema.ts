@@ -94,6 +94,8 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
     {
       /**
        * !identifier name
+       * the name acts as a unique identifier in the config, so it cannot be duplicated. it usually a short
+       * human readable "id" like hg38, but you can also optionally customize the assembly "displayName" config slot
        */
       explicitIdentifier: 'name',
     },

@@ -47,14 +47,14 @@ export function extractWithComment(
     const comment = ts.displayPartsToString(
       symbol.getDocumentationComment(checker),
     )
-    const ft = node.getFullText()
+    const fulltext = node.getFullText()
     const r = {
       name: symbol.getName(),
       comment,
       signature: checker.typeToString(
         checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!),
       ),
-      node: ft,
+      node: fulltext,
       filename: node.getSourceFile().fileName,
     }
 
@@ -72,7 +72,8 @@ export function extractWithComment(
     ]
     for (let i = 0; i < list.length; i++) {
       const type = '!' + list[i]
-      if (comment?.includes(type) && ft.includes(type)) {
+      // console.error({ comment, fulltext: fulltext.slice(0, 100), type })
+      if (comment.includes(type)) {
         cb({ type: list[i], ...r })
       }
     }

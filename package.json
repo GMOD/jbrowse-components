@@ -23,9 +23,9 @@
     "test": "jest",
     "prepare": "husky install",
     "preconfigdocs": "yarn tsc --build docs/tsconfig.json",
-    "configdocs": "node docs/dist/generateConfigDocs.js > website/docs/config_reference.md",
+    "configdocs": "node docs/dist/generateConfigDocs.js",
     "prestatedocs": "yarn tsc --build docs/tsconfig.json",
-    "statedocs": "node docs/dist/generateStateModelDocs.js > website/docs/state_model_reference.md"
+    "statedocs": "node docs/dist/generateStateModelDocs.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

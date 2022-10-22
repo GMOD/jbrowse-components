@@ -8,6 +8,8 @@ import {
 
 /**
  * !config AlignmentsTrack
+ * the AlignmentsTrack type has very little config, most config and state
+ * logic is on the display
  */
 function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
@@ -21,21 +23,15 @@ function configSchemaFactory(pluginManager: PluginManager) {
     },
   )
 }
-export default function register(pluginManager: PluginManager) {
-  pluginManager.addTrackType(() => {
-    const configSchema = configSchemaFactory(pluginManager)
+export default function register(pm: PluginManager) {
+  pm.addTrackType(() => {
+    const configSchema = configSchemaFactory(pm)
     const track = new TrackType({
       name: 'AlignmentsTrack',
       configSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'AlignmentsTrack',
-        configSchema,
-      ),
+      stateModel: createBaseTrackModel(pm, 'AlignmentsTrack', configSchema),
     })
-    const linearAlignmentsDisplay = pluginManager.getDisplayType(
-      'LinearAlignmentsDisplay',
-    )
+    const linearAlignmentsDisplay = pm.getDisplayType('LinearAlignmentsDisplay')
     // Add LinearAlignmentsDisplay here so that it has priority over the other
     // linear displays (defaults to order the displays are added, but we have
     // to add the Pileup and SNPCoverage displays first).
