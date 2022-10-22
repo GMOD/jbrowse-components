@@ -91,6 +91,9 @@ const assemblyConfigSchema = (pluginManager: PluginManager) => {
       },
     },
     {
+      /*
+       * !identifier name
+       */
       explicitIdentifier: 'name',
     },
   )

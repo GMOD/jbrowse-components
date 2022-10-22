@@ -111,6 +111,11 @@ function generateConfigDocs() {
         write(filter(obj.comment, '!baseConfiguration'))
         write('\n')
         write(`\`\`\`js\n${removeComments(obj.node)}\n\`\`\`\n`)
+      } else if (obj.type === 'identifier') {
+        const name = rm(obj.comment, '!identifier') || obj.name
+        write(`#### identifier: ${name}\n`)
+        write('\n')
+        write(`\`\`\`js\n${removeComments(obj.node)}\n\`\`\`\n`)
       } else if (obj.type === 'slot') {
         const name = rm(obj.comment, '!slot') || obj.name
 
