@@ -4,7 +4,7 @@ import PluginManager from '../PluginManager'
 /**
  * !config BaseAssembly
  */
-const assemblyConfigSchema = (pluginManager: PluginManager) => {
+function assemblyConfigSchema(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'BaseAssembly',
     {
