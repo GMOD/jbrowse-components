@@ -3,7 +3,7 @@ import {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-
+import { CramRecord } from '@gmod/cram'
 import CramAdapter from './CramAdapter'
 
 export interface Mismatch {
@@ -20,8 +20,8 @@ export interface Mismatch {
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
   // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(private record: any, private _store: CramAdapter) {}
+
+  constructor(private record: CramRecord, private _store: CramAdapter) {}
 
   _get_name() {
     return this.record.readName
@@ -32,7 +32,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_end() {
-    return this.record.alignmentStart + this.record.lengthOnRef - 1
+    return this.record.alignmentStart + (this.record.lengthOnRef ?? 1) - 1
   }
 
   _get_cram_read_features() {
@@ -123,6 +123,9 @@ export default class CramSlightlyLazyFeature implements Feature {
     let cigar = ''
     let op = 'M'
     let oplen = 0
+    if (!this.record._refRegion) {
+      return ''
+    }
 
     // not sure I should access these, but...
     const ref = this.record._refRegion.seq
@@ -280,19 +283,12 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tags: Record<string, any> = {}
-    this.tags().forEach((t: string) => {
-      const val = this.get(t)
-      if (val !== undefined) {
-        tags[t] = val
-      }
-    })
-
     return {
-      ...tags,
-      name: this.get('name'),
-      type: this.get('type'),
+      ...Object.fromEntries(
+        this.tags()
+          .map(t => [t, this.get(t)])
+          .filter(elt => elt[1] !== undefined),
+      ),
       uniqueId: this.id(),
     }
   }
