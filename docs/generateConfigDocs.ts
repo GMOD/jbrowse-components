@@ -1,8 +1,8 @@
 import slugify from 'slugify'
 import { rm, filter, removeComments, extractWithComment } from './util'
 import fs from 'fs'
-
-let contents = {} as { [key: string]: any }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const contents = {} as { [key: string]: any }
 
 function generateConfigDocs() {
   extractWithComment(
@@ -111,7 +111,7 @@ function generateConfigDocs() {
           config: undefined,
         }
       }
-      let current = contents[fn]
+      const current = contents[fn]
       const name = rm(obj.comment, '!' + obj.type) || obj.name
       const docs = filter(obj.comment, '!' + obj.type)
       const code = removeComments(obj.node)
@@ -131,7 +131,7 @@ function generateConfigDocs() {
 
 generateConfigDocs()
 
-Object.entries(contents).map(([key, value]) => {
+Object.entries(contents).forEach(([key, value]) => {
   const { config, slots, id, derives } = value
   if (config) {
     const idstr = id
@@ -153,6 +153,7 @@ ${derives.code}
     const slotstr =
       `${slots.length ? '### Slots' : ''}\n` +
       slots
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ name, docs, code }: any) => {
           return `#### slot: ${name}
 

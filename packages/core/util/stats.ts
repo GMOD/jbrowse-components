@@ -25,9 +25,8 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
  * @param sumSquares - sum(i^2, 1..n)
  * @param n - number of elements
  * @param population - boolean: use population instead of sample correction
- * @return the estimated std deviation
+ * @returns - the estimated std deviation
  */
-
 export function calcStdFromSums(
   sum: number,
   sumSquares: number,
@@ -53,7 +52,7 @@ export function calcStdFromSums(
 
 /**
  * @param stats - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
- * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
+ * @returns - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
  */
 export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   return {
@@ -72,7 +71,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
  * calculates per-base scores for variable width features over a region
  * @param region - object contains start, end
  * @param features - list of features with start, end, score
- * @return array of numeric scores
+ * @returns array of numeric scores
  */
 export function calcPerBaseStats(
   region: NoAssemblyRegion,
@@ -114,8 +113,8 @@ interface Seed {
 /**
  * transform a list of scores to summary statistics
  * @param region - object with start, end
- * @param feats - array of features which are possibly summary features
- * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
+ * @param features - array of features which are possibly summary features
+ * @returns - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export async function scoresToStats(
   region: NoAssemblyRegion,

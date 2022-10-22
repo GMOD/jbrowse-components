@@ -52,11 +52,12 @@ const rendererTypes = new Map([
 ])
 
 type LGV = LinearGenomeViewModel
+
 /**
  * !stateModel LinearPileupDisplay
  */
-const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
-  types
+function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
+  return types
     .compose(
       'LinearPileupDisplay',
       BaseLinearDisplay,
@@ -812,6 +813,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         },
       }
     })
+}
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearPileupDisplayModel = Instance<LinearPileupDisplayStateModel>

@@ -63,7 +63,7 @@ type AnyConfiguration =
   | SnapshotOut<AnyConfigurationModel>
 
 /**
- * !config JBrowseWebSessionModel
+ * !stateModel JBrowseWebSessionModel
  */
 export default function sessionModelFactory(
   pluginManager: PluginManager,

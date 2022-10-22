@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getContainingView } from '@jbrowse/core/util'
 
@@ -25,11 +24,11 @@ type LGV = LinearGenomeViewModel
  * !stateModel LinearSNPCoverageDisplay
  * extends `LinearWiggleDisplay`
  */
-const stateModelFactory = (
+function stateModelFactory(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
-) =>
-  types
+) {
+  return types
     .compose(
       'LinearSNPCoverageDisplay',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
@@ -323,6 +322,7 @@ const stateModelFactory = (
         },
       }
     })
+}
 
 export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
 

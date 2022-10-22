@@ -6,152 +6,148 @@ toplevel: true
 
 used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
 
-#### property: type
+### Properties
+
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearBasicDisplay">
+// code
 type: types.literal('LinearBasicDisplay')
 ```
 
-#### property: trackShowLabels
+#### properties: trackShowLabels
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 trackShowLabels: types.maybe(types.boolean)
 ```
 
-#### property: trackShowDescriptions
+#### properties: trackShowDescriptions
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 trackShowDescriptions: types.maybe(types.boolean)
 ```
 
-#### property: trackDisplayMode
+#### properties: trackDisplayMode
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 trackDisplayMode: types.maybe(types.string)
 ```
 
-#### property: trackMaxHeight
+#### properties: trackMaxHeight
 
 ```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### property: configuration
+#### properties: configuration
 
 ```js
+// type signature
+ITypeUnion<any, any, any>
+// code
 configuration: ConfigurationReference(configSchema)
 ```
+
+### Getters
 
 #### getter: rendererTypeName
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: showLabels
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: showDescriptions
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: maxHeight
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: displayMode
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: rendererConfig
 
 ```js
-// Type
+// type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
-#### getter: rendererType
-
-the pluggable element type object for this display's
-renderer
-
-```js
-// Type
-RendererType
-```
-
-#### action: toggleShowLabels
-
-```js
-// Type signature
-toggleShowLabels: () => void
-```
-
-#### action: toggleShowDescriptions
-
-```js
-// Type signature
-toggleShowDescriptions: () => void
-```
-
-#### action: setDisplayMode
-
-```js
-// Type signature
-setDisplayMode: (val: string) => void
-```
-
-#### action: setMaxHeight
-
-```js
-// Type signature
-setMaxHeight: (val: number) => void
-```
+### Methods
 
 #### method: renderProps
 
 ```js
-// Type signature
+// type signature
 renderProps: () => { config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>; }
 ```
 
 #### method: trackMenuItems
 
 ```js
-// Type signature
+// type signature
 trackMenuItems: () => MenuItem[]
 ```
 
-#### action: navToLocString
+### Actions
 
-navigate to the given locstring
+#### action: toggleShowLabels
 
 ```js
-// Type signature
-navToLocString: (locString: string, optAssemblyName?: string) => void
+// type signature
+toggleShowLabels: () => void
 ```
 
-#### action: showTrack
+#### action: toggleShowDescriptions
 
 ```js
-// Type signature
-showTrack: (
-  trackId: string,
-  initialSnapshot?: {},
-  displayInitialSnapshot?: {},
-) => any
+// type signature
+toggleShowDescriptions: () => void
+```
+
+#### action: setDisplayMode
+
+```js
+// type signature
+setDisplayMode: (val: string) => void
+```
+
+#### action: setMaxHeight
+
+```js
+// type signature
+setMaxHeight: (val: number) => void
 ```

@@ -6,233 +6,215 @@ toplevel: true
 
 extends `LinearWiggleDisplay`
 
-#### property: type
+### Properties
+
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearSNPCoverageDisplay">
+// code
 type: types.literal('LinearSNPCoverageDisplay')
 ```
 
-#### property: drawInterbaseCounts
+#### properties: drawInterbaseCounts
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 drawInterbaseCounts: types.maybe(types.boolean)
 ```
 
-#### property: drawIndicators
+#### properties: drawIndicators
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 drawIndicators: types.maybe(types.boolean)
 ```
 
-#### property: drawArcs
+#### properties: drawArcs
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 drawArcs: types.maybe(types.boolean)
 ```
 
-#### property: filterBy
+#### properties: filterBy
 
 ```js
+// type signature
+IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
 filterBy: types.optional(
-  types.model({
-    flagInclude: types.optional(types.number, 0),
-    flagExclude: types.optional(types.number, 1540),
-    readName: types.maybe(types.string),
-    tagFilter: types.maybe(
-      types.model({ tag: types.string, value: types.string }),
-    ),
-  }),
-  {},
-)
+          types.model({
+            flagInclude: types.optional(types.number, 0),
+            flagExclude: types.optional(types.number, 1540),
+            readName: types.maybe(types.string),
+            tagFilter: types.maybe(
+              types.model({ tag: types.string, value: types.string }),
+            ),
+          }),
+          {},
+        )
 ```
 
-#### property: colorBy
+#### properties: colorBy
 
 ```js
+// type signature
+IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>
+// code
 colorBy: types.maybe(
-  types.model({
-    type: types.string,
-    tag: types.maybe(types.string),
-  }),
-)
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+          }),
+        )
 ```
 
-#### action: setConfig
-
-```js
-// Type signature
-setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
-```
-
-#### action: setFilterBy
-
-```js
-// Type signature
-setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: string; tagFilter?: { tag: string; value: string; }; }) => void
-```
-
-#### action: setColorBy
-
-```js
-// Type signature
-setColorBy: (colorBy?: { type: string; tag?: string; }) => void
-```
-
-#### action: updateModificationColorMap
-
-```js
-// Type signature
-updateModificationColorMap: (uniqueModifications: string[]) => void
-```
+### Getters
 
 #### getter: rendererConfig
 
 ```js
-// Type
+// type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
-```
-
-#### getter: rendererTypeName
-
-```js
-// Type
-any
-```
-
-#### getter: rendererType
-
-the pluggable element type object for this display's
-renderer
-
-```js
-// Type
-RendererType
 ```
 
 #### getter: drawArcsSetting
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: drawInterbaseCountsSetting
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: drawIndicatorsSetting
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: modificationsReady
 
 ```js
-// Type
+// type
 boolean
-```
-
-#### method: renderProps
-
-```js
-// Type signature
-renderProps: () => any
-```
-
-#### action: toggleDrawIndicators
-
-```js
-// Type signature
-toggleDrawIndicators: () => void
-```
-
-#### action: toggleDrawInterbaseCounts
-
-```js
-// Type signature
-toggleDrawInterbaseCounts: () => void
-```
-
-#### action: toggleDrawArcs
-
-```js
-// Type signature
-toggleDrawArcs: () => void
-```
-
-#### getter: estimatedStatsReady
-
-```js
-// Type
-boolean
-```
-
-#### getter: regionTooLarge
-
-region is too large if:
-
-- stats are ready
-- region is greater than 20kb (don't warn when zoomed in less than that)
-- and bytes is greater than max allowed bytes or density greater than max density
-
-```js
-// Type
-boolean
-```
-
-#### getter: parentTrack
-
-```js
-// Type
-any
-```
-
-#### action: setError
-
-```js
-// Type signature
-setError: (error?: unknown) => void
 ```
 
 #### getter: TooltipComponent
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: adapterConfig
 
 ```js
-// Type
+// type
 {
   type: string
   subadapter: any
 }
 ```
 
+#### getter: rendererTypeName
+
+```js
+// type
+string
+```
+
 #### getter: needsScalebar
 
 ```js
-// Type
+// type
 boolean
+```
+
+### Methods
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
 ```
 
 #### method: contextMenuItems
 
 ```js
-// Type signature
+// type signature
 contextMenuItems: () => any[]
 ```
 
 #### method: trackMenuItems
 
 ```js
-// Type signature
+// type signature
 trackMenuItems: () => any[]
+```
+
+### Actions
+
+#### action: setConfig
+
+```js
+// type signature
+setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+#### action: setFilterBy
+
+```js
+// type signature
+setFilterBy: (filter: { flagInclude: number; flagExclude: number; readName?: string; tagFilter?: { tag: string; value: string; }; }) => void
+```
+
+#### action: setColorBy
+
+```js
+// type signature
+setColorBy: (colorBy?: { type: string; tag?: string; }) => void
+```
+
+#### action: updateModificationColorMap
+
+```js
+// type signature
+updateModificationColorMap: (uniqueModifications: string[]) => void
+```
+
+#### action: toggleDrawIndicators
+
+```js
+// type signature
+toggleDrawIndicators: () => void
+```
+
+#### action: toggleDrawInterbaseCounts
+
+```js
+// type signature
+toggleDrawInterbaseCounts: () => void
+```
+
+#### action: toggleDrawArcs
+
+```js
+// type signature
+toggleDrawArcs: () => void
 ```

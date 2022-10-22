@@ -6,94 +6,136 @@ toplevel: true
 
 extends `BaseViewModel`
 
-#### property: type
+### Properties
+
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"CircularView">
+// code
 type: types.literal('CircularView')
 ```
 
-#### property: offsetRadians
+#### properties: offsetRadians
 
 similar to offsetPx in linear genome view
 
 ```js
+// type signature
+number
+// code
 offsetRadians: -Math.PI / 2
 ```
 
-#### property: bpPerPx
+#### properties: bpPerPx
 
 ```js
+// type signature
+number
+// code
 bpPerPx: 2000000
 ```
 
-#### property: tracks
+#### properties: tracks
 
 ```js
-tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
+// type signature
+IArrayType<IAnyType>
+// code
+tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        )
 ```
 
-#### property: hideVerticalResizeHandle
+#### properties: hideVerticalResizeHandle
 
 ```js
+// type signature
+false
+// code
 hideVerticalResizeHandle: false
 ```
 
-#### property: hideTrackSelectorButton
+#### properties: hideTrackSelectorButton
 
 ```js
+// type signature
+false
+// code
 hideTrackSelectorButton: false
 ```
 
-#### property: lockedFitToWindow
+#### properties: lockedFitToWindow
 
 ```js
+// type signature
+true
+// code
 lockedFitToWindow: true
 ```
 
-#### property: disableImportForm
+#### properties: disableImportForm
 
 ```js
+// type signature
+false
+// code
 disableImportForm: false
 ```
 
-#### property: height
+#### properties: height
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
 height: types.optional(
-  types.refinement('trackHeight', types.number, n => n >= minHeight),
-  defaultHeight,
-)
+          types.refinement('trackHeight', types.number, n => n >= minHeight),
+          defaultHeight,
+        )
 ```
 
-#### property: displayedRegions
+#### properties: displayedRegions
 
 ```js
+// type signature
+IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+// code
 displayedRegions: types.array(Region)
 ```
 
-#### property: scrollX
+#### properties: scrollX
 
 ```js
+// type signature
+number
+// code
 scrollX: 0
 ```
 
-#### property: scrollY
+#### properties: scrollY
 
 ```js
+// type signature
+number
+// code
 scrollY: 0
 ```
+
+### Getters
 
 #### getter: staticSlices
 
 ```js
-// Type
+// type
 any[]
 ```
 
 #### getter: visibleSection
 
 ```js
-// Type
+// type
 {
   rho: [number, number]
   theta: [number, number]
@@ -103,105 +145,105 @@ any[]
 #### getter: circumferencePx
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: radiusPx
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: bpPerRadian
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: pxPerRadian
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: centerXY
 
 ```js
-// Type
+// type
 ;[number, number]
 ```
 
 #### getter: totalBp
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: maximumRadiusPx
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: maxBpPerPx
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: minBpPerPx
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: atMaxBpPerPx
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: atMinBpPerPx
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: tooSmallToLock
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: figureDimensions
 
 ```js
-// Type
+// type
 ;[number, number]
 ```
 
 #### getter: figureWidth
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: figureHeight
 
 ```js
-// Type
+// type
 any
 ```
 
@@ -211,307 +253,176 @@ this is displayedRegions, post-processed to
 elide regions that are too small to see reasonably
 
 ```js
-// Type
+// type
 any[]
 ```
 
 #### getter: assemblyNames
 
 ```js
-// Type
+// type
 string[]
 ```
 
 #### getter: initialized
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: visibleStaticSlices
 
 ```js
-// Type
+// type
 any[]
 ```
+
+### Actions
 
 #### action: setWidth
 
 ```js
-// Type signature
+// type signature
 setWidth: (newWidth: number) => number
 ```
 
 #### action: setHeight
 
 ```js
-// Type signature
+// type signature
 setHeight: (newHeight: number) => number
 ```
 
 #### action: resizeHeight
 
 ```js
-// Type signature
+// type signature
 resizeHeight: (distance: number) => number
 ```
 
 #### action: resizeWidth
 
 ```js
-// Type signature
+// type signature
 resizeWidth: (distance: number) => number
 ```
 
 #### action: rotateClockwiseButton
 
 ```js
-// Type signature
+// type signature
 rotateClockwiseButton: () => void
 ```
 
 #### action: rotateCounterClockwiseButton
 
 ```js
-// Type signature
+// type signature
 rotateCounterClockwiseButton: () => void
 ```
 
 #### action: rotateClockwise
 
 ```js
-// Type signature
+// type signature
 rotateClockwise: (distance?: number) => void
 ```
 
 #### action: rotateCounterClockwise
 
 ```js
-// Type signature
+// type signature
 rotateCounterClockwise: (distance?: number) => void
 ```
 
 #### action: zoomInButton
 
 ```js
-// Type signature
+// type signature
 zoomInButton: () => void
 ```
 
 #### action: zoomOutButton
 
 ```js
-// Type signature
+// type signature
 zoomOutButton: () => void
 ```
 
 #### action: setBpPerPx
 
 ```js
-// Type signature
+// type signature
 setBpPerPx: (newVal: number) => void
 ```
 
 #### action: setModelViewWhenAdjust
 
 ```js
-// Type signature
+// type signature
 setModelViewWhenAdjust: (secondCondition: boolean) => void
 ```
 
 #### action: closeView
 
 ```js
-// Type signature
+// type signature
 closeView: () => void
 ```
 
 #### action: setDisplayedRegions
 
 ```js
-// Type signature
+// type signature
 setDisplayedRegions: (regions: SnapshotOrInstance<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>[]) => void
 ```
 
 #### action: activateTrackSelector
 
 ```js
-// Type signature
+// type signature
 activateTrackSelector: () => Widget
 ```
 
 #### action: toggleTrack
 
 ```js
-// Type signature
+// type signature
 toggleTrack: (trackId: string) => void
 ```
 
 #### action: setError
 
 ```js
-// Type signature
+// type signature
 setError: (error: unknown) => void
 ```
 
 #### action: showTrack
 
 ```js
-// Type signature
+// type signature
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
 #### action: addTrackConf
 
 ```js
-// Type signature
+// type signature
 addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
-// Type signature
+// type signature
 hideTrack: (trackId: string) => number
 ```
 
 #### action: toggleFitToWindowLock
 
 ```js
-// Type signature
+// type signature
 toggleFitToWindowLock: () => boolean
-```
-
-#### property: bezierRadiusRatio
-
-```js
-bezierRadiusRatio: 0.1
-```
-
-#### property: assemblyName
-
-```js
-assemblyName: types.maybe(types.string)
-```
-
-#### action: onChordClick
-
-```js
-// Type signature
-onChordClick: (feature: Feature) => void
-```
-
-#### getter: blockDefinitions
-
-```js
-// Type
-any
-```
-
-#### method: renderProps
-
-```js
-// Type signature
-renderProps: () => any
-```
-
-#### getter: rendererType
-
-the pluggable element type object for this diplay's
-renderer
-
-```js
-// Type
-RendererType
-```
-
-#### method: isCompatibleWithRenderer
-
-```js
-// Type signature
-isCompatibleWithRenderer: (renderer: RendererType) => boolean
-```
-
-#### getter: selectedFeatureId
-
-returns a string feature ID if the globally-selected object
-is probably a feature
-
-```js
-// Type
-string
-```
-
-#### action: renderStarted
-
-```js
-// Type signature
-renderStarted: () => void
-```
-
-#### action: renderSuccess
-
-```js
-// Type signature
-renderSuccess: ({ message, data, reactElement, renderingComponent, }: { message: string; data: any; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
-```
-
-#### action: renderError
-
-```js
-// Type signature
-renderError: (error: unknown) => void
-```
-
-#### action: setRefNameMap
-
-```js
-// Type signature
-setRefNameMap: (refNameMap: Record<string, string>) => void
-```
-
-#### property: type
-
-```js
-type: types.literal('LinearVariantDisplay')
-```
-
-#### property: configuration
-
-```js
-configuration: ConfigurationReference(configSchema)
-```
-
-#### action: selectFeature
-
-```js
-// Type signature
-selectFeature: (feature: Feature) => Promise<void>
-```
-
-#### property: type
-
-```js
-type: types.literal('ChordVariantDisplay')
-```
-
-#### property: configuration
-
-```js
-configuration: ConfigurationReference(configSchema)
-```
-
-#### getter: rendererTypeName
-
-```js
-// Type
-any
-```
-
-#### method: renderProps
-
-```js
-// Type signature
-renderProps: () => Record<string, unknown>
 ```

@@ -6,319 +6,248 @@ toplevel: true
 
 Extends `BaseLinearDisplay`
 
-#### property: type
+### Properties
+
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearWiggleDisplay">
+// code
 type: types.literal('LinearWiggleDisplay')
 ```
 
-#### property: configuration
+#### properties: configuration
 
 ```js
+// type signature
+ITypeUnion<any, any, any>
+// code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: selectedRendering
+#### properties: selectedRendering
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
 selectedRendering: types.optional(types.string, '')
 ```
 
-#### property: resolution
+#### properties: resolution
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<number>, [undefined]>
+// code
 resolution: types.optional(types.number, 1)
 ```
 
-#### property: fill
+#### properties: fill
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 fill: types.maybe(types.boolean)
 ```
 
-#### property: minSize
+#### properties: minSize
 
 ```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
 minSize: types.maybe(types.number)
 ```
 
-#### property: color
+#### properties: color
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 color: types.maybe(types.string)
 ```
 
-#### property: posColor
+#### properties: posColor
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 posColor: types.maybe(types.string)
 ```
 
-#### property: negColor
+#### properties: negColor
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 negColor: types.maybe(types.string)
 ```
 
-#### property: summaryScoreMode
+#### properties: summaryScoreMode
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 summaryScoreMode: types.maybe(types.string)
 ```
 
-#### property: rendererTypeNameState
+#### properties: rendererTypeNameState
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 rendererTypeNameState: types.maybe(types.string)
 ```
 
-#### property: scale
+#### properties: scale
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 scale: types.maybe(types.string)
 ```
 
-#### property: autoscale
+#### properties: autoscale
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 autoscale: types.maybe(types.string)
 ```
 
-#### property: displayCrossHatches
+#### properties: displayCrossHatches
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 displayCrossHatches: types.maybe(types.boolean)
 ```
 
-#### property: constraints
+#### properties: constraints
 
 ```js
+// type signature
+IOptionalIType<IModelType<{ max: IMaybe<ISimpleType<number>>; min: IMaybe<ISimpleType<number>>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
 constraints: types.optional(
-  types.model({
-    max: types.maybe(types.number),
-    min: types.maybe(types.number),
-  }),
-  {},
-)
+          types.model({
+            max: types.maybe(types.number),
+            min: types.maybe(types.number),
+          }),
+          {},
+        )
 ```
 
-#### action: updateStats
-
-```js
-// Type signature
-updateStats: (stats: { scoreMin: number; scoreMax: number; }) => void
-```
-
-#### action: setColor
-
-```js
-// Type signature
-setColor: (color?: string) => void
-```
-
-#### action: setPosColor
-
-```js
-// Type signature
-setPosColor: (color?: string) => void
-```
-
-#### action: setNegColor
-
-```js
-// Type signature
-setNegColor: (color?: string) => void
-```
-
-#### action: setLoading
-
-```js
-// Type signature
-setLoading: (aborter: AbortController) => void
-```
-
-#### action: setResolution
-
-```js
-// Type signature
-setResolution: (res: number) => void
-```
-
-#### action: setFill
-
-```js
-// Type signature
-setFill: (fill: number) => void
-```
-
-#### action: toggleLogScale
-
-```js
-// Type signature
-toggleLogScale: () => void
-```
-
-#### action: setScaleType
-
-```js
-// Type signature
-setScaleType: (scale?: string) => void
-```
-
-#### action: setSummaryScoreMode
-
-```js
-// Type signature
-setSummaryScoreMode: (val: string) => void
-```
-
-#### action: setAutoscale
-
-```js
-// Type signature
-setAutoscale: (val: string) => void
-```
-
-#### action: setMaxScore
-
-```js
-// Type signature
-setMaxScore: (val?: number) => void
-```
-
-#### action: setRendererType
-
-```js
-// Type signature
-setRendererType: (val: string) => void
-```
-
-#### action: setMinScore
-
-```js
-// Type signature
-setMinScore: (val?: number) => void
-```
-
-#### action: toggleCrossHatches
-
-```js
-// Type signature
-toggleCrossHatches: () => void
-```
-
-#### action: setCrossHatches
-
-```js
-// Type signature
-setCrossHatches: (cross: boolean) => void
-```
+### Getters
 
 #### getter: TooltipComponent
 
 ```js
-// Type
+// type
 React.FC
 ```
 
 #### getter: adapterTypeName
 
 ```js
-// Type
-any
-```
-
-#### getter: adapterConfig
-
-```js
-// Type
+// type
 any
 ```
 
 #### getter: rendererTypeNameSimple
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: rendererTypeName
 
 ```js
-// Type
+// type
 string
+```
+
+#### getter: filters
+
+subclasses can define these, as snpcoverage track does
+
+```js
+// type
+any
 ```
 
 #### getter: scaleType
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: maxScore
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: minScore
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: rendererConfig
 
 ```js
-// Type
+// type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
-```
-
-#### getter: rendererType
-
-the pluggable element type object for this display's
-renderer
-
-```js
-// Type
-RendererType
 ```
 
 #### getter: filled
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: summaryScoreModeSetting
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: domain
 
 ```js
-// Type
+// type
 number[]
 ```
 
 #### getter: needsScalebar
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: scaleOpts
 
 ```js
-// Type
+// type
 {
   domain: any
   stats: {
@@ -334,71 +263,198 @@ boolean
 #### getter: canHaveFill
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: autoscaleType
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: displayCrossHatchesSetting
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: ticks
 
 ```js
-// Type
+// type
 { range: number[]; values: number[]; format: (d: NumberValue) => string; position: ScaleLinear<number, number, never> | ScaleQuantize<number, never>; }
 ```
 
 #### getter: adapterCapabilities
 
 ```js
-// Type
+// type
 string[]
-```
-
-#### method: renderProps
-
-```js
-// Type signature
-renderProps: () => any
 ```
 
 #### getter: hasResolution
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: hasGlobalStats
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: fillSetting
 
 ```js
-// Type
-;2 | 0 | 1
+// type
+;1 | 2 | 0
+```
+
+### Methods
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
 ```
 
 #### method: trackMenuItems
 
 ```js
-// Type signature
+// type signature
 trackMenuItems: () => any[]
+```
+
+### Actions
+
+#### action: updateStats
+
+```js
+// type signature
+updateStats: (stats: { scoreMin: number; scoreMax: number; }) => void
+```
+
+#### action: setColor
+
+```js
+// type signature
+setColor: (color?: string) => void
+```
+
+#### action: setPosColor
+
+```js
+// type signature
+setPosColor: (color?: string) => void
+```
+
+#### action: setNegColor
+
+```js
+// type signature
+setNegColor: (color?: string) => void
+```
+
+#### action: setLoading
+
+```js
+// type signature
+setLoading: (aborter: AbortController) => void
+```
+
+#### action: selectFeature
+
+this overrides the BaseLinearDisplayModel to avoid popping up a
+feature detail display, but still sets the feature selection on the
+model so listeners can detect a click
+
+```js
+// type signature
+selectFeature: (feature: Feature) => void
+```
+
+#### action: setResolution
+
+```js
+// type signature
+setResolution: (res: number) => void
+```
+
+#### action: setFill
+
+```js
+// type signature
+setFill: (fill: number) => void
+```
+
+#### action: toggleLogScale
+
+```js
+// type signature
+toggleLogScale: () => void
+```
+
+#### action: setScaleType
+
+```js
+// type signature
+setScaleType: (scale?: string) => void
+```
+
+#### action: setSummaryScoreMode
+
+```js
+// type signature
+setSummaryScoreMode: (val: string) => void
+```
+
+#### action: setAutoscale
+
+```js
+// type signature
+setAutoscale: (val: string) => void
+```
+
+#### action: setMaxScore
+
+```js
+// type signature
+setMaxScore: (val?: number) => void
+```
+
+#### action: setRendererType
+
+```js
+// type signature
+setRendererType: (val: string) => void
+```
+
+#### action: setMinScore
+
+```js
+// type signature
+setMinScore: (val?: number) => void
+```
+
+#### action: toggleCrossHatches
+
+```js
+// type signature
+toggleCrossHatches: () => void
+```
+
+#### action: setCrossHatches
+
+```js
+// type signature
+setCrossHatches: (cross: boolean) => void
 ```
 
 #### action: reload
@@ -406,28 +462,13 @@ trackMenuItems: () => any[]
 re-runs stats and refresh whole display on reload
 
 ```js
-// Type signature
+// type signature
 reload: () => Promise<void>
-```
-
-#### action: setError
-
-```js
-// Type signature
-setError: (error?: unknown) => void
 ```
 
 #### action: renderSvg
 
 ```js
-// Type signature
+// type signature
 renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; }) => Promise<Element>
-```
-
-#### method: regionCannotBeRenderedText
-
-```js
-// Type signature
-regionCannotBeRenderedText: (_region: Region) =>
-  '' | 'Force load to see features'
 ```

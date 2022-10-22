@@ -12,7 +12,7 @@ import baseModel from '../LinearComparativeView/model'
 
 /**
  * !stateModel LinearSyntenyView
- * extends the LinearComparativeView base model
+ * extends the `LinearComparativeView` base model
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -43,6 +43,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       return {
         /**
          * !method
+         * adds functions to draw curves and square the view
          */
         menuItems() {
           return [

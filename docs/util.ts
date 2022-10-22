@@ -14,6 +14,8 @@ interface Node {
 export function extractWithComment(
   fileNames: string[],
   cb: (obj: Node) => void,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  filterNode: (obj: any, type: string) => boolean = () => true,
   options = {},
 ) {
   const program = ts.createProgram(fileNames, options)
@@ -72,8 +74,7 @@ export function extractWithComment(
     ]
     for (let i = 0; i < list.length; i++) {
       const type = '!' + list[i]
-      // console.error({ comment, fulltext: fulltext.slice(0, 100), type })
-      if (comment.includes(type)) {
+      if (fulltext.includes(type) && filterNode(r, type)) {
         cb({ type: list[i], ...r })
       }
     }

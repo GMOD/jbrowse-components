@@ -4,208 +4,255 @@ title: LinearPileupDisplay
 toplevel: true
 ---
 
-#### property: type
+### Properties
+
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearPileupDisplay">
+// code
 type: types.literal('LinearPileupDisplay')
 ```
 
-#### property: configuration
+#### properties: configuration
 
 ```js
+// type signature
+ITypeUnion<any, any, any>
+// code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: showSoftClipping
+#### properties: showSoftClipping
 
 ```js
+// type signature
+false
+// code
 showSoftClipping: false
 ```
 
-#### property: featureHeight
+#### properties: featureHeight
 
 ```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
 featureHeight: types.maybe(types.number)
 ```
 
-#### property: noSpacing
+#### properties: noSpacing
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 noSpacing: types.maybe(types.boolean)
 ```
 
-#### property: fadeLikelihood
+#### properties: fadeLikelihood
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 fadeLikelihood: types.maybe(types.boolean)
 ```
 
-#### property: trackMaxHeight
+#### properties: trackMaxHeight
 
 ```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
 trackMaxHeight: types.maybe(types.number)
 ```
 
-#### property: mismatchAlpha
+#### properties: mismatchAlpha
 
 ```js
+// type signature
+IMaybe<ISimpleType<boolean>>
+// code
 mismatchAlpha: types.maybe(types.boolean)
 ```
 
-#### property: sortedBy
+#### properties: sortedBy
 
 ```js
+// type signature
+IMaybe<IModelType<{ type: ISimpleType<string>; pos: ISimpleType<number>; tag: IMaybe<ISimpleType<string>>; refName: ISimpleType<string>; assemblyName: ISimpleType<...>; }, {}, _NotCustomized, _NotCustomized>>
+// code
 sortedBy: types.maybe(
-  types.model({
-    type: types.string,
-    pos: types.number,
-    tag: types.maybe(types.string),
-    refName: types.string,
-    assemblyName: types.string,
-  }),
-)
+          types.model({
+            type: types.string,
+            pos: types.number,
+            tag: types.maybe(types.string),
+            refName: types.string,
+            assemblyName: types.string,
+          }),
+        )
 ```
 
-#### property: colorBy
+#### properties: colorBy
 
 ```js
+// type signature
+IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
+// code
 colorBy: types.maybe(
-  types.model({
-    type: types.string,
-    tag: types.maybe(types.string),
-    extra: types.frozen(),
-  }),
-)
+          types.model({
+            type: types.string,
+            tag: types.maybe(types.string),
+            extra: types.frozen(),
+          }),
+        )
 ```
+
+### Getters
+
+#### getter: maxHeight
+
+```js
+// type
+any
+```
+
+#### getter: rendererConfig
+
+```js
+// type
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+```
+
+#### getter: featureHeightSetting
+
+```js
+// type
+any
+```
+
+#### getter: mismatchAlphaSetting
+
+```js
+// type
+any
+```
+
+#### getter: featureUnderMouse
+
+```js
+// type
+Feature
+```
+
+#### getter: rendererTypeName
+
+```js
+// type
+string
+```
+
+#### getter: DisplayBlurb
+
+```js
+// type
+any
+```
+
+### Methods
+
+#### method: contextMenuItems
+
+```js
+// type signature
+contextMenuItems: () => { label: string; icon: any; onClick: () => void; }[]
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => any[]
+```
+
+### Actions
 
 #### action: setReady
 
 ```js
-// Type signature
+// type signature
 setReady: (flag: boolean) => void
 ```
 
 #### action: setMaxHeight
 
 ```js
-// Type signature
+// type signature
 setMaxHeight: (n: number) => void
 ```
 
 #### action: setFeatureHeight
 
 ```js
-// Type signature
+// type signature
 setFeatureHeight: (n: number) => void
 ```
 
 #### action: setNoSpacing
 
 ```js
-// Type signature
+// type signature
 setNoSpacing: (flag: boolean) => void
 ```
 
 #### action: setColorScheme
 
 ```js
-// Type signature
+// type signature
 setColorScheme: (colorScheme: { type: string; tag?: string; }) => void
 ```
 
 #### action: updateModificationColorMap
 
 ```js
-// Type signature
+// type signature
 updateModificationColorMap: (uniqueModifications: string[]) => void
 ```
 
 #### action: updateColorTagMap
 
 ```js
-// Type signature
+// type signature
 updateColorTagMap: (uniqueTag: string[]) => void
 ```
 
 #### action: setFeatureUnderMouse
 
 ```js
-// Type signature
+// type signature
 setFeatureUnderMouse: (feat?: Feature) => void
-```
-
-#### getter: estimatedStatsReady
-
-```js
-// Type
-boolean
-```
-
-#### getter: regionTooLarge
-
-region is too large if:
-
-- stats are ready
-- region is greater than 20kb (don't warn when zoomed in less than that)
-- and bytes is greater than max allowed bytes or density greater than max density
-
-```js
-// Type
-boolean
-```
-
-#### getter: rendererType
-
-the pluggable element type object for this display's
-renderer
-
-```js
-// Type
-RendererType
-```
-
-#### method: renderProps
-
-the react props that are passed to the Renderer when data
-is rendered in this display
-
-```js
-// Type signature
-renderProps: any
-```
-
-#### action: setCurrBpPerPx
-
-```js
-// Type signature
-setCurrBpPerPx: (n: number) => void
-```
-
-#### action: setError
-
-```js
-// Type signature
-setError: (error?: unknown) => void
-```
-
-#### getter: featureUnderMouse
-
-```js
-// Type
-any
 ```
 
 #### action: selectFeature
 
 ```js
-// Type signature
+// type signature
 selectFeature: (feature: Feature) => void
 ```
 
 #### action: clearSelected
 
 ```js
-// Type signature
+// type signature
 clearSelected: () => void
 ```
 
@@ -214,125 +261,41 @@ clearSelected: () => void
 uses copy-to-clipboard and generates notification
 
 ```js
-// Type signature
+// type signature
 copyFeatureToClipboard: (feature: Feature) => void
 ```
 
 #### action: toggleSoftClipping
 
 ```js
-// Type signature
+// type signature
 toggleSoftClipping: () => void
 ```
 
 #### action: toggleMismatchAlpha
 
 ```js
-// Type signature
+// type signature
 toggleMismatchAlpha: () => void
 ```
 
 #### action: setConfig
 
 ```js
-// Type signature
+// type signature
 setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setSortedBy
 
 ```js
-// Type signature
+// type signature
 setSortedBy: (type: string, tag?: string) => void
 ```
 
 #### action: reload
 
-base display reload does nothing, see specialized displays for details
-
 ```js
-// Type signature
-reload: any
-```
-
-#### getter: maxHeight
-
-```js
-// Type
-any
-```
-
-#### getter: rendererConfig
-
-```js
-// Type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
-```
-
-#### getter: featureHeightSetting
-
-```js
-// Type
-any
-```
-
-#### getter: mismatchAlphaSetting
-
-```js
-// Type
-any
-```
-
-#### getter: rendererTypeName
-
-```js
-// Type
-string
-```
-
-#### method: contextMenuItems
-
-```js
-// Type signature
-contextMenuItems: () => { label: string; icon: any; onClick: () => void; }[]
-```
-
-#### action: clearFeatureSelection
-
-```js
-// Type signature
-clearFeatureSelection: () => void
-```
-
-#### getter: DisplayBlurb
-
-```js
-// Type
-any
-```
-
-#### action: setContextMenuFeature
-
-```js
-// Type signature
-setContextMenuFeature: (feature?: Feature) => void
-```
-
-#### method: trackMenuItems
-
-```js
-// Type signature
-trackMenuItems: () => any[]
-```
-
-#### getter: dynamicBlocks
-
-dynamic blocks represent the exact coordinates of the currently
-visible genome regions on the screen. they are similar to static
-blocks, but statcic blocks can go offscreen while dynamic blocks
-represent exactly what is on screen
-
-```js
-// Type
-BlockSet
+// type signature
+reload: () => void
 ```

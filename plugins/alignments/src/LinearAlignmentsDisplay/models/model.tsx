@@ -2,6 +2,7 @@ import React from 'react'
 import {
   ConfigurationReference,
   AnyConfigurationModel,
+  AnyConfigurationSchemaType,
   getConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -11,7 +12,6 @@ import { autorun, when } from 'mobx'
 import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
 import deepEqual from 'fast-deep-equal'
-import { AlignmentsConfigModel } from './configSchema'
 
 const minDisplayHeight = 20
 
@@ -19,10 +19,10 @@ const minDisplayHeight = 20
  * !stateModel LinearAlignmentsDisplay
  * extends `BaseDisplay`
  */
-const stateModelFactory = (
+function stateModelFactory(
   pluginManager: PluginManager,
-  configSchema: AlignmentsConfigModel,
-) => {
+  configSchema: AnyConfigurationSchemaType,
+) {
   return types
     .compose(
       'LinearAlignmentsDisplay',

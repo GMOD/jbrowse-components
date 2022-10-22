@@ -6,204 +6,239 @@ toplevel: true
 
 extends `BaseDisplay`
 
-#### property: PileupDisplay
+### Properties
+
+#### properties: PileupDisplay
 
 refers to LinearPileupDisplay sub-display model
 
 ```js
+// type signature
+IMaybe<IAnyModelType>
+// code
 PileupDisplay: types.maybe(
-  pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
-)
+          pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
+        )
 ```
 
-#### property: SNPCoverageDisplay
+#### properties: SNPCoverageDisplay
 
 refers to LinearSNPCoverageDisplay sub-display model
 
 ```js
+// type signature
+IMaybe<IAnyModelType>
+// code
 SNPCoverageDisplay: types.maybe(
-  pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-)
+          pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+        )
 ```
 
-#### property: snpCovHeight
+#### properties: snpCovHeight
 
 ```js
+// type signature
+number
+// code
 snpCovHeight: 45
 ```
 
-#### property: type
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearAlignmentsDisplay">
+// code
 type: types.literal('LinearAlignmentsDisplay')
 ```
 
-#### property: configuration
+#### properties: configuration
 
 ```js
+// type signature
+ITypeUnion<any, any, any>
+// code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: height
+#### properties: height
 
 ```js
+// type signature
+number
+// code
 height: 250
 ```
 
-#### property: showCoverage
+#### properties: showCoverage
 
 ```js
+// type signature
+true
+// code
 showCoverage: true
 ```
 
-#### property: showPileup
+#### properties: showPileup
 
 ```js
+// type signature
+true
+// code
 showPileup: true
 ```
 
-#### property: userFeatureScreenDensity
+#### properties: userFeatureScreenDensity
 
 ```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
 userFeatureScreenDensity: types.maybe(types.number)
 ```
 
-#### action: toggleCoverage
-
-```js
-// Type signature
-toggleCoverage: () => void
-```
-
-#### action: togglePileup
-
-```js
-// Type signature
-togglePileup: () => void
-```
-
-#### action: setScrollTop
-
-```js
-// Type signature
-setScrollTop: (scrollTop: number) => void
-```
-
-#### action: setSNPCoverageHeight
-
-```js
-// Type signature
-setSNPCoverageHeight: (n: number) => void
-```
+### Getters
 
 #### getter: pileupDisplayConfig
 
 ```js
-// Type
+// type
 any
-```
-
-#### method: getFeatureByID
-
-```js
-// Type signature
-getFeatureByID: (blockKey: string, id: string) => any
-```
-
-#### method: searchFeatureByID
-
-```js
-// Type signature
-searchFeatureByID: (id: string) => any
 ```
 
 #### getter: features
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: DisplayBlurb
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: sortedBy
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: sortedByPosition
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: sortedByRefName
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: snpCoverageDisplayConfig
 
 ```js
-// Type
+// type
 any
+```
+
+### Methods
+
+#### method: getFeatureByID
+
+```js
+// type signature
+getFeatureByID: (blockKey: string, id: string) => any
+```
+
+#### method: searchFeatureByID
+
+```js
+// type signature
+searchFeatureByID: (id: string) => any
 ```
 
 #### method: trackMenuItems
 
 ```js
-// Type signature
+// type signature
 trackMenuItems: () => MenuItem[]
+```
+
+### Actions
+
+#### action: toggleCoverage
+
+```js
+// type signature
+toggleCoverage: () => void
+```
+
+#### action: togglePileup
+
+```js
+// type signature
+togglePileup: () => void
+```
+
+#### action: setScrollTop
+
+```js
+// type signature
+setScrollTop: (scrollTop: number) => void
+```
+
+#### action: setSNPCoverageHeight
+
+```js
+// type signature
+setSNPCoverageHeight: (n: number) => void
 ```
 
 #### action: setSNPCoverageDisplay
 
 ```js
-// Type signature
+// type signature
 setSNPCoverageDisplay: (displayConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setUserFeatureScreenDensity
 
 ```js
-// Type signature
+// type signature
 setUserFeatureScreenDensity: (limit: number) => void
 ```
 
 #### action: setPileupDisplay
 
 ```js
-// Type signature
+// type signature
 setPileupDisplay: (displayConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setHeight
 
 ```js
-// Type signature
+// type signature
 setHeight: (displayHeight: number) => number
 ```
 
 #### action: resizeHeight
 
 ```js
-// Type signature
+// type signature
 resizeHeight: (distance: number) => number
 ```
 
 #### action: renderSvg
 
 ```js
-// Type signature
+// type signature
 renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
 ```

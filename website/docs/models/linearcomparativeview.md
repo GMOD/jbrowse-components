@@ -4,134 +4,193 @@ title: LinearComparativeView
 toplevel: true
 ---
 
-#### property: id
+### Properties
+
+#### properties: id
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
 id: ElementId
 ```
 
-#### property: type
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearComparativeView">
+// code
 type: types.literal('LinearComparativeView')
 ```
 
-#### property: height
+#### properties: height
 
 ```js
+// type signature
+number
+// code
 height: defaultHeight
 ```
 
-#### property: trackSelectorType
+#### properties: trackSelectorType
 
 ```js
+// type signature
+string
+// code
 trackSelectorType: 'hierarchical'
 ```
 
-#### property: showIntraviewLinks
+#### properties: showIntraviewLinks
 
 ```js
+// type signature
+true
+// code
 showIntraviewLinks: true
 ```
 
-#### property: linkViews
+#### properties: linkViews
 
 ```js
+// type signature
+false
+// code
 linkViews: false
 ```
 
-#### property: interactToggled
+#### properties: interactToggled
 
 ```js
+// type signature
+false
+// code
 interactToggled: false
 ```
 
-#### property: middleComparativeHeight
+#### properties: middleComparativeHeight
 
 ```js
+// type signature
+number
+// code
 middleComparativeHeight: 100
 ```
 
-#### property: tracks
+#### properties: tracks
 
 ```js
-tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
+// type signature
+IArrayType<IAnyType>
+// code
+tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        )
 ```
 
-#### property: views
+#### properties: views
 
 currently this is limited to an array of two
 
 ```js
+// type signature
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; } & { id: IOptionalIType<ISimpleType<string>, [...]>; ... 12 more ...; showGridlines: IType<...>; }, { ...; } & ... 14 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+// code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         )
 ```
 
-#### property: viewTrackConfigs
+#### properties: viewTrackConfigs
 
 this represents tracks specific to this view specifically used
 for read vs ref dotplots where this track would not really apply
 elsewhere
 
 ```js
-viewTrackConfigs: types.array(pluginManager.pluggableConfigSchemaType('track'))
+// type signature
+IArrayType<IAnyModelType>
+// code
+viewTrackConfigs: types.array(
+          pluginManager.pluggableConfigSchemaType('track'),
+        )
 ```
+
+### Getters
 
 #### getter: highResolutionScaling
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: initialized
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: refNames
 
 ```js
-// Type
+// type
 any[][]
 ```
 
 #### getter: assemblyNames
 
 ```js
-// Type
+// type
 any[]
 ```
+
+### Methods
+
+#### method: menuItems
+
+```js
+// type signature
+menuItems: () => MenuItem[]
+```
+
+#### method: rubberBandMenuItems
+
+```js
+// type signature
+rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
+```
+
+### Actions
 
 #### action: setWidth
 
 ```js
-// Type signature
+// type signature
 setWidth: (newWidth: number) => void
 ```
 
 #### action: setHeight
 
 ```js
-// Type signature
+// type signature
 setHeight: (newHeight: number) => void
 ```
 
 #### action: setViews
 
 ```js
-// Type signature
+// type signature
 setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; } & { id: IOptionalIType<ISimpleType<string>, [...]>; ... 12 more ...; showGridlines: IType<...>; }>>[]) => void
 ```
 
 #### action: removeView
 
 ```js
-// Type signature
+// type signature
 removeView: (view: { id: string; displayName: string; type: "LinearGenomeView"; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IS...
 ```
 
@@ -140,76 +199,62 @@ removeView: (view: { id: string; displayName: string; type: "LinearGenomeView"; 
 removes the view itself from the state tree entirely by calling the parent removeView
 
 ```js
-// Type signature
+// type signature
 closeView: () => void
 ```
 
 #### action: setMiddleComparativeHeight
 
 ```js
-// Type signature
+// type signature
 setMiddleComparativeHeight: (n: number) => number
 ```
 
 #### action: toggleLinkViews
 
 ```js
-// Type signature
+// type signature
 toggleLinkViews: () => void
 ```
 
 #### action: activateTrackSelector
 
 ```js
-// Type signature
+// type signature
 activateTrackSelector: () => Widget
 ```
 
 #### action: toggleTrack
 
 ```js
-// Type signature
+// type signature
 toggleTrack: (trackId: string) => void
 ```
 
 #### action: showTrack
 
 ```js
-// Type signature
+// type signature
 showTrack: (trackId: string, initialSnapshot?: {}) => void
 ```
 
 #### action: hideTrack
 
 ```js
-// Type signature
+// type signature
 hideTrack: (trackId: string) => number
 ```
 
 #### action: squareView
 
 ```js
-// Type signature
+// type signature
 squareView: () => void
 ```
 
 #### action: clearView
 
 ```js
-// Type signature
+// type signature
 clearView: () => void
-```
-
-#### method: menuItems
-
-```js
-// Type signature
-menuItems: () => MenuItem[]
-```
-
-#### method: rubberBandMenuItems
-
-```js
-// Type signature
-rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```

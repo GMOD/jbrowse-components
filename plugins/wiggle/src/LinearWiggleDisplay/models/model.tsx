@@ -48,11 +48,11 @@ type LGV = LinearGenomeViewModel
  * !stateModel LinearWiggleDisplay
  * Extends `BaseLinearDisplay`
  */
-const stateModelFactory = (
+function stateModelFactory(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
-) =>
-  types
+) {
+  return types
     .compose(
       'LinearWiggleDisplay',
       BaseLinearDisplay,
@@ -721,6 +721,7 @@ const stateModelFactory = (
         },
       }
     })
+}
 
 export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>

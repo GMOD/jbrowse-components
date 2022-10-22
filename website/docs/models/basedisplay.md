@@ -4,60 +4,63 @@ title: BaseDisplay
 toplevel: true
 ---
 
-#### property: id
+### Properties
+
+#### properties: id
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
 id: ElementId
 ```
 
-#### property: type
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<string>
+// code
 type: types.string
 ```
 
-#### property: rpcDriverName
+#### properties: rpcDriverName
 
 ```js
+// type signature
+IMaybe<ISimpleType<string>>
+// code
 rpcDriverName: types.maybe(types.string)
 ```
+
+### Getters
 
 #### getter: RenderingComponent
 
 ```js
-// Type
+// type
 React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmptyObject & { rendererTypeName: string; error: unknown; } & IStateTreeNode<IModelType<{ id: IOptionalIType<ISimpleType<string>, [...]>; type: ISimpleType<...>; rpcDriverName: IMaybe<...>; }, { ...; }, _NotCustomized, _NotCustomized>>; onHo...
 ```
 
 #### getter: DisplayBlurb
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: adapterConfig
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: parentTrack
 
 ```js
-// Type
+// type
 any
-```
-
-#### method: renderProps
-
-the react props that are passed to the Renderer when data
-is rendered in this display
-
-```js
-// Type signature
-renderProps: () => any
 ```
 
 #### getter: rendererType
@@ -66,7 +69,7 @@ the pluggable element type object for this display's
 renderer
 
 ```js
-// Type
+// type
 RendererType
 ```
 
@@ -76,42 +79,56 @@ if a display-level message should be displayed instead,
 make this return a react component
 
 ```js
-// Type
+// type
 any
-```
-
-#### method: trackMenuItems
-
-```js
-// Type signature
-trackMenuItems: () => MenuItem[]
 ```
 
 #### getter: viewMenuActions
 
 ```js
-// Type
+// type
 MenuItem[]
+```
+
+### Methods
+
+#### method: renderProps
+
+the react props that are passed to the Renderer when data
+is rendered in this display
+
+```js
+// type signature
+renderProps: () => any
+```
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => MenuItem[]
 ```
 
 #### method: regionCannotBeRendered
 
 ```js
-// Type signature
+// type signature
 regionCannotBeRendered: () => any
 ```
+
+### Actions
 
 #### action: setError
 
 ```js
-// Type signature
+// type signature
 setError: (error?: unknown) => void
 ```
 
 #### action: setRpcDriverName
 
 ```js
-// Type signature
+// type signature
 setRpcDriverName: (rpcDriverName: string) => void
 ```
 
@@ -120,6 +137,6 @@ setRpcDriverName: (rpcDriverName: string) => void
 base display reload does nothing, see specialized displays for details
 
 ```js
-// Type signature
+// type signature
 reload: () => void
 ```

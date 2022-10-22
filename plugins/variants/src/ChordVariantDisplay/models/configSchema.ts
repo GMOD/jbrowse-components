@@ -6,8 +6,8 @@ import { types } from 'mobx-state-tree'
 /**
  * !config ChordVariantDisplay
  */
-const configSchema = (pluginManager: PluginManager) =>
-  ConfigurationSchema(
+function stateModelFactory(pluginManager: PluginManager) {
+  return ConfigurationSchema(
     'ChordVariantDisplay',
     {
       /**
@@ -26,5 +26,6 @@ const configSchema = (pluginManager: PluginManager) =>
       explicitlyTyped: true,
     },
   )
+}
 
-export default configSchema
+export default stateModelFactory

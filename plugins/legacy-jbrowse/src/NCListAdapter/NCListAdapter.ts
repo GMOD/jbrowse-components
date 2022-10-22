@@ -80,10 +80,9 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
 
   /**
    * NCList is unable to get list of ref names so returns empty
-   * @return Promise<string[]> of empty list
    */
-  getRefNames() {
-    return Promise.resolve(this.configRefNames || [])
+  async getRefNames() {
+    return this.configRefNames || []
   }
 
   /**

@@ -4,418 +4,209 @@ title: LinearGenomeView
 toplevel: true
 ---
 
-#### property: id
+### Properties
+
+#### properties: id
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
 id: ElementId
 ```
 
-#### property: type
+#### properties: type
 
 ```js
+// type signature
+ISimpleType<"LinearGenomeView">
+// code
 type: types.literal('LinearGenomeView')
 ```
 
-#### property: offsetPx
+#### properties: offsetPx
 
 corresponds roughly to the horizontal scroll of the LGV
 
 ```js
+// type signature
+number
+// code
 offsetPx: 0
 ```
 
-#### property: bpPerPx
+#### properties: bpPerPx
 
 corresponds roughly to the zoom level, base-pairs per pixel
 
 ```js
+// type signature
+number
+// code
 bpPerPx: 1
 ```
 
-#### property: displayedRegions
+#### properties: displayedRegions
 
 currently displayed regions, can be a single chromosome, arbitrary subsections,
 or the entire set of chromosomes in the genome, but it not advised to use the
 entire set of chromosomes if your assembly is very fragmented
 
 ```js
+// type signature
+IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>
+// code
 displayedRegions: types.array(MUIRegion)
 ```
 
-#### property: tracks
+#### properties: tracks
 
 array of currently displayed tracks state models instances
 
 ```js
-tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
+// type signature
+IArrayType<IAnyType>
+// code
+tracks: types.array(
+          pluginManager.pluggableMstType('track', 'stateModel'),
+        )
 ```
 
-#### property: hideHeader
+#### properties: hideHeader
 
 array of currently displayed tracks state model's
 
 ```js
+// type signature
+false
+// code
 hideHeader: false
 ```
 
-#### property: hideHeaderOverview
+#### properties: hideHeaderOverview
 
 ```js
+// type signature
+false
+// code
 hideHeaderOverview: false
 ```
 
-#### property: hideNoTracksActive
+#### properties: hideNoTracksActive
 
 ```js
+// type signature
+false
+// code
 hideNoTracksActive: false
 ```
 
-#### property: trackSelectorType
+#### properties: trackSelectorType
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
 trackSelectorType: types.optional(
-  types.enumeration(['hierarchical']),
-  'hierarchical',
-)
+          types.enumeration(['hierarchical']),
+          'hierarchical',
+        )
 ```
 
-#### property: trackLabels
+#### properties: trackLabels
 
 how to display the track labels, can be "overlapping", "offset", or "hidden"
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
 trackLabels: types.optional(
-  types.string,
-  () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
-)
+          types.string,
+          () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
+        )
 ```
 
-#### property: showCenterLine
+#### properties: showCenterLine
 
 show the "center line"
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
 showCenterLine: types.optional(types.boolean, () => {
-  const setting = localStorageGetItem('lgv-showCenterLine')
-  return setting !== undefined && setting !== null ? !!+setting : false
-})
+          const setting = localStorageGetItem('lgv-showCenterLine')
+          return setting !== undefined && setting !== null ? !!+setting : false
+        })
 ```
 
-#### property: showCytobandsSetting
+#### properties: showCytobandsSetting
 
 show the "cytobands" in the overview scale bar
 
 ```js
+// type signature
+IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
 showCytobandsSetting: types.optional(types.boolean, () => {
-  const setting = localStorageGetItem('lgv-showCytobands')
-  return setting !== undefined && setting !== null ? !!+setting : true
-})
+          const setting = localStorageGetItem('lgv-showCytobands')
+          return setting !== undefined && setting !== null ? !!+setting : true
+        })
 ```
 
-#### property: showGridlines
+#### properties: showGridlines
 
 show the "gridlines" in the track area
 
 ```js
+// type signature
+true
+// code
 showGridlines: true
 ```
+
+### Getters
 
 #### getter: width
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: interRegionPaddingWidth
 
 ```js
-// Type
+// type
 number
 ```
 
 #### getter: assemblyNames
 
 ```js
-// Type
+// type
 any[]
-```
-
-#### action: setShowCytobands
-
-```js
-// Type signature
-setShowCytobands: (flag: boolean) => void
-```
-
-#### action: setWidth
-
-```js
-// Type signature
-setWidth: (newWidth: number) => void
-```
-
-#### action: setError
-
-```js
-// Type signature
-setError: (error: Error) => void
-```
-
-#### action: toggleHeader
-
-```js
-// Type signature
-toggleHeader: () => void
-```
-
-#### action: toggleHeaderOverview
-
-```js
-// Type signature
-toggleHeaderOverview: () => void
-```
-
-#### action: toggleNoTracksActive
-
-```js
-// Type signature
-toggleNoTracksActive: () => void
-```
-
-#### action: toggleShowGridlines
-
-```js
-// Type signature
-toggleShowGridlines: () => void
-```
-
-#### action: scrollTo
-
-```js
-// Type signature
-scrollTo: (offsetPx: number) => number
-```
-
-#### action: zoomTo
-
-```js
-// Type signature
-zoomTo: (bpPerPx: number) => number
-```
-
-#### action: setOffsets
-
-sets offsets used in the get sequence dialog
-
-```js
-// Type signature
-setOffsets: (left?: BpOffset, right?: BpOffset) => void
-```
-
-#### action: setSearchResults
-
-```js
-// Type signature
-setSearchResults: (results?: BaseResult[], query?: string) => void
-```
-
-#### action: setGetSequenceDialogOpen
-
-```js
-// Type signature
-setGetSequenceDialogOpen: (open: boolean) => void
-```
-
-#### action: setNewView
-
-```js
-// Type signature
-setNewView: (bpPerPx: number, offsetPx: number) => void
-```
-
-#### action: horizontallyFlip
-
-```js
-// Type signature
-horizontallyFlip: () => void
-```
-
-#### action: showTrack
-
-```js
-// Type signature
-showTrack: (
-  trackId: string,
-  initialSnapshot?: {},
-  displayInitialSnapshot?: {},
-) => any
-```
-
-#### action: moveTrack
-
-```js
-// Type signature
-moveTrack: (movingId: string, targetId: string) => void
-```
-
-#### action: closeView
-
-```js
-// Type signature
-closeView: () => void
-```
-
-#### action: toggleTrack
-
-```js
-// Type signature
-toggleTrack: (trackId: string) => void
-```
-
-#### action: setTrackLabels
-
-```js
-// Type signature
-setTrackLabels: (setting: "overlapping" | "offset" | "hidden") => void
-```
-
-#### action: toggleCenterLine
-
-```js
-// Type signature
-toggleCenterLine: () => void
-```
-
-#### action: setDisplayedRegions
-
-```js
-// Type signature
-setDisplayedRegions: (regions: Region[]) => void
-```
-
-#### action: activateTrackSelector
-
-```js
-// Type signature
-activateTrackSelector: () => Widget
-```
-
-#### method: getSelectedRegions
-
-Helper method for the fetchSequence.
-Retrieves the corresponding regions that were selected by the rubberband
-
-```js
-// Type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => BaseBlock[]
-```
-
-#### action: afterDisplayedRegionsSet
-
-schedule something to be run after the next time displayedRegions is set
-
-```js
-// Type signature
-afterDisplayedRegionsSet: (cb: Function) => void
-```
-
-#### action: horizontalScroll
-
-```js
-// Type signature
-horizontalScroll: (distance: number) => number
-```
-
-#### action: center
-
-```js
-// Type signature
-center: () => void
-```
-
-#### action: showAllRegions
-
-```js
-// Type signature
-showAllRegions: () => void
-```
-
-#### action: showAllRegionsInAssembly
-
-```js
-// Type signature
-showAllRegionsInAssembly: (assemblyName?: string) => void
-```
-
-#### action: setDraggingTrackId
-
-```js
-// Type signature
-setDraggingTrackId: (idx?: string) => void
-```
-
-#### action: setScaleFactor
-
-```js
-// Type signature
-setScaleFactor: (factor: number) => void
-```
-
-#### action: clearView
-
-this "clears the view" and makes the view return to the import form
-
-```js
-// Type signature
-clearView: () => void
-```
-
-#### action: exportSvg
-
-creates an svg export and save using FileSaver
-
-```js
-// Type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
-```
-
-#### action: slide
-
-perform animated slide
-
-```js
-// Type signature
-slide: (viewWidths: number) => void
-```
-
-#### action: zoom
-
-perform animated zoom
-
-```js
-// Type signature
-zoom: (targetBpPerPx: number) => void
 ```
 
 #### getter: canShowCytobands
 
 ```js
-// Type
+// type
 any
 ```
 
 #### getter: showCytobands
 
 ```js
-// Type
+// type
 boolean
 ```
 
 #### getter: anyCytobandsExist
 
 ```js
-// Type
+// type
 boolean
 ```
 
@@ -425,17 +216,8 @@ the cytoband is displayed to the right of the chromosome name,
 and that offset is calculated manually with this method
 
 ```js
-// Type
+// type
 number
-```
-
-#### method: menuItems
-
-return the view menu items
-
-```js
-// Type signature
-menuItems: () => MenuItem[]
 ```
 
 #### getter: staticBlocks
@@ -448,7 +230,7 @@ static blocks to render their data for the region represented by
 the block
 
 ```js
-// Type
+// type
 BlockSet
 ```
 
@@ -460,7 +242,7 @@ blocks, but statcic blocks can go offscreen while dynamic blocks
 represent exactly what is on screen
 
 ```js
-// Type
+// type
 BlockSet
 ```
 
@@ -469,7 +251,7 @@ BlockSet
 rounded dynamic blocks are dynamic blocks without fractions of bp
 
 ```js
-// Type
+// type
 any
 ```
 
@@ -479,7 +261,7 @@ a single "combo-locstring" representing all the regions visible
 on the screen
 
 ```js
-// Type
+// type
 string
 ```
 
@@ -488,69 +270,49 @@ string
 same as visibleLocStrings, but only updated every 300ms
 
 ```js
-// Type
+// type
 string
 ```
 
-#### action: setCoarseDynamicBlocks
+#### getter: centerLineInfo
 
 ```js
-// Type signature
-setCoarseDynamicBlocks: (blocks: BlockSet) => void
+// type
+any
 ```
 
-#### action: moveTo
+### Methods
 
-offset is the base-pair-offset in the displayed region, index is the index of the
-displayed region in the linear genome view
+#### method: getSelectedRegions
+
+Helper method for the fetchSequence.
+Retrieves the corresponding regions that were selected by the rubberband
 
 ```js
-// Type signature
-moveTo: (start?: BpOffset, end?: BpOffset) => void
+// type signature
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => BaseBlock[]
 ```
 
-#### action: navToLocString
+#### method: menuItems
 
-navigate to the given locstring
-
-```js
-// Type signature
-navToLocString: (locString: string, optAssemblyName?: string) => void
-```
-
-#### action: navTo
-
-Navigate to a location based on its refName and optionally start, end,
-and assemblyName. Can handle if there are multiple displayedRegions
-from same refName. Only navigates to a location if it is entirely
-within a displayedRegion. Navigates to the first matching location
-encountered.
-
-Throws an error if navigation was unsuccessful
+return the view menu items
 
 ```js
-// Type signature
-navTo: (query: NavLocation) => void
-```
-
-#### action: navToMultiple
-
-```js
-// Type signature
-navToMultiple: (locations: NavLocation[]) => void
+// type signature
+menuItems: () => MenuItem[]
 ```
 
 #### method: rubberBandMenuItems
 
 ```js
-// Type signature
+// type signature
 rubberBandMenuItems: () => MenuItem[]
 ```
 
 #### method: bpToPx
 
 ```js
-// Type signature
+// type signature
 bpToPx: ({
   refName,
   coord,
@@ -571,14 +333,14 @@ scrolls the view to center on the given bp. if that is not in any
 of the displayed regions, does nothing
 
 ```js
-// Type signature
+// type signature
 centerAt: (coord: number, refName: string, regionNumber: number) => void
 ```
 
 #### method: pxToBp
 
 ```js
-// Type signature
+// type signature
 pxToBp: (px: number) => {
   coord: number
   index: number
@@ -592,9 +354,299 @@ pxToBp: (px: number) => {
 }
 ```
 
-#### getter: centerLineInfo
+### Actions
+
+#### action: setShowCytobands
 
 ```js
-// Type
-any
+// type signature
+setShowCytobands: (flag: boolean) => void
+```
+
+#### action: setWidth
+
+```js
+// type signature
+setWidth: (newWidth: number) => void
+```
+
+#### action: setError
+
+```js
+// type signature
+setError: (error: Error) => void
+```
+
+#### action: toggleHeader
+
+```js
+// type signature
+toggleHeader: () => void
+```
+
+#### action: toggleHeaderOverview
+
+```js
+// type signature
+toggleHeaderOverview: () => void
+```
+
+#### action: toggleNoTracksActive
+
+```js
+// type signature
+toggleNoTracksActive: () => void
+```
+
+#### action: toggleShowGridlines
+
+```js
+// type signature
+toggleShowGridlines: () => void
+```
+
+#### action: scrollTo
+
+```js
+// type signature
+scrollTo: (offsetPx: number) => number
+```
+
+#### action: zoomTo
+
+```js
+// type signature
+zoomTo: (bpPerPx: number) => number
+```
+
+#### action: setOffsets
+
+sets offsets used in the get sequence dialog
+
+```js
+// type signature
+setOffsets: (left?: BpOffset, right?: BpOffset) => void
+```
+
+#### action: setSearchResults
+
+```js
+// type signature
+setSearchResults: (results?: BaseResult[], query?: string) => void
+```
+
+#### action: setGetSequenceDialogOpen
+
+```js
+// type signature
+setGetSequenceDialogOpen: (open: boolean) => void
+```
+
+#### action: setNewView
+
+```js
+// type signature
+setNewView: (bpPerPx: number, offsetPx: number) => void
+```
+
+#### action: horizontallyFlip
+
+```js
+// type signature
+horizontallyFlip: () => void
+```
+
+#### action: showTrack
+
+```js
+// type signature
+showTrack: (
+  trackId: string,
+  initialSnapshot?: {},
+  displayInitialSnapshot?: {},
+) => any
+```
+
+#### action: moveTrack
+
+```js
+// type signature
+moveTrack: (movingId: string, targetId: string) => void
+```
+
+#### action: closeView
+
+```js
+// type signature
+closeView: () => void
+```
+
+#### action: toggleTrack
+
+```js
+// type signature
+toggleTrack: (trackId: string) => void
+```
+
+#### action: setTrackLabels
+
+```js
+// type signature
+setTrackLabels: (setting: "offset" | "overlapping" | "hidden") => void
+```
+
+#### action: toggleCenterLine
+
+```js
+// type signature
+toggleCenterLine: () => void
+```
+
+#### action: setDisplayedRegions
+
+```js
+// type signature
+setDisplayedRegions: (regions: Region[]) => void
+```
+
+#### action: activateTrackSelector
+
+```js
+// type signature
+activateTrackSelector: () => Widget
+```
+
+#### action: afterDisplayedRegionsSet
+
+schedule something to be run after the next time displayedRegions is set
+
+```js
+// type signature
+afterDisplayedRegionsSet: (cb: Function) => void
+```
+
+#### action: horizontalScroll
+
+```js
+// type signature
+horizontalScroll: (distance: number) => number
+```
+
+#### action: center
+
+```js
+// type signature
+center: () => void
+```
+
+#### action: showAllRegions
+
+```js
+// type signature
+showAllRegions: () => void
+```
+
+#### action: showAllRegionsInAssembly
+
+```js
+// type signature
+showAllRegionsInAssembly: (assemblyName?: string) => void
+```
+
+#### action: setDraggingTrackId
+
+```js
+// type signature
+setDraggingTrackId: (idx?: string) => void
+```
+
+#### action: setScaleFactor
+
+```js
+// type signature
+setScaleFactor: (factor: number) => void
+```
+
+#### action: clearView
+
+this "clears the view" and makes the view return to the import form
+
+```js
+// type signature
+clearView: () => void
+```
+
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```js
+// type signature
+exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```
+
+#### action: slide
+
+perform animated slide
+
+```js
+// type signature
+slide: (viewWidths: number) => void
+```
+
+#### action: zoom
+
+perform animated zoom
+
+```js
+// type signature
+zoom: (targetBpPerPx: number) => void
+```
+
+#### action: setCoarseDynamicBlocks
+
+```js
+// type signature
+setCoarseDynamicBlocks: (blocks: BlockSet) => void
+```
+
+#### action: moveTo
+
+offset is the base-pair-offset in the displayed region, index is the index of the
+displayed region in the linear genome view
+
+```js
+// type signature
+moveTo: (start?: BpOffset, end?: BpOffset) => void
+```
+
+#### action: navToLocString
+
+navigate to the given locstring
+
+```js
+// type signature
+navToLocString: (locString: string, optAssemblyName?: string) => void
+```
+
+#### action: navTo
+
+Navigate to a location based on its refName and optionally start, end,
+and assemblyName. Can handle if there are multiple displayedRegions
+from same refName. Only navigates to a location if it is entirely
+within a displayedRegion. Navigates to the first matching location
+encountered.
+
+Throws an error if navigation was unsuccessful
+
+```js
+// type signature
+navTo: (query: NavLocation) => void
+```
+
+#### action: navToMultiple
+
+```js
+// type signature
+navToMultiple: (locations: NavLocation[]) => void
 ```

@@ -17,7 +17,9 @@ import { LinearVariantDisplayConfigModel } from './configSchema'
  * extends `LinearBasicDisplay`
  * very similar to basic display, but provides custom widget on feature click
  */
-export default function (configSchema: LinearVariantDisplayConfigModel) {
+export default function stateModelFactory(
+  configSchema: LinearVariantDisplayConfigModel,
+) {
   return types
     .compose(
       'LinearVariantDisplay',

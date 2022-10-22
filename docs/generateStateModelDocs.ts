@@ -2,11 +2,8 @@ import slugify from 'slugify'
 import { rm, filter, removeComments, extractWithComment } from './util'
 import fs from 'fs'
 
-let currStateModel = ''
-
-function write(s: string) {
-  fs.appendFileSync(currStateModel, `${s}\n`)
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const contents = {} as { [key: string]: any }
 
 function generateStateModelDocs() {
   extractWithComment(
@@ -27,62 +24,145 @@ function generateStateModelDocs() {
       'plugins/circular-view/src/BaseChordDisplay/models/BaseChordDisplayModel.ts',
       'plugins/variants/src/LinearVariantDisplay/model.ts',
       'plugins/variants/src/ChordVariantDisplay/models/ChordVariantDisplay.ts',
+      'products/jbrowse-web/src/sessionModelFactory.ts',
     ],
+
     obj => {
-      if (obj.type === 'stateModel') {
-        const name = rm(obj.comment, '!stateModel') || obj.name
-        const id = slugify(name, { lower: true })
-        currStateModel = `website/docs/models/${id}.md`
-        fs.writeFileSync(currStateModel, '')
-
-        write(`---
-id: ${id}
-title: ${name}
-toplevel: true
----`)
-
-        const rest = filter(obj.comment, '!stateModel')
-        write('\n')
-        write(rest)
-      } else {
-        if (obj.type === 'getter') {
-          const rest = filter(obj.comment, '!getter')
-          write(`#### getter: ${obj.name}`)
-          write('\n')
-          write(rest)
-          write('```js')
-          write('// Type')
-          write(obj.signature || '')
-          write('```')
-        } else if (obj.type === 'method') {
-          write(`#### method: ${obj.name}`)
-
-          const rest = filter(obj.comment, '!method')
-          write(rest)
-          write('```js')
-          write('// Type signature')
-          write(`${obj.name}: ${obj.signature}`)
-          write('```')
-        } else if (obj.type === 'action') {
-          write(`#### action: ${obj.name}`)
-          write('\n')
-
-          const rest = filter(obj.comment, '!action')
-          write(rest)
-          write('```js')
-          write('// Type signature')
-          write(`${obj.name}: ${obj.signature}`)
-          write('```')
-        } else if (obj.type === 'property') {
-          write(`#### property: ${obj.name}`)
-          write('\n')
-          write(obj.comment.replace('!property', ''))
-          write('```js')
-          write(removeComments(obj.node))
-          write('```')
+      const fn = obj.filename
+      if (!contents[fn]) {
+        contents[obj.filename] = {
+          model: undefined,
+          getters: [],
+          actions: [],
+          methods: [],
+          properties: [],
         }
       }
+      const current = contents[fn]
+
+      const name = rm(obj.comment, '!' + obj.type) || obj.name
+      const docs = filter(obj.comment, '!' + obj.type)
+      const code = removeComments(obj.node)
+      const id = slugify(name, { lower: true })
+
+      if (obj.type === 'stateModel') {
+        current.model = { ...obj, name, docs, id }
+      } else if (obj.type === 'getter') {
+        current.getters.push({ ...obj, name, docs, code })
+      } else if (obj.type === 'method') {
+        current.methods.push({ ...obj, name, docs, code })
+      } else if (obj.type === 'action') {
+        current.actions.push({ ...obj, name, docs, code })
+      } else if (obj.type === 'property') {
+        current.properties.push({ ...obj, name, docs, code })
+      }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (extra: any, type: string) => {
+      // this extra filter is needed because e.g. references anywhere to
+      // view.bpPerPx in LinearPileupDisplay will try to output the property
+      // bpPerPx in the LinearPileupDisplay doc. since we have this, we have to
+      // make sure that document comments are on actual functions like
+      // stateModelFactory, can't just comment `const Model` unfortunately
+      return extra.comment.includes(type)
     },
   )
 }
 generateStateModelDocs()
+
+Object.entries(contents).forEach(([key, value]) => {
+  const { model, getters, properties, actions, methods } = value
+  if (model) {
+    const getterstr =
+      `${getters.length ? '### Getters' : ''}\n` +
+      getters
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map(({ name, docs, signature }: any) => {
+          return `#### getter: ${name}
+
+${docs}
+
+\`\`\`js
+// type
+${signature || ''}
+\`\`\`
+`
+        })
+        .join('\n')
+
+    const methodstr =
+      `${methods.length ? '### Methods' : ''}\n` +
+      methods
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map(({ name, docs, signature }: any) => {
+          return `#### method: ${name}
+
+${docs}
+
+\`\`\`js
+// type signature
+${name}: ${signature || ''}
+\`\`\`
+`
+        })
+        .join('\n')
+
+    const propertiesstr =
+      `${properties.length ? '### Properties' : ''}\n` +
+      properties
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map(({ name, docs, code, signature }: any) => {
+          return `#### properties: ${name}
+
+${docs}
+
+\`\`\`js
+// type signature
+${signature || ''}
+// code
+${code}
+\`\`\`
+`
+        })
+        .join('\n')
+
+    const actionstr =
+      `${actions.length ? '### Actions' : ''}\n` +
+      actions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map(({ name, docs, signature }: any) => {
+          return `#### action: ${name}
+
+${docs}
+
+\`\`\`js
+// type signature
+${name}: ${signature || ''}
+\`\`\`
+`
+        })
+        .join('\n')
+
+    fs.writeFileSync(
+      `website/docs/models/${model.id}.md`,
+      `---
+id: ${model.id}
+title: ${model.name}
+toplevel: true
+---
+${model.docs}
+
+
+
+${propertiesstr}
+
+${getterstr}
+
+${methodstr}
+
+${actionstr}
+ 
+`,
+    )
+  }
+})
