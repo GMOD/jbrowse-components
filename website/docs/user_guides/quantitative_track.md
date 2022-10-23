@@ -4,6 +4,8 @@ toplevel: true
 title: Quantitative and multi-quantitative tracks
 ---
 
+import Figure from '../figure'
+
 ## Quantitative tracks
 
 Visualizing genome signals, whether it is read depth-of-coverage or other

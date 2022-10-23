@@ -4,10 +4,11 @@ toplevel: true
 title: Alignments track
 ---
 
-Visualizing alignments is an important aspect of genome browsers. This guide
-will go over the main features of the "Alignments track."
+import Figure from '../figure'
 
-The alignments track is a combination of a pileup and a coverage visualization.
+Visualizing alignments is an important aspect of genome browsers. This guide
+will go over the main features of the "Alignments track." The alignments track
+is a combination of a pileup and a coverage visualization.
 
 ### Pileup visualization
 
@@ -57,7 +58,9 @@ of what the "sort by" option is doing.
 <Figure caption="The center line is an indicator that shows what base pair underlies the center of the view." src="/img/alignments_center_line.png" />
 
 :::info Note
-The center line is used by the 'Sort by' function discussed in this section; the sort is performed using properties of the feature, or even exact base pair underlying the center line.
+The center line is used by the 'Sort by' function discussed in this section;
+the sort is performed using properties of the feature, or even exact base pair
+underlying the center line.
 :::
 
 ### Sorting by base pair
@@ -74,17 +77,17 @@ specific base pair mutation at the position crossing the center line (which is
 
 ### Sort, color and filter by tag
 
-With these features, we can create expressive views of alignments tracks.
-For example, in the below step-by-step guide, it shows how to color and sort
-the reads by the HP tag:
+With these features, we can create expressive views of alignments tracks. For
+example, in the below step-by-step guide, it shows how to color and sort the
+reads by the HP tag:
 
 <Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag." src="/img/alignments/haplotype.png" />
 
 ### Color by modifications/methylation
 
 If you have data that marks DNA/RNA modifications using the MM tag in BAM/CRAM
-format, then the alignments track can use these merks to color these modification. It uses two
-modes:
+format, then the alignments track can use these merks to color these
+modification. It uses two modes:
 
 1. Modifications mode - draws the modifications as they are
 2. Methylation mode - draws both unmodified and modifified CpGs (unmodified
@@ -116,9 +119,9 @@ the alignment.
 <Figure caption="Sashimi-style arcs that are automatically drawn from spliced alignments. These arcs will be drawn by default on both short-reads e.g. RNA-seq and long reads e.g. Iso-Seq." src="/img/alignments_track_arcs.png" />
 
 :::info Note
-You can disable these by clicking on the track menu (vertical "..."
-next to track label, then hovering over SNPCoverage options, and unchecking
-"Draw arcs").
+You can disable these by clicking on the track menu (vertical "..." next to
+track label, then hovering over SNPCoverage options, and unchecking "Draw
+arcs").
 :::
 
 ### Insertion and clipping indicators
@@ -129,20 +132,19 @@ soft/hard clipped read counts at all positions, and mark significant positions
 
 <Figure caption="Clipping and insertion indicators are drawn at the top of the alignments track. Purple indicates insertions, the blue indicates soft clipping, and red indicates hard clipping." src="/img/alignment_clipping_indicators.png" />
 
-Also, insertions that are larger than 10bp are marked with a larger
-purple rectangle, seen in the screenshot below. Generally, long reads span
-larger insertions better, so this feature is more prominant with large reads.
+Also, insertions that are larger than 10bp are marked with a larger purple
+rectangle, seen in the screenshot below. Generally, long reads span larger
+insertions better, so this feature is more prominant with large reads.
 
 <Figure caption="Large insertion indicator drawn from long reads, along with the 'show soft clipping' setting turned on for a short read track." src="/img/insertion_indicators.png" />
 
 :::info Note
-You can disable these by clicking on the track menu (vertical "..."
-next to track label, then hovering over SNPCoverage options, and unchecking
-"Draw insertion/clipping indicators" and "Draw insertion/clipping counts").
+You can disable these by clicking on the track menu (vertical "..." next to
+track label, then hovering over SNPCoverage options, and unchecking "Draw
+insertion/clipping indicators" and "Draw insertion/clipping counts").
 :::
 
 ### Opening a synteny view from a dotplot view
 
-You can open a synteny view from a dotplot view by selecting a region on the dotplot and clicking "Open linear synteny view", shown below:
-
-<Figure caption="Screenshow showing the 'click and drag' selection over the dotplot view which prompts you to open up a linear synteny view from the selected region." src="/img/synteny_from_dotplot_view.png" />
+You can open a synteny view from a dotplot view by selecting a region on the
+dotplot and clicking "Open linear synteny view", shown below:

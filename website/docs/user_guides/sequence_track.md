@@ -4,6 +4,8 @@ toplevel: true
 title: Sequence track
 ---
 
+import Figure from '../figure'
+
 ## Sequence track
 
 The sequence track shows the reference sequence and a three-frame translation.

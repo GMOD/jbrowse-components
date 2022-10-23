@@ -4,6 +4,8 @@ title: SV inspector view
 toplevel: true
 ---
 
+import Figure from '../figure'
+
 The Structural Variant (SV) inspector is a "workflow" that is designed to help
 users inspect structural variant calls.
 

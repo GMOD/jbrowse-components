@@ -4,6 +4,8 @@ toplevel: true
 title: Basic usage
 ---
 
+import Figure from '../figure'
+
 ### Linear genome view
 
 To open a linear genome view (LGV), use the menu bar: `ADD` -> `Linear genome view`

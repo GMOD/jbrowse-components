@@ -1,8 +1,10 @@
 ---
 id: bookmark_widget
-toplevel:true
-title: Using the bookmark widget
+toplevel: true
+title: Bookmark widget
 ---
+
+import Figure from '../figure'
 
 The "bookmark widget" can store lists of interesting regions that you might
 like to easily revisit.

@@ -1,10 +1,11 @@
 ---
 id: embedded_components
-title: Embedded components
+title: Embedded components/JBrowse Jupyter/JBrowseR
 toplevel: true
 ---
 
-Our embedded components allow you to use individual JBrowse views in your application
+Our embedded components allow you to use individual JBrowse views in your
+application
 
 ## JBrowse React Linear Genome View
 
@@ -12,7 +13,8 @@ This component consists of a single JBrowse 2 linear view.
 
 - [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
   linear genome view React component on NPM
-- [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the linear genome view React component
+- [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the linear
+  genome view React component
 
 Here is a table of different usages of the `@jbrowse/react-linear-genome-view`
 using different bundlers
@@ -41,3 +43,11 @@ Here is a table of different usages of the
 | create-react-app v4 | [demo](https://jbrowse.org/demos/cgv/)          | [source code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view) ([download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view))                     | no polyfills needed in create-react-app v4                                                       |
 | create-react-app v5 | [demo](https://jbrowse.org/demos/cgv-cra5/)     | [source code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-cra5) ([download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view-cra5))           | for create-react-app v5, we use craco to update the webpack config to polyfill some node modules |
 | vanilla js          | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-vanillajs) ([download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view-vanillajs)) | uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling     |
+
+### JBrowse Jupyter
+
+Comprehensive documentation for JBrowse Jupyter is found off-site,
+[here](https://gmod.github.io/jbrowse-jupyter/docs/html/index.html).
+
+Also check out the JBrowse Jupyter [Github
+repo](https://github.com/GMOD/jbrowse-jupyter).

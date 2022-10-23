@@ -4,6 +4,8 @@ toplevel: true
 title: Variant tracks
 ---
 
+import Figure from '../figure'
+
 ## Variant tracks
 
 Visualizing variant tracks from the VCF format alongside the original alignment

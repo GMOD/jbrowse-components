@@ -7,17 +7,22 @@ toplevel: true
 import Figure from './figure'
 import config from '../docusaurus.config.json'
 
-In this guide, we'll get an instance of JBrowse web running on your computer's browser.
+In this guide, we'll get an instance of JBrowse web running on your computer's
+browser.
 
-Are you an **administrator**, or want to install via CLI to get access to configuration tools? Follow our [CLI quick start](../quickstart_cli).
+Are you an **administrator**, or want to install via CLI to get access to
+configuration tools? Follow our [CLI quick start](../quickstart_cli).
 
-Want JBrowse desktop? Follow our [JBrowse desktop quick start](../quickstart_desktop).
+Want JBrowse desktop? Follow our [JBrowse desktop quick
+start](../quickstart_desktop).
 
 ## Downloading manually
 
-Download JBrowse 2 manually <a href={`https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-web-${config.customFields.currentVersion}.zip`}>here</a>.
+Download JBrowse 2 manually <a
+href={`https://github.com/GMOD/jbrowse-components/releases/download/${config.customFields.currentVersion}/jbrowse-web-${config.customFields.currentVersion}.zip`}>here</a>.
 
-Once you have downloaded the ZIP file, extract it to the directory where you would like to have JBrowse 2.
+Once you have downloaded the ZIP file, extract it to the directory where you
+would like to have JBrowse 2.
 
 ### Checking the download
 

@@ -1,8 +1,10 @@
 ---
 id: plugin_store
-title: Using the plugin store
-toplevel:true
+title: Plugin store
+toplevel: true
 ---
+
+import Figure from '../figure'
 
 Users can add plugins to their session using the in-app plugin store. The
 plugin will be added to your "session" which can be shared with the share

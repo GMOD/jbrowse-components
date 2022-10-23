@@ -4,6 +4,8 @@ title: Linear synteny view
 toplevel: true
 ---
 
+import Figure from '../figure'
+
 ### Opening a linear synteny view
 
 1. Navigate on the header bar `Add`->`Linear synteny view`

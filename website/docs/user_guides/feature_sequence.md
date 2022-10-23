@@ -4,7 +4,9 @@ title: Feature sequence panel
 toplevel: true
 ---
 
-### Getting the protein sequence for features
+import Figure from '../figure'
+
+### Gene features
 
 If you have a track with gene or transcript level features, then the feature
 detail sidebar will automatically stitch together the sequence for that
@@ -27,7 +29,7 @@ interested in adjusting these default parameters [let us know](/contact/).
 
 <Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details." src="/img/feature_detail_sequence.png" />
 
-### Getting the sequence of other types of features
+### Other feature types
 
 Clicking on other types of features will have the "Feature sequence" button in
 the feature details widget, but will not automatically "stitch" together

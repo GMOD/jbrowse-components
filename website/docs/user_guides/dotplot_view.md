@@ -4,6 +4,8 @@ title: Dotplot view
 toplevel: true
 ---
 
+import Figure from '../figure'
+
 The dotplot view is a 2D comparative view that can display alignments between
 different genome assemblies, or even compare a long-read or NGS short-read
 against the genome.
