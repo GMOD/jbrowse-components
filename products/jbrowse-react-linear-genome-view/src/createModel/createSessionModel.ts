@@ -12,6 +12,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
+import { extendSessionModel, addSessionTrack } from '@jbrowse/app-core'
 import { version } from '../version'
 import {
   getMembers,
@@ -160,16 +161,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       addTrackConf(trackConf: AnyConfigurationModel) {
-        const { trackId, type } = trackConf
-        if (!type) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
-        if (track) {
-          return track
-        }
-        const length = self.sessionTracks.push(trackConf)
-        return self.sessionTracks[length - 1]
+        addSessionTrack(self, trackConf)
       },
       queueDialog(
         callback: (doneCallback: () => void) => [DialogComponentType, any],
@@ -370,7 +362,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  return addSnackbarToModel(model)
+  return extendSessionModel(addSnackbarToModel(model), pluginManager)
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

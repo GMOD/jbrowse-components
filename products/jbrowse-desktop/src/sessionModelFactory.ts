@@ -5,6 +5,7 @@ import {
   readConfObject,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
+import { extendSessionModel } from '@jbrowse/app-core'
 import {
   Region,
   TrackViewModel,
@@ -95,20 +96,6 @@ export default function sessionModelFactory(
       queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
-      get DialogComponent() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
-        }
-        return undefined
-      },
-      get DialogProps() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
-        }
-        return undefined
-      },
       get rpcManager() {
         return getParent<any>(self).jbrowse.rpcManager
       },
@@ -664,22 +651,25 @@ export default function sessionModelFactory(
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
-    // @ts-ignore
-    preProcessor(snapshot) {
-      if (snapshot) {
-        // @ts-ignore
-        const { connectionInstances, ...rest } = snapshot || {}
-        // connectionInstances schema changed from object to an array, so any
-        // old connectionInstances as object is in snapshot, filter it out
-        // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (!Array.isArray(connectionInstances)) {
-          return rest
+  return types.snapshotProcessor(
+    extendSessionModel(addSnackbarToModel(extendedSessionModel), pluginManager),
+    {
+      // @ts-ignore
+      preProcessor(snapshot) {
+        if (snapshot) {
+          // @ts-ignore
+          const { connectionInstances, ...rest } = snapshot || {}
+          // connectionInstances schema changed from object to an array, so any
+          // old connectionInstances as object is in snapshot, filter it out
+          // https://github.com/GMOD/jbrowse-components/issues/1903
+          if (!Array.isArray(connectionInstances)) {
+            return rest
+          }
         }
-      }
-      return snapshot
+        return snapshot
+      },
     },
-  })
+  )
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

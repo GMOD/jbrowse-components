@@ -16,6 +16,7 @@ import {
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
+import { extendSessionModel, addSessionTrack } from '@jbrowse/app-core'
 
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
@@ -77,20 +78,6 @@ export default function sessionModelFactory(
         384,
       ),
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
-      widgets: types.map(
-        pluginManager.pluggableMstType('widget', 'stateModel'),
-      ),
-      activeWidgets: types.map(
-        types.safeReference(
-          pluginManager.pluggableMstType('widget', 'stateModel'),
-        ),
-      ),
-      connectionInstances: types.array(
-        pluginManager.pluggableMstType('connection', 'stateModel'),
-      ),
-      sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      ),
       sessionConnections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
@@ -123,20 +110,6 @@ export default function sessionModelFactory(
       ),
     }))
     .views(self => ({
-      get DialogComponent() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
-        }
-        return undefined
-      },
-      get DialogProps() {
-        if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
-        }
-        return undefined
-      },
       get shareURL() {
         return getConf(getParent<any>(self).jbrowse, 'shareURL')
       },
@@ -234,16 +207,7 @@ export default function sessionModelFactory(
         self.drawerPosition = arg
         localStorage.setItem('drawerPosition', arg)
       },
-      queueDialog(
-        callback: (
-          doneCallback: () => void,
-        ) => [DialogComponentType, ReactProps],
-      ): void {
-        const [component, props] = callback(() => {
-          self.queueOfDialogs.shift()
-        })
-        self.queueOfDialogs.push([component, props])
-      },
+
       setName(str: string) {
         self.name = str
       },
@@ -472,17 +436,9 @@ export default function sessionModelFactory(
       addTrackConf(trackConf: AnyConfiguration) {
         if (self.adminMode) {
           return getParent<any>(self).jbrowse.addTrackConf(trackConf)
+        } else {
+          return addSessionTrack(self, trackConf)
         }
-        const { trackId, type } = trackConf
-        if (!type) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
-        if (track) {
-          return track
-        }
-        const length = self.sessionTracks.push(trackConf)
-        return self.sessionTracks[length - 1]
       },
 
       deleteTrackConf(trackConf: AnyConfigurationModel) {
@@ -751,22 +707,25 @@ export default function sessionModelFactory(
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
-    // @ts-ignore
-    preProcessor(snapshot) {
-      if (snapshot) {
-        // @ts-ignore
-        const { connectionInstances, ...rest } = snapshot || {}
-        // connectionInstances schema changed from object to an array, so any
-        // old connectionInstances as object is in snapshot, filter it out
-        // https://github.com/GMOD/jbrowse-components/issues/1903
-        if (!Array.isArray(connectionInstances)) {
-          return rest
+  return types.snapshotProcessor(
+    extendSessionModel(addSnackbarToModel(extendedSessionModel), pluginManager),
+    {
+      // @ts-ignore
+      preProcessor(snapshot) {
+        if (snapshot) {
+          // @ts-ignore
+          const { connectionInstances, ...rest } = snapshot || {}
+          // connectionInstances schema changed from object to an array, so any
+          // old connectionInstances as object is in snapshot, filter it out
+          // https://github.com/GMOD/jbrowse-components/issues/1903
+          if (!Array.isArray(connectionInstances)) {
+            return rest
+          }
         }
-      }
-      return snapshot
+        return snapshot
+      },
     },
-  })
+  )
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

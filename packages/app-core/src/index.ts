@@ -8,13 +8,16 @@ import {
 } from './addUndo'
 import App from './App'
 import extendMenuModel from './topLevelMenuUtils'
+import extendSessionModel, { addSessionTrack } from './sessionModel'
 
 export {
   App,
   addUndoKeyboardShortcuts,
+  addSessionTrack,
   initUndoModel,
   initInternetAccounts,
-  undoMenuItems,
   extendAuthenticationModel,
   extendMenuModel,
+  extendSessionModel,
+  undoMenuItems,
 }
