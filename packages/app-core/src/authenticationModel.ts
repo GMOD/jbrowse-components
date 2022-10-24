@@ -1,5 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { autorun } from 'mobx'
 import {
+  addDisposer,
   types,
   resolveIdentifier,
   IModelType,
@@ -96,4 +98,17 @@ export default function extend<PROPS extends ModelProperties, OTHERS>(
     }))
 
   return types.compose(newModel, model)
+}
+
+export function initInternetAccounts(self: any) {
+  addDisposer(
+    self,
+    autorun(() => {
+      // @ts-ignore
+      self.jbrowse.internetAccounts.forEach(account => {
+        // @ts-ignore
+        this.initializeInternetAccount(account.internetAccountId)
+      })
+    }),
+  )
 }

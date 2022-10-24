@@ -8,7 +8,15 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 
-import { extendAuthenticationModel } from '@jbrowse/app-core'
+import {
+  addUndoKeyboardShortcuts,
+  initInternetAccounts,
+  initUndoModel,
+  undoMenuItems,
+  extendMenuModel,
+  extendAuthenticationModel,
+} from '@jbrowse/app-core'
+
 import { saveAs } from 'file-saver'
 import { observable, autorun } from 'mobx'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
@@ -17,7 +25,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
-import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 
@@ -32,8 +39,6 @@ import PublishIcon from '@mui/icons-material/Publish'
 import ExtensionIcon from '@mui/icons-material/Extension'
 import StorageIcon from '@mui/icons-material/Storage'
 import SaveIcon from '@mui/icons-material/Save'
-import UndoIcon from '@mui/icons-material/Undo'
-import RedoIcon from '@mui/icons-material/Redo'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
@@ -109,24 +114,9 @@ export default function RootModel(
 
     .actions(self => ({
       afterCreate() {
-        document.addEventListener('keydown', e => {
-          const cm = e.ctrlKey || e.metaKey
-          if (self.history.canRedo) {
-            if (
-              // ctrl+shift+z or cmd+shift+z
-              (cm && e.shiftKey && e.code === 'KeyZ') ||
-              // ctrl+y
-              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
-            ) {
-              self.history.redo()
-            }
-          } else if (self.history.canUndo) {
-            // ctrl+z or cmd+z
-            if (cm && !e.shiftKey && e.code === 'KeyZ') {
-              self.history.undo()
-            }
-          }
-        })
+        initUndoModel(self)
+        initInternetAccounts(self)
+        addUndoKeyboardShortcuts(self)
 
         Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
@@ -160,18 +150,6 @@ export default function RootModel(
 
         addDisposer(
           self,
-          autorun(() => {
-            if (self.session) {
-              // we use a specific initialization routine after session is
-              // created to get it to start tracking itself sort of related
-              // issue here
-              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
-              self.history.initialize()
-            }
-          }),
-        )
-        addDisposer(
-          self,
           autorun(
             () => {
               if (self.session) {
@@ -199,15 +177,6 @@ export default function RootModel(
             },
             { delay: 400 },
           ),
-        )
-        addDisposer(
-          self,
-          autorun(() => {
-            self.jbrowse.internetAccounts.forEach(account => {
-              // @ts-ignore
-              this.initializeInternetAccount(account.internetAccountId)
-            })
-          }),
         )
       },
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
@@ -447,22 +416,7 @@ export default function RootModel(
         {
           label: 'Tools',
           menuItems: [
-            {
-              label: 'Undo',
-              disabled: self.history.canUndo,
-              icon: UndoIcon,
-              onClick: () => {
-                self.history.undo()
-              },
-            },
-            {
-              label: 'Redo',
-              disabled: self.history.canRedo,
-              icon: RedoIcon,
-              onClick: () => {
-                self.history.redo()
-              },
-            },
+            ...undoMenuItems(self),
             { type: 'divider' },
             {
               label: 'Plugin store',
@@ -482,141 +436,8 @@ export default function RootModel(
       ] as Menu[],
       adminMode,
     }))
-    .actions(self => ({
-      setMenus(newMenus: Menu[]) {
-        self.menus = newMenus
-      },
-      /**
-       * Add a top-level menu
-       * @param menuName - Name of the menu to insert.
-       * @returns The new length of the top-level menus array
-       */
-      appendMenu(menuName: string) {
-        return self.menus.push({ label: menuName, menuItems: [] })
-      },
-      /**
-       * Insert a top-level menu
-       * @param menuName - Name of the menu to insert.
-       * @param position - Position to insert menu. If negative, counts from th
-       * end, e.g. `insertMenu('My Menu', -1)` will insert the menu as the
-       * second-to-last one.
-       * @returns The new length of the top-level menus array
-       */
-      insertMenu(menuName: string, position: number) {
-        self.menus.splice(
-          (position < 0 ? self.menus.length : 0) + position,
-          0,
-          { label: menuName, menuItems: [] },
-        )
-        return self.menus.length
-      },
-      /**
-       * Add a menu item to a top-level menu
-       * @param menuName - Name of the top-level menu to append to.
-       * @param menuItem - Menu item to append.
-       * @returns The new length of the menu
-       */
-      appendToMenu(menuName: string, menuItem: MenuItem) {
-        const menu = self.menus.find(m => m.label === menuName)
-        if (!menu) {
-          self.menus.push({ label: menuName, menuItems: [menuItem] })
-          return 1
-        }
-        return menu.menuItems.push(menuItem)
-      },
-      /**
-       * Insert a menu item into a top-level menu
-       * @param menuName - Name of the top-level menu to insert into
-       * @param menuItem - Menu item to insert
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       * @returns The new length of the menu
-       */
-      insertInMenu(menuName: string, menuItem: MenuItem, position: number) {
-        const menu = self.menus.find(m => m.label === menuName)
-        if (!menu) {
-          self.menus.push({ label: menuName, menuItems: [menuItem] })
-          return 1
-        }
-        const insertPosition =
-          position < 0 ? menu.menuItems.length + position : position
-        menu.menuItems.splice(insertPosition, 0, menuItem)
-        return menu.menuItems.length
-      },
-      /**
-       * Add a menu item to a sub-menu
-       * @param menuPath - Path to the sub-menu to add to, starting with the
-       * top-level menu (e.g. `['File', 'Insert']`).
-       * @param menuItem - Menu item to append.
-       * @returns The new length of the sub-menu
-       */
-      appendToSubMenu(menuPath: string[], menuItem: MenuItem) {
-        let topMenu = self.menus.find(m => m.label === menuPath[0])
-        if (!topMenu) {
-          const idx = this.appendMenu(menuPath[0])
-          topMenu = self.menus[idx - 1]
-        }
-        let { menuItems: subMenu } = topMenu
-        const pathSoFar = [menuPath[0]]
-        menuPath.slice(1).forEach(menuName => {
-          pathSoFar.push(menuName)
-          let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-          if (!sm) {
-            const idx = subMenu.push({ label: menuName, subMenu: [] })
-            sm = subMenu[idx - 1]
-          }
-          if (!('subMenu' in sm)) {
-            throw new Error(
-              `"${menuName}" in path "${pathSoFar}" is not a subMenu`,
-            )
-          }
-          subMenu = sm.subMenu
-        })
-        return subMenu.push(menuItem)
-      },
-      /**
-       * Insert a menu item into a sub-menu
-       * @param menuPath - Path to the sub-menu to add to, starting with the
-       * top-level menu (e.g. `['File', 'Insert']`).
-       * @param menuItem - Menu item to insert.
-       * @param position - Position to insert menu item. If negative, counts
-       * from the end, e.g. `insertMenu('My Menu', -1)` will insert the menu as
-       * the second-to-last one.
-       * @returns The new length of the sub-menu
-       */
-      insertInSubMenu(
-        menuPath: string[],
-        menuItem: MenuItem,
-        position: number,
-      ) {
-        let topMenu = self.menus.find(m => m.label === menuPath[0])
-        if (!topMenu) {
-          const idx = this.appendMenu(menuPath[0])
-          topMenu = self.menus[idx - 1]
-        }
-        let { menuItems: subMenu } = topMenu
-        const pathSoFar = [menuPath[0]]
-        menuPath.slice(1).forEach(menuName => {
-          pathSoFar.push(menuName)
-          let sm = subMenu.find(mi => 'label' in mi && mi.label === menuName)
-          if (!sm) {
-            const idx = subMenu.push({ label: menuName, subMenu: [] })
-            sm = subMenu[idx - 1]
-          }
-          if (!('subMenu' in sm)) {
-            throw new Error(
-              `"${menuName}" in path "${pathSoFar}" is not a subMenu`,
-            )
-          }
-          subMenu = sm.subMenu
-        })
-        subMenu.splice(position, 0, menuItem)
-        return subMenu.length
-      },
-    }))
 
-  return extendAuthenticationModel(rootModel, pluginManager)
+  return extendMenuModel(extendAuthenticationModel(rootModel, pluginManager))
 }
 
 export function createTestSession(snapshot = {}, adminMode = false) {
