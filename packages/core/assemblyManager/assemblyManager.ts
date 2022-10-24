@@ -1,18 +1,16 @@
-import { cast, getParent, types, Instance, IAnyType } from 'mobx-state-tree'
+import { addDisposer, cast, getParent, types, IAnyType } from 'mobx-state-tree'
 import { when } from '../util'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
-
-import assemblyFactory from './assembly'
+import { reaction } from 'mobx'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
+import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
 
-export default function assemblyManagerFactory(
-  assemblyConfigType: IAnyType,
-  pluginManager: PluginManager,
-) {
-  const Assembly = assemblyFactory(assemblyConfigType, pluginManager)
+type Conf = IAnyType | string
+
+function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
   return types
     .model({
-      assemblies: types.array(Assembly),
+      assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
       get(assemblyName: string) {
@@ -35,22 +33,19 @@ export default function assemblyManagerFactory(
           ...assemblies,
           ...sessionAssemblies,
           ...temporaryAssemblies,
-        ] as (AnyConfigurationModel & { name: string })[]
+        ] as AnyConfigurationModel[]
       },
 
       get rpcManager() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
-      get pluginManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return getParent<any>(self).pluginManager
-      },
     }))
     .views(self => ({
       // use this method instead of assemblyManager.get(assemblyName)
       // get an assembly with regions loaded
       async waitForAssembly(assemblyName: string) {
+        console.log('t2')
         if (!assemblyName) {
           throw new Error('no assembly name supplied to waitForAssembly')
         }
@@ -112,26 +107,47 @@ export default function assemblyManagerFactory(
       },
     }))
     .actions(self => ({
-      removeAssembly(asm: Instance<typeof Assembly>) {
+      afterAttach() {
+        addDisposer(
+          self,
+          reaction(
+            // have to slice it to be properly reacted to
+            () => self.assemblyList,
+            assemblyConfigs => {
+              self.assemblies.forEach(asm => {
+                if (!asm.configuration) {
+                  this.removeAssembly(asm)
+                }
+              })
+              assemblyConfigs.forEach(assemblyConfig => {
+                const existingAssemblyIdx = self.assemblies.findIndex(
+                  assembly =>
+                    assembly.name === readConfObject(assemblyConfig, 'name'),
+                )
+                if (existingAssemblyIdx === -1) {
+                  this.addAssembly(assemblyConfig)
+                }
+              })
+            },
+            { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
+          ),
+        )
+      },
+      removeAssembly(asm: Assembly) {
         self.assemblies.remove(asm)
       },
 
       // this can take an active instance of an assembly, in which case it is
       // referred to, or it can take an identifier e.g. assembly name, which is
       // used as a reference. snapshots cannot be used
-      addAssembly(
-        assemblyConfig: Instance<typeof assemblyConfigType> | string,
-      ) {
-        self.assemblies.push({ configuration: assemblyConfig })
+      addAssembly(configuration: Conf) {
+        self.assemblies.push({ configuration })
       },
 
-      replaceAssembly(
-        idx: number,
-        assemblyConfig: Instance<typeof assemblyConfigType> | string,
-      ) {
-        self.assemblies[idx] = cast({
-          configuration: assemblyConfig,
-        })
+      replaceAssembly(idx: number, configuration: Conf) {
+        self.assemblies[idx] = cast({ configuration })
       },
     }))
 }
+
+export default assemblyManagerFactory

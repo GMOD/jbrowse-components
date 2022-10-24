@@ -1,6 +1,4 @@
-import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
-import AbortablePromiseCache from 'abortable-promise-cache'
 
 // locals
 import { getConf, AnyConfigurationModel } from '../configuration'
@@ -10,7 +8,6 @@ import {
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
 import { when, Region, Feature } from '../util'
-import QuickLRU from '../util/QuickLRU'
 
 const refNameRegex = new RegExp(
   '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
@@ -56,12 +53,6 @@ export interface BaseOptions {
   sessionId: string
   statusCallback?: Function
 }
-interface CacheData {
-  adapterConf: unknown
-  self: Assembly
-  sessionId: string
-  options: BaseOptions
-}
 
 export interface RefNameMap {
   forwardMap: RefNameAliases
@@ -76,27 +67,16 @@ export interface BasicRegion {
 }
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
-  pluginManager: PluginManager,
+  pm: PluginManager,
 ) {
-  const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
-    cache: new QuickLRU({ maxSize: 1000 }),
-    async fill(
-      args: CacheData,
-      signal?: AbortSignal,
-      statusCallback?: Function,
-    ) {
-      const { adapterConf, self, options } = args
-      return
-    },
-  })
-
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
     })
     .volatile(() => ({
       error: undefined as unknown,
-      regions: undefined as BasicRegion[] | undefined,
+      loaded: false,
+      volatileRegions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as RefNameAliases | undefined,
       lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
       cytobands: undefined as Feature[] | undefined,
@@ -107,6 +87,14 @@ export default function assemblyFactory(
       },
       get name(): string {
         return getConf(self, 'name')
+      },
+
+      get regions() {
+        if (!self.loaded) {
+          // @ts-ignore
+          self.load()
+        }
+        return self.volatileRegions
       },
 
       get aliases(): string[] {
@@ -125,7 +113,7 @@ export default function assemblyFactory(
         return [this.name, ...this.aliases]
       },
       get refNames() {
-        return self.regions?.map(region => region.refName)
+        return self.volatileRegions?.map(region => region.refName)
       },
 
       // note: lowerCaseRefNameAliases not included here: this allows the list
@@ -185,7 +173,6 @@ export default function assemblyFactory(
       },
     }))
     .actions(self => ({
-      setLoading() {},
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
@@ -197,6 +184,7 @@ export default function assemblyFactory(
         lowerCaseRefNameAliases: RefNameAliases
         cytobands: Feature[]
       }) {
+        self.loaded = true
         this.setRegions(adapterRegionsWithAssembly)
         this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
         this.setCytobands(cytobands)
@@ -206,7 +194,7 @@ export default function assemblyFactory(
         self.error = e
       },
       setRegions(regions: Region[]) {
-        self.regions = regions
+        self.volatileRegions = regions
       },
       setRefNameAliases(aliases: RefNameAliases, lowerCase: RefNameAliases) {
         self.refNameAliases = aliases
@@ -216,33 +204,25 @@ export default function assemblyFactory(
         self.cytobands = cytobands
       },
       async load() {
+        if (self.loaded) {
+          return
+        }
         try {
-          const refNameAliasesAdapterConfig =
-            self.configuration.refNameAliases?.adapter
-          const cytobandAdapterConfig = self.configuration.cytobands?.adapter
-          const sequenceAdapterConfig = self.configuration.sequence.adapter
+          const conf = self.configuration
+          const refNameAliasesAdapterConf = conf.refNameAliases?.adapter
+          const cytobandAdapterConf = conf.cytobands?.adapter
+          const sequenceAdapterConf = conf.sequence.adapter
           const assemblyName = self.name
 
-          const adapterRegions = await getAssemblyRegions(
-            sequenceAdapterConfig,
-            pluginManager,
-          )
-          const adapterRegionsWithAssembly = adapterRegions.map(
-            adapterRegion => {
-              checkRefName(adapterRegion.refName)
-              return { ...adapterRegion, assemblyName }
-            },
-          )
+          const regions = await getAssemblyRegions(sequenceAdapterConf, pm)
+          const adapterRegionsWithAssembly = regions.map(r => {
+            checkRefName(r.refName)
+            return { ...r, assemblyName }
+          })
           const refNameAliases: RefNameAliases = {}
 
-          const ret = await getRefNameAliases(
-            refNameAliasesAdapterConfig,
-            pluginManager,
-          )
-          const cytobands = await getCytobands(
-            cytobandAdapterConfig,
-            pluginManager,
-          )
+          const ret = await getRefNameAliases(refNameAliasesAdapterConf, pm)
+          const cytobands = await getCytobands(cytobandAdapterConf, pm)
           ret.forEach(({ refName, aliases }) => {
             aliases.forEach(a => {
               checkRefName(a)
@@ -261,36 +241,28 @@ export default function assemblyFactory(
             ]),
           )
 
-          return {
+          this.setLoaded({
             adapterRegionsWithAssembly,
             refNameAliases,
             lowerCaseRefNameAliases,
             cytobands,
-          }
+          })
         } catch (e) {
           this.setError(e)
         }
       },
     }))
     .views(self => ({
-      async getAdapterMapEntry(options: BaseOptions) {
-        const { signal } = options
-        if (!options.sessionId) {
-          throw new Error('sessionId is required')
-        }
-        const { sessionId } = options
+      async getAdapterMapEntry() {
         await when(() => Boolean(self.regions && self.refNameAliases), {
-          signal,
           name: 'when assembly ready',
         })
 
         const refNames = (await self.rpcManager.call(
-          sessionId,
+          'test',
           'CoreGetRefNames',
           {
             adapterConfig: self.configuration,
-            signal,
-            ...options,
           },
           { timeout: 1000000 },
         )) as string[]
@@ -326,7 +298,7 @@ export default function assemblyFactory(
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      async getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
+      async getRefNameMapForAdapter() {
         const map = await this.getAdapterMapEntry()
         return map.forwardMap
       },
@@ -334,10 +306,7 @@ export default function assemblyFactory(
       /**
        * get Map of `adapter-specific-name -> canonical-name`
        */
-      async getReverseRefNameMapForAdapter(
-        adapterConf: unknown,
-        opts: BaseOptions,
-      ) {
+      async getReverseRefNameMapForAdapter() {
         const map = await this.getAdapterMapEntry()
         return map.reverseMap
       },
