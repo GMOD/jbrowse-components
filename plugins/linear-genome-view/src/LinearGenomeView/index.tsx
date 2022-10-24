@@ -945,7 +945,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         moveTo(self, start, end)
       },
 
-      navToLocString(locString: string, optAssemblyName?: string) {
+      async navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
@@ -981,34 +981,38 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         }
 
-        const locations = parsedLocStrings?.map(region => {
-          const asmName = region.assemblyName || assemblyName
-          const asm = assemblyManager.get(asmName)
-          const { refName } = region
-          if (!asm) {
-            throw new Error(`assembly ${asmName} not found`)
-          }
-          const { regions } = asm
-          if (!regions) {
-            throw new Error(`regions not loaded yet for ${asmName}`)
-          }
-          const canonicalRefName = asm.getCanonicalRefName(region.refName)
-          if (!canonicalRefName) {
-            throw new Error(`Could not find refName ${refName} in ${asm.name}`)
-          }
-          const parentRegion = regions.find(
-            region => region.refName === canonicalRefName,
-          )
-          if (!parentRegion) {
-            throw new Error(`Could not find refName ${refName} in ${asmName}`)
-          }
+        const locations = await Promise.all(
+          parsedLocStrings?.map(async region => {
+            const asmName = region.assemblyName || assemblyName
+            const asm = await assemblyManager.waitForAssembly(asmName)
+            const { refName } = region
+            if (!asm) {
+              throw new Error(`assembly ${asmName} not found`)
+            }
+            const { regions } = asm
+            if (!regions) {
+              throw new Error(`regions not loaded yet for ${asmName}`)
+            }
+            const canonicalRefName = asm.getCanonicalRefName(region.refName)
+            if (!canonicalRefName) {
+              throw new Error(
+                `Could not find refName ${refName} in ${asm.name}`,
+              )
+            }
+            const parentRegion = regions.find(
+              r => r.refName === canonicalRefName,
+            )
+            if (!parentRegion) {
+              throw new Error(`Could not find refName ${refName} in ${asmName}`)
+            }
 
-          return {
-            ...region,
-            assemblyName: asmName,
-            parentRegion,
-          }
-        })
+            return {
+              ...region,
+              assemblyName: asmName,
+              parentRegion,
+            }
+          }),
+        )
 
         if (locations.length === 1) {
           const loc = locations[0]
