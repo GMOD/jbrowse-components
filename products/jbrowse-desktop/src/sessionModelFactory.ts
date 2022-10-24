@@ -5,7 +5,11 @@ import {
   readConfObject,
   isConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { extendSessionModel } from '@jbrowse/app-core'
+import {
+  addAssembly,
+  removeAssembly,
+  extendSessionModel,
+} from '@jbrowse/app-core'
 import {
   Region,
   TrackViewModel,
@@ -180,14 +184,7 @@ export default function sessionModelFactory(
         self.drawerPosition = arg
         localStorage.setItem('drawerPosition', arg)
       },
-      queueDialog(
-        callback: (doneCallback: () => void) => [DialogComponentType, any],
-      ): void {
-        const [component, props] = callback(() => {
-          self.queueOfDialogs.shift()
-        })
-        self.queueOfDialogs.push([component, props])
-      },
+
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -280,44 +277,26 @@ export default function sessionModelFactory(
       removeView(view: any) {
         for (const [, widget] of self.activeWidgets) {
           if (widget.view && widget.view.id === view.id) {
-            this.hideWidget(widget)
+            self.hideWidget(widget)
           }
         }
         self.views.remove(view)
       },
 
-      addAssembly(assemblyConfig: any) {
-        self.sessionAssemblies.push(assemblyConfig)
+      addAssembly(conf: any) {
+        addAssembly(self, self.sessionAssemblies, conf)
       },
       removeAssembly(assemblyName: string) {
-        const index = self.sessionAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.sessionAssemblies.splice(index, 1)
-        }
+        removeAssembly(self, self.sessionAssemblies, assemblyName)
       },
 
       removeTemporaryAssembly(assemblyName: string) {
-        const index = self.temporaryAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.temporaryAssemblies.splice(index, 1)
-        }
+        removeAssembly(self, self.temporaryAssemblies, assemblyName)
       },
 
       // used for read vs ref type assemblies.
-      addTemporaryAssembly(assemblyConfig: AnyConfigurationModel) {
-        const asm = self.sessionAssemblies.find(
-          f => f.name === assemblyConfig.name,
-        )
-        if (asm) {
-          console.warn(`Assembly ${assemblyConfig.name} was already existing`)
-          return asm
-        }
-        const length = self.temporaryAssemblies.push(assemblyConfig)
-        return self.temporaryAssemblies[length - 1]
+      addTemporaryAssembly(conf: AnyConfigurationModel) {
+        addAssembly(self, self.temporaryAssemblies, conf)
       },
 
       addAssemblyConf(assemblyConf: any) {
@@ -326,10 +305,6 @@ export default function sessionModelFactory(
 
       addTrackConf(trackConf: any) {
         return getParent<any>(self).jbrowse.addTrackConf(trackConf)
-      },
-
-      hasWidget(widget: any) {
-        return self.activeWidgets.has(widget.id)
       },
 
       removeReferring(
@@ -360,7 +335,7 @@ export default function sessionModelFactory(
             // If a configuration editor widget has the track config
             // open, close the widget
             const type = 'configuration editor widget(s)'
-            callbacks.push(() => this.hideWidget(node))
+            callbacks.push(() => self.hideWidget(node))
             dereferenced = true
             if (!dereferenceTypeCount[type]) {
               dereferenceTypeCount[type] = 0
@@ -456,63 +431,6 @@ export default function sessionModelFactory(
         return this.addView(viewType, state)
       },
 
-      addWidget(
-        typeName: string,
-        id: string,
-        initialState = {},
-        configuration = { type: typeName },
-      ) {
-        const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown widget type ${typeName}`)
-        }
-        const data = {
-          ...initialState,
-          id,
-          type: typeName,
-          configuration,
-        }
-        self.widgets.set(id, data)
-        return self.widgets.get(id)
-      },
-
-      showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id)) {
-          self.activeWidgets.delete(widget.id)
-        }
-        self.activeWidgets.set(widget.id, widget)
-      },
-
-      hideWidget(widget: any) {
-        self.activeWidgets.delete(widget.id)
-      },
-      minimizeWidgetDrawer() {
-        self.minimized = true
-      },
-      showWidgetDrawer() {
-        self.minimized = false
-      },
-
-      hideAllWidgets() {
-        self.activeWidgets.clear()
-      },
-
-      /**
-       * set the global selection, i.e. the globally-selected object.
-       * can be a feature, a view, just about anything
-       * @param thing -
-       */
-      setSelection(thing: any) {
-        self.selection = thing
-      },
-
-      /**
-       * clears the global selection
-       */
-      clearSelection() {
-        self.selection = undefined
-      },
-
       /**
        * opens a configuration editor to configure the given thing,
        * and sets the current task to be configuring it
@@ -524,12 +442,13 @@ export default function sessionModelFactory(
             'must pass a configuration model to editConfiguration',
           )
         }
-        const editor = this.addWidget(
-          'ConfigurationEditorWidget',
-          'configEditor',
-          { target: configuration },
+        // @ts-ignore
+        self.showWidget(
+          // @ts-ignore
+          self.addWidget('ConfigurationEditorWidget', 'configEditor', {
+            target: configuration,
+          }),
         )
-        this.showWidget(editor)
       },
       editTrackConfiguration(configuration: AnyConfigurationModel) {
         this.editConfiguration(configuration)

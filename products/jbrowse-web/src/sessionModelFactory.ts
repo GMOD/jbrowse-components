@@ -14,13 +14,16 @@ import {
   AbstractSessionModel,
   TrackViewModel,
   JBrowsePlugin,
-  DialogComponentType,
 } from '@jbrowse/core/util/types'
-import { extendSessionModel, addSessionTrack } from '@jbrowse/app-core'
+import {
+  extendSessionModel,
+  addAssembly,
+  removeAssembly,
+  addSessionTrack,
+} from '@jbrowse/app-core'
 
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
-import { observable } from 'mobx'
 import {
   getMembers,
   getParent,
@@ -47,6 +50,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
+import { addSessionAssembly } from '@jbrowse/app-core/src/sessionModel'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -68,8 +72,8 @@ export default function sessionModelFactory(
   assemblyConfigSchemasType = types.frozen(),
 ) {
   const minDrawerWidth = 128
-  const sessionModel = types
-    .model('JBrowseWebSessionModel', {
+  const sessionModel = extendSessionModel(
+    types.model('JBrowseWebSessionModel', {
       id: types.optional(types.identifier, shortid()),
       name: types.string,
       margin: 0,
@@ -90,25 +94,9 @@ export default function sessionModelFactory(
         types.string,
         localStorage.getItem('drawerPosition') || 'right',
       ),
-    })
-    .volatile((/* self */) => ({
-      /**
-       * this is the globally "selected" object. can be anything.
-       * code that wants to deal with this should examine it to see what
-       * kind of thing it is.
-       */
-      selection: undefined,
-      /**
-       * this is the current "task" that is being performed in the UI.
-       * this is usually an object of the form
-       * `{ taskName: "configure", target: thing_being_configured }`
-       */
-      task: undefined,
-
-      queueOfDialogs: observable.array(
-        [] as [DialogComponentType, ReactProps][],
-      ),
-    }))
+    }),
+    pluginManager,
+  )
     .views(self => ({
       get shareURL() {
         return getConf(getParent<any>(self).jbrowse, 'shareURL')
@@ -170,15 +158,6 @@ export default function sessionModelFactory(
         return { theme: getConf(self, 'theme') }
       },
 
-      get visibleWidget() {
-        if (isAlive(self)) {
-          // returns most recently added item in active widgets
-          return Array.from(self.activeWidgets.values())[
-            self.activeWidgets.size - 1
-          ]
-        }
-        return undefined
-      },
       /**
        * See if any MST nodes currently have a types.reference to this object.
        * @param object - object
@@ -213,24 +192,10 @@ export default function sessionModelFactory(
       },
 
       addAssembly(conf: AnyConfiguration) {
-        const asm = self.sessionAssemblies.find(f => f.name === conf.name)
-        if (asm) {
-          console.warn(`Assembly ${conf.name} was already existing`)
-          return asm
-        }
-        const length = self.sessionAssemblies.push(conf)
-        return self.sessionAssemblies[length - 1]
+        return addAssembly(self, self.sessionAssemblies, conf)
       },
-
-      // used for read vs ref type assemblies.
       addTemporaryAssembly(conf: AnyConfiguration) {
-        const asm = self.sessionAssemblies.find(f => f.name === conf.name)
-        if (asm) {
-          console.warn(`Assembly ${conf.name} was already existing`)
-          return asm
-        }
-        const length = self.temporaryAssemblies.push(conf)
-        return self.temporaryAssemblies[length - 1]
+        return addAssembly(self, self.temporaryAssemblies, conf)
       },
       addSessionPlugin(plugin: JBrowsePlugin) {
         if (self.sessionPlugins.find(p => p.name === plugin.name)) {
@@ -240,20 +205,10 @@ export default function sessionModelFactory(
         getRoot<any>(self).setPluginsUpdated(true)
       },
       removeAssembly(assemblyName: string) {
-        const index = self.sessionAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.sessionAssemblies.splice(index, 1)
-        }
+        return removeAssembly(self, self.sessionAssemblies, assemblyName)
       },
       removeTemporaryAssembly(assemblyName: string) {
-        const index = self.temporaryAssemblies.findIndex(
-          asm => asm.name === assemblyName,
-        )
-        if (index !== -1) {
-          self.temporaryAssemblies.splice(index, 1)
-        }
+        return removeAssembly(self, self.temporaryAssemblies, assemblyName)
       },
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
         self.sessionPlugins = cast(
@@ -471,7 +426,7 @@ export default function sessionModelFactory(
         if (!type) {
           throw new Error(`unknown connection type ${type}`)
         }
-        const connection = self.sessionTracks.find(
+        const connection = self.sessionConnections.find(
           (c: any) => c.connectionId === connectionId,
         )
         if (connection) {
@@ -519,69 +474,11 @@ export default function sessionModelFactory(
         return this.addView(viewType, state)
       },
 
-      addWidget(
-        typeName: string,
-        id: string,
-        initialState = {},
-        configuration = { type: typeName },
-      ) {
-        const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown widget type ${typeName}`)
-        }
-        const data = {
-          ...initialState,
-          id,
-          type: typeName,
-          configuration,
-        }
-        self.widgets.set(id, data)
-        return self.widgets.get(id)
-      },
-
-      showWidget(widget: any) {
-        if (self.activeWidgets.has(widget.id)) {
-          self.activeWidgets.delete(widget.id)
-        }
-        self.activeWidgets.set(widget.id, widget)
-        self.minimized = false
-      },
-
-      hasWidget(widget: any) {
-        return self.activeWidgets.has(widget.id)
-      },
-
-      hideWidget(widget: any) {
-        self.activeWidgets.delete(widget.id)
-      },
       minimizeWidgetDrawer() {
         self.minimized = true
       },
       showWidgetDrawer() {
         self.minimized = false
-      },
-      hideAllWidgets() {
-        self.activeWidgets.clear()
-      },
-
-      /**
-       * set the global selection, i.e. the globally-selected object.
-       * can be a feature, a view, just about anything
-       * @param thing -
-       */
-      setSelection(thing: any) {
-        self.selection = thing
-      },
-
-      /**
-       * clears the global selection
-       */
-      clearSelection() {
-        self.selection = undefined
-      },
-
-      clearConnections() {
-        self.connectionInstances.length = 0
       },
 
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
@@ -707,25 +604,22 @@ export default function sessionModelFactory(
     sessionModel,
   ) as typeof sessionModel
 
-  return types.snapshotProcessor(
-    extendSessionModel(addSnackbarToModel(extendedSessionModel), pluginManager),
-    {
-      // @ts-ignore
-      preProcessor(snapshot) {
-        if (snapshot) {
-          // @ts-ignore
-          const { connectionInstances, ...rest } = snapshot || {}
-          // connectionInstances schema changed from object to an array, so any
-          // old connectionInstances as object is in snapshot, filter it out
-          // https://github.com/GMOD/jbrowse-components/issues/1903
-          if (!Array.isArray(connectionInstances)) {
-            return rest
-          }
+  return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
+    // @ts-ignore
+    preProcessor(snapshot) {
+      if (snapshot) {
+        // @ts-ignore
+        const { connectionInstances, ...rest } = snapshot || {}
+        // connectionInstances schema changed from object to an array, so any
+        // old connectionInstances as object is in snapshot, filter it out
+        // https://github.com/GMOD/jbrowse-components/issues/1903
+        if (!Array.isArray(connectionInstances)) {
+          return rest
         }
-        return snapshot
-      },
+      }
+      return snapshot
     },
-  )
+  })
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>

@@ -9,6 +9,13 @@ import {
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+
+import {
+  extendSessionModel,
+  addAssembly,
+  removeAssembly,
+  addSessionTrack,
+} from '@jbrowse/app-core'
 import {
   cast,
   getParent,
@@ -112,33 +119,11 @@ export default function JBrowseDesktop(
         })
       },
 
-      addAssemblyConf(assemblyConf: AnyConfigurationModel) {
-        const { name } = assemblyConf
-        if (!name) {
-          throw new Error('Can\'t add assembly with no "name"')
-        }
-        if (self.assemblyNames.includes(name)) {
-          throw new Error(
-            `Can't add assembly with name "${name}", an assembly with that name already exists`,
-          )
-        }
-        const length = self.assemblies.push({
-          ...assemblyConf,
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: `${name}-${Date.now()}`,
-            ...(assemblyConf.sequence || {}),
-          },
-        })
-        return self.assemblies[length - 1]
+      addAssemblyConf(conf: AnyConfigurationModel) {
+        return addAssembly(self, self.assemblies, conf)
       },
       removeAssemblyConf(assemblyName: string) {
-        const toRemove = self.assemblies.find(
-          assembly => assembly.name === assemblyName,
-        )
-        if (toRemove) {
-          self.assemblies.remove(toRemove)
-        }
+        removeAssembly(self, self.assemblies, assemblyName)
       },
       addTrackConf(trackConf: AnyConfigurationModel) {
         const { type } = trackConf
