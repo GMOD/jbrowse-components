@@ -1,14 +1,5 @@
-import { reaction } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getParent,
-  types,
-  Instance,
-  IAnyType,
-} from 'mobx-state-tree'
+import { cast, getParent, types, Instance, IAnyType } from 'mobx-state-tree'
 import { when } from '../util'
-import { readConfObject } from '../configuration'
 import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 import assemblyFactory from './assembly'
@@ -55,16 +46,6 @@ export default function assemblyManagerFactory(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).pluginManager
       },
-      get allPossibleRefNames() {
-        let refNames: string[] = []
-        for (const assembly of self.assemblies) {
-          if (!assembly.allRefNames) {
-            return undefined
-          }
-          refNames = refNames.concat(assembly.allRefNames)
-        }
-        return refNames
-      },
     }))
     .views(self => ({
       // use this method instead of assemblyManager.get(assemblyName)
@@ -82,9 +63,11 @@ export default function assemblyManagerFactory(
             // ignore
           }
         }
+
         if (!assembly) {
           return undefined
         }
+        await assembly.load()
         await when(
           () =>
             Boolean(assembly?.regions && assembly.refNameAliases) ||
@@ -118,53 +101,19 @@ export default function assemblyManagerFactory(
         }
         return {}
       },
-      isValidRefName(refName: string, assemblyName?: string) {
-        if (assemblyName) {
-          const assembly = self.get(assemblyName)
-          if (assembly) {
-            return assembly.isValidRefName(refName)
-          }
-          throw new Error(
-            `isValidRefName for ${assemblyName} failed, assembly does not exist`,
-          )
+      isValidRefName(refName: string, assemblyName: string) {
+        const assembly = self.get(assemblyName)
+        if (assembly) {
+          return assembly.isValidRefName(refName)
         }
-        if (!self.allPossibleRefNames) {
-          throw new Error(
-            `isValidRefName not available, assemblyManager has not yet finished loading. If you are looking for a refname in a specific assembly, pass assembly argument`,
-          )
-        }
-        return self.allPossibleRefNames.includes(refName)
+        throw new Error(
+          `isValidRefName for ${assemblyName} failed, assembly does not exist`,
+        )
       },
     }))
     .actions(self => ({
       removeAssembly(asm: Instance<typeof Assembly>) {
         self.assemblies.remove(asm)
-      },
-      afterAttach() {
-        addDisposer(
-          self,
-          reaction(
-            // have to slice it to be properly reacted to
-            () => self.assemblyList,
-            assemblyConfigs => {
-              self.assemblies.forEach(asm => {
-                if (!asm.configuration) {
-                  this.removeAssembly(asm)
-                }
-              })
-              assemblyConfigs.forEach(assemblyConfig => {
-                const existingAssemblyIdx = self.assemblies.findIndex(
-                  assembly =>
-                    assembly.name === readConfObject(assemblyConfig, 'name'),
-                )
-                if (existingAssemblyIdx === -1) {
-                  this.addAssembly(assemblyConfig)
-                }
-              })
-            },
-            { fireImmediately: true, name: 'assemblyManagerAfterAttach' },
-          ),
-        )
       },
 
       // this can take an active instance of an assembly, in which case it is
