@@ -1,4 +1,4 @@
-import { getSnapshot, isAlive, isStateTreeNode } from 'mobx-state-tree'
+import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { clamp } from '../util'
 import { serializeAbortSignal } from './remoteAbortSignals'
 import PluginManager from '../PluginManager'

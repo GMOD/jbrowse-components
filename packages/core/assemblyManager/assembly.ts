@@ -73,6 +73,13 @@ export interface BasicRegion {
   refName: string
   assemblyName: string
 }
+
+export interface Loading {
+  adapterRegionsWithAssembly: Region[]
+  refNameAliases: RefNameAliases
+  lowerCaseRefNameAliases: RefNameAliases
+  cytobands: Feature[]
+}
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pm: PluginManager,
@@ -203,12 +210,7 @@ export default function assemblyFactory(
         refNameAliases,
         lowerCaseRefNameAliases,
         cytobands,
-      }: {
-        adapterRegionsWithAssembly: Region[]
-        refNameAliases: RefNameAliases
-        lowerCaseRefNameAliases: RefNameAliases
-        cytobands: Feature[]
-      }) {
+      }: Loading) {
         self.loaded = true
         this.setRegions(adapterRegionsWithAssembly)
         this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
@@ -221,14 +223,14 @@ export default function assemblyFactory(
       setRegions(regions: Region[]) {
         self.volatileRegions = regions
       },
-      setRefNameAliases(aliases: RefNameAliases, lowerCase: RefNameAliases) {
+      setRefNameAliases(aliases: RefNameAliases, lcAliases: RefNameAliases) {
         self.refNameAliases = aliases
-        self.lowerCaseRefNameAliases = lowerCase
+        self.lowerCaseRefNameAliases = lcAliases
       },
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
       },
-      setLoadingP(p: any) {
+      setLoadingP(p?: Promise<void>) {
         self.loadingP = p
       },
       load() {
