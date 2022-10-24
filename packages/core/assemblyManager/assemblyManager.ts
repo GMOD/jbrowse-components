@@ -45,7 +45,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       // use this method instead of assemblyManager.get(assemblyName)
       // get an assembly with regions loaded
       async waitForAssembly(assemblyName: string) {
-        console.log('t2')
         if (!assemblyName) {
           throw new Error('no assembly name supplied to waitForAssembly')
         }
@@ -125,6 +124,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
                     assembly.name === readConfObject(assemblyConfig, 'name'),
                 )
                 if (existingAssemblyIdx === -1) {
+                  // @ts-ignore
                   this.addAssembly(assemblyConfig)
                 }
               })
@@ -141,10 +141,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       // referred to, or it can take an identifier e.g. assembly name, which is
       // used as a reference. snapshots cannot be used
       addAssembly(configuration: Conf) {
+        // @ts-ignore
         self.assemblies.push({ configuration })
       },
 
       replaceAssembly(idx: number, configuration: Conf) {
+        // @ts-ignore
         self.assemblies[idx] = cast({ configuration })
       },
     }))

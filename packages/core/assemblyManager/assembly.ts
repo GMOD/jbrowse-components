@@ -1,4 +1,6 @@
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
+import jsonStableStringify from 'json-stable-stringify'
+import AbortablePromiseCache from 'abortable-promise-cache'
 
 // locals
 import { getConf, AnyConfigurationModel } from '../configuration'
@@ -8,6 +10,7 @@ import {
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
 import { when, Region, Feature } from '../util'
+import QuickLRU from '../util/QuickLRU'
 
 const refNameRegex = new RegExp(
   '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
@@ -47,7 +50,12 @@ const refNameColors = [
 ]
 
 type RefNameAliases = Record<string, string>
-
+interface CacheData {
+  adapterConf: unknown
+  self: Assembly
+  sessionId: string
+  options: BaseOptions
+}
 export interface BaseOptions {
   signal?: AbortSignal
   sessionId: string
@@ -69,6 +77,22 @@ export default function assemblyFactory(
   assemblyConfigType: IAnyType,
   pm: PluginManager,
 ) {
+  const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
+    cache: new QuickLRU({ maxSize: 1000 }),
+    async fill(
+      args: CacheData,
+      signal?: AbortSignal,
+      statusCallback?: Function,
+    ) {
+      const { adapterConf, self, options } = args
+      return loadRefNameMap(
+        self,
+        adapterConf,
+        { ...options, statusCallback },
+        signal,
+      )
+    },
+  })
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
@@ -76,7 +100,7 @@ export default function assemblyFactory(
     .volatile(() => ({
       error: undefined as unknown,
       loaded: false,
-      loadingP: undefined as any,
+      loadingP: undefined as Promise<void> | undefined,
       volatileRegions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as RefNameAliases | undefined,
       lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
@@ -84,10 +108,8 @@ export default function assemblyFactory(
     }))
     .views(self => ({
       get initialized() {
-        if (!self.loaded) {
-          // @ts-ignore
-          self.load()
-        }
+        // @ts-ignore
+        self.load()
         return !!self.refNameAliases
       },
       get name(): string {
@@ -95,10 +117,8 @@ export default function assemblyFactory(
       },
 
       get regions() {
-        if (!self.loaded) {
-          // @ts-ignore
-          self.load()
-        }
+        // @ts-ignore
+        self.load()
         return self.volatileRegions
       },
 
@@ -208,13 +228,13 @@ export default function assemblyFactory(
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
       },
+      setLoadingP(p: any) {
+        self.loadingP = p
+      },
       load() {
-        if (self.loaded) {
-          return
-        }
         if (!self.loadingP) {
           self.loadingP = this.loadPre().catch(e => {
-            self.loadingP = undefined
+            this.setLoadingP(undefined)
             this.setError(e)
           })
         }
@@ -263,61 +283,46 @@ export default function assemblyFactory(
       },
     }))
     .views(self => ({
-      async getAdapterMapEntry() {
-        await when(() => Boolean(self.regions && self.refNameAliases), {
-          name: 'when assembly ready',
-        })
-
-        const refNames = (await self.rpcManager.call(
-          'test',
-          'CoreGetRefNames',
+      getAdapterMapEntry(adapterConf: unknown, options: BaseOptions) {
+        const { signal, statusCallback, ...rest } = options
+        if (!options.sessionId) {
+          throw new Error('sessionId is required')
+        }
+        const adapterId = getAdapterId(adapterConf)
+        return adapterLoads.get(
+          adapterId,
           {
-            adapterConfig: self.configuration,
-          },
-          { timeout: 1000000 },
-        )) as string[]
+            adapterConf,
+            self: self as Assembly,
+            options: rest,
+          } as CacheData,
 
-        const { refNameAliases } = self
-        if (!refNameAliases) {
-          throw new Error(
-            `error loading assembly ${self.name}'s refNameAliases`,
-          )
-        }
-
-        const refNameMap = Object.fromEntries(
-          refNames.map(name => {
-            checkRefName(name)
-            return [self.getCanonicalRefName(name), name]
-          }),
+          // signal intentionally not passed here, fixes issues like #2221.
+          // alternative fix #2540 was proposed but non-working currently
+          undefined,
+          statusCallback,
         )
-
-        // make the reversed map too
-        const reversed = Object.fromEntries(
-          Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
-            adapterName,
-            canonicalName,
-          ]),
-        )
-
-        return {
-          forwardMap: refNameMap,
-          reverseMap: reversed,
-        }
       },
 
       /**
        * get Map of `canonical-name -> adapter-specific-name`
        */
-      async getRefNameMapForAdapter() {
-        const map = await this.getAdapterMapEntry()
+      async getRefNameMapForAdapter(adapterConf: unknown, opts: BaseOptions) {
+        if (!opts || !opts.sessionId) {
+          throw new Error('sessionId is required')
+        }
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.forwardMap
       },
 
       /**
        * get Map of `adapter-specific-name -> canonical-name`
        */
-      async getReverseRefNameMapForAdapter() {
-        const map = await this.getAdapterMapEntry()
+      async getReverseRefNameMapForAdapter(
+        adapterConf: unknown,
+        opts: BaseOptions,
+      ) {
+        const map = await this.getAdapterMapEntry(adapterConf, opts)
         return map.reverseMap
       },
     }))
@@ -361,5 +366,58 @@ function checkRefName(refName: string) {
   }
 }
 
+async function loadRefNameMap(
+  assembly: Assembly,
+  adapterConfig: unknown,
+  options: BaseOptions,
+  signal?: AbortSignal,
+) {
+  const { sessionId } = options
+  await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
+    signal,
+    name: 'when assembly ready',
+  })
+
+  const refNames = (await assembly.rpcManager.call(
+    sessionId,
+    'CoreGetRefNames',
+    {
+      adapterConfig,
+      signal,
+      ...options,
+    },
+    { timeout: 1000000 },
+  )) as string[]
+
+  const { refNameAliases } = assembly
+  if (!refNameAliases) {
+    throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
+  }
+
+  const refNameMap = Object.fromEntries(
+    refNames.map(name => {
+      checkRefName(name)
+      return [assembly.getCanonicalRefName(name), name]
+    }),
+  )
+
+  // make the reversed map too
+  const reversed = Object.fromEntries(
+    Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
+      adapterName,
+      canonicalName,
+    ]),
+  )
+
+  return {
+    forwardMap: refNameMap,
+    reverseMap: reversed,
+  }
+}
+
 export type AssemblyModel = ReturnType<typeof assemblyFactory>
 export type Assembly = Instance<AssemblyModel>
+
+function getAdapterId(adapterConf: unknown) {
+  return jsonStableStringify(adapterConf)
+}
