@@ -13,8 +13,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
-      get(assemblyName: string) {
-        return self.assemblies.find(assembly => assembly.hasName(assemblyName))
+      get(asmName: string) {
+        return self.assemblies.find(asm => asm.hasName(asmName))
       },
 
       get assemblyNamesList() {

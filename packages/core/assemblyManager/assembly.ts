@@ -83,6 +83,10 @@ export default function assemblyFactory(
     }))
     .views(self => ({
       get initialized() {
+        if (!self.loaded) {
+          // @ts-ignore
+          self.load()
+        }
         return !!self.refNameAliases
       },
       get name(): string {
