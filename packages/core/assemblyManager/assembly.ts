@@ -76,6 +76,7 @@ export default function assemblyFactory(
     .volatile(() => ({
       error: undefined as unknown,
       loaded: false,
+      loadingP: undefined as any,
       volatileRegions: undefined as BasicRegion[] | undefined,
       refNameAliases: undefined as RefNameAliases | undefined,
       lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
@@ -207,53 +208,58 @@ export default function assemblyFactory(
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
       },
-      async load() {
+      load() {
         if (self.loaded) {
           return
         }
-        try {
-          const conf = self.configuration
-          const refNameAliasesAdapterConf = conf.refNameAliases?.adapter
-          const cytobandAdapterConf = conf.cytobands?.adapter
-          const sequenceAdapterConf = conf.sequence.adapter
-          const assemblyName = self.name
-
-          const regions = await getAssemblyRegions(sequenceAdapterConf, pm)
-          const adapterRegionsWithAssembly = regions.map(r => {
-            checkRefName(r.refName)
-            return { ...r, assemblyName }
+        if (!self.loadingP) {
+          self.loadingP = this.loadPre().catch(e => {
+            self.loadingP = undefined
+            this.setError(e)
           })
-          const refNameAliases: RefNameAliases = {}
-
-          const ret = await getRefNameAliases(refNameAliasesAdapterConf, pm)
-          const cytobands = await getCytobands(cytobandAdapterConf, pm)
-          ret.forEach(({ refName, aliases }) => {
-            aliases.forEach(a => {
-              checkRefName(a)
-              refNameAliases[a] = refName
-            })
-          })
-          // add identity to the refNameAliases list
-          adapterRegionsWithAssembly.forEach(region => {
-            refNameAliases[region.refName] = region.refName
-          })
-
-          const lowerCaseRefNameAliases = Object.fromEntries(
-            Object.entries(refNameAliases).map(([key, val]) => [
-              key.toLowerCase(),
-              val,
-            ]),
-          )
-
-          this.setLoaded({
-            adapterRegionsWithAssembly,
-            refNameAliases,
-            lowerCaseRefNameAliases,
-            cytobands,
-          })
-        } catch (e) {
-          this.setError(e)
         }
+        return self.loadingP
+      },
+      async loadPre() {
+        const conf = self.configuration
+        const refNameAliasesAdapterConf = conf.refNameAliases?.adapter
+        const cytobandAdapterConf = conf.cytobands?.adapter
+        const sequenceAdapterConf = conf.sequence.adapter
+        const assemblyName = self.name
+
+        const regions = await getAssemblyRegions(sequenceAdapterConf, pm)
+        const adapterRegionsWithAssembly = regions.map(r => {
+          checkRefName(r.refName)
+          return { ...r, assemblyName }
+        })
+        const refNameAliases: RefNameAliases = {}
+
+        const ret = await getRefNameAliases(refNameAliasesAdapterConf, pm)
+        const cytobands = await getCytobands(cytobandAdapterConf, pm)
+        ret.forEach(({ refName, aliases }) => {
+          aliases.forEach(a => {
+            checkRefName(a)
+            refNameAliases[a] = refName
+          })
+        })
+        // add identity to the refNameAliases list
+        adapterRegionsWithAssembly.forEach(region => {
+          refNameAliases[region.refName] = region.refName
+        })
+
+        const lowerCaseRefNameAliases = Object.fromEntries(
+          Object.entries(refNameAliases).map(([key, val]) => [
+            key.toLowerCase(),
+            val,
+          ]),
+        )
+
+        this.setLoaded({
+          adapterRegionsWithAssembly,
+          refNameAliases,
+          lowerCaseRefNameAliases,
+          cytobands,
+        })
       },
     }))
     .views(self => ({
