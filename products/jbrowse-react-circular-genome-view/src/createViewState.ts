@@ -57,11 +57,20 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   autorun(reaction => {
-    if (stateTree.session.view.initialized) {
-      const assembly = stateTree.assemblyManager.assemblies[0]
-      stateTree.session.view.setDisplayedRegions(assembly.regions)
-      reaction.dispose()
+    const {
+      session: { view },
+      assemblyManager: { assemblies },
+    } = stateTree
+
+    if (!view.initialized || !assemblies.length) {
+      return
     }
+    const [assembly] = assemblies
+    if (assembly?.regions) {
+      return
+    }
+    view.setDisplayedRegions(assembly.regions)
+    reaction.dispose()
   })
   if (onChange) {
     onPatch(stateTree, onChange)

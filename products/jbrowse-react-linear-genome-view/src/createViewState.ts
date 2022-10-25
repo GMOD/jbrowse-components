@@ -73,16 +73,21 @@ export default function createViewState(opts: ViewStateOptions) {
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
-    autorun(reaction => {
-      const assemblyName = stateTree.assemblyManager.assemblies[0].name
-      if (stateTree.session.view.initialized) {
-        if (typeof location === 'string') {
-          stateTree.session.view.navToLocString(location, assemblyName)
-        } else {
-          stateTree.session.view.navTo(location)
-        }
-        reaction.dispose()
+    autorun(async reaction => {
+      const {
+        assemblyManager: { assemblies },
+        session: { view },
+      } = stateTree
+      if (!view.initialized || !assemblies.length) {
+        return
       }
+      const [assembly] = assemblies
+      if (typeof location === 'string') {
+        view.navToLocString(location, assembly.name)
+      } else {
+        view.navTo(location)
+      }
+      reaction.dispose()
     })
   }
   if (onChange) {
