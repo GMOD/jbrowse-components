@@ -130,7 +130,6 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
                     assembly.name === readConfObject(assemblyConfig, 'name'),
                 )
                 if (existingAssemblyIdx === -1) {
-                  // @ts-ignore
                   this.addAssembly(assemblyConfig)
                 }
               })
