@@ -7,9 +7,8 @@ describe('JBrowse embedded view', () => {
     cy.visit('/')
 
     // eslint-disable-next-line testing-library/await-async-query,testing-library/prefer-screen-queries
-    cy.findByTestId('Blockset-pileup').findByTestId(
+    cy.findByTestId('Blockset-pileup', { timeout: 30000 }).findByTestId(
       'prerendered_canvas_{GRCh38}10:29,838,637..29,838,705-0_done',
-      { timeout: 10000 },
     )
   })
 })

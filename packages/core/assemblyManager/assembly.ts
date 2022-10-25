@@ -49,17 +49,79 @@ const refNameColors = [
   'rgb(96, 163, 48)', // originally 'rgb(121, 204, 61)'
 ]
 
+async function loadRefNameMap(
+  assembly: Assembly,
+  adapterConfig: unknown,
+  options: BaseOptions,
+  signal?: AbortSignal,
+) {
+  const { sessionId } = options
+  await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
+    signal,
+    name: 'when assembly ready',
+  })
+
+  const refNames = (await assembly.rpcManager.call(
+    sessionId,
+    'CoreGetRefNames',
+    {
+      adapterConfig,
+      signal,
+      ...options,
+    },
+    { timeout: 1000000 },
+  )) as string[]
+
+  const { refNameAliases } = assembly
+  if (!refNameAliases) {
+    throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
+  }
+
+  const refNameMap = Object.fromEntries(
+    refNames.map(name => {
+      checkRefName(name)
+      return [assembly.getCanonicalRefName(name), name]
+    }),
+  )
+
+  // make the reversed map too
+  const reversed = Object.fromEntries(
+    Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
+      adapterName,
+      canonicalName,
+    ]),
+  )
+
+  return {
+    forwardMap: refNameMap,
+    reverseMap: reversed,
+  }
+}
+
+// Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
+function checkRefName(refName: string) {
+  if (!refName.match(refNameRegex)) {
+    throw new Error(`Encountered invalid refName: "${refName}"`)
+  }
+}
+
+function getAdapterId(adapterConf: unknown) {
+  return jsonStableStringify(adapterConf)
+}
+
 type RefNameAliases = Record<string, string>
+
+export interface BaseOptions {
+  signal?: AbortSignal
+  sessionId: string
+  statusCallback?: Function
+}
+
 interface CacheData {
   adapterConf: unknown
   self: Assembly
   sessionId: string
   options: BaseOptions
-}
-export interface BaseOptions {
-  signal?: AbortSignal
-  sessionId: string
-  statusCallback?: Function
 }
 
 export interface RefNameMap {
@@ -144,9 +206,6 @@ export default function assemblyFactory(
       get allAliases() {
         return [this.name, ...this.aliases]
       },
-      get refNames() {
-        return self.volatileRegions?.map(region => region.refName)
-      },
 
       // note: lowerCaseRefNameAliases not included here: this allows the list
       // of refnames to be just the "normal casing", but things like
@@ -178,6 +237,11 @@ export default function assemblyFactory(
       },
     }))
     .views(self => ({
+      get refNames() {
+        return self.regions?.map(region => region.refName)
+      },
+    }))
+    .views(self => ({
       getCanonicalRefName(refName: string) {
         if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
           throw new Error(
@@ -189,8 +253,11 @@ export default function assemblyFactory(
         )
       },
       getRefNameColor(refName: string) {
-        const idx = self.refNames?.findIndex(r => r === refName)
-        if (idx === undefined || idx === -1) {
+        if (!self.refNames) {
+          return undefined
+        }
+        const idx = self.refNames.findIndex(r => r === refName)
+        if (idx === -1) {
           return undefined
         }
         return self.refNameColors[idx % self.refNameColors.length]
@@ -361,65 +428,5 @@ async function getAssemblyRegions(
   return adapter.getRegions({ signal })
 }
 
-// Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
-function checkRefName(refName: string) {
-  if (!refName.match(refNameRegex)) {
-    throw new Error(`Encountered invalid refName: "${refName}"`)
-  }
-}
-
-async function loadRefNameMap(
-  assembly: Assembly,
-  adapterConfig: unknown,
-  options: BaseOptions,
-  signal?: AbortSignal,
-) {
-  const { sessionId } = options
-  await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
-    signal,
-    name: 'when assembly ready',
-  })
-
-  const refNames = (await assembly.rpcManager.call(
-    sessionId,
-    'CoreGetRefNames',
-    {
-      adapterConfig,
-      signal,
-      ...options,
-    },
-    { timeout: 1000000 },
-  )) as string[]
-
-  const { refNameAliases } = assembly
-  if (!refNameAliases) {
-    throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
-  }
-
-  const refNameMap = Object.fromEntries(
-    refNames.map(name => {
-      checkRefName(name)
-      return [assembly.getCanonicalRefName(name), name]
-    }),
-  )
-
-  // make the reversed map too
-  const reversed = Object.fromEntries(
-    Object.entries(refNameMap).map(([canonicalName, adapterName]) => [
-      adapterName,
-      canonicalName,
-    ]),
-  )
-
-  return {
-    forwardMap: refNameMap,
-    reverseMap: reversed,
-  }
-}
-
 export type AssemblyModel = ReturnType<typeof assemblyFactory>
 export type Assembly = Instance<AssemblyModel>
-
-function getAdapterId(adapterConf: unknown) {
-  return jsonStableStringify(adapterConf)
-}
