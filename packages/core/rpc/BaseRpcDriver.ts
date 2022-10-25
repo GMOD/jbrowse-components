@@ -126,17 +126,11 @@ export default abstract class BaseRpcDriver {
   }
 
   // filter the given object and just remove any non-clonable things from it
-  filterArgs<THING_TYPE>(
-    thing: THING_TYPE,
-    sessionId: string,
-    depth = 0,
-  ): THING_TYPE {
+  filterArgs<THING_TYPE>(thing: THING_TYPE, sessionId: string): THING_TYPE {
     if (Array.isArray(thing)) {
       return thing
         .filter(isClonable)
-        .map(t =>
-          this.filterArgs(t, sessionId, depth + 1),
-        ) as unknown as THING_TYPE
+        .map(t => this.filterArgs(t, sessionId)) as unknown as THING_TYPE
     }
     if (typeof thing === 'object' && thing !== null) {
       // AbortSignals are specially handled
@@ -160,7 +154,7 @@ export default abstract class BaseRpcDriver {
       return Object.fromEntries(
         Object.entries(thing)
           .filter(e => isClonable(e[1]))
-          .map(([k, v]) => [k, this.filterArgs(v, sessionId, depth + 1)]),
+          .map(([k, v]) => [k, this.filterArgs(v, sessionId)]),
       ) as THING_TYPE
     }
     return thing
