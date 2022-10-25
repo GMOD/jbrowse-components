@@ -43,7 +43,7 @@
 
     {
       "type": "category",
-      "label": "Developer guides",
+      "label": "Developer guide",
       "items": [
         "developer_guide",
         {
