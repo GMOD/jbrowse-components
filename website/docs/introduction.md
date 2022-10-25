@@ -45,8 +45,9 @@ Welcome to the JBrowse 2 documentation.
 - [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - docs for our
   command line image generator
 - [Embedded components, JBrowseR, and JBrowse Jupyter](embedded_components) -
-  docs for our reusable React components, and their usages for embedded
-  components
+  docs for our reusable React components
+- [JBrowseR](https://gmod.github.io/JBrowseR/) - docs for our R htmlwidget usable in Shiny apps
+- [JBrowse Jupyter](https://gmod.github.io/jbrowse-jupyter/docs/html/index.html) - docs for our Python dash component usable in Jupyter
 
 ### PDF download
 
