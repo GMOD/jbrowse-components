@@ -285,11 +285,7 @@ export async function renderRegion(opts = {}) {
   const { assemblyManager } = model
 
   view.setWidth(width)
-  await when(
-    () =>
-      assemblyManager.allPossibleRefNames?.length &&
-      model.session.view.initialized,
-  )
+  await when(() => model.session.view.initialized)
 
   if (loc) {
     const assembly = assemblyManager.assemblies[0]

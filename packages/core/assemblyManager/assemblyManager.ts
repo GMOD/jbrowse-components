@@ -1,13 +1,19 @@
-import { addDisposer, cast, getParent, types, IAnyType } from 'mobx-state-tree'
+import {
+  addDisposer,
+  cast,
+  getParent,
+  types,
+  Instance,
+  IAnyType,
+} from 'mobx-state-tree'
 import { when } from '../util'
 import { reaction } from 'mobx'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
 
-type Conf = IAnyType | string
-
 function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
+  type Conf = Instance<typeof conf> | string
   return types
     .model({
       assemblies: types.array(assemblyFactory(conf, pm)),
@@ -141,12 +147,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       // referred to, or it can take an identifier e.g. assembly name, which is
       // used as a reference. snapshots cannot be used
       addAssembly(configuration: Conf) {
-        // @ts-ignore
         self.assemblies.push({ configuration })
       },
 
       replaceAssembly(idx: number, configuration: Conf) {
-        // @ts-ignore
         self.assemblies[idx] = cast({ configuration })
       },
     }))
