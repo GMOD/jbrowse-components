@@ -44,9 +44,9 @@ Welcome to the JBrowse 2 documentation.
   text indexing, and more
 - [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - docs for our
   command line image generator
-- [Embedded components](embedded_components) - docs for our reusable React
+- [Embedded components, JBrowseR, and JBrowse Jupyter](embedded_components) -
+  docs for our reusable React components, and their usages for embedded
   components
-- [JBrowse Jupyter](jbrowse_jupyter) - docs for JBrowse Jupyter
 
 ### PDF download
 
