@@ -619,19 +619,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const session = getSession(self)
         const { assemblyManager } = session
         if (!assemblyName) {
-          const assemblyNames = [
-            ...new Set(
-              self.displayedRegions.map(region => region.assemblyName),
-            ),
-          ]
-          if (assemblyNames.length > 1) {
+          const names = new Set(self.displayedRegions.map(r => r.assemblyName))
+          if (names.size > 1) {
             session.notify(
-              `Can't perform this with multiple assemblies currently`,
+              `Can't perform operation with multiple assemblies currently`,
             )
             return
           }
-
-          ;[assemblyName] = assemblyNames
+          ;[assemblyName] = [...names]
         }
         const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
@@ -955,6 +950,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           .split(/(\s+)/)
           .map(f => f.trim())
           .filter(f => !!f)
+
+        if (assemblyName) {
+          await assemblyManager.waitForAssembly(assemblyName)
+        }
 
         // first try interpreting as a whitespace-separated sequence of
         // multiple locstrings
