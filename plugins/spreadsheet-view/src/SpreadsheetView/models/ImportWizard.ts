@@ -65,10 +65,11 @@ const ImportWizard = types
     },
 
     isValidRefName(refName: string, assemblyName?: string) {
-      return getSession(self).assemblyManager.isValidRefName(
-        refName,
-        assemblyName,
-      )
+      const { assemblyManager } = getSession(self)
+      if (!assemblyName) {
+        return false
+      }
+      return assemblyManager.isValidRefName(refName, assemblyName)
     },
   }))
   .actions(self => ({

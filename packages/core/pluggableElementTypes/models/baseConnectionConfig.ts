@@ -1,8 +1,10 @@
 import { ConfigurationSchema } from '../../configuration'
 
 /**
- * #config
+ * #config BaseConnection
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export default ConfigurationSchema(
   'BaseConnection',
   {
@@ -23,5 +25,11 @@ export default ConfigurationSchema(
       description: 'optional list of names of assemblies in this connection',
     },
   },
-  { explicitlyTyped: true, explicitIdentifier: 'connectionId' },
+  {
+    explicitlyTyped: true,
+    /**
+     * #identifier
+     */
+    explicitIdentifier: 'connectionId',
+  },
 )

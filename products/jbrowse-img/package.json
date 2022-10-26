@@ -18,13 +18,7 @@
     "test": "jest",
     "prebuild": "rm -rf dist",
     "build": "babel --root-mode upward src -d dist",
-    "preversion": "npm run build",
-    "snap": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.svg",
-    "snappng": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.png",
-    "snappdf": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.pdf",
-    "snapjpg": "npm run build && node dist/index.js --config data/config.json --defaultSession --out out.jpg",
-    "tiny": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out tiny.svg",
-    "tinypng": "npm run build && node dist/index.js --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam --loc ctgA:1-5000 --out out.png"
+    "preversion": "npm run build"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",

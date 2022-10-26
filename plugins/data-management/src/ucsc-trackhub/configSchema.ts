@@ -2,8 +2,10 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
- * #config
+ * #config UCSCTrackHubConnection
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const UCSCTrackHubConnection = ConfigurationSchema(
   'UCSCTrackHubConnection',
   {

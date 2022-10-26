@@ -1,6 +1,5 @@
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
-import { when } from 'mobx'
 import path from 'path'
 import fs from 'fs'
 import { booleanize } from './util'
@@ -8,7 +7,7 @@ import { booleanize } from './util'
 function read(file) {
   let res
   try {
-    res = JSON.parse(fs.readFileSync(file))
+    res = JSON.parse(fs.readFileSync(file, 'utf8'))
   } catch (e) {
     throw new Error(
       `Failed to parse ${file} as JSON, use --fasta if you mean to pass a FASTA file`,
@@ -285,22 +284,13 @@ export async function renderRegion(opts = {}) {
   const { assemblyManager } = model
 
   view.setWidth(width)
-  await when(
-    () =>
-      assemblyManager.allPossibleRefNames?.length &&
-      model.session.view.initialized,
-  )
 
   if (loc) {
-    const assembly = assemblyManager.assemblies[0]
-    const region = assembly.regions[0]
-    if (region) {
-      view.setDisplayedRegions([region])
-    }
+    const [assembly] = assemblyManager.assemblies
     if (loc === 'all') {
       view.showAllRegionsInAssembly(assembly.name)
     } else {
-      view.navToLocString(loc)
+      await view.navToLocString(loc, assembly.name)
     }
   } else if (!sessionParam && !defaultSession) {
     console.warn('No loc specified')

@@ -28,16 +28,11 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     this.makeWorker = async (): Promise<DummyHandle> => new DummyHandle()
   }
 
-  async call(
-    pluginManager: PluginManager,
-    sessionId: string,
-    functionName: string,
-    args: {},
-  ): Promise<unknown> {
+  async call(pm: PluginManager, sessionId: string, funcName: string, args: {}) {
     if (!sessionId) {
       throw new TypeError('sessionId is required')
     }
-    const rpcMethod = pluginManager.getRpcMethodType(functionName)
+    const rpcMethod = pm.getRpcMethodType(funcName)
     const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
     const result = await rpcMethod.execute(serializedArgs, this.name)
     return rpcMethod.deserializeReturn(result, args, this.name)

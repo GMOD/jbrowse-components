@@ -5,6 +5,8 @@ import { Instance } from 'mobx-state-tree'
  * #config InternetAccount
  * the "base" internet account type
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export const BaseInternetAccountConfig = ConfigurationSchema(
   'InternetAccount',
   {
@@ -51,6 +53,9 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
     },
   },
   {
+    /**
+     * #identifier
+     */
     explicitIdentifier: 'internetAccountId',
     explicitlyTyped: true,
   },

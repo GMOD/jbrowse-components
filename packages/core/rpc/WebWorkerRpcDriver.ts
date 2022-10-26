@@ -10,19 +10,17 @@ interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
 }
 
+interface Options {
+  statusCallback?: (arg0: string) => void
+  rpcDriverClassName: string
+}
+
 class WebWorkerHandle extends Rpc.Client {
   destroy(): void {
     this.workers[0].terminate()
   }
 
-  async call(
-    functionName: string,
-    args: Record<string, unknown>,
-    opts: {
-      statusCallback?: (arg0: string) => void
-      rpcDriverClassName: string
-    },
-  ) {
+  async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${shortid.generate()}`
     const listener = (message: string) => {
@@ -30,7 +28,7 @@ class WebWorkerHandle extends Rpc.Client {
     }
     this.on(channel, listener)
     const result = await super.call(
-      functionName,
+      funcName,
       { ...args, channel, rpcDriverClassName },
       opts,
     )
