@@ -133,6 +133,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     let last_pos = this.record.alignmentStart
     let sublen = 0
     if (typeof this.record.readFeatures !== 'undefined') {
+      let insLen = 0
       // @ts-ignore
       for (let i = 0; i < this.record.readFeatures.length; i++) {
         const { code, refPos, sub, data } = this.record.readFeatures[i]
@@ -147,6 +148,10 @@ export default class CramSlightlyLazyFeature implements Feature {
         if (sublen) {
           op = 'M'
           oplen += sublen
+        }
+        if (insLen > 0 && code !== 'i') {
+          cigar += `${insLen}I`
+          insLen = 0
         }
 
         if (code === 'b') {
@@ -184,11 +189,11 @@ export default class CramSlightlyLazyFeature implements Feature {
           oplen = 0
         } else if (code === 'i') {
           // Single base insertion
-          seq += data
+          // seq += data
           if (oplen) {
             cigar += oplen + op
           }
-          cigar += `${1}I`
+          insLen++
           oplen = 0
         } else if (code === 'P') {
           // Padding
@@ -302,10 +307,23 @@ export default class CramSlightlyLazyFeature implements Feature {
     const start = this.get('start')
     const mismatches: Mismatch[] = new Array(readFeatures.length)
     let j = 0
+    let insLen = 0
+
+    let refPos = 0
     for (let i = 0; i < readFeatures.length; i++) {
       const f = readFeatures[i]
       const { code, pos, data, sub, ref } = f
-      const refPos = f.refPos - 1 - start
+      if (insLen > 0 && code !== 'i') {
+        mismatches[j++] = {
+          start: refPos,
+          type: 'insertion',
+          base: `${insLen}`,
+          length: 0,
+        }
+        insLen = 0
+      }
+      refPos = f.refPos - 1 - start
+
       if (code === 'X') {
         // substitution
         mismatches[j++] = {
@@ -371,12 +389,7 @@ export default class CramSlightlyLazyFeature implements Feature {
       } else if (code === 'i') {
         // single-base insertion
         // insertion
-        mismatches[j++] = {
-          start: refPos,
-          type: 'insertion',
-          base: data,
-          length: 1,
-        }
+        insLen++
       } else if (code === 'Q') {
         // single quality value
       }
