@@ -4,7 +4,20 @@ id: cli
 toplevel: true
 ---
 
-This document covers the CLI tools. Note: for @jbrowse/img static export tool, see https://www.npmjs.com/package/@jbrowse/img
+This document covers the CLI tools. Note: for @jbrowse/img static export
+tool, see https://www.npmjs.com/package/@jbrowse/img
+
+Note: the @jbrowse/cli may not do all types of operations, some use cases may
+best be handled by creating your own tools to manipulate a config.json by
+hand or by using a script file.
+
+A simple script that does not use @jbrowse/cli at all may just look like this
+
+```
+const config = JSON.parse(fs.readFileSync('config.json', 'utf8'))
+// do something with config.tracks, config.assemblies, etc.
+fs.writeFileSync('config.json', JSON.stringify(config, null, 2))
+```
 
 ## Installation
 
