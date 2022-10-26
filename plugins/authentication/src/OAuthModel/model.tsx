@@ -34,15 +34,11 @@ function getGlobalObject(): Window {
 }
 
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
-  return types
-    .compose(
-      'OAuthInternetAccount',
-      InternetAccount,
-      types.model('OAuthModel', {
-        type: types.literal('OAuthInternetAccount'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
+  return InternetAccount.named('OAuthInternetAccount')
+    .props({
+      type: types.literal('OAuthInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+    })
     .views(() => {
       let codeVerifier: string | undefined = undefined
       return {

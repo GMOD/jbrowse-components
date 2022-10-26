@@ -25,6 +25,19 @@ import {
 export default class AuthenticationPlugin extends Plugin {
   name = 'AuthenticationPlugin'
 
+  exports = {
+    OAuthConfigSchema,
+    OAuthInternetAccountModelFactory,
+    ExternalTokenConfigSchema,
+    ExternalTokenInternetAccountModelFactory,
+    HTTPBasicConfigSchema,
+    HTTPBasicInternetAccountModelFactory,
+    DropboxOAuthConfigSchema,
+    DropboxOAuthInternetAccountModelFactory,
+    GoogleDriveOAuthConfigSchema,
+    GoogleDriveOAuthInternetAccountModelFactory,
+  }
+
   install(pluginManager: PluginManager) {
     pluginManager.addInternetAccountType(() => {
       return new InternetAccountType({
@@ -68,4 +81,17 @@ export default class AuthenticationPlugin extends Plugin {
       })
     })
   }
+}
+
+export {
+  OAuthConfigSchema,
+  OAuthInternetAccountModelFactory,
+  ExternalTokenConfigSchema,
+  ExternalTokenInternetAccountModelFactory,
+  HTTPBasicConfigSchema,
+  HTTPBasicInternetAccountModelFactory,
+  DropboxOAuthConfigSchema,
+  DropboxOAuthInternetAccountModelFactory,
+  GoogleDriveOAuthConfigSchema,
+  GoogleDriveOAuthInternetAccountModelFactory,
 }

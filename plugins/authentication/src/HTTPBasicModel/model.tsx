@@ -9,15 +9,11 @@ import { HTTPBasicLoginForm } from './HTTPBasicLoginForm'
 const stateModelFactory = (
   configSchema: HTTPBasicInternetAccountConfigModel,
 ) => {
-  return types
-    .compose(
-      'HTTPBasicInternetAccount',
-      InternetAccount,
-      types.model({
-        type: types.literal('HTTPBasicInternetAccount'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
+  return InternetAccount.named('HTTPBasicInternetAccount')
+    .props({
+      type: types.literal('HTTPBasicInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+    })
     .views(self => ({
       get validateWithHEAD(): boolean {
         return getConf(self, 'validateWithHEAD')

@@ -9,15 +9,11 @@ import { ExternalTokenEntryForm } from './ExternalTokenEntryForm'
 const stateModelFactory = (
   configSchema: ExternalTokenInternetAccountConfigModel,
 ) => {
-  return types
-    .compose(
-      'ExternalTokenInternetAccount',
-      InternetAccount,
-      types.model({
-        type: types.literal('ExternalTokenInternetAccount'),
-        configuration: ConfigurationReference(configSchema),
-      }),
-    )
+  return InternetAccount.named('ExternalTokenInternetAccount')
+    .props({
+      type: types.literal('ExternalTokenInternetAccount'),
+      configuration: ConfigurationReference(configSchema),
+    })
     .views(self => ({
       get validateWithHEAD(): boolean {
         return getConf(self, 'validateWithHEAD')

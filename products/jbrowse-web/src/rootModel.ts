@@ -279,13 +279,12 @@ export default function RootModel(
           throw new Error(`unknown internet account type ${configuration.type}`)
         }
 
-        const internetAccount = internetAccountType.stateModel.create({
+        const length = self.internetAccounts.push({
           ...initialSnapshot,
           type: configuration.type,
           configuration,
         })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
+        return self.internetAccounts[length - 1]
       },
       createEphemeralInternetAccount(
         internetAccountId: string,
