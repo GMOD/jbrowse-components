@@ -68,7 +68,7 @@ An example per-track config may look like this:
 ```
 
 Information on generating trix indexes via the CLI can be found
-[here](../cli#jbrowse-text-index).
+[here](/docs/cli#jbrowse-text-index).
 
 ### TrixTextSearchAdapter config
 
@@ -77,10 +77,10 @@ The trix search index is the current file format for name searching.
 It is based on the UCSC trix file format described here
 https://genome.ucsc.edu/goldenPath/help/trix.html.
 
-To create trix indexes you can use our command line tools. More info can be found at
-our [jbrowse text-index guide](../cli#jbrowse-text-index). This tool will
-automatically generate a config like this. The config slots are described below
-for details:
+To create trix indexes you can use our command line tools. More info can be
+found at our [jbrowse text-index guide](/docs/cli#jbrowse-text-index). This tool
+will automatically generate a config like this. The config slots are described
+below for details:
 
 ```json
 {

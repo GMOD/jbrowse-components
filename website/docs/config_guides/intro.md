@@ -1,5 +1,5 @@
 ---
-id: Intro
+id: intro
 title: Intro to the config.json format
 toplevel: true
 ---

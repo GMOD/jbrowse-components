@@ -118,31 +118,38 @@ If you've manually downloaded jbrowse-web, the newest releases can be found [her
 
 ### How can I setup JBrowse 2 without the CLI tools
 
-The jbrowse CLI tools are basically a convenience, and are not strictly required.
+The jbrowse CLI tools are basically a convenience, and are not strictly
+required.
 
 Simple tasks can be done without it.
 
-For example, for jbrowse create, you can visit the [releases page](https://github.com/GMOD/jbrowse-components/releases) and
-download the latest jbrowse-web release tag, and unzip it into your web
-directory.
+For example, for jbrowse create, you can visit the [releases
+page](https://github.com/GMOD/jbrowse-components/releases) and download the
+latest jbrowse-web release tag, and unzip it into your web directory.
 
-Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to using a manually downloaded JBrowse instance.
+Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to
+using a manually downloaded JBrowse instance.
 
 For other things, like add-assembly and add-track, you can manually edit the
-`config.json`; reviewing the [config docs](../config_guide) and sample configs will be valuable.
+`config.json`; reviewing the [config docs](../config_guide) and sample configs
+will be valuable.
 
-To configure JBrowse using the GUI, checkout our [tutorial](../tutorials/config_gui).
+To configure JBrowse using the GUI, checkout our
+[tutorial](../tutorials/config_gui).
 
-Understanding the [config basics](../config_guide/intro-to-the-configjson) will
-come in handy also because you can manually edit in advanced configs after your
-tracks are loaded; however be careful:s corrupt configs can produce hard
-to understand errors, because our config system is strongly typed.
+Understanding the [config basics](/docs/config_guides/intro) will come in handy
+also because you can manually edit in advanced configs after your tracks are
+loaded; however be careful:s corrupt configs can produce hard to understand
+errors, because our config system is strongly typed.
 
-Reach out to the team [on gitter](https://gitter.im/GMOD/jbrowse2) or in the [discussions](https://github.com/GMOD/jbrowse-components/discussions) if you have any complex configuration issues.
+Reach out to the team [on gitter](https://gitter.im/GMOD/jbrowse2) or in the
+[discussions](https://github.com/GMOD/jbrowse-components/discussions) if you
+have any complex configuration issues.
 
 ### How do I load a track into JBrowse 2
 
-With the JBrowse CLI tools, you can easily add tracks with the `add-track` command, e.g.:
+With the JBrowse CLI tools, you can easily add tracks with the `add-track`
+command, e.g.:
 
     jbrowse add-track myfile.bw -a hg19
 
@@ -160,7 +167,8 @@ The add-track command will do as much as possible to infer from the file
 extension how to configure this track, and automatically infer the index to be
 myfile.bam.bai.
 
-As mentioned [above](how-can-i-setup-jbrowse-2-without-the-cli-tools) you can also manually edit your config file, or use the GUI.
+As mentioned [above](#how-can-i-setup-jbrowse-2-without-the-cli-tools) you can
+also manually edit your config file, or use the GUI.
 
 ### How do I customize the color of the features displayed on my track
 
@@ -173,7 +181,7 @@ An example of a Jexl configuration callback might look like this:
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
 ```
 
-See our [configuration callbacks guide](../config_guide/configuration-callbacks) for more information.
+See our [configuration callbacks guide](/docs/config_guides/jexl) for more information.
 
 ### My jexl is too complicated, how can I simplify it?
 

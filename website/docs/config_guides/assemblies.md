@@ -127,14 +127,14 @@ jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
 See our [configure JBrowse using the
-cli](../tutorials/config_cli/#adding-a-genome-assembly) tutorial for more
+cli](/docs/tutorials/config_cli/#adding-a-genome-assembly) tutorial for more
 in-depth instructions, or more information on the `add-assembly` command
-through our [CLI tools guide](../cli/#jbrowse-add-assembly-sequence).
+through our [CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
 
 :::note
 Assemblies can also be added graphically using the assembly manager when you
 are using the `admin-server`. See how to [configure JBrowse using the
-GUI](../tutorials/config_gui/#adding-a-genome-assembly) for more details.
+GUI](/docs/tutorials/config_gui/#adding-a-genome-assembly) for more details.
 :::
 
 ## Assembly config
@@ -333,7 +333,8 @@ parsing time.
 }
 ```
 
-Optionally you can specify a .chrom.sizes file which will speed up loading the 2bit especially if it has many chromosomes in it
+Optionally you can specify a .chrom.sizes file which will speed up loading the
+2bit especially if it has many chromosomes in it
 
 ```json
 {

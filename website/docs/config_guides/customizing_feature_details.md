@@ -109,7 +109,7 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-Footnote 0. See [our no-build plugin tutorial](../tutorials/no_build_plugin_tutorial/) for
+Footnote 0. See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/) for
 more info on setting up a simple plugin for doing these customizations.
 
 Footnote 1. Note that the feature for feature detail panels is different from

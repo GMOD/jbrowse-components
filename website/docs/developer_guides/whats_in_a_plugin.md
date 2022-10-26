@@ -83,7 +83,7 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 
 Adapters are parsers for a given data format. We will review
 what adapters the alignments plugin has (to write your own adapter,
-see [creating adapters](../devguide_pluggable_elements/#creating-adapters)).
+see [creating adapters](../pluggable_elements/#creating-adapters)).
 
 Example adapters: the `@jbrowse/plugin-alignments` plugin creates
 multiple adapter types:
@@ -141,7 +141,7 @@ Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
-renderers](../devguide_pluggable_elements/#creating-renderers).
+renderers](../pluggable_elements/#creating-renderers).
 
 For example, the `@jbrowse/plugin-alignments` exports several
 renderer types:
@@ -252,7 +252,10 @@ export default class WigglePlugin extends Plugin {
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
-Checkout the [full extension point API](../api_guide/#extension-points) or an [example for adding context menu items](../devguide_pluggable_elements/#adding-track-context-menu-items) for more detailed information.
+Checkout the [full extension point API](/docs/api_guide/#extension-points) or
+an [example for adding context menu
+items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
+for more detailed information.
 
 The basic API is that producers can say:
 
@@ -287,11 +290,11 @@ extension point.
 
 Now that you have an overview of the different pluggable element types that are
 available to you, review your [understanding of the configuration
-model](../devguide_config), or checkout [creating your own pluggable
-elements](../devguide_pluggable_elements) for specific guides for making new
-adapters, tracks, and renderers.
+model](../config_model), or checkout [creating your own pluggable
+elements](../pluggable_elements) for specific guides for making new adapters,
+tracks, and renderers.
 
 Also checkout the [guided
-tutorial](../tutorials/simple_plugin_tutorial/01_introduction) for writing a
+tutorial](/docs/tutorials/simple_plugin_tutorial/01_introduction) for writing a
 plugin, which will take you through everything from installation, creating a
 new pluggable element, and general development tips for working with JBrowse 2.

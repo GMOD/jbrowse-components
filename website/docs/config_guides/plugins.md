@@ -116,7 +116,7 @@ compatibility.
 writing) does not support ESM, and since the jbrowse-plugin-template will not
 output some code that is helpful for desktop like true require() calls for
 desktop modules. See the [desktop plugin
-tutorial](../tutorials/desktop_spec_plugin_tutorial/) for more info.
+tutorial](/docs/tutorials/desktop_spec_plugin_tutorial/) for more info.
 
 ### Plugin store
 
@@ -128,6 +128,6 @@ You can verify the plugin is installed properly by checking the Plugin Store:
 
 <Figure src="/img/plugin-store.png" caption="Example screenshot showing how installed plugins are represented in the plugin store interface. Plugins installed via the config are shown with a lock icon, indicating they cannot be removed via the GUI."/>
 
-See our [developer guide](../developer_guide/) for more information on
+See our [developer guide](/docs/developer_guide/) for more information on
 developing plugins, or our [plugins page](/plugin_store) to browse currently
 published plugins.

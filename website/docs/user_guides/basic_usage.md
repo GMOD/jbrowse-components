@@ -8,21 +8,26 @@ import Figure from '../figure'
 
 ### Linear genome view
 
-To open a linear genome view (LGV), use the menu bar: `ADD` -> `Linear genome view`
+To open a linear genome view (LGV), use the menu bar: `Add` -> `Linear genome view`
 
 #### Scrolling
 
-You can scroll side to side using your mouse wheel or via click and drag. Left and right pan buttons found in the header of the LGV can also be used to scroll in their respective directions.
+You can scroll side to side using your mouse wheel or via click and drag. Left
+and right pan buttons found in the header of the LGV can also be used to scroll
+in their respective directions.
 
 #### Zooming
 
-The zoom buttons and the slider bar found in the header of the linear genome view can be used to zoom in and out on the view
+The zoom buttons and the slider bar found in the header of the linear genome
+view can be used to zoom in and out on the view
 
-You can also hold the `Ctrl` key and use your mousewheel or trackpad to scroll to zoom in and out.
+You can also hold the `Ctrl` key and use your mousewheel or trackpad to scroll
+to zoom in and out.
 
 #### Re-ordering tracks
 
-Click and drag up or down on the drag handle on the track labels (indicated by six vertical dots) to reorder tracks.
+Click and drag up or down on the drag handle on the track labels (indicated by
+six vertical dots) to reorder tracks.
 
 <Figure caption="(1) Use Add, Linear genome view to add a new LGV. (2) The pan buttons can be used to scroll left or right. (3) The zoom buttons or the slider can be used to zoom on the view. (4) Tracks can be reordered by clicking and dragging the drag handle indicated by six vertical dots." src="/img/lgv_usage_guide.png" />
 
@@ -32,14 +37,19 @@ The location search box is located at the top of the LGV.
 
 You can search a location in several ways when typing in the search box:
 
-1. Searching by region and location, e.g. `chr1:1..100` or `chr1:1-100` or `chr1 1 100`
+1. Searching by region and location, e.g. `chr1:1..100` or `chr1:1-100` or
+   `chr1 1 100`
 2. Searching by assembly, region, and location, e.g. `{hg19}chr1:1-100`
-3. Searching discontinuous regions, delimited by a space, and opening them side-by-side, e.g. `chr1:1..100 chr2:1..100`
-4. Searching in any of the above ways and appending \[rev\] to the end of the region will horizontally flip it, e.g. `chr1:1-100\[rev\]`
+3. Searching discontinuous regions, delimited by a space, and opening them
+   side-by-side, e.g. `chr1:1..100 chr2:1..100`
+4. Searching in any of the above ways and appending \[rev\] to the end of the
+   region will horizontally flip it, e.g. `chr1:1-100\[rev\]`
 5. If configured, searching by gene name or feature keywords, e.g. `BRCA1`
 
 To configure name searching, you or the admin of the instance will need to
-create a "text index". See the [configuration guide](../tutorials/config_cli#indexing-feature-names-for-searching) for more information.
+create a "text index". See the [configuration
+guide](/docs/tutorials/config_cli#indexing-feature-names-for-searching) for more
+information.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
@@ -50,8 +60,8 @@ To open a new track or connection, use the menu bar: `File` -> `Open track..`
 <Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
 
 :::info Tip
-There is a circular plus (+) icon button inside the "Available tracks" widget that
-can also be used to access the "Add a track" form.
+There is a circular plus (+) icon button inside the "Available tracks" widget
+that can also be used to access the "Add a track" form.
 :::
 
 <Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The orange plus (+) icon button in the bottom right the 'Available Tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
@@ -81,7 +91,8 @@ The following file formats are supported in core JBrowse 2:
 - 2bit
 - .hic (Hi-C contact matrix visualization)
 
-Additional data formats can be supported via plugins; checkout the [plugin store](/plugin_store).
+Additional data formats can be supported via plugins; checkout the [plugin
+store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
@@ -89,7 +100,9 @@ as filename+'.bai' for example, but if it is different than this, make sure to
 specify the index file explicitly.
 
 :::info Note
-If you are an administrator, you can add tracks with the [command line](../tutorials/config_cli/#adding-a-track) or with the [admin server](../tutorials/config_gui).
+If you are an administrator, you can add tracks with the [command
+line](/docs/tutorials/config_cli/#adding-a-track) or with the [admin
+server](/docs/tutorials/config_gui).
 :::
 
 ### Undo and redo

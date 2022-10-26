@@ -1,5 +1,5 @@
 ---
-id: devguide_config
+id: config_model
 title: Understanding the configuration model
 toplevel: true
 ---
@@ -117,7 +117,7 @@ We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more
 details.
 
 There are also more examples and information in our [config
-guide](../config_guide/#configuration-callbacks).
+guide](/docs/config_guides/jexl).
 
 If you had a variant track in your config, and wanted to make a custom config
 callback for color, it might look like this:
@@ -158,7 +158,7 @@ callback for color, it might look like this:
 This draws all SNV (single nucleotide variants) as green, and other types as
 purple (insertion, deletion, other structural variant).
 
-You can also [write your own jexl function](../devguide_pluggable_elements) and
+You can also [write your own jexl function](../pluggable_elements) and
 call it in the same way in the configuration.
 
 :::info Note
