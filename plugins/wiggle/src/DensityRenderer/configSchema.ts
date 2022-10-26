@@ -1,11 +1,22 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import ConfigSchema from '../configSchema'
+import baseWiggleRendererConfigSchema from '../configSchema'
+
+/**
+ * #config DensityRenderer
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = ConfigurationSchema(
   'DensityRenderer',
   {},
-  { baseConfiguration: ConfigSchema, explicitlyTyped: true },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: baseWiggleRendererConfigSchema,
+    explicitlyTyped: true,
+  },
 )
 
 export default configSchema

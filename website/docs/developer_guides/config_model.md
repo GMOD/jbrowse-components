@@ -1,19 +1,22 @@
 ---
-id: devguide_config
+id: config_model
 title: Understanding the configuration model
 toplevel: true
 ---
 
-import Figure from './figure'
+import Figure from '../figure'
 
-This guide will introduce some critical concepts to understanding the configuration model. The configuration model is used to structure the features and data available in a given JBrowse session, and each new pluggable element you create will need its own configuration schema.
+This guide will introduce some critical concepts to understanding the
+configuration model. The configuration model is used to structure the features
+and data available in a given JBrowse session, and each new pluggable element
+you create will need its own configuration schema.
 
 ## Configuration slot types
 
 Our configuration system is "typed" to facilitate graphical editing of the
-configuration. Each configuration has a "schema" that lists what
-"configuration slots" it has. Each configuration slot has a name, description,
-a type, and a value.
+configuration. Each configuration has a "schema" that lists what "configuration
+slots" it has. Each configuration slot has a name, description, a type, and a
+value.
 
 Here is a mostly comprehensive list of config types:
 
@@ -37,7 +40,8 @@ Let's examine the `PileupRenderer` configuration as an example.
 
 ## Example config with multiple slot types
 
-This `PileupRenderer` config contains an example of several different slot types:
+This `PileupRenderer` config contains an example of several different slot
+types:
 
 ```js
 // plugins/alignments/src/PileupRenderer/configSchema.ts
@@ -109,9 +113,11 @@ various feature attributes.
 
 ## Example of a config callback
 
-We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more details.
+We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more
+details.
 
-There are also more examples and information in our [config guide](../config_guide/#configuration-callbacks).
+There are also more examples and information in our [config
+guide](/docs/config_guides/jexl).
 
 If you had a variant track in your config, and wanted to make a custom config
 callback for color, it might look like this:
@@ -152,14 +158,17 @@ callback for color, it might look like this:
 This draws all SNV (single nucleotide variants) as green, and other types as
 purple (insertion, deletion, other structural variant).
 
-You can also [write your own jexl function](../devguide_pluggable_elements) and call it in the same way in the configuration.
+You can also [write your own jexl function](../pluggable_elements) and
+call it in the same way in the configuration.
 
 :::info Note
 
-It can be extremely useful to utilize a custom jexl function in the default configuration for a pluggable element type,
-as you can observe in [one of the examples above](#example-config-with-multiple-slot-types), the default value of the
-`color` slot of the renderer is a jexl function. If you configure your plugin with a custom jexl function, you can use
-that function as a default value in your various pluggable elements.
+It can be extremely useful to utilize a custom jexl function in the default
+configuration for a pluggable element type, as you can observe in [one of the
+examples above](#example-config-with-multiple-slot-types), the default value of
+the `color` slot of the renderer is a jexl function. If you configure your
+plugin with a custom jexl function, you can use that function as a default
+value in your various pluggable elements.
 
 :::
 

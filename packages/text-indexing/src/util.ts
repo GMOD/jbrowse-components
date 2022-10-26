@@ -1,6 +1,3 @@
-/*
- Util functions for text indexing
-*/
 export interface UriLocation {
   uri: string
   locationType: 'UriLocation'

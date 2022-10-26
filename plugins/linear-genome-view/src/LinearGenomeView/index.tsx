@@ -85,7 +85,7 @@ function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {
     return ''
   }
   const isSingleAssemblyName = contentBlocks.every(
-    block => block.assemblyName === contentBlocks[0].assemblyName,
+    b => b.assemblyName === contentBlocks[0].assemblyName,
   )
   const locs = contentBlocks.map(block =>
     assembleLocString({
@@ -119,41 +119,107 @@ function localStorageGetItem(item: string) {
     : undefined
 }
 
+/**
+ * #stateModel LinearGenomeView
+ */
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       BaseViewModel,
       types.model('LinearGenomeView', {
+        /**
+         * #property
+         */
         id: ElementId,
+
+        /**
+         * #property
+         */
         type: types.literal('LinearGenomeView'),
+
+        /**
+         * #property
+         * corresponds roughly to the horizontal scroll of the LGV
+         */
         offsetPx: 0,
+
+        /**
+         * #property
+         * corresponds roughly to the zoom level, base-pairs per pixel
+         */
         bpPerPx: 1,
+
+        /**
+         * #property
+         * currently displayed regions, can be a single chromosome, arbitrary subsections,
+         * or the entire  set of chromosomes in the genome, but it not advised to use the
+         * entire set of chromosomes if your assembly is very fragmented
+         */
         displayedRegions: types.array(MUIRegion),
 
-        // we use an array for the tracks because the tracks are displayed in a
-        // specific order that we need to keep.
+        /**
+         * #property
+         * array of currently displayed tracks state models instances
+         */
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
+
+        /**
+         * #property
+         * array of currently displayed tracks state model's
+         */
         hideHeader: false,
+
+        /**
+         * #property
+         */
         hideHeaderOverview: false,
+
+        /**
+         * #property
+         */
         hideNoTracksActive: false,
+
+        /**
+         * #property
+         */
         trackSelectorType: types.optional(
           types.enumeration(['hierarchical']),
           'hierarchical',
         ),
+
+        /**
+         * #property
+         * how to display the track labels, can be "overlapping", "offset", or "hidden"
+         */
         trackLabels: types.optional(
           types.string,
           () => localStorageGetItem('lgv-trackLabels') || 'overlapping',
         ),
+
+        /**
+         * #property
+         * show the "center line"
+         */
         showCenterLine: types.optional(types.boolean, () => {
           const setting = localStorageGetItem('lgv-showCenterLine')
           return setting !== undefined && setting !== null ? !!+setting : false
         }),
+
+        /**
+         * #property
+         * show the "cytobands" in the overview scale bar
+         */
         showCytobandsSetting: types.optional(types.boolean, () => {
           const setting = localStorageGetItem('lgv-showCytobands')
           return setting !== undefined && setting !== null ? !!+setting : true
         }),
+
+        /**
+         * #property
+         * show the "gridlines" in the track area
+         */
         showGridlines: true,
       }),
     )
@@ -178,6 +244,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       seqDialogDisplayed: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get width(): number {
         if (self.volatileWidth === undefined) {
           throw new Error(
@@ -186,10 +255,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         return self.volatileWidth
       },
+      /**
+       * #getter
+       */
       get interRegionPaddingWidth() {
         return INTER_REGION_PADDING_WIDTH
       },
 
+      /**
+       * #getter
+       */
       get assemblyNames() {
         return [
           ...new Set(self.displayedRegions.map(region => region.assemblyName)),
@@ -361,37 +436,61 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
         localStorage.setItem('lgv-showCytobands', `${+flag}`)
       },
+      /**
+       * #action
+       */
       setWidth(newWidth: number) {
         self.volatileWidth = newWidth
       },
+      /**
+       * #action
+       */
       setError(error: Error | undefined) {
         self.volatileError = error
       },
-
+      /**
+       * #action
+       */
       toggleHeader() {
         self.hideHeader = !self.hideHeader
       },
-
+      /**
+       * #action
+       */
       toggleHeaderOverview() {
         self.hideHeaderOverview = !self.hideHeaderOverview
       },
+      /**
+       * #action
+       */
       toggleNoTracksActive() {
         self.hideNoTracksActive = !self.hideNoTracksActive
       },
+      /**
+       * #action
+       */
       toggleShowGridlines() {
         self.showGridlines = !self.showGridlines
       },
-
+      /**
+       * #action
+       */
       scrollTo(offsetPx: number) {
         const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
         self.offsetPx = newOffsetPx
         return newOffsetPx
       },
 
+      /**
+       * #action
+       */
       zoomTo(bpPerPx: number) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         if (newBpPerPx === self.bpPerPx) {
@@ -416,26 +515,41 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return newBpPerPx
       },
 
+      /**
+       * #action
+       * sets offsets used in the get sequence dialog
+       */
       setOffsets(left?: BpOffset, right?: BpOffset) {
-        // sets offsets used in the get sequence dialog
         self.leftOffset = left
         self.rightOffset = right
       },
 
+      /**
+       * #action
+       */
       setSearchResults(results?: BaseResult[], query?: string) {
         self.searchResults = results
         self.searchQuery = query
       },
 
+      /**
+       * #action
+       */
       setGetSequenceDialogOpen(open: boolean) {
         self.seqDialogDisplayed = open
       },
 
+      /**
+       * #action
+       */
       setNewView(bpPerPx: number, offsetPx: number) {
         this.zoomTo(bpPerPx)
         this.scrollTo(offsetPx)
       },
 
+      /**
+       * #action
+       */
       horizontallyFlip() {
         self.displayedRegions = cast(
           self.displayedRegions
@@ -446,6 +560,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         this.scrollTo(self.totalBp / self.bpPerPx - self.offsetPx - self.width)
       },
 
+      /**
+       * #action
+       */
       showTrack(
         trackId: string,
         initialSnapshot = {},
@@ -500,6 +617,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       moveTrack(movingId: string, targetId: string) {
         const oldIndex = self.tracks.findIndex(track => track.id === movingId)
         if (oldIndex === -1) {
@@ -514,6 +634,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.tracks.splice(newIndex, 0, track)
       },
 
+      /**
+       * #action
+       */
       closeView() {
         const parent = getContainingView(self)
         if (parent) {
@@ -527,6 +650,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #action
+       */
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = self.hideTrack(trackId)
@@ -536,21 +662,33 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #action
+       */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
         localStorage.setItem('lgv-trackLabels', setting)
       },
 
+      /**
+       * #action
+       */
       toggleCenterLine() {
         self.showCenterLine = !self.showCenterLine
         localStorage.setItem('lgv-showCenterLine', `${+self.showCenterLine}`)
       },
 
+      /**
+       * #action
+       */
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
         self.zoomTo(self.bpPerPx)
       },
 
+      /**
+       * #action
+       */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -568,6 +706,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #method
        * Helper method for the fetchSequence.
        * Retrieves the corresponding regions that were selected by the rubberband
        *
@@ -592,11 +731,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }))
       },
 
-      // schedule something to be run after the next time displayedRegions is set
+      /**
+       * #action
+       * schedule something to be run after the next time displayedRegions is set
+       */
       afterDisplayedRegionsSet(cb: Function) {
         self.afterDisplayedRegionsSetCallbacks.push(cb)
       },
 
+      /**
+       * #action
+       */
       horizontalScroll(distance: number) {
         const oldOffsetPx = self.offsetPx
         // newOffsetPx is the actual offset after the scroll is clamped
@@ -604,17 +749,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return newOffsetPx - oldOffsetPx
       },
 
+      /**
+       * #action
+       */
       center() {
         const centerBp = self.totalBp / 2
         const centerPx = centerBp / self.bpPerPx
         self.scrollTo(Math.round(centerPx - self.width / 2))
       },
 
+      /**
+       * #action
+       */
       showAllRegions() {
         self.zoomTo(self.maxBpPerPx)
         this.center()
       },
 
+      /**
+       * #action
+       */
       showAllRegionsInAssembly(assemblyName?: string) {
         const session = getSession(self)
         const { assemblyManager } = session
@@ -639,14 +793,24 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #action
+       */
       setDraggingTrackId(idx?: string) {
         self.draggingTrackId = idx
       },
 
+      /**
+       * #action
+       */
       setScaleFactor(factor: number) {
         self.scaleFactor = factor
       },
-      // this "clears the view" and makes the view return to the import form
+
+      /**
+       * #action
+       * this "clears the view" and makes the view return to the import form
+       */
       clearView() {
         this.setDisplayedRegions([])
         self.tracks.clear()
@@ -656,6 +820,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
         self.scrollTo(0)
         self.zoomTo(10)
       },
+
+      /**
+       * #action
+       * creates an svg export and save using FileSaver
+       */
       async exportSvg(opts: ExportSvgOptions = {}) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const html = await renderToSvg(self as any, opts)
@@ -666,6 +835,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => {
       let cancelLastAnimation = () => {}
 
+      /**
+       * #action
+       * perform animated slide
+       */
       function slide(viewWidths: number) {
         const [animate, cancelAnimation] = springAnimate(
           self.offsetPx,
@@ -682,6 +855,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => {
       let cancelLastAnimation = () => {}
 
+      /**
+       * #action
+       * perform animated zoom
+       */
       function zoom(targetBpPerPx: number) {
         self.zoomTo(self.bpPerPx)
         if (
@@ -710,20 +887,32 @@ export function stateModelFactory(pluginManager: PluginManager) {
       return { zoom }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get canShowCytobands() {
         return self.displayedRegions.length === 1 && this.anyCytobandsExist
       },
+      /**
+       * #getter
+       */
       get showCytobands() {
         return this.canShowCytobands && self.showCytobandsSetting
       },
+      /**
+       * #getter
+       */
       get anyCytobandsExist() {
         const { assemblyManager } = getSession(self)
-        const { assemblyNames } = self
-        return assemblyNames.some(
-          asm => assemblyManager.get(asm)?.cytobands?.length,
+        return self.assemblyNames.some(
+          a => assemblyManager.get(a)?.cytobands?.length,
         )
       },
-
+      /**
+       * #getter
+       * the cytoband is displayed to the right of the chromosome name,
+       * and that offset is calculated manually with this method
+       */
       get cytobandOffset() {
         return this.showCytobands
           ? measureText(self.displayedRegions[0].refName, 12) + 15
@@ -731,6 +920,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       * return the view menu items
+       */
       menuItems(): MenuItem[] {
         const { canShowCytobands, showCytobands } = self
         const session = getSession(self)
@@ -878,6 +1071,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
       let stringifiedCurrentlyCalculatedStaticBlocks = ''
       return {
+        /**
+         * #getter
+         * static blocks are an important concept jbrowse uses to avoid
+         * re-rendering when you scroll to the side. when you horizontally
+         * scroll to the right, old blocks to the left may be removed, and
+         * new blocks may be instantiated on the right. tracks may use the
+         * static blocks to render their data for the region represented by
+         * the block
+         */
         get staticBlocks() {
           const ret = calculateStaticBlocks(self)
           const sret = JSON.stringify(ret)
@@ -887,33 +1089,58 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
           return currentlyCalculatedStaticBlocks as BlockSet
         },
-
+        /**
+         * #getter
+         * dynamic blocks represent the exact coordinates of the currently
+         * visible genome regions on the screen. they are similar to static
+         * blocks, but statcic blocks can go offscreen while dynamic blocks
+         * represent exactly what is on screen
+         */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
         },
-
+        /**
+         * #getter
+         * rounded dynamic blocks are dynamic blocks without fractions of bp
+         */
         get roundedDynamicBlocks() {
-          return this.dynamicBlocks.contentBlocks.map(block => {
-            return {
-              ...block,
-              start: Math.floor(block.start),
-              end: Math.ceil(block.end),
-            }
-          })
+          return this.dynamicBlocks.contentBlocks.map(
+            block =>
+              ({
+                ...block,
+                start: Math.floor(block.start),
+                end: Math.ceil(block.end),
+              } as BaseBlock),
+          )
         },
+
+        /**
+         * #getter
+         * a single "combo-locstring" representing all the regions visible
+         * on the screen
+         */
         get visibleLocStrings() {
           return calculateVisibleLocStrings(this.dynamicBlocks.contentBlocks)
         },
+
+        /**
+         * #getter
+         * same as visibleLocStrings, but only updated every 300ms
+         */
         get coarseVisibleLocStrings() {
           return calculateVisibleLocStrings(self.coarseDynamicBlocks)
         },
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       */
       setCoarseDynamicBlocks(blocks: BlockSet) {
         self.coarseDynamicBlocks = blocks.contentBlocks
         self.coarseTotalBp = blocks.totalBp
       },
+
       afterAttach() {
         addDisposer(
           self,
@@ -930,6 +1157,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       /**
+       * #action
        * offset is the base-pair-offset in the displayed region, index is the index of the
        * displayed region in the linear genome view
        *
@@ -940,6 +1168,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         moveTo(self, start, end)
       },
 
+      /**
+       * #action
+       * navigate to the given locstring
+       *
+       * @param locString - e.g. "chr1:1-100"
+       * @param optAssemblyName - (optional) the assembly name to use when navigating to the locstring
+       */
       async navToLocString(locString: string, optAssemblyName?: string) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
@@ -1035,6 +1270,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #action
        * Navigate to a location based on its refName and optionally start, end,
        * and assemblyName. Can handle if there are multiple displayedRegions
        * from same refName. Only navigates to a location if it is entirely
@@ -1043,12 +1279,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
        *
        * Throws an error if navigation was unsuccessful
        *
-       * @param location - a proposed location to navigate to
+       * @param query - a proposed location to navigate to
        */
       navTo(query: NavLocation) {
         this.navToMultiple([query])
       },
 
+      /**
+       * #action
+       */
       navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
@@ -1182,6 +1421,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       rubberBandMenuItems(): MenuItem[] {
         return [
           {
@@ -1200,6 +1442,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
 
+      /**
+       * #method
+       */
       bpToPx({
         refName,
         coord,
@@ -1213,6 +1458,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #method
        * scrolls the view to center on the given bp. if that is not in any
        * of the displayed regions, does nothing
        * @param coord - basepair at which you want to center the view
@@ -1230,10 +1476,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #method
+       */
       pxToBp(px: number) {
         return pxToBp(self, px)
       },
 
+      /**
+       * #getter
+       */
       get centerLineInfo() {
         return self.displayedRegions.length
           ? this.pxToBp(self.width / 2)

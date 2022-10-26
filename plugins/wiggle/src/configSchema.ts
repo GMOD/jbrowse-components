@@ -1,29 +1,50 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 
-export default ConfigurationSchema(
+/**
+ * #config WiggleRenderer
+ * this is the "base wiggle renderer config schema"
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const WiggleRenderer = ConfigurationSchema(
   'WiggleRenderer',
   {
+    /**
+     * #slot
+     */
     color: {
       type: 'color',
       description: 'the color of track, overrides posColor and negColor',
       defaultValue: '#f0f',
     },
+    /**
+     * #slot
+     */
     posColor: {
       type: 'color',
       description: 'the color to use when the score is positive',
       defaultValue: 'blue',
     },
+    /**
+     * #slot
+     */
     negColor: {
       type: 'color',
       description: 'the color to use when the score is negative',
       defaultValue: 'red',
     },
+    /**
+     * #slot
+     */
     clipColor: {
       type: 'color',
       description: 'the color of the clipping marker',
       defaultValue: 'red',
     },
+    /**
+     * #slot
+     */
     bicolorPivot: {
       type: 'stringEnum',
       model: types.enumeration('Scale type', [
@@ -35,6 +56,9 @@ export default ConfigurationSchema(
       description: 'type of bicolor pivot',
       defaultValue: 'numeric',
     },
+    /**
+     * #slot
+     */
     bicolorPivotValue: {
       type: 'number',
       defaultValue: 0,
@@ -43,3 +67,4 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+export default WiggleRenderer

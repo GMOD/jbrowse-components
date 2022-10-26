@@ -76,11 +76,9 @@ Let's start with creating a plugin that accesses the UCSC REST API. See https://
 We will clone a working version of this plugin for brevity and analyze it
 
 :::caution
-
 The development and build process for plugins has changed since this tutorial
-was created. See https://github.com/GMOD/jbrowse-plugin-template#readme for current
-instructions.
-
+was created. See https://github.com/GMOD/jbrowse-plugin-template#readme for
+current instructions.
 :::
 
 ```sh
@@ -106,8 +104,12 @@ instead
 
 Notes about the plugin:
 
-- we run our plugin development server on a custom port. This is a webpack-dev-server for the plugin code
-- the config we are pointing at is here https://github.com/cmdcolin/jbrowse-plugin-ucsc-api/blob/master/assets/config_ucsc_api.json and we can see it is basically resolving to a plugin.js file at a CDN, which can be the final built output or the webpack-dev-server served version
+- we run our plugin development server on a custom port. This is a
+  webpack-dev-server for the plugin code
+- the config we are pointing at is here
+  https://github.com/cmdcolin/jbrowse-plugin-ucsc-api/blob/master/assets/config_ucsc_api.json
+  and we can see it is basically resolving to a plugin.js file at a CDN, which
+  can be the final built output or the webpack-dev-server served version
 
 ![](../../../img/bcc2020_img1.png)
 Screenshot of the UCSC REST API plugin displaying boxes for the interaction features
@@ -118,7 +120,8 @@ Interaction data is often displayed using arcs to connect enhancer to gene. We
 will create a custom renderer to illustrate this
 
 But what is a renderer? It is code that performs drawing. See the renderer docs
-here for more details [on creating renderers](../../../devguide_pluggable_elements/#creating-custom-renderers)
+here for more details [on creating
+renderers](/docs/developer_guides/pluggable_elements/#creating-custom-renderers)
 
 Let's clone a working arc renderer plugin
 
@@ -144,7 +147,8 @@ renders the UCSC GeneHancer interactions as arcs
 
 ### Making custom view types with plugins
 
-Many new things are possible by making completely custom view types in JBrowse 2
+Many new things are possible by making completely custom view types in JBrowse
+2
 
 Plugins can basically register a new view type that is a ReactComponent without
 much else, allowing integration of diverse other view types that are not really

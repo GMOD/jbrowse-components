@@ -27,32 +27,69 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
-export default function stateModelFactory(pluginManager: PluginManager) {
+/**
+ * #stateModel LinearComparativeView
+ */
+function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
   return types
     .compose(
       'LinearComparativeView',
       BaseViewModel,
       types.model({
+        /**
+         * #property
+         */
         id: ElementId,
+        /**
+         * #property
+         */
         type: types.literal('LinearComparativeView'),
+        /**
+         * #property
+         */
         height: defaultHeight,
+        /**
+         * #property
+         */
         trackSelectorType: 'hierarchical',
+        /**
+         * #property
+         */
         showIntraviewLinks: true,
+        /**
+         * #property
+         */
         linkViews: false,
+        /**
+         * #property
+         */
         interactToggled: false,
+        /**
+         * #property
+         */
         middleComparativeHeight: 100,
+        /**
+         * #property
+         */
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
+        /**
+         * #property
+         * currently this is limited to an array of two
+         */
         views: types.array(
           pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         ),
 
-        // this represents tracks specific to this view specifically used for
-        // read vs ref dotplots where this track would not really apply
-        // elsewhere
+        /**
+         * #property
+         * this represents tracks specific to this view specifically used
+         * for read vs ref dotplots where this track would not really apply
+         * elsewhere
+         */
         viewTrackConfigs: types.array(
           pluginManager.pluggableConfigSchemaType('track'),
         ),
@@ -62,19 +99,31 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       width: 800,
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get highResolutionScaling() {
         return 2
       },
+      /**
+       * #getter
+       */
       get initialized() {
         return self.views.length > 0
       },
 
+      /**
+       * #getter
+       */
       get refNames() {
         return self.views.map(v => [
           ...new Set(v.staticBlocks.map(m => m.refName)),
         ])
       },
 
+      /**
+       * #getter
+       */
       get assemblyNames() {
         return [...new Set(self.views.map(v => v.assemblyNames).flat())]
       },
@@ -121,34 +170,59 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         })
       },
 
+      /**
+       * #action
+       */
       setWidth(newWidth: number) {
         self.width = newWidth
       },
+      /**
+       * #action
+       */
       setHeight(newHeight: number) {
         self.height = newHeight
       },
 
+      /**
+       * #action
+       */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
       },
 
+      /**
+       * #action
+       */
       removeView(view: LinearGenomeViewModel) {
         self.views.remove(view)
       },
 
+      /**
+       * #action
+       * removes the view itself from the state tree entirely by calling the parent removeView
+       */
       closeView() {
         getParent<any>(self, 2).removeView(self)
       },
 
+      /**
+       * #action
+       */
       setMiddleComparativeHeight(n: number) {
         self.middleComparativeHeight = n
         return self.middleComparativeHeight
       },
 
+      /**
+       * #action
+       */
       toggleLinkViews() {
         self.linkViews = !self.linkViews
       },
 
+      /**
+       * #action
+       */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
           const session = getSession(self)
@@ -166,6 +240,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
 
+      /**
+       * #action
+       */
       toggleTrack(trackId: string) {
         // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
@@ -176,6 +253,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #action
+       */
       showTrack(trackId: string, initialSnapshot = {}) {
         const schema = pluginManager.pluggableConfigSchemaType(
           'track',
@@ -208,6 +288,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
 
+      /**
+       * #action
+       */
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const config = resolveIdentifier(schema, getRoot(self), trackId)
@@ -215,6 +298,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
         return shownTracks.length
       },
+      /**
+       * #action
+       */
       squareView() {
         const bpPerPxs = self.views.map(v => v.bpPerPx)
         const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
@@ -227,11 +313,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           view.centerAt(center.coord, center.refName, center.index)
         })
       },
+      /**
+       * #action
+       */
       clearView() {
         self.views = cast([])
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       menuItems() {
         const menuItems: MenuItem[] = []
         self.views.forEach((view, idx) => {
@@ -259,6 +351,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         })
         return menuItems
       },
+      /**
+       * #method
+       */
       rubberBandMenuItems() {
         return [
           {
@@ -294,3 +389,5 @@ export type LinearComparativeViewStateModel = ReturnType<
 >
 export type LinearComparativeViewModel =
   Instance<LinearComparativeViewStateModel>
+
+export default stateModelFactory

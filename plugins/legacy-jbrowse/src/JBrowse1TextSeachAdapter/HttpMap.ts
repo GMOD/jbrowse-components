@@ -1,4 +1,4 @@
-/*
+/**
  * Helper class allows reading names index generated in JBrowse1
  * Adapted from https://github.com/GMOD/jbrowse/blob/master/src/JBrowse/Store/Hash.js
  */

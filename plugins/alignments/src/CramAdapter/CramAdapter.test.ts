@@ -4,10 +4,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import Adapter from './CramAdapter'
 import { SequenceAdapter } from './CramTestAdapters'
-import configSchemaF from './configSchema'
+import configSchema from './configSchema'
 
 const pluginManager = new PluginManager()
-const configSchema = pluginManager.load(configSchemaF)
 
 const getVolvoxSequenceSubAdapter: getSubAdapterType = async () => {
   return {

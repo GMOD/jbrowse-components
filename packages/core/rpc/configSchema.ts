@@ -1,38 +1,28 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
+import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'
+import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'
 
-const BaseRpcDriverConfigSchema = ConfigurationSchema(
-  'BaseRpcDriver',
-  {
-    workerCount: {
-      type: 'number',
-      description:
-        'The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.',
-      defaultValue: 0,
-    },
-  },
-  { explicitlyTyped: true },
-)
-const MainThreadRpcDriverConfigSchema = ConfigurationSchema(
-  'MainThreadRpcDriver',
-  {},
-  { explicitlyTyped: true, baseConfiguration: BaseRpcDriverConfigSchema },
-)
-const WebWorkerRpcDriverConfigSchema = ConfigurationSchema(
-  'WebWorkerRpcDriver',
-  {},
-  { explicitlyTyped: true, baseConfiguration: BaseRpcDriverConfigSchema },
-)
+/**
+ * #config RpcOptions
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default ConfigurationSchema(
   'RpcOptions',
   {
+    /**
+     * #slot
+     */
     defaultDriver: {
       type: 'string',
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
       defaultValue: 'MainThreadRpcDriver',
     },
+    /**
+     * #slot
+     */
     drivers: types.optional(
       types.map(
         types.union(

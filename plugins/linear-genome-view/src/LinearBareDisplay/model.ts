@@ -6,13 +6,23 @@ import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { types } from 'mobx-state-tree'
 import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
+/**
+ * #stateModel LinearBareDisplay
+ * extends `BaseLinearDisplay`
+ */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearBareDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearBareDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
@@ -20,6 +30,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #method
+         */
         renderProps() {
           return {
             ...superRenderProps(),
@@ -29,6 +42,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           }
         },
 
+        /**
+         * #getter
+         */
         get rendererTypeName() {
           return self.configuration.renderer.type
         },

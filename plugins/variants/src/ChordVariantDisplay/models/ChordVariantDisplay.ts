@@ -1,42 +1,45 @@
-import {
-  baseChordDisplayConfig,
-  BaseChordDisplayModel,
-} from '@jbrowse/plugin-circular-view'
-import {
-  ConfigurationSchema,
-  ConfigurationReference,
-} from '@jbrowse/core/configuration'
+import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import { getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-const ChordVariantDisplayF = (pluginManager: PluginManager) => {
-  const configSchema = ConfigurationSchema(
-    'ChordVariantDisplay',
-    {
-      renderer: types.optional(
-        pluginManager.pluggableConfigSchemaType('renderer'),
-        { type: 'StructuralVariantChordRenderer' },
-      ),
-    },
-    { baseConfiguration: baseChordDisplayConfig, explicitlyTyped: true },
-  )
+// locals
+import configSchemaF from './configSchema'
 
+/**
+ * #stateModel ChordVariantDisplay
+ * extends `BaseChordDisplay`
+ */
+const ChordVariantDisplayF = (pluginManager: PluginManager) => {
+  const configSchema = configSchemaF(pluginManager)
   const stateModel = types
     .compose(
       'ChordVariantDisplay',
       BaseChordDisplayModel,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('ChordVariantDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererTypeName() {
         return self.configuration.renderer.type
       },
 
+      /**
+       * #method
+       */
       renderProps(): Record<string, unknown> {
         const view = getContainingView(self)
         return {

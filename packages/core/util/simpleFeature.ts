@@ -39,7 +39,7 @@ export interface Feature {
    */
   children(): Feature[] | undefined
 
-  /*
+  /**
    * Convert to JSON
    */
   toJSON(): SimpleFeatureSerialized

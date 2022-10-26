@@ -21,8 +21,8 @@ yarn-error.log*
 
 **.pdf
 titlemod.md
-combined.md
 cli.md
 
 # plugin data from AWS
 plugins.json
+jb2

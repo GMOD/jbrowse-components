@@ -23,7 +23,7 @@ https://github.com/GMOD/jbrowse-plugin-template which uses `rollup` to compile
 extra dependencies that your plugin might use. In contrast, "no-build" plugins
 have no build step and can be hand edited. This can be useful for adding [extra
 jexl config callbacks for making extra config callbacks or similar
-modifications](../config_guide/#making-sophisticated-color-callbacks).
+modifications](/docs/config_guide/#making-sophisticated-color-callbacks).
 
 ## Writing a no-build plugin
 

@@ -3,22 +3,45 @@ import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-/*
-Note: this is primarily a copy of createBaseTrackConfig, except with a subset
-of the config slots, to avoid including fields that don't make sense for the
-ReferenceSequenceTrack
-*/
+// Note: this is primarily a copy of createBaseTrackConfig, except with a
+// subset of the config slots, to avoid including fields that don't make sense
+// for the ReferenceSequenceTrack
+
+/**
+ * #config ReferenceSequenceTrack
+ * used to display base level DNA sequence tracks
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ReferenceSequenceTrack',
     {
+      /**
+       * #slot
+       * configuration for track adapter
+       */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+
+      /**
+       * #slot
+       * configuration for the displays e.g. LinearReferenceSequenceDisplay
+       */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
+
+      /**
+       * #slot
+       */
       name: {
         type: 'string',
-        description: 'optional track name',
+        description:
+          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
         defaultValue: '',
       },
+
+      /**
+       * #slot
+       */
       metadata: {
         type: 'frozen',
         description: 'anything to add about this track',
@@ -26,12 +49,19 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       },
 
       formatAbout: ConfigurationSchema('FormatAbout', {
+        /**
+         * #slot formatAbout.config
+         */
         config: {
           type: 'frozen',
           description: 'formats configuration in about dialog',
           defaultValue: {},
           contextVariable: ['config'],
         },
+
+        /**
+         * #slot formatAbout.hideUris
+         */
         hideUris: {
           type: 'boolean',
           defaultValue: false,
@@ -60,6 +90,10 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
         }
         return { ...snap, displays }
       },
+      /**
+       * #identifier
+       * all tracks have a globally unique 'trackId'
+       */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
       actions: (self: any) => ({

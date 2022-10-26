@@ -16,29 +16,60 @@ import { BaseLinearDisplay } from '../BaseLinearDisplay'
 
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
-const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
-  types
+/**
+ * #stateModel LinearBasicDisplay
+ * used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
+ */
+function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+  return types
     .compose(
       'LinearBasicDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearBasicDisplay'),
+        /**
+         * #property
+         */
         trackShowLabels: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         trackShowDescriptions: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         trackDisplayMode: types.maybe(types.string),
+        /**
+         * #property
+         */
         trackMaxHeight: types.maybe(types.number),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererTypeName() {
         return getConf(self, ['renderer', 'type'])
       },
 
+      /**
+       * #getter
+       */
       get showLabels() {
         return self.trackShowLabels ?? getConf(self, ['renderer', 'showLabels'])
       },
 
+      /**
+       * #getter
+       */
       get showDescriptions() {
         return (
           self.trackShowDescriptions ??
@@ -46,10 +77,16 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         )
       },
 
+      /**
+       * #getter
+       */
       get maxHeight() {
         return self.trackMaxHeight ?? getConf(self, ['renderer', 'maxHeight'])
       },
 
+      /**
+       * #getter
+       */
       get displayMode() {
         return (
           self.trackDisplayMode ?? getConf(self, ['renderer', 'displayMode'])
@@ -57,6 +94,9 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const configBlob = getConf(self, ['renderer']) || {}
         const config = configBlob as Omit<typeof configBlob, symbol>
@@ -75,15 +115,27 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
     }))
 
     .actions(self => ({
+      /**
+       * #action
+       */
       toggleShowLabels() {
         self.trackShowLabels = !self.showLabels
       },
+      /**
+       * #action
+       */
       toggleShowDescriptions() {
         self.trackShowDescriptions = !self.showDescriptions
       },
+      /**
+       * #action
+       */
       setDisplayMode(val: string) {
         self.trackDisplayMode = val
       },
+      /**
+       * #action
+       */
       setMaxHeight(val: number) {
         self.trackMaxHeight = val
       },
@@ -94,19 +146,22 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         renderProps: superRenderProps,
       } = self
       return {
+        /**
+         * #method
+         */
         renderProps() {
           const config = self.rendererConfig
           const superProps = superRenderProps()
-
           const superPropsOmit = superProps as Omit<typeof superProps, symbol>
-
           return {
             ...superPropsOmit,
-
             config,
           }
         },
 
+        /**
+         * #method
+         */
         trackMenuItems(): MenuItem[] {
           return [
             ...superTrackMenuItems(),
@@ -115,9 +170,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
               icon: VisibilityIcon,
               type: 'checkbox',
               checked: self.showLabels,
-              onClick: () => {
-                self.toggleShowLabels()
-              },
+              onClick: () => self.toggleShowLabels(),
             },
             {
               label: 'Show descriptions',
@@ -136,9 +189,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
                 'collapse',
               ].map(val => ({
                 label: val,
-                onClick: () => {
-                  self.setDisplayMode(val)
-                },
+                onClick: () => self.setDisplayMode(val),
               })),
             },
             {
@@ -154,6 +205,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) =>
         },
       }
     })
+}
 
 export type FeatureTrackStateModel = ReturnType<typeof stateModelFactory>
 export type FeatureTrackModel = Instance<FeatureTrackStateModel>

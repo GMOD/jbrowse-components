@@ -1,13 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config HicRenderer
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const HicRenderer = ConfigurationSchema(
   'HicRenderer',
   {
+    /**
+     * #slot
+     */
     baseColor: {
       type: 'color',
       description: 'base color to be used in the hic alignment',
       defaultValue: '#f00',
     },
+    /**
+     * #slot
+     */
     color: {
       type: 'color',
       description: 'the color of each feature in a hic alignment',
@@ -15,6 +26,9 @@ export default ConfigurationSchema(
       contextVariable: ['count', 'maxScore', 'baseColor'],
     },
 
+    /**
+     * #slot
+     */
     maxHeight: {
       type: 'integer',
       description: 'the maximum height to be used in a hic rendering',
@@ -23,3 +37,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default HicRenderer

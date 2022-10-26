@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config MCScanAnchorsAdapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const MCScanAnchorsAdapter = ConfigurationSchema(
   'MCScanAnchorsAdapter',
   {
+    /**
+     * #slot
+     */
     mcscanAnchorsLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -10,6 +18,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     */
     bed1Location: {
       type: 'fileLocation',
       defaultValue: {
@@ -17,6 +28,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     */
     bed2Location: {
       type: 'fileLocation',
       defaultValue: {
@@ -24,7 +38,9 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
-
+    /**
+     * #slot
+     */
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
@@ -32,3 +48,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default MCScanAnchorsAdapter

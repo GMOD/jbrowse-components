@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getContainingView } from '@jbrowse/core/util'
 
@@ -21,19 +20,38 @@ const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
 
 type LGV = LinearGenomeViewModel
 
-const stateModelFactory = (
+/**
+ * #stateModel LinearSNPCoverageDisplay
+ * extends `LinearWiggleDisplay`
+ */
+function stateModelFactory(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
-) =>
-  types
+) {
+  return types
     .compose(
       'LinearSNPCoverageDisplay',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearSNPCoverageDisplay'),
+        /**
+         * #property
+         */
         drawInterbaseCounts: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         drawIndicators: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         drawArcs: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         filterBy: types.optional(
           types.model({
             flagInclude: types.optional(types.number, 0),
@@ -45,6 +63,9 @@ const stateModelFactory = (
           }),
           {},
         ),
+        /**
+         * #property
+         */
         colorBy: types.maybe(
           types.model({
             type: types.string,
@@ -57,9 +78,15 @@ const stateModelFactory = (
       modificationTagMap: observable.map({}),
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
+      /**
+       * #action
+       */
       setFilterBy(filter: {
         flagInclude: number
         flagExclude: number
@@ -68,10 +95,16 @@ const stateModelFactory = (
       }) {
         self.filterBy = cast(filter)
       },
+      /**
+       * #action
+       */
       setColorBy(colorBy?: { type: string; tag?: string }) {
         self.colorBy = cast(colorBy)
       },
 
+      /**
+       * #action
+       */
       updateModificationColorMap(uniqueModifications: string[]) {
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
         let i = 0
@@ -87,6 +120,9 @@ const stateModelFactory = (
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #getter
+         */
         get rendererConfig() {
           const configBlob =
             getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -102,17 +138,26 @@ const stateModelFactory = (
             getEnv(self),
           )
         },
+        /**
+         * #getter
+         */
         get drawArcsSetting() {
           return (
             self.drawArcs ?? readConfObject(this.rendererConfig, 'drawArcs')
           )
         },
+        /**
+         * #getter
+         */
         get drawInterbaseCountsSetting() {
           return (
             self.drawInterbaseCounts ??
             readConfObject(this.rendererConfig, 'drawInterbaseCounts')
           )
         },
+        /**
+         * #getter
+         */
         get drawIndicatorsSetting() {
           return (
             self.drawIndicators ??
@@ -120,6 +165,9 @@ const stateModelFactory = (
           )
         },
 
+        /**
+         * #getter
+         */
         get modificationsReady() {
           return self.colorBy?.type === 'modifications'
             ? Object.keys(JSON.parse(JSON.stringify(self.modificationTagMap)))
@@ -127,6 +175,9 @@ const stateModelFactory = (
             : true
         },
 
+        /**
+         * #method
+         */
         renderProps() {
           const superProps = superRenderProps()
           const { colorBy, filterBy, modificationTagMap } = self
@@ -144,12 +195,21 @@ const stateModelFactory = (
       }
     })
     .actions(self => ({
+      /**
+       * #action
+       */
       toggleDrawIndicators() {
         self.drawIndicators = !self.drawIndicatorsSetting
       },
+      /**
+       * #action
+       */
       toggleDrawInterbaseCounts() {
         self.drawInterbaseCounts = !self.drawInterbaseCountsSetting
       },
+      /**
+       * #action
+       */
       toggleDrawArcs() {
         self.drawArcs = !self.drawArcsSetting
       },
@@ -195,10 +255,16 @@ const stateModelFactory = (
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
       return {
+        /**
+         * #getter
+         */
         get TooltipComponent() {
           return Tooltip
         },
 
+        /**
+         * #getter
+         */
         get adapterConfig() {
           const subadapter = getConf(self.parentTrack, 'adapter')
           return {
@@ -207,18 +273,30 @@ const stateModelFactory = (
           }
         },
 
+        /**
+         * #getter
+         */
         get rendererTypeName() {
           return rendererTypes.get('snpcoverage')
         },
 
+        /**
+         * #getter
+         */
         get needsScalebar() {
           return true
         },
 
+        /**
+         * #method
+         */
         contextMenuItems() {
           return []
         },
 
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
@@ -244,6 +322,7 @@ const stateModelFactory = (
         },
       }
     })
+}
 
 export type SNPCoverageDisplayModel = ReturnType<typeof stateModelFactory>
 

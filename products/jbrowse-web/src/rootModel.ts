@@ -49,6 +49,11 @@ interface Menu {
   menuItems: MenuItem[]
 }
 
+/**
+ * #stateModel JBrowseWebRootModel
+ * note that many properties of the root model are available through the session, which
+ * may be preferable since using getSession() is better relied on than getRoot()
+ */
 export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
@@ -61,14 +66,39 @@ export default function RootModel(
   )
   return types
     .model('Root', {
+      /**
+       * #property
+       * `jbrowse` is a mapping of the config.json into the in-memory state tree
+       */
       jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
+      /**
+       * #property
+       */
       configPath: types.maybe(types.string),
+      /**
+       * #property
+       * `session` encompasses the currently active state of the app, including
+       * views open, tracks open in those views, etc.
+       */
       session: types.maybe(Session),
+      /**
+       * #property
+       */
       assemblyManager: types.optional(AssemblyManager, {}),
+      /**
+       * #property
+       */
       version: types.maybe(types.string),
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
+      /**
+       * #property
+       * used for undo/redo
+       */
       history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({

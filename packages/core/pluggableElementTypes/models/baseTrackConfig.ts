@@ -3,71 +3,119 @@ import { types, Instance } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../../configuration'
 import PluginManager from '../../PluginManager'
 
+/**
+ * #config BaseTrack
+ */
 export function createBaseTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'BaseTrack',
     {
+      /**
+       * #slot
+       */
       name: {
         description: 'descriptive name of the track',
         type: 'string',
         defaultValue: 'Track',
       },
+      /**
+       * #slot
+       */
       assemblyNames: {
         description: 'name of the assembly (or assemblies) track belongs to',
         type: 'stringArray',
         defaultValue: ['assemblyName'],
       },
+      /**
+       * #slot
+       */
       description: {
         description: 'a description of the track',
         type: 'string',
         defaultValue: '',
       },
+      /**
+       * #slot
+       */
       category: {
         description: 'the category and sub-categories of a track',
         type: 'stringArray',
         defaultValue: [],
       },
+      /**
+       * #slot
+       */
       metadata: {
         type: 'frozen',
         description: 'anything to add about this track',
         defaultValue: {},
       },
+      /**
+       * #slot
+       */
       adapter: pluginManager.pluggableConfigSchemaType('adapter'),
+
       textSearching: ConfigurationSchema('textSearching', {
+        /**
+         * #slot textSearching.indexedAttributes
+         */
         indexingAttributes: {
           type: 'stringArray',
           description:
             'list of which feature attributes to index for text searching',
           defaultValue: ['Name', 'ID'],
         },
+        /**
+         * #slot textSearching.indexingFeatureTypesToExclude
+         */
         indexingFeatureTypesToExclude: {
           type: 'stringArray',
           description: 'list of feature types to exclude in text search index',
           defaultValue: ['CDS', 'exon'],
         },
+
+        /**
+         * #slot textSearching.textSearchAdapter
+         */
         textSearchAdapter: pluginManager.pluggableConfigSchemaType(
           'text search adapter',
         ),
       }),
+
+      /**
+       * #slot
+       */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
       formatDetails: ConfigurationSchema('FormatDetails', {
+        /**
+         * #slot formatDetails.feature
+         */
         feature: {
           type: 'frozen',
           description: 'adds extra fields to the feature details',
           defaultValue: {},
           contextVariable: ['feature'],
         },
+
+        /**
+         * #slot formatDetails.subfeatures
+         */
         subfeatures: {
           type: 'frozen',
           description: 'adds extra fields to the subfeatures of a feature',
           defaultValue: {},
           contextVariable: ['feature'],
         },
+
+        /**
+         * #slot formatDetails.depth
+         */
         depth: {
           type: 'number',
           defaultValue: 2,
-          description: 'depth to iterate on subfeatures',
+          description:
+            'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
         },
       }),
       formatAbout: ConfigurationSchema('FormatAbout', {

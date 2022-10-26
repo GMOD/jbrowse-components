@@ -6,7 +6,7 @@ import {
   configSchema as svgFeatureRendererConfigSchema,
   ReactComponent as SvgFeatureRendererReactComponent,
 } from '@jbrowse/plugin-svg/src/SvgFeatureRenderer'
-import { LinearVariantDisplayConfigFactory as configSchemaFactory } from './configSchema'
+import configSchemaFactory from './configSchema'
 
 // mock warnings to avoid unnecessary outputs
 beforeEach(() => {

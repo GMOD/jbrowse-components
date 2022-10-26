@@ -82,7 +82,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     }
   }
 
-  /*
+  /**
    * draw features to context given props, to be used by derived renderer
    * classes
    */

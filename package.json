@@ -22,7 +22,11 @@
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && npm run test-jbimg",
     "built-test-ci": "jest --ci integration.test.js",
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "preconfigdocs": "yarn tsc --build docs/tsconfig.json",
+    "configdocs": "rm -rf website/docs/config && mkdir website/docs/config && node docs/dist/generateConfigDocs.js",
+    "prestatedocs": "yarn tsc --build docs/tsconfig.json",
+    "statedocs": "rm -rf website/docs/models && mkdir website/docs/models && node docs/dist/generateStateModelDocs.js"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -136,6 +140,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.0.0",
     "semver": "^7.3.4",
+    "slugify": "^1.6.5",
     "ts-loader": "^9.3.0",
     "ts-node": "^10.4.0",
     "tslib": "^2.0.1",

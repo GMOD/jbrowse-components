@@ -1,12 +1,14 @@
 ---
-id: devguide_pluggable_elements
-title: Creating your own pluggable elements
+id: pluggable_elements
+title: Examples of plugin functionality
 toplevel: true
 ---
 
-import Figure from './figure'
+import Figure from '../figure'
 
-This guide will walk you through the concepts necessary for creating your own of some of the most common pluggable element types, including **adapters**, **tracks**, and **renderers**.
+This guide will walk you through the concepts necessary for creating your own
+of some of the most common pluggable element types, including **adapters**,
+**tracks**, and **renderers**.
 
 ## Simple additions to JBrowse using plugins
 
@@ -15,11 +17,10 @@ This guide will walk you through the concepts necessary for creating your own of
 These are the menus that appear in the top bar of JBrowse Web and JBrowse
 Desktop. By default, there are `File`, `Add`, `Tools`, and `Help` menus.
 
-You can add your own menu, or you can add menu items or sub-menus to the existing menus and
-sub-menus. Sub-menus can be arbitrarily deep.
+You can add your own menu, or you can add menu items or sub-menus to the
+existing menus and sub-menus. Sub-menus can be arbitrarily deep.
 
-<Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place
-to consider adding your own custom view type."/>
+<Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 
 You add menus in the `configure` method of your plugin. Not all JBrowse
 products will have top-level menus, though. JBrowse Web and JBrowse Desktop
@@ -56,7 +57,7 @@ class MyPlugin extends Plugin {
 ```
 
 This example uses `rootModel.appendToMenu`. See [top-level menu
-API](../api_guide#rootmodel-menu-api) for more details on available functions.
+API](/docs/api_guide#rootmodel-menu-api) for more details on available functions.
 
 ### Adding menu items to a custom track
 
@@ -315,18 +316,18 @@ class MyAdapter extends BaseFeatureDataAdapter {
 
 #### getRefNames
 
-Returns the refNames that are contained in the file. This is
-used for "refname renaming" and is optional, but highly useful in scenarios
-like human chromosomes which have, for example, chr1 vs 1.
+Returns the refNames that are contained in the file. This is used for "refname
+renaming" and is optional, but highly useful in scenarios like human
+chromosomes which have, for example, chr1 vs 1.
 
 Returning the refNames used by a given file or resource allows JBrowse to
-automatically smooth these small naming disparities over.
-See [reference renaming](../config_guide/#configuring-reference-name-aliasing).
+automatically smooth these small naming disparities over. See [reference
+renaming](/docs/config_guide/#configuring-reference-name-aliasing).
 
 #### getFeatures
 
-A function that returns features from the file given a genomic
-range query e.g.,
+A function that returns features from the file given a genomic range query
+e.g.,
 
 `getFeatures(region, options)`
 
@@ -342,10 +343,10 @@ interface Region {
 }
 ```
 
-The `refName`, `start`, `end` specify a simple genomic range. The `assemblyName` is
-used to query a specific assembly if your adapter responds to multiple
-assemblies, e.g. for a synteny data file or a REST API that queries a backend
-with multiple assemblies.
+The `refName`, `start`, `end` specify a simple genomic range. The
+`assemblyName` is used to query a specific assembly if your adapter responds to
+multiple assemblies, e.g. for a synteny data file or a REST API that queries a
+backend with multiple assemblies.
 
 The `originalRefName` are also passed, where `originalRefName` is the queried
 refname before ref renaming e.g. in BamAdapter, if the BAM file uses chr1, and
@@ -370,13 +371,15 @@ interface Options {
 - `statusCallback` - not implemented yet but in the future may allow you to
   report the status of your loading operations
 - `headers` - set of HTTP headers as a JSON object
+- anything from the `renderProps` of the display model type gets passed to the
+  getFeatures opts
 
-We return an rxjs Observable from getFeatures. This is similar to a JBrowse 1
-getFeatures call, where we pass each feature to a featureCallback, tell it when
-we are done with finishCallback, and send errors to errorCallback, except we do
-all those things with the Observable
+We return an rxjs `Observable` from `getFeatures`. This is similar to a JBrowse
+1 getFeatures call, where we pass each feature to a `featureCallback`, tell it
+when we are done with `finishCallback`, and send errors to `errorCallback`,
+except we do all those things with the `Observable`
 
-Here is a "conversion" of JBrowse 1 getFeatures callbacks to JBrowse 2
+Here is a "conversion" of JBrowse-1-style `getFeatures` callbacks to JBrowse 2
 observable calls
 
 - `featureCallback(new SimpleFeature(...))` -> `observer.next(new SimpleFeature(...))`

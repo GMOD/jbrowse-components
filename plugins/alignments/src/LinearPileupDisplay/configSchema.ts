@@ -3,28 +3,43 @@ import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-ge
 import { types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-function PileupConfigFactory(pluginManager: PluginManager) {
-  const PileupRendererConfigSchema =
-    pluginManager.getRendererType('PileupRenderer').configSchema
+/**
+ * #config LinearPileupDisplay
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
+function PileupConfigFactory(pluginManager: PluginManager) {
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearPileupDisplay',
     {
+      /**
+       * #slot
+       */
       defaultRendering: {
         type: 'stringEnum',
         model: types.enumeration('Rendering', ['pileup']),
         defaultValue: 'pileup',
       },
+      /**
+       * #slot
+       */
       renderers: ConfigurationSchema('RenderersConfiguration', {
-        PileupRenderer: PileupRendererConfigSchema,
+        PileupRenderer:
+          pluginManager.getRendererType('PileupRenderer').configSchema,
       }),
-      renderer: '',
+      /**
+       * #slot
+       */
       maxFeatureScreenDensity: {
         type: 'number',
         description: 'maximum features per pixel that is displayed in the view',
         defaultValue: 5,
       },
+
+      /**
+       * #slot
+       */
       colorScheme: {
         type: 'stringEnum',
         model: types.enumeration('colorScheme', [
@@ -40,6 +55,9 @@ function PileupConfigFactory(pluginManager: PluginManager) {
       },
     },
     {
+      /**
+       * #baseConfiguration
+       */
       baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
