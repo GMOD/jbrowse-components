@@ -120,7 +120,7 @@ ${name}: ${signature || ''}
             .join('\n')
 
         fs.writeFileSync(
-          `website/docs/models/${model.id}.md`,
+          `website/docs/models/${model.name}.md`,
           `---
 id: ${model.id}
 title: ${model.name}

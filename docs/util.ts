@@ -102,16 +102,8 @@ export function filter(str1: string, str2: string) {
 }
 
 export async function getAllFiles() {
-  // exec('find . -type f | wc -l', (err, stdout, stderr) => {
-  //   if (err) {
-  //     console.error(`exec error: ${err}`)
-  //     return
-  //   }
-
-  //   console.log(`Number of files ${stdout}`)
-  // })
   const files = await exec2(
-    'git ls-files | grep "\\(plugins\\|products\\|packages\\).*.\\(t\\|j\\)s$"',
+    'git ls-files | grep "\\(plugins\\|products\\|packages\\).*.\\(t\\|j\\)sx\\?$"',
   )
   return files.stdout.split('\n').filter(f => !!f)
 }

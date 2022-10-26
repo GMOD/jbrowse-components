@@ -76,7 +76,7 @@ ${code}
           .join('\n')
 
       fs.writeFileSync(
-        `website/docs/config/${config.id}.md`,
+        `website/docs/config/${config.name}.md`,
         `---
 id: ${config.id}
 title: ${config.name}
