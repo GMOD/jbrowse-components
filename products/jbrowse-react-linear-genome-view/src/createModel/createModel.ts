@@ -16,29 +16,29 @@ export default function createModel(
     throw new Error('no makeWorkerInstance supplied')
   },
 ) {
-  const pluginManager = new PluginManager(
+  const pm = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   )
-  pluginManager.createPluggableElements()
-  const Session = createSessionModel(pluginManager)
-  const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
-  const AssemblyManager = assemblyManagerFactory(assemblyConfig, pluginManager)
+  pm.createPluggableElements()
+  const Session = createSessionModel(pm)
+  const Assembly = assemblyConfigSchemaFactory(pm)
+  const AssemblyManager = assemblyManagerFactory(Assembly, pm)
   const rootModel = types
     .model('ReactLinearGenomeView', {
-      config: createConfigModel(pluginManager, assemblyConfig),
+      config: createConfigModel(pm, Assembly),
       session: Session,
       assemblyManager: types.optional(AssemblyManager, {}),
       disableAddTracks: types.optional(types.boolean, false),
     })
     .volatile(self => ({
       error: undefined as Error | undefined,
-      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
+      rpcManager: new RpcManager(pm, self.config.configuration.rpc, {
         WebWorkerRpcDriver: {
           makeWorkerInstance,
         },
         MainThreadRpcDriver: {},
       }),
-      textSearchManager: new TextSearchManager(pluginManager),
+      textSearchManager: new TextSearchManager(pm),
     }))
 
     .actions(self => ({
@@ -62,7 +62,7 @@ export default function createModel(
         return self.config
       },
     }))
-  return { model: rootModel, pluginManager }
+  return { model: rootModel, pluginManager: pm }
 }
 
 export type ViewStateModel = ReturnType<typeof createModel>['model']

@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { version } from '../version'
 import {
+  cast,
   getMembers,
   getParent,
   getSnapshot,
@@ -33,13 +34,15 @@ import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 
 // locals
 import { ReferringNode } from '../types'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
     .model('ReactLinearGenomeViewSession', {
       name: types.identifier,
       margin: 0,
-      view: pluginManager.getViewType('LinearGenomeView').stateModel,
+      view: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel,
       widgets: types.map(
         pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
@@ -172,11 +175,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return self.sessionTracks[length - 1]
       },
       queueDialog(
-        callback: (doneCallback: () => void) => [DialogComponentType, any],
-      ): void {
-        const [component, props] = callback(() => {
-          this.removeActiveDialog()
-        })
+        cb: (doneCallback: () => void) => [DialogComponentType, any],
+      ) {
+        const [component, props] = cb(() => this.removeActiveDialog())
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
       },
       removeActiveDialog() {
@@ -275,16 +276,19 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         self.connectionInstances.remove(connection)
       },
 
-      addView(typeName: string, initialState = {}) {
+      addView(
+        typeName: 'LinearGenomeView',
+        initialState = {} as Record<string, unknown>,
+      ) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) {
           throw new Error(`unknown view type ${typeName}`)
         }
 
-        self.view = {
+        self.view = cast({
           ...initialState,
           type: typeName,
-        }
+        })
         return self.view
       },
 

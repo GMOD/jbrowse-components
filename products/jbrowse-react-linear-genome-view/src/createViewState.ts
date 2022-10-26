@@ -58,34 +58,32 @@ export default function createViewState(opts: ViewStateOptions) {
       },
     }
   }
-  const stateSnapshot = {
-    config: {
-      configuration,
-      assembly,
-      tracks,
-      aggregateTextSearchAdapters,
-      defaultSession,
+  const stateTree = model.create(
+    {
+      config: {
+        configuration,
+        assembly,
+        tracks,
+        aggregateTextSearchAdapters,
+      },
+      disableAddTracks,
+      session: defaultSession,
     },
-    disableAddTracks,
-    session: defaultSession,
-  }
-  const stateTree = model.create(stateSnapshot, { pluginManager })
+    { pluginManager },
+  )
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
     autorun(async reaction => {
-      const {
-        assemblyManager: { assemblies },
-        session: { view },
-      } = stateTree
-      if (!view.initialized || !assemblies.length) {
+      const { session } = stateTree
+      if (!session.view.initialized) {
         return
       }
-      const [assembly] = assemblies
+
       if (typeof location === 'string') {
-        view.navToLocString(location, assembly.name)
+        session.view.navToLocString(location, assembly.name)
       } else {
-        view.navTo(location)
+        session.view.navTo(location)
       }
       reaction.dispose()
     })
