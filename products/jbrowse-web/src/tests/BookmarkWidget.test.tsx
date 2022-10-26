@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react'
+import { waitFor, fireEvent } from '@testing-library/react'
 
 import { createView, setup, hts, doBeforeEach } from './util'
 
@@ -66,9 +66,9 @@ test('navigates to bookmarked region from widget', async () => {
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
-  const newRegion = view.getSelectedRegions(
-    view.leftOffset,
-    view.rightOffset,
-  )[0]
-  expect(newRegion.key).toEqual('{volvox}ctgA:201..240-0')
+  await waitFor(() =>
+    expect(
+      view.getSelectedRegions(view.leftOffset, view.rightOffset)[0].key,
+    ).toEqual('{volvox}ctgA:201..240-0'),
+  )
 }, 20000)

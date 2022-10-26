@@ -1,4 +1,3 @@
-import { reaction } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -8,24 +7,20 @@ import {
   IAnyType,
 } from 'mobx-state-tree'
 import { when } from '../util'
-import { readConfObject } from '../configuration'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
-
-import assemblyFactory from './assembly'
+import { reaction } from 'mobx'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
+import assemblyFactory, { Assembly } from './assembly'
 import PluginManager from '../PluginManager'
 
-export default function assemblyManagerFactory(
-  assemblyConfigType: IAnyType,
-  pluginManager: PluginManager,
-) {
-  const Assembly = assemblyFactory(assemblyConfigType, pluginManager)
+function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
+  type Conf = Instance<typeof conf> | string
   return types
     .model({
-      assemblies: types.array(Assembly),
+      assemblies: types.array(assemblyFactory(conf, pm)),
     })
     .views(self => ({
-      get(assemblyName: string) {
-        return self.assemblies.find(assembly => assembly.hasName(assemblyName))
+      get(asmName: string) {
+        return self.assemblies.find(asm => asm.hasName(asmName))
       },
 
       get assemblyNamesList() {
@@ -44,26 +39,12 @@ export default function assemblyManagerFactory(
           ...assemblies,
           ...sessionAssemblies,
           ...temporaryAssemblies,
-        ] as (AnyConfigurationModel & { name: string })[]
+        ] as AnyConfigurationModel[]
       },
 
       get rpcManager() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
-      },
-      get pluginManager() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return getParent<any>(self).pluginManager
-      },
-      get allPossibleRefNames() {
-        let refNames: string[] = []
-        for (const assembly of self.assemblies) {
-          if (!assembly.allRefNames) {
-            return undefined
-          }
-          refNames = refNames.concat(assembly.allRefNames)
-        }
-        return refNames
       },
     }))
     .views(self => ({
@@ -82,9 +63,11 @@ export default function assemblyManagerFactory(
             // ignore
           }
         }
+
         if (!assembly) {
           return undefined
         }
+        await assembly.load()
         await when(
           () =>
             Boolean(assembly?.regions && assembly.refNameAliases) ||
@@ -118,28 +101,17 @@ export default function assemblyManagerFactory(
         }
         return {}
       },
-      isValidRefName(refName: string, assemblyName?: string) {
-        if (assemblyName) {
-          const assembly = self.get(assemblyName)
-          if (assembly) {
-            return assembly.isValidRefName(refName)
-          }
-          throw new Error(
-            `isValidRefName for ${assemblyName} failed, assembly does not exist`,
-          )
+      isValidRefName(refName: string, assemblyName: string) {
+        const assembly = self.get(assemblyName)
+        if (assembly) {
+          return assembly.isValidRefName(refName)
         }
-        if (!self.allPossibleRefNames) {
-          throw new Error(
-            `isValidRefName not available, assemblyManager has not yet finished loading. If you are looking for a refname in a specific assembly, pass assembly argument`,
-          )
-        }
-        return self.allPossibleRefNames.includes(refName)
+        throw new Error(
+          `isValidRefName for ${assemblyName} failed, assembly does not exist`,
+        )
       },
     }))
     .actions(self => ({
-      removeAssembly(asm: Instance<typeof Assembly>) {
-        self.assemblies.remove(asm)
-      },
       afterAttach() {
         addDisposer(
           self,
@@ -166,23 +138,21 @@ export default function assemblyManagerFactory(
           ),
         )
       },
+      removeAssembly(asm: Assembly) {
+        self.assemblies.remove(asm)
+      },
 
       // this can take an active instance of an assembly, in which case it is
       // referred to, or it can take an identifier e.g. assembly name, which is
       // used as a reference. snapshots cannot be used
-      addAssembly(
-        assemblyConfig: Instance<typeof assemblyConfigType> | string,
-      ) {
-        self.assemblies.push({ configuration: assemblyConfig })
+      addAssembly(configuration: Conf) {
+        self.assemblies.push({ configuration })
       },
 
-      replaceAssembly(
-        idx: number,
-        assemblyConfig: Instance<typeof assemblyConfigType> | string,
-      ) {
-        self.assemblies[idx] = cast({
-          configuration: assemblyConfig,
-        })
+      replaceAssembly(idx: number, configuration: Conf) {
+        self.assemblies[idx] = cast({ configuration })
       },
     }))
 }
+
+export default assemblyManagerFactory
