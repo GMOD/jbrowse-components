@@ -4,15 +4,14 @@ title: DropboxOAuthInternetAccount
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### DropboxOAuthInternetAccount - Slots
+
 #### slot: authEndpoint
-
-
 
 ```js
 authEndpoint: {
@@ -24,8 +23,6 @@ authEndpoint: {
 
 #### slot: tokenEndpoint
 
-
-
 ```js
 tokenEndpoint: {
       description: 'the token endpoint of the internet account',
@@ -36,8 +33,6 @@ tokenEndpoint: {
 
 #### slot: needsPKCE
 
-
-
 ```js
 needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
@@ -47,8 +42,6 @@ needsPKCE: {
 ```
 
 #### slot: domains
-
-
 
 ```js
 domains: {
@@ -69,8 +62,6 @@ domains: {
 
 #### slot: hasRefreshToken
 
-
-
 ```js
 hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
@@ -79,14 +70,8 @@ hasRefreshToken: {
     }
 ```
 
-
 ## DropboxOAuthInternetAccount - Derives from
-
-
-
 
 ```js
 baseConfiguration: OAuthConfigSchema
 ```
-
- 

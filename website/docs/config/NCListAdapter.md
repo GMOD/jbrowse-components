@@ -4,15 +4,14 @@ title: NCListAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### NCListAdapter - Slots
+
 #### slot: rootUrlTemplate
-
-
 
 ```js
 rootUrlTemplate: {
@@ -26,8 +25,6 @@ rootUrlTemplate: {
 
 #### slot: refNames
 
-
-
 ```js
 refNames: {
       type: 'stringArray',
@@ -35,7 +32,3 @@ refNames: {
       description: 'List of refNames used by the NCList used for aliasing',
     }
 ```
-
-
-
- 

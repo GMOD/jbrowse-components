@@ -4,15 +4,14 @@ title: ChainAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### ChainAdapter - Slots
+
 #### slot: assemblyNames
-
-
 
 ```js
 assemblyNames: {
@@ -49,15 +48,9 @@ queryAssembly: {
 
 #### slot: chainLocation
 
-
-
 ```js
 chainLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/file.chain', locationType: 'UriLocation' },
     }
 ```
-
-
-
- 

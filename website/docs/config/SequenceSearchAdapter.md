@@ -4,15 +4,14 @@ title: SequenceSearchAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### SequenceSearchAdapter - Slots
+
 #### slot: search
-
-
 
 ```js
 search: {
@@ -24,8 +23,6 @@ search: {
 
 #### slot: sequenceAdapter
 
-
-
 ```js
 sequenceAdapter: {
       type: 'frozen',
@@ -34,8 +31,6 @@ sequenceAdapter: {
 ```
 
 #### slot: searchForward
-
-
 
 ```js
 searchForward: {
@@ -46,8 +41,6 @@ searchForward: {
 
 #### slot: searchReverse
 
-
-
 ```js
 searchReverse: {
       type: 'boolean',
@@ -57,15 +50,9 @@ searchReverse: {
 
 #### slot: caseInsensitive
 
-
-
 ```js
 caseInsensitive: {
       type: 'boolean',
       defaultValue: true,
     }
 ```
-
-
-
- 

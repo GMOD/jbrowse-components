@@ -38,6 +38,10 @@ function removeAttr(obj: Record<string, unknown>, attr: string) {
   return obj
 }
 
+/**
+ * #config JBrowseWebConfiguration
+ * configuration here appears as a "configuration" object on the root of config.json
+ */
 export default function JBrowseWeb(
   pluginManager: PluginManager,
   Session: SessionStateModel,
@@ -46,35 +50,56 @@ export default function JBrowseWeb(
   const JBrowseModel = types
     .model('JBrowseWeb', {
       configuration: ConfigurationSchema('Root', {
+        /**
+         * #slot
+         */
         rpc: RpcManager.configSchema,
-        // possibly consider this for global config editor
+        /**
+         * #slot
+         */
         highResolutionScaling: {
           type: 'number',
           defaultValue: 2,
         },
+        /**
+         * #slot
+         */
         shareURL: {
           type: 'string',
           defaultValue: 'https://share.jbrowse.org/api/v1/',
         },
+
         featureDetails: ConfigurationSchema('FeatureDetails', {
+          /**
+           * #slot featureDetails.sequenceTypes
+           */
           sequenceTypes: {
             type: 'stringArray',
             defaultValue: ['mRNA', 'transcript', 'gene', 'CDS'],
           },
         }),
         formatDetails: ConfigurationSchema('FormatDetails', {
+          /**
+           * #slot formatDetails.feature
+           */
           feature: {
             type: 'frozen',
             description: 'adds extra fields to the feature details',
             defaultValue: {},
             contextVariable: ['feature'],
           },
+          /**
+           * #slot formatDetails.subfeatures
+           */
           subfeatures: {
             type: 'frozen',
             description: 'adds extra fields to the subfeatures of a feature',
             defaultValue: {},
             contextVariable: ['feature'],
           },
+          /**
+           * #slot formatDetails.depth
+           */
           depth: {
             type: 'number',
             defaultValue: 2,
@@ -82,22 +107,37 @@ export default function JBrowseWeb(
           },
         }),
         formatAbout: ConfigurationSchema('FormatAbout', {
-          conf: {
+          /**
+           * #slot formatAbout.conf
+           */
+          config: {
             type: 'frozen',
             description: 'formats configuration object in about dialog',
             defaultValue: {},
-            contextVariable: ['conf'],
+            contextVariable: ['config'],
           },
+          /**
+           * #slot formatAbout.hideUris
+           */
           hideUris: {
             type: 'boolean',
             defaultValue: false,
           },
         }),
+        /**
+         * #slot
+         */
         disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
+        /**
+         * #slot
+         */
         theme: { type: 'frozen', defaultValue: {} },
+        /**
+         * #slot
+         */
         logoPath: {
           type: 'fileLocation',
           defaultValue: { uri: '', locationType: 'UriLocation' },

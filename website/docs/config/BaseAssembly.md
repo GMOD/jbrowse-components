@@ -3,15 +3,20 @@ id: baseassembly
 title: BaseAssembly
 toplevel: true
 ---
+
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
+
 This corresponds to the assemblies section of the config
 
 ### BaseAssembly - Identifier
 
 #### slot: name
 
-
-
 ### BaseAssembly - Slots
+
 #### slot: aliases
 
 aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
@@ -30,13 +35,10 @@ sequence refers to a reference sequence track that has an adapter containing,
 importantly, a sequence adapter such as IndexedFastaAdapter
 
 ```js
-sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
-        .configSchema
+sequence: pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 ```
 
 #### slot: refNameColors
-
-
 
 ```js
 refNameColors: {
@@ -68,8 +70,6 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 
 #### slot: displayName
 
-
-
 ```js
 displayName: {
         type: 'string',
@@ -78,7 +78,3 @@ displayName: {
           'A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while the assembly name may just be "hg38"',
       }
 ```
-
-
-
- 

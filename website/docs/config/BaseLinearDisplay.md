@@ -3,6 +3,12 @@ id: baselineardisplay
 title: BaseLinearDisplay
 toplevel: true
 ---
+
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
+
 BaseLinearDisplay is a "base" config that is extended by classes like
 "LinearBasicDisplay" (used for feature tracks, etc) and "LinearBareDisplay"
 (more stripped down than even the basic display, not commonly used)
@@ -11,12 +17,9 @@ BaseLinearDisplay is a "base" config that is extended by classes like
 
 #### slot: explicitIdentifier
 
-
-
 ### BaseLinearDisplay - Slots
+
 #### slot: maxFeatureScreenDensity
-
-
 
 ```js
 maxFeatureScreenDensity: {
@@ -29,8 +32,6 @@ maxFeatureScreenDensity: {
 
 #### slot: fetchSizeLimit
 
-
-
 ```js
 fetchSizeLimit: {
       type: 'number',
@@ -39,7 +40,3 @@ fetchSizeLimit: {
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
     }
 ```
-
-
-
- 

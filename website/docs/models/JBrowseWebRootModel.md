@@ -3,12 +3,16 @@ id: jbrowsewebrootmodel
 title: JBrowseWebRootModel
 toplevel: true
 ---
+
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
 note that many properties of the root model are available through the session, which
 may be preferable since using getSession() is better relied on than getRoot()
 
-
-
 ### JBrowseWebRootModel - Properties
+
 #### property: jbrowse
 
 `jbrowse` is a mapping of the config.json into the in-memory state tree
@@ -21,8 +25,6 @@ jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema)
 ```
 
 #### property: configPath
-
-
 
 ```js
 // type signature
@@ -45,8 +47,6 @@ session: types.maybe(Session)
 
 #### property: assemblyManager
 
-
-
 ```js
 // type signature
 IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: Error; regions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & { ...; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _No...
@@ -56,8 +56,6 @@ assemblyManager: types.optional(AssemblyManager, {})
 
 #### property: version
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
@@ -66,8 +64,6 @@ version: types.maybe(types.string)
 ```
 
 #### property: internetAccounts
-
-
 
 ```js
 // type signature
@@ -88,14 +84,3 @@ IOptionalIType<IModelType<{ undoIdx: IType<number, number, number>; targetPath: 
 // code
 history: types.optional(TimeTraveller, { targetPath: '../session' })
 ```
-
-
-
-
-
-
-
-
-
-
- 

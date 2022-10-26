@@ -4,13 +4,13 @@ title: DotplotView
 toplevel: true
 ---
 
-
-
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
 
 ### DotplotView - Properties
+
 #### property: id
-
-
 
 ```js
 // type signature
@@ -21,8 +21,6 @@ id: ElementId
 
 #### property: type
 
-
-
 ```js
 // type signature
 ISimpleType<"DotplotView">
@@ -31,8 +29,6 @@ type: types.literal('DotplotView')
 ```
 
 #### property: height
-
-
 
 ```js
 // type signature
@@ -43,8 +39,6 @@ height: 600
 
 #### property: borderSize
 
-
-
 ```js
 // type signature
 number
@@ -53,8 +47,6 @@ borderSize: 20
 ```
 
 #### property: tickSize
-
-
 
 ```js
 // type signature
@@ -65,8 +57,6 @@ tickSize: 5
 
 #### property: vtextRotation
 
-
-
 ```js
 // type signature
 number
@@ -75,8 +65,6 @@ vtextRotation: 0
 ```
 
 #### property: htextRotation
-
-
 
 ```js
 // type signature
@@ -87,8 +75,6 @@ htextRotation: -90
 
 #### property: fontSize
 
-
-
 ```js
 // type signature
 number
@@ -97,8 +83,6 @@ fontSize: 15
 ```
 
 #### property: trackSelectorType
-
-
 
 ```js
 // type signature
@@ -109,8 +93,6 @@ trackSelectorType: 'hierarchical'
 
 #### property: assemblyNames
 
-
-
 ```js
 // type signature
 IArrayType<ISimpleType<string>>
@@ -119,8 +101,6 @@ assemblyNames: types.array(types.string)
 ```
 
 #### property: drawCigar
-
-
 
 ```js
 // type signature
@@ -131,8 +111,6 @@ drawCigar: true
 
 #### property: hview
 
-
-
 ```js
 // type signature
 IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx: IType<...>; of...
@@ -141,8 +119,6 @@ hview: types.optional(DotplotHView, {})
 ```
 
 #### property: vview
-
-
 
 ```js
 // type signature
@@ -153,8 +129,6 @@ vview: types.optional(DotplotVView, {})
 
 #### property: cursorMode
 
-
-
 ```js
 // type signature
 string
@@ -163,8 +137,6 @@ cursorMode: 'crosshair'
 ```
 
 #### property: tracks
-
-
 
 ```js
 // type signature
@@ -188,11 +160,9 @@ IArrayType<IAnyModelType>
 viewTrackConfigs: types.array(pm.pluggableConfigSchemaType('track'))
 ```
 
-
 ### DotplotView - Getters
+
 #### getter: width
-
-
 
 ```js
 // type
@@ -201,16 +171,12 @@ number
 
 #### getter: assemblyErrors
 
-
-
 ```js
 // type
 string
 ```
 
 #### getter: assembliesInitialized
-
-
 
 ```js
 // type
@@ -219,16 +185,12 @@ boolean
 
 #### getter: initialized
 
-
-
 ```js
 // type
 boolean
 ```
 
 #### getter: hticks
-
-
 
 ```js
 // type
@@ -237,16 +199,12 @@ any[]
 
 #### getter: vticks
 
-
-
 ```js
 // type
 any[]
 ```
 
 #### getter: loading
-
-
 
 ```js
 // type
@@ -255,16 +213,12 @@ boolean
 
 #### getter: viewWidth
 
-
-
 ```js
 // type
 number
 ```
 
 #### getter: viewHeight
-
-
 
 ```js
 // type
@@ -273,8 +227,6 @@ number
 
 #### getter: views
 
-
-
 ```js
 // type
 (({ id: string; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IStateTreeNode<...>; bpPerPx: number; offsetPx: number; interRegionPaddingWidth: numbe...
@@ -282,18 +234,14 @@ number
 
 #### getter: error
 
-
-
 ```js
 // type
 unknown
 ```
 
-
 ### DotplotView - Methods
+
 #### method: renderProps
-
-
 
 ```js
 // type signature
@@ -302,18 +250,14 @@ renderProps: () => any
 
 #### method: menuItems
 
-
-
 ```js
 // type signature
 menuItems: () => ({ label: string; onClick: () => void; icon?: undefined; } | { label: string; onClick: () => any; icon: (props: SvgIconProps<"svg", {}>) => Element; })[]
 ```
 
-
 ### DotplotView - Actions
+
 #### action: setCursorMode
-
-
 
 ```js
 // type signature
@@ -321,8 +265,6 @@ setCursorMode: (str: string) => void
 ```
 
 #### action: setDrawCigar
-
-
 
 ```js
 // type signature
@@ -340,16 +282,12 @@ clearView: () => void
 
 #### action: setBorderX
 
-
-
 ```js
 // type signature
 setBorderX: (n: number) => void
 ```
 
 #### action: setBorderY
-
-
 
 ```js
 // type signature
@@ -358,8 +296,6 @@ setBorderY: (n: number) => void
 
 #### action: setWidth
 
-
-
 ```js
 // type signature
 setWidth: (newWidth: number) => number
@@ -367,16 +303,12 @@ setWidth: (newWidth: number) => number
 
 #### action: setHeight
 
-
-
 ```js
 // type signature
 setHeight: (newHeight: number) => number
 ```
 
 #### action: setError
-
-
 
 ```js
 // type signature
@@ -394,16 +326,12 @@ closeView: () => void
 
 #### action: zoomOutButton
 
-
-
 ```js
 // type signature
 zoomOutButton: () => void
 ```
 
 #### action: zoomInButton
-
-
 
 ```js
 // type signature
@@ -412,16 +340,12 @@ zoomInButton: () => void
 
 #### action: activateTrackSelector
 
-
-
 ```js
 // type signature
 activateTrackSelector: () => any
 ```
 
 #### action: showTrack
-
-
 
 ```js
 // type signature
@@ -430,16 +354,12 @@ showTrack: (trackId: string, initialSnapshot?: {}) => void
 
 #### action: hideTrack
 
-
-
 ```js
 // type signature
 hideTrack: (trackId: string) => number
 ```
 
 #### action: toggleTrack
-
-
 
 ```js
 // type signature
@@ -448,8 +368,6 @@ toggleTrack: (trackId: string) => void
 
 #### action: setAssemblyNames
 
-
-
 ```js
 // type signature
 setAssemblyNames: (target: string, query: string) => void
@@ -457,16 +375,12 @@ setAssemblyNames: (target: string, query: string) => void
 
 #### action: setViews
 
-
-
 ```js
 // type signature
 setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>>; bpPerPx...
 ```
 
 #### action: getCoords
-
-
 
 ```js
 // type signature
@@ -493,8 +407,6 @@ onDotplotView: (mousedown: Coord, mouseup: Coord) => void
 
 #### action: squareView
 
-
-
 ```js
 // type signature
 squareView: () => void
@@ -502,11 +414,7 @@ squareView: () => void
 
 #### action: squareViewProportional
 
-
-
 ```js
 // type signature
 squareViewProportional: () => void
 ```
-
- 

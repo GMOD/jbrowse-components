@@ -4,15 +4,14 @@ title: SNPCoverageRenderer
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### SNPCoverageRenderer - Slots
+
 #### slot: clipColor
-
-
 
 ```js
 clipColor: {
@@ -23,8 +22,6 @@ clipColor: {
 ```
 
 #### slot: indicatorThreshold
-
-
 
 ```js
 indicatorThreshold: {
@@ -37,8 +34,6 @@ indicatorThreshold: {
 
 #### slot: drawArcs
 
-
-
 ```js
 drawArcs: {
       type: 'boolean',
@@ -48,8 +43,6 @@ drawArcs: {
 ```
 
 #### slot: drawInterbaseCounts
-
-
 
 ```js
 drawInterbaseCounts: {
@@ -62,8 +55,6 @@ drawInterbaseCounts: {
 
 #### slot: drawIndicators
 
-
-
 ```js
 drawIndicators: {
       type: 'boolean',
@@ -72,7 +63,3 @@ drawIndicators: {
       defaultValue: true,
     }
 ```
-
-
-
- 

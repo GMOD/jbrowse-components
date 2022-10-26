@@ -4,13 +4,13 @@ title: LinearGenomeView
 toplevel: true
 ---
 
-
-
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
 
 ### LinearGenomeView - Properties
+
 #### property: id
-
-
 
 ```js
 // type signature
@@ -20,8 +20,6 @@ id: ElementId
 ```
 
 #### property: type
-
-
 
 ```js
 // type signature
@@ -55,7 +53,7 @@ bpPerPx: 1
 #### property: displayedRegions
 
 currently displayed regions, can be a single chromosome, arbitrary subsections,
-or the entire  set of chromosomes in the genome, but it not advised to use the
+or the entire set of chromosomes in the genome, but it not advised to use the
 entire set of chromosomes if your assembly is very fragmented
 
 ```js
@@ -91,8 +89,6 @@ hideHeader: false
 
 #### property: hideHeaderOverview
 
-
-
 ```js
 // type signature
 false
@@ -102,8 +98,6 @@ hideHeaderOverview: false
 
 #### property: hideNoTracksActive
 
-
-
 ```js
 // type signature
 false
@@ -112,8 +106,6 @@ hideNoTracksActive: false
 ```
 
 #### property: trackSelectorType
-
-
 
 ```js
 // type signature
@@ -178,11 +170,9 @@ true
 showGridlines: true
 ```
 
-
 ### LinearGenomeView - Getters
+
 #### getter: width
-
-
 
 ```js
 // type
@@ -191,16 +181,12 @@ number
 
 #### getter: interRegionPaddingWidth
 
-
-
 ```js
 // type
 number
 ```
 
 #### getter: assemblyNames
-
-
 
 ```js
 // type
@@ -209,8 +195,6 @@ any[]
 
 #### getter: canShowCytobands
 
-
-
 ```js
 // type
 any
@@ -218,16 +202,12 @@ any
 
 #### getter: showCytobands
 
-
-
 ```js
 // type
 boolean
 ```
 
 #### getter: anyCytobandsExist
-
-
 
 ```js
 // type
@@ -300,15 +280,13 @@ string
 
 #### getter: centerLineInfo
 
-
-
 ```js
 // type
 any
 ```
 
-
 ### LinearGenomeView - Methods
+
 #### method: getSelectedRegions
 
 Helper method for the fetchSequence.
@@ -330,8 +308,6 @@ menuItems: () => MenuItem[]
 
 #### method: rubberBandMenuItems
 
-
-
 ```js
 // type signature
 rubberBandMenuItems: () => MenuItem[]
@@ -339,11 +315,20 @@ rubberBandMenuItems: () => MenuItem[]
 
 #### method: bpToPx
 
-
-
 ```js
 // type signature
-bpToPx: ({ refName, coord, regionNumber, }: { refName: string; coord: number; regionNumber?: number; }) => { index: number; offsetPx: number; }
+bpToPx: ({
+  refName,
+  coord,
+  regionNumber,
+}: {
+  refName: string,
+  coord: number,
+  regionNumber?: number,
+}) => {
+  index: number
+  offsetPx: number
+}
 ```
 
 #### method: centerAt
@@ -358,18 +343,24 @@ centerAt: (coord: number, refName: string, regionNumber: number) => void
 
 #### method: pxToBp
 
-
-
 ```js
 // type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed: boolean; }
+pxToBp: (px: number) => {
+  coord: number
+  index: number
+  refName: string
+  oob: boolean
+  assemblyName: string
+  offset: number
+  start: number
+  end: number
+  reversed: boolean
+}
 ```
 
-
 ### LinearGenomeView - Actions
+
 #### action: setShowCytobands
-
-
 
 ```js
 // type signature
@@ -378,16 +369,12 @@ setShowCytobands: (flag: boolean) => void
 
 #### action: setWidth
 
-
-
 ```js
 // type signature
 setWidth: (newWidth: number) => void
 ```
 
 #### action: setError
-
-
 
 ```js
 // type signature
@@ -396,16 +383,12 @@ setError: (error: Error) => void
 
 #### action: toggleHeader
 
-
-
 ```js
 // type signature
 toggleHeader: () => void
 ```
 
 #### action: toggleHeaderOverview
-
-
 
 ```js
 // type signature
@@ -414,16 +397,12 @@ toggleHeaderOverview: () => void
 
 #### action: toggleNoTracksActive
 
-
-
 ```js
 // type signature
 toggleNoTracksActive: () => void
 ```
 
 #### action: toggleShowGridlines
-
-
 
 ```js
 // type signature
@@ -432,16 +411,12 @@ toggleShowGridlines: () => void
 
 #### action: scrollTo
 
-
-
 ```js
 // type signature
 scrollTo: (offsetPx: number) => number
 ```
 
 #### action: zoomTo
-
-
 
 ```js
 // type signature
@@ -459,16 +434,12 @@ setOffsets: (left?: BpOffset, right?: BpOffset) => void
 
 #### action: setSearchResults
 
-
-
 ```js
 // type signature
 setSearchResults: (results?: BaseResult[], query?: string) => void
 ```
 
 #### action: setGetSequenceDialogOpen
-
-
 
 ```js
 // type signature
@@ -477,16 +448,12 @@ setGetSequenceDialogOpen: (open: boolean) => void
 
 #### action: setNewView
 
-
-
 ```js
 // type signature
 setNewView: (bpPerPx: number, offsetPx: number) => void
 ```
 
 #### action: horizontallyFlip
-
-
 
 ```js
 // type signature
@@ -495,16 +462,16 @@ horizontallyFlip: () => void
 
 #### action: showTrack
 
-
-
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}, displayInitialSnapshot?: {}) => any
+showTrack: (
+  trackId: string,
+  initialSnapshot?: {},
+  displayInitialSnapshot?: {},
+) => any
 ```
 
 #### action: moveTrack
-
-
 
 ```js
 // type signature
@@ -513,16 +480,12 @@ moveTrack: (movingId: string, targetId: string) => void
 
 #### action: closeView
 
-
-
 ```js
 // type signature
 closeView: () => void
 ```
 
 #### action: toggleTrack
-
-
 
 ```js
 // type signature
@@ -531,16 +494,12 @@ toggleTrack: (trackId: string) => void
 
 #### action: setTrackLabels
 
-
-
 ```js
 // type signature
 setTrackLabels: (setting: "hidden" | "offset" | "overlapping") => void
 ```
 
 #### action: toggleCenterLine
-
-
 
 ```js
 // type signature
@@ -549,16 +508,12 @@ toggleCenterLine: () => void
 
 #### action: setDisplayedRegions
 
-
-
 ```js
 // type signature
 setDisplayedRegions: (regions: Region[]) => void
 ```
 
 #### action: activateTrackSelector
-
-
 
 ```js
 // type signature
@@ -576,16 +531,12 @@ afterDisplayedRegionsSet: (cb: Function) => void
 
 #### action: horizontalScroll
 
-
-
 ```js
 // type signature
 horizontalScroll: (distance: number) => number
 ```
 
 #### action: center
-
-
 
 ```js
 // type signature
@@ -594,16 +545,12 @@ center: () => void
 
 #### action: showAllRegions
 
-
-
 ```js
 // type signature
 showAllRegions: () => void
 ```
 
 #### action: showAllRegionsInAssembly
-
-
 
 ```js
 // type signature
@@ -612,16 +559,12 @@ showAllRegionsInAssembly: (assemblyName?: string) => void
 
 #### action: setDraggingTrackId
 
-
-
 ```js
 // type signature
 setDraggingTrackId: (idx?: string) => void
 ```
 
 #### action: setScaleFactor
-
-
 
 ```js
 // type signature
@@ -666,8 +609,6 @@ zoom: (targetBpPerPx: number) => void
 
 #### action: setCoarseDynamicBlocks
 
-
-
 ```js
 // type signature
 setCoarseDynamicBlocks: (blocks: BlockSet) => void
@@ -709,11 +650,7 @@ navTo: (query: NavLocation) => void
 
 #### action: navToMultiple
 
-
-
 ```js
 // type signature
 navToMultiple: (locations: NavLocation[]) => void
 ```
-
- 

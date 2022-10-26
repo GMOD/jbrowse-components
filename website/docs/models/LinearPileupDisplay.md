@@ -4,13 +4,13 @@ title: LinearPileupDisplay
 toplevel: true
 ---
 
-
-
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
 
 ### LinearPileupDisplay - Properties
+
 #### property: type
-
-
 
 ```js
 // type signature
@@ -21,8 +21,6 @@ type: types.literal('LinearPileupDisplay')
 
 #### property: configuration
 
-
-
 ```js
 // type signature
 ITypeUnion<any, any, any>
@@ -31,8 +29,6 @@ configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: showSoftClipping
-
-
 
 ```js
 // type signature
@@ -43,8 +39,6 @@ showSoftClipping: false
 
 #### property: featureHeight
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<number>>
@@ -53,8 +47,6 @@ featureHeight: types.maybe(types.number)
 ```
 
 #### property: noSpacing
-
-
 
 ```js
 // type signature
@@ -65,8 +57,6 @@ noSpacing: types.maybe(types.boolean)
 
 #### property: fadeLikelihood
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
@@ -75,8 +65,6 @@ fadeLikelihood: types.maybe(types.boolean)
 ```
 
 #### property: trackMaxHeight
-
-
 
 ```js
 // type signature
@@ -87,8 +75,6 @@ trackMaxHeight: types.maybe(types.number)
 
 #### property: mismatchAlpha
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<boolean>>
@@ -97,8 +83,6 @@ mismatchAlpha: types.maybe(types.boolean)
 ```
 
 #### property: sortedBy
-
-
 
 ```js
 // type signature
@@ -117,8 +101,6 @@ sortedBy: types.maybe(
 
 #### property: colorBy
 
-
-
 ```js
 // type signature
 IMaybe<IModelType<{ type: ISimpleType<string>; tag: IMaybe<ISimpleType<string>>; extra: IType<any, any, any>; }, {}, _NotCustomized, _NotCustomized>>
@@ -132,11 +114,9 @@ colorBy: types.maybe(
         )
 ```
 
-
 ### LinearPileupDisplay - Getters
+
 #### getter: maxHeight
-
-
 
 ```js
 // type
@@ -145,16 +125,12 @@ any
 
 #### getter: rendererConfig
 
-
-
 ```js
 // type
 { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
 #### getter: featureHeightSetting
-
-
 
 ```js
 // type
@@ -163,16 +139,12 @@ any
 
 #### getter: mismatchAlphaSetting
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: featureUnderMouse
-
-
 
 ```js
 // type
@@ -181,8 +153,6 @@ Feature
 
 #### getter: rendererTypeName
 
-
-
 ```js
 // type
 string
@@ -190,18 +160,14 @@ string
 
 #### getter: DisplayBlurb
 
-
-
 ```js
 // type
-(props: LinearPileupDisplayBlurbProps) => Element
+;(props: LinearPileupDisplayBlurbProps) => Element
 ```
 
-
 ### LinearPileupDisplay - Methods
+
 #### method: contextMenuItems
-
-
 
 ```js
 // type signature
@@ -210,8 +176,6 @@ contextMenuItems: () => { label: string; icon: (props: SvgIconProps<"svg", {}>) 
 
 #### method: renderProps
 
-
-
 ```js
 // type signature
 renderProps: () => any
@@ -219,18 +183,14 @@ renderProps: () => any
 
 #### method: trackMenuItems
 
-
-
 ```js
 // type signature
 trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
-
 ### LinearPileupDisplay - Actions
+
 #### action: setReady
-
-
 
 ```js
 // type signature
@@ -239,16 +199,12 @@ setReady: (flag: boolean) => void
 
 #### action: setMaxHeight
 
-
-
 ```js
 // type signature
 setMaxHeight: (n: number) => void
 ```
 
 #### action: setFeatureHeight
-
-
 
 ```js
 // type signature
@@ -257,16 +213,12 @@ setFeatureHeight: (n: number) => void
 
 #### action: setNoSpacing
 
-
-
 ```js
 // type signature
 setNoSpacing: (flag: boolean) => void
 ```
 
 #### action: setColorScheme
-
-
 
 ```js
 // type signature
@@ -275,16 +227,12 @@ setColorScheme: (colorScheme: { type: string; tag?: string; }) => void
 
 #### action: updateModificationColorMap
 
-
-
 ```js
 // type signature
 updateModificationColorMap: (uniqueModifications: string[]) => void
 ```
 
 #### action: updateColorTagMap
-
-
 
 ```js
 // type signature
@@ -293,8 +241,6 @@ updateColorTagMap: (uniqueTag: string[]) => void
 
 #### action: setFeatureUnderMouse
 
-
-
 ```js
 // type signature
 setFeatureUnderMouse: (feat?: Feature) => void
@@ -302,16 +248,12 @@ setFeatureUnderMouse: (feat?: Feature) => void
 
 #### action: selectFeature
 
-
-
 ```js
 // type signature
 selectFeature: (feature: Feature) => void
 ```
 
 #### action: clearSelected
-
-
 
 ```js
 // type signature
@@ -329,16 +271,12 @@ copyFeatureToClipboard: (feature: Feature) => void
 
 #### action: toggleSoftClipping
 
-
-
 ```js
 // type signature
 toggleSoftClipping: () => void
 ```
 
 #### action: toggleMismatchAlpha
-
-
 
 ```js
 // type signature
@@ -347,16 +285,12 @@ toggleMismatchAlpha: () => void
 
 #### action: setConfig
 
-
-
 ```js
 // type signature
 setConfig: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setSortedBy
-
-
 
 ```js
 // type signature
@@ -365,11 +299,7 @@ setSortedBy: (type: string, tag?: string) => void
 
 #### action: reload
 
-
-
 ```js
 // type signature
 reload: () => void
 ```
-
- 

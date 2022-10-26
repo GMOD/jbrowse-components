@@ -4,15 +4,14 @@ title: MashMapAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### MashMapAdapter - Slots
+
 #### slot: assemblyNames
-
-
 
 ```js
 assemblyNames: {
@@ -25,8 +24,6 @@ assemblyNames: {
 
 #### slot: targetAssembly
 
-
-
 ```js
 targetAssembly: {
       type: 'string',
@@ -36,8 +33,6 @@ targetAssembly: {
 ```
 
 #### slot: queryAssembly
-
-
 
 ```js
 queryAssembly: {
@@ -49,8 +44,6 @@ queryAssembly: {
 
 #### slot: outLocation
 
-
-
 ```js
 outLocation: {
       type: 'fileLocation',
@@ -60,7 +53,3 @@ outLocation: {
       },
     }
 ```
-
-
-
- 

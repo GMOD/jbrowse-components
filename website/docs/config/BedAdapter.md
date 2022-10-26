@@ -4,15 +4,14 @@ title: BedAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### BedAdapter - Slots
+
 #### slot: bedLocation
-
-
 
 ```js
 bedLocation: {
@@ -22,8 +21,6 @@ bedLocation: {
 ```
 
 #### slot: columnNames
-
-
 
 ```js
 columnNames: {
@@ -35,8 +32,6 @@ columnNames: {
 
 #### slot: scoreColumn
 
-
-
 ```js
 scoreColumn: {
       type: 'string',
@@ -46,8 +41,6 @@ scoreColumn: {
 ```
 
 #### slot: autoSql
-
-
 
 ```js
 autoSql: {
@@ -59,8 +52,6 @@ autoSql: {
 
 #### slot: colRef
 
-
-
 ```js
 colRef: {
       type: 'number',
@@ -70,8 +61,6 @@ colRef: {
 ```
 
 #### slot: colStart
-
-
 
 ```js
 colStart: {
@@ -83,8 +72,6 @@ colStart: {
 
 #### slot: colEnd
 
-
-
 ```js
 colEnd: {
       type: 'number',
@@ -92,7 +79,3 @@ colEnd: {
       defaultValue: 2,
     }
 ```
-
-
-
- 

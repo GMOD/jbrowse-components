@@ -4,13 +4,13 @@ title: BaseDisplay
 toplevel: true
 ---
 
-
-
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
 
 ### BaseDisplay - Properties
+
 #### property: id
-
-
 
 ```js
 // type signature
@@ -21,8 +21,6 @@ id: ElementId
 
 #### property: type
 
-
-
 ```js
 // type signature
 ISimpleType<string>
@@ -32,8 +30,6 @@ type: types.string
 
 #### property: rpcDriverName
 
-
-
 ```js
 // type signature
 IMaybe<ISimpleType<string>>
@@ -41,11 +37,9 @@ IMaybe<ISimpleType<string>>
 rpcDriverName: types.maybe(types.string)
 ```
 
-
 ### BaseDisplay - Getters
+
 #### getter: RenderingComponent
-
-
 
 ```js
 // type
@@ -54,8 +48,6 @@ React.FC<{ model: { id: string; type: string; rpcDriverName: string; } & NonEmpt
 
 #### getter: DisplayBlurb
 
-
-
 ```js
 // type
 any
@@ -63,16 +55,12 @@ any
 
 #### getter: adapterConfig
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: parentTrack
-
-
 
 ```js
 // type
@@ -101,15 +89,13 @@ any
 
 #### getter: viewMenuActions
 
-
-
 ```js
 // type
 MenuItem[]
 ```
 
-
 ### BaseDisplay - Methods
+
 #### method: renderProps
 
 the react props that are passed to the Renderer when data
@@ -122,8 +108,6 @@ renderProps: () => any
 
 #### method: trackMenuItems
 
-
-
 ```js
 // type signature
 trackMenuItems: () => MenuItem[]
@@ -131,18 +115,14 @@ trackMenuItems: () => MenuItem[]
 
 #### method: regionCannotBeRendered
 
-
-
 ```js
 // type signature
 regionCannotBeRendered: () => any
 ```
 
-
 ### BaseDisplay - Actions
+
 #### action: setError
-
-
 
 ```js
 // type signature
@@ -150,8 +130,6 @@ setError: (error?: unknown) => void
 ```
 
 #### action: setRpcDriverName
-
-
 
 ```js
 // type signature
@@ -166,5 +144,3 @@ base display reload does nothing, see specialized displays for details
 // type signature
 reload: () => void
 ```
-
- 

@@ -4,15 +4,14 @@ title: JBrowse1Connection
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### JBrowse1Connection - Slots
+
 #### slot: dataDirLocation
-
-
 
 ```js
 dataDirLocation: {
@@ -28,8 +27,6 @@ dataDirLocation: {
 
 #### slot: assemblyNames
 
-
-
 ```js
 assemblyNames: {
       description:
@@ -39,14 +36,8 @@ assemblyNames: {
     }
 ```
 
-
 ## JBrowse1Connection - Derives from
-
-
-
 
 ```js
 baseConfiguration: baseConnectionConfig
 ```
-
- 

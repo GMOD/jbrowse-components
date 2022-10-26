@@ -4,13 +4,13 @@ title: JBrowseWebSessionModel
 toplevel: true
 ---
 
-
-
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
 
 ### JBrowseWebSessionModel - Properties
+
 #### property: id
-
-
 
 ```js
 // type signature
@@ -21,8 +21,6 @@ id: types.optional(types.identifier, shortid())
 
 #### property: name
 
-
-
 ```js
 // type signature
 ISimpleType<string>
@@ -32,8 +30,6 @@ name: types.string
 
 #### property: margin
 
-
-
 ```js
 // type signature
 number
@@ -42,8 +38,6 @@ margin: 0
 ```
 
 #### property: drawerWidth
-
-
 
 ```js
 // type signature
@@ -57,8 +51,6 @@ drawerWidth: types.optional(
 
 #### property: views
 
-
-
 ```js
 // type signature
 IArrayType<IAnyType>
@@ -67,8 +59,6 @@ views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
 #### property: widgets
-
-
 
 ```js
 // type signature
@@ -80,8 +70,6 @@ widgets: types.map(
 ```
 
 #### property: activeWidgets
-
-
 
 ```js
 // type signature
@@ -96,8 +84,6 @@ activeWidgets: types.map(
 
 #### property: connectionInstances
 
-
-
 ```js
 // type signature
 IArrayType<IAnyType>
@@ -108,8 +94,6 @@ connectionInstances: types.array(
 ```
 
 #### property: sessionTracks
-
-
 
 ```js
 // type signature
@@ -122,8 +106,6 @@ sessionTracks: types.array(
 
 #### property: sessionConnections
 
-
-
 ```js
 // type signature
 IArrayType<IAnyModelType>
@@ -135,8 +117,6 @@ sessionConnections: types.array(
 
 #### property: sessionAssemblies
 
-
-
 ```js
 // type signature
 IArrayType<IType<any, any, any>>
@@ -145,8 +125,6 @@ sessionAssemblies: types.array(assemblyConfigSchemasType)
 ```
 
 #### property: temporaryAssemblies
-
-
 
 ```js
 // type signature
@@ -157,8 +135,6 @@ temporaryAssemblies: types.array(assemblyConfigSchemasType)
 
 #### property: sessionPlugins
 
-
-
 ```js
 // type signature
 IArrayType<IType<any, any, any>>
@@ -168,8 +144,6 @@ sessionPlugins: types.array(types.frozen())
 
 #### property: minimized
 
-
-
 ```js
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
@@ -178,8 +152,6 @@ minimized: types.optional(types.boolean, false)
 ```
 
 #### property: drawerPosition
-
-
 
 ```js
 // type signature
@@ -191,11 +163,9 @@ drawerPosition: types.optional(
       )
 ```
 
-
 ### JBrowseWebSessionModel - Getters
+
 #### getter: DialogComponent
-
-
 
 ```js
 // type
@@ -204,16 +174,12 @@ any
 
 #### getter: DialogProps
 
-
-
 ```js
 // type
 ReactProps
 ```
 
 #### getter: shareURL
-
-
 
 ```js
 // type
@@ -222,16 +188,12 @@ any
 
 #### getter: rpcManager
 
-
-
 ```js
 // type
 RpcManager
 ```
 
 #### getter: configuration
-
-
 
 ```js
 // type
@@ -240,16 +202,12 @@ RpcManager
 
 #### getter: assemblies
 
-
-
 ```js
 // type
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: assemblyNames
-
-
 
 ```js
 // type
@@ -258,16 +216,12 @@ string[]
 
 #### getter: tracks
 
-
-
 ```js
 // type
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: textSearchManager
-
-
 
 ```js
 // type
@@ -276,16 +230,12 @@ TextSearchManager
 
 #### getter: connections
 
-
-
 ```js
 // type
 ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: adminMode
-
-
 
 ```js
 // type
@@ -294,16 +244,12 @@ boolean
 
 #### getter: savedSessions
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: previousAutosaveId
-
-
 
 ```js
 // type
@@ -312,16 +258,12 @@ any
 
 #### getter: savedSessionNames
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: history
-
-
 
 ```js
 // type
@@ -330,16 +272,12 @@ any
 
 #### getter: menus
 
-
-
 ```js
 // type
 any
 ```
 
 #### getter: assemblyManager
-
-
 
 ```js
 // type
@@ -348,8 +286,6 @@ any
 
 #### getter: version
 
-
-
 ```js
 // type
 any
@@ -357,22 +293,20 @@ any
 
 #### getter: visibleWidget
 
-
-
 ```js
 // type
 any
 ```
 
-
 ### JBrowseWebSessionModel - Methods
+
 #### method: renderProps
-
-
 
 ```js
 // type signature
-renderProps: () => { theme: any; }
+renderProps: () => {
+  theme: any
+}
 ```
 
 #### method: getReferring
@@ -386,18 +320,14 @@ getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
 
 #### method: getTrackActionMenuItems
 
-
-
 ```js
 // type signature
 getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => ({ ...; } | { ...; })[]
 ```
 
-
 ### JBrowseWebSessionModel - Actions
+
 #### action: setDrawerPosition
-
-
 
 ```js
 // type signature
@@ -406,8 +336,6 @@ setDrawerPosition: (arg: string) => void
 
 #### action: queueDialog
 
-
-
 ```js
 // type signature
 queueDialog: (callback: (doneCallback: () => void) => [any, ReactProps]) => void
@@ -415,16 +343,12 @@ queueDialog: (callback: (doneCallback: () => void) => [any, ReactProps]) => void
 
 #### action: setName
 
-
-
 ```js
 // type signature
 setName: (str: string) => void
 ```
 
 #### action: addAssembly
-
-
 
 ```js
 // type signature
@@ -442,16 +366,12 @@ addTemporaryAssembly: (conf: AnyConfiguration) => any
 
 #### action: addSessionPlugin
 
-
-
 ```js
 // type signature
 addSessionPlugin: (plugin: JBrowsePlugin) => void
 ```
 
 #### action: removeAssembly
-
-
 
 ```js
 // type signature
@@ -460,16 +380,12 @@ removeAssembly: (assemblyName: string) => void
 
 #### action: removeTemporaryAssembly
 
-
-
 ```js
 // type signature
 removeTemporaryAssembly: (assemblyName: string) => void
 ```
 
 #### action: removeSessionPlugin
-
-
 
 ```js
 // type signature
@@ -478,16 +394,17 @@ removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
 
 #### action: makeConnection
 
-
-
 ```js
 // type signature
-makeConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => any
+makeConnection: (
+  configuration: { [x: string]: any } & NonEmptyObject & {
+      setSubschema(slotName: string, data: unknown): any,
+    } & IStateTreeNode<AnyConfigurationSchemaType>,
+  initialSnapshot?: {},
+) => any
 ```
 
 #### action: removeReferring
-
-
 
 ```js
 // type signature
@@ -496,16 +413,12 @@ removeReferring: (referring: any, track: any, callbacks: Function[], dereference
 
 #### action: prepareToBreakConnection
 
-
-
 ```js
 // type signature
 prepareToBreakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => (Record<...> | (() => void))[]
 ```
 
 #### action: breakConnection
-
-
 
 ```js
 // type signature
@@ -514,16 +427,16 @@ breakConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setS
 
 #### action: deleteConnection
 
-
-
 ```js
 // type signature
-deleteConnection: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+deleteConnection: (
+  configuration: { [x: string]: any } & NonEmptyObject & {
+      setSubschema(slotName: string, data: unknown): any,
+    } & IStateTreeNode<AnyConfigurationSchemaType>,
+) => any
 ```
 
 #### action: updateDrawerWidth
-
-
 
 ```js
 // type signature
@@ -532,16 +445,12 @@ updateDrawerWidth: (drawerWidth: number) => number
 
 #### action: resizeDrawer
 
-
-
 ```js
 // type signature
 resizeDrawer: (distance: number) => number
 ```
 
 #### action: addView
-
-
 
 ```js
 // type signature
@@ -550,16 +459,12 @@ addView: (typeName: string, initialState?: {}) => any
 
 #### action: removeView
 
-
-
 ```js
 // type signature
 removeView: (view: any) => void
 ```
 
 #### action: addAssemblyConf
-
-
 
 ```js
 // type signature
@@ -568,8 +473,6 @@ addAssemblyConf: (assemblyConf: AnyConfiguration) => any
 
 #### action: addTrackConf
 
-
-
 ```js
 // type signature
 addTrackConf: (trackConf: AnyConfiguration) => any
@@ -577,16 +480,16 @@ addTrackConf: (trackConf: AnyConfiguration) => any
 
 #### action: deleteTrackConf
 
-
-
 ```js
 // type signature
-deleteTrackConf: (trackConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => any
+deleteTrackConf: (
+  trackConf: { [x: string]: any } & NonEmptyObject & {
+      setSubschema(slotName: string, data: unknown): any,
+    } & IStateTreeNode<AnyConfigurationSchemaType>,
+) => any
 ```
 
 #### action: addConnectionConf
-
-
 
 ```js
 // type signature
@@ -595,8 +498,6 @@ addConnectionConf: (connectionConf: any) => any
 
 #### action: addLinearGenomeViewOfAssembly
 
-
-
 ```js
 // type signature
 addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
@@ -604,34 +505,36 @@ addLinearGenomeViewOfAssembly: (assemblyName: string, initialState?: {}) => any
 
 #### action: addViewOfAssembly
 
-
-
 ```js
 // type signature
-addViewOfAssembly: (viewType: any, assemblyName: string, initialState?: any) => any
+addViewOfAssembly: (viewType: any, assemblyName: string, initialState?: any) =>
+  any
 ```
 
 #### action: addViewFromAnotherView
 
-
-
 ```js
 // type signature
-addViewFromAnotherView: (viewType: string, otherView: any, initialState?: { displayedRegions?: Region[]; }) => any
+addViewFromAnotherView: (
+  viewType: string,
+  otherView: any,
+  initialState?: { displayedRegions?: Region[] },
+) => any
 ```
 
 #### action: addWidget
 
-
-
 ```js
 // type signature
-addWidget: (typeName: string, id: string, initialState?: {}, configuration?: { type: string; }) => any
+addWidget: (
+  typeName: string,
+  id: string,
+  initialState?: {},
+  configuration?: { type: string },
+) => any
 ```
 
 #### action: showWidget
-
-
 
 ```js
 // type signature
@@ -640,16 +543,12 @@ showWidget: (widget: any) => void
 
 #### action: hasWidget
 
-
-
 ```js
 // type signature
 hasWidget: (widget: any) => boolean
 ```
 
 #### action: hideWidget
-
-
 
 ```js
 // type signature
@@ -658,8 +557,6 @@ hideWidget: (widget: any) => void
 
 #### action: minimizeWidgetDrawer
 
-
-
 ```js
 // type signature
 minimizeWidgetDrawer: () => void
@@ -667,16 +564,12 @@ minimizeWidgetDrawer: () => void
 
 #### action: showWidgetDrawer
 
-
-
 ```js
 // type signature
 showWidgetDrawer: () => void
 ```
 
 #### action: hideAllWidgets
-
-
 
 ```js
 // type signature
@@ -704,16 +597,12 @@ clearSelection: () => void
 
 #### action: clearConnections
 
-
-
 ```js
 // type signature
 clearConnections: () => void
 ```
 
 #### action: addSavedSession
-
-
 
 ```js
 // type signature
@@ -722,16 +611,12 @@ addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOp
 
 #### action: removeSavedSession
 
-
-
 ```js
 // type signature
 removeSavedSession: (sessionSnapshot: any) => any
 ```
 
 #### action: renameCurrentSession
-
-
 
 ```js
 // type signature
@@ -740,16 +625,12 @@ renameCurrentSession: (sessionName: string) => any
 
 #### action: duplicateCurrentSession
 
-
-
 ```js
 // type signature
 duplicateCurrentSession: () => any
 ```
 
 #### action: activateSession
-
-
 
 ```js
 // type signature
@@ -758,16 +639,12 @@ activateSession: (sessionName: any) => any
 
 #### action: setDefaultSession
 
-
-
 ```js
 // type signature
 setDefaultSession: () => any
 ```
 
 #### action: saveSessionToLocalStorage
-
-
 
 ```js
 // type signature
@@ -776,16 +653,12 @@ saveSessionToLocalStorage: () => any
 
 #### action: loadAutosaveSession
 
-
-
 ```js
 // type signature
 loadAutosaveSession: () => any
 ```
 
 #### action: setSession
-
-
 
 ```js
 // type signature
@@ -804,11 +677,7 @@ editConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { se
 
 #### action: editTrackConfiguration
 
-
-
 ```js
 // type signature
 editTrackConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
-
- 

@@ -4,15 +4,14 @@ title: OAuthInternetAccount
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### OAuthInternetAccount - Slots
+
 #### slot: tokenType
-
-
 
 ```js
 tokenType: {
@@ -24,8 +23,6 @@ tokenType: {
 
 #### slot: authEndpoint
 
-
-
 ```js
 authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
@@ -35,8 +32,6 @@ authEndpoint: {
 ```
 
 #### slot: tokenEndpoint
-
-
 
 ```js
 tokenEndpoint: {
@@ -48,8 +43,6 @@ tokenEndpoint: {
 
 #### slot: needsPKCE
 
-
-
 ```js
 needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
@@ -59,8 +52,6 @@ needsPKCE: {
 ```
 
 #### slot: clientId
-
-
 
 ```js
 clientId: {
@@ -72,8 +63,6 @@ clientId: {
 
 #### slot: scopes
 
-
-
 ```js
 scopes: {
       description: 'optional scopes for the authorization call',
@@ -83,8 +72,6 @@ scopes: {
 ```
 
 #### slot: responseType
-
-
 
 ```js
 responseType: {
@@ -96,8 +83,6 @@ responseType: {
 
 #### slot: hasRefreshToken
 
-
-
 ```js
 hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
@@ -106,14 +91,8 @@ hasRefreshToken: {
     }
 ```
 
-
 ## OAuthInternetAccount - Derives from
-
-
-
 
 ```js
 baseConfiguration: BaseInternetAccountConfig
 ```
-
- 

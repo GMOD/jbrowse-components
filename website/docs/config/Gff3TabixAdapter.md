@@ -4,15 +4,14 @@ title: Gff3TabixAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### Gff3TabixAdapter - Slots
+
 #### slot: gffGzLocation
-
-
 
 ```js
 gffGzLocation: {
@@ -23,8 +22,6 @@ gffGzLocation: {
 
 #### slot: index.indexType
 
-
-
 ```js
 indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -34,8 +31,6 @@ indexType: {
 ```
 
 #### slot: index.indexType
-
-
 
 ```js
 location: {
@@ -60,7 +55,3 @@ dontRedispatch: {
       defaultValue: ['chromosome', 'region'],
     }
 ```
-
-
-
- 

@@ -3,16 +3,17 @@ id: bamadapter
 title: BamAdapter
 toplevel: true
 ---
+
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
+
 used to configure BAM adapter
 
-
-
-
-
 ### BamAdapter - Slots
+
 #### slot: bamLocation
-
-
 
 ```js
 bamLocation: {
@@ -23,8 +24,6 @@ bamLocation: {
 
 #### slot: index.indexType
 
-
-
 ```js
 indexType: {
         model: types.enumeration('IndexType', ['BAI', 'CSI']),
@@ -34,8 +33,6 @@ indexType: {
 ```
 
 #### slot: index.location
-
-
 
 ```js
 location: {
@@ -48,8 +45,6 @@ location: {
 ```
 
 #### slot: fetchSizeLimit
-
-
 
 ```js
 fetchSizeLimit: {
@@ -73,7 +68,3 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
-
-
-
- 

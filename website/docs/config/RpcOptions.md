@@ -4,15 +4,14 @@ title: RpcOptions
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### RpcOptions - Slots
+
 #### slot: defaultDriver
-
-
 
 ```js
 defaultDriver: {
@@ -25,23 +24,17 @@ defaultDriver: {
 
 #### slot: drivers
 
-
-
 ```js
 drivers: types.optional(
-      types.map(
-        types.union(
-          MainThreadRpcDriverConfigSchema,
-          WebWorkerRpcDriverConfigSchema,
-        ),
-      ),
-      {
-        MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
-        WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
-      },
-    )
+  types.map(
+    types.union(
+      MainThreadRpcDriverConfigSchema,
+      WebWorkerRpcDriverConfigSchema,
+    ),
+  ),
+  {
+    MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
+    WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
+  },
+)
 ```
-
-
-
- 

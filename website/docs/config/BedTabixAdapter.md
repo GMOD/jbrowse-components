@@ -4,15 +4,14 @@ title: BedTabixAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### BedTabixAdapter - Slots
+
 #### slot: bedGzLocation
-
-
 
 ```js
 bedGzLocation: {
@@ -23,8 +22,6 @@ bedGzLocation: {
 
 #### slot: index.indexType
 
-
-
 ```js
 indexType: {
         model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -34,8 +31,6 @@ indexType: {
 ```
 
 #### slot: index.location
-
-
 
 ```js
 location: {
@@ -49,8 +44,6 @@ location: {
 
 #### slot: columnNames
 
-
-
 ```js
 columnNames: {
       type: 'stringArray',
@@ -60,8 +53,6 @@ columnNames: {
 ```
 
 #### slot: scoreColumn
-
-
 
 ```js
 scoreColumn: {
@@ -73,8 +64,6 @@ scoreColumn: {
 
 #### slot: autoSql
 
-
-
 ```js
 autoSql: {
       type: 'string',
@@ -82,7 +71,3 @@ autoSql: {
       defaultValue: '',
     }
 ```
-
-
-
- 

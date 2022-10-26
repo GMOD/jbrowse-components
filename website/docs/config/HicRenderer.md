@@ -4,15 +4,14 @@ title: HicRenderer
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### HicRenderer - Slots
+
 #### slot: baseColor
-
-
 
 ```js
 baseColor: {
@@ -23,8 +22,6 @@ baseColor: {
 ```
 
 #### slot: color
-
-
 
 ```js
 color: {
@@ -37,8 +34,6 @@ color: {
 
 #### slot: maxHeight
 
-
-
 ```js
 maxHeight: {
       type: 'integer',
@@ -46,7 +41,3 @@ maxHeight: {
       defaultValue: 600,
     }
 ```
-
-
-
- 

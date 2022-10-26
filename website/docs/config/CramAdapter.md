@@ -3,16 +3,17 @@ id: cramadapter
 title: CramAdapter
 toplevel: true
 ---
+
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
+
 used to configure CRAM adapter
 
-
-
-
-
 ### CramAdapter - Slots
+
 #### slot: fetchSizeLimit
-
-
 
 ```js
 fetchSizeLimit: {
@@ -25,8 +26,6 @@ fetchSizeLimit: {
 
 #### slot: cramLocation
 
-
-
 ```js
 cramLocation: {
       type: 'fileLocation',
@@ -38,8 +37,6 @@ cramLocation: {
 ```
 
 #### slot: craiLocation
-
-
 
 ```js
 craiLocation: {
@@ -64,7 +61,3 @@ sequenceAdapter: {
       defaultValue: null,
     }
 ```
-
-
-
- 

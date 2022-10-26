@@ -126,6 +126,12 @@ id: ${model.id}
 title: ${model.name}
 toplevel: true
 ---
+
+
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
 ${model.docs}
 
 

@@ -4,15 +4,14 @@ title: VcfTabixAdapter
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### VcfTabixAdapter - Slots
+
 #### slot: vcfGzLocation
-
-
 
 ```js
 vcfGzLocation: {
@@ -22,8 +21,6 @@ vcfGzLocation: {
 ```
 
 #### slot: index.indexType
-
-
 
 ```js
 indexType: {
@@ -35,8 +32,6 @@ indexType: {
 
 #### slot: index.location
 
-
-
 ```js
 location: {
         type: 'fileLocation',
@@ -46,7 +41,3 @@ location: {
         },
       }
 ```
-
-
-
- 

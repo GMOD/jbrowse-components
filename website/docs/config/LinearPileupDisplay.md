@@ -4,15 +4,14 @@ title: LinearPileupDisplay
 toplevel: true
 ---
 
-
-
-
-
+Note: this document is automatically generated from configuration objects in
+our source code. See [Understanding the configuration
+model](/docs/devguide_config/) and [Config guide](/docs/config_guide) for more
+info
 
 ### LinearPileupDisplay - Slots
+
 #### slot: defaultRendering
-
-
 
 ```js
 defaultRendering: {
@@ -24,18 +23,13 @@ defaultRendering: {
 
 #### slot: renderers
 
-
-
 ```js
 renderers: ConfigurationSchema('RenderersConfiguration', {
-        PileupRenderer:
-          pluginManager.getRendererType('PileupRenderer').configSchema,
-      })
+  PileupRenderer: pluginManager.getRendererType('PileupRenderer').configSchema,
+})
 ```
 
 #### slot: maxFeatureScreenDensity
-
-
 
 ```js
 maxFeatureScreenDensity: {
@@ -46,8 +40,6 @@ maxFeatureScreenDensity: {
 ```
 
 #### slot: colorScheme
-
-
 
 ```js
 colorScheme: {
@@ -65,14 +57,8 @@ colorScheme: {
       }
 ```
 
-
 ## LinearPileupDisplay - Derives from
-
-
-
 
 ```js
 baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager)
 ```
-
- 
