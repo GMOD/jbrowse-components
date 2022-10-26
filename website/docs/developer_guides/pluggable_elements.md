@@ -1,12 +1,14 @@
 ---
 id: devguide_pluggable_elements
-title: Creating your own pluggable elements
+title: Examples of plugin functionality
 toplevel: true
 ---
 
-import Figure from './figure'
+import Figure from '../figure'
 
-This guide will walk you through the concepts necessary for creating your own of some of the most common pluggable element types, including **adapters**, **tracks**, and **renderers**.
+This guide will walk you through the concepts necessary for creating your own
+of some of the most common pluggable element types, including **adapters**,
+**tracks**, and **renderers**.
 
 ## Simple additions to JBrowse using plugins
 
@@ -15,8 +17,8 @@ This guide will walk you through the concepts necessary for creating your own of
 These are the menus that appear in the top bar of JBrowse Web and JBrowse
 Desktop. By default, there are `File`, `Add`, `Tools`, and `Help` menus.
 
-You can add your own menu, or you can add menu items or sub-menus to the existing menus and
-sub-menus. Sub-menus can be arbitrarily deep.
+You can add your own menu, or you can add menu items or sub-menus to the
+existing menus and sub-menus. Sub-menus can be arbitrarily deep.
 
 <Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
 

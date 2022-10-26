@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ts from 'typescript'
+import util from 'util'
+import { exec } from 'child_process'
+const exec2 = util.promisify(exec)
 
 interface Node {
   signature?: string
@@ -14,8 +17,6 @@ interface Node {
 export function extractWithComment(
   fileNames: string[],
   cb: (obj: Node) => void,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  filterNode: (obj: any, type: string) => boolean = () => true,
   options = {},
 ) {
   const program = ts.createProgram(fileNames, options)
@@ -74,7 +75,7 @@ export function extractWithComment(
     ]
     for (let i = 0; i < list.length; i++) {
       const type = '#' + list[i]
-      if (fulltext.includes(type) && filterNode(r, type)) {
+      if (fulltext.includes(type) && r.comment.includes(type)) {
         cb({ type: list[i], ...r })
       }
     }
@@ -98,4 +99,19 @@ export function filter(str1: string, str2: string) {
     .split('\n')
     .filter(x => !x.includes(str2))
     .join('\n')
+}
+
+export async function getAllFiles() {
+  // exec('find . -type f | wc -l', (err, stdout, stderr) => {
+  //   if (err) {
+  //     console.error(`exec error: ${err}`)
+  //     return
+  //   }
+
+  //   console.log(`Number of files ${stdout}`)
+  // })
+  const files = await exec2(
+    'git ls-files | grep "\\(plugins\\|products\\|packages\\).*.\\(t\\|j\\)s$"',
+  )
+  return files.stdout.split('\n').filter(f => !!f)
 }
