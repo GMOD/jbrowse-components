@@ -51,17 +51,11 @@ const tracks = volvoxConfig.tracks.filter(
 )
 const defaultSession = {
   name: 'Storybook',
-  view: {
-    ...volvoxConfig.defaultSession.views[0],
-    type: 'LinearGenomeView' as const,
-  },
+  view: volvoxConfig.defaultSession.views[0],
 }
 const longReadsSession = {
   ...defaultSession,
-  view: {
-    ...volvoxSession.session.views[0],
-    type: 'LinearGenomeView' as const,
-  },
+  view: volvoxSession.session.views[0],
 }
 export const WithWebWorker = () => {
   const state = createViewState({
@@ -394,10 +388,11 @@ export const NextstrainExample = () => {
   const state = createViewState({
     assembly,
     tracks,
-    // @ts-ignore
     defaultSession,
     location: 'SARS-CoV-2:1..29,903',
-    onChange: patch => console.log('patch', patch),
+    onChange: patch => {
+      console.log('patch', patch)
+    },
     configuration: {
       theme: {
         palette: {
