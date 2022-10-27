@@ -1,6 +1,5 @@
 ---
 id: plugins
-toplevel: true
 title: Configuring plugins
 ---
 
