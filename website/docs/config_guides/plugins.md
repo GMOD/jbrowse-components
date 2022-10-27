@@ -4,6 +4,8 @@ toplevel: true
 title: Configuring plugins
 ---
 
+import Figure from '../figure'
+
 In jbrowse-web and jbrowse-desktop, plugins can be added using the config.json.
 Note that with our embedded components, you will likely use a different method
 than described in this article: see

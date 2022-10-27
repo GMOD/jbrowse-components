@@ -4,6 +4,8 @@ title: Customizing feature details with callbacks and plugins
 toplevel: true
 ---
 
+import Figure from '../figure'
+
 Every track has a configuration slot called `formatDetails`.
 
 Here is an example track with a formatter:

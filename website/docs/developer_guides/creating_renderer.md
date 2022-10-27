@@ -3,6 +3,8 @@ id: creating_renderer
 title: Creating a custom renderer
 ---
 
+import Figure from '../figure'
+
 ### What is a renderer
 
 In JBrowse 1, a track type typically would directly call the data parser and do

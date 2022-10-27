@@ -3,6 +3,8 @@ id: modifying_menus
 title: Modifying JBrowse menus
 ---
 
+import Figure from '../figure'
+
 ### Adding a top-level menu
 
 These are the menus that appear in the top bar of JBrowse Web and JBrowse

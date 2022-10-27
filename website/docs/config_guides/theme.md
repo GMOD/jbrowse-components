@@ -4,6 +4,8 @@ toplevel: true
 title: Coloring/theming
 ---
 
+import Figure from '../figure'
+
 ### Color
 
 The color scheme as well as some sizing options can be configured via the theme.
