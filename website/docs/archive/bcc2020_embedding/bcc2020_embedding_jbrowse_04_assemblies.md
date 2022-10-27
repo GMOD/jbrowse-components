@@ -4,10 +4,8 @@ title: About assemblies
 ---
 
 :::danger Out of date
-
 Please see the
-[updated version of this tutorial](../../embed_linear_genome_view/01_introduction).
-
+[updated version of this tutorial](/docs/tutorials/embed_linear_genome_view/01_introduction)
 :::
 
 ## What is an assembly?
