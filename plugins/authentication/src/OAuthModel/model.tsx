@@ -15,6 +15,7 @@ interface OAuthData {
   code_challenge?: string
   code_challenge_method?: string
   token_access_type?: string
+  state?: string
 }
 
 function fixup(buf: string) {
@@ -254,6 +255,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             client_id: self.clientId,
             redirect_uri: redirectUri,
             response_type: self.responseType || 'code',
+            state: window.location.origin,
           }
 
           if (self.scopes) {
