@@ -9,7 +9,7 @@ import Figure from '../figure'
 In order to display your data, JBrowse 2 needs to know about the reference
 genome for your organism of interest and needs to have tracks created that
 reference your data sources. This guide will show you how to set those up using
-the JBrowse 2's graphical configuration editing.
+JBrowse 2's graphical configuration editing.
 
 :::note
 
