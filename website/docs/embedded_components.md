@@ -1,6 +1,6 @@
 ---
 id: embedded_components
-title: Embedded components, JBrowse Jupyter, and JBrowseR
+title: Embedded components
 toplevel: true
 ---
 
@@ -43,19 +43,3 @@ Here is a table of different usages of the
 | create-react-app v4 | [demo](https://jbrowse.org/demos/cgv/)          | [source code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view) ([download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view))                     | no polyfills needed in create-react-app v4                                                       |
 | create-react-app v5 | [demo](https://jbrowse.org/demos/cgv-cra5/)     | [source code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-cra5) ([download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view-cra5))           | for create-react-app v5, we use craco to update the webpack config to polyfill some node modules |
 | vanilla js          | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view-vanillajs) ([download](https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-circular-genome-view-vanillajs)) | uses a script tag to include a UMD bundle, and doesn't require any transpilation or bundling     |
-
-## JBrowse Jupyter
-
-Comprehensive documentation for JBrowse Jupyter is found off-site,
-[here](https://gmod.github.io/jbrowse-jupyter/docs/html/index.html).
-
-Also check out the JBrowse Jupyter [GitHub
-repo](https://github.com/GMOD/jbrowse-jupyter).
-
-## JBrowseR
-
-Comprehensive documentation for JBrowseR is found off-site,
-[here](https://gmod.github.io/JBrowseR/).
-
-Also check out the JBrowse Jupyter [GitHub
-repo](https://github.com/GMOD/JBrowseR/).

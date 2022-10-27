@@ -1,10 +1,10 @@
 ---
 id: alignment_track
 toplevel: true
-title: Alignnments track configuration
+title: Alignments track configuration
 ---
 
-Example AlignmentsTrack config:
+Example `AlignmentsTrack` config:
 
 ```json
 {
@@ -33,7 +33,7 @@ Example AlignmentsTrack config:
   - indexType: options BAI or CSI. default: BAI
   - location: a 'file location' of the index
 
-Example BamAdapter config:
+Example `BamAdapter` config:
 
 ```json
 {
@@ -54,7 +54,7 @@ Example BamAdapter config:
 - `cramLocation` - a 'file location' for the CRAM
 - `craiLocation` - a 'file location' for the CRAI
 
-Example CramAdapter config:
+Example `CramAdapter` config:
 
 ```json
 {

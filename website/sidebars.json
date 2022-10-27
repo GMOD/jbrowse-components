@@ -96,6 +96,8 @@
       ]
     },
     "embedded_components",
+    "jbrowse_jupyter",
+    "jbrowser",
     "cli",
     "faq",
     {

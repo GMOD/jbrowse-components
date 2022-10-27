@@ -111,18 +111,21 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-Footnote 0. See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/) for
+See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/) for
 more info on setting up a simple plugin for doing these customizations.
 
-Footnote 1. Note that the feature for feature detail panels is different from
-that in the color callback: it is a plain JS object. So instead of
-`feature.get('start')`, you can say just `feature.start`. The reason it is
-different for the feature details callbacks (compared with e.g. the color
-callbacks) is that the feature is serialized into the session. You might also
-ask why aren't all features serialized or plain JSON objects normally? Well,
-some feature types like alignments features benefit from only being partially
-serialized e.g. getting only a couple attributes via `feature.get('attribute')`
-(completely converting them to a raw JSON expression is expensive). It is a
-little confusing, but that is why in the feature details, you can access the
-plain JS object e.g. `feature.start` while in color callbacks you use e.g.
-`feature.get('start')`.
+#### Footnote 1
+
+Note that the feature for feature detail panels is different from that in the
+color callback: it is a plain JS object. So instead of `feature.get('start')`,
+you can say just `feature.start`. The reason it is different for the feature
+details callbacks (compared with e.g. the color callbacks) is that the feature
+is serialized into the session.
+
+You might also ask why aren't all features serialized or plain JSON objects
+normally? Well, some feature types like alignments features benefit from only
+being partially serialized e.g. getting only a couple attributes via
+`feature.get('attribute')` (completely converting them to a raw JSON expression
+is expensive). It is a little confusing, but that is why in the feature
+details, you can access the plain JS object e.g. `feature.start` while in color
+callbacks you use e.g. `feature.get('start')`.
