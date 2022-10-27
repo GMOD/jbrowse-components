@@ -15,6 +15,7 @@ interface OAuthData {
   code_challenge?: string
   code_challenge_method?: string
   token_access_type?: string
+  state?: string
 }
 
 function fixup(buf: string) {
@@ -69,6 +70,13 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       },
       get scopes(): string {
         return getConf(self, 'scopes')
+      },
+      /**
+       * OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+       * Can override this getter if dynamic state is needed.
+       */
+      get state(): string | undefined {
+        return getConf(self, 'state') || undefined
       },
       get responseType(): 'token' | 'code' {
         return getConf(self, 'responseType')
@@ -155,7 +163,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             if (obj.error === 'invalid_grant') {
               this.removeRefreshToken()
             }
-            text ??= obj?.error_description
+            text = obj?.error_description ?? text
           } catch (e) {
             /* just use original text as error */
           }
@@ -254,6 +262,10 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             client_id: self.clientId,
             redirect_uri: redirectUri,
             response_type: self.responseType || 'code',
+          }
+
+          if (self.state) {
+            data.state = self.state
           }
 
           if (self.scopes) {
