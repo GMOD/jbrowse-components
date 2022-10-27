@@ -73,9 +73,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
       },
       /**
        * OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-       * Can override this getter if dynamic state is needed.
+       * Can override or extend if dynamic state is needed.
        */
-      get state(): string | undefined {
+      state(): string | undefined {
         return getConf(self, 'state') || undefined
       },
       get responseType(): 'token' | 'code' {
@@ -264,8 +264,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             response_type: self.responseType || 'code',
           }
 
-          if (self.state) {
-            data.state = self.state
+          if (self.state()) {
+            data.state = self.state()
           }
 
           if (self.scopes) {
