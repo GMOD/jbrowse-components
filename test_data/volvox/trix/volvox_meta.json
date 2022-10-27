@@ -1,5 +1,5 @@
 {
-  "dateCreated": "2022-10-07T15:35:11.613Z",
+  "dateCreated": "2022-10-27T22:58:17.607Z",
   "tracks": [
     {
       "trackId": "volvox_sv_test",
@@ -75,6 +75,24 @@
     },
     {
       "trackId": "volvox_filtered_vcf",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "variant_colors_displaymod",
       "attributesIndexed": ["Name", "ID", "Note"],
       "excludedTypes": ["CDS", "exon"],
       "adapterConf": {

@@ -46,6 +46,7 @@
     "@jbrowse/plugin-linear-genome-view": "^2.0.0",
     "@jbrowse/plugin-wiggle": "^2.0.0",
     "@mui/material": "^5.0.0",
+    "clone": "^2.1.2",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",

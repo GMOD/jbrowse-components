@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import clone from 'clone'
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -70,25 +71,44 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
     },
     {
       preProcessSnapshot: s => {
-        const snap = JSON.parse(JSON.stringify(s))
-        const displayTypes = new Set()
-        const { displays = [] } = snap
+        const snap = clone(s) as any
+        const { displays = [] } = snap as {
+          trackId: string
+          displays:
+            | { displayId?: string; type: string }[]
+            | Record<string, { displayId?: string; [key: string]: unknown }>
+        }
+        let displaysToUse = displays as any[]
         if (snap.trackId !== 'placeholderId') {
-          // Gets the displays on the track snapshot and the possible displays
-          // from the track type and adds any missing possible displays to the
-          // snapshot
-          displays.forEach((d: any) => d && displayTypes.add(d.type))
+          let displayTypesInConf: Set<string>
+          if (Array.isArray(displays)) {
+            // Gets the displays on the track snapshot and the possible displays
+            // from the track type and adds any missing possible displays to the
+            // snapshot
+            displayTypesInConf = new Set(
+              displays.filter(d => !!d).map(d => d.type),
+            )
+            displaysToUse = displays
+          } else {
+            displayTypesInConf = new Set(Object.keys(displays))
+            displaysToUse = Object.entries(displays).map(([key, val]) => ({
+              type: key,
+              displayId: val.displayId || snap.trackId + '-' + key,
+              ...(val as Record<string, unknown>),
+            }))
+          }
+
           const trackType = pluginManager.getTrackType(snap.type)
-          trackType.displayTypes.forEach(displayType => {
-            if (!displayTypes.has(displayType.name)) {
-              displays.push({
-                displayId: `${snap.trackId}-${displayType.name}`,
-                type: displayType.name,
+          trackType.displayTypes.forEach(d => {
+            if (!displayTypesInConf.has(d.name)) {
+              displaysToUse.push({
+                displayId: `${snap.trackId}-${d.name}`,
+                type: d.name,
               })
             }
           })
         }
-        return { ...snap, displays }
+        return { ...snap, displays: displaysToUse }
       },
       /**
        * #identifier

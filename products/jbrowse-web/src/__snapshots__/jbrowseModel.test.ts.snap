@@ -2678,6 +2678,49 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "displayId": "variant_colors_displaymod-LinearVariantDisplay",
+          "maxFeatureScreenDensity": 0.0006,
+          "renderer": {
+            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+            "type": "SvgFeatureRenderer",
+          },
+          "type": "LinearVariantDisplay",
+        },
+        {
+          "displayId": "variant_colors_displaymod-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "volvox filtered vcf (green snp, purple indel, modified display conf)",
+      "trackId": "variant_colors_displaymod",
+      "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "location": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox.filtered.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.filtered.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "VCF",
+      ],
+      "displays": [
+        {
           "displayId": "volvox_filtered_vcf_color-ChordVariantDisplay",
           "type": "ChordVariantDisplay",
         },
