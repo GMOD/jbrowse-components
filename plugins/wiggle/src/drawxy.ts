@@ -83,7 +83,7 @@ export function drawXY(
   const getHeight = (n: number) => (filled ? toOrigin(n) : Math.max(minSize, 1))
   let hasClipping = false
 
-  let prevLeftPx = 0
+  let prevLeftPx = -Infinity
   const reducedFeatures = []
   const crossingOrigin = niceMin < pivotValue && niceMax > pivotValue
 
@@ -255,7 +255,7 @@ export function drawLine(
 
   let lastVal
 
-  let prevLeftPx = 0
+  let prevLeftPx = -Infinity
   const reducedFeatures = []
   for (const feature of features.values()) {
     const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
@@ -347,7 +347,7 @@ export function drawDensity(
   }
   const [niceMin, niceMax] = scale2.domain()
 
-  let prevLeftPx = 0
+  let prevLeftPx = -Infinity
   let hasClipping = false
   const reducedFeatures = []
   for (const feature of features.values()) {
