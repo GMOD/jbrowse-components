@@ -6,16 +6,16 @@ title: Introduction
 ## Welcome!
 
 This tutorial will show you how to get a JBrowse 2 linear genome view embedded
-in a website. It is similar to a
-[tutorial given a BCC2020](../../archive/bcc2020_embedding_jbrowse_01_getting_started),
-but has been updated to reflect the final, released version of the interface.
+in a website. It is similar to a [tutorial given a
+BCC2020](../../archive/bcc2020_embedding_jbrowse_01_getting_started), but has
+been updated to reflect the final, released version of the interface.
 
 ## What is JBrowse 2
 
 JBrowse 2 is a pluggable open-source platform for visualizing and integrating
-biological data. At its core, it is a
-[genome browser](https://en.wikipedia.org/wiki/Genome_browser), but it has also
-been built as an extensible platform to enable visualization of all kinds of
+biological data. At its core, it is a [genome
+browser](https://en.wikipedia.org/wiki/Genome_browser), but it has also been
+built as an extensible platform to enable visualization of all kinds of
 biological data.
 
 For those of you who have used the original JBrowse, you'll recognize many of
@@ -49,15 +49,16 @@ This tutorial is a good fit if you have an existing web page and you'd like to
 have JBrowse running inside that page, although in the tutorial we'll create a
 page from scratch so you don't need an existing page to do this tutorial.
 
-If your web page is built with React, you can install our
-[JBrowse Linear Genome View React Component](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+If your web page is built with React, you can install our [JBrowse Linear
+Genome View React
+Component](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 from NPM instead of adding it like is done in this guide. A lot of the content
-of this tutorial would still be relevant to setting up and configuring the view,
-though.
+of this tutorial would still be relevant to setting up and configuring the
+view, though.
 
 Also, another option for your web site is to add the full JBrowse Web app as a
-new page in your site. This might be an option if the JBrowse Linear Genome View
-is missing features you need.
+new page in your site. This might be an option if the JBrowse Linear Genome
+View is missing features you need.
 
 ## What you need
 
@@ -67,12 +68,12 @@ installers [here](https://nodejs.org/en/download/), or if you are on Mac or
 Linux and plan on doing more extensive JavaScript development, we recommend
 using [NVM](https://github.com/nvm-sh/nvm).
 
-You can do most of this tutorial with a simple text editor and some way to serve
-files (just opening the HTML files we create in a browser won't work, you'll
-need a server). If you have Node.js installed, you can run a simple server by
-opening your terminal in the directory you want to serve and running `npx serve`
-(or you can install it globally with `npm install -g serve` and then run
-`serve`).
+You can do most of this tutorial with a simple text editor and some way to
+serve files (just opening the HTML files we create in a browser won't work,
+you'll need a server). If you have Node.js installed, you can run a simple
+server by opening your terminal in the directory you want to serve and running
+`npx serve` (or you can install it globally with `npm install -g serve` and
+then run `serve`).
 
 We'll also be using the JBrowse CLI, although you can technically complete the
 tutorial without it. You can install it after installing Node.js by running

@@ -3,6 +3,8 @@ id: bcc2020_plugin_development
 title: BCC2020 - Plugin development course
 ---
 
+import Figure from '../figure'
+
 Welcome to the BCC2020 plugin development course
 
 This will cover, starting from scratch, how we can develop a JBrowse 2 plugin
@@ -111,8 +113,7 @@ Notes about the plugin:
   and we can see it is basically resolving to a plugin.js file at a CDN, which
   can be the final built output or the webpack-dev-server served version
 
-![](../../../img/bcc2020_img1.png)
-Screenshot of the UCSC REST API plugin displaying boxes for the interaction features
+<Figure caption="Screenshot of the UCSC REST API plugin displaying boxes for the interaction features" src="/img/bcc2020_img1.png"/>
 
 ### Combining the UCSC API plugin with a custom renderer
 
@@ -143,7 +144,7 @@ https://github.com/cmdcolin/jbrowse-plugin-arc-renderer/blob/master/assets/confi
 This loads both the UCSCPlugin and the ArcRendererPlugin at the same time, and
 renders the UCSC GeneHancer interactions as arcs
 
-![](../../../img/bcc2020_img2.png)
+<Figure caption="Showing the arc renderer" src="/img/bcc2020_img2.png"/>
 
 ### Making custom view types with plugins
 
@@ -167,7 +168,7 @@ have a gene expression heatmap, barchart, get charts dynamically from an R
 server side component, make a graph genome, etc. The ideas are endless! And we
 can make it interact with other views!
 
-![](../../../img/bcc2020_img3.png)
+<Figure caption="The hello view plugin" src="/img/bcc2020_img3.png" />
 
 ### Debugging your plugins
 
