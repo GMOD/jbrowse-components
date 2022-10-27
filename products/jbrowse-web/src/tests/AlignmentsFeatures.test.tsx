@@ -40,10 +40,10 @@ test('opens the track menu and enables soft clipping', async () => {
   fireEvent.click(await findByText('Show soft clipping'))
 
   // wait for block to rerender
-  const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
+  const { findByTestId: f0 } = within(await findByTestId('Blockset-pileup'))
 
   expectCanvasMatch(
-    await find1(pc('softclipped_{volvox}ctgA:2,849..2,864-0'), {}, delay),
+    await f0(pc('softclipped_{volvox}ctgA:2,849..2,864-0'), {}, delay),
   )
 }, 30000)
 
@@ -68,9 +68,7 @@ test('selects a sort, sort by strand', async () => {
 
   // wait for pileup track to render with sort
   await findAllByTestId('pileup-Read strand', {}, delay)
-
   const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
-
   expectCanvasMatch(await find1(pc('{volvox}ctgA:41,729..41,744-0'), {}, delay))
 }, 35000)
 
@@ -94,8 +92,6 @@ test('color by strand', async () => {
 
   // wait for pileup track to render with color
   await findAllByTestId('pileup-strand', {}, delay)
-
-  // wait for pileup track to render
   const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
   expectCanvasMatch(await find1(pc('{volvox}ctgA:41,729..41,744-0'), {}, delay))
 }, 30000)
@@ -121,9 +117,6 @@ test('color by tag', async () => {
   fireEvent.click(await findByText('Submit'))
   // wait for pileup track to render with color
   await findAllByTestId('pileup-tagHP', {}, delay)
-
-  // wait for pileup track to render
   const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
-
   expectCanvasMatch(await find1(pc('{volvox}ctgA:39,805..40,176-0'), {}, delay))
 }, 30000)

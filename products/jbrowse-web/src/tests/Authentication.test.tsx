@@ -158,4 +158,4 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
   expectCanvasMatch(
     await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
   )
-})
+}, 25000)
