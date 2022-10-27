@@ -1,644 +1,307 @@
 ---
 id: pluggable_elements
-title: Examples of plugin functionality
+title: Pluggable elements
 toplevel: true
 ---
 
 import Figure from '../figure'
 
-This guide will walk you through the concepts necessary for creating your own
-of some of the most common pluggable element types, including **adapters**,
-**tracks**, and **renderers**.
+A plugin is an independently distributed package of code that is designed to
+"plug in" to a JBrowse application.
 
-## Simple additions to JBrowse using plugins
+It's implemented as a class that extends `@jbrowse/core/Plugin`. It gets
+instantiated by the application that it plugs into, and it has an `install`
+method and a `configure` method that the application calls.
 
-### Adding a top-level menu
+This class is distributed as a webpack bundle that exports it to a namespace on
+the browser's `window` object specifically for JBrowse plugins. **This means it
+is only possible to have one version of a particular plugin loaded on any given
+webpage, even if multiple products are loaded and using it on the same page.**
 
-These are the menus that appear in the top bar of JBrowse Web and JBrowse
-Desktop. By default, there are `File`, `Add`, `Tools`, and `Help` menus.
+It's common for a plugin to use its `configure` method to set up [mobx autoruns
+or reactions](https://mobx.js.org/refguide/autorun.html) that react to changes
+in the application's state to modify its behavior.
 
-You can add your own menu, or you can add menu items or sub-menus to the
-existing menus and sub-menus. Sub-menus can be arbitrarily deep.
-
-<Figure src="/img/top_level_menus.png" caption="In the above screenshot, the `Add` menu provides quick access to adding a view via the UI; this is a good place to consider adding your own custom view type."/>
-
-You add menus in the `configure` method of your plugin. Not all JBrowse
-products will have top-level menus, though. JBrowse Web and JBrowse Desktop
-have them, but something like JBrowse Linear View (which is an just a single
-view designed to be embedded in another page) does not. This means you need to
-check whether or not menus are supported using `isAbstractMenuManager` in the
-`configure` method. This way the rest of the plugin will still work if there is
-not a menu. Here's an example that adds an "Open My View" item to the `Add` menu.
-
-```js
-import Plugin from '@jbrowse/core/Plugin'
-import { isAbstractMenuManager } from '@jbrowse/core/util'
-import InfoIcon from '@mui/icons-material/Info'
-
-class MyPlugin extends Plugin {
-  name = 'MyPlugin'
-
-  install(pluginManager) {
-    // install MyView here
-  }
-
-  configure(pluginManager) {
-    if (isAbstractMenuManager(pluginManager.rootModel)) {
-      pluginManager.rootModel.appendToMenu('Add', {
-        label: 'Open My View',
-        icon: InfoIcon,
-        onClick: session => {
-          session.addView('MyView', {})
-        },
-      })
-    }
-  }
-}
-```
-
-This example uses `rootModel.appendToMenu`. See [top-level menu
-API](/docs/api_guide#rootmodel-menu-api) for more details on available functions.
-
-### Adding menu items to a custom track
-
-If you create a custom track, you can populate the track menu items in it using
-the `trackMenuItems` property in the track model. For example:
-
-```js
-types
-  .model({
-    // model
-  })
-  .views(self => ({
-    trackMenuItems() {
-      return [
-        {
-          label: 'Menu Item',
-          icon: AddIcon,
-          onClick: () => {},
-        },
-      ]
-    },
-  }))
-```
-
-If you'd prefer to append your track menu items onto menu items available from the
-base display, you can grab the `trackMenuItems` property from the extended model
-and redefine trackMenuItems with your new Menu Item appended at the end, like so:
-
-```js
-types
-  .model({
-    // model
-  })
-  .views(self => {
-    const { trackMenuItems: superTrackMenuItems } = self
-    return {
-      get trackMenuItems() {
-        return [
-          ...superTrackMenuItems(),
-          {
-            label: 'Menu Item',
-            icon: AddIcon,
-            onClick: () => {},
-          },
-        ]
-      },
-    }
-  })
-```
-
-### Adding track context-menu items
-
-When you right-click in a linear track, a context menu will appear if there are
-any menu items defined for it.
-
-<Figure src="/img/linear_align_ctx_menu.png" caption="A screenshot of a context menu available on a linear genome view track. Here, we see the context menu of a feature right-clicked on a LinearAlignmentsDisplay."/>
-
-It's possible to add items to that menu, and you
-can also have different menu items based on if the click was on a feature or
-not, and based on what feature is clicked. This is done by extending the
-`contextMenuItems` view of the display model. Here is an example:
-
-```js
-class SomePlugin extends Plugin {
-  name = 'SomePlugin'
-
-  install(pluginManager) {
-    pluginManager.addToExtensionPoint(
-      'Core-extendPluggableElement',
-      pluggableElement => {
-        if (pluggableElement.name === 'LinearPileupDisplay') {
-          const { stateModel } = pluggableElement
-          const newStateModel = stateModel.extend(self => {
-            const superContextMenuItems = self.contextMenuItems
-            return {
-              views: {
-                contextMenuItems() {
-                  const feature = self.contextMenuFeature
-                  if (!feature) {
-                    // we're not adding any menu items since the click was not
-                    // on a feature
-                    return superContextMenuItems()
-                  }
-                  return [
-                    ...superContextMenuItems(),
-                    {
-                      label: 'Some menu item',
-                      icon: SomeIcon,
-                      onClick: () => {
-                        // do some stuff
-                      },
-                    },
-                  ]
-                },
-              },
-            }
-          })
-
-          pluggableElement.stateModel = newStateModel
-        }
-        return pluggableElement
-      },
-    )
-  }
-}
-```
-
-## Creating adapters
-
-### What is an adapter
-
-An adapter is essentially a class that fetches and parses your data and returns
-it in a format JBrowse understands.
-
-For example, if you have some data source that contains genes, and you want to
-display those genes using JBrowse's existing gene displays, you can write a
-custom adapter to do so. If you want to do a custom display of your data,
-though, you'll probably need to create a custom display and/or renderer along
-with your adapter.
-
-### What types of adapters are there
-
-- **Feature adapter** - This is the most common type of adapter. Essentially,
-  it takes a request for a _region_ (a chromosome, starting position, and ending
-  position) and returns the _features_ (e.g. genes, reads, variants, etc.) that
-  are in that region. Examples of this in JBrowse include adapters for
-  [BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) and
-  [VCF](https://samtools.github.io/hts-specs/VCFv4.3.pdf) file formats.
-- **Regions adapter** - This type of adapter is used to define what regions are
-  in an assembly. It returns a list of chromosomes/contigs/scaffolds and their
-  sizes. An example of this in JBrowse is an adapter for a
-  [chrome.sizes](https://software.broadinstitute.org/software/igv/chromSizes)
-  file.
-- **Sequence adapter** - This is basically a combination of a regions adapter
-  and a feature adapter. It can give the list of regions in an assembly, and
-  can also return the sequence of a queried region. Examples of this in JBrowse
-  include adapters for
-  [FASTA](https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=BlastHelp)
-  and [.2bit](https://genome.ucsc.edu/FAQ/FAQformat.html#format7) file formats.
-- **RefName alias adapter** - This type of adapter is used to return data about
-  aliases for reference sequence names, for example to define that "chr1" is an
-  alias for "1". An example of this in JBrowse is an adapter for
-  (alias files)[http://software.broadinstitute.org/software/igv/LoadData/#aliasfile]
-- **Text search adapter** - This type of adapter is used to search through text search indexes. Returns list of search results. An example of this in JBrowse is the trix text search adapter.
+Plugins often also have their `install` method add "pluggable elements" into
+the host JBrowse application. This is how plugins can add new kinds of views,
+tracks, renderers, and so forth.
 
 :::info Note
-When using the refName alias adapter, it's important that the first column match what is seen in your FASTA file.
+Many of the plugins referenced in the following section are found in [the
+JBrowse Github repo](https://github.com/gmod/jbrowse-components).
+
+We encourage you to reference and review the concepts presented here using the
+functional and up-to-date plugin code found there.
 :::
 
-### Skeleton of a feature adapter
+## Pluggable elements
 
-A basic feature adapter might look like this (with implementation omitted for
-simplicity):
+Pluggable elements are pieces of functionality that plugins can add to JBrowse.
+Examples of pluggable types include:
 
-```js
-class MyAdapter extends BaseFeatureDataAdapter {
-  constructor(config) {
-    // config
-  }
-  async getRefNames() {
-    // return refNames used in your adapter, used for refName renaming
-  }
+- Adapter types
+- Track types
+- View types
+- Display types
+- Renderer types
+- Widgets
+- RPC calls
+- Extension points
+- Internet account types
+- Connection types
+- Text search adapter types
+- Extension points
+- Add track workflow
 
-  getFeatures(region, opts) {
-    // region: {
-    //    refName:string, e.g. chr1
-    //    start:number, 0-based half open start coord
-    //    end:number, 0-based half open end coord
-    //    assemblyName:string, assembly name
-    //    originalRefName:string the name of the refName from the fasta file, e.g. 1 instead of chr1
-    // }
-    // opts: {
-    //   signal?: AbortSignal
-    //   ...rest: all the renderProps() object from the display type
-    // }
-  }
+In additional to creating plugins that create new adapters, track types,
+etc. note that you can also wrap the behavior of another track so these
+elements are composable.
 
-  freeResources(region) {
-    // can be empty
-  }
-}
-```
+For example, we can have adapters that perform calculations on the results of
+another adapter, views that contains other subviews, and tracks that contain
+other tracks, leading to a lot of interesting behavior.
 
-So to make a feature adapter, you implement the `getRefNames` function
-(optional), the `getFeatures` function (returns an rxjs observable stream of
-features, discussed below) and `freeResources` (optional).
+Let's dive further into these details, and look at some examples.
 
-### Example feature adapter
+### View types
 
-To take this a little slow, let's look at each function individually.
+Creating view types is one of the most powerful features of JBrowse 2, because
+it allows us to put entirely different visualizations in the same context as
+the standard linear-genome-view.
 
-This is a more complete description of the class interface that you can implement:
+We have demonstrated a couple new view types in JBrowse 2 already, including:
 
-```js
-import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
+- `LinearGenomeView` - the classic linear view of a genome
+- `CircularView` - a Circos-like circular whole genome view
+- `DotplotView` - a comparative 2-D genome view
+- `SvInspectorView` - superview containing `CircularView` and `SpreadsheetView`
+  subviews
+- And more!
 
-class MyAdapter extends BaseFeatureDataAdapter {
-  // your constructor gets a config object that you can read with readConfObject
-  // if you use "subadapters" then you can initialize those with getSubAdapter
-  constructor(config, getSubAdapter) {
-    const fileLocation = readConfObject(config, 'fileLocation')
-    const subadapter = readConfObject(config, 'sequenceAdapter')
-    const sequenceAdapter = getSubAdapter(subadapter)
-  }
+We think the boundaries for this are just your imagination, and there can also
+be interplay between view types e.g. popup dotplot from a linear view, etc.
 
-  // use rxjs observer.next(new SimpleFeature(...your feature data....) for each
-  // feature you want to return
-  getFeatures(region, options) {
-    return ObservableCreate(async observer => {
-      try {
-        const { refName, start, end } = region
-        const response = await fetch(
-          'http://myservice/genes/${refName}/${start}-${end}',
-          options,
-        )
-        if (response.ok) {
-          const features = await result.json()
-          features.forEach(feature => {
-            observer.next(
-              new SimpleFeature({
-                uniqueID: `${feature.refName}-${feature.start}-${feature.end}`,
-                refName: feature.refName,
-                start: feature.start,
-                end: feature.end,
-              }),
-            )
-          })
-          observer.complete()
-        } else {
-          throw new Error(`${response.status} - ${response.statusText}`)
-        }
-      } catch (e) {
-        observer.error(e)
-      }
-    })
-  }
+### Adapters
 
-  async getRefNames() {
-    // returns the list of refseq names in the file, used for refseq renaming
-    // you can hardcode this if you know it ahead of time e.g. for your own
-    // remote data API or fetch this from your data file e.g. from the bam header
-    return ['chr1', 'chr2', 'chr3'] /// etc
-  }
+Adapters are parsers for a given data format. We will review
+what adapters the alignments plugin has (to write your own adapter,
+see [creating adapters](../pluggable_elements/#creating-adapters)).
 
-  freeResources(region) {
-    // optionally remove cache resources for a region
-    // can just be an empty function
-  }
-}
-```
+Example adapters: the `@jbrowse/plugin-alignments` plugin creates
+multiple adapter types:
 
-### What is needed from a feature adapter
+- `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
+  for use by the browser.
+- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
+  CramAdapter also takes a sequenceAdapter as a subadapter configuration, and
+  uses getSubAdapter to instantiate it
+- `SNPCoverageAdapter` - this adapter takes a `BamAdapter` or `CramAdapter` as a
+  subadapter, and calculates feature coverage from it
 
-#### getRefNames
+### Track types
 
-Returns the refNames that are contained in the file. This is used for "refname
-renaming" and is optional, but highly useful in scenarios like human
-chromosomes which have, for example, chr1 vs 1.
+Track types are a high level type that controls how features are drawn. In most
+cases, a track combines a renderer and an adapter, and can do additional things like:
 
-Returning the refNames used by a given file or resource allows JBrowse to
-automatically smooth these small naming disparities over. See [reference
-renaming](/docs/config_guide/#configuring-reference-name-aliasing).
+- Control what widget pops up on feature click
+- Add extra menu items to the track menu
+- Create subtracks (See `AlignmentsTrack`)
+- Choose "static-blocks" rendering styles, which keeps contents stable while
+  the user scrolls, or "dynamic-blocks" that update on each scroll
 
-#### getFeatures
+Example tracks: the `@jbrowse/plugin-alignments` exports multiple track
+types:
 
-A function that returns features from the file given a genomic range query
-e.g.,
+- `SNPCoverageTrack` - this track type actually derives from the WiggleTrack type
+- `PileupTrack` - a track type that draws alignment pileup results
+- `AlignmentsTrack` - combines `SNPCoverageTrack` and `PileupTrack` as "subtracks"
 
-`getFeatures(region, options)`
+### Displays
 
-The region parameter contains:
+A _display_ is a method for displaying a particular track in a particular view.
 
-```typescript
-interface Region {
-  refName: string
-  start: number
-  end: number
-  originalRefName: string
-  assemblyName: string
-}
-```
+For example, we have a notion of a synteny track type, and the synteny track
+type has two display models:
 
-The `refName`, `start`, `end` specify a simple genomic range. The
-`assemblyName` is used to query a specific assembly if your adapter responds to
-multiple assemblies, e.g. for a synteny data file or a REST API that queries a
-backend with multiple assemblies.
+- `DotplotDisplay`, which is used in the dotplot view
+- `LinearSyntenyDisplay`, which is used in the linear synteny view
 
-The `originalRefName` are also passed, where `originalRefName` is the queried
-refname before ref renaming e.g. in BamAdapter, if the BAM file uses chr1, and
-your reference genome file uses 1, then originalRefName will be 1 and refName
-will be chr1.
+This enables a single track entry to be used in multiple view types e.g. if I
+run `jbrowse add-track myfile.paf`, this automatically creates a `SyntenyTrack`
+entry in the tracklist, and when this track is opened in the dotplot view, the
+`DotplotDisplay` is used for rendering.
 
-The options parameter to getFeatures can contain any number of things:
+Another example of a track type with multiple display types is `VariantTrack`,
+which has two display methods
 
-```typescript
-interface Options {
-  bpPerPx: number
-  signal: AbortSignal
-  statusCallback: Function
-  headers: Record<string, string>
-}
-```
+- `LinearVariantDisplay` - used in linear genome view
+- `ChordVariantDisplay` - used in the circular view to draw breakends and structural variants
 
-- `bpPerPx` - number: resolution of the genome browser when the features were
-  fetched
-- `signal` - can be used to abort a fetch request when it is no longer needed,
-  from AbortController
-- `statusCallback` - not implemented yet but in the future may allow you to
-  report the status of your loading operations
-- `headers` - set of HTTP headers as a JSON object
-- anything from the `renderProps` of the display model type gets passed to the
-  getFeatures opts
+### Renderers
 
-We return an rxjs `Observable` from `getFeatures`. This is similar to a JBrowse
-1 getFeatures call, where we pass each feature to a `featureCallback`, tell it
-when we are done with `finishCallback`, and send errors to `errorCallback`,
-except we do all those things with the `Observable`
+Renderers are a new concept in JBrowse 2, and are related to the concept of
+server side rendering (SSR), but can be used not just on the server but also in
+contexts like the web worker (e.g. the webworker can draw the features to an
+OffscreenCanvas). For more info see [creating
+renderers](../pluggable_elements/#creating-renderers).
 
-Here is a "conversion" of JBrowse-1-style `getFeatures` callbacks to JBrowse 2
-observable calls
+For example, the `@jbrowse/plugin-alignments` exports several
+renderer types:
 
-- `featureCallback(new SimpleFeature(...))` -> `observer.next(new SimpleFeature(...))`
-- `finishCallback()` -> `observer.complete()`
-- `errorCallback(error)` -> `observer.error(error)`
+- `PileupRenderer` - a renderer type that renders Pileup type display of
+  alignments fetched from the `BamAdapter`/`CramAdapter`
+- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
+  renderer derives from the wiggle renderer, but does the additional step of
+  drawing the mismatches over the coverage track
 
-#### freeResources
+:::info Views, tracks, displays, renderers?
+If you're confused about what kind of pluggable element you might need to
+accomplish your development goals, a way to remember the relationship between
+these four pluggable elements is as follows:
 
-This is uncommonly used, so most adapters make this an empty function
+1. A view is a container for anything, views typically _have tracks_ (the
+   linear genome view especially)
+2. A track controls the _what_ (kind of data, data adapters used) and _how_
+   (displays, renderers) of the data you'd like to display, typically within a
+   view
+3. A display is a way you might want to display the data on a track, you might
+   have multiple displays for a given view, for example, displays can determine
+   if a feature is drawn with rectangles or with triangles; displays _may_ have
+   renderers
+4. A renderer controls how the display is presented, for example what might
+   happen when you mouse over a feature
 
-Most adapters in fact use an LRU cache to make resources go away over time
-instead of manually cleaning up resources
-
-## Creating custom renderers
-
-### What is a renderer
-
-In JBrowse 1, a track type typically would directly call the data parser and do
-it's own rendering. In JBrowse 2, the data parsing and rendering is offloaded
-to a web-worker or other RPC. This allows things to be faster in many cases.
-This is conceptually related to "server side rendering" or SSR in React terms.
-
-<Figure src="/img/renderer.png" caption="Conceptual diagram of how a track calls a renderer using the RPC"/>
-
-:::warning Note
-You can make custom track types that do not use this workflow, but it is a built-in workflow that functions well for the core track types in JBrowse 2, and is recommended.
 :::
 
-### How to create a new renderer
+### Widgets
 
-The fundamental aspect of creating a new renderer is creating a class that
-implements the "render" function. A renderer is actually a pair of a React
-component that contains the renderer's output, which we call the "rendering",
-and the renderer itself.
+Widgets are custom info panels that can show up in side panels, modals, or other
+places in an app.
 
-```js
-class MyRenderer implements ServerSideRendererType {
-  render(props) {
-    const { width, height, regions, features } = props
-    const canvas = createCanvas(width, height)
-    const ctx = canvas.getContext('2d')
-    ctx.fillStyle = 'red'
-    ctx.drawRect(0, 0, 100, 100)
-    const imageData = createImageBitmap(canvas)
-    return {
-      reactElement: React.createElement(this.ReactComponent, { ...props }),
-      imageData,
-      height,
-      width,
-    }
-  }
-}
-```
+Widgets can do multiple types of things, including:
 
-In the above simplified example, our renderer creates a canvas using width and
-height that are supplied via arguments, and draw a rectangle. We then return a
-`React.createElement` call which creates a "rendering" component that will
-contain the output.
+- Configuration widget
+- Feature detail widget
+- Add track widget
+- Add connection widget
+- etc.
 
-:::info Note
-The above canvas operations use an `OffscreenCanvas` for Chrome, or in
-other browsers serialize the drawing commands to be drawn in the main thread.
-:::
+These widgets can be extended via plugins, so for example, the
+`@jbrowse/plugin-alignments` extends the `BaseFeatureDetailWidget` to
+have custom display of the alignments.
 
-### What are the props passed to the renderer
+- `AlignmentsFeatureDetailWidget` - this provides a custom widget
+  for viewing the feature details of alignments features that customizes the
+  basic feature detail widget
 
-The typical props that a renderer receives:
+### RPC methods
 
-```typescript
-export interface PileupRenderProps {
-  features: Map<string, Feature>
-  layout: { addRect: (featureId, leftBp, rightBp, height) => number }
-  config: AnyConfigurationModel
-  regions: Region[]
-  bpPerPx: number
-  height: number
-  width: number
-  highResolutionScaling: number
-}
-```
+Plugins can register their own RPC methods, which can allow them to offload
+custom behaviors to a web-worker or server side process.
 
-The layout is available on BoxRendererType renderers so that it can layout
-things in pileup format, and has an addRect function to get the y-coordinate at which to
-render your data.
+The wiggle plugin, for example, registers two custom RPC method types:
 
-The features argument is a map of feature ID to the feature itself. To iterate
-over the features Map, we can use an iterator or convert to an array:
+- `WiggleGetGlobalStats`
+- `WiggleGetMultiRegionStats`
+
+These methods can run in the webworker when available.
+
+### Add track workflows
+
+Plugins can register their own React component to display in the "Add track"
+widget for adding tracks that require custom logic. The Multi-wiggle track is
+an example of this, it produces a textbox where you can paste a list of files.
+
+A simple addition to the add track workflow:
 
 ```js
-class MyRenderer extends ServerSideRendererType {
-  render(props) {
-    const { features, width, height } = props
-    // iterate over the ES6 map of features
-    for (const feature in features.values()) {
-      // render each feature to canvas or output SVG
-    }
+// plugins/wiggle/MultiWiggleAddTrackWidget/index.jsx
 
-    // alternatively
-    const feats = Array.from(features.values())
-    feats.forEach(feat => {})
-  }
-}
-```
+import PluginManager from '@jbrowse/core/PluginManager'
+import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
+import { types } from 'mobx-state-tree'
 
-### Adding custom props to the renderer
+// locals
+import MultiWiggleWidget from './AddTrackWorkflow'
 
-Track models themselves can extend this using their `renderProps` function.
-
-For example, the `WiggleTrack` has code similar to this, which adds a scaleOpts
-prop that gets passed to the renderer:
-
-```js
-const model = types
-  .compose(
-    'WiggleTrack',
-    blockBasedTrack,
-    types.model({
-      type: types.literal('WiggleTrack'),
-    }),
-  )
-  .views(self => {
-    const { renderProps: superRenderProps } = self
-    return {
-      renderProps() {
-        return {
-          ...superRenderProps(),
-          scaleOpts: {
-            domain: this.domain,
-            stats: self.stats,
-            autoscaleType: getConf(self, 'autoscale'),
-            scaleType: getConf(self, 'scaleType'),
-            inverted: getConf(self, 'inverted'),
-          },
-        }
-      },
-    }
-  })
-```
-
-### Rendering SVG
-
-Our SVG renderer is an example, where it extends the existing built in renderer
-type with a custom ReactComponent only:
-
-```js
-export default class SVGPlugin extends Plugin {
-  install(pluginManager: PluginManager) {
-    pluginManager.addRendererType(
-      () =>
-        new BoxRendererType({
-          name: 'SvgFeatureRenderer',
-          ReactComponent: SvgFeatureRendererReactComponent,
-          configSchema: svgFeatureRendererConfigSchema,
-          pluginManager,
-        }),
-    )
-  }
-}
-```
-
-Then, we have our Rendering component just be plain React code. This is a
-highly simplified SVG renderer just to illustrate:
-
-```jsx
-export default function SvgFeatureRendering(props) {
-  const { width, features, regions, layout, bpPerPx } = props
-  const region = regions[0]
-
-  const feats = Array.from(features.values())
-  const height = readConfObject(config, 'height', { feature })
-  return (
-    <svg>
-      {feats.map(feature => {
-        // our layout determines at what y-coordinate to
-        // plot our feature, given all the other features
-        const top = layout.addRect(
-          feature.id(),
-          feature.get('start'),
-          feature.get('end'),
-          height,
-        )
-        const [left, right] = bpSpanPx(
-          feature.get('start'),
-          feature.get('end'),
-          region,
-          bpPerPx,
-        )
-        return <rect x={left} y={top} height={height} width={right - left} />
-      })}
-    </svg>
+export default (pm: PluginManager) => {
+  pm.addAddTrackWorkflowType(
+    () =>
+      new AddTrackWorkflowType({
+        name: 'Multi-wiggle track',
+        /* in a separate file, export the react component to render within the track widget,
+        typically a form to collect relevant data for your track */
+        ReactComponent: MultiWiggleWidget,
+        stateModel: types.model({}),
+      }),
   )
 }
 ```
 
-:::info Note
-
-1.The above SVG renderer is highly simplified, but it
-shows that you can have a simple React component that leverages the existing
-`BoxRendererType`, so that you do not have to necessarily create your own
-renderer class
-
-2.The renderers receive an array of regions to render, but if they are only
-equipped to handle one region at a time then they can select only rendering
-to `regions[0]`
-:::
-
-### Overriding the renderer's getFeatures method
-
-Normally, it is sufficient to override the `getFeatures` function in your
-dataAdapter.
-
-If you want to drastically modify the feature fetching behavior, you can modify
-the renderer's `getFeatures` call.
-
-The base `ServerSideRendererType` class has a built-in `getFeatures` function that,
-in turn, calls your adapter's `getFeatures` function, but if you need
-tighter control over how your adapter's `getFeatures` method is called, then
-your renderer.
-
-The Hi-C renderer type does not operate on conventional
-features and instead works with contact matrices, so the Hi-C renderer has a
-custom `getFeatures` function:
+...and ensure you install this component into your larger plugin:
 
 ```js
-import { toArray } from 'rxjs/operators'
-class HicRenderer extends ServerSideRendererType {
-  async getFeatures(args) {
-    const { dataAdapter, regions } = args
-    const features = await dataAdapter
-      .getFeatures(regions[0])
-      .pipe(toArray())
-      .toPromise()
-    return features
+// plugins/wiggle/index.jsx
+
+// ...
+
+export default class WigglePlugin extends Plugin {
+  name = 'WigglePlugin'
+
+  install(pm: PluginManager) {
+    // ...
+    MultiWiggleAddTrackWidgetF(pm)
+    // ...
   }
 }
 ```
 
-## Creating custom track types
+### Extension points
 
-At a high level, the track types are just "ReactComponents" that contain
-rendered track contents. Oftentimes, for custom drawing, we create a renderer
-instead of a track, but here are some reasons you might want a custom track:
+Extension points are a pluggable element type which allows users to add a
+callback that is called at an appropriate time.
 
-- Drawing custom things over the rendered content (e.g. drawing the Y-scale bar
-  in the wiggle track)
-- Implementing custom track menu items (e.g. Show soft clipping in the
-  alignments track)
-- Adding custom widgets (e.g. custom `VariantFeatureWidget` in
-  variant track)
-- You want to bundle your renderer and adapter as a specific thing that is
-  automatically initialized rather than the `BasicTrack` (which combines any
-  adapter and renderer)
+Checkout the [full extension point API](/docs/api_guide/#extension-points) or
+an [example for adding context menu
+items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
+for more detailed information.
 
-For examples of custom track types, refer to things like:
+The basic API is that producers can say:
 
-- `HicTrack`, which uses a custom HicRenderer to draw contact matrix
-- `GDCPlugin`, which has a custom track type that registers custom feature detail
-  widgets
-- `VariantTrack`, which also registers custom widgets, and has
-  `ChordVariantDisplay` and `LinearVariantDisplay`
-- `SyntenyTrack`, which can be displayed with `DotplotDisplay` or
-  `LinearSyntenyDisplay`
+```js
+const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
+  value: 1,
+})
+```
+
+And consumers can say:
+
+```js
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+```
+
+In this case, `arg` that is passed in evaluateExtensionPoint calls all the
+callbacks that have been registered by `addToExtensionPoint`. If multiple
+extension points are registered, the return value of the first extension point
+is passed as the new argument to the second, and so on (they are chained
+together).
+
+So in the example above, ret would be `{value:3}` after evaluating the
+extension point.
+
+## Next steps
+
+Now that you have an overview of the different pluggable element types that are
+available to you, review your [understanding of the configuration
+model](../config_model).
+
+Also checkout the [guided
+tutorial](/docs/tutorials/simple_plugin_tutorial/01_introduction) for writing a
+plugin, which will take you through everything from installation, creating a
+new pluggable element, and general development tips for working with JBrowse 2.

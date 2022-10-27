@@ -1,6 +1,6 @@
 ---
 id: config_model
-title: Understanding the configuration model
+title: Configuration model basics
 toplevel: true
 ---
 
