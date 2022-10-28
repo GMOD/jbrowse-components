@@ -1,3 +1,4 @@
+import Authentication from '@jbrowse/plugin-authentication'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
 import CircularGenomeView from '@jbrowse/plugin-circular-view'
@@ -6,6 +7,7 @@ import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
 
 const corePlugins = [
+  Authentication,
   Config,
   DataManagement,
   CircularGenomeView,

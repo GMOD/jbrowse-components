@@ -1,4 +1,5 @@
 import Alignments from '@jbrowse/plugin-alignments'
+import Authentication from '@jbrowse/plugin-authentication'
 import BED from '@jbrowse/plugin-bed'
 import Config from '@jbrowse/plugin-config'
 import DataManagement from '@jbrowse/plugin-data-management'
@@ -14,6 +15,7 @@ import Trix from '@jbrowse/plugin-trix'
 const corePlugins = [
   SVG,
   Alignments,
+  Authentication,
   BED,
   Config,
   DataManagement,

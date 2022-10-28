@@ -12,7 +12,7 @@ import {
   FileLocation,
   LocalPathLocation,
   BlobLocation,
-  isAppRootModel,
+  isRootModelWithInternetAccounts,
   isUriLocation,
   AuthNeededError,
   UriLocation,
@@ -109,7 +109,7 @@ function getInternetAccount(
 ): BaseInternetAccountModel | undefined {
   const { rootModel } = pluginManager
   // If there is an appRootModel, use it to find the internetAccount
-  if (rootModel && isAppRootModel(rootModel)) {
+  if (rootModel && isRootModelWithInternetAccounts(rootModel)) {
     return rootModel.findAppropriateInternetAccount(location)
   }
   // If there is no appRootModel, but there is pre-auth, create a temporary
