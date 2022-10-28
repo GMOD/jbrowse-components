@@ -37,17 +37,9 @@ const useStyles = makeStyles()({
 
 const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const { classes } = useStyles()
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
-  const [cursorAnchorEl, setCursorAnchorEl] = useState<null | HTMLElement>(null)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>()
   return (
     <div>
-      <IconButton
-        onClick={event => setCursorAnchorEl(event.currentTarget)}
-        className={classes.iconButton}
-        color="secondary"
-      >
-        <CursorMouse />
-      </IconButton>
       <IconButton
         onClick={model.zoomOutButton}
         className={classes.iconButton}
@@ -89,7 +81,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
           open
           onMenuItemClick={(_event, callback) => {
             callback()
-            setMenuAnchorEl(null)
+            setMenuAnchorEl(undefined)
           }}
           menuItems={[
             {
@@ -106,20 +98,6 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
               label: 'Draw CIGAR',
               checked: model.drawCigar,
             },
-          ]}
-          onClose={() => setMenuAnchorEl(null)}
-        />
-      ) : null}
-
-      {cursorAnchorEl ? (
-        <Menu
-          anchorEl={cursorAnchorEl}
-          open
-          onMenuItemClick={(_event, callback) => {
-            callback()
-            setCursorAnchorEl(null)
-          }}
-          menuItems={[
             {
               onClick: () => model.setCursorMode('move'),
               label: 'Cursor mode - click and drag to move',
@@ -130,11 +108,12 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
             {
               onClick: () => model.setCursorMode('crosshair'),
               label: 'Cursor mode - select region',
+              icon: CursorMouse,
               type: 'radio',
               checked: model.cursorMode === 'crosshair',
             },
           ]}
-          onClose={() => setCursorAnchorEl(null)}
+          onClose={() => setMenuAnchorEl(undefined)}
         />
       ) : null}
     </div>

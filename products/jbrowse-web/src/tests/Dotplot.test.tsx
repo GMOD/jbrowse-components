@@ -48,7 +48,7 @@ test('open a dotplot view with import form', async () => {
       value: 'peach_grape_small.paf.gz',
     },
   })
-  fireEvent.click(await findByTestId('submitDotplot'))
+  fireEvent.click(await findByText('Open'))
 
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 30000)
