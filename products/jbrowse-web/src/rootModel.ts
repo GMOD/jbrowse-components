@@ -3,11 +3,9 @@ import {
   cast,
   getSnapshot,
   getType,
-  resolveIdentifier,
   types,
   IAnyStateTreeNode,
   SnapshotIn,
-  IAnyModelType,
 } from 'mobx-state-tree'
 
 import { saveAs } from 'file-saver'
@@ -43,6 +41,7 @@ import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
 import { filterSessionInPlace } from './util'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface Menu {
   label: string
@@ -241,7 +240,7 @@ export default function RootModel(
           self,
           autorun(() => {
             self.jbrowse.internetAccounts.forEach(account => {
-              this.initializeInternetAccount(account.internetAccountId)
+              this.initializeInternetAccount(account)
             })
           }),
         )
@@ -261,28 +260,22 @@ export default function RootModel(
         }
       },
       initializeInternetAccount(
-        internetAccountId: string,
+        internetAccountConfig: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
-        const internetAccountConfigSchema =
-          pluginManager.pluggableConfigSchemaType('internet account')
-        const configuration = resolveIdentifier(
-          internetAccountConfigSchema as IAnyModelType,
-          self,
-          internetAccountId,
-        )
-
         const internetAccountType = pluginManager.getInternetAccountType(
-          configuration.type,
+          internetAccountConfig.type,
         )
         if (!internetAccountType) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
+          throw new Error(
+            `unknown internet account type ${internetAccountConfig.type}`,
+          )
         }
 
         const length = self.internetAccounts.push({
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: internetAccountConfig.type,
+          configuration: internetAccountConfig,
         })
         return self.internetAccounts[length - 1]
       },

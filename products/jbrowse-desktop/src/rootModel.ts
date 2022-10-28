@@ -1,12 +1,10 @@
 import {
   addDisposer,
   cast,
-  resolveIdentifier,
   getSnapshot,
   types,
   SnapshotIn,
   Instance,
-  IAnyModelType,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
 import makeWorkerInstance from './makeWorkerInstance'
@@ -129,27 +127,25 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           this.setSession(snapshot)
         }
       },
-      initializeInternetAccount(id: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType(
-          'internet account',
-        ) as IAnyModelType
-        const configuration = resolveIdentifier(schema, self, id)
-
-        const accountType = pluginManager.getInternetAccountType(
-          configuration.type,
+      initializeInternetAccount(
+        internetAccountConfig: AnyConfigurationModel,
+        initialSnapshot = {},
+      ) {
+        const internetAccountType = pluginManager.getInternetAccountType(
+          internetAccountConfig.type,
         )
-        if (!accountType) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
+        if (!internetAccountType) {
+          throw new Error(
+            `unknown internet account type ${internetAccountConfig.type}`,
+          )
         }
 
-        const internetAccount = accountType.stateModel.create({
+        const length = self.internetAccounts.push({
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: internetAccountConfig.type,
+          configuration: internetAccountConfig,
         })
-
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
+        return self.internetAccounts[length - 1]
       },
       createEphemeralInternetAccount(
         internetAccountId: string,
@@ -579,7 +575,7 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           self,
           autorun(() => {
             self.jbrowse.internetAccounts.forEach(account => {
-              self.initializeInternetAccount(account.internetAccountId)
+              self.initializeInternetAccount(account)
             })
           }),
         )
