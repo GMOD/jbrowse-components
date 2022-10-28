@@ -9,8 +9,7 @@
   "organizationName": "GMOD",
   "projectName": "jbrowse-components",
   "customFields": {
-    "currentVersion": "v1.6.5",
-    "bannerBulletin": "Introducing JBrowse Desktop"
+    "currentVersion": "v2.1.7"
   },
   "themeConfig": {
     "colorMode": {
@@ -92,6 +91,10 @@
             {
               "label": "Documentation",
               "to": "docs/"
+            },
+            {
+              "label": "Cancer resources",
+              "to": "cancer/"
             }
           ]
         },

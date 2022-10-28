@@ -1,8 +1,6 @@
 export { default as AdapterClass } from './FromConfigAdapter'
 export { default as RegionsAdapterClass } from './FromConfigRegionsAdapter'
 export { default as SequenceAdapterClass } from './FromConfigSequenceAdapter'
-export {
-  configSchema,
-  regionsConfigSchema,
-  sequenceConfigSchema,
-} from './configSchema'
+export { default as configSchema } from './fromConfig'
+export { default as regionsConfigSchema } from './fromConfig'
+export { default as sequenceConfigSchema } from './fromConfigSequence'

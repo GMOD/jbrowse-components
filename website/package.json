@@ -3,9 +3,10 @@
   "license": "Apache-2.0",
   "homepage": ".",
   "scripts": {
-    "prestart": "npm run make combined.md",
-    "start": "npm run fetchPlugins && docusaurus start",
-    "prebuild": "npm run make combined.md && npm run fetchPlugins",
+    "prep": "npm run make cli.md && npm run fetchPlugins",
+    "prestart": "npm run prep",
+    "start": "docusaurus start",
+    "prebuild": "npm run prep",
     "build": "docusaurus build",
     "fetchPlugins": "rimraf plugins.json && wget https://s3.amazonaws.com/jbrowse.org/plugin-store/plugins.json",
     "swizzle": "docusaurus swizzle",
@@ -15,19 +16,20 @@
     "make": "make -C docs"
   },
   "dependencies": {
-    "@docusaurus/core": "^2.0.0-beta.16",
-    "@docusaurus/preset-classic": "^2.0.0-beta.16",
-    "@emotion/react": "^11.5.0",
-    "@emotion/styled": "^11.3.0",
-    "@mui/icons-material": "^5.0.4",
-    "@mui/material": "^5.0.4",
-    "@mui/styles": "^5.0.1",
-    "acorn": "^8.1.1",
+    "@cmfcmf/docusaurus-search-local": "^0.11.0",
+    "@docusaurus/core": "^2.1.0",
+    "@docusaurus/preset-classic": "^2.1.0",
+    "@emotion/react": "^11.10.4",
+    "@emotion/styled": "^11.10.4",
+    "@mui/icons-material": "^5.10.9",
+    "@mui/material": "^5.10.11",
+    "acorn": "^8.8.1",
     "acorn-jsx": "^5.3.1",
     "clsx": "^1.1.1",
-    "copy-to-clipboard": "^3.3.1",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "copy-to-clipboard": "^3.3.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-player": "^2.11.0"
   },
   "browserslist": {
     "production": [

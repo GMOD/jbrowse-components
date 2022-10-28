@@ -1,9 +1,4 @@
-import {
-  polarToCartesian,
-  assembleLocString,
-  objectFromEntries,
-  Region,
-} from '@jbrowse/core/util'
+import { polarToCartesian, assembleLocString, Region } from '@jbrowse/core/util'
 import { thetaRangesOverlap } from './viewportVisibleRegion'
 
 export class Slice {
@@ -50,7 +45,7 @@ export class Slice {
   }
 
   toJSON() {
-    return objectFromEntries(Object.entries(this))
+    return Object.fromEntries(Object.entries(this))
   }
 }
 
@@ -67,10 +62,11 @@ function calculateStaticSlices(self: any) {
   return slices
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sliceIsVisible(self: any, slice: Slice) {
+function sliceIsVisible(
+  self: { offsetRadians: number; visibleSection: { theta: [number, number] } },
+  slice: Slice,
+) {
   const {
-    // rho: visibleRhoRange,
     theta: [visibleThetaMin, visibleThetaMax],
   } = self.visibleSection
 

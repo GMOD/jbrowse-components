@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { observer } from 'mobx-react'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -7,35 +6,51 @@ import { Tooltip } from '@jbrowse/plugin-wiggle'
 type Count = {
   [key: string]: {
     total: number
-    strands: { [key: string]: number }
+    '-1': number
+    '0': number
+    '1': number
   }
 }
 
 type SNPInfo = {
-  ref: Count
   cov: Count
   lowqual: Count
   noncov: Count
   delskips: Count
+  refbase: string
   total: number
+  ref: number
+  all: number
+  '-1': number
+  '0': number
+  '1': number
 }
 
 const en = (n: number) => n.toLocaleString('en-US')
+const toP = (s = 0) => +(+s).toFixed(1)
+const pct = (n: number, total: number) => `${toP((n / (total || 1)) * 100)}%`
 
-const TooltipContents = React.forwardRef(
-  ({ feature }: { feature: Feature }, ref: any) => {
+const TooltipContents = React.forwardRef<HTMLDivElement, { feature: Feature }>(
+  ({ feature }, reactRef) => {
     const start = feature.get('start')
     const end = feature.get('end')
     const name = feature.get('refName')
-    const info = feature.get('snpinfo') as SNPInfo
+    const {
+      refbase,
+      all,
+      total,
+      ref,
+      '-1': rn1,
+      '1': r1,
+      '0': r0,
+      ...info
+    } = feature.get('snpinfo') as SNPInfo
     const loc = [name, start === end ? en(start) : `${en(start)}..${en(end)}`]
       .filter(f => !!f)
       .join(':')
 
-    const total = info?.total
-
     return (
-      <div ref={ref}>
+      <div ref={reactRef}>
         <table>
           <caption>{loc}</caption>
           <thead>
@@ -50,33 +65,38 @@ const TooltipContents = React.forwardRef(
           <tbody>
             <tr>
               <td>Total</td>
-              <td>{total}</td>
+              <td>{all}</td>
+            </tr>
+            <tr>
+              <td>REF {refbase ? `(${refbase.toUpperCase()})` : ''}</td>
+              <td>{ref}</td>
+              <td>{pct(ref, all)}</td>
+              <td>
+                {rn1 ? `${rn1}(-)` : ''}
+                {r1 ? `${r1}(+)` : ''}
+              </td>
               <td />
             </tr>
 
-            {Object.entries(info).map(([key, entry]) => {
-              return Object.entries(entry).map(([base, score]) => {
-                const { strands } = score
-                return (
+            {Object.entries(info as unknown as Record<string, Count>).map(
+              ([key, entry]) =>
+                Object.entries(entry).map(([base, score]) => (
                   <tr key={base}>
                     <td>{base.toUpperCase()}</td>
                     <td>{score.total}</td>
                     <td>
                       {base === 'total' || base === 'skip'
                         ? '---'
-                        : `${Math.floor(
-                            (score.total / (total || score.total || 1)) * 100,
-                          )}%`}
+                        : pct(score.total, all)}
                     </td>
                     <td>
-                      {strands['-1'] ? `${strands['-1']}(-)` : ''}
-                      {strands['1'] ? `${strands['1']}(+)` : ''}
+                      {score['-1'] ? `${score['-1']}(-)` : ''}
+                      {score['1'] ? `${score['1']}(+)` : ''}
                     </td>
                     <td>{key}</td>
                   </tr>
-                )
-              })
-            })}
+                )),
+            )}
           </tbody>
         </table>
       </div>
@@ -88,7 +108,7 @@ type Coord = [number, number]
 
 const SNPCoverageTooltip = observer(
   (props: {
-    model: any
+    model: { featureUnderMouse: Feature }
     height: number
     offsetMouseCoord: Coord
     clientMouseCoord: Coord

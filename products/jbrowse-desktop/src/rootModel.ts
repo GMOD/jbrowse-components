@@ -6,33 +6,38 @@ import {
   types,
   SnapshotIn,
   Instance,
+  IAnyModelType,
 } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-
+import makeWorkerInstance from './makeWorkerInstance'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { MenuItem } from '@jbrowse/core/ui'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
+import { MenuItem } from '@jbrowse/core/ui'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { ipcRenderer } from 'electron'
 
 // icons
-import OpenIcon from '@material-ui/icons/FolderOpen'
-import ExtensionIcon from '@material-ui/icons/Extension'
-import AppsIcon from '@material-ui/icons/Apps'
-import StorageIcon from '@material-ui/icons/Storage'
-import SettingsIcon from '@material-ui/icons/Settings'
-import MeetingRoomIcon from '@material-ui/icons/MeetingRoom'
+import OpenIcon from '@mui/icons-material/FolderOpen'
+import ExtensionIcon from '@mui/icons-material/Extension'
+import AppsIcon from '@mui/icons-material/Apps'
+import StorageIcon from '@mui/icons-material/Storage'
+import SettingsIcon from '@mui/icons-material/Settings'
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
+import UndoIcon from '@mui/icons-material/Undo'
+import RedoIcon from '@mui/icons-material/Redo'
 import { Save, SaveAs, DNA, Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import sessionModelFactory from './sessionModelFactory'
+import jobsModelFactory from './indexJobsModel'
 import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
+
+const { ipcRenderer } = window.require('electron')
 
 function getSaveSession(model: RootModel) {
   return {
@@ -49,10 +54,12 @@ interface Menu {
 export default function rootModelFactory(pluginManager: PluginManager) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
+  const JobsManager = jobsModelFactory(pluginManager)
   return types
     .model('Root', {
       jbrowse: JBrowseDesktop(pluginManager, Session, assemblyConfigSchema),
       session: types.maybe(Session),
+      jobsManager: types.maybe(JobsManager),
       assemblyManager: assemblyManagerFactory(
         assemblyConfigSchema,
         pluginManager,
@@ -62,13 +69,14 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
-      isAssemblyEditing: false,
       sessionPath: types.optional(types.string, ''),
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(() => ({
+      isAssemblyEditing: false,
       error: undefined as unknown,
       textSearchManager: new TextSearchManager(pluginManager),
-      openNewSessionCallback: async (path: string) => {
+      openNewSessionCallback: async (_path: string) => {
         console.error('openNewSessionCallback unimplemented')
       },
       pluginManager,
@@ -121,42 +129,37 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           this.setSession(snapshot)
         }
       },
-      initializeInternetAccount(
-        internetAccountId: string,
-        initialSnapshot = {},
-      ) {
-        const internetAccountConfigSchema =
-          pluginManager.pluggableConfigSchemaType('internet account')
-        const configuration = resolveIdentifier(
-          internetAccountConfigSchema,
-          self,
-          internetAccountId,
-        )
+      initializeInternetAccount(id: string, initialSnapshot = {}) {
+        const schema = pluginManager.pluggableConfigSchemaType(
+          'internet account',
+        ) as IAnyModelType
+        const configuration = resolveIdentifier(schema, self, id)
 
-        const internetAccountType = pluginManager.getInternetAccountType(
+        const accountType = pluginManager.getInternetAccountType(
           configuration.type,
         )
-        if (!internetAccountType) {
+        if (!accountType) {
           throw new Error(`unknown internet account type ${configuration.type}`)
         }
 
-        const internetAccount = internetAccountType.stateModel.create({
+        const internetAccount = accountType.stateModel.create({
           ...initialSnapshot,
           type: configuration.type,
           configuration,
         })
+
         self.internetAccounts.push(internetAccount)
         return internetAccount
       },
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot = {},
-        location: UriLocation,
+        url: string,
       ) {
         let hostUri
 
         try {
-          hostUri = new URL(location.uri).origin
+          hostUri = new URL(url).origin
         } catch (e) {
           // ignore
         }
@@ -202,22 +205,11 @@ export default function rootModelFactory(pluginManager: PluginManager) {
 
         // if still no existing account, create ephemeral config to use
         return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location)
+          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
-      },
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(() => {
-            self.jbrowse.internetAccounts.forEach(account => {
-              this.initializeInternetAccount(account.internetAccountId)
-            })
-          }),
-        )
       },
     }))
     .volatile(self => ({
-      history: {},
       menus: [
         {
           label: 'File',
@@ -277,7 +269,20 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                 if (self.session) {
                   self.session.queueDialog(doneCallback => [
                     OpenSequenceDialog,
-                    { model: self, onClose: doneCallback },
+                    {
+                      model: self,
+                      onClose: (confs: AnyConfigurationModel[]) => {
+                        try {
+                          confs?.forEach(conf => {
+                            self.jbrowse.addAssemblyConf(conf)
+                          })
+                        } catch (e) {
+                          console.error(e)
+                          self.session?.notify(`${e}`)
+                        }
+                        doneCallback()
+                      },
+                    },
                   ])
                 }
               },
@@ -344,6 +349,23 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           label: 'Tools',
           menuItems: [
             {
+              label: 'Undo',
+              disabled: self.history.canUndo,
+              icon: UndoIcon,
+              onClick: () => {
+                self.history.undo()
+              },
+            },
+            {
+              label: 'Redo',
+              disabled: self.history.canRedo,
+              icon: RedoIcon,
+              onClick: () => {
+                self.history.redo()
+              },
+            },
+            { type: 'divider' },
+            {
               label: 'Plugin store',
               icon: ExtensionIcon,
               onClick: () => {
@@ -370,7 +392,9 @@ export default function rootModelFactory(pluginManager: PluginManager) {
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            makeWorkerInstance,
+          },
           MainThreadRpcDriver: {},
         },
       ),
@@ -379,10 +403,6 @@ export default function rootModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       activateSession(sessionSnapshot: SnapshotIn<typeof Session>) {
         self.setSession(sessionSnapshot)
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setHistory(history: any) {
-        self.history = history
       },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
@@ -522,6 +542,47 @@ export default function rootModelFactory(pluginManager: PluginManager) {
       },
 
       afterCreate() {
+        document.addEventListener('keydown', e => {
+          if (self.history.canRedo) {
+            if (
+              // ctrl+shift+z or cmd+shift+z
+              ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyZ') ||
+              // ctrl+y
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
+            ) {
+              self.history.redo()
+            }
+          } else if (self.history.canUndo) {
+            if (
+              // ctrl+z or cmd+z
+              (e.ctrlKey || e.metaKey) &&
+              !e.shiftKey &&
+              e.code === 'KeyZ'
+            ) {
+              self.history.undo()
+            }
+          }
+        })
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.session) {
+              // we use a specific initialization routine after session is
+              // created to get it to start tracking itself sort of related
+              // issue here
+              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
+              self.history.initialize()
+            }
+          }),
+        )
+        addDisposer(
+          self,
+          autorun(() => {
+            self.jbrowse.internetAccounts.forEach(account => {
+              self.initializeInternetAccount(account.internetAccountId)
+            })
+          }),
+        )
         addDisposer(
           self,
           autorun(

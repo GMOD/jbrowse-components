@@ -1,9 +1,17 @@
 import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config JBrowse1Connection
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const JBrowse1Connection = ConfigurationSchema(
   'JBrowse1Connection',
   {
+    /**
+     * #slot
+     */
     dataDirLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -13,6 +21,9 @@ export default ConfigurationSchema(
       description:
         'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
     },
+    /**
+     * #slot
+     */
     assemblyNames: {
       description:
         'name of the assembly the connection belongs to, should be a single entry',
@@ -20,5 +31,12 @@ export default ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { baseConfiguration: baseConnectionConfig },
+  {
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: baseConnectionConfig,
+  },
 )
+
+export default JBrowse1Connection

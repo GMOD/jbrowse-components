@@ -1,26 +1,27 @@
 import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
-import { getSession, objectHash } from './index'
+import { getSession, objectHash, getEnv } from './index'
 import { PreFileLocation, FileLocation } from './types'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
-import { readConfObject } from '../configuration'
-import { getEnv } from 'mobx-state-tree'
+import {
+  getConf,
+  readConfObject,
+  AnyConfigurationModel,
+} from '../configuration'
 
 /* utility functions for use by track models and so forth */
 
 export function getTrackAssemblyNames(
   track: IAnyStateTreeNode & { configuration: AnyConfigurationModel },
 ) {
-  const trackConf = track.configuration
-  const trackAssemblyNames = readConfObject(trackConf, 'assemblyNames')
+  const trackAssemblyNames = getConf(track, 'assemblyNames') as string[]
   if (!trackAssemblyNames) {
     // Check if it's an assembly sequence track
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parent = getParent<any>(track.configuration)
     if ('sequence' in parent) {
-      return [readConfObject(parent, 'name')]
+      return [readConfObject(parent, 'name') as string]
     }
   }
-  return trackAssemblyNames as string[]
+  return trackAssemblyNames
 }
 
 /** return the rpcSessionId of the highest parent node in the tree that has an rpcSessionId */
@@ -30,7 +31,8 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
     rpcSessionId: string
   }
   let highestRpcSessionId
-  for (let node = thisNode; !isRoot(node); node = getParent(node)) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
     if ('rpcSessionId' in node) {
       highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
     }
@@ -51,9 +53,11 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
  */
 export function getParentRenderProps(node: IAnyStateTreeNode) {
   for (
-    let currentNode = getParent(node);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let currentNode = getParent<any>(node);
     !isRoot(currentNode);
-    currentNode = getParent(currentNode)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    currentNode = getParent<any>(currentNode)
   ) {
     if ('renderProps' in currentNode) {
       return currentNode.renderProps()
@@ -83,13 +87,14 @@ export function setBlobMap(map: { [key: string]: File }) {
   blobMap = map
 }
 
-// blob files are stored in a global map
+let counter = 0
+
+// blob files are stored in a global map. the blobId is based on a combination
+// of timestamp plus counter to be unique across sessions and fast repeated
+// calls
 export function storeBlobLocation(location: PreFileLocation) {
   if (location && 'blob' in location) {
-    // possibly we should be more clear about when this is not undefined, and
-    // also allow mix of blob and url for index and file
-    // @ts-ignore
-    const blobId = `b${+Date.now()}`
+    const blobId = `b${+Date.now()}-${counter++}`
     blobMap[blobId] = location.blob
     return { name: location?.blob.name, blobId, locationType: 'BlobLocation' }
   }
@@ -164,7 +169,8 @@ export function guessAdapter(
   model?: IAnyStateTreeNode,
 ) {
   if (model) {
-    const adapterGuesser = getEnv(model).pluginManager.evaluateExtensionPoint(
+    const { pluginManager } = getEnv(model)
+    const adapterGuesser = pluginManager.evaluateExtensionPoint(
       'Core-guessAdapterForLocation',
       (
         _file: FileLocation,
@@ -243,4 +249,20 @@ export function generateUnknownTrackConf(
   }
   conf.trackId = objectHash(conf)
   return conf
+}
+
+export function getTrackName(
+  conf: AnyConfigurationModel,
+  session: { assemblies: AnyConfigurationModel[] },
+) {
+  const trackName = readConfObject(conf, 'name')
+  if (!trackName && readConfObject(conf, 'type') === 'ReferenceSequenceTrack') {
+    const asm = session.assemblies.find(a => a.sequence === conf)
+    return asm
+      ? `Reference sequence (${
+          readConfObject(asm, 'displayName') || readConfObject(asm, 'name')
+        })`
+      : 'Reference sequence'
+  }
+  return trackName
 }

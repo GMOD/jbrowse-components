@@ -10,7 +10,7 @@ You don't need to have JBrowse 2 installed to use this tool. The tool can genera
 
 ## Screenshot
 
-![](img/1.png)
+![](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
 
 More examples [EXAMPLES.md](EXAMPLES.md)
 
@@ -28,8 +28,6 @@ If you are a developer and want to modify the code, see [developer
 guide](DEVELOPER.md) for details
 
 ## Example usages
-
-This will show some example usages
 
 ### Use with local files
 
@@ -51,14 +49,21 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 
 If `--out` is not specified it writes to out.svg
 
-### Generate PDF of PNG instead of SVG
+### Generate PNG instead of SVG
 
-If a filename with a `pdf` or `png` extension is supplied to `--out` then the
-tool tries to convert from svg to pdf/png using rsvg-convert (you will need to
-install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`)
+Supply a file with the png extension to `--out`, uses rsvg-convert so you will
+need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
 
-```
+```bash
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.png
+```
+
+### Generate PDF instead of SVG
+
+Supply a file with the pdf extension to `--out`, uses rsvg-convert so you will
+need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
+
+```bash
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
 ```
 
@@ -66,11 +71,10 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 
 This example shows using remote files, e.g. with human hg19 and several tracks
 
-Note the use of --aliases to smooth over refname differences e.g. fasta
+Note the use of --aliases, which smoothes over refname differences e.g. fasta
 contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
 
-```
-
+```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt  \
   --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinvar/clinvarMain.bb \
@@ -151,7 +155,7 @@ If you use jbrowse-web, you can select File->Export session which produces a
 session.json file, and then use the --session parameter. Make sure to specify
 the assembly also, it currently does not infer the assembly from the session
 
-```
+```bash
 jb2export --config data/skbr3/config.json \
   --session session.json \
   --assembly hg19
@@ -203,7 +207,7 @@ Then you can call it like above
 
 ```bash
 jb2export --config data/volvox/config.json \
-  --assembly volvox
+  --assembly volvox \
   --configtracks volvox_sv \
   --loc ctgA:1-50,000
 ```
@@ -333,10 +337,6 @@ convert -size 2048x out.svg out.png
 
 ## Troubleshooting
 
-### I see the message 'useLayoutEffect does nothing on the server'
-
-This is a harmless warning, we are working on fixing it though
-
 ### I don't get any outputted svg and no message
 
 The error reporting from the app is not very good at the moment so often has
@@ -350,8 +350,3 @@ There are some new features in the latest NPM (2021, v7) related to
 peerDependencies that may produce some warnings. It should work even despite
 making warnings, but you can use yarn to install or use legacy peer
 dependencies if you want to avoid install time warningsvg
-
-### The program keeps running after saying it completed?
-
-We are looking into this still. The file should have been generated though, and
-the program will complete

@@ -1,17 +1,12 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import {
-  Typography,
-  makeStyles,
-  Select,
-  MenuItem,
-  FormControl,
-} from '@material-ui/core'
+import { Typography, Select, MenuItem, FormControl } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   container: {
     display: 'flex',
     flexDirection: 'row',
@@ -27,17 +22,15 @@ const useStyles = makeStyles(() => ({
 }))
 
 function AssemblySelector({ model }: { model: GridBookmarkModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { assemblies, selectedAssembly, setSelectedAssembly } = model
   const noAssemblies = assemblies.length === 0 ? true : false
 
   const determineCurrentValue = (selectedAssembly: string) => {
     if (selectedAssembly === 'all') {
       return 'all'
-    } else {
-      if (assemblies.includes(selectedAssembly)) {
-        return selectedAssembly
-      }
+    } else if (assemblies.includes(selectedAssembly)) {
+      return selectedAssembly
     }
 
     return 'none'
@@ -49,14 +42,10 @@ function AssemblySelector({ model }: { model: GridBookmarkModel }) {
       <FormControl className={classes.flexItem} disabled={noAssemblies}>
         <Select
           value={determineCurrentValue(selectedAssembly)}
-          onChange={event => setSelectedAssembly(event.target.value as string)}
+          onChange={event => setSelectedAssembly(event.target.value)}
         >
-          <MenuItem value="none" key="no-assembly">
-            none
-          </MenuItem>
-          <MenuItem value="all" key="all-assemblies">
-            all
-          </MenuItem>
+          <MenuItem value="none">none</MenuItem>
+          <MenuItem value="all">all</MenuItem>
           {assemblies.map(assembly => (
             <MenuItem value={assembly} key={assembly}>
               {assembly}

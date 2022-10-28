@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import {
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
@@ -10,15 +11,12 @@ import {
   Paper,
   TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    width: 500,
-  },
+const useStyles = makeStyles()(theme => ({
   paper: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),
@@ -95,7 +93,7 @@ function FilterByTagDlg(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { filterBy } = model
   const [flagInclude, setFlagInclude] = useState(filterBy?.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy?.flagExclude)
@@ -123,74 +121,74 @@ function FilterByTagDlg(props: {
           Set filter bitmask options. Refer to <Link href={site}>{site}</Link>{' '}
           for details
         </Typography>
-        <div className={classes.root}>
-          <Paper className={classes.paper} variant="outlined">
-            <div style={{ display: 'flex' }}>
-              <div>
-                <Typography>Read must have ALL these flags</Typography>
-                <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
-              </div>
-              <div>
-                <Typography>Read must have NONE of these flags</Typography>
-                <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
-              </div>
+        <Paper className={classes.paper} variant="outlined">
+          <div style={{ display: 'flex' }}>
+            <div>
+              <Typography>Read must have ALL these flags</Typography>
+              <Bitmask flag={flagInclude} setFlag={setFlagInclude} />
             </div>
-          </Paper>
-          <Paper className={classes.paper} variant="outlined">
-            <Typography>
-              Filter by tag name and value. Use * in the value field to get all
-              reads containing any value for that tag. Example: filter tag name
-              SA with value * to get all split/supplementary reads. Other
-              examples include HP for haplotype, or RG for read group
-            </Typography>
-            <TextField
-              className={classes.field}
-              value={tag}
-              onChange={event => {
-                setTag(event.target.value)
-              }}
-              placeholder="Enter tag name"
-              inputProps={{
-                maxLength: 2,
-                'data-testid': 'color-tag-name-input',
-              }}
-              error={tag.length === 2 && !validTag}
-              helperText={
-                tag.length === 2 && !validTag ? 'Not a valid tag' : ''
-              }
-              data-testid="color-tag-name"
-            />
-            <TextField
-              className={classes.field}
-              value={tagValue}
-              onChange={event => {
-                setTagValue(event.target.value)
-              }}
-              placeholder="Enter tag value"
-              inputProps={{
-                'data-testid': 'color-tag-name-input',
-              }}
-              data-testid="color-tag-value"
-            />
-          </Paper>
-          <Paper className={classes.paper} variant="outlined">
-            <Typography>Filter by read name</Typography>
-            <TextField
-              className={classes.field}
-              value={readName}
-              onChange={event => {
-                setReadName(event.target.value)
-              }}
-              placeholder="Enter read name"
-              inputProps={{
-                'data-testid': 'color-tag-readname-input',
-              }}
-              data-testid="color-tag-readname"
-            />
-          </Paper>
+            <div>
+              <Typography>Read must have NONE of these flags</Typography>
+              <Bitmask flag={flagExclude} setFlag={setFlagExclude} />
+            </div>
+          </div>
+        </Paper>
+        <Paper className={classes.paper} variant="outlined">
+          <Typography>
+            Filter by tag name and value. Use * in the value field to get all
+            reads containing any value for that tag. Example: filter tag name SA
+            with value * to get all split/supplementary reads. Other examples
+            include HP for haplotype, or RG for read group
+          </Typography>
+          <TextField
+            className={classes.field}
+            value={tag}
+            onChange={event => {
+              setTag(event.target.value)
+            }}
+            placeholder="Enter tag name"
+            inputProps={{
+              maxLength: 2,
+              'data-testid': 'color-tag-name-input',
+            }}
+            error={tag.length === 2 && !validTag}
+            helperText={tag.length === 2 && !validTag ? 'Not a valid tag' : ''}
+            data-testid="color-tag-name"
+          />
+          <TextField
+            className={classes.field}
+            value={tagValue}
+            onChange={event => {
+              setTagValue(event.target.value)
+            }}
+            placeholder="Enter tag value"
+            inputProps={{
+              'data-testid': 'color-tag-name-input',
+            }}
+            data-testid="color-tag-value"
+          />
+        </Paper>
+        <Paper className={classes.paper} variant="outlined">
+          <Typography>Filter by read name</Typography>
+          <TextField
+            className={classes.field}
+            value={readName}
+            onChange={event => {
+              setReadName(event.target.value)
+            }}
+            placeholder="Enter read name"
+            inputProps={{
+              'data-testid': 'color-tag-readname-input',
+            }}
+            data-testid="color-tag-readname"
+          />
+        </Paper>
+        <DialogActions>
           <Button
             variant="contained"
             color="primary"
+            autoFocus
+            type="submit"
             onClick={() => {
               model.setFilterBy({
                 flagInclude,
@@ -209,7 +207,14 @@ function FilterByTagDlg(props: {
           >
             Submit
           </Button>
-        </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleClose()}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )

@@ -9,22 +9,21 @@ import {
   TextField,
   Tooltip,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
-import SearchIcon from '@material-ui/icons/Search'
-import MoreIcon from '@material-ui/icons/MoreHoriz'
-
-import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
-import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
-
-import { ipcRenderer } from 'electron'
+import SearchIcon from '@mui/icons-material/Search'
+import MoreIcon from '@mui/icons-material/MoreHoriz'
 import deepmerge from 'deepmerge'
 
 // locals
+import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'
+import RenameQuickstartDialog from './dialogs/RenameQuickstartDialog'
 import { loadPluginManager } from './util'
 
-const useStyles = makeStyles(theme => ({
+const { ipcRenderer } = window.require('electron')
+
+const useStyles = makeStyles()(theme => ({
   button: {
     float: 'right',
     height: '3em',
@@ -48,7 +47,7 @@ function QuickstartPanel({
 }: {
   setPluginManager: (arg0: PluginManager) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [selected, setSelected] = useState({} as Record<string, boolean>)
   const [search, setSearch] = useState('')
   const [error, setError] = useState<unknown>()

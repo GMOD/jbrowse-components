@@ -2,6 +2,13 @@
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
+    },
+    "formatAbout": {
+      "hideUris": true,
+      "config": "jexl:{extraField:'important data'}"
+    },
+    "formatDetails": {
+      "feature": "jexl:{extraField:'important data'}"
     }
   },
   "assemblies": [
@@ -65,36 +72,40 @@
         }
       ]
     },
+
     {
-      "type": "AlignmentsTrack",
-      "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA, svg)",
-      "category": ["Integration test"],
-      "assemblyNames": ["volvox", "volvox2"],
+      "type": "SyntenyTrack",
+      "trackId": "volvox_fake_synteny",
+      "name": "volvox_fake_synteny",
+      "assemblyNames": ["volvox", "volvox"],
       "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "volvox-sorted.bam",
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_fake_synteny.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox", "volvox"]
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_sv_test",
+      "name": "volvox structural variant test",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.vcf.gz",
           "locationType": "UriLocation"
         },
         "index": {
           "location": {
-            "uri": "volvox-sorted.bam.bai",
+            "uri": "volvox.dup.vcf.gz.tbi",
             "locationType": "UriLocation"
           }
         }
-      },
-      "displays": [
-        {
-          "type": "LinearAlignmentsDisplay",
-          "displayId": "volvox_alignments_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "defaultRendering": "svg"
-          }
-        }
-      ]
+      }
     }
   ]
 }

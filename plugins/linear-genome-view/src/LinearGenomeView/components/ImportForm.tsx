@@ -1,46 +1,41 @@
 import React, { useState, lazy } from 'react'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import {
-  Button,
-  CircularProgress,
-  Container,
-  Grid,
-  makeStyles,
-} from '@material-ui/core'
-import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
-import { LinearGenomeViewModel } from '..'
+import { fetchResults, splitLast } from './util'
+import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(2),
   },
   button: {
     margin: theme.spacing(2),
   },
+  container: {
+    padding: theme.spacing(4),
+  },
 }))
 
 type LGV = LinearGenomeViewModel
 
 const ImportForm = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
-  const {
-    rankSearchResults,
-    isSearchDialogDisplayed,
-    error: modelError,
-  } = model
+  const { rankSearchResults, isSearchDialogDisplayed, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
-  const [error, setError] = useState<typeof modelError | undefined>(modelError)
+  const [importError, setImportError] = useState(error)
+  const [option, setOption] = useState<BaseResult>()
+
   const searchScope = model.searchScope(selectedAsm)
 
   const assembly = assemblyManager.get(selectedAsm)
@@ -48,40 +43,19 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     ? assembly?.error
     : 'No configured assemblies'
   const regions = assembly?.regions || []
-  const err = assemblyError || error
+  const err = assemblyError || importError
+  const [myVal, setValue] = useState('')
+  const value = myVal || regions[0]?.refName
 
-  const [myOption, setOption] = useState<BaseResult>()
-
-  // use this instead of useState initializer because the useState initializer
-  // won't update in response to an observable
-  const option =
-    myOption ||
-    new BaseResult({
-      label: regions[0]?.refName,
-    })
-
-  const selectedRegion = option?.getLocation()
-
-  async function fetchResults(query: string, searchType?: SearchType) {
-    if (!textSearchManager) {
-      console.warn('No text search manager')
+  function navToOption(option: BaseResult) {
+    const location = option.getLocation()
+    const trackId = option.getTrackId()
+    if (location) {
+      model.navToLocString(location, selectedAsm)
+      if (trackId) {
+        model.showTrack(trackId)
+      }
     }
-
-    const textSearchResults = await textSearchManager?.search(
-      {
-        queryString: query,
-        searchType,
-      },
-      searchScope,
-      rankSearchResults,
-    )
-
-    const refNameResults = assembly?.allRefNames
-      ?.filter(refName => refName.startsWith(query))
-      .map(r => new BaseResult({ label: r }))
-      .slice(0, 10)
-
-    return [...(refNameResults || []), ...(textSearchResults || [])]
   }
 
   // gets a string as input, or use stored option results from previous query,
@@ -90,27 +64,34 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   // 2) if it's a single result navigate to it
   // 3) else assume it's a locstring and navigate to it
   async function handleSelectedRegion(input: string) {
-    if (!option) {
-      return
-    }
-    let trackId = option.getTrackId()
-    let location = input || option.getLocation() || ''
     try {
-      if (assembly?.allRefNames?.includes(location)) {
-        model.navToLocString(location, selectedAsm)
+      if (option?.getDisplayString() === input && option.hasLocation()) {
+        navToOption(option)
       } else {
-        const results = await fetchResults(input, 'exact')
-        if (results && results.length > 1) {
-          model.setSearchResults(results, input.toLowerCase())
-          return
-        } else if (results?.length === 1) {
-          location = results[0].getLocation()
-          trackId = results[0].getTrackId()
-        }
+        const [ref, rest] = splitLast(input, ':')
+        const allRefs = assembly?.allRefNamesWithLowerCase || []
+        if (
+          allRefs.includes(input) ||
+          (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
+        ) {
+          model.navToLocString(input, selectedAsm)
+        } else {
+          const results = await fetchResults({
+            queryString: input,
+            searchType: 'exact',
+            searchScope,
+            rankSearchResults,
+            textSearchManager,
+            assembly,
+          })
 
-        model.navToLocString(location, selectedAsm)
-        if (trackId) {
-          model.showTrack(trackId)
+          if (results.length > 1) {
+            model.setSearchResults(results, input.toLowerCase())
+          } else if (results.length === 1) {
+            navToOption(results[0])
+          } else {
+            model.navToLocString(input, selectedAsm)
+          }
         }
       }
     } catch (e) {
@@ -119,13 +100,23 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
+  const height = WIDGET_HEIGHT + 5
+
   // implementation notes:
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
-    <div>
+    <div className={classes.container}>
       {err ? <ErrorMessage error={err} /> : null}
       <Container className={classes.importFormContainer}>
-        <form onSubmit={event => event.preventDefault()}>
+        <form
+          onSubmit={event => {
+            event.preventDefault()
+            model.setError(undefined)
+            if (value) {
+              handleSelectedRegion(value)
+            }
+          }}
+        >
           <Grid
             container
             spacing={1}
@@ -135,31 +126,43 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Grid item>
               <AssemblySelector
                 onChange={val => {
-                  setError(undefined)
+                  setImportError('')
                   setSelectedAsm(val)
+                  setValue('')
                 }}
                 session={session}
                 selected={selectedAsm}
+                InputProps={{ style: { height } }}
               />
             </Grid>
             <Grid item>
               {selectedAsm ? (
                 err ? (
                   <CloseIcon style={{ color: 'red' }} />
-                ) : selectedRegion ? (
+                ) : value ? (
                   <RefNameAutocomplete
-                    fetchResults={fetchResults}
+                    fetchResults={queryString =>
+                      fetchResults({
+                        queryString,
+                        assembly,
+                        textSearchManager,
+                        rankSearchResults,
+                        searchScope,
+                      })
+                    }
                     model={model}
                     assemblyName={assemblyError ? undefined : selectedAsm}
-                    value={selectedRegion}
+                    value={value}
                     // note: minWidth 270 accomodates full width of helperText
                     minWidth={270}
-                    onSelect={option => setOption(option)}
+                    onChange={str => setValue(str)}
+                    onSelect={val => setOption(val)}
                     TextFieldProps={{
-                      margin: 'normal',
                       variant: 'outlined',
                       helperText:
                         'Enter sequence name, feature name, or location',
+                      style: { minWidth: '175px' },
+                      InputProps: { style: { height } },
                     }}
                   />
                 ) : (
@@ -171,25 +174,18 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                 )
               ) : null}
             </Grid>
-            <Grid item></Grid>
             <Grid item>
               <Button
                 type="submit"
-                disabled={!selectedRegion}
+                disabled={!value}
                 className={classes.button}
-                onClick={() => {
-                  model.setError(undefined)
-                  if (selectedRegion) {
-                    handleSelectedRegion(selectedRegion)
-                  }
-                }}
                 variant="contained"
                 color="primary"
               >
                 Open
               </Button>
               <Button
-                disabled={!selectedRegion}
+                disabled={!value}
                 className={classes.button}
                 onClick={() => {
                   model.setError(undefined)

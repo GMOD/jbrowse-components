@@ -1,141 +1,100 @@
-import React from 'react'
-import {
-  screen,
-  cleanup,
-  waitFor,
-  fireEvent,
-  render,
-} from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 
-import { setup, generateReadBuffer, getPluginManager, JBrowse } from './util'
+// locals
+import { setup, doBeforeEach, createView } from './util'
 import jb1_config from '../../test_data/volvox/volvox_jb1_text_config.json'
 
 setup()
-afterEach(cleanup)
 
 beforeEach(() => {
-  clearCache()
-  clearAdapterCache()
-
-  // @ts-ignore
-  fetch.resetMocks()
-  // @ts-ignore
-  fetch.mockResponse(
-    generateReadBuffer((url: string) => {
-      return new LocalFile(require.resolve(`../../test_data/volvox/${url}`))
-    }),
-  )
+  doBeforeEach()
 })
-test('test trix from lgv header', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
 
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
-  const input = await findByPlaceholderText('Search for location')
+const delay = { timeout: 10000 }
 
-  // wait for displayedRegions[0] to be volvox, required for searching header
-  // of lgv
-  await waitFor(() =>
-    // @ts-ignore
-    expect(state.session.views[0].displayedRegions[0].assemblyName).toEqual(
-      'volvox',
-    ),
-  )
+async function doSetup(val?: unknown) {
+  const args = createView(val)
+  const { findByTestId, findByPlaceholderText } = args
 
-  auto.focus()
-  fireEvent.mouseDown(input)
+  const autocomplete = await findByTestId('autocomplete', {}, delay)
+  const input = (await findByPlaceholderText(
+    'Search for location',
+  )) as HTMLInputElement
+
+  autocomplete.focus()
+  input.focus()
+
+  return { autocomplete, input, ...args }
+}
+
+test('single result, searching: eden.1', async () => {
+  const { input, autocomplete } = await doSetup()
   fireEvent.change(input, { target: { value: 'eden.1' } })
-  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-
-  await waitFor(
-    () => expect((input as HTMLInputElement).value).toBe('ctgA:1,055..9,005'),
-    { timeout: 10000 },
-  )
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)
 
-test('test trix on import form', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findByText, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
+test('dialog with multiple results, searching seg02', async () => {
+  const { input, view, autocomplete } = await doSetup()
 
-  // @ts-ignore
-  pluginManager.rootModel.session.views[0].clearView()
-
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
-  const input = await findByPlaceholderText('Search for location')
-  await waitFor(() => {
-    // @ts-ignore
-    expect(state.assemblyManager.get('volvox').initialized)
-  })
-
-  auto.focus()
-  fireEvent.mouseDown(input)
-  fireEvent.change(input, { target: { value: 'eden.1' } })
-  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-
-  // should work to just have enter and no click on open in UI, but this is
-  // needed in test currently. may be worth investigating
-  fireEvent.click(await findByText('Open'))
-
-  await waitFor(
-    async () => {
-      const newInput = await findByPlaceholderText('Search for location')
-      expect((newInput as HTMLInputElement).value).toBe('ctgA:1,055..9,005')
-    },
-    { timeout: 10000 },
-  )
-}, 30000)
-
-test('opens a dialog with multiple results', async () => {
-  const pluginManager = getPluginManager()
-  const state = pluginManager.rootModel
-  const { findByTestId, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
-  const input = await findByPlaceholderText('Search for location')
-  await waitFor(() => {
-    // @ts-ignore
-    expect(state.assemblyManager.get('volvox').initialized)
-  })
-
-  auto.focus()
-  fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'seg02' } })
-  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search results', {}, { timeout: 10000 })
-  // @ts-ignore
-  expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await screen.findByText('Search results', {}, delay)
+  await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)
 
-test('opens a dialog with multiple results with jb1 text search adapter results', async () => {
-  const pluginManager = getPluginManager(jb1_config)
-  const state = pluginManager.rootModel
-  const { findByTestId, findByPlaceholderText } = render(
-    <JBrowse pluginManager={pluginManager} />,
-  )
-
-  const auto = await findByTestId('autocomplete', {}, { timeout: 10000 })
-  const input = await findByPlaceholderText('Search for location')
-  await waitFor(() => {
-    // @ts-ignore
-    expect(state.assemblyManager.get('volvox').initialized)
-  })
-
-  auto.focus()
-  fireEvent.mouseDown(input)
+test('dialog with multiple results with jb1 config, searching: eden.1', async () => {
+  const { input, view, autocomplete } = await doSetup(jb1_config)
   fireEvent.change(input, { target: { value: 'eden.1' } })
-  fireEvent.keyDown(auto, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search results', {}, { timeout: 10000 })
-  // @ts-ignore
-  expect(state.session.views[0].searchResults.length).toBeGreaterThan(0)
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await screen.findByText('Search results', {}, delay)
+  expect(view.searchResults?.length).toBeGreaterThan(0)
+}, 30000)
+
+test('test navigation with the search input box, {volvox2}ctgB:1..200', async () => {
+  const { input, view, autocomplete } = await doSetup()
+  fireEvent.change(input, { target: { value: '{volvox2}ctgB:1..200' } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() =>
+    expect(view.displayedRegions[0].assemblyName).toEqual('volvox2'),
+  )
+}, 30000)
+
+test('nav lower case refnames, searching: ctgb:1-100', async () => {
+  const { input, view, autocomplete } = await doSetup()
+  fireEvent.change(input, { target: { value: 'ctgb:1-100' } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
+}, 30000)
+
+test('nav lower case refnames, searching: ctgb', async () => {
+  const { input, view, autocomplete } = await doSetup()
+
+  fireEvent.change(input, { target: { value: 'ctgb' } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
+}, 30000)
+
+test('nav lower case refnames, searching: contigb:1-100', async () => {
+  const { input, view, autocomplete } = await doSetup()
+
+  fireEvent.change(input, { target: { value: 'contigb:1-100' } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() => expect(view.displayedRegions[0].refName).toBe('ctgB'))
+}, 30000)
+
+test('description of gene, searching: kinase', async () => {
+  console.warn = jest.fn()
+  const { input, autocomplete } = await doSetup()
+
+  fireEvent.mouseDown(input)
+  fireEvent.change(input, { target: { value: 'kinase' } })
+
+  fireEvent.click(await screen.findByText('EDEN (protein kinase)', {}, delay))
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)

@@ -17,7 +17,7 @@ module.exports = {
     '<rootDir>/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/**/*.(spec|test).{js,jsx,ts,tsx}',
   ],
-  testPathIgnorePatterns: ['/dist/', '/cypress/'],
+  testPathIgnorePatterns: ['/dist/', '/cypress/', '/demos/'],
   collectCoverageFrom: [
     'packages/*/src/**/*.{js,jsx,ts,tsx}',
     'products/*/src/**/*.{js,jsx,ts,tsx}',
@@ -25,15 +25,20 @@ module.exports = {
     // most packages have their src in src/, except for jbrowse-core
     'packages/core/**/*.{js,jsx,ts,tsx}',
   ],
+  coveragePathIgnorePatterns: [
+    '!*.d.ts',
+    'makeWorkerInstance.ts',
+    'react-colorful.js',
+    'QuickLRU.js',
+  ],
   setupFiles: [
+    '<rootDir>/config/jest/textEncoder.js',
     '<rootDir>/config/jest/createRange.js',
     '<rootDir>/config/jest/fetchMock.js',
     '<rootDir>/config/jest/console.js',
+    '<rootDir>/config/jest/crypto.js',
     'jest-localstorage-mock',
   ],
-  testURL: 'http://localhost',
-  moduleNameMapper: {
-    '^react-native$': 'react-native-web',
-    '^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-  },
+  testEnvironmentOptions: { url: 'http://localhost' },
+  testEnvironment: 'jsdom',
 }

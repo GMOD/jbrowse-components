@@ -1,10 +1,11 @@
 import React from 'react'
-import {
-  createCanvas,
-  PonyfillOffscreenCanvas,
-  createImageBitmap,
-} from './offscreenCanvasPonyfill'
-import { blobToDataURL } from '.'
+import { CanvasSequence } from 'canvas-sequencer'
+
+// locals
+import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
+import { blobToDataURL } from './index'
+
+export type RenderReturn = Record<string, unknown>
 
 export async function renderToAbstractCanvas(
   width: number,
@@ -13,54 +14,59 @@ export async function renderToAbstractCanvas(
     exportSVG?: { rasterizeLayers?: boolean }
     highResolutionScaling: number
   },
-  cb: (arg: CanvasRenderingContext2D) => Promise<void> | void,
+  cb: (
+    ctx: CanvasRenderingContext2D,
+  ) => Promise<RenderReturn | void> | RenderReturn | void,
 ) {
-  const { exportSVG, highResolutionScaling = 1 } = opts
-  if (exportSVG && !exportSVG.rasterizeLayers) {
-    const fakeCanvas = new PonyfillOffscreenCanvas(width, height)
-    const fakeCtx = fakeCanvas.getContext('2d')
+  const { exportSVG, highResolutionScaling: scaling = 1 } = opts
 
-    // @ts-ignore just assume we are actually rendering to a canvas
-    await cb(fakeCtx)
-    return {
-      reactElement: fakeCanvas.getSerializedSvg(),
+  if (exportSVG) {
+    if (!exportSVG.rasterizeLayers) {
+      const fakeCtx = new CanvasSequence()
+      const result = await cb(fakeCtx)
+      return {
+        ...result,
+        canvasRecordedData: fakeCtx.toJSON(),
+      }
+    } else {
+      const scale = 4
+      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('2d canvas rendering not supported on this platform')
+      }
+      ctx.scale(scale, scale)
+      const result = await cb(ctx)
+
+      // two methods needed for converting canvas to PNG, one for webworker
+      // offscreen canvas, one for main thread
+      return {
+        ...result,
+        reactElement: (
+          <image
+            width={width}
+            height={height}
+            xlinkHref={
+              'convertToBlob' in canvas
+                ? await blobToDataURL(
+                    await canvas.convertToBlob({
+                      type: 'image/png',
+                    }),
+                  )
+                : canvas.toDataURL()
+            }
+          />
+        ),
+      }
     }
-  }
-  if (exportSVG && exportSVG.rasterizeLayers) {
-    const scale = 4
-    const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+  } else {
+    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
     const ctx = canvas.getContext('2d')
-    ctx.scale(scale, scale)
-    await cb(ctx)
-
-    // two methods needed for converting canvas to PNG, one for webworker
-    // offscreen canvas, one for main thread
-    return {
-      reactElement: (
-        <image
-          width={width}
-          height={height}
-          xlinkHref={
-            canvas.convertToBlob
-              ? await blobToDataURL(
-                  await canvas.convertToBlob({
-                    type: 'image/png',
-                  }),
-                )
-              : canvas.toDataURL()
-          }
-        />
-      ),
+    if (!ctx) {
+      throw new Error('2d canvas rendering not supported on this platform')
     }
+    ctx.scale(scaling, scaling)
+    const result = await cb(ctx)
+    return { ...result, imageData: await createImageBitmap(canvas) }
   }
-
-  const canvas = createCanvas(
-    Math.ceil(width * highResolutionScaling),
-    height * highResolutionScaling,
-  )
-  const ctx = canvas.getContext('2d')
-  ctx.scale(highResolutionScaling, highResolutionScaling)
-  await cb(ctx)
-
-  return { imageData: await createImageBitmap(canvas) }
 }

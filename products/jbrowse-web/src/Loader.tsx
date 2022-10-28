@@ -1,18 +1,17 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
-import PluginManager, { PluginLoadRecord } from '@jbrowse/core/PluginManager'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { inDevelopment } from '@jbrowse/core/util'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 import {
   StringParam,
   QueryParamProvider,
   useQueryParam,
 } from 'use-query-params'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
-import 'core-js/stable'
-import queryString from 'query-string'
 import shortid from 'shortid'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
@@ -21,7 +20,7 @@ import Loading from './Loading'
 import corePlugins from './corePlugins'
 import JBrowse from './JBrowse'
 import JBrowseRootModelFactory from './rootModel'
-import { version } from '../package.json'
+import packageJSON from '../package.json'
 import factoryReset from './factoryReset'
 import SessionLoader, {
   SessionLoaderModel,
@@ -55,26 +54,22 @@ function NoConfigMessage() {
         Configuration not found. You may have arrived here if you requested a
         config that does not exist or you have not set up your JBrowse yet.
       </h4>
-
-      <p>
-        If you want to complete your setup, visit our{' '}
-        <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-          Quick start guide
-        </a>
-      </p>
-
       {inDevelopment ? (
         <>
           <div>Sample JBrowse configs:</div>
           <ul>
             {links.map(([link, name]) => {
               const { href, search } = window.location
-              const { config, ...rest } = queryString.parse(search)
+              const { config, ...rest } = Object.fromEntries(
+                new URLSearchParams(search),
+              )
               const root = href.split('?')[0]
-              const params = queryString.stringify({
-                ...rest,
-                config: link,
-              })
+              const params = new URLSearchParams(
+                Object.entries({
+                  ...rest,
+                  config: link,
+                }),
+              )
               return (
                 <li key={name}>
                   <a href={`${root}?${params}`}>{name}</a>
@@ -175,11 +170,11 @@ const SessionTriaged = ({
   )
 }
 
-const ErrMessage = ({ err }: { err: unknown }) => {
+const StartScreenErrorMessage = ({ error }: { error: unknown }) => {
   return (
     <>
       <NoConfigMessage />
-      {`${err}`.match(/HTTP 404 fetching config.json/) ? (
+      {`${error}`.match(/HTTP 404 fetching config.json/) ? (
         <div
           style={{
             margin: 8,
@@ -190,13 +185,14 @@ const ErrMessage = ({ err }: { err: unknown }) => {
         >
           No config.json found. If you want to learn how to complete your setup,
           visit our{' '}
-          <a href="https://jbrowse.org/jb2/docs/quickstart_web">
-            Quick start guide
+          <a href="https://jbrowse.org/jb2/docs/quickstarts/quickstart_web/">
+            quick start guide
           </a>
+          .
         </div>
       ) : (
         <Suspense fallback={<div>Loading...</div>}>
-          <ErrorMessage error={err} />
+          <ErrorMessage error={error} />
         </Suspense>
       )}
     </>
@@ -237,7 +233,7 @@ const Renderer = observer(
   }: {
     loader: SessionLoaderModel
     initialTimestamp: number
-    initialSessionQuery: string | null | undefined
+    initialSessionQuery?: string | null
   }) => {
     const { sessionError, configError, ready, shareWarningOpen } = loader
     const [pm, setPluginManager] = useState<PluginManager>()
@@ -261,12 +257,10 @@ const Renderer = observer(
           // error Assuming that the query changes self.sessionError or
           // self.sessionSnapshot or self.blankSession
           const pluginManager = new PluginManager([
-            ...corePlugins.map(P => {
-              return {
-                plugin: new P(),
-                metadata: { isCore: true },
-              } as PluginLoadRecord
-            }),
+            ...corePlugins.map(P => ({
+              plugin: new P(),
+              metadata: { isCore: true },
+            })),
             ...runtimePlugins.map(({ plugin: P, definition }) => ({
               plugin: new P(),
               definition,
@@ -279,28 +273,21 @@ const Renderer = observer(
             })),
           ])
           pluginManager.createPluggableElements()
-          const isAdmin = !!adminKey
-
-          const RootModel = JBrowseRootModelFactory(pluginManager, isAdmin)
+          const RootModel = JBrowseRootModelFactory(pluginManager, !!adminKey)
 
           if (configSnapshot) {
             const rootModel = RootModel.create(
               {
                 jbrowse: configSnapshot,
-                assemblyManager: {},
-                version,
+                version: packageJSON.version,
                 configPath,
               },
               { pluginManager },
             )
-            rootModel.jbrowse.configuration.rpc.addDriverConfig(
-              'WebWorkerRpcDriver',
-              { type: 'WebWorkerRpcDriver' },
-            )
-            if (!loader.configSnapshot?.configuration?.rpc?.defaultDriver) {
-              rootModel.jbrowse.configuration.rpc.defaultDriver.set(
-                'WebWorkerRpcDriver',
-              )
+
+            if (!configSnapshot?.configuration?.rpc?.defaultDriver) {
+              const { rpc } = rootModel.jbrowse.configuration
+              rpc.defaultDriver.set('WebWorkerRpcDriver')
             }
 
             let afterInitializedCb = () => {}
@@ -311,16 +298,13 @@ const Renderer = observer(
             try {
               if (sessionError) {
                 rootModel.setDefaultSession()
-                // make typescript happy by checking for session after
-                // setDefaultSession, even though we know this exists now
-                if (rootModel.session) {
-                  rootModel.session.notify(
-                    `Error loading session: ${sessionError}. If you
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                rootModel.session!.notify(
+                  `Error loading session: ${sessionError}. If you
                 received this URL from another user, request that they send you
                 a session generated with the "Share" button instead of copying
                 and pasting their URL`,
-                  )
-                }
+                )
               } else if (sessionSnapshot && !shareWarningOpen) {
                 rootModel.setSession(sessionSnapshot)
               } else if (sessionSpec) {
@@ -369,7 +353,7 @@ const Renderer = observer(
     const err = configError || error
 
     if (err) {
-      return <ErrMessage err={err} />
+      return <StartScreenErrorMessage error={err} />
     }
 
     if (loader.sessionTriaged) {
@@ -386,23 +370,19 @@ const Renderer = observer(
       )
     }
     if (pm) {
-      if (!pm.rootModel?.session) {
-        return (
-          <Suspense fallback={<div>Loading...</div>}>
-            <StartScreen
-              rootModel={pm.rootModel}
-              onFactoryReset={factoryReset}
-            />
-          </Suspense>
-        )
-      }
-      return <JBrowse pluginManager={pm} />
+      return !pm.rootModel?.session ? (
+        <Suspense fallback={<div>Loading...</div>}>
+          <StartScreen rootModel={pm.rootModel} onFactoryReset={factoryReset} />
+        </Suspense>
+      ) : (
+        <JBrowse pluginManager={pm} />
+      )
     }
     return <Loading />
   },
 )
 
-const PlatformSpecificFatalErrorDialog = (props: unknown) => {
+const PlatformSpecificFatalErrorDialog = (props: FallbackProps) => {
   return (
     <FatalErrorDialog
       resetButtonText="Reset Session"
@@ -413,8 +393,9 @@ const PlatformSpecificFatalErrorDialog = (props: unknown) => {
 }
 const LoaderWrapper = ({ initialTimestamp }: { initialTimestamp: number }) => {
   return (
+    // @ts-ignore
     <ErrorBoundary FallbackComponent={PlatformSpecificFatalErrorDialog}>
-      <QueryParamProvider>
+      <QueryParamProvider adapter={WindowHistoryAdapter}>
         <Loader initialTimestamp={initialTimestamp} />
       </QueryParamProvider>
     </ErrorBoundary>

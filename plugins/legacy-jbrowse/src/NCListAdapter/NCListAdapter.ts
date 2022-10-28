@@ -8,12 +8,10 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkAbortSignal } from '@jbrowse/core/util'
 import { RemoteFile } from 'generic-filehandle'
-import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
 import NCListFeature from './NCListFeature'
-import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,13 +20,13 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   private configRefNames?: string[]
 
   constructor(
-    config: Instance<typeof MyConfigSchema>,
+    config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const refNames = readConfObject(config, 'refNames')
-    const rootUrlTemplate = readConfObject(config, 'rootUrlTemplate')
+    const refNames = this.getConf('refNames')
+    const rootUrlTemplate = this.getConf('rootUrlTemplate')
     this.configRefNames = refNames
 
     this.nclist = new NCListStore({
@@ -78,12 +76,11 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     return !!(root && root.stats && root.stats.featureCount)
   }
 
-  /*
+  /**
    * NCList is unable to get list of ref names so returns empty
-   * @return Promise<string[]> of empty list
    */
-  getRefNames() {
-    return Promise.resolve(this.configRefNames || [])
+  async getRefNames() {
+    return this.configRefNames || []
   }
 
   /**

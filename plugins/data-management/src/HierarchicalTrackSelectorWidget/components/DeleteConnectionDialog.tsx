@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import { AbstractSessionModel } from '@jbrowse/core/util'
@@ -18,7 +18,7 @@ function DeleteConnectionDialog({
 }: {
   deleteDialogDetails: { name: string; connectionConf: AnyConfigurationModel }
   session: AbstractSessionModel
-  handleClose: Function
+  handleClose: () => void
 }) {
   const { connectionConf, name } = deleteDialogDetails
   return (

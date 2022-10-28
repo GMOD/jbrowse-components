@@ -50,3 +50,7 @@ Currently deploys to the jbrowse.org amazon s3 bucket
 ### Deploy pdf
 
     yarn deploypdf
+
+## Screenshots
+
+See [SCREENSHOTS.md](SCREENSHOTS.md) for info on how various screenshots are generated

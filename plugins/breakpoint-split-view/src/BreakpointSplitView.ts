@@ -1,12 +1,13 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import { parseBreakend } from '@gmod/vcf'
+
+// locals
 import BreakpointSplitViewComponent from './components/BreakpointSplitView'
 import BreakpointSplitViewModel from './model'
-import { parseBreakend } from '@gmod/vcf'
 
 class BreakpointSplitViewType extends ViewType {
   snapshotFromBreakendFeature(feature: Feature, view: LinearGenomeViewModel) {
@@ -29,9 +30,7 @@ class BreakpointSplitViewType extends ViewType {
     }
     const { getCanonicalRefName } = assembly as Assembly
     const featureRefName = getCanonicalRefName(feature.get('refName'))
-    const topRegion = assembly.regions.find(
-      f => f.refName === String(featureRefName),
-    )
+    const topRegion = assembly.regions.find(f => f.refName === featureRefName)
 
     let mateRefName: string | undefined
     let startMod = 0
@@ -42,7 +41,7 @@ class BreakpointSplitViewType extends ViewType {
       const INFO = feature.get('INFO')
       endPos = INFO.END[0] - 1
       mateRefName = getCanonicalRefName(INFO.CHR2[0])
-    } else if (bnd) {
+    } else if (bnd?.MatePosition) {
       const matePosition = bnd.MatePosition.split(':')
       endPos = +matePosition[1] - 1
       mateRefName = getCanonicalRefName(matePosition[0])
@@ -66,9 +65,7 @@ class BreakpointSplitViewType extends ViewType {
       return {}
     }
 
-    const bottomRegion = assembly.regions.find(
-      f => f.refName === String(mateRefName),
-    )
+    const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)
 
     if (!topRegion || !bottomRegion) {
       console.warn(

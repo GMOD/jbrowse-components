@@ -1,22 +1,29 @@
 import React from 'react'
 import {
+  Button,
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   FormControlLabel,
-  Checkbox,
   IconButton,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+export function ellipses(slug: string) {
+  return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
+}
+
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -33,23 +40,14 @@ const useStyles = makeStyles(theme => ({
 function ToggleConnectionDialog({
   session,
   handleClose,
-  assemblyName,
   breakConnection,
 }: {
   handleClose: () => void
   session: AbstractSessionModel
-  assemblyName: string
-  breakConnection: Function
+  breakConnection: (arg: AnyConfigurationModel) => void
 }) {
-  const classes = useStyles()
-  const { connections, connectionInstances } = session
-  const assemblySpecificConnections = connections.filter(c => {
-    const configAssemblyNames = readConfObject(c, 'assemblyNames')
-    if (configAssemblyNames.length === 0) {
-      return true
-    }
-    return configAssemblyNames.includes(assemblyName)
-  })
+  const { classes } = useStyles()
+  const { connections, connectionInstances: instances = [] } = session
   return (
     <Dialog open onClose={handleClose} maxWidth="lg">
       <DialogTitle>
@@ -64,37 +62,32 @@ function ToggleConnectionDialog({
       <DialogContent>
         <Typography>Use the checkbox to turn on/off connections</Typography>
         <div className={classes.connectionContainer}>
-          {assemblySpecificConnections.map(conf => {
+          {connections.map(conf => {
             const name = readConfObject(conf, 'name')
+            const assemblyNames = readConfObject(conf, 'assemblyNames')
+            const found = instances.find(conn => name === conn.name)
             return (
-              <div key={conf.connectionId}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={
-                        !!connectionInstances?.find(conn => name === conn.name)
+              <FormControlLabel
+                key={conf.connectionId}
+                control={
+                  <Checkbox
+                    checked={!!found}
+                    onChange={() => {
+                      if (found) {
+                        breakConnection(conf)
+                      } else {
+                        session.makeConnection?.(conf)
                       }
-                      onChange={() => {
-                        if (
-                          connectionInstances?.find(
-                            conn => conn.name === readConfObject(conf, 'name'),
-                          )
-                        ) {
-                          breakConnection(conf)
-                        } else {
-                          session.makeConnection?.(conf)
-                        }
-                      }}
-                      color="primary"
-                    />
-                  }
-                  label={name}
-                />
-              </div>
+                    }}
+                    color="primary"
+                  />
+                }
+                label={`${name} (${ellipses(assemblyNames.join(','))})`}
+              />
             )
           })}
-          {!assemblySpecificConnections.length ? (
-            <Typography>No connections found for {assemblyName}</Typography>
+          {!connections.length ? (
+            <Typography>No connections found</Typography>
           ) : null}
         </div>
       </DialogContent>

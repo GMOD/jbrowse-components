@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
-import { getEnv, getParent } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
-import { JBrowsePlugin } from '@jbrowse/core/util/types'
-import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
+import { getParent } from 'mobx-state-tree'
+import { getSession, getEnv } from '@jbrowse/core/util'
+import {
+  JBrowsePlugin,
+  isSessionWithSessionPlugins,
+} from '@jbrowse/core/util/types'
 import {
   Card,
   CardActions,
@@ -12,16 +13,16 @@ import {
   Button,
   Link,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 // icons
-import PersonIcon from '@material-ui/icons/Person'
-import AddIcon from '@material-ui/icons/Add'
-import CheckIcon from '@material-ui/icons/Check'
+import PersonIcon from '@mui/icons-material/Person'
+import AddIcon from '@mui/icons-material/Add'
+import CheckIcon from '@mui/icons-material/Check'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   card: {
     margin: '1em',
   },
@@ -48,18 +49,17 @@ function PluginCard({
   model: PluginStoreModel
   adminMode: boolean
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
-  const { pluginManager } = getEnv(model) as { pluginManager: PluginManager }
+  const { pluginManager } = getEnv(model)
   const isInstalled = Boolean(
-    pluginManager.runtimePluginDefinitions.find(
-      pluginDefinition => pluginDefinition.url === plugin.url,
-    ),
+    pluginManager.runtimePluginDefinitions.find(def => def.url === plugin.url),
   )
   const [tempDisabled, setTempDisabled] = useState(false)
   const disableButton = isInstalled || tempDisabled
 
-  const rootModel = getParent(model, 3)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rootModel = getParent<any>(model, 3)
   const { jbrowse } = rootModel
 
   return (

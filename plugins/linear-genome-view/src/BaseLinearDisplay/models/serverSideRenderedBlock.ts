@@ -1,20 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import {
+  assembleLocString,
+  getSession,
+  getContainingDisplay,
+  getContainingView,
+  getViewParams,
+  makeAbortableReaction,
+  Feature,
+} from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types/mst'
 import {
   AbstractDisplayModel,
   isRetryException,
 } from '@jbrowse/core/util/types'
-import React from 'react'
 
-import {
-  assembleLocString,
-  makeAbortableReaction,
-  getSession,
-  getContainingDisplay,
-} from '@jbrowse/core/util'
 import {
   getTrackAssemblyNames,
   getRpcSessionId,
@@ -161,7 +163,7 @@ const blockState = types
         self.maxHeightReached = false
         self.ReactComponent = ServerSideRenderedBlockContent
         self.renderProps = undefined
-        getParent(self, 2).reload()
+        getParent<any>(self, 2).reload()
       },
       beforeDestroy() {
         if (renderInProgress && !renderInProgress.signal.aborted) {
@@ -194,7 +196,7 @@ export type BlockModel = Instance<BlockStateModel>
 // calls the render worker to render the block content not using a flow for
 // this, because the flow doesn't work with autorun
 export function renderBlockData(
-  self: Instance<BlockStateModel>,
+  self: BlockModel,
   optDisplay?: AbstractDisplayModel,
 ) {
   try {
@@ -220,6 +222,7 @@ export function renderBlockData(
     readConfObject(config)
 
     const sessionId = getRpcSessionId(display)
+    const layoutId = getContainingView(display).id
     const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
 
     return {
@@ -239,6 +242,7 @@ export function renderBlockData(
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
+        layoutId,
         blockKey: self.key,
         reloadFlag: self.reloadFlag,
         timeout: 1000000, // 10000,
@@ -265,7 +269,7 @@ interface ErrorProps {
 async function renderBlockEffect(
   props: RenderProps | ErrorProps,
   signal: AbortSignal,
-  self: Instance<BlockStateModel>,
+  self: BlockModel,
 ) {
   const {
     rendererType,
@@ -296,6 +300,7 @@ async function renderBlockEffect(
     await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
+      viewParams: getViewParams(self),
       signal,
     })
   return {

@@ -1,9 +1,12 @@
 import React from 'react'
 import { getSnapshot, getParent } from 'mobx-state-tree'
+import { ThemeProvider } from '@mui/material/styles'
 import { render, cleanup, fireEvent, waitFor } from '@testing-library/react'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
 
 import PluginStoreWidget from './PluginStoreWidget'
+jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
 const plugins = {
   plugins: [
@@ -41,14 +44,20 @@ describe('<PluginStoreWidget />', () => {
 
   it('renders with the available plugins', async () => {
     const { container, findByText } = render(
-      <PluginStoreWidget model={model} />,
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <PluginStoreWidget model={model} />
+      </ThemeProvider>,
     )
     await findByText('multiple sequence alignment browser plugin for JBrowse 2')
     expect(container.firstChild).toMatchSnapshot()
   })
 
   it('Installs a session plugin', async () => {
-    const { findByText } = render(<PluginStoreWidget model={model} />)
+    const { findByText } = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <PluginStoreWidget model={model} />
+      </ThemeProvider>,
+    )
     await findByText('multiple sequence alignment browser plugin for JBrowse 2')
     fireEvent.click(await findByText('Install'))
     await waitFor(() => {
@@ -61,7 +70,9 @@ describe('<PluginStoreWidget />', () => {
     session = createTestSession({}, true)
     model = session.addWidget('PluginStoreWidget', 'pluginStoreWidget')
     const { findByText, getByText, getByLabelText } = render(
-      <PluginStoreWidget model={model} />,
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <PluginStoreWidget model={model} />
+      </ThemeProvider>,
     )
     await findByText('multiple sequence alignment browser plugin for JBrowse 2')
     fireEvent.click(getByText('Add custom plugin'))
@@ -98,7 +109,9 @@ describe('<PluginStoreWidget />', () => {
     const { jbrowse } = rootModel
     jbrowse.addPlugin(plugins.plugins[0])
     const { findByText, getByText, getByTestId } = render(
-      <PluginStoreWidget model={model} />,
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <PluginStoreWidget model={model} />
+      </ThemeProvider>,
     )
     await findByText('multiple sequence alignment browser plugin for JBrowse 2')
     fireEvent.click(getByTestId('removePlugin-SVGPlugin'))

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
 import { getParent } from 'mobx-state-tree'
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getBpDisplayStr } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 
@@ -17,18 +17,6 @@ import {
 import { Polygon, Cytobands } from './OverviewScaleBar'
 
 type LGV = LinearGenomeViewModel
-
-function getBpDisplayStr(totalBp: number) {
-  let displayBp
-  if (Math.floor(totalBp / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000000).toPrecision(3))}Mbp`
-  } else if (Math.floor(totalBp / 1000) > 0) {
-    displayBp = `${parseFloat((totalBp / 1000).toPrecision(3))}Kbp`
-  } else {
-    displayBp = `${Math.floor(totalBp)}bp`
-  }
-  return displayBp
-}
 
 function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
   const {
@@ -247,10 +235,10 @@ function SVGTracks({
         const current = offset
         const trackName =
           getConf(track, 'name') ||
-          `Reference sequence (${readConfObject(
-            getParent(track.configuration),
-            'name',
-          )})`
+          `Reference sequence (${
+            readConfObject(getParent(track.configuration), 'displayName') ||
+            readConfObject(getParent(track.configuration), 'name')
+          })`
         const display = track.displays[0]
         offset += display.height + paddingHeight + textHeight
         return (

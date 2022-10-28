@@ -6,10 +6,6 @@
       "url": "https://unpkg.com/jbrowse-plugin-biothings@^1/dist/jbrowse-plugin-biothings.umd.production.min.js"
     },
     {
-      "name": "GDC",
-      "url": "https://unpkg.com/jbrowse-plugin-gdc@^1/dist/jbrowse-plugin-gdc.umd.production.min.js"
-    },
-    {
       "name": "UCSC",
       "url": "https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js"
     }
@@ -46,7 +42,6 @@
           }
         }
       },
-
       "cytobands": {
         "adapter": {
           "type": "CytobandAdapter",
@@ -97,24 +92,20 @@
       }
     },
     {
-      "name": "t2t-chm13-v1.1",
-      "displayName": "Homo sapiens (t2t-chm13-v1.1)",
+      "name": "chm13v2.0",
       "sequence": {
         "type": "ReferenceSequenceTrack",
-        "trackId": "t2t-chm13-v1.1-asm",
+        "trackId": "chm13v2.0-asm",
         "adapter": {
           "type": "BgzipFastaAdapter",
           "fastaLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz"
           },
           "faiLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.fai",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.fai"
           },
           "gziLocation": {
-            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13.draft_v1.1.fasta.gz.gzi",
-            "locationType": "UriLocation"
+            "uri": "https://jbrowse.org/genomes/CHM13/fasta/chm13v2.0.fa.gz.gzi"
           }
         }
       }
@@ -124,7 +115,35 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
-      "name": "NCBI RefSeq (GFF3Tabix)",
+      "name": "NCBI RefSeq w/ subfeature details",
+      "formatDetails": {
+        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+      },
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation"],
+      "metadata": {
+        "source": "https://www.ncbi.nlm.nih.gov/genome/guide/human/",
+        "dateaccessed": "12/03/2020"
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_gff_hg19_2",
+      "name": "NCBI RefSeq w/ top-level feature details",
+      "formatDetails": {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+      },
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "metadata": {
@@ -296,30 +315,6 @@
         "track": "genomicSuperDups"
       }
     },
-
-    {
-      "type": "GDCTrack",
-      "trackId": "gdc_plugin_track",
-      "name": "GDC cancer variants (GraphQL plugin)",
-      "assemblyNames": ["hg38"],
-      "category": ["Annotation"],
-      "adapter": {
-        "type": "GDCAdapter"
-      },
-      "displays": [
-        {
-          "type": "LinearGDCDisplay",
-          "displayId": "gdc_plugin_track_linear",
-          "renderer": {
-            "color1": "jexl:cast({LOW: 'blue', MODIFIER: 'goldenrod', MODERATE: 'orange', HIGH: 'red'})[get(feature,'consequence').hits.edges[.node.transcript.is_canonical == true][0].node.transcript.annotation.vep_impact] || 'lightgray'",
-            "labels": {
-              "name": "jexl:get(feature,'genomicDnaChange')"
-            },
-            "type": "CanvasFeatureRenderer"
-          }
-        }
-      ]
-    },
     {
       "type": "FeatureTrack",
       "trackId": "clinvar_hg19",
@@ -434,7 +429,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_hg38_linear",
           "renderer": {
-            "type": "CanvasFeatureRenderer",
+            "type": "SvgFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -473,13 +468,13 @@
     {
       "type": "FeatureTrack",
       "trackId": "mane_hg38",
-      "name": "MANE 0.92",
+      "name": "MANE 1.0",
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
         "type": "BigBedAdapter",
         "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.0.92.bb",
+          "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb",
           "locationType": "UriLocation"
         }
       },
@@ -488,7 +483,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "mane_hg38_linear",
           "renderer": {
-            "type": "CanvasFeatureRenderer",
+            "type": "SvgFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'geneName2')"
             }
@@ -2756,7 +2751,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_v36_hg37_lift_linear",
           "renderer": {
-            "type": "CanvasFeatureRenderer",
+            "type": "SvgFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -2789,7 +2784,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "gencode_nclist_v36_hg38_linear",
           "renderer": {
-            "type": "CanvasFeatureRenderer",
+            "type": "SvgFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'gene_name')"
             }
@@ -3434,7 +3429,7 @@
           "type": "LinearBasicDisplay",
           "displayId": "testing1",
           "renderer": {
-            "type": "CanvasFeatureRenderer",
+            "type": "SvgFeatureRenderer",
             "labels": {
               "description": "jexl:get(feature,'ucscLabel')"
             }
@@ -3861,6 +3856,263 @@
           "locationType": "UriLocation",
           "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
         }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grch38-chm13v2.paf",
+      "name": "grch38-chm13v2.paf",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/synteny/grch38-chm13v2.paf.gz",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["chm13v2.0", "hg38"]
+      },
+      "assemblyNames": ["chm13v2.0", "hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "chm13v2.0.gff",
+      "name": "chm13v2.0.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/genomes/CHM13/gff/chm13v2.0.gff.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "assemblyNames": ["chm13v2.0"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "bonito_calls",
+      "name": "Clive-ome 5mC",
+      "category": ["Methylation"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ont-open-data.s3.amazonaws.com/cliveome_kit14_2022.05/cfdna/basecalling/bonito_mod/bonito_calls.bam"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ont-open-data.s3.amazonaws.com/cliveome_kit14_2022.05/cfdna/basecalling/bonito_mod/bonito_calls.bam.bai"
+          },
+          "indexType": "BAI"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      },
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "microarray_multi",
+      "name": "MultiWig",
+      "category": ["ENCODE bigWigs"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "bigWigs": [
+          "https://www.encodeproject.org/files/ENCFF055ZII/@@download/ENCFF055ZII.bigWig",
+          "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig",
+          "https://www.encodeproject.org/files/ENCFF858LIM/@@download/ENCFF858LIM.bigWig",
+          "https://www.encodeproject.org/files/ENCFF425TNW/@@download/ENCFF425TNW.bigWig",
+          "https://www.encodeproject.org/files/ENCFF207RBY/@@download/ENCFF207RBY.bigWig",
+          "https://www.encodeproject.org/files/ENCFF289CTN/@@download/ENCFF289CTN.bigWig",
+          "https://www.encodeproject.org/files/ENCFF884IEG/@@download/ENCFF884IEG.bigWig",
+          "https://www.encodeproject.org/files/ENCFF495SBQ/@@download/ENCFF495SBQ.bigWig",
+          "https://www.encodeproject.org/files/ENCFF959EZF/@@download/ENCFF959EZF.bigWig",
+          "https://www.encodeproject.org/files/ENCFF926YZX/@@download/ENCFF926YZX.bigWig",
+          "https://www.encodeproject.org/files/ENCFF269CHA/@@download/ENCFF269CHA.bigWig",
+          "https://www.encodeproject.org/files/ENCFF857KTJ/@@download/ENCFF857KTJ.bigWig",
+          "https://www.encodeproject.org/files/ENCFF109KCQ/@@download/ENCFF109KCQ.bigWig",
+          "https://www.encodeproject.org/files/ENCFF942TZX/@@download/ENCFF942TZX.bigWig",
+          "https://www.encodeproject.org/files/ENCFF140HPM/@@download/ENCFF140HPM.bigWig",
+          "https://www.encodeproject.org/files/ENCFF305JRR/@@download/ENCFF305JRR.bigWig",
+          "https://www.encodeproject.org/files/ENCFF739FDJ/@@download/ENCFF739FDJ.bigWig",
+          "https://www.encodeproject.org/files/ENCFF518OJP/@@download/ENCFF518OJP.bigWig",
+          "https://www.encodeproject.org/files/ENCFF810HHS/@@download/ENCFF810HHS.bigWig",
+          "https://www.encodeproject.org/files/ENCFF939JSB/@@download/ENCFF939JSB.bigWig",
+          "https://www.encodeproject.org/files/ENCFF041TAK/@@download/ENCFF041TAK.bigWig"
+        ]
+      }
+    },
+    {
+      "type": "MultiQuantitativeTrack",
+      "trackId": "microarray_multi_groups",
+      "name": "MultiWig (groups)",
+      "category": ["ENCODE bigWigs"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF055ZII/@@download/ENCFF055ZII.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF826HEW/@@download/ENCFF826HEW.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF858LIM/@@download/ENCFF858LIM.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF425TNW/@@download/ENCFF425TNW.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF207RBY/@@download/ENCFF207RBY.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF289CTN/@@download/ENCFF289CTN.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF884IEG/@@download/ENCFF884IEG.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF495SBQ/@@download/ENCFF495SBQ.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF959EZF/@@download/ENCFF959EZF.bigWig"
+            },
+            "group": "group1"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF926YZX/@@download/ENCFF926YZX.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF269CHA/@@download/ENCFF269CHA.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF857KTJ/@@download/ENCFF857KTJ.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF109KCQ/@@download/ENCFF109KCQ.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF942TZX/@@download/ENCFF942TZX.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF140HPM/@@download/ENCFF140HPM.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF305JRR/@@download/ENCFF305JRR.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF739FDJ/@@download/ENCFF739FDJ.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF518OJP/@@download/ENCFF518OJP.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF810HHS/@@download/ENCFF810HHS.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF939JSB/@@download/ENCFF939JSB.bigWig"
+            },
+            "group": "group2"
+          },
+          {
+            "type": "BigWigAdapter",
+            "bigWigLocation": {
+              "uri": "https://www.encodeproject.org/files/ENCFF041TAK/@@download/ENCFF041TAK.bigWig"
+            },
+            "group": "group2"
+          }
+        ]
       }
     }
   ],

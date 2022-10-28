@@ -2,56 +2,40 @@ import {
   RegionsAdapter,
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FileLocation } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { GenericFilehandle } from 'generic-filehandle'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { Instance } from 'mobx-state-tree'
-import MyConfigSchema from './configSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 export default class extends BaseAdapter implements RegionsAdapter {
   // the map of refSeq to length
-  protected refSeqs: Promise<Record<string, number>>
+  protected setupP?: Promise<{ [key: string]: number }>
 
-  protected source: string
-
-  public constructor(
-    config: Instance<typeof MyConfigSchema>,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-    const chromSizesLocation = readConfObject(config, 'chromSizesLocation')
-    if (!chromSizesLocation) {
-      throw new Error('must provide chromSizesLocation')
-    }
-    const file = openLocation(
-      chromSizesLocation as FileLocation,
-      this.pluginManager,
+  async setupPre() {
+    const pm = this.pluginManager
+    const file = openLocation(this.getConf('chromSizesLocation'), pm)
+    const data = await file.readFile('utf8')
+    return Object.fromEntries(
+      data
+        .split(/\n|\r\n|\r/)
+        .map(f => f.trim())
+        .filter(f => !!f)
+        .map((line: string) => {
+          const [name, length] = line.split('\t')
+          return [name, +length]
+        }),
     )
-    this.source = file.toString()
-    this.refSeqs = this.init(file)
   }
 
-  private async init(file: GenericFilehandle) {
-    const data = await file.readFile('utf8')
-    const refSeqs: { [key: string]: number } = {}
-    if (!data.length) {
-      throw new Error(`Could not read file ${file.toString()}`)
+  async setup() {
+    if (!this.setupP) {
+      this.setupP = this.setupPre().catch(e => {
+        this.setupP = undefined
+        throw e
+      })
     }
-    data.split('\n').forEach((line: string) => {
-      if (line.length) {
-        const [name, length] = line.split('\t')
-        refSeqs[name] = +length
-      }
-    })
-    return refSeqs
+    return this.setupP
   }
 
   public async getRegions() {
-    const refSeqs = await this.refSeqs
+    const refSeqs = await this.setup()
     return Object.keys(refSeqs).map(refName => ({
       refName,
       start: 0,
@@ -59,8 +43,8 @@ export default class extends BaseAdapter implements RegionsAdapter {
     }))
   }
 
-  public getFeatures() {
-    throw new Error('sequence not available')
+  public getHeader() {
+    return {}
   }
 
   public freeResources(/* { region } */): void {}

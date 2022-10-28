@@ -1,8 +1,8 @@
+import React, { useRef, useState, useEffect } from 'react'
 import { Region } from '@jbrowse/core/util/types'
 import { PrerenderedCanvas } from '@jbrowse/core/ui'
 import { bpSpanPx } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import React, { MouseEvent, useRef, useState, useEffect } from 'react'
 import type { BaseLinearDisplayModel } from '@jbrowse/plugin-linear-genome-view'
 
 // used so that user can click-away-from-feature below the laid out features
@@ -91,46 +91,46 @@ function PileupRendering(props: {
     contextMenuFeature,
   ])
 
-  function onMouseDown(event: MouseEvent) {
+  function onMouseDown(event: React.MouseEvent) {
     setMouseIsDown(true)
     setMovedDuringLastMouseDown(false)
     callMouseHandler('MouseDown', event)
   }
 
-  function onMouseEnter(event: MouseEvent) {
+  function onMouseEnter(event: React.MouseEvent) {
     callMouseHandler('MouseEnter', event)
   }
 
-  function onMouseOut(event: MouseEvent) {
+  function onMouseOut(event: React.MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
   }
 
-  function onMouseOver(event: MouseEvent) {
+  function onMouseOver(event: React.MouseEvent) {
     callMouseHandler('MouseOver', event)
   }
 
-  function onMouseUp(event: MouseEvent) {
+  function onMouseUp(event: React.MouseEvent) {
     setMouseIsDown(false)
     callMouseHandler('MouseUp', event)
   }
 
-  function onClick(event: MouseEvent) {
+  function onClick(event: React.MouseEvent) {
     if (!movedDuringLastMouseDown) {
       callMouseHandler('Click', event)
     }
   }
 
-  function onMouseLeave(event: MouseEvent) {
+  function onMouseLeave(event: React.MouseEvent) {
     callMouseHandler('MouseOut', event)
     callMouseHandler('MouseLeave', event)
   }
 
-  function onContextMenu(event: MouseEvent) {
+  function onContextMenu(event: React.MouseEvent) {
     callMouseHandler('ContextMenu', event)
   }
 
-  function mouseMove(event: MouseEvent) {
+  function mouseMove(event: React.MouseEvent) {
     if (mouseIsDown) {
       setMovedDuringLastMouseDown(true)
     }
@@ -158,7 +158,7 @@ function PileupRendering(props: {
     }
   }
 
-  function callMouseHandler(handlerName: string, event: MouseEvent) {
+  function callMouseHandler(handlerName: string, event: React.MouseEvent) {
     // @ts-ignore
     // eslint-disable-next-line react/destructuring-assignment
     const featureHandler = props[`onFeature${handlerName}`]

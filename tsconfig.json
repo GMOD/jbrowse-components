@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2018",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
+    "outDir": "dist",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
+    "declaration": true,
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "jsx": "react",
     "downlevelIteration": true,
     "noImplicitReturns": true,
@@ -24,6 +25,9 @@
     "**/lib/",
     "**/umd/",
     "**/tmp/",
-    "**/component_test/"
+    "**/demos/",
+    "**/component_tests/",
+    "**/plugin-development-tools/",
+    "**/webpack.config.js"
   ]
 }

@@ -1,20 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { transaction } from 'mobx'
+import { getRoot, resolveIdentifier, types, Instance } from 'mobx-state-tree'
 import {
-  getRoot,
-  Instance,
-  resolveIdentifier,
-  types,
-  getEnv,
-} from 'mobx-state-tree'
-import { getConf } from '../../configuration'
-import {
+  getConf,
+  AnyConfigurationModel,
   AnyConfigurationSchemaType,
   ConfigurationReference,
-} from '../../configuration/configurationSchema'
+} from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession } from '../../util'
+import { getContainingView, getSession, getEnv } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
@@ -103,68 +97,44 @@ export function createBaseTrackModel(
         }
       },
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          displayId,
-        )
-        const displayType = pluginManager.getDisplayType(configuration.type)
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), displayId)
+        const displayType = pluginManager.getDisplayType(conf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${configuration.type}`)
+          throw new Error(`unknown display type ${conf.type}`)
         }
         const display = displayType.stateModel.create({
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: conf.type,
+          configuration: conf,
         })
         self.displays.push(display)
       },
 
       hideDisplay(displayId: string) {
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          displayId,
-        )
-        // if we have any displays with that configuration, turn them off
-        const shownDisplays = self.displays.filter(
-          d => d.configuration === configuration,
-        )
-        transaction(() => shownDisplays.forEach(d => self.displays.remove(d)))
-        return shownDisplays.length
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), displayId)
+        const t = self.displays.filter(d => d.configuration === conf)
+        transaction(() => t.forEach(d => self.displays.remove(d)))
+        return t.length
       },
-      replaceDisplay(
-        oldDisplayId: string,
-        newDisplayId: string,
-        initialSnapshot = {},
-      ) {
-        const displayIdx = self.displays.findIndex(
-          d => d.configuration.displayId === oldDisplayId,
+      replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
+        const idx = self.displays.findIndex(
+          d => d.configuration.displayId === oldId,
         )
-        if (displayIdx === -1) {
-          throw new Error(
-            `could not find display id ${oldDisplayId} to replace`,
-          )
+        if (idx === -1) {
+          throw new Error(`could not find display id ${oldId} to replace`)
         }
-        const displayTypeConfigSchema =
-          pluginManager.pluggableConfigSchemaType('display')
-        const configuration = resolveIdentifier(
-          displayTypeConfigSchema,
-          getRoot(self),
-          newDisplayId,
-        )
-        const displayType = pluginManager.getDisplayType(configuration.type)
+        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const conf = resolveIdentifier(schema, getRoot(self), newId)
+        const displayType = pluginManager.getDisplayType(conf.type)
         if (!displayType) {
-          throw new Error(`unknown display type ${configuration.type}`)
+          throw new Error(`unknown display type ${conf.type}`)
         }
-        self.displays.splice(displayIdx, 1, {
+        self.displays.splice(idx, 1, {
           ...initialSnapshot,
-          type: configuration.type,
-          configuration,
+          type: conf.type,
+          configuration: conf,
         })
       },
     }))
@@ -181,7 +151,7 @@ export function createBaseTrackModel(
           displayType => displayType.name,
         )
         const compatibleDisplays = self.configuration.displays.filter(
-          (displayConf: any) =>
+          (displayConf: AnyConfigurationModel) =>
             compatibleDisplayTypes.includes(displayConf.type),
         )
         const shownId = self.displays[0].configuration.displayId
@@ -190,14 +160,13 @@ export function createBaseTrackModel(
             { type: 'divider' },
             { type: 'subHeader', label: 'Display types' },
           )
-          compatibleDisplays.forEach((displayConf: any) => {
+          compatibleDisplays.forEach((displayConf: AnyConfigurationModel) => {
             displayChoices.push({
               type: 'radio',
-              label: `${displayConf.type}`,
-              onClick: () => {
-                self.replaceDisplay(shownId, displayConf.displayId)
-              },
+              label: displayConf.type,
               checked: displayConf.displayId === shownId,
+              onClick: () =>
+                self.replaceDisplay(shownId, displayConf.displayId),
             })
           })
         }

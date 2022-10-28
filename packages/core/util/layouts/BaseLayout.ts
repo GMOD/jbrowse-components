@@ -2,6 +2,7 @@ export type RectTuple = [number, number, number, number]
 export interface SerializedLayout {
   rectangles: Record<string, RectTuple>
   totalHeight: number
+  containsNoTransferables: true
   maxHeightReached: boolean
 }
 export interface Rectangle<T> {
@@ -11,7 +12,7 @@ export interface Rectangle<T> {
   top: number | null
   h: number
   originalHeight: number
-  data?: Record<string, T>
+  data?: T
 }
 
 export interface BaseLayout<T> {
@@ -20,10 +21,10 @@ export interface BaseLayout<T> {
     left: number,
     right: number,
     height: number,
-    data?: Record<string, T>,
+    data?: unknown,
   ): number | null
   collides(rect: Rectangle<T>, top: number): boolean
-  addRectToBitmap(rect: Rectangle<T>, data: Record<string, T>): void
+  addRectToBitmap(rect: Rectangle<T>, data: unknown): void
   getRectangles(): Map<string, RectTuple>
   discardRange(left: number, right: number): void
   serializeRegion(region: { start: number; end: number }): SerializedLayout

@@ -1,6 +1,7 @@
 import React from 'react'
-import { getEnv, resolveIdentifier, getRoot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from 'tss-react/mui'
+import { resolveIdentifier, getRoot } from 'mobx-state-tree'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import {
   Button,
   Dialog,
@@ -9,6 +10,7 @@ import {
   DialogTitle,
   Divider,
   IconButton,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -16,13 +18,11 @@ import {
   TableHead,
   TableRow,
   Typography,
-  Paper,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { LinearGenomeViewModel } from '../..'
 
-export const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   dialogContent: {
     width: '80em',
   },
@@ -43,7 +43,7 @@ export default function SearchResultsDialog({
   optAssemblyName?: string
   handleClose: () => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
@@ -84,15 +84,9 @@ export default function SearchResultsDialog({
 
   function getTrackName(trackId: string | undefined) {
     if (trackId) {
-      const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
-      const configuration = resolveIdentifier(
-        trackConfigSchema,
-        getRoot(model),
-        trackId,
-      )
-      if (configuration) {
-        return configuration.name?.value
-      }
+      const schema = pluginManager.pluggableConfigSchemaType('track')
+      const configuration = resolveIdentifier(schema, getRoot(model), trackId)
+      return configuration?.name?.value || ''
     }
     return ''
   }
@@ -108,6 +102,7 @@ export default function SearchResultsDialog({
             onClick={() => {
               handleClose()
             }}
+            size="large"
           >
             <CloseIcon />
           </IconButton>
@@ -149,14 +144,16 @@ export default function SearchResultsDialog({
                       <TableCell align="right">
                         <Button
                           onClick={() => {
-                            handleClick(result.getLocation())
-                            const resultTrackId = result.getTrackId()
-                            if (resultTrackId) {
-                              model.showTrack(resultTrackId)
+                            const location = result.getLocation()
+                            if (location) {
+                              handleClick(location)
+                              const resultTrackId = result.getTrackId()
+                              if (resultTrackId) {
+                                model.showTrack(resultTrackId)
+                              }
                             }
                             handleClose()
                           }}
-                          disabled={!getTrackName(result.getTrackId())}
                           color="primary"
                           variant="contained"
                         >

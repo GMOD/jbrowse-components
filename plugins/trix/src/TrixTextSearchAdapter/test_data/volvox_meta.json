@@ -1,0 +1,163 @@
+{
+  "dateCreated": "2022-06-17T10:57:18.370Z",
+  "tracks": [
+    {
+      "trackId": "volvox_sv_test",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "volvox_sv_test_renamed",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.dup.renamed.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.dup.renamed.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "volvox_test_vcf",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.test.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.test.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "gff3tabix_genes",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "volvox_filtered_vcf",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "variant_colors",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "single_exon_gene",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "single_exon_gene.sorted.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "single_exon_gene.sorted.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "trackId": "volvox.inv.vcf",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.inv.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.inv.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+    {
+      "trackId": "volvox.filtered.lowercase",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "VcfAdapter",
+        "vcfLocation": {
+          "uri": "volvox.filtered.lowercase.vcf",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ],
+  "assemblyNames": ["volvox"]
+}

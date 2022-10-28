@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config ChromSizesAdapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const ChromSizesAdapter = ConfigurationSchema(
   'ChromSizesAdapter',
   {
+    /**
+     * #slot
+     */
     chromSizesLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -13,3 +21,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default ChromSizesAdapter

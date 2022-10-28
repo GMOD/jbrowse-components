@@ -5,14 +5,14 @@ import {
   Paper,
   Toolbar,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+  ScopedCssBaseline,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { SessionModel } from '../createModel/createSessionModel'
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   paper: {
     overflow: 'auto',
   },
@@ -28,9 +28,22 @@ const ModalWidgetContents = observer(
         </AppBar>
       )
     }
-    const { ReactComponent, HeadingComponent, heading } = getEnv(
-      session,
-    ).pluginManager.getWidgetType(visibleWidget.type)
+
+    const { pluginManager } = getEnv(session)
+    const { ReactComponent, HeadingComponent, heading } =
+      pluginManager.getWidgetType(visibleWidget.type)
+
+    const Component = visibleWidget
+      ? (pluginManager.evaluateExtensionPoint(
+          'Core-replaceWidget',
+          ReactComponent,
+          {
+            session,
+            model: visibleWidget,
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ) as React.FC<any>)
+      : null
     return (
       <>
         <AppBar position="static">
@@ -42,10 +55,10 @@ const ModalWidgetContents = observer(
             )}
           </Toolbar>
         </AppBar>
-        {visibleWidget && ReactComponent ? (
+        {visibleWidget && Component ? (
           <Suspense fallback={<div>Loading...</div>}>
             <ScopedCssBaseline>
-              <ReactComponent
+              <Component
                 model={visibleWidget}
                 session={session}
                 overrideDimensions={{
@@ -62,7 +75,7 @@ const ModalWidgetContents = observer(
 )
 
 const ModalWidget = observer(({ session }: { session: SessionModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { visibleWidget, hideAllWidgets } = session
   return (
     <Dialog

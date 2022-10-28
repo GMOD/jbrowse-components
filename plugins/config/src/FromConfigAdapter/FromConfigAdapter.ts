@@ -5,8 +5,10 @@ import SimpleFeature, {
 } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 

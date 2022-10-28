@@ -1,26 +1,26 @@
-import { CraiIndex, IndexedCramFile } from '@gmod/cram'
+import { CraiIndex, IndexedCramFile, CramRecord } from '@gmod/cram'
 import {
   BaseFeatureDataAdapter,
   BaseOptions,
+  BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
-import { checkAbortSignal } from '@jbrowse/core/util'
+import { checkAbortSignal, Region, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
-interface HeaderLine {
-  tag: string
-  value: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  data: HeaderLine[]
-}
 interface Header {
   idToName?: string[]
   nameToId?: Record<string, number>
-  readGroups?: number[]
+  readGroups?: (string | undefined)[]
+}
+
+interface FilterBy {
+  flagInclude: number
+  flagExclude: number
+  tagFilter: { tag: string; value: unknown }
+  readName: string
 }
 
 export default class CramAdapter extends BaseFeatureDataAdapter {
@@ -28,8 +28,13 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private setupP?: Promise<{
     samHeader: Header
-    cram: any // eslint-disable-line @typescript-eslint/no-explicit-any
-    sequenceAdapter: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    cram: IndexedCramFile
+    sequenceAdapter: BaseSequenceAdapter
+  }>
+
+  private configureP?: Promise<{
+    cram: IndexedCramFile
+    sequenceAdapter: BaseSequenceAdapter
   }>
 
   // maps a refname to an id
@@ -38,60 +43,64 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // maps a seqId to original refname, passed specially to render args, to a seqid
   private seqIdToOriginalRefName: string[] = []
 
-  public async configure() {
-    const cramLocation = readConfObject(this.config, 'cramLocation')
-    const craiLocation = readConfObject(this.config, 'craiLocation')
+  public async configurePre() {
+    const cramLocation = this.getConf('cramLocation')
+    const craiLocation = this.getConf('craiLocation')
     if (!cramLocation) {
       throw new Error('missing cramLocation argument')
     }
     if (!craiLocation) {
       throw new Error('missing craiLocation argument')
     }
+    const pm = this.pluginManager
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cram: any = new IndexedCramFile({
-      cramFilehandle: openLocation(cramLocation, this.pluginManager),
-      index: new CraiIndex({
-        filehandle: openLocation(craiLocation, this.pluginManager),
-      }),
-      seqFetch: this.seqFetch.bind(this),
+    const cram = new IndexedCramFile({
+      cramFilehandle: openLocation(cramLocation, pm),
+      index: new CraiIndex({ filehandle: openLocation(craiLocation, pm) }),
+      seqFetch: (...args) => this.seqFetch(...args),
       checkSequenceMD5: false,
       fetchSizeLimit: 200_000_000, // just make this a large size to avoid hitting it
     })
-    // instantiate the sequence adapter
-    const sequenceAdapterType = readConfObject(this.config, [
-      'sequenceAdapter',
-      'type',
-    ])
 
     if (!this.getSubAdapter) {
       throw new Error('Error getting subadapter')
     }
 
-    const seqConf = readConfObject(this.config, 'sequenceAdapter')
-    const { dataAdapter: sequenceAdapter } = await this.getSubAdapter(seqConf)
+    const seqConf = this.getConf('sequenceAdapter')
+    const subadapter = await this.getSubAdapter(seqConf)
 
-    if (!(sequenceAdapter instanceof BaseFeatureDataAdapter)) {
-      throw new Error(
-        `CRAM feature adapters cannot use sequence adapters of type '${sequenceAdapterType}'`,
-      )
+    return {
+      cram,
+      sequenceAdapter: subadapter.dataAdapter as BaseSequenceAdapter,
     }
+  }
 
-    return { cram, sequenceAdapter }
+  public async configure() {
+    if (!this.configureP) {
+      this.configureP = this.configurePre().catch(e => {
+        this.configureP = undefined
+        throw e
+      })
+    }
+    return this.configureP
   }
 
   async getHeader(opts?: BaseOptions) {
     const { cram } = await this.configure()
-    return cram.cram.getHeaderText(opts)
+    return cram.cram.getHeaderText()
   }
 
-  private async seqFetch(seqId: number, start: number, end: number) {
+  private async seqFetch(
+    seqId: number,
+    start: number,
+    end: number,
+  ): Promise<string> {
     start -= 1 // convert from 1-based closed to interbase
 
     const { sequenceAdapter } = await this.configure()
     const refName = this.refIdToOriginalName(seqId) || this.refIdToName(seqId)
     if (!refName) {
-      return undefined
+      throw new Error('unknown')
     }
 
     const seqChunks = await sequenceAdapter
@@ -131,10 +140,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   private async setupPre(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts || {}
-    const configured = await this.configure()
+    const conf = await this.configure()
     statusCallback('Downloading index')
-    const { cram } = configured
-    const samHeader: HeaderLine[] = await cram.cram.getSamHeader(opts?.signal)
+    const { cram } = conf
+    const samHeader = await cram.cram.getSamHeader()
 
     // use the @SQ lines in the header to figure out the
     // mapping between ref ID numbers and names
@@ -160,7 +169,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
     const data = { idToName, nameToId, readGroups }
     statusCallback('')
     this.samHeader = data
-    return { samHeader: data, ...configured }
+    return { samHeader: data, ...conf }
   }
 
   private async setup(opts?: BaseOptions) {
@@ -196,13 +205,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
   // use info from the SAM header if possible, but fall back to using
   // the ref seq order from when the browser's refseqs were loaded
   refIdToName(refId: number) {
-    if (this.samHeader.idToName) {
-      return this.samHeader.idToName[refId]
-    }
-    if (this.seqIdToRefName) {
-      return this.seqIdToRefName[refId]
-    }
-    return undefined
+    return this.samHeader.idToName?.[refId] || this.seqIdToRefName?.[refId]
   }
 
   refIdToOriginalName(refId: number) {
@@ -211,31 +214,56 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   getFeatures(
     region: Region & { originalRefName?: string },
-    opts?: BaseOptions,
+    opts?: BaseOptions & {
+      filterBy: FilterBy
+    },
   ) {
-    const { signal, statusCallback = () => {} } = opts || {}
+    const { signal, filterBy, statusCallback = () => {} } = opts || {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
-      const { cram, sequenceAdapter } = await this.setup(opts)
-      statusCallback('Downloading alignments')
-      if (!this.seqIdToRefName) {
-        this.seqIdToRefName = await sequenceAdapter.getRefNames(opts)
-      }
+      const { cram } = await this.setup(opts)
+
       const refId = this.refNameToId(refName)
-      if (refId !== undefined) {
-        if (originalRefName) {
-          this.seqIdToOriginalRefName[refId] = originalRefName
-        }
-        const records = await cram.getRecordsForRange(refId, start, end, opts)
-        checkAbortSignal(signal)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        records.forEach((record: any) => {
-          observer.next(this.cramRecordToFeature(record))
-        })
-      } else {
+      if (refId === undefined) {
         console.warn('Unknown refName', refName)
+        observer.complete()
+        return
       }
+
+      if (originalRefName) {
+        this.seqIdToOriginalRefName[refId] = originalRefName
+      }
+      statusCallback('Downloading alignments')
+      const records = await cram.getRecordsForRange(refId, start, end)
+      checkAbortSignal(signal)
+      const {
+        flagInclude = 0,
+        flagExclude = 0,
+        tagFilter,
+        readName,
+      } = filterBy || {}
+
+      let filtered = records.filter(record => {
+        const flags = record.flags
+        return (flags & flagInclude) === flagInclude && !(flags & flagExclude)
+      })
+
+      if (tagFilter) {
+        filtered = filtered.filter(record => {
+          // @ts-ignore
+          const val = record[tagFilter.tag]
+          return val === '*' ? val !== undefined : val === tagFilter.value
+        })
+      }
+
+      if (readName) {
+        filtered = filtered.filter(record => record.readName === readName)
+      }
+
+      filtered.forEach(record => {
+        observer.next(this.cramRecordToFeature(record))
+      })
       statusCallback('')
       observer.complete()
     }, signal)
@@ -243,14 +271,14 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
 
   freeResources(/* { region } */): void {}
 
-  cramRecordToFeature(record: unknown) {
+  cramRecordToFeature(record: CramRecord) {
     return new CramSlightlyLazyFeature(record, this)
   }
 
   // we return the configured fetchSizeLimit, and the bytes for the region
   async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
     const bytes = await this.bytesForRegions(regions, opts)
-    const fetchSizeLimit = readConfObject(this.config, 'fetchSizeLimit')
+    const fetchSizeLimit = this.getConf('fetchSizeLimit')
     return {
       bytes,
       fetchSizeLimit,
@@ -268,7 +296,9 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       regions.map(region => {
         const { refName, start, end } = region
         const chrId = this.refNameToId(refName)
-        return cram.index.getEntriesForRange(chrId, start, end)
+        return chrId !== undefined
+          ? cram.index.getEntriesForRange(chrId, start, end)
+          : [{ sliceBytes: 0 }]
       }),
     )
 

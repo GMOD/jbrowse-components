@@ -1,11 +1,10 @@
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getEnv } from '@jbrowse/core/util'
 import { autorun } from 'mobx'
 import {
   addDisposer,
   types,
   getParent,
-  getEnv,
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
@@ -44,7 +43,7 @@ const ColumnDefinition = types
     },
   }))
 
-type RowMenuPosition = { anchorEl: Element; rowNumber: number } | null
+type RowMenuPosition = { anchorEl: Element; rowNumber: string } | null
 
 const Spreadsheet = types
   .model('Spreadsheet', {
@@ -81,7 +80,8 @@ const Spreadsheet = types
     },
     get hideRowSelection() {
       // just delegates to parent
-      return getParent(self).hideRowSelection
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return getParent<any>(self).hideRowSelection
     },
 
     // list of data type names to be made available in the column
@@ -153,5 +153,8 @@ const Spreadsheet = types
       return self.rowSet.unselectAll()
     },
   }))
+
+export type SpreadsheetStateModel = typeof Spreadsheet
+export type SpreadsheetModel = Instance<SpreadsheetStateModel>
 
 export default Spreadsheet

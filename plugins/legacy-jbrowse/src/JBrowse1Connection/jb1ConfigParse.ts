@@ -99,7 +99,7 @@ function parse(text: string, url: string): Config {
     }
   }
 
-  text.split('\n').forEach((textLine, i): void => {
+  text.split(/\n|\r\n|\r/).forEach((textLine, i): void => {
     lineNumber = i + 1
     const line = textLine.replace(/^\s*#.+/, '')
 

@@ -1,29 +1,52 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config ArcRenderer
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const ArcRenderer = ConfigurationSchema(
   'ArcRenderer',
   {
+    /**
+     * #slot
+     */
     color: {
       type: 'color',
       description: 'the color of the arcs',
       defaultValue: 'darkblue',
+      contextVariable: ['feature'],
     },
+    /**
+     * #slot
+     */
     thickness: {
       type: 'number',
       description: 'the thickness of the arcs',
       defaultValue: `jexl:logThickness(feature,'score')`,
+      contextVariable: ['feature'],
     },
+    /**
+     * #slot
+     */
     label: {
       type: 'string',
       description: 'the label to appear at the apex of the arcs',
       defaultValue: `jexl:get(feature,'score')`,
       contextVariable: ['feature'],
     },
+    /**
+     * #slot
+     */
     height: {
       type: 'number',
       description: 'the height of the arcs',
       defaultValue: `jexl:log10(get(feature,'end')-get(feature,'start'))*50`,
+      contextVariable: ['feature'],
     },
+    /**
+     * #slot
+     */
     caption: {
       type: 'string',
       description:
@@ -34,3 +57,4 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+export default ArcRenderer

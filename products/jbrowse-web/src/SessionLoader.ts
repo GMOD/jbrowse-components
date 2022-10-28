@@ -14,16 +14,15 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import shortid from 'shortid'
 
-function addRelativeUris(
-  config: SnapshotOut<AnyConfigurationModel>,
-  configUri: URL,
-) {
+type Config = SnapshotOut<AnyConfigurationModel>
+
+function addRelativeUris(config: Config, base: URL) {
   if (typeof config === 'object') {
     for (const key of Object.keys(config)) {
       if (typeof config[key] === 'object') {
-        addRelativeUris(config[key], configUri)
+        addRelativeUris(config[key], base)
       } else if (key === 'uri') {
-        config.baseUri = configUri.href
+        config.baseUri = base.href
       }
     }
   }
@@ -31,7 +30,7 @@ function addRelativeUris(
 
 // raw readConf alternative for before conf is initialized
 function readConf(
-  { configuration = {} }: { configuration?: { [key: string]: string } },
+  { configuration = {} }: { configuration?: Config },
   attr: string,
   def: string,
 ) {
@@ -54,32 +53,25 @@ async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
     if (isUMDPluginDefinition(p)) {
       return Boolean(
         storePlugins.plugins.find(
-          storePlugin =>
-            isUMDPluginDefinition(storePlugin) &&
-            (('url' in storePlugin &&
-              'url' in p &&
-              storePlugin.url === p.url) ||
-              ('umdUrl' in storePlugin &&
-                'umdUrl' in p &&
-                storePlugin.umdUrl === p.umdUrl)),
+          pp =>
+            isUMDPluginDefinition(p) &&
+            (('url' in pp && 'url' in p && p.url === pp.url) ||
+              ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
         ),
       )
     }
     if (isESMPluginDefinition(p)) {
       return Boolean(
         storePlugins.plugins.find(
-          storePlugin =>
-            isESMPluginDefinition(storePlugin) &&
-            storePlugin.esmUrl === p.esmUrl,
+          pp =>
+            isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
         ),
       )
     }
     if (isCJSPluginDefinition(p)) {
       return Boolean(
         storePlugins.plugins.find(
-          storePlugin =>
-            isCJSPluginDefinition(storePlugin) &&
-            storePlugin.cjsUrl === p.cjsUrl,
+          pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
         ),
       )
     }
@@ -209,9 +201,11 @@ const SessionLoader = types
   .actions(self => ({
     async fetchPlugins(config: { plugins: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(config.plugins)
+        const pluginLoader = new PluginLoader(config.plugins, {
+          fetchESM: url => import(/* webpackIgnore:true */ url),
+        })
         pluginLoader.installGlobalReExports(window)
-        const runtimePlugins = await pluginLoader.load()
+        const runtimePlugins = await pluginLoader.load(window.location.href)
         self.setRuntimePlugins([...runtimePlugins])
       } catch (e) {
         console.error(e)
@@ -220,9 +214,11 @@ const SessionLoader = types
     },
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
-        const pluginLoader = new PluginLoader(snap.sessionPlugins || [])
+        const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
+          fetchESM: url => import(/* webpackIgnore:true */ url),
+        })
         pluginLoader.installGlobalReExports(window)
-        const plugins = await pluginLoader.load()
+        const plugins = await pluginLoader.load(window.location.href)
         self.setSessionPlugins([...plugins])
       } catch (e) {
         console.error(e)
@@ -232,7 +228,7 @@ const SessionLoader = types
 
     // passed
     async setSessionSnapshot(
-      snap: { sessionPlugins?: PluginDefinition[] },
+      snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
     ) {
       try {
@@ -269,19 +265,15 @@ const SessionLoader = types
         const configPlugins = config.plugins || []
         const configPluginsAllowed = await checkPlugins(configPlugins)
         if (!configPluginsAllowed) {
-          self.setSessionTriaged({
+          return self.setSessionTriaged({
             snap: config,
             origin: 'config',
             reason: configPlugins,
           })
-        } else {
-          await this.fetchPlugins(config)
-          self.setConfigSnapshot(config)
         }
-      } else {
-        await this.fetchPlugins(config)
-        self.setConfigSnapshot(config)
       }
+      await this.fetchPlugins(config)
+      self.setConfigSnapshot(config)
     },
 
     async fetchSessionStorageSession() {
@@ -292,26 +284,24 @@ const SessionLoader = types
       if (sessionStr) {
         const sessionSnap = JSON.parse(sessionStr).session || {}
         if (query === sessionSnap.id) {
-          await this.setSessionSnapshot(sessionSnap)
-          return
+          return this.setSessionSnapshot(sessionSnap)
         }
       }
+
       if (self.bc1) {
         self.bc1.postMessage(query)
-        const resultP = new Promise((resolve, reject) => {
-          if (self.bc2) {
-            self.bc2.onmessage = msg => {
-              resolve(msg.data)
-            }
-          }
-          setTimeout(() => reject(), 1000)
-        })
-
         try {
-          const result = await resultP
-          // @ts-ignore
-          await self.setSessionSnapshot({ ...result, id: shortid() })
-          return
+          const result = await new Promise<Record<string, unknown>>(
+            (resolve, reject) => {
+              if (self.bc2) {
+                self.bc2.onmessage = msg => {
+                  resolve(msg.data)
+                }
+              }
+              setTimeout(() => reject(), 1000)
+            },
+          )
+          return this.setSessionSnapshot({ ...result, id: shortid() })
         } catch (e) {
           // the broadcast channels did not find the session in another tab
           // clear session param, so just ignore
@@ -329,7 +319,6 @@ const SessionLoader = types
       )
 
       const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
-
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
@@ -412,6 +401,17 @@ const SessionLoader = types
               return
             }
 
+            if (self.bc1) {
+              self.bc1.onmessage = msg => {
+                const r =
+                  JSON.parse(sessionStorage.getItem('current') || '{}')
+                    .session || {}
+                if (r.id === msg.data && self.bc2) {
+                  self.bc2.postMessage(r)
+                }
+              }
+            }
+
             if (isSharedSession) {
               await this.fetchSharedSession()
             } else if (isSpecSession) {
@@ -430,18 +430,6 @@ const SessionLoader = types
             } else {
               // placeholder for session loaded, but none found
               self.setBlankSession(true)
-            }
-            if (self.bc1) {
-              self.bc1.onmessage = msg => {
-                const ret =
-                  JSON.parse(sessionStorage.getItem('current') || '{}')
-                    .session || {}
-                if (ret.id === msg.data) {
-                  if (self.bc2) {
-                    self.bc2.postMessage(ret)
-                  }
-                }
-              }
             }
           } catch (e) {
             console.error(e)
@@ -468,7 +456,7 @@ interface ViewSpec {
 export function loadSessionSpec(
   {
     views,
-    sessionTracks,
+    sessionTracks = [],
   }: {
     views: ViewSpec[]
     sessionTracks: unknown[]

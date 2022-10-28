@@ -6,14 +6,13 @@ import {
   SnapshotIn,
   Instance,
 } from 'mobx-state-tree'
-import { observable } from 'mobx'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { MenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
 // icons
-import DoneIcon from '@material-ui/icons/Done'
+import DoneIcon from '@mui/icons-material/Done'
 
 import SpreadsheetModel from './Spreadsheet'
 import ImportWizardModel from './ImportWizard'
@@ -39,7 +38,7 @@ const defaultRowMenuItems: MenuItemWithDisabledCallback[] = [
     onClick(_view: unknown, spreadsheet: Spreadsheet) {
       const rowNumber = spreadsheet.rowMenuPosition?.rowNumber
       if (rowNumber !== undefined) {
-        spreadsheet.rowSet.rows[rowNumber - 1].toggleSelect()
+        spreadsheet.rowSet.rows[+rowNumber - 1].toggleSelect()
       }
     },
   },
@@ -81,7 +80,7 @@ const model = types
   })
   .volatile(() => ({
     width: 400,
-    rowMenuItems: observable(defaultRowMenuItems),
+    rowMenuItems: defaultRowMenuItems,
   }))
   .views(self => ({
     get readyToDisplay() {
@@ -114,7 +113,7 @@ const model = types
   }))
   .actions(self => ({
     setRowMenuItems(newItems: MenuItem[]) {
-      self.rowMenuItems.replace(newItems)
+      self.rowMenuItems = newItems
     },
     setWidth(newWidth: number) {
       self.width = newWidth
@@ -157,10 +156,14 @@ const model = types
     },
 
     closeView() {
-      getParent(self, 2).removeView(self)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getParent<any>(self, 2).removeView(self)
     },
   }))
 
 const SpreadsheetView = types.compose(BaseViewModel, model)
+
+export type SpreadsheetViewStateModel = typeof SpreadsheetView
+export type SpreadsheetViewModel = Instance<SpreadsheetViewStateModel>
 
 export default SpreadsheetView

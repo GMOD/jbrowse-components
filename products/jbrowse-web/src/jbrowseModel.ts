@@ -27,6 +27,21 @@ window.getSnapshot = getSnapshot
 // @ts-ignore
 window.resolveIdentifier = resolveIdentifier
 
+function removeAttr(obj: Record<string, unknown>, attr: string) {
+  for (const prop in obj) {
+    if (prop === attr) {
+      delete obj[prop]
+    } else if (typeof obj[prop] === 'object') {
+      removeAttr(obj[prop] as Record<string, unknown>, attr)
+    }
+  }
+  return obj
+}
+
+/**
+ * #config JBrowseWebConfiguration
+ * configuration here appears as a "configuration" object on the root of config.json
+ */
 export default function JBrowseWeb(
   pluginManager: PluginManager,
   Session: SessionStateModel,
@@ -35,27 +50,94 @@ export default function JBrowseWeb(
   const JBrowseModel = types
     .model('JBrowseWeb', {
       configuration: ConfigurationSchema('Root', {
+        /**
+         * #slot
+         */
         rpc: RpcManager.configSchema,
-        // possibly consider this for global config editor
+        /**
+         * #slot
+         */
         highResolutionScaling: {
           type: 'number',
           defaultValue: 2,
         },
+        /**
+         * #slot
+         */
         shareURL: {
           type: 'string',
           defaultValue: 'https://share.jbrowse.org/api/v1/',
         },
+
         featureDetails: ConfigurationSchema('FeatureDetails', {
+          /**
+           * #slot featureDetails.sequenceTypes
+           */
           sequenceTypes: {
             type: 'stringArray',
-            defaultValue: ['mRNA', 'transcript'],
+            defaultValue: ['mRNA', 'transcript', 'gene', 'CDS'],
           },
         }),
+        formatDetails: ConfigurationSchema('FormatDetails', {
+          /**
+           * #slot formatDetails.feature
+           */
+          feature: {
+            type: 'frozen',
+            description: 'adds extra fields to the feature details',
+            defaultValue: {},
+            contextVariable: ['feature'],
+          },
+          /**
+           * #slot formatDetails.subfeatures
+           */
+          subfeatures: {
+            type: 'frozen',
+            description: 'adds extra fields to the subfeatures of a feature',
+            defaultValue: {},
+            contextVariable: ['feature'],
+          },
+          /**
+           * #slot formatDetails.depth
+           */
+          depth: {
+            type: 'number',
+            defaultValue: 2,
+            description: 'depth to iterate on subfeatures',
+          },
+        }),
+        formatAbout: ConfigurationSchema('FormatAbout', {
+          /**
+           * #slot formatAbout.conf
+           */
+          config: {
+            type: 'frozen',
+            description: 'formats configuration object in about dialog',
+            defaultValue: {},
+            contextVariable: ['config'],
+          },
+          /**
+           * #slot formatAbout.hideUris
+           */
+          hideUris: {
+            type: 'boolean',
+            defaultValue: false,
+          },
+        }),
+        /**
+         * #slot
+         */
         disableAnalytics: {
           type: 'boolean',
           defaultValue: false,
         },
+        /**
+         * #slot
+         */
         theme: { type: 'frozen', defaultValue: {} },
+        /**
+         * #slot
+         */
         logoPath: {
           type: 'fileLocation',
           defaultValue: { uri: '', locationType: 'UriLocation' },
@@ -86,7 +168,8 @@ export default function JBrowseWeb(
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self).rpcManager
       },
     }))
     .actions(self => ({
@@ -185,7 +268,8 @@ export default function JBrowseWeb(
       },
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         let newDefault
-        if (getParent(self).session.name === sessionConf.name) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (getParent<any>(self).session.name === sessionConf.name) {
           newDefault = getSnapshot(sessionConf)
         } else {
           newDefault = toJS(sessionConf)
@@ -200,8 +284,8 @@ export default function JBrowseWeb(
       },
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
-        const rootModel = getRoot(self)
-        rootModel.setPluginsUpdated(true)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getRoot<any>(self).setPluginsUpdated(true)
       },
 
       removePlugin(pluginDefinition: PluginDefinition) {
@@ -214,22 +298,20 @@ export default function JBrowseWeb(
               plugin.esmUrl !== pluginDefinition.esmUrl,
           ),
         )
-        const rootModel = getParent(self)
-        rootModel.setPluginsUpdated(true)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self).setPluginsUpdated(true)
       },
 
-      addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
-        const { type } = internetAccountConf
+      addInternetAccountConf(config: AnyConfigurationModel) {
+        const { type } = config
         if (!type) {
           throw new Error(`unknown internetAccount type ${type}`)
         }
-        const length = self.internetAccounts.push(internetAccountConf)
+        const length = self.internetAccounts.push(config)
         return self.internetAccounts[length - 1]
       },
-      deleteInternetAccountConf(configuration: AnyConfigurationModel) {
-        const idx = self.internetAccounts.findIndex(
-          acct => acct.id === configuration.id,
-        )
+      deleteInternetAccountConf(config: AnyConfigurationModel) {
+        const idx = self.internetAccounts.findIndex(a => a.id === config.id)
         if (idx === -1) {
           return undefined
         }
@@ -238,17 +320,8 @@ export default function JBrowseWeb(
     }))
 
   return types.snapshotProcessor(JBrowseModel, {
-    postProcessor(snapshot) {
-      function removeAttr(obj: Record<string, unknown>, attr: string) {
-        for (const prop in obj) {
-          if (prop === attr) {
-            delete obj[prop]
-          } else if (typeof obj[prop] === 'object') {
-            removeAttr(obj[prop] as Record<string, unknown>, attr)
-          }
-        }
-        return obj
-      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    postProcessor(snapshot: { [key: string]: any }) {
       return removeAttr(clone(snapshot), 'baseUri')
     },
   })

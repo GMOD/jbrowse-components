@@ -17,33 +17,34 @@ import {
   RadioGroup,
   TextField,
   Typography,
-  alpha,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+
+import { alpha } from '@mui/material/styles'
+import { makeStyles } from 'tss-react/mui'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
 // icons
-import ShareIcon from '@material-ui/icons/Share'
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline'
-import SettingsIcon from '@material-ui/icons/Settings'
-import CloseIcon from '@material-ui/icons/Close'
+import ShareIcon from '@mui/icons-material/Share'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
+import SettingsIcon from '@mui/icons-material/Settings'
+import CloseIcon from '@mui/icons-material/Close'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { toUrlSafeB64 } from './util'
 import { shareSessionToDynamo } from './sessionSharing'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   shareDiv: {
     textAlign: 'center',
     paddingLeft: '2px',
   },
   shareButton: {
+    backgroundColor: alpha(
+      theme.palette.primary.contrastText,
+      theme.palette.action.hoverOpacity,
+    ),
     '&:hover': {
-      backgroundColor: alpha(
-        theme.palette.primary.contrastText,
-        theme.palette.action.hoverOpacity,
-      ),
       '@media (hover: none)': {
         backgroundColor: 'transparent',
       },
@@ -67,7 +68,7 @@ function SettingsDialog(props: {
   onClose: Function
   currentSetting: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { onClose, open, currentSetting } = props
   const [setting, setSetting] = useState(currentSetting)
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
@@ -127,7 +128,7 @@ function SettingsDialog(props: {
   )
 }
 function InfoDialog(props: { open: boolean; onClose: Function }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { onClose, open } = props
 
   const handleClose = () => {
@@ -178,7 +179,7 @@ const ShareDialog = observer(
     handleClose: () => void
     session: AbstractSessionModel & { shareURL: string }
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const [shortUrl, setShortUrl] = useState('')
     const [longUrl, setLongUrl] = useState('')
     const [loading, setLoading] = useState(true)
@@ -344,7 +345,7 @@ const ShareButton = observer(
     const [open, setOpen] = useState(false)
 
     const { session } = props
-    const classes = useStyles()
+    const { classes } = useStyles()
 
     const handleClose = () => {
       setOpen(false)

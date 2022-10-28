@@ -1,5 +1,5 @@
 import Adapter from './FromConfigRegionsAdapter'
-import { regionsConfigSchema } from './configSchema'
+import regionsConfigSchema from './fromConfigRegions'
 
 test('adapter can fetch regions 1', async () => {
   const features = [

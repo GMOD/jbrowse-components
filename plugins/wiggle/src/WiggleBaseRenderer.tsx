@@ -1,4 +1,3 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import FeatureRendererType, {
   RenderArgs as FeatureRenderArgs,
   RenderArgsSerialized,
@@ -7,9 +6,9 @@ import FeatureRendererType, {
   ResultsSerialized,
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
-import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import { ThemeOptions } from '@material-ui/core'
-import { ScaleOpts } from './util'
+import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
+import { ThemeOptions } from '@mui/material'
+import { ScaleOpts, Source } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {
   scaleOpts: ScaleOpts
@@ -22,12 +21,17 @@ export interface RenderArgsDeserialized extends FeatureRenderArgsDeserialized {
   scaleOpts: ScaleOpts
   displayCrossHatches: boolean
   ticks: { values: number[] }
-  theme: ThemeOptions
+  themeOptions: ThemeOptions
 }
 
 export interface RenderArgsDeserializedWithFeatures
   extends RenderArgsDeserialized {
   features: Map<string, Feature>
+}
+
+export interface MultiRenderArgsDeserialized
+  extends RenderArgsDeserializedWithFeatures {
+  sources: Source[]
 }
 
 export type {
@@ -46,11 +50,12 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
     const [region] = regions
     const width = (region.end - region.start) / bpPerPx
 
-    const res = await renderToAbstractCanvas(
+    // @ts-ignore
+    const { reducedFeatures, ...rest } = await renderToAbstractCanvas(
       width,
       height,
       renderProps,
-      (ctx: CanvasRenderingContext2D) =>
+      ctx =>
         this.draw(ctx, {
           ...renderProps,
           features,
@@ -59,7 +64,7 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     const results = await super.render({
       ...renderProps,
-      ...res,
+      ...rest,
       features,
       height,
       width,
@@ -67,19 +72,22 @@ export default abstract class WiggleBaseRenderer extends FeatureRendererType {
 
     return {
       ...results,
-      ...res,
-      features,
+      ...rest,
+      features: (reducedFeatures
+        ? new Map(reducedFeatures.map((r: Feature) => [r.id(), r]))
+        : results.features) as Map<string, Feature>,
       height,
       width,
+      containsNoTransferables: true,
     }
   }
 
-  /*
+  /**
    * draw features to context given props, to be used by derived renderer
    * classes
    */
   abstract draw<T extends RenderArgsDeserializedWithFeatures>(
     ctx: CanvasRenderingContext2D,
     props: T,
-  ): void
+  ): Promise<Record<string, unknown> | void>
 }

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-alignments",
-  "version": "1.6.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 alignments adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -18,47 +18,50 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-alignments.esm.js",
-  "module": "",
   "files": [
     "dist",
+    "esm",
     "src"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "npm-run-all build:*",
     "test": "cd ../..; jest plugins/alignments",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "prebuild": "npm run clean",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bam": "^1.1.13",
-    "@gmod/cram": "^1.6.1",
-    "@material-ui/icons": "^4.9.1",
-    "abortable-promise-cache": "^1.5.0",
+    "@gmod/bam": "^1.1.15",
+    "@gmod/cram": "^1.7.1",
+    "@mui/icons-material": "^5.0.1",
     "color": "^3.1.2",
     "copy-to-clipboard": "^3.3.1",
     "fast-deep-equal": "^3.1.3",
-    "generic-filehandle": "^2.2.2",
-    "json-stable-stringify": "^1.0.1",
-    "react-d3-axis-mod": "^0.1.3"
+    "generic-filehandle": "^3.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
-    "@jbrowse/plugin-wiggle": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "mobx": "^5.10.1",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
+    "@jbrowse/plugin-wiggle": "^2.0.0",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
-    "rxjs": "^6.0.0"
+    "rxjs": "^6.0.0",
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "distModule": "esm/index.js",
+  "srcModule": "src/index.ts",
+  "module": ""
 }

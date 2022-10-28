@@ -1,41 +1,104 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import Path from 'svg-path-generator'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
+
+// locals
 import { yPos, useNextFrame, getPxFromCoordinate } from '../util'
 import { BreakpointViewModel } from '../model'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
+// this finds candidate alignment features, aimed at plotting split reads
+// from BAM/CRAM files
+function getBadlyPairedAlignments(features: Map<string, Feature>) {
+  const candidates: Record<string, Feature[]> = {}
+  const alreadySeen = new Set<string>()
+
+  // this finds candidate features that share the same name
+  for (const feature of features.values()) {
+    const flags = feature.get('flags')
+    const id = feature.id()
+    const unmapped = flags & 4
+    const correctlyPaired = flags & 2
+
+    if (!alreadySeen.has(id) && !correctlyPaired && !unmapped) {
+      const n = feature.get('name')
+      if (!candidates[n]) {
+        candidates[n] = []
+      }
+      candidates[n].push(feature)
+    }
+    alreadySeen.add(feature.id())
+  }
+
+  return Object.values(candidates).filter(v => v.length > 1)
+}
+
+// this finds candidate alignment features, aimed at plotting split reads
+// from BAM/CRAM files
+function getMatchedAlignmentFeatures(features: Map<string, Feature>) {
+  const candidates: Record<string, Feature[]> = {}
+  const alreadySeen = new Set<string>()
+
+  // this finds candidate features that share the same name
+  for (const feature of features.values()) {
+    const id = feature.id()
+    const unmapped = feature.get('flags') & 4
+    if (!alreadySeen.has(id) && !unmapped) {
+      const n = feature.get('name')
+      if (!candidates[n]) {
+        candidates[n] = []
+      }
+      candidates[n].push(feature)
+    }
+    alreadySeen.add(feature.id())
+  }
+
+  return Object.values(candidates).filter(v => v.length > 1)
+}
+
+function hasPairedReads(features: Map<string, Feature>) {
+  return [...features.values()].find(f => f.get('flags') & 64)
+}
+
 const AlignmentConnections = observer(
   ({
     model,
-    trackConfigId,
+    trackId,
     parentRef,
   }: {
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views, showIntraviewLinks } = model
-    const { assemblyManager } = getSession(model)
 
     const session = getSession(model)
     const snap = getSnapshot(model)
-    useNextFrame(snap)
+    const { assemblyManager } = session
     const assembly = assemblyManager.get(views[0].assemblyNames[0])
-    const totalFeatures = model.getTrackFeatures(trackConfigId)
-    const features = model.hasPairedReads(trackConfigId)
-      ? model.getBadlyPairedAlignments(trackConfigId)
-      : model.getMatchedAlignmentFeatures(trackConfigId)
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackConfigId,
-      features,
+    useNextFrame(snap)
+    const totalFeatures = model.getTrackFeatures(trackId)
+    const hasPaired = useMemo(
+      () => hasPairedReads(totalFeatures),
+      [totalFeatures],
     )
-    layoutMatches.forEach(m => {
-      m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
-    })
+
+    const layoutMatches = useMemo(() => {
+      const features = hasPaired
+        ? getBadlyPairedAlignments(totalFeatures)
+        : getMatchedAlignmentFeatures(totalFeatures)
+      const layoutMatches = model.getMatchedFeaturesInLayout(trackId, features)
+      if (!hasPaired) {
+        layoutMatches.forEach(m => {
+          m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
+        })
+      }
+      return layoutMatches
+    }, [totalFeatures, trackId, hasPaired, model])
+
     const [mouseoverElt, setMouseoverElt] = useState<string>()
 
     let yOffset = 0
@@ -45,15 +108,15 @@ const AlignmentConnections = observer(
     }
 
     if (!assembly) {
+      console.warn('Unable to read assembly')
       return null
     }
+
     return (
       <g
         stroke="#333"
         fill="none"
-        data-testid={
-          layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
-        }
+        data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
       >
         {layoutMatches.map(chunk => {
           const ret = []
@@ -80,23 +143,24 @@ const AlignmentConnections = observer(
             if (!f1ref || !f2ref) {
               throw new Error(`unable to find ref for ${f1ref || f2ref}`)
             }
-            const x1 = getPxFromCoordinate(
-              views[level1],
-              f1ref,
-              c1[f1.get('strand') === -1 ? LEFT : RIGHT],
-            )
-            const x2 = getPxFromCoordinate(
-              views[level2],
-              f2ref,
-              c2[f2.get('strand') === -1 ? RIGHT : LEFT],
-            )
+
+            const s1 = f1.get('strand')
+            const s2 = f2.get('strand')
+            const p1 = hasPaired
+              ? c1[s1 === -1 ? LEFT : RIGHT]
+              : c1[s1 === -1 ? LEFT : RIGHT]
+            const p2 = hasPaired
+              ? c2[s2 === -1 ? LEFT : RIGHT]
+              : c2[s2 === -1 ? RIGHT : LEFT]
+            const x1 = getPxFromCoordinate(views[level1], f1ref, p1)
+            const x2 = getPxFromCoordinate(views[level2], f2ref, p2)
             const reversed1 = views[level1].pxToBp(x1).reversed
             const reversed2 = views[level2].pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackConfigId))
+            const tracks = views.map(v => v.getTrack(trackId))
 
-            const y1 = yPos(trackConfigId, level1, views, tracks, c1) - yOffset
-            const y2 = yPos(trackConfigId, level2, views, tracks, c2) - yOffset
+            const y1 = yPos(trackId, level1, views, tracks, c1) - yOffset
+            const y2 = yPos(trackId, level2, views, tracks, c2) - yOffset
 
             // possible todo: use totalCurveHeight to possibly make alternative
             // squiggle if the S is too small
@@ -105,7 +169,11 @@ const AlignmentConnections = observer(
               .curveTo(
                 x1 + 200 * f1.get('strand') * (reversed1 ? -1 : 1),
                 y1,
-                x2 - 200 * f2.get('strand') * (reversed2 ? -1 : 1),
+                x2 -
+                  200 *
+                    f2.get('strand') *
+                    (reversed2 ? -1 : 1) *
+                    (hasPaired ? -1 : 1),
                 y2,
                 x2,
                 y2,

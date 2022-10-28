@@ -22,14 +22,14 @@ jobs:
         run: yarn typecheck
 
   buildwebsite:
-    name: Build website on node 14 and ubuntu-latest
+    name: Build website on node 16 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Install website deps (with cache)
         uses: bahmutov/npm-install@v1
         with:
@@ -39,28 +39,32 @@ jobs:
           cd website/
           yarn build
   buildwholerepo:
-    name: Build whole repo on node 14 and ubuntu-latest
+    name: Build whole repo on node 16 and ubuntu-latest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 14
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - name: Install deps (with cache)
         uses: bahmutov/npm-install@v1
       - name: Build codebase
         run: yarn build
       - name: Test build
         run: BUILT_TESTS=1 yarn built-test-ci
-      - name: Test embedded
-        # CI=false since we have a warning that gets treated as an error under CI
-        # Warning is: "Critical dependency: the request of a dependency is an expression"
+      - name: Test embedded lgv
         run: |
           yarn
-          CI=false yarn build
+          yarn build
           yarn test:e2e
-        working-directory: component_test
+        working-directory: component_tests/lgv
+      - name: Test embedded cgv
+        run: |
+          yarn
+          yarn build
+          yarn test:e2e
+        working-directory: component_tests/cgv
 
   buildjbrowseweb:
     name: Build only jbrowse-web and upload to s3 on node 14 and ubuntu-latest

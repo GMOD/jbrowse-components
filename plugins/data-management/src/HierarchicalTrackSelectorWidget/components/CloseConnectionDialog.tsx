@@ -8,15 +8,18 @@ import {
   List,
   ListItem,
   DialogActions,
-} from '@material-ui/core'
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 function CloseConnectionDialog({
   modalInfo = {},
   setModalInfo,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  modalInfo: any
+  modalInfo?: {
+    name?: string
+    dereferenceTypeCount?: { [key: string]: number }
+    safelyBreakConnection?: Function
+  }
   setModalInfo: Function
 }) {
   const { name, dereferenceTypeCount, safelyBreakConnection } = modalInfo
@@ -41,12 +44,7 @@ function CloseConnectionDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={() => {
-            setModalInfo()
-          }}
-          color="primary"
-        >
+        <Button onClick={() => setModalInfo()} color="primary">
           Cancel
         </Button>
         <Button
@@ -54,9 +52,7 @@ function CloseConnectionDialog({
           onClick={
             modalInfo
               ? () => {
-                  if (safelyBreakConnection) {
-                    safelyBreakConnection()
-                  }
+                  safelyBreakConnection?.()
                   setModalInfo()
                 }
               : () => {}

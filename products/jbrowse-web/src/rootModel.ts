@@ -3,19 +3,11 @@ import {
   cast,
   getSnapshot,
   getType,
-  getPropertyMembers,
-  getChildType,
-  isArrayType,
-  isModelType,
-  isReferenceType,
-  isValidReference,
-  isMapType,
   resolveIdentifier,
   types,
   IAnyStateTreeNode,
-  IAnyType,
-  Instance,
   SnapshotIn,
+  IAnyModelType,
 } from 'mobx-state-tree'
 
 import { saveAs } from 'file-saver'
@@ -25,123 +17,106 @@ import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyC
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import TimeTraveller from '@jbrowse/core/util/TimeTraveller'
 import { UriLocation } from '@jbrowse/core/util/types'
 import { AbstractSessionModel, SessionWithWidgets } from '@jbrowse/core/util'
 import { MenuItem } from '@jbrowse/core/ui'
 
 // icons
-import AddIcon from '@material-ui/icons/Add'
-import SettingsIcon from '@material-ui/icons/Settings'
-import AppsIcon from '@material-ui/icons/Apps'
-import FileCopyIcon from '@material-ui/icons/FileCopy'
-import FolderOpenIcon from '@material-ui/icons/FolderOpen'
-import GetAppIcon from '@material-ui/icons/GetApp'
-import PublishIcon from '@material-ui/icons/Publish'
-import ExtensionIcon from '@material-ui/icons/Extension'
-import StorageIcon from '@material-ui/icons/Storage'
-import SaveIcon from '@material-ui/icons/Save'
+import AddIcon from '@mui/icons-material/Add'
+import SettingsIcon from '@mui/icons-material/Settings'
+import AppsIcon from '@mui/icons-material/Apps'
+import FileCopyIcon from '@mui/icons-material/FileCopy'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import GetAppIcon from '@mui/icons-material/GetApp'
+import PublishIcon from '@mui/icons-material/Publish'
+import ExtensionIcon from '@mui/icons-material/Extension'
+import StorageIcon from '@mui/icons-material/Storage'
+import SaveIcon from '@mui/icons-material/Save'
+import UndoIcon from '@mui/icons-material/Undo'
+import RedoIcon from '@mui/icons-material/Redo'
 import { Cable } from '@jbrowse/core/ui/Icons'
 
 // other
+import makeWorkerInstance from './makeWorkerInstance'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
-// @ts-ignore
-import RenderWorker from './rpc.worker'
 import sessionModelFactory from './sessionModelFactory'
-
-// attempts to remove undefined references from the given MST model. can only actually
-// remove them from arrays and maps. throws MST undefined ref error if it encounters
-// undefined refs in model properties
-function filterSessionInPlace(node: IAnyStateTreeNode, nodeType: IAnyType) {
-  type MSTArray = Instance<ReturnType<typeof types.array>>
-  type MSTMap = Instance<ReturnType<typeof types.map>>
-
-  // makes it work with session sharing
-  if (node === undefined) {
-    return
-  }
-  if (isArrayType(nodeType)) {
-    const array = node as MSTArray
-    const childType = getChildType(node)
-    if (isReferenceType(childType)) {
-      // filter array elements
-      for (let i = 0; i < array.length; ) {
-        if (!isValidReference(() => array[i])) {
-          array.splice(i, 1)
-        } else {
-          i += 1
-        }
-      }
-    }
-    array.forEach(el => {
-      filterSessionInPlace(el, childType)
-    })
-  } else if (isMapType(nodeType)) {
-    const map = node as MSTMap
-    const childType = getChildType(map)
-    if (isReferenceType(childType)) {
-      // filter the map members
-      for (const key in map.keys()) {
-        if (!isValidReference(() => map.get(key))) {
-          map.delete(key)
-        }
-      }
-    }
-    map.forEach(child => {
-      filterSessionInPlace(child, childType)
-    })
-  } else if (isModelType(nodeType)) {
-    // iterate over children
-    const { properties } = getPropertyMembers(node)
-
-    Object.entries(properties).forEach(([pname, ptype]) => {
-      // @ts-ignore
-      filterSessionInPlace(node[pname], ptype)
-    })
-  }
-}
+import { filterSessionInPlace } from './util'
 
 interface Menu {
   label: string
   menuItems: MenuItem[]
 }
 
+/**
+ * #stateModel JBrowseWebRootModel
+ * note that many properties of the root model are available through the session, which
+ * may be preferable since using getSession() is better relied on than getRoot()
+ */
 export default function RootModel(
   pluginManager: PluginManager,
   adminMode = false,
 ) {
   const assemblyConfigSchema = assemblyConfigSchemaFactory(pluginManager)
   const Session = sessionModelFactory(pluginManager, assemblyConfigSchema)
-  const assemblyManagerType = assemblyManagerFactory(
+  const AssemblyManager = assemblyManagerFactory(
     assemblyConfigSchema,
     pluginManager,
   )
   return types
     .model('Root', {
+      /**
+       * #property
+       * `jbrowse` is a mapping of the config.json into the in-memory state tree
+       */
       jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
+      /**
+       * #property
+       */
       configPath: types.maybe(types.string),
+      /**
+       * #property
+       * `session` encompasses the currently active state of the app, including
+       * views open, tracks open in those views, etc.
+       */
       session: types.maybe(Session),
-      assemblyManager: assemblyManagerType,
+      /**
+       * #property
+       */
+      assemblyManager: types.optional(AssemblyManager, {}),
+      /**
+       * #property
+       */
       version: types.maybe(types.string),
+      /**
+       * #property
+       */
       internetAccounts: types.array(
         pluginManager.pluggableMstType('internet account', 'stateModel'),
       ),
-      isAssemblyEditing: false,
-      isDefaultSessionEditing: false,
+      /**
+       * #property
+       * used for undo/redo
+       */
+      history: types.optional(TimeTraveller, { targetPath: '../session' }),
     })
     .volatile(self => ({
+      isAssemblyEditing: false,
+      isDefaultSessionEditing: false,
       pluginsUpdated: false,
       rpcManager: new RpcManager(
         pluginManager,
         self.jbrowse.configuration.rpc,
         {
-          WebWorkerRpcDriver: { WorkerClass: RenderWorker },
+          WebWorkerRpcDriver: {
+            makeWorkerInstance,
+          },
           MainThreadRpcDriver: {},
         },
       ),
       savedSessionsVolatile: observable.map({}),
       textSearchManager: new TextSearchManager(pluginManager),
-      pluginManager,
       error: undefined as unknown,
     }))
     .views(self => ({
@@ -168,13 +143,31 @@ export default function RootModel(
         return params?.get('session')?.split('local-')[1]
       },
     }))
+
     .actions(self => ({
       afterCreate() {
+        document.addEventListener('keydown', e => {
+          const cm = e.ctrlKey || e.metaKey
+          if (self.history.canRedo) {
+            if (
+              // ctrl+shift+z or cmd+shift+z
+              (cm && e.shiftKey && e.code === 'KeyZ') ||
+              // ctrl+y
+              (e.ctrlKey && !e.shiftKey && e.code === 'KeyY')
+            ) {
+              self.history.redo()
+            }
+          } else if (self.history.canUndo) {
+            // ctrl+z or cmd+z
+            if (cm && !e.shiftKey && e.code === 'KeyZ') {
+              self.history.undo()
+            }
+          }
+        })
+
         Object.entries(localStorage)
           .filter(([key, _val]) => key.startsWith('localSaved-'))
-          .filter(
-            ([key, _val]) => key.indexOf(self.configPath || 'undefined') !== -1,
-          )
+          .filter(([key]) => key.indexOf(self.configPath || 'undefined') !== -1)
           .forEach(([key, val]) => {
             try {
               const { session } = JSON.parse(val)
@@ -198,6 +191,19 @@ export default function RootModel(
                   )
                 }
               }
+            }
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            if (self.session) {
+              // we use a specific initialization routine after session is
+              // created to get it to start tracking itself sort of related
+              // issue here
+              // https://github.com/mobxjs/mobx-state-tree/issues/1089#issuecomment-441207911
+              self.history.initialize()
             }
           }),
         )
@@ -261,7 +267,7 @@ export default function RootModel(
         const internetAccountConfigSchema =
           pluginManager.pluggableConfigSchemaType('internet account')
         const configuration = resolveIdentifier(
-          internetAccountConfigSchema,
+          internetAccountConfigSchema as IAnyModelType,
           self,
           internetAccountId,
         )
@@ -273,23 +279,22 @@ export default function RootModel(
           throw new Error(`unknown internet account type ${configuration.type}`)
         }
 
-        const internetAccount = internetAccountType.stateModel.create({
+        const length = self.internetAccounts.push({
           ...initialSnapshot,
           type: configuration.type,
           configuration,
         })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
+        return self.internetAccounts[length - 1]
       },
       createEphemeralInternetAccount(
         internetAccountId: string,
         initialSnapshot = {},
-        location: UriLocation,
+        url: string,
       ) {
         let hostUri
 
         try {
-          hostUri = new URL(location.uri).origin
+          hostUri = new URL(url).origin
         } catch (e) {
           // ignore
         }
@@ -417,12 +422,11 @@ export default function RootModel(
 
         // if still no existing account, create ephemeral config to use
         return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location)
+          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
     }))
     .volatile(self => ({
-      history: {},
       menus: [
         {
           label: 'File',
@@ -493,8 +497,7 @@ export default function RootModel(
             {
               label: 'Open track...',
               icon: StorageIcon,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick: (session: any) => {
+              onClick: (session: SessionWithWidgets) => {
                 if (session.views.length === 0) {
                   session.notify('Please open a view to add a track first')
                 } else if (session.views.length >= 1) {
@@ -515,14 +518,12 @@ export default function RootModel(
             {
               label: 'Open connection...',
               icon: Cable,
-              onClick: () => {
-                if (self.session) {
-                  const widget = self.session.addWidget(
-                    'AddConnectionWidget',
-                    'addConnectionWidget',
-                  )
-                  self.session.showWidget(widget)
-                }
+              onClick: (session: SessionWithWidgets) => {
+                const widget = session.addWidget(
+                  'AddConnectionWidget',
+                  'addConnectionWidget',
+                )
+                session.showWidget(widget)
               },
             },
             { type: 'divider' },
@@ -566,6 +567,23 @@ export default function RootModel(
           label: 'Tools',
           menuItems: [
             {
+              label: 'Undo',
+              disabled: self.history.canUndo,
+              icon: UndoIcon,
+              onClick: () => {
+                self.history.undo()
+              },
+            },
+            {
+              label: 'Redo',
+              disabled: self.history.canRedo,
+              icon: RedoIcon,
+              onClick: () => {
+                self.history.redo()
+              },
+            },
+            { type: 'divider' },
+            {
               label: 'Plugin store',
               icon: ExtensionIcon,
               onClick: () => {
@@ -584,10 +602,6 @@ export default function RootModel(
       adminMode,
     }))
     .actions(self => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setHistory(history: any) {
-        self.history = history
-      },
       setMenus(newMenus: Menu[]) {
         self.menus = newMenus
       },
@@ -608,9 +622,11 @@ export default function RootModel(
        * @returns The new length of the top-level menus array
        */
       insertMenu(menuName: string, position: number) {
-        const insertPosition =
-          position < 0 ? self.menus.length + position : position
-        self.menus.splice(insertPosition, 0, { label: menuName, menuItems: [] })
+        self.menus.splice(
+          (position < 0 ? self.menus.length : 0) + position,
+          0,
+          { label: menuName, menuItems: [] },
+        )
         return self.menus.length
       },
       /**
@@ -724,8 +740,7 @@ export function createTestSession(snapshot = {}, adminMode = false) {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
 
-  const JBrowseRootModel = RootModel(pluginManager, adminMode)
-  const root = JBrowseRootModel.create(
+  const root = RootModel(pluginManager, adminMode).create(
     {
       jbrowse: {
         configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
@@ -738,10 +753,11 @@ export function createTestSession(snapshot = {}, adminMode = false) {
     name: 'testSession',
     ...snapshot,
   })
-  // @ts-ignore
-  root.session.views.map(view => view.setWidth(800))
-  pluginManager.setRootModel(root)
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const session = root.session!
+  session.views.map(view => view.setWidth(800))
+  pluginManager.setRootModel(root)
   pluginManager.configure()
-  return root.session as AbstractSessionModel
+  return session
 }

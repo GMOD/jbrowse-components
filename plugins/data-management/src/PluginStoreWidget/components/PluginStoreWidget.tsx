@@ -5,21 +5,21 @@ import { getEnv } from 'mobx-state-tree'
 import {
   Accordion,
   AccordionSummary,
-  TextField,
-  InputAdornment,
   Button,
   IconButton,
+  InputAdornment,
+  TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { JBrowsePlugin } from '@jbrowse/core/util/types'
 import { getSession, isElectron } from '@jbrowse/core/util'
 
 // icons
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
-import ClearIcon from '@material-ui/icons/Clear'
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ClearIcon from '@mui/icons-material/Clear'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 // locals
 import InstalledPluginsList from './InstalledPluginsList'
@@ -27,7 +27,7 @@ import PluginCard from './PluginCard'
 import CustomPluginForm from './CustomPluginForm'
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
   },
@@ -37,8 +37,7 @@ const useStyles = makeStyles(theme => ({
   adminBadge: {
     margin: '0.5em',
     borderRadius: 3,
-    // this is the quaternary color in JB2 palette
-    backgroundColor: '#FFB11D',
+    backgroundColor: theme.palette.quaternary.main,
     padding: '1em',
     display: 'flex',
     alignContent: 'center',
@@ -51,7 +50,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const [pluginArray, setPluginArray] = useState<JBrowsePlugin[]>()
   const [error, setError] = useState<unknown>()
   const [customPluginFormOpen, setCustomPluginFormOpen] = useState(false)

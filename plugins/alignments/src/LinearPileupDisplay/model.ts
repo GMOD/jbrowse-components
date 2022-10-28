@@ -1,38 +1,43 @@
 import { lazy } from 'react'
+import { autorun, observable } from 'mobx'
+import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
+import copy from 'copy-to-clipboard'
 import {
+  AnyConfigurationModel,
   ConfigurationReference,
   readConfObject,
   getConf,
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
+  getEnv,
   getSession,
   isSessionModelWithWidgets,
   getContainingView,
+  SimpleFeature,
+  Feature,
 } from '@jbrowse/core/util'
 
-import VisibilityIcon from '@material-ui/icons/Visibility'
-import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 import {
   LinearGenomeViewModel,
   BaseLinearDisplay,
 } from '@jbrowse/plugin-linear-genome-view'
-import { cast, types, addDisposer, getEnv, Instance } from 'mobx-state-tree'
-import copy from 'copy-to-clipboard'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import MenuOpenIcon from '@material-ui/icons/MenuOpen'
-import SortIcon from '@material-ui/icons/Sort'
-import PaletteIcon from '@material-ui/icons/Palette'
-import FilterListIcon from '@material-ui/icons/ClearAll'
 
-import { autorun, observable } from 'mobx'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
-import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+// icons
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import SortIcon from '@mui/icons-material/Sort'
+import PaletteIcon from '@mui/icons-material/Palette'
+import FilterListIcon from '@mui/icons-material/ClearAll'
+
+// locals
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-
 import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
+import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
+// async
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
 const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
@@ -48,20 +53,50 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
-const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
-  types
+/**
+ * #stateModel LinearPileupDisplay
+ */
+function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
+  return types
     .compose(
       'LinearPileupDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearPileupDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
         showSoftClipping: false,
+        /**
+         * #property
+         */
         featureHeight: types.maybe(types.number),
+        /**
+         * #property
+         */
         noSpacing: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         fadeLikelihood: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         trackMaxHeight: types.maybe(types.number),
+        /**
+         * #property
+         */
         mismatchAlpha: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         sortedBy: types.maybe(
           types.model({
             type: types.string,
@@ -71,6 +106,10 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             assemblyName: types.string,
           }),
         ),
+
+        /**
+         * #property
+         */
         colorBy: types.maybe(
           types.model({
             type: types.string,
@@ -94,28 +133,47 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
+      featureUnderMouseVolatile: undefined as undefined | Feature,
       ready: false,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setReady(flag: boolean) {
         self.ready = flag
       },
+      /**
+       * #action
+       */
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
       },
+      /**
+       * #action
+       */
       setFeatureHeight(n: number) {
         self.featureHeight = n
       },
+      /**
+       * #action
+       */
       setNoSpacing(flag: boolean) {
         self.noSpacing = flag
       },
 
+      /**
+       * #action
+       */
       setColorScheme(colorScheme: { type: string; tag?: string }) {
         self.colorTagMap = observable.map({}) // clear existing mapping
         self.colorBy = cast(colorScheme)
         self.ready = false
       },
 
+      /**
+       * #action
+       */
       updateModificationColorMap(uniqueModifications: string[]) {
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
         uniqueModifications.forEach(value => {
@@ -127,8 +185,13 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         })
       },
 
+      /**
+       * #action
+       */
       updateColorTagMap(uniqueTag: string[]) {
-        // pale color scheme https://cran.r-project.org/web/packages/khroma/vignettes/tol.html e.g. "tol_light"
+        // pale color scheme
+        // https://cran.r-project.org/web/packages/khroma/vignettes/tol.html
+        // e.g. "tol_light"
         const colorPalette = [
           '#BBCCEE',
           'pink',
@@ -150,6 +213,12 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
           }
         })
       },
+      /**
+       * #action
+       */
+      setFeatureUnderMouse(feat?: Feature) {
+        self.featureUnderMouseVolatile = feat
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -159,53 +228,67 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             async () => {
               try {
                 const { rpcManager } = getSession(self)
-                const { sortedBy, colorBy } = self
                 const view = getContainingView(self) as LGV
+                const {
+                  sortedBy,
+                  colorBy,
+                  parentTrack,
+                  adapterConfig,
+                  rendererType,
+                } = self
 
+                if (
+                  !view.initialized ||
+                  !self.estimatedStatsReady ||
+                  self.regionTooLarge
+                ) {
+                  return
+                }
+
+                const { staticBlocks, bpPerPx } = view
                 // continually generate the vc pairing, set and rerender if any
                 // new values seen
                 if (colorBy?.tag) {
-                  const uniqueTagSet = await getUniqueTagValues(
-                    self,
-                    colorBy,
-                    view.staticBlocks,
+                  self.updateColorTagMap(
+                    await getUniqueTagValues(self, colorBy, staticBlocks),
                   )
-                  self.updateColorTagMap(uniqueTagSet)
                 }
 
                 if (colorBy?.type === 'modifications') {
-                  const uniqueModificationsSet =
+                  const adapter = getConf(parentTrack, ['adapter'])
+                  self.updateModificationColorMap(
                     await getUniqueModificationValues(
                       self,
-                      getConf(self.parentTrack, ['adapter']),
+                      adapter,
                       colorBy,
-                      view.staticBlocks,
-                    )
-                  self.updateModificationColorMap(uniqueModificationsSet)
+                      staticBlocks,
+                    ),
+                  )
                 }
 
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
-
-                  const region = {
-                    start: pos,
-                    end: pos + 1,
-                    refName,
-                    assemblyName,
-                  }
-
                   // render just the sorted region first
+                  // @ts-ignore
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
-                    regions: [region],
-                    adapterConfig: self.adapterConfig,
-                    rendererType: self.rendererType.name,
+                    regions: [
+                      {
+                        start: pos,
+                        end: pos + 1,
+                        refName,
+                        assemblyName,
+                      },
+                    ],
+                    adapterConfig: adapterConfig,
+                    rendererType: rendererType.name,
                     sessionId: getRpcSessionId(self),
+                    layoutId: view.id,
                     timeout: 1000000,
                     ...self.renderProps(),
                   })
                   self.setReady(true)
-                  self.setCurrBpPerPx(view.bpPerPx)
+                  self.setCurrBpPerPx(bpPerPx)
                 } else {
                   self.setReady(true)
                 }
@@ -217,7 +300,53 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             { delay: 1000 },
           ),
         )
+
+        // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        addDisposer(
+          self,
+          autorun(async () => {
+            const session = getSession(self)
+            try {
+              const featureId = self.featureIdUnderMouse
+              if (self.featureUnderMouse?.id() !== featureId) {
+                if (!featureId) {
+                  self.setFeatureUnderMouse(undefined)
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const view = getContainingView(self)
+                  const { feature } = (await session.rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId,
+                      sessionId,
+                      layoutId: view.id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  // check featureIdUnderMouse is still the same as the
+                  // feature.id that was returned e.g. that the user hasn't
+                  // moused over to a new position during the async operation
+                  // above
+                  // @ts-ignore
+                  if (self.featureIdUnderMouse === feature.uniqueId) {
+                    // @ts-ignore
+                    self.setFeatureUnderMouse(new SimpleFeature(feature))
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(e)
+              session.notify(`${e}`, 'error')
+            }
+          }),
+        )
       },
+
+      /**
+       * #action
+       */
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
@@ -231,11 +360,17 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         session.setSelection(feature)
       },
 
+      /**
+       * #action
+       */
       clearSelected() {
         self.sortedBy = undefined
       },
 
-      // uses copy-to-clipboard and generates notification
+      /**
+       * #action
+       * uses copy-to-clipboard and generates notification
+       */
       copyFeatureToClipboard(feature: Feature) {
         const { uniqueId, ...rest } = feature.toJSON()
         const session = getSession(self)
@@ -243,17 +378,30 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         session.notify('Copied to clipboard', 'success')
       },
 
+      /**
+       * #action
+       */
       toggleSoftClipping() {
         self.showSoftClipping = !self.showSoftClipping
       },
+
+      /**
+       * #action
+       */
       toggleMismatchAlpha() {
         self.mismatchAlpha = !self.mismatchAlpha
       },
 
+      /**
+       * #action
+       */
       setConfig(configuration: AnyConfigurationModel) {
         self.configuration = configuration
       },
 
+      /**
+       * #action
+       */
       setSortedBy(type: string, tag?: string) {
         const { centerLineInfo } = getContainingView(self) as LGV
         if (!centerLineInfo) {
@@ -261,16 +409,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         }
         const { refName, assemblyName, offset } = centerLineInfo
         const centerBp = Math.round(offset) + 1
-        const centerRefName = refName
 
-        if (centerBp < 0) {
+        if (centerBp < 0 || !refName) {
           return
         }
 
         self.sortedBy = {
           type,
           pos: centerBp,
-          refName: centerRefName,
+          refName,
           assemblyName,
           tag,
         }
@@ -290,6 +437,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
       const superReload = self.reload
 
       return {
+        /**
+         * #action
+         */
         reload() {
           self.clearSelected()
           superReload()
@@ -298,12 +448,19 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
     })
 
     .views(self => ({
+      /**
+       * #getter
+       */
       get maxHeight() {
         const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
         return self.trackMaxHeight !== undefined
           ? self.trackMaxHeight
           : conf.maxHeight
       },
+
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
@@ -318,15 +475,28 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
           getEnv(self),
         )
       },
+
+      /**
+       * #getter
+       */
       get featureHeightSetting() {
         return (
           self.featureHeight || readConfObject(this.rendererConfig, 'height')
         )
       },
+      /**
+       * #getter
+       */
       get mismatchAlphaSetting() {
         return self.mismatchAlpha !== undefined
           ? self.mismatchAlpha
           : readConfObject(this.rendererConfig, 'mismatchAlpha')
+      },
+      /**
+       * #getter
+       */
+      get featureUnderMouse() {
+        return self.featureUnderMouseVolatile
       },
     }))
     .views(self => {
@@ -336,6 +506,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
       } = self
 
       return {
+        /**
+         * #getter
+         */
         get rendererTypeName() {
           const viewName = getConf(self, 'defaultRendering')
           const rendererType = rendererTypes.get(viewName)
@@ -345,6 +518,9 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
           return rendererType
         },
 
+        /**
+         * #method
+         */
         contextMenuItems() {
           const feat = self.contextMenuFeature
           const contextMenuItems = feat
@@ -373,30 +549,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
           return contextMenuItems
         },
 
+        /**
+         * #getter
+         */
         get DisplayBlurb() {
           return LinearPileupDisplayBlurb
         },
-
-        get filters() {
-          let filters: string[] = []
-          const { flagInclude, flagExclude, tagFilter, readName } =
-            self.filterBy
-
-          filters = [
-            `jexl:((get(feature,'flags')&${flagInclude})==${flagInclude}) && !(get(feature,'flags')&${flagExclude})`,
-          ]
-          if (tagFilter) {
-            const { tag, value } = tagFilter
-            filters.push(
-              `jexl:"${value}" =='*' ? getTag(feature,"${tag}") != undefined : getTag(feature,"${tag}") == "${value}"`,
-            )
-          }
-          if (readName) {
-            filters.push(`jexl:get(feature,'name') == "${readName}"`)
-          }
-          return new SerializableFilterChain({ filters })
-        },
-
+        /**
+         * #method
+         */
         renderProps() {
           const view = getContainingView(self) as LGV
           const {
@@ -404,7 +565,10 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             modificationTagMap,
             sortedBy,
             colorBy,
+            filterBy,
             rpcDriverName,
+            currBpPerPx,
+            ready,
           } = self
 
           const superProps = superRenderProps()
@@ -413,20 +577,87 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             ...superProps,
             notReady:
               superProps.notReady ||
-              !self.ready ||
-              (sortedBy && self.currBpPerPx !== view.bpPerPx),
+              !ready ||
+              (sortedBy && currBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,
             colorBy,
-            colorTagMap: JSON.parse(JSON.stringify(colorTagMap)),
-            modificationTagMap: JSON.parse(JSON.stringify(modificationTagMap)),
-            filters: this.filters,
+            filterBy: JSON.parse(JSON.stringify(filterBy)),
+            colorTagMap: Object.fromEntries(colorTagMap.toJSON()),
+            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
             showSoftClip: self.showSoftClipping,
             config: self.rendererConfig,
+            async onFeatureClick(_: unknown, featureId?: string) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: getContainingView(self).id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: unknown }
+
+                  if (feature) {
+                    // @ts-ignore
+                    self.selectFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
+
+            onClick() {
+              self.clearFeatureSelection()
+            },
+            // similar to click but opens a menu with further options
+            async onFeatureContextMenu(_: unknown, featureId?: string) {
+              const session = getSession(self)
+              const { rpcManager } = session
+              try {
+                const f = featureId || self.featureIdUnderMouse
+                if (!f) {
+                  self.clearFeatureSelection()
+                } else {
+                  const sessionId = getRpcSessionId(self)
+                  const { feature } = (await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatureDetails',
+                    {
+                      featureId: f,
+                      sessionId,
+                      layoutId: getContainingView(self).id,
+                      rendererType: 'PileupRenderer',
+                    },
+                  )) as { feature: SimpleFeatureSerialized }
+
+                  if (feature) {
+                    self.setContextMenuFeature(new SimpleFeature(feature))
+                  }
+                }
+              } catch (e) {
+                console.error(e)
+                session.notify(`${e}`)
+              }
+            },
           }
         },
 
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
@@ -450,19 +681,17 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               disabled: self.showSoftClipping,
               subMenu: [
                 ...['Start location', 'Read strand', 'Base pair'].map(
-                  option => {
-                    return {
-                      label: option,
-                      onClick: () => self.setSortedBy(option),
-                    }
-                  },
+                  option => ({
+                    label: option,
+                    onClick: () => self.setSortedBy(option),
+                  }),
                 ),
                 {
                   label: 'Sort by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(handleClose => [
                       SortByTagDlg,
-                      { model: self, handleClose: doneCallback },
+                      { model: self, handleClose },
                     ])
                   },
                 },
@@ -507,9 +736,15 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                   },
                 },
                 {
+                  label: 'Per-base lettering',
+                  onClick: () => {
+                    self.setColorScheme({ type: 'perBaseLettering' })
+                  },
+                },
+                {
                   label: 'Modifications or methylation',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       ModificationsDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -530,7 +765,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
                 {
                   label: 'Color by tag...',
                   onClick: () => {
-                    getSession(self).queueDialog((doneCallback: Function) => [
+                    getSession(self).queueDialog(doneCallback => [
                       ColorByTagDlg,
                       { model: self, handleClose: doneCallback },
                     ])
@@ -542,7 +777,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
               label: 'Filter by',
               icon: FilterListIcon,
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   FilterByTagDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -551,7 +786,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             {
               label: 'Set feature height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetFeatureHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -560,7 +795,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(doneCallback => [
                   SetMaxHeightDlg,
                   { model: self, handleClose: doneCallback },
                 ])
@@ -578,6 +813,7 @@ const stateModelFactory = (configSchema: LinearPileupDisplayConfigModel) =>
         },
       }
     })
+}
 
 export type LinearPileupDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearPileupDisplayModel = Instance<LinearPileupDisplayStateModel>

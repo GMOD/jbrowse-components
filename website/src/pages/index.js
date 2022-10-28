@@ -16,7 +16,7 @@ import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
-  const { currentVersion, bannerBulletin } = siteConfig.customFields
+  const { currentVersion } = siteConfig.customFields
 
   return (
     <Layout title={`${siteConfig.title}`}>
@@ -31,13 +31,17 @@ function Home() {
         >
           <Box sx={{ flex: '50%' }}>
             <Box sx={{ marginLeft: { xs: 0, sm: 0, md: 4 }, margin: 2 }}>
-              <Typography variant="h5">
-                JBrowse: The next generation genome browser
+              <Typography variant="h3" gutterBottom>
+                JBrowse
+              </Typography>
+              <Typography variant="h4" gutterBottom>
+                The next-generation genome browser
               </Typography>
               <Typography variant="body1">
-                The mission of the JBrowse Consortium is to develop a
-                comprehensive, pluggable, open-source computational platform for
-                visualizing and integrating biological data.
+                <p>
+                  JBrowse is a new kind of genome browser that runs on the web,
+                  on your desktop, or embedded in your app.
+                </p>
               </Typography>
             </Box>
             <Box
@@ -52,32 +56,26 @@ function Home() {
               <Button
                 variant="contained"
                 startIcon={<GetAppIcon />}
-                href="/jb2/download/#jbrowse-2-desktop"
-                sx={{
-                  fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
-                }}
+                href="/jb2/download/"
                 style={{ color: 'white' }}
               >
-                Download JBrowse Desktop
+                Download
               </Button>
               <Button
                 variant="contained"
                 color="secondary"
                 startIcon={<OpenInBrowserIcon />}
                 href={`https://jbrowse.org/code/jb2/${currentVersion}/?session=share-HShsEcnq3i&password=nYzTU`}
-                sx={{
-                  fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
-                }}
                 style={{ color: 'black' }}
               >
-                Browse web demo instance
+                Browse demo
               </Button>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="caption">
                 Also check out our{' '}
                 <Link href="/jb2/blog">latest release blogpost</Link>, our{' '}
-                <Link href="/jb2/download/#embedded-components">
+                <Link href="/jb2/docs/embedded_components/">
                   embedded components
                 </Link>
                 , and our{' '}
@@ -106,38 +104,6 @@ function Home() {
             />
           </Box>
         </Box>
-      </Box>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          backgroundColor: '#F0F0F0',
-          padding: '25px',
-          alignItems: 'center',
-          marginBottom: 6,
-        }}
-      >
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 'bold',
-            fontSize: { xs: 'medium', sm: 'medium', md: 'x-large' },
-          }}
-        >
-          {bannerBulletin}
-        </Typography>
-        <Button
-          variant="contained"
-          href={`https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}/`}
-          sx={{
-            fontSize: { xs: 'x-small', sm: 'x-small', md: 'small' },
-            maxWidth: { xs: 'min-content', sm: 'min-content', md: 'inherit' },
-          }}
-          style={{ color: 'white' }}
-        >
-          Learn more
-        </Button>
       </Box>
       <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
         <Box sx={{ marginBottom: 6 }}>
@@ -197,16 +163,24 @@ function Home() {
           <Typography variant="h4">Citation</Typography>
           <hr />
           <Typography variant="body1">
-            Research citations are one of the main metrics the JBrowse project
-            uses to demonstrate our relevance and utility when applying for
-            funding to continue our work. If you use JBrowse in research that
-            you publish, please cite the most recent JBrowse paper:
-          </Typography>
-          <br />
-          <Typography variant="body1">
-            Buels, Robert, et al. &quot;JBrowse: a dynamic web platform for
-            genome visualization and analysis.&quot; Genome Biology 17.1 (2016):
-            66.
+            <p>
+              We at the JBrowse Consortium are working to make JBrowse a
+              pluggable, open-source computational platform for integrating many
+              kinds of biological data from many different places.
+            </p>
+            <p>
+              Research citations are one of the main metrics the consortium uses
+              to demonstrate our relevance and utility when applying for funding
+              to continue our work. If you use JBrowse in research that you
+              publish, please cite the most recent JBrowse paper:
+            </p>
+            <cite>
+              JBrowse 2: A modular genome browser with views of synteny and
+              structural variation (2022). bioRxiv.{' '}
+              <a href="https://doi.org/10.1101/2022.07.28.501447">
+                https://doi.org/10.1101/2022.07.28.501447
+              </a>
+            </cite>
           </Typography>
         </Box>
         <Box sx={{ marginBottom: 6 }}>
@@ -226,8 +200,8 @@ function Home() {
           <Typography variant="body1">
             JBrowse development is supported by the US National Institutes of
             Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
-            Institute for Cancer Research, and the University of California,
-            Berkeley.
+            Institute for Cancer Research (OICR), and the University of
+            California, Berkeley.
           </Typography>
         </Box>
       </Box>

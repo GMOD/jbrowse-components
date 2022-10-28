@@ -1,32 +1,27 @@
-import { makeStyles } from '@material-ui/core/styles'
-import { observer } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
 import React, { useEffect, useRef, useState } from 'react'
+import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
 import normalizeWheel from 'normalize-wheel'
 
-import {
-  LinearGenomeViewStateModel,
-  RESIZE_HANDLE_HEIGHT,
-  SCALE_BAR_HEIGHT,
-} from '..'
+// locals
+import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
 import RubberBand from './RubberBand'
 import ScaleBar from './ScaleBar'
-import VerticalGuides from './VerticalGuides'
+import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
-    borderRadius: theme.shape.borderRadius,
     overflow: 'hidden',
   },
   spacer: {
     position: 'relative',
-    height: RESIZE_HANDLE_HEIGHT,
+    height: 3,
   },
-}))
+})
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 type Timer = ReturnType<typeof setTimeout>
 
 function TracksContainer({
@@ -36,7 +31,7 @@ function TracksContainer({
   children: React.ReactNode
   model: LGV
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
   const delta = useRef(0)
@@ -167,13 +162,13 @@ function TracksContainer({
   return (
     <div
       ref={ref}
-      role="presentation"
+      data-testid="trackContainer"
       className={classes.tracksContainer}
       onMouseDown={mouseDown}
       onMouseUp={mouseUp}
       onMouseLeave={mouseLeave}
     >
-      <VerticalGuides model={model} />
+      {model.showGridlines ? <Gridlines model={model} /> : null}
       {model.showCenterLine ? <CenterLine model={model} /> : null}
 
       <RubberBand
@@ -185,7 +180,6 @@ function TracksContainer({
           />
         }
       />
-      <div className={classes.spacer} />
       {children}
     </div>
   )

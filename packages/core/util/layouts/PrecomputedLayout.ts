@@ -1,4 +1,3 @@
-import { objectFromEntries } from '..'
 import {
   RectTuple,
   SerializedLayout,
@@ -90,9 +89,10 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
 
   toJSON(): SerializedLayout {
     return {
-      rectangles: objectFromEntries(this.rectangles),
+      rectangles: Object.fromEntries(this.rectangles),
       totalHeight: this.totalHeight,
       maxHeightReached: false,
+      containsNoTransferables: true,
     }
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ReactPropTypes from 'prop-types'
-import React, { useRef, useEffect } from 'react'
-import { ImageBitmapType } from '../util/offscreenCanvasPonyfill'
+import React, { useState, useRef, useEffect } from 'react'
+import { drawImageOntoCanvasContext } from '../util/offscreenCanvasPonyfill'
 
 function PrerenderedCanvas(props: {
   width: number
@@ -21,6 +21,7 @@ function PrerenderedCanvas(props: {
     blockKey,
     showSoftClip,
   } = props
+  const [done, setDone] = useState(false)
 
   const featureCanvas = useRef<HTMLCanvasElement>(null)
 
@@ -36,31 +37,15 @@ function PrerenderedCanvas(props: {
     if (!context) {
       return
     }
-    if (imageData.commands) {
-      imageData.commands.forEach((command: any) => {
-        if (command.type === 'strokeStyle') {
-          context.strokeStyle = command.style
-        } else if (command.type === 'fillStyle') {
-          context.fillStyle = command.style
-        } else if (command.type === 'font') {
-          context.font = command.style
-        } else {
-          // @ts-ignore
-          context[command.type](...command.args)
-        }
-      })
-    } else if (imageData instanceof ImageBitmapType) {
-      context.drawImage(imageData, 0, 0)
-    } else if (imageData.dataURL) {
-      const img = new Image()
-      img.onload = () => context.drawImage(img, 0, 0)
-      img.src = imageData.dataURL
-    }
+    drawImageOntoCanvasContext(imageData, context)
+    setDone(true)
   }, [imageData])
 
   const softClipString = showSoftClip ? '_softclipped' : ''
   const blockKeyStr = blockKey ? '_' + blockKey : ''
-  const testId = `prerendered_canvas${softClipString}${blockKeyStr}`
+  const testId = `prerendered_canvas${softClipString}${blockKeyStr}${
+    done ? '_done' : ''
+  }`
   return (
     <canvas
       data-testid={testId}

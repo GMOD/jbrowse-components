@@ -1,17 +1,20 @@
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
+  cast,
+  getParent,
+  getRoot,
+  resolveIdentifier,
+  types,
   SnapshotOrInstance,
   Instance,
-  types,
-  getParent,
-  resolveIdentifier,
-  getRoot,
-  cast,
 } from 'mobx-state-tree'
 import { Region } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
+
 import {
   getSession,
   clamp,
@@ -22,7 +25,11 @@ import { calculateStaticSlices, sliceIsVisible } from './slices'
 
 import { viewportVisibleSection } from './viewportVisibleRegion'
 
-export default function CircularView(pluginManager: PluginManager) {
+/**
+ * #stateModel CircularView
+ * extends `BaseViewModel`
+ */
+function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400
@@ -30,43 +37,86 @@ export default function CircularView(pluginManager: PluginManager) {
     BaseViewModel,
     types
       .model('CircularView', {
+        /**
+         * #property
+         */
         type: types.literal('CircularView'),
+        /**
+         * #property
+         * similar to offsetPx in linear genome view
+         */
         offsetRadians: -Math.PI / 2,
+        /**
+         * #property
+         */
         bpPerPx: 2000000,
+        /**
+         * #property
+         */
         tracks: types.array(
           pluginManager.pluggableMstType('track', 'stateModel'),
         ),
 
+        /**
+         * #property
+         */
         hideVerticalResizeHandle: false,
+        /**
+         * #property
+         */
         hideTrackSelectorButton: false,
+        /**
+         * #property
+         */
         lockedFitToWindow: true,
+        /**
+         * #property
+         */
         disableImportForm: false,
 
+        /**
+         * #property
+         */
         height: types.optional(
           types.refinement('trackHeight', types.number, n => n >= minHeight),
           defaultHeight,
         ),
+        /**
+         * #property
+         */
+        displayedRegions: types.array(Region),
+        /**
+         * #property
+         */
+        scrollX: 0,
+        /**
+         * #property
+         */
+        scrollY: 0,
+
         minimumRadiusPx: 25,
         spacingPx: 10,
         paddingPx: 80,
         lockedPaddingPx: 100,
         minVisibleWidth: 6,
         minimumBlockWidth: 20,
-        displayedRegions: types.array(Region),
-        scrollX: 0,
-        scrollY: 0,
+
         trackSelectorType: 'hierarchical',
       })
       .volatile(() => ({
         width: 0,
       }))
       .views(self => ({
+        /**
+         * #getter
+         */
         get staticSlices() {
           return calculateStaticSlices(self)
         },
-        get visibleStaticSlices() {
-          return this.staticSlices.filter(sliceIsVisible.bind(this, self))
-        },
+
+        /**
+         * #getter
+         */
         get visibleSection() {
           return viewportVisibleSection(
             [
@@ -79,6 +129,9 @@ export default function CircularView(pluginManager: PluginManager) {
             this.radiusPx,
           )
         },
+        /**
+         * #getter
+         */
         get circumferencePx() {
           let elidedBp = 0
           for (const r of this.elidedRegions) {
@@ -88,21 +141,36 @@ export default function CircularView(pluginManager: PluginManager) {
             elidedBp / self.bpPerPx + self.spacingPx * this.elidedRegions.length
           )
         },
+        /**
+         * #getter
+         */
         get radiusPx() {
           return this.circumferencePx / (2 * Math.PI)
         },
+        /**
+         * #getter
+         */
         get bpPerRadian() {
           return self.bpPerPx * this.radiusPx
         },
+        /**
+         * #getter
+         */
         get pxPerRadian() {
           return this.radiusPx
         },
+        /**
+         * #getter
+         */
         get centerXY(): [number, number] {
           return [
             this.radiusPx + self.paddingPx,
             this.radiusPx + self.paddingPx,
           ]
         },
+        /**
+         * #getter
+         */
         get totalBp() {
           let total = 0
           for (const region of self.displayedRegions) {
@@ -110,15 +178,24 @@ export default function CircularView(pluginManager: PluginManager) {
           }
           return total
         },
+        /**
+         * #getter
+         */
         get maximumRadiusPx() {
           return self.lockedFitToWindow
             ? Math.min(self.width, self.height) / 2 - self.lockedPaddingPx
             : 1000000
         },
+        /**
+         * #getter
+         */
         get maxBpPerPx() {
           const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
           return this.totalBp / minCircumferencePx
         },
+        /**
+         * #getter
+         */
         get minBpPerPx() {
           // min depends on window dimensions, clamp between old min(0.01) and max
           const maxCircumferencePx = 2 * Math.PI * this.maximumRadiusPx
@@ -128,29 +205,50 @@ export default function CircularView(pluginManager: PluginManager) {
             this.maxBpPerPx,
           )
         },
+        /**
+         * #getter
+         */
         get atMaxBpPerPx() {
           return self.bpPerPx >= this.maxBpPerPx
         },
+        /**
+         * #getter
+         */
         get atMinBpPerPx() {
           return self.bpPerPx <= this.minBpPerPx
         },
+        /**
+         * #getter
+         */
         get tooSmallToLock() {
           return this.minBpPerPx <= 0.0000000001
         },
-        get figureDimensions() {
+        /**
+         * #getter
+         */
+        get figureDimensions(): [number, number] {
           return [
             this.radiusPx * 2 + 2 * self.paddingPx,
             this.radiusPx * 2 + 2 * self.paddingPx,
           ]
         },
+        /**
+         * #getter
+         */
         get figureWidth() {
           return this.figureDimensions[0]
         },
+        /**
+         * #getter
+         */
         get figureHeight() {
           return this.figureDimensions[1]
         },
-        // this is displayedRegions, post-processed to
-        // elide regions that are too small to see reasonably
+        /**
+         * #getter
+         * this is displayedRegions, post-processed to
+         * elide regions that are too small to see reasonably
+         */
         get elidedRegions() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const visible: any[] = []
@@ -186,7 +284,9 @@ export default function CircularView(pluginManager: PluginManager) {
           }
           return visible
         },
-
+        /**
+         * #getter
+         */
         get assemblyNames() {
           const assemblyNames: string[] = []
           self.displayedRegions.forEach(displayedRegion => {
@@ -196,88 +296,129 @@ export default function CircularView(pluginManager: PluginManager) {
           })
           return assemblyNames
         },
+        /**
+         * #getter
+         */
         get initialized() {
           const { assemblyManager } = getSession(self)
-
-          // if the assemblyManager is tracking a given assembly name, wait for
-          // it to be loaded. this is done by looking in the assemblyManager's
-          // assembly list, and then waiting on it's initialized state which is
-          // updated later
-          return this.assemblyNames.every(assemblyName => {
-            if (
-              assemblyManager.assemblyList
-                ?.map(asm => asm.name)
-                .includes(assemblyName)
-            ) {
-              return assemblyManager.get(assemblyName)?.initialized
-            }
-            return true
-          })
+          return this.assemblyNames.every(
+            a => assemblyManager.get(a)?.initialized,
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         */
+        get visibleStaticSlices() {
+          return self.staticSlices.filter(s => sliceIsVisible(self, s))
         },
       }))
       .volatile(() => ({
-        error: undefined as Error | undefined,
+        error: undefined as unknown,
       }))
       .actions(self => ({
-        // toggle action with a flag stating which mode it's in
+        /**
+         * #action
+         */
         setWidth(newWidth: number) {
           self.width = Math.max(newWidth, minWidth)
           return self.width
         },
+        /**
+         * #action
+         */
         setHeight(newHeight: number) {
           self.height = Math.max(newHeight, minHeight)
           return self.height
         },
+        /**
+         * #action
+         */
         resizeHeight(distance: number) {
           const oldHeight = self.height
           const newHeight = this.setHeight(self.height + distance)
           this.setModelViewWhenAdjust(!self.tooSmallToLock)
           return newHeight - oldHeight
         },
+        /**
+         * #action
+         */
         resizeWidth(distance: number) {
           const oldWidth = self.width
           const newWidth = this.setWidth(self.width + distance)
           this.setModelViewWhenAdjust(!self.tooSmallToLock)
           return newWidth - oldWidth
         },
+        /**
+         * #action
+         */
         rotateClockwiseButton() {
           this.rotateClockwise(Math.PI / 6)
         },
 
+        /**
+         * #action
+         */
         rotateCounterClockwiseButton() {
           this.rotateCounterClockwise(Math.PI / 6)
         },
 
+        /**
+         * #action
+         */
         rotateClockwise(distance = 0.17) {
           self.offsetRadians += distance
         },
 
+        /**
+         * #action
+         */
         rotateCounterClockwise(distance = 0.17) {
           self.offsetRadians -= distance
         },
 
+        /**
+         * #action
+         */
         zoomInButton() {
           this.setBpPerPx(self.bpPerPx / 1.4)
         },
 
+        /**
+         * #action
+         */
         zoomOutButton() {
           this.setBpPerPx(self.bpPerPx * 1.4)
         },
 
+        /**
+         * #action
+         */
         setBpPerPx(newVal: number) {
           self.bpPerPx = clamp(newVal, self.minBpPerPx, self.maxBpPerPx)
         },
 
+        /**
+         * #action
+         */
         setModelViewWhenAdjust(secondCondition: boolean) {
           if (self.lockedFitToWindow && secondCondition) {
             this.setBpPerPx(self.minBpPerPx)
           }
         },
 
+        /**
+         * #action
+         */
         closeView() {
-          getParent(self, 2).removeView(self)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          getParent<any>(self, 2).removeView(self)
         },
 
+        /**
+         * #action
+         */
         setDisplayedRegions(regions: SnapshotOrInstance<typeof Region>[]) {
           const previouslyEmpty = self.displayedRegions.length === 0
           self.displayedRegions = cast(regions)
@@ -289,6 +430,9 @@ export default function CircularView(pluginManager: PluginManager) {
           }
         },
 
+        /**
+         * #action
+         */
         activateTrackSelector() {
           if (self.trackSelectorType === 'hierarchical') {
             const session = getSession(self)
@@ -307,6 +451,9 @@ export default function CircularView(pluginManager: PluginManager) {
           )
         },
 
+        /**
+         * #action
+         */
         toggleTrack(trackId: string) {
           // if we have any tracks with that configuration, turn them off
           const hiddenCount = this.hideTrack(trackId)
@@ -316,39 +463,41 @@ export default function CircularView(pluginManager: PluginManager) {
           }
         },
 
-        setError(error: Error) {
+        /**
+         * #action
+         */
+        setError(error: unknown) {
           console.error(error)
           self.error = error
         },
 
+        /**
+         * #action
+         */
         showTrack(trackId: string, initialSnapshot = {}) {
-          const trackConfigSchema =
-            pluginManager.pluggableConfigSchemaType('track')
-          const configuration = resolveIdentifier(
-            trackConfigSchema,
-            getRoot(self),
-            trackId,
-          )
-          const trackType = pluginManager.getTrackType(configuration.type)
+          const schema = pluginManager.pluggableConfigSchemaType('track')
+          const conf = resolveIdentifier(schema, getRoot(self), trackId)
+          const trackType = pluginManager.getTrackType(conf.type)
           if (!trackType) {
-            throw new Error(`unknown track type ${configuration.type}`)
+            throw new Error(`unknown track type ${conf.type}`)
           }
           const viewType = pluginManager.getViewType(self.type)
-          const supportedDisplays = viewType.displayTypes.map(
-            displayType => displayType.name,
-          )
-          const displayConf = configuration.displays.find(
-            (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+          const supportedDisplays = viewType.displayTypes.map(d => d.name)
+          const displayConf = conf.displays.find((d: AnyConfigurationModel) =>
+            supportedDisplays.includes(d.type),
           )
           const track = trackType.stateModel.create({
             ...initialSnapshot,
-            type: configuration.type,
-            configuration,
+            type: conf.type,
+            configuration: conf,
             displays: [{ type: displayConf.type, configuration: displayConf }],
           })
           self.tracks.push(track)
         },
 
+        /**
+         * #action
+         */
         addTrackConf(
           configuration: AnyConfigurationModel,
           initialSnapshot = {},
@@ -360,9 +509,7 @@ export default function CircularView(pluginManager: PluginManager) {
             throw new Error(`unknown track type ${configuration.type}`)
           }
           const viewType = pluginManager.getViewType(self.type)
-          const supportedDisplays = viewType.displayTypes.map(
-            displayType => displayType.name,
-          )
+          const supportedDisplays = viewType.displayTypes.map(d => d.name)
           const displayConf = configuration.displays.find(
             (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
           )
@@ -376,25 +523,23 @@ export default function CircularView(pluginManager: PluginManager) {
           self.tracks.push(track)
         },
 
+        /**
+         * #action
+         */
         hideTrack(trackId: string) {
-          const trackConfigSchema =
-            pluginManager.pluggableConfigSchemaType('track')
-          const configuration = resolveIdentifier(
-            trackConfigSchema,
-            getRoot(self),
-            trackId,
-          )
-          // if we have any tracks with that configuration, turn them off
-          const shownTracks = self.tracks.filter(
-            t => t.configuration === configuration,
-          )
-          transaction(() => shownTracks.forEach(t => self.tracks.remove(t)))
-          return shownTracks.length
+          const schema = pluginManager.pluggableConfigSchemaType('track')
+          const conf = resolveIdentifier(schema, getRoot(self), trackId)
+          const t = self.tracks.filter(t => t.configuration === conf)
+          transaction(() => t.forEach(t => self.tracks.remove(t)))
+          return t.length
         },
 
+        /**
+         * #action
+         */
         toggleFitToWindowLock() {
-          self.lockedFitToWindow = !self.lockedFitToWindow
           // when going unlocked -> locked and circle is cut off, set to the locked minBpPerPx
+          self.lockedFitToWindow = !self.lockedFitToWindow
           this.setModelViewWhenAdjust(self.atMinBpPerPx)
           return self.lockedFitToWindow
         },
@@ -402,10 +547,10 @@ export default function CircularView(pluginManager: PluginManager) {
   )
 }
 
-export type CircularViewStateModel = ReturnType<typeof CircularView>
+export type CircularViewStateModel = ReturnType<typeof stateModelFactory>
 export type CircularViewModel = Instance<CircularViewStateModel>
 
-/*
+/**
 PLANS
 
 - tracks
@@ -413,3 +558,5 @@ PLANS
 - set viewport scroll from state snapshot
 
 */
+
+export default stateModelFactory

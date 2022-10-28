@@ -561,7 +561,7 @@ describe('add-track', () => {
       ).toBeTruthy()
       expect(JSON.parse(contents).tracks).toEqual([
         {
-          type: 'FeatureTrack',
+          type: 'VariantTrack',
           trackId: 'volvox.filtered',
           name: 'volvox.filtered',
           assemblyNames: ['testAssembly'],

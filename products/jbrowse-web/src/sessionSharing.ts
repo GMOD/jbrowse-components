@@ -1,8 +1,5 @@
 import { toUrlSafeB64 } from './util'
 
-import AES from 'crypto-js/aes'
-import Utf8 from 'crypto-js/enc-utf8'
-
 // from https://stackoverflow.com/questions/1349404/
 function generateUID(length: number) {
   return window
@@ -15,11 +12,14 @@ function generateUID(length: number) {
     .substring(0, length)
 }
 
-const encrypt = (text: string, password: string) => {
+const encrypt = async (text: string, password: string) => {
+  const AES = await import('crypto-js/aes')
   return AES.encrypt(text, password).toString()
 }
 
-const decrypt = (text: string, password: string) => {
+const decrypt = async (text: string, password: string) => {
+  const AES = await import('crypto-js/aes')
+  const Utf8 = await import('crypto-js/enc-utf8')
   const bytes = AES.decrypt(text, password)
   return bytes.toString(Utf8)
 }
@@ -34,13 +34,13 @@ function getErrorMsg(err: string) {
 }
 // writes the encrypted session, current datetime, and referer to DynamoDB
 export async function shareSessionToDynamo(
-  session: Record<string, unknown>,
+  session: unknown,
   url: string,
   referer: string,
 ) {
   const sess = await toUrlSafeB64(JSON.stringify(session))
   const password = generateUID(5)
-  const encryptedSession = encrypt(sess, password)
+  const encryptedSession = await encrypt(sess, password)
 
   const data = new FormData()
   data.append('session', encryptedSession)

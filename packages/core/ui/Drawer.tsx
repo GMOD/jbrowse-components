@@ -1,11 +1,11 @@
 import React from 'react'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
+import { Paper } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import ResizeHandle from './ResizeHandle'
 import { SessionWithDrawerWidgets } from '../util/types'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   paper: {
     overflowY: 'auto',
     height: '100%',
@@ -29,7 +29,7 @@ function Drawer({
   session: SessionWithDrawerWidgets
 }) {
   const { drawerPosition, drawerWidth } = session
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <Paper className={classes.paper} elevation={16} square>

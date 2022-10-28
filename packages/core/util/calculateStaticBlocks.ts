@@ -1,3 +1,4 @@
+import { isStateTreeNode, getSnapshot, Instance } from 'mobx-state-tree'
 import { assembleLocString } from '.'
 import {
   BlockSet,
@@ -6,11 +7,12 @@ import {
   InterRegionPaddingBlock,
 } from './blockTypes'
 import { Region } from './types'
+import { Region as RegionModel } from './types/mst'
 
 export interface Base1DViewModel {
   offsetPx: number
   width: number
-  displayedRegions: Region[]
+  displayedRegions: (Region | Instance<typeof RegionModel>)[]
   bpPerPx: number
   minimumBlockWidth: number
   interRegionPaddingWidth: number
@@ -21,12 +23,7 @@ export default function calculateStaticBlocks(
   padding = true,
   elision = true,
   extra = 0,
-
-  // on the main thread, window.innerWidth is used because this reduces
-  // recalculating the blocks, otherwise, model.width for cases such as
-  // off-main-thread. also this is not a ternary because our window.innerWidth
-  // might be undefined on off-main-thread, so instead use || model.width
-  width = (typeof window !== 'undefined' && window.innerWidth) || model.width,
+  width = 800,
 ) {
   const {
     offsetPx,
@@ -34,10 +31,11 @@ export default function calculateStaticBlocks(
     bpPerPx,
     minimumBlockWidth,
     interRegionPaddingWidth,
+    width: modelWidth,
   } = model
 
   const windowLeftBp = offsetPx * bpPerPx
-  const windowRightBp = (offsetPx + width) * bpPerPx
+  const windowRightBp = (offsetPx + modelWidth) * bpPerPx
   const blockSizePx = width
   const blockSizeBp = Math.ceil(blockSizePx * bpPerPx)
   // for each displayed region
@@ -54,6 +52,7 @@ export default function calculateStaticBlocks(
       reversed,
     } = region
     const regionBlockCount = Math.ceil((regionEnd - regionStart) / blockSizeBp)
+    const parentRegion = isStateTreeNode(region) ? getSnapshot(region) : region
 
     let windowRightBlockNum =
       Math.floor((windowRightBp - regionBpOffset) / blockSizeBp) + extra
@@ -97,7 +96,7 @@ export default function calculateStaticBlocks(
         end,
         reversed,
         offsetPx: (regionBpOffset + blockNum * blockSizeBp) / bpPerPx,
-        parentRegion: region,
+        parentRegion,
         regionNumber,
         widthPx,
         isLeftEndOfDisplayedRegion,

@@ -1,23 +1,40 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from 'mobx-state-tree'
+/**
+ * #config HtsgetBamAdapter
+ * Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export default types.late(() =>
-  ConfigurationSchema(
-    'HtsgetBamAdapter',
-    {
-      htsgetBase: {
-        type: 'string',
-        defaultValue: '',
-      },
-      htsgetTrackId: {
-        type: 'string',
-        defaultValue: '',
-      },
-      sequenceAdapter: {
-        type: 'frozen',
-        defaultValue: null,
-      },
+const HtsgetBamAdapter = ConfigurationSchema(
+  'HtsgetBamAdapter',
+  {
+    /**
+     * #slot
+     */
+    htsgetBase: {
+      type: 'string',
+      description: 'the base URL to fetch from',
+      defaultValue: '',
     },
-    { explicitlyTyped: true },
-  ),
+    /**
+     * #slot
+     */
+    htsgetTrackId: {
+      type: 'string',
+      description: 'the trackId, which is appended to the base URL',
+      defaultValue: '',
+    },
+    /**
+     * #slot
+     */
+    sequenceAdapter: {
+      type: 'frozen',
+      description:
+        'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
+      defaultValue: null,
+    },
+  },
+  { explicitlyTyped: true },
 )
+
+export default HtsgetBamAdapter

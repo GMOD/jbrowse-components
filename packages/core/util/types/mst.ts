@@ -71,7 +71,8 @@ export const UriLocationRaw = types.model('UriLocation', {
 
 export const UriLocation = types.snapshotProcessor(UriLocationRaw, {
   postProcessor: snap => {
-    const { baseUri, ...rest } = snap
+    // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+    const { baseUri, ...rest } = snap as Omit<typeof snap, symbol>
     if (!baseUri) {
       return rest
     }
@@ -83,13 +84,14 @@ export const FileLocation = types.snapshotProcessor(
   types.union(LocalPathLocation, UriLocation, BlobLocation),
   {
     // @ts-ignore
-    preProcessor(snapshot) {
-      if (!snapshot) {
+    preProcessor(snap) {
+      if (!snap) {
         return undefined
       }
 
       // @ts-ignore
-      const { locationType, ...rest } = snapshot
+      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
+      const { locationType, ...rest } = snap as Omit<typeof snap, symbol>
       if (!locationType) {
         // @ts-ignore
         const { uri, localPath, blob } = rest
@@ -104,7 +106,7 @@ export const FileLocation = types.snapshotProcessor(
 
         return { ...rest, locationType }
       }
-      return snapshot
+      return snap
     },
   },
 )

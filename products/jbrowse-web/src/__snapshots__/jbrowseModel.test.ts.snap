@@ -96,6 +96,10 @@ Object {
             "type": "LinearReferenceSequenceDisplay",
           },
         ],
+        "formatAbout": Object {
+          "config": "jexl:{extraField:'important data'}",
+          "hideUris": true,
+        },
         "metadata": Object {
           "date": "2020-08-20",
         },
@@ -159,6 +163,74 @@ Object {
         "type": "ReferenceSequenceTrack",
       },
     },
+    Object {
+      "name": "volvox_del",
+      "sequence": Object {
+        "adapter": Object {
+          "faiLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_del.fa.fai",
+          },
+          "fastaLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_del.fa",
+          },
+          "metadataLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": Array [
+          Object {
+            "displayId": "volvox_del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+        ],
+        "trackId": "volvox_del-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+    Object {
+      "name": "volvox_ins",
+      "sequence": Object {
+        "adapter": Object {
+          "faiLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_ins.fa.fai",
+          },
+          "fastaLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox_ins.fa",
+          },
+          "metadataLocation": Object {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": Array [
+          Object {
+            "displayId": "volvox_ins-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+        ],
+        "trackId": "volvox_ins-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": Object {},
   "connections": Array [],
@@ -194,42 +266,32 @@ Object {
   },
   "internetAccounts": Array [
     Object {
-      "authEndpoint": "https://www.dropbox.com/oauth2/authorize",
       "clientId": "50knr6xrjfc39sk",
-      "description": "OAuth Info for Dropbox",
-      "domains": Array [
-        "addtodropbox.com",
-        "db.tt",
-        "dropbox.com",
-        "dropboxapi.com",
-        "dropboxbusiness.com",
-        "dropbox.tech",
-        "getdropbox.com",
-      ],
-      "hasRefreshToken": true,
+      "description": "Account to access Dropbox files",
       "internetAccountId": "dropboxOAuth",
       "name": "Dropbox",
-      "needsAuthorization": true,
-      "needsPKCE": true,
-      "tokenEndpoint": "https://api.dropbox.com/oauth2/token",
       "type": "DropboxOAuthInternetAccount",
     },
     Object {
-      "authEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
       "clientId": "109518325434-udfch80a0v70mgu65d5fejqsq5kvhm1b.apps.googleusercontent.com",
-      "description": "OAuth Info for Google Drive",
-      "domains": Array [
-        "drive.google.com",
-      ],
+      "description": "Account to access Google Drive files",
       "internetAccountId": "googleOAuth",
       "name": "Google Drive",
-      "needsAuthorization": true,
-      "responseType": "token",
-      "scopes": "https://www.googleapis.com/auth/drive.readonly",
       "type": "GoogleDriveOAuthInternetAccount",
     },
   ],
-  "plugins": Array [],
+  "plugins": Array [
+    Object {
+      "name": "UMDLocPlugin",
+      "umdLoc": Object {
+        "uri": "umd_plugin.js",
+      },
+    },
+    Object {
+      "name": "UMDUrlPlugin",
+      "umdUrl": "umd_plugin.js",
+    },
+  ],
   "tracks": Array [
     Object {
       "adapter": Object {
@@ -257,12 +319,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_sv_test-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_sv_test-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_sv_test-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox structural variant test",
@@ -295,12 +357,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_sv_test_renamed-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_sv_test_renamed-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox structural variant test w/renamed refs",
@@ -322,15 +384,7 @@ Object {
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -378,15 +432,7 @@ Object {
         },
         "fetchSizeLimit": 1000,
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -436,15 +482,7 @@ Object {
           "uri": "volvox-sorted-altname.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -491,15 +529,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -546,15 +576,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -601,15 +623,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -670,7 +684,6 @@ Object {
         Object {
           "displayId": "volvox_alignments_alignments",
           "pileupDisplay": Object {
-            "defaultRendering": "svg",
             "displayId": "volvox_bam_altname_alignments_pileup",
             "type": "LinearPileupDisplay",
           },
@@ -685,7 +698,7 @@ Object {
           "type": "LinearSNPCoverageDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (ctgA, svg)",
+      "name": "volvox-sorted.bam (ctgA)",
       "trackId": "volvox_alignments",
       "type": "AlignmentsTrack",
     },
@@ -841,12 +854,7 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_bam_altname_alignments",
-          "pileupDisplay": Object {
-            "defaultRendering": "svg",
-            "displayId": "volvox_bam_altname_alignments_pileup",
-            "type": "LinearPileupDisplay",
-          },
+          "displayId": "volvox_bam_altname-LinearAlignmentsDisplay",
           "type": "LinearAlignmentsDisplay",
         },
         Object {
@@ -858,7 +866,7 @@ Object {
           "type": "LinearSNPCoverageDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (contigA, svg)",
+      "name": "volvox-sorted.bam (contigA)",
       "trackId": "volvox_bam_altname",
       "type": "AlignmentsTrack",
     },
@@ -940,12 +948,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_test_vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_test_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_test_vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox 1000genomes vcf",
@@ -1092,6 +1100,55 @@ Object {
       "name": "wiggle_track 404",
       "trackId": "volvox_bigwig_nonexist",
       "type": "QuantitativeTrack",
+    },
+    Object {
+      "adapter": Object {
+        "subadapters": Array [
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v1.cram.bw",
+            },
+            "name": "k1",
+            "source": "j1",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v2.cram.bw",
+            },
+            "name": "k2",
+            "source": "j2",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v3.cram.bw",
+            },
+            "name": "k3",
+            "type": "BigWigAdapter",
+          },
+          Object {
+            "bigWigLocation": Object {
+              "uri": "v4.cram.bw",
+            },
+            "name": "k4",
+            "type": "BigWigAdapter",
+          },
+        ],
+        "type": "MultiWiggleAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_microarray_multi-MultiLinearWiggleDisplay",
+          "type": "MultiLinearWiggleDisplay",
+        },
+      ],
+      "name": "MultiWig",
+      "trackId": "volvox_microarray_multi",
+      "type": "MultiQuantitativeTrack",
     },
     Object {
       "adapter": Object {
@@ -1383,15 +1440,7 @@ Object {
           "uri": "volvox-long-reads-sv.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1438,15 +1487,7 @@ Object {
           "uri": "volvox-long-reads.fastq.sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1535,15 +1576,7 @@ Object {
           "uri": "volvox-samspec.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1632,15 +1665,7 @@ Object {
           "uri": "volvox-sv.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1716,36 +1741,6 @@ Object {
     },
     Object {
       "adapter": Object {
-        "gffLocation": Object {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox.sort.gff3",
-        },
-        "type": "Gff3Adapter",
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "Miscellaneous",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "gff3_genes-LinearBasicDisplay",
-          "type": "LinearBasicDisplay",
-        },
-        Object {
-          "displayId": "gff3_genes-LinearArcDisplay",
-          "type": "LinearArcDisplay",
-        },
-      ],
-      "name": "GFF3 genes",
-      "trackId": "gff3_genes",
-      "type": "FeatureTrack",
-    },
-    Object {
-      "adapter": Object {
         "gffGzLocation": Object {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,
@@ -1778,6 +1773,9 @@ Object {
           "type": "LinearArcDisplay",
         },
       ],
+      "formatDetails": Object {
+        "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
+      },
       "name": "GFF3Tabix genes",
       "trackId": "gff3tabix_genes",
       "type": "FeatureTrack",
@@ -1797,15 +1795,7 @@ Object {
           "uri": "volvox-sorted.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -1905,46 +1895,16 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_filtered_vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox filtered vcf",
       "trackId": "volvox_filtered_vcf",
-      "type": "VariantTrack",
-    },
-    Object {
-      "adapter": Object {
-        "type": "VcfAdapter",
-        "vcfLocation": Object {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox.filtered.vcf",
-        },
-      },
-      "assemblyNames": Array [
-        "volvox",
-      ],
-      "category": Array [
-        "VCF",
-      ],
-      "displays": Array [
-        Object {
-          "displayId": "volvox_filtered_vcf_plaintext-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
-          "displayId": "volvox_filtered_vcf_plaintext-LinearVariantDisplay",
-          "type": "LinearVariantDisplay",
-        },
-      ],
-      "name": "volvox filtered vcf (plaintext)",
-      "trackId": "volvox_filtered_vcf_plaintext",
       "type": "VariantTrack",
     },
     Object {
@@ -1973,12 +1933,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox_filtered_vcf_assembly_alias-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox_filtered_vcf_assembly_alias-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox filtered vcf (with assembly alias)",
@@ -2051,6 +2011,36 @@ Object {
       ],
       "name": "BedTabix genes",
       "trackId": "bedtabix_genes",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
+        "bedLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-bed12.bed",
+        },
+        "type": "BedAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Miscellaneous",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "bed_genes-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "bed_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Bed genes",
+      "trackId": "bed_genes",
       "type": "FeatureTrack",
     },
     Object {
@@ -2494,15 +2484,7 @@ Object {
           "uri": "volvox-rg.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -2898,12 +2880,12 @@ Object {
       ],
       "displays": Array [
         Object {
-          "displayId": "volvox.inv.vcf-ChordVariantDisplay",
-          "type": "ChordVariantDisplay",
-        },
-        Object {
           "displayId": "volvox.inv.vcf-LinearVariantDisplay",
           "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "volvox.inv.vcf-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
         },
       ],
       "name": "volvox inversions",
@@ -2925,15 +2907,7 @@ Object {
           "uri": "deep_sequencing.cram",
         },
         "sequenceAdapter": Object {
-          "chromSizesLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
-            "locationType": "UriLocation",
-            "uri": "/path/to/default.chrom.sizes",
-          },
           "twoBitLocation": Object {
-            "internetAccountId": undefined,
-            "internetAccountPreAuthorization": undefined,
             "locationType": "UriLocation",
             "uri": "volvox.2bit",
           },
@@ -2971,7 +2945,7 @@ Object {
           "type": "LinearSNPCoverageDisplay",
         },
       ],
-      "name": "deep_sequencing",
+      "name": "Deep sequencing",
       "trackId": "Deep sequencing",
       "type": "AlignmentsTrack",
     },
@@ -3086,6 +3060,130 @@ Object {
       "name": "volvox-rnaseq demo",
       "trackId": "spliced",
       "type": "AlignmentsTrack",
+    },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox.filtered.lowercase.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "Integration test",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox.filtered.lowercase-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        Object {
+          "displayId": "volvox.filtered.lowercase-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "volvox.filtered.lowercase",
+      "trackId": "volvox.filtered.lowercase",
+      "type": "FeatureTrack",
+    },
+    Object {
+      "adapter": Object {
+        "pafLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_del.paf",
+        },
+        "queryAssembly": "volvox_del",
+        "targetAssembly": "volvox",
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox_del",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_del.paf-1658813720770-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        Object {
+          "displayId": "volvox_del.paf-1658813720770-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        Object {
+          "displayId": "volvox_del.paf-1658813720770-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_del.paf",
+      "trackId": "volvox_del.paf-1658813720770",
+      "type": "SyntenyTrack",
+    },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "variant_effect_demo_data.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "variant_effect_demo_data-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "variant_effect_demo_data-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "Ensembl VEP example",
+      "trackId": "variant_effect_demo_data",
+      "type": "VariantTrack",
+    },
+    Object {
+      "adapter": Object {
+        "type": "VcfAdapter",
+        "vcfLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_vcf_jannovar.vcf",
+        },
+      },
+      "assemblyNames": Array [
+        "volvox",
+      ],
+      "category": Array [
+        "VCF",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "variant_effect_demo_jannovar-LinearVariantDisplay",
+          "type": "LinearVariantDisplay",
+        },
+        Object {
+          "displayId": "variant_effect_demo_jannovar-ChordVariantDisplay",
+          "type": "ChordVariantDisplay",
+        },
+      ],
+      "name": "Jannovar example",
+      "trackId": "variant_effect_demo_jannovar",
+      "type": "VariantTrack",
     },
   ],
 }

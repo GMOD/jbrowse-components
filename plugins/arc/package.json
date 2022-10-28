@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-arc",
-  "version": "1.6.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 arc adapters, tracks, etc.",
   "keywords": [
     "jbrowse",
@@ -18,36 +18,41 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-arc.esm.js",
-  "module": "",
   "files": [
     "dist",
-    "src"
+    "src",
+    "esm"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "npm-run-all build:*",
     "test": "cd ../..; jest plugins/arc",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "prebuild": "npm run clean",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
     "react-svg-tooltip": "^0.0.11"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@jbrowse/plugin-linear-genome-view": "^1.0.0",
-    "@jbrowse/plugin-wiggle": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "mobx": "^5.10.1",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
+    "@jbrowse/plugin-wiggle": "^2.0.0",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
     "rxjs": "^6.0.0"
   },
-  "private": true
+  "private": true,
+  "distModule": "esm/index.js",
+  "srcModule": "src/index.ts",
+  "module": ""
 }

@@ -12,27 +12,17 @@ export default function (/* config?: any*/): JexlNonBuildable {
   // ones passed in
 
   // below are core functions
-  j.addFunction('get', (feature: Feature, data: string) => {
-    return feature.get(data)
-  })
-  j.addFunction('parent', (feature: Feature) => {
-    return feature.parent()
-  })
+  j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
+  j.addFunction('parent', (feature: Feature) => feature.parent())
 
-  j.addFunction('id', (feature: Feature) => {
-    return feature.id()
-  })
+  j.addFunction('id', (feature: Feature) => feature.id())
 
   // let user cast a jexl type into a javascript type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  j.addFunction('cast', (arg: any) => {
-    return arg
-  })
+  j.addFunction('cast', (arg: unknown) => arg)
 
   // logging
   j.addFunction('log', (thing: unknown) => {
-    // eslint-disable-next-line no-console
-    console.log(thing)
+    console.log(thing) // eslint-disable-line no-console
     return thing
   })
 
@@ -50,67 +40,47 @@ export default function (/* config?: any*/): JexlNonBuildable {
   j.addFunction('parseFloat', Number.parseFloat)
 
   // string
-  j.addFunction('split', (str: string, char: string) => str.split(char))
-  j.addFunction('charAt', (str: string, index: number) => str.charAt(index))
-  j.addFunction('charCodeAt', (str: string, index: number) =>
-    str.charCodeAt(index),
+  j.addFunction('split', (s: string, char: string) => s.split(char))
+  j.addFunction('charAt', (s: string, index: number) => s.charAt(index))
+  j.addFunction('charCodeAt', (s: string, index: number) => s.charCodeAt(index))
+  j.addFunction('codePointAt', (s: string, pos: number) => s.codePointAt(pos))
+  j.addFunction('startsWith', (s: string, search: string, len?: number) =>
+    s.startsWith(search, len),
   )
-  j.addFunction('codePointAt', (str: string, pos: number) =>
-    str.codePointAt(pos),
+  j.addFunction('endsWith', (s: string, search: string, len?: number) =>
+    s.endsWith(search, len),
   )
-  j.addFunction(
-    'startsWith',
-    (str: string, searchStr: string, length?: number | undefined) =>
-      str.startsWith(searchStr, length),
+  j.addFunction('padEnd', (s: string, len: number, pad?: string) =>
+    s.padEnd(len, pad),
   )
-  j.addFunction(
-    'endsWith',
-    (str: string, searchStr: string, length?: number | undefined) =>
-      str.endsWith(searchStr, length),
+  j.addFunction('padStart', (s: string, len: number, fill?: string) =>
+    s.padStart(len, fill),
   )
-  j.addFunction(
-    'padEnd',
-    (str: string, targetLength: number, padString?: string | undefined) =>
-      str.padEnd(targetLength, padString),
+  j.addFunction('repeat', (s: string, count: number) => s.repeat(count))
+  j.addFunction('replace', (s: string, match: string, sub: string) =>
+    s.replace(match, sub),
   )
-  j.addFunction(
-    'padStart',
-    (str: string, targetLength: number, fillString?: string | undefined) =>
-      str.padStart(targetLength, fillString),
+  j.addFunction('replaceAll', (s: string, match: string, sub: string) =>
+    s.replaceAll(match, sub),
   )
-  j.addFunction('repeat', (str: string, count: number) => str.repeat(count))
-  j.addFunction('replace', (str: string, match: string, newSubStr: string) =>
-    str.replace(match, newSubStr),
+  j.addFunction('slice', (s: string, start: number, end?: number) =>
+    s.slice(start, end),
   )
-  j.addFunction('replaceAll', (str: string, match: string, newSubStr: string) =>
-    str.replaceAll(match, newSubStr),
+  j.addFunction('startsWith', (s: string, search: string, pos?: number) =>
+    s.startsWith(search, pos),
   )
-  j.addFunction(
-    'slice',
-    (str: string, start: number, end?: number | undefined) =>
-      str.slice(start, end),
+  j.addFunction('substring', (s: string, start: number, end?: number) =>
+    s.substring(start, end),
   )
-  j.addFunction(
-    'startsWith',
-    (str: string, searchStr: string, position?: number | undefined) =>
-      str.startsWith(searchStr, position),
-  )
-  j.addFunction(
-    'substring',
-    (str: string, start: number, end?: number | undefined) =>
-      str.substring(start, end),
-  )
-  j.addFunction('toLowerCase', (str: string) => str.toLowerCase())
-  j.addFunction('toUpperCase', (str: string) => str.toUpperCase())
-  j.addFunction('trim', (str: string) => {
-    str.trim()
-  })
-  j.addFunction('trimEnd', (str: string) => str.trimEnd())
-  j.addFunction('trimStart', (str: string) => str.trimStart())
+  j.addFunction('toLowerCase', (s: string) => s.toLowerCase())
+  j.addFunction('toUpperCase', (s: string) => s.toUpperCase())
+  j.addFunction('trim', (s: string) => s.trim())
+  j.addFunction('trimEnd', (s: string) => s.trimEnd())
+  j.addFunction('trimStart', (s: string) => s.trimStart())
 
-  j.addFunction('getTag', (feature: Feature, str: string) => {
+  j.addFunction('getTag', (feature: Feature, s: string) => {
     const tags = feature.get('tags')
-    return tags ? tags[str] : feature.get(str)
+    return tags ? tags[s] : feature.get(s)
   })
 
   j.addBinaryOp('&', 15, (a: number, b: number) => a & b)

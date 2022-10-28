@@ -1,13 +1,14 @@
 import { Observable, merge } from 'rxjs'
-import { takeUntil, toArray } from 'rxjs/operators'
+import { toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal, observeAbortSignal } from '../util'
+import { checkAbortSignal } from '../util'
 import { Feature } from '../util/simpleFeature'
 import {
+  readConfObject,
   AnyConfigurationModel,
   ConfigurationSchema,
-} from '../configuration/configurationSchema'
+} from '../configuration'
 import { getSubAdapterType } from './dataAdapterCache'
 import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
 import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
@@ -56,16 +57,15 @@ export interface SequenceAdapter
   extends BaseFeatureDataAdapter,
     RegionsAdapter {}
 
+const EmptyConfig = ConfigurationSchema('empty', {})
+
 export abstract class BaseAdapter {
   public id: string
 
   static capabilities = [] as string[]
 
   constructor(
-    public config: AnyConfigurationModel = ConfigurationSchema(
-      'empty',
-      {},
-    ).create(),
+    public config: AnyConfigurationModel = EmptyConfig.create(),
     public getSubAdapter?: getSubAdapterType,
     public pluginManager?: PluginManager,
   ) {
@@ -77,6 +77,10 @@ export abstract class BaseAdapter {
     } else {
       this.id = 'test'
     }
+  }
+
+  getConf(arg: string | string[]) {
+    return readConfObject(this.config, arg)
   }
 
   /**
@@ -111,11 +115,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   //   const { refNames } = this.metadata
   //   return refNames
   // }
+  //
 
   /**
    * Get features from the data source that overlap a region
    * @param region - Region
-   * @param options - Feature adapter options
+   * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the region
    */
   public abstract getFeatures(
@@ -165,9 +170,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       if (!hasData) {
         observer.complete()
       } else {
-        this.getFeatures(region, opts)
-          .pipe(takeUntil(observeAbortSignal(opts.signal)))
-          .subscribe(observer)
+        this.getFeatures(region, opts).subscribe(observer)
       }
     })
   }
@@ -191,24 +194,11 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     regions: Region[],
     opts: BaseOptions = {},
   ) {
-    const obs = merge(
+    return merge(
       ...regions.map(region => {
-        return ObservableCreate<Feature>(async observer => {
-          const hasData = await this.hasDataForRefName(region.refName, opts)
-          checkAbortSignal(opts.signal)
-          if (!hasData) {
-            observer.complete()
-          } else {
-            this.getFeatures(region, opts).subscribe(observer)
-          }
-        })
+        return this.getFeaturesInRegion(region, opts)
       }),
     )
-
-    if (opts.signal) {
-      return obs.pipe(takeUntil(observeAbortSignal(opts.signal)))
-    }
-    return obs
   }
 
   /**

@@ -1,6 +1,7 @@
 import React from 'react'
-import { ThemeOptions } from '@material-ui/core'
-import { ThemeProvider } from '@material-ui/core/styles'
+import { DeprecatedThemeOptions } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
+import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 
 import {
@@ -24,7 +25,7 @@ interface BaseRenderArgs extends RenderProps {
   // Note that signal serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
-  theme: ThemeOptions
+  theme: DeprecatedThemeOptions
   exportSVG: { rasterizeLayers?: boolean }
 }
 
@@ -47,6 +48,19 @@ export type { RenderResults }
 
 export interface ResultsSerialized extends Omit<RenderResults, 'reactElement'> {
   html: string
+}
+
+export interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+  reactElement: unknown
+}
+
+function isSvgExport(
+  elt: ResultsSerialized,
+): elt is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in elt
 }
 
 export type ResultsDeserialized = RenderResults
@@ -156,11 +170,26 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - render args
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    return rpcManager.call(
+    const results = (await rpcManager.call(
       args.sessionId,
       'CoreRender',
       args,
-    ) as Promise<ResultsSerialized>
+    )) as ResultsSerialized
+
+    if (isSvgExport(results)) {
+      const { width, height, canvasRecordedData } = results
+
+      const C2S = await import('canvas2svg')
+      const ctx = new C2S.default(width, height)
+      const seq = new CanvasSequence(canvasRecordedData)
+      seq.execute(ctx)
+      const str = ctx.getSvg()
+      // innerHTML strips the outer <svg> element from returned data, we add
+      // our own <svg> element in the view's SVG export
+      results.html = str.innerHTML
+      delete results.reactElement
+    }
+    return results
   }
 
   /**
@@ -171,10 +200,8 @@ export default class ServerSideRenderer extends RendererType {
    */
   async renderInWorker(args: RenderArgsSerialized): Promise<ResultsSerialized> {
     const { signal, statusCallback = () => {} } = args
-    checkAbortSignal(signal)
     const deserializedArgs = this.deserializeArgsInWorker(args)
 
-    checkAbortSignal(signal)
     const results = await updateStatus('Rendering plot', statusCallback, () =>
       this.render(deserializedArgs),
     )
@@ -183,12 +210,9 @@ export default class ServerSideRenderer extends RendererType {
     // serialize the results for passing back to the main thread.
     // these will be transmitted to the main process, and will come out
     // as the result of renderRegionWithWorker.
-    const serialized = await updateStatus(
-      'Serializing results',
-      statusCallback,
-      () => this.serializeResultsInWorker(results, deserializedArgs),
+    return updateStatus('Serializing results', statusCallback, () =>
+      this.serializeResultsInWorker(results, deserializedArgs),
     )
-    return serialized
   }
 
   async freeResourcesInClient(rpcManager: RpcManager, args: RenderArgs) {

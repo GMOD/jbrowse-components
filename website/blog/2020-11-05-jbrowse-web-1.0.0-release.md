@@ -20,7 +20,6 @@ Changes
 - fixed bug with reference sequences that don't use the alias system
 - fixed bug with SV inspector having a disabled state stuck on the buttons
 - added documentation for the `jbrowse admin-server` command
-  [here](/docs/quickstart_gui)
 - added display modes, a giant effort to make the same track visible in
   multiple contexts
 - added a splash screen when no default session is in the config file
@@ -34,7 +33,7 @@ Changes
 - fixed crash when live editing an assembly in the assembly manager
 - added a simple PAF import form in the DotplotView and LinearSyntenyView
   import forms
-- updated @material-ui/core version
+- updated @mui/material version
 - clearer output printed when using admin-server
 
 Enjoy!

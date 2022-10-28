@@ -29,7 +29,7 @@ function View() {
 }
 ```
 
-For a full working example, see [this example](docs/example.md).
+For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
 
 ## Install
 
@@ -50,15 +50,16 @@ the peer dependencies not being met while installing.
 
 ## Documentation
 
-The latest Storybook documentation for the component is hosted [here](https://jbrowse.org/storybook/lgv/main).
+The latest documentation for the component is hosted at
+https://jbrowse.org/storybook/lgv/main
 
 ### Note on fonts
 
 [Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for
 JBrowse, and this component will use that font if it is available. The easiest
 way to add it is to add the
-[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) package
-to your project and import it in your root `index.js`.
+[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto)
+package to your project and import it in your root `index.js`.
 
 ## Academic Use
 

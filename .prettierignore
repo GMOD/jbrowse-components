@@ -2,6 +2,7 @@
 **/coverage/
 **/umd
 **/dist/
+**/esm/
 **/build/
 **/lib/
 **/tmp/
@@ -9,7 +10,8 @@
 **/titlemod.md
 **/combined.md
 **/cli.md
-
+**/.next/
+**/_next/
 # JSON files we don't want to format
 **/*nclist*/**/*.json
 **/ensembl_genes/**/*.json

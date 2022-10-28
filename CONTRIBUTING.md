@@ -99,13 +99,36 @@ If you don't provide `versionIncreaseLevel`, it will default to "patch".
 This will trigger a GitHub workflow that will create a draft release on GitHub,
 build JBrowse Web, and upload the build to that release. It will also trigger
 workflows that will build JBrowse Desktop for Windows, Mac, and Linux and upload
-those to the release as well. Once the draft release has been created (you can
-look for it [here](https://github.com/GMOD/jbrowse-components/releases)), go to
-the release and click "Edit," then add a description to the release. Usually you
-can copy the content of the blog post that was generated (it will be named
-something like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
-"Downloads" section. Finally, once you have confirmed that the build artifacts
-from all four workflows have been added to the release, click "Publish release."
+those to the release as well.
+
+Once the draft release has been created (you can look for it
+[here](https://github.com/GMOD/jbrowse-components/releases)), go to the release
+and click "Edit," then add a description to the release. Usually you can copy
+the content of the blog post that was generated (it will be named something
+like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
+"Downloads" section.
+
+Note that it is very helpful to run the release from a computer with a stable
+and fast internet connection. One option for this is to run it from a AWS
+machine.
+
+Reason: If you have a flaky internet at all, it may result in one of the npm
+publish jobs from any one of the packages in the monorepo failing to upload to
+NPM with a network problem, and then this basically means you have to run
+another release because it is difficult to continue the release process after
+that failure. See
+https://github.com/GMOD/jbrowse-components/issues/2697#issuecomment-1045209088
+
+Important: confirm that the build artifacts from all four workflows
+(jbrowse-web, mac, windows, and linux desktop builds) have been added to the
+release, click "Publish release" (if you publish before the artifacts are
+uploaded, the workflows will refuse to add them to the published release since
+it looks for draft releases)
+
+Finally, run the update_demos.sh script from within the demos folder of the
+monorepo after the packages have been published. This will update the `demos`
+to use the latest version, and then publish them to our S3 bucket e.g. at
+https://jbrowse.org/demos/lgv
 
 ## Monorepo code organization
 
@@ -252,3 +275,11 @@ jbrowse text-index --tracks ncbi_refseq_109_hg38_latest  --out config_demo.json 
 jbrowse text-index -a hg19 --tracks ncbi_gff_hg19 --out config_demo.json --force --attributes Name,ID,Note,description,gene_synonym
 
 ```
+
+## Notes about monorepo setup
+
+Our setup for the monorepo takes notes from the material-ui repository. Some particular notes include
+
+1. The use of the "flat" packages/core package, where you can import from nested subpaths like '@jbrowse/core/util'
+2. The use of tsconfig.build.json to generate types in the final release
+3. The use of referring to the src directory at development time

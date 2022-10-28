@@ -12,37 +12,56 @@ import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-vi
 import { types } from 'mobx-state-tree'
 import { LinearVariantDisplayConfigModel } from './configSchema'
 
-export default function (configSchema: LinearVariantDisplayConfigModel) {
+/**
+ * #stateModel LinearVariantDisplay
+ * extends `LinearBasicDisplay`
+ * very similar to basic display, but provides custom widget on feature click
+ */
+export default function stateModelFactory(
+  configSchema: LinearVariantDisplayConfigModel,
+) {
   return types
     .compose(
       'LinearVariantDisplay',
       linearBasicDisplayModelFactory(configSchema),
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearVariantDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
       }),
     )
     .actions(self => ({
+      /**
+       * #action
+       */
       async selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSessionModelWithWidgets(session)) {
           const { rpcManager } = session
           const sessionId = getRpcSessionId(self)
           const track = getContainingTrack(self)
+          const view = getContainingView(self)
           const adapterConfig = getConf(track, 'adapter')
-          const header = await rpcManager.call(sessionId, 'CoreGetMetadata', {
-            adapterConfig,
-          })
-          const featureWidget = session.addWidget(
-            'VariantFeatureWidget',
-            'variantFeature',
+          const descriptions = await rpcManager.call(
+            sessionId,
+            'CoreGetMetadata',
             {
-              featureData: feature.toJSON(),
-              view: getContainingView(self),
-              descriptions: header,
+              adapterConfig,
             },
           )
-          session.showWidget(featureWidget)
+          session.showWidget(
+            session.addWidget('VariantFeatureWidget', 'variantFeature', {
+              featureData: feature.toJSON(),
+              view,
+              track,
+              descriptions,
+            }),
+          )
         }
 
         session.setSelection(feature)

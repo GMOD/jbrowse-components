@@ -6,14 +6,22 @@ export interface Feat {
   id?: string
 }
 export interface ParentFeat extends Feat {
+  uniqueId: string
   strand?: number
+  refName: string
   subfeatures?: Feat[]
+  parentId?: string
 }
 export interface SeqState {
   seq: string
-  upstream: string
-  downstream: string
+  upstream?: string
+  downstream?: string
 }
+
+export interface ErrorState {
+  error: string
+}
+
 export function stitch(subfeats: Feat[], sequence: string) {
   return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
 }
@@ -62,6 +70,23 @@ export function calculateUTRs(cds: Feat[], exons: Feat[]) {
     { start: lastCds.end, end: lastCdsExon.end },
     ...exons.slice(lastCdsIdx + 1),
   ].map(elt => ({ ...elt, type: 'three_prime_UTR' }))
+
+  return [...fiveUTRs, ...threeUTRs]
+}
+
+// calculates UTRs using impliedUTRs logic, but there are no exon subfeatures
+export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
+  const firstCds = cds[0]
+  const lastCds = cds[cds.length - 1]
+
+  const fiveUTRs = [{ start: parentFeat.start, end: firstCds.start }].map(
+    elt => ({ ...elt, type: 'five_prime_UTR' }),
+  )
+
+  const threeUTRs = [{ start: lastCds.end, end: parentFeat.end }].map(elt => ({
+    ...elt,
+    type: 'three_prime_UTR',
+  }))
 
   return [...fiveUTRs, ...threeUTRs]
 }

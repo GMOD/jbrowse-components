@@ -1,4 +1,5 @@
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, Feature } from '@jbrowse/core/util'
+import BED from '@gmod/bed'
 
 export function ucscProcessedTranscript(feature: Feature) {
   const children = feature.children()
@@ -97,11 +98,9 @@ export function ucscProcessedTranscript(feature: Feature) {
       })
     }
   })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const newData: Record<string, any> = {}
-  feature.tags().forEach(tag => {
-    newData[tag] = feature.get(tag)
-  })
+  const newData = Object.fromEntries(
+    feature.tags().map(tag => [tag, feature.get(tag)]),
+  )
   newData.subfeatures = newChildren
   newData.type = 'mRNA'
   newData.uniqueId = feature.id()
@@ -119,4 +118,64 @@ export function ucscProcessedTranscript(feature: Feature) {
     id: feature.id(),
   })
   return newFeature
+}
+
+function defaultParser(fields: string[], line: string) {
+  return Object.fromEntries(line.split('\t').map((f, i) => [fields[i], f]))
+}
+
+export function featureData(
+  line: string,
+  colRef: number,
+  colStart: number,
+  colEnd: number,
+  scoreColumn: string,
+  parser: BED,
+  uniqueId: string,
+  names?: string[],
+) {
+  const l = line.split('\t')
+  const refName = l[colRef]
+  const start = +l[colStart]
+  const colSame = colStart === colEnd ? 1 : 0
+
+  const end = +l[colEnd] + colSame
+  const data = names
+    ? defaultParser(names, line)
+    : parser.parseLine(line, { uniqueId })
+
+  const { blockCount, blockSizes, blockStarts, chromStarts } = data
+
+  if (blockCount) {
+    const starts = chromStarts || blockStarts || []
+    const sizes = blockSizes
+    const blocksOffset = start
+    data.subfeatures = []
+
+    for (let b = 0; b < blockCount; b += 1) {
+      const bmin = (starts[b] || 0) + blocksOffset
+      const bmax = bmin + (sizes[b] || 0)
+      data.subfeatures.push({
+        uniqueId: `${uniqueId}-${b}`,
+        start: bmin,
+        end: bmax,
+        type: 'block',
+      })
+    }
+  }
+
+  if (scoreColumn) {
+    data.score = +data[scoreColumn]
+  }
+  delete data.chrom
+  delete data.chromStart
+  delete data.chromEnd
+  const f = new SimpleFeature({
+    ...data,
+    start,
+    end,
+    refName,
+    uniqueId,
+  })
+  return f.get('thickStart') ? ucscProcessedTranscript(f) : f
 }

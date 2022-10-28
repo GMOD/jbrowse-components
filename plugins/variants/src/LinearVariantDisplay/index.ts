@@ -1,2 +1,19 @@
-export { LinearVariantDisplayConfigFactory as configSchemaFactory } from './configSchema'
-export { default as modelFactory } from './model'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import stateModelFactory from './model'
+import configSchemaF from './configSchema'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaF(pluginManager)
+    return new DisplayType({
+      name: 'LinearVariantDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'VariantTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent: BaseLinearDisplayComponent,
+    })
+  })
+}

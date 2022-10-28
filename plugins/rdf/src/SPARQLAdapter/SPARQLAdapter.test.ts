@@ -4,7 +4,6 @@ import Adapter from './SPARQLAdapter'
 import emptyQueryResponse from './test_data/emptyQueryResponse.json'
 import queryResponse from './test_data/queryResponse.json'
 import refNamesResponse from './test_data/refNamesResponse.json'
-import 'core-js/stable'
 
 import configSchema from './configSchema'
 

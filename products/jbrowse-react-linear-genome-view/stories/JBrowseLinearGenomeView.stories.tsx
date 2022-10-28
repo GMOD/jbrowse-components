@@ -10,6 +10,8 @@ import Plugin from '@jbrowse/core/Plugin'
 // locals
 import { createViewState, loadPlugins, JBrowseLinearGenomeView } from '../src'
 
+import makeWorkerInstance from '../src/makeWorkerInstance'
+
 // configs
 import volvoxConfig from '../public/test_data/volvox/config.json'
 import volvoxSession from '../public/volvox-session.json'
@@ -35,14 +37,17 @@ addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
 const supportedTrackTypes = [
   'AlignmentsTrack',
   'PileupTrack',
+  'FeatureTrack',
   'SNPCoverageTrack',
   'VariantTrack',
   'WiggleTrack',
 ]
 
+const excludeIds = ['gtf_plain_text_test', 'lollipop_track', 'arc_track']
+
 const assembly = volvoxConfig.assemblies[0]
-const tracks = volvoxConfig.tracks.filter(track =>
-  supportedTrackTypes.includes(track.type),
+const tracks = volvoxConfig.tracks.filter(
+  t => supportedTrackTypes.includes(t.type) && !excludeIds.includes(t.trackId),
 )
 const defaultSession = {
   name: 'Storybook',
@@ -52,6 +57,23 @@ const longReadsSession = {
   ...defaultSession,
   view: volvoxSession.session.views[0],
 }
+export const WithWebWorker = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    location: 'ctgA:1105..1221',
+    configuration: {
+      rpc: {
+        defaultDriver: 'WebWorkerRpcDriver',
+      },
+    },
+    makeWorkerInstance,
+  })
+  state.session.view.showTrack('Deep sequencing')
+
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const OneLinearGenomeView = () => {
   const state = createViewState({
     assembly,
@@ -77,6 +99,19 @@ export const UsingLocObject = () => {
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }
+
+export const DisableAddTracks = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    defaultSession,
+    // use 0-based coordinates for "location object" here
+    location: { refName: 'ctgA', start: 10000, end: 20000 },
+    disableAddTracks: true,
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 export const WithLongReads = () => {
   const state = createViewState({
     assembly,
@@ -84,6 +119,17 @@ export const WithLongReads = () => {
     defaultSession: longReadsSession,
     location: 'ctgA:1105..1221',
   })
+
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithShowTrack = () => {
+  const state = createViewState({
+    assembly,
+    tracks,
+    location: 'ctgA:1105..1221',
+  })
+  state.session.view.showTrack('volvox-long-reads-sv-bam')
 
   return <JBrowseLinearGenomeView viewState={state} />
 }
@@ -99,8 +145,8 @@ export const WithOutsideStyling = () => {
   return (
     <div style={{ textAlign: 'center', fontFamily: 'monospace' }}>
       <h2>
-        This parent container has textAlign:'center' and a monospace font, but
-        these attributes are not affecting the internal LGV
+        This parent container has textAlign:&apos;center&apos; and a monospace
+        font, but these attributes are not affecting the internal LGV
       </h2>
       <JBrowseLinearGenomeView viewState={state} />
     </div>
@@ -363,17 +409,18 @@ export const NextstrainExample = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+function loc(r: Region) {
+  return `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
+}
 const VisibleRegions = observer(
   ({ state }: { state: ReturnType<typeof createViewState> }) => {
-    const locstrings = state.session.views[0].coarseDynamicBlocks
-      .map(
-        (region: Region) =>
-          `${region.refName}:${Math.floor(region.start)}-${Math.floor(
-            region.end,
-          )}`,
-      )
-      .join(',')
-    return <p>Visible region: {locstrings}</p>
+    const view = state.session.views[0]
+    return view.initialized ? (
+      <div>
+        <p>Visible region {view.coarseDynamicBlocks.map(loc).join(',')}</p>
+        <p>Static blocks {view.staticBlocks.map(loc).join(',')}</p>
+      </div>
+    ) : null
   },
 )
 
@@ -456,11 +503,14 @@ export const WithInlinePlugins = () => {
 export const WithExternalPlugins = () => {
   // usage with buildtime plugins
   // this plugins array is then passed to the createViewState constructor
+  //
   // import UCSCPlugin from 'jbrowse-plugin-ucsc'
   // const plugins = [UCSCPlugin]
-
-  // usage with runtime plugins
-  // this plugins array is then passed to the createViewState constructor
+  //
+  // note: the loadPlugins function is from
+  // import {loadPlugins} from '@jbrowse/react-linear-genome-view'
+  //
+  // we manually call loadPlugins, and pass the result to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     async function getPlugins() {

@@ -1,6 +1,13 @@
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
-import XYPlotRenderer, { configSchema, ReactComponent } from '.'
+import configSchema from './configSchema'
+import XYPlotRenderer from './XYPlotRenderer'
+import ReactComponent from '../WiggleRendering'
+
+import { Image, createCanvas } from 'canvas'
+
+global.nodeImage = Image
+global.nodeCreateCanvas = createCanvas
 
 test('several features', async () => {
   const pluginManager = {}

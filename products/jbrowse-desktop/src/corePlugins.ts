@@ -8,9 +8,11 @@ import DataManagement from '@jbrowse/plugin-data-management'
 import DotplotView from '@jbrowse/plugin-dotplot-view'
 import Gff3 from '@jbrowse/plugin-gff3'
 import GtfPlugin from '@jbrowse/plugin-gtf'
+import JobsManagementPlugin from '@jbrowse/plugin-jobs-management'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
+import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
 import Lollipop from '@jbrowse/plugin-lollipop'
 import Arc from '@jbrowse/plugin-arc'
 import Menus from '@jbrowse/plugin-menus'
@@ -23,6 +25,7 @@ import Wiggle from '@jbrowse/plugin-wiggle'
 import SpreadsheetViewPlugin from '@jbrowse/plugin-spreadsheet-view'
 import SvInspectorPlugin from '@jbrowse/plugin-sv-inspector'
 import HicPlugin from '@jbrowse/plugin-hic'
+import TextIndex from '@jbrowse/plugin-text-indexing'
 import TrixPlugin from '@jbrowse/plugin-trix'
 import GridBookmarkPlugin from '@jbrowse/plugin-grid-bookmark'
 
@@ -38,6 +41,7 @@ const corePlugins = [
   DotplotView,
   Gff3,
   GtfPlugin,
+  JobsManagementPlugin,
   LegacyJBrowse,
   LinearComparativeView,
   Lollipop,
@@ -46,6 +50,7 @@ const corePlugins = [
   RDF,
   Sequence,
   TrackHubRegistry,
+  TextIndex,
   Variants,
   Wiggle,
   SpreadsheetViewPlugin,
@@ -54,6 +59,7 @@ const corePlugins = [
   HicPlugin,
   TrixPlugin,
   GridBookmarkPlugin,
+  ComparativeAdapters,
 ]
 
 export default corePlugins

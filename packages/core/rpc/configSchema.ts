@@ -1,40 +1,39 @@
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '../configuration'
+import WebWorkerRpcDriverConfigSchema from './webWorkerRpcConfig'
+import MainThreadRpcDriverConfigSchema from './mainThreadRpcConfig'
 
-const MainThreadRpcDriverConfigSchema = ConfigurationSchema(
-  'MainThreadRpcDriver',
-  {},
-  { explicitlyTyped: true },
-)
-const WebWorkerRpcDriverConfigSchema = ConfigurationSchema(
-  'WebWorkerRpcDriver',
-  {},
-  { explicitlyTyped: true },
-)
-const ElectronRpcDriverConfigSchema = ConfigurationSchema(
-  'ElectronRpcDriver',
-  {},
-  { explicitlyTyped: true },
-)
+/**
+ * #config RpcOptions
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default ConfigurationSchema(
   'RpcOptions',
   {
+    /**
+     * #slot
+     */
     defaultDriver: {
       type: 'string',
       description:
         'the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend',
       defaultValue: 'MainThreadRpcDriver',
     },
+    /**
+     * #slot
+     */
     drivers: types.optional(
       types.map(
         types.union(
           MainThreadRpcDriverConfigSchema,
           WebWorkerRpcDriverConfigSchema,
-          ElectronRpcDriverConfigSchema,
         ),
       ),
-      { MainThreadRpcDriver: { type: 'MainThreadRpcDriver' } },
+      {
+        MainThreadRpcDriver: { type: 'MainThreadRpcDriver' },
+        WebWorkerRpcDriver: { type: 'WebWorkerRpcDriver' },
+      },
     ),
   },
   {

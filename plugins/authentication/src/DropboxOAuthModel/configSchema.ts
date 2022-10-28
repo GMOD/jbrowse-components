@@ -1,59 +1,70 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
-import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
+import OAuthConfigSchema from '../OAuthModel/configSchema'
+
+/**
+ * #config DropboxOAuthInternetAccount
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const DropboxOAuthConfigSchema = ConfigurationSchema(
   'DropboxOAuthInternetAccount',
   {
+    /**
+     * #slot
+     */
     authEndpoint: {
       description: 'the authorization code endpoint of the internet account',
       type: 'string',
-      defaultValue: '',
+      defaultValue: 'https://www.dropbox.com/oauth2/authorize',
     },
+    /**
+     * #slot
+     */
     tokenEndpoint: {
       description: 'the token endpoint of the internet account',
       type: 'string',
-      defaultValue: '',
+      defaultValue: 'https://api.dropbox.com/oauth2/token',
     },
-    needsAuthorization: {
-      description: 'boolean to indicate if the endpoint needs authorization',
-      type: 'boolean',
-      defaultValue: false,
-    },
+    /**
+     * #slot
+     */
     needsPKCE: {
       description: 'boolean to indicate if the endpoint needs a PKCE code',
       type: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
-    clientId: {
-      description: 'id for the OAuth application',
-      type: 'string',
-      defaultValue: '',
-    },
-    scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: '',
-    },
+    /**
+     * #slot
+     */
     domains: {
       description:
         'array of valid domains the url can contain to use this account',
       type: 'stringArray',
-      defaultValue: [],
+      defaultValue: [
+        'addtodropbox.com',
+        'db.tt',
+        'dropbox.com',
+        'dropboxapi.com',
+        'dropboxbusiness.com',
+        'dropbox.tech',
+        'getdropbox.com',
+      ],
     },
-    responseType: {
-      description: 'the type of response from the authorization endpoint',
-      type: 'string',
-      defaultValue: 'code',
-    },
+    /**
+     * #slot
+     */
     hasRefreshToken: {
       description: 'true if the endpoint can supply a refresh token',
       type: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
     },
   },
   {
-    baseConfiguration: BaseInternetAccountConfig,
+    /**
+     * #baseConfiguration
+     */
+    baseConfiguration: OAuthConfigSchema,
     explicitlyTyped: true,
   },
 )

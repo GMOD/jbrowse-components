@@ -31,7 +31,7 @@ function View() {
 
 ![](docs/img/exampleView.png)
 
-For a full working example, see [this example](docs/example.md).
+For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
 
 ## Install
 
@@ -50,13 +50,19 @@ $ npm install @jbrowse/react-circular-genome-view --legacy-peer-deps
 The --legacy-peer-deps helps with installing via NPM to avoid warnings about
 the peer dependencies not being met while installing.
 
+### Documentation
+
+Documentation for this component is located here
+
+https://jbrowse.org/storybook/cgv/main/?path=/story/getting-started--page
+
 ### Note on fonts
 
 [Roboto](https://fonts.google.com/specimen/Roboto) is the recommended font for
 JBrowse, and this component will use that font if it is available. The easiest
 way to add it is to add the
-[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) package
-to your project and import it in your root `index.js`.
+[`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto)
+package to your project and import it in your root `index.js`.
 
 ## Academic Use
 

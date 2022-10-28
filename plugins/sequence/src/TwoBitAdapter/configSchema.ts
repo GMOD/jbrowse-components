@@ -1,12 +1,23 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config TwoBitAdapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const TwoBitAdapter = ConfigurationSchema(
   'TwoBitAdapter',
   {
+    /**
+     * #slot
+     */
     twoBitLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.2bit', locationType: 'UriLocation' },
     },
+    /**
+     * #slot
+     */
     chromSizesLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -19,3 +30,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default TwoBitAdapter

@@ -1,6 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { featureSpanPx, bpSpanPx } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { featureSpanPx, bpSpanPx, Feature } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { RenderArgsDeserialized as FeatureRenderArgsDeserialized } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import {
@@ -39,7 +38,7 @@ interface SNPInfo {
 export default class SNPCoverageRenderer extends WiggleBaseRenderer {
   // note: the snps are drawn on linear scale even if the data is drawn in log
   // scape hence the two different scales being used
-  draw(
+  async draw(
     ctx: CanvasRenderingContext2D,
     props: RenderArgsDeserializedWithFeatures,
   ) {
@@ -71,13 +70,14 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     }
     const opts = { ...scaleOpts, range: [0, height] }
     const viewScale = getScale(opts)
-    const snpViewScale = getScale({
+
+    // clipping and insertion indicators, uses a smaller height/2 scale
+    const indicatorViewScale = getScale({
       ...opts,
       range: [0, height / 2],
       scaleType: 'linear',
     })
     const originY = getOrigin(scaleOpts.scaleType)
-    const snpOriginY = getOrigin('linear')
 
     const indicatorThreshold = readConfObject(cfg, 'indicatorThreshold')
     const drawInterbaseCounts = readConfObject(cfg, 'drawInterbaseCounts')
@@ -88,15 +88,17 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
     const toY = (n: number) => height - (viewScale(n) || 0) + offset
     const toHeight = (n: number) => toY(originY) - toY(n)
 
-    // this is always linear scale, even when plotted on top of log scale
-    const snpToY = (n: number) => height - (snpViewScale(n) || 0) + offset
-    const snpToHeight = (n: number) => snpToY(snpOriginY) - snpToY(n)
+    const indicatorToY = (n: number) =>
+      height - (indicatorViewScale(n) || 0) + offset
+    const indicatorToHeight = (n: number) =>
+      indicatorToY(getOrigin('linear')) - indicatorToY(n)
 
+    const { bases } = theme.palette
     const colorForBase: { [key: string]: string } = {
-      A: theme.palette.bases.A.main,
-      C: theme.palette.bases.C.main,
-      G: theme.palette.bases.G.main,
-      T: theme.palette.bases.T.main,
+      A: bases.A.main,
+      C: bases.C.main,
+      G: bases.G.main,
+      T: bases.T.main,
       total: 'lightgrey',
       insertion: 'purple',
       softclip: 'blue',
@@ -140,13 +142,11 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
       const feature = coverage[i]
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
 
+      const score = feature.get('score') as number
       const snpinfo = feature.get('snpinfo') as SNPInfo
       const w = Math.max(rightPx - leftPx + 0.3, 1)
       const totalScore = snpinfo.total
-
-      const keys = Object.keys(snpinfo.cov).sort((a, b) =>
-        a < b ? -1 : a > b ? 1 : 0,
-      )
+      const keys = Object.keys(snpinfo.cov).sort()
 
       let curr = 0
       for (let i = 0; i < keys.length; i++) {
@@ -156,7 +156,15 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           colorForBase[base] ||
           modificationTagMap[base.replace('mod_', '')] ||
           '#888'
-        ctx.fillRect(leftPx, snpToY(total + curr), w, snpToHeight(total))
+
+        const height = toHeight(score)
+        const bottom = toY(score) + height
+        ctx.fillRect(
+          leftPx,
+          bottom - ((total + curr) / score) * height,
+          w,
+          (total / score) * height,
+        )
         curr += total
       }
 
@@ -170,9 +178,9 @@ export default class SNPCoverageRenderer extends WiggleBaseRenderer {
           ctx.fillStyle = colorForBase[base]
           ctx.fillRect(
             leftPx - 0.6 + extraHorizontallyFlippedOffset,
-            indicatorHeight + snpToHeight(curr),
+            indicatorHeight + indicatorToHeight(curr),
             1.2,
-            snpToHeight(total),
+            indicatorToHeight(total),
           )
           curr += total
         }

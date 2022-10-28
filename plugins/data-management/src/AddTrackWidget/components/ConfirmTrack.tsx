@@ -1,26 +1,55 @@
-import React from 'react'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import React, { useEffect, useState } from 'react'
 import {
-  Link,
-  MenuItem,
-  TextField,
+  Card,
+  CardContent,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  InputLabel,
+  InputAdornment,
   ListSubheader,
+  Link,
+  List,
+  ListItem,
+  MenuItem,
+  Paper,
+  TextField,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  supportedIndexingAdapters,
+  getSession,
+  getEnv,
+  isElectron,
+} from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
-
-// locals
-import { AddTrackModel } from '../model'
 import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
-const useStyles = makeStyles(theme => ({
+// icons
+import DeleteIcon from '@mui/icons-material/Delete'
+import AddIcon from '@mui/icons-material//Add'
+// locals
+import { AddTrackModel } from '../model'
+
+const useStyles = makeStyles()(theme => ({
   spacing: {
     marginBottom: theme.spacing(3),
+  },
+  paper: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: theme.spacing(1),
+  },
+  spacer: {
+    height: theme.spacing(8),
+  },
+  card: {
+    marginTop: theme.spacing(1),
   },
 }))
 
@@ -31,7 +60,7 @@ function StatusMessage({
   trackAdapter: { type: string; subadapter?: { type: string } }
   trackType: string
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return trackAdapter.type === 'SNPCoverageAdapter' ? (
     <Typography className={classes.spacing}>
       Selected <code>{trackType}</code>. Using adapter{' '}
@@ -98,12 +127,110 @@ function getTrackTypes(pluginManager: PluginManager) {
   return pluginManager.getElementTypesInGroup('track') as { name: string }[]
 }
 
+const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
+  const { classes } = useStyles()
+  const [value1, setValue1] = useState('')
+  const [value2, setValue2] = useState('')
+  const [attributes, setAttributes] = useState(['Name', 'ID'])
+  const [exclude, setExclude] = useState(['CDS', 'exon'])
+  const sections = [
+    {
+      label: 'Indexing attributes',
+      values: attributes,
+    },
+    {
+      label: 'Feature types to exclude',
+      values: exclude,
+    },
+  ]
+  useEffect(() => {
+    model.setTextIndexingConf({ attributes, exclude })
+  }, [model, attributes, exclude])
+
+  return (
+    <Paper className={classes.paper}>
+      <InputLabel>Indexing configuration</InputLabel>
+      {sections.map((section, index) => (
+        <Card raised key={section.label} className={classes.card}>
+          <CardContent>
+            <InputLabel>{section.label}</InputLabel>
+            <List disablePadding>
+              {section.values.map((val: string, idx: number) => (
+                <ListItem key={idx} disableGutters>
+                  <TextField
+                    value={val}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            color="secondary"
+                            onClick={() => {
+                              const newAttr = section.values.filter((a, i) => {
+                                return i !== idx
+                              })
+                              index === 0
+                                ? setAttributes(newAttr)
+                                : setExclude(newAttr)
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </ListItem>
+              ))}
+              <ListItem disableGutters>
+                <TextField
+                  value={index === 0 ? value1 : value2}
+                  placeholder="add new"
+                  onChange={event => {
+                    index === 0
+                      ? setValue1(event.target.value)
+                      : setValue2(event.target.value)
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => {
+                            if (index === 0) {
+                              const newAttr: string[] = attributes
+                              newAttr.push(value1)
+                              setAttributes(newAttr)
+                              setValue1('')
+                            } else {
+                              const newFeat: string[] = exclude
+                              newFeat.push(value2)
+                              setExclude(newFeat)
+                              setValue2('')
+                            }
+                          }}
+                          disabled={index === 0 ? value1 === '' : value2 === ''}
+                          color="secondary"
+                          data-testid={`stringArrayAdd-Feat`}
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </ListItem>
+            </List>
+          </CardContent>
+        </Card>
+      ))}
+    </Paper>
+  )
+})
+
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
-  const session = getSession(model)
+  const { classes } = useStyles()
   const { trackAdapter } = model
-  // prettier-ignore
-  const adapters = getAdapterTypes(getEnv(session).pluginManager)
+  const { pluginManager } = getEnv(model)
+  const adapters = getAdapterTypes(pluginManager)
   return (
     <TextField
       className={classes.spacing}
@@ -112,9 +239,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
       helperText="Select an adapter type"
       select
       fullWidth
-      onChange={event => {
-        model.setAdapterHint(event.target.value)
-      }}
+      onChange={event => model.setAdapterHint(event.target.value)}
       SelectProps={{
         // @ts-ignore
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
@@ -134,16 +259,19 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
               : elt.name}
           </MenuItem>
         ))}
-      {/* adapters with the 'adapterMetadata.category' property are categorized by the value of the property here */}
-      {categorizeAdapters(
-        adapters.filter(elt => !elt.adapterMetadata?.hiddenFromGUI),
-      )}
+      {
+        // adapters with the 'adapterMetadata.category' property are categorized
+        // by the value of the property here
+        categorizeAdapters(
+          adapters.filter(elt => !elt.adapterMetadata?.hiddenFromGUI),
+        )
+      }
     </TextField>
   )
 })
 
 function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       <Typography className={classes.spacing}>
@@ -172,7 +300,7 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
 }
 
 const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const session = getSession(model)
   const { trackType } = model
   const trackTypes = getTrackTypes(getEnv(session).pluginManager)
@@ -232,7 +360,8 @@ const TrackAssemblySelector = observer(
 )
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
+  const [check, setCheck] = useState(true)
   const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
     model
 
@@ -273,6 +402,7 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
     return <Typography>Could not recognize this data type.</Typography>
   }
 
+  const supportedForIndexing = supportedIndexingAdapters(trackAdapter?.type)
   return (
     <div>
       {trackAdapter ? (
@@ -293,6 +423,25 @@ function ConfirmTrack({ model }: { model: AddTrackModel }) {
       <TrackAdapterSelector model={model} />
       <TrackTypeSelector model={model} />
       <TrackAssemblySelector model={model} />
+      {isElectron && supportedForIndexing && (
+        <FormControl>
+          <FormControlLabel
+            label={'Index track for text searching?'}
+            control={
+              <Checkbox
+                checked={check}
+                onChange={e => {
+                  setCheck(e.target.checked)
+                  model.setTextIndexTrack(e.target.checked)
+                }}
+              />
+            }
+          />
+        </FormControl>
+      )}
+      {isElectron && check && supportedForIndexing ? (
+        <TextIndexingConfig model={model} />
+      ) : null}
     </div>
   )
 }

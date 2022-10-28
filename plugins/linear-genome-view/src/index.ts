@@ -1,17 +1,12 @@
 import { lazy } from 'react'
 import { when } from 'mobx'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import {
-  createBaseTrackConfig,
-  createBaseTrackModel,
-} from '@jbrowse/core/pluggableElementTypes/models'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
-import LineStyleIcon from '@material-ui/icons/LineStyle'
+import LineStyleIcon from '@mui/icons-material/LineStyle'
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
@@ -29,12 +24,17 @@ import {
   renderToSvg,
   RefNameAutocomplete,
   SearchBox,
+  ZoomControls,
+  LinearGenomeView,
 } from './LinearGenomeView'
 
 import {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
+
+import FeatureTrackF from './FeatureTrack'
+import BasicTrackF from './BasicTrack'
 
 type LGV = LinearGenomeViewModel
 
@@ -45,49 +45,14 @@ export default class LinearGenomeViewPlugin extends Plugin {
     BaseLinearDisplayComponent,
     BaseLinearDisplay,
     baseLinearDisplayConfigSchema,
+    SearchBox,
+    ZoomControls,
+    LinearGenomeView,
   }
 
   install(pluginManager: PluginManager) {
-    pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'FeatureTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
-      return new TrackType({
-        name: 'FeatureTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'FeatureTrack',
-          configSchema,
-        ),
-      })
-    })
-
-    pluginManager.addTrackType(() => {
-      const configSchema = ConfigurationSchema(
-        'BasicTrack',
-        {},
-        {
-          baseConfiguration: createBaseTrackConfig(pluginManager),
-          explicitIdentifier: 'trackId',
-        },
-      )
-      return new TrackType({
-        name: 'BasicTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'BasicTrack',
-          configSchema,
-        ),
-      })
-    })
-
+    FeatureTrackF(pluginManager)
+    BasicTrackF(pluginManager)
     pluginManager.addDisplayType(() => {
       const configSchema = linearBareDisplayConfigSchemaFactory(pluginManager)
       return new DisplayType({
@@ -137,42 +102,47 @@ export default class LinearGenomeViewPlugin extends Plugin {
         loc: string
         tracks?: string[]
       }) => {
-        const { assemblyManager } = session
-        const view = session.addView('LinearGenomeView', {}) as LGV
+        try {
+          const { assemblyManager } = session
+          const view = session.addView('LinearGenomeView', {}) as LGV
 
-        await when(() => !!view.volatileWidth)
+          await when(() => !!view.volatileWidth)
 
-        if (!assembly) {
-          throw new Error(
-            'No assembly provided when launching linear genome view',
-          )
-        }
-
-        const asm = await assemblyManager.waitForAssembly(assembly)
-        if (!asm) {
-          throw new Error(
-            `Assembly "${assembly}" not found when launching linear genome view`,
-          )
-        }
-
-        view.navToLocString(loc, assembly)
-
-        const idsNotFound = [] as string[]
-        tracks.forEach(track => {
-          try {
-            view.showTrack(track)
-          } catch (e) {
-            if (`${e}`.match('Could not resolve identifier')) {
-              idsNotFound.push(track)
-            } else {
-              throw e
-            }
+          if (!assembly) {
+            throw new Error(
+              'No assembly provided when launching linear genome view',
+            )
           }
-        })
-        if (idsNotFound.length) {
-          throw new Error(
-            `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-          )
+
+          const asm = await assemblyManager.waitForAssembly(assembly)
+          if (!asm) {
+            throw new Error(
+              `Assembly "${assembly}" not found when launching linear genome view`,
+            )
+          }
+
+          view.navToLocString(loc, assembly)
+
+          const idsNotFound = [] as string[]
+          tracks.forEach(track => {
+            try {
+              view.showTrack(track)
+            } catch (e) {
+              if (`${e}`.match('Could not resolve identifier')) {
+                idsNotFound.push(track)
+              } else {
+                throw e
+              }
+            }
+          })
+          if (idsNotFound.length) {
+            throw new Error(
+              `Could not resolve identifiers: ${idsNotFound.join(',')}`,
+            )
+          }
+        } catch (e) {
+          session.notify(`${e}`, 'error')
+          throw e
         }
       },
     )

@@ -8,10 +8,8 @@ import {
   DialogTitle,
   Input,
   Typography,
-} from '@material-ui/core'
-import electron from 'electron'
-
-const { ipcRenderer } = electron
+} from '@mui/material'
+const { ipcRenderer } = window.require('electron')
 
 const RenameSessionDialog = ({
   sessionToRename,

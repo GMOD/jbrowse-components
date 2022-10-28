@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-spreadsheet-view",
-  "version": "1.6.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 spreadsheet view",
   "keywords": [
     "jbrowse",
@@ -18,40 +18,46 @@
   "distMain": "dist/index.js",
   "srcMain": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-spreadsheet-view.esm.js",
-  "module": "",
   "files": [
     "dist",
-    "src"
+    "src",
+    "esm"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "build": "npm-run-all build:*",
     "test": "cd ../..; jest plugins/spreadsheet-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
-    "useSrc": "node ../../scripts/useSrc.js"
+    "useSrc": "node ../../scripts/useSrc.js",
+    "prebuild": "npm run clean",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bgzf-filehandle": "^1.4.2",
+    "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/vcf": "^5.0.5",
-    "@jbrowse/plugin-variants": "^1.6.5",
-    "@material-ui/icons": "^4.9.1",
-    "classnames": "^2.2.6",
+    "@jbrowse/plugin-variants": "^2.1.7",
+    "@mui/icons-material": "^5.0.1",
     "csvtojson": "^2.0.10"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "mobx": "^5.0.0",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "rxjs": "^6.0.0"
+    "rxjs": "^6.0.0",
+    "tss-react": "^3.0.0"
   },
-  "private": true
+  "private": true,
+  "distModule": "esm/index.js",
+  "srcModule": "src/index.ts",
+  "module": ""
 }

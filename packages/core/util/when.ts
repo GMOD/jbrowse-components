@@ -1,10 +1,8 @@
-import { when as mobxWhen } from 'mobx'
+import { when as mobxWhen, IWhenOptions } from 'mobx'
 import { makeAbortError } from './aborting'
 
-interface WhenOpts {
-  timeout?: number
+interface WhenOpts extends IWhenOptions {
   signal?: AbortSignal
-  name?: string
 }
 
 /**

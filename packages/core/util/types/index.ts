@@ -4,6 +4,8 @@ import {
   Instance,
   SnapshotIn,
   IAnyStateTreeNode,
+  IStateTreeNode,
+  IType,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
@@ -24,13 +26,15 @@ import { BaseInternetAccountModel } from '../../pluggableElementTypes/models'
 export * from './util'
 
 /** abstract type for a model that contains multiple views */
-export interface AbstractViewContainer extends IAnyStateTreeNode {
+export interface AbstractViewContainer
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  extends IStateTreeNode<IType<any, unknown, any>> {
   views: AbstractViewModel[]
   removeView(view: AbstractViewModel): void
   addView(
     typeName: string,
-    initialState: Record<string, unknown>,
-  ): void | AbstractViewModel
+    initialState?: Record<string, unknown>,
+  ): AbstractViewModel
 }
 export function isViewContainer(
   thing: unknown,
@@ -44,6 +48,10 @@ export function isViewContainer(
 }
 
 export type NotificationLevel = 'error' | 'info' | 'warning' | 'success'
+export interface SnackAction {
+  name: string
+  onClick: () => void
+}
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
 export type { TextSearchManager }
@@ -74,6 +82,7 @@ export type DialogComponentType =
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
+  drawerPosition?: string
   setSelection(feature: Feature): void
   clearSelection(): void
   configuration: AnyConfigurationModel
@@ -82,7 +91,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   assemblies: AnyConfigurationModel[]
   selection?: unknown
   duplicateCurrentSession?(): void
-  notify(message: string, level?: NotificationLevel): void
+  notify(message: string, level?: NotificationLevel, action?: SnackAction): void
   assemblyManager: AssemblyManager
   version: string
   getTrackActionMenuItems?: Function
@@ -92,7 +101,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   connections: AnyConfigurationModel[]
   deleteConnection?: Function
   sessionConnections?: AnyConfigurationModel[]
-  connectionInstances?: { name: string }[]
+  connectionInstances?: {
+    name: string
+    connectionId: string
+    tracks: AnyConfigurationModel[]
+  }[]
   makeConnection?: Function
   adminMode?: boolean
   showWidget?: Function
@@ -101,12 +114,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   DialogComponent?: DialogComponentType
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DialogProps: any
-  queueDialog: (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    callback: (doneCallback: Function) => [DialogComponentType, any],
-  ) => void
+  queueDialog<T extends DialogComponentType>(
+    callback: (doneCallback: () => void) => [T, React.ComponentProps<T>],
+  ): void
   name: string
   id?: string
+  tracks: AnyConfigurationModel[]
 }
 export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
   return (
@@ -136,7 +149,10 @@ export interface SessionWithConfigEditing extends AbstractSessionModel {
 export function isSessionWithAddTracks(
   thing: unknown,
 ): thing is SessionWithConfigEditing {
-  return isSessionModel(thing) && 'addTrackConf' in thing
+  return (
+    // @ts-ignore
+    isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
+  )
 }
 
 export interface Widget {
@@ -174,6 +190,16 @@ export function isSessionModelWithWidgets(
   thing: unknown,
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
+}
+
+interface SessionWithConnections {
+  addConnectionConf: (arg: AnyConfigurationModel) => void
+}
+
+export function isSessionModelWithConnections(
+  thing: unknown,
+): thing is SessionWithConnections {
+  return isSessionModel(thing) && 'addConnectionConf' in thing
 }
 
 export interface SessionWithSessionPlugins extends AbstractSessionModel {
@@ -222,7 +248,10 @@ export function isViewModel(thing: unknown): thing is AbstractViewModel {
   )
 }
 
-type AbstractTrackModel = {}
+export interface AbstractTrackModel {
+  displays: AbstractDisplayModel[]
+}
+
 export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
   return (
     typeof thing === 'object' &&
@@ -336,16 +365,10 @@ export interface LocalPathLocation
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
-  return (
-    typeof location === 'object' &&
-    location !== null &&
-    'locationType' in location &&
-    'uri' in location
-  )
+  return typeof location === 'object' && location !== null && 'uri' in location
 }
-
 export class AuthNeededError extends Error {
-  constructor(public message: string, public location: UriLocation) {
+  constructor(public message: string, public url: string) {
     super(message)
     this.name = 'AuthNeededError'
 
@@ -367,7 +390,7 @@ export function isAuthNeededException(
     exception instanceof Error &&
     // DOMException
     (exception.name === 'AuthNeededError' ||
-      (exception as AuthNeededError).location !== undefined)
+      (exception as AuthNeededError).url !== undefined)
   )
 }
 

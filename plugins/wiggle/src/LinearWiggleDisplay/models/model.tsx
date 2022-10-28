@@ -6,33 +6,34 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import {
-  isAbortException,
+  getEnv,
   getSession,
   getContainingView,
   isSelectionContainer,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, when } from 'mobx'
-import { addDisposer, isAlive, types, getEnv, Instance } from 'mobx-state-tree'
+import { when } from 'mobx'
+import { isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import { FeatureStats } from '@jbrowse/core/util/stats'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
-import { getNiceDomain, getScale } from '../../util'
+import {
+  getNiceDomain,
+  getScale,
+  getStats,
+  statsAutorun,
+  YSCALEBAR_LABEL_OFFSET,
+} from '../../util'
 
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
 
 const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
-
-// fudge factor for making all labels on the YScalebar visible
-export const YSCALEBAR_LABEL_OFFSET = 5
 
 // using a map because it preserves order
 const rendererTypes = new Map([
@@ -43,28 +44,78 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
-const stateModelFactory = (
+/**
+ * #stateModel LinearWiggleDisplay
+ * Extends `BaseLinearDisplay`
+ */
+function stateModelFactory(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
-) =>
-  types
+) {
+  return types
     .compose(
       'LinearWiggleDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearWiggleDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         */
         selectedRendering: types.optional(types.string, ''),
+        /**
+         * #property
+         */
         resolution: types.optional(types.number, 1),
+        /**
+         * #property
+         */
         fill: types.maybe(types.boolean),
+        /**
+         * #property
+         */
+        minSize: types.maybe(types.number),
+        /**
+         * #property
+         */
         color: types.maybe(types.string),
+        /**
+         * #property
+         */
         posColor: types.maybe(types.string),
+        /**
+         * #property
+         */
         negColor: types.maybe(types.string),
+        /**
+         * #property
+         */
         summaryScoreMode: types.maybe(types.string),
+        /**
+         * #property
+         */
         rendererTypeNameState: types.maybe(types.string),
+        /**
+         * #property
+         */
         scale: types.maybe(types.string),
+        /**
+         * #property
+         */
         autoscale: types.maybe(types.string),
+        /**
+         * #property
+         */
         displayCrossHatches: types.maybe(types.boolean),
+        /**
+         * #property
+         */
         constraints: types.optional(
           types.model({
             max: types.maybe(types.number),
@@ -81,26 +132,42 @@ const stateModelFactory = (
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
-      updateStats({
-        scoreMin,
-        scoreMax,
-      }: {
-        scoreMin: number
-        scoreMax: number
-      }) {
-        self.stats = { scoreMin, scoreMax }
-        self.statsReady = true
+      /**
+       * #action
+       */
+      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+        const { scoreMin, scoreMax } = stats
+        const EPSILON = 0.000001
+        if (
+          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
+          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+        ) {
+          self.stats = { scoreMin, scoreMax }
+          self.statsReady = true
+        }
       },
-      setColor(color: string) {
+      /**
+       * #action
+       */
+      setColor(color?: string) {
         self.color = color
       },
-      setPosColor(color: string) {
+      /**
+       * #action
+       */
+      setPosColor(color?: string) {
         self.posColor = color
       },
-      setNegColor(color: string) {
+      /**
+       * #action
+       */
+      setNegColor(color?: string) {
         self.negColor = color
       },
 
+      /**
+       * #action
+       */
       setLoading(aborter: AbortController) {
         const { statsFetchInProgress: statsFetch } = self
         if (statsFetch !== undefined && !statsFetch.signal.aborted) {
@@ -109,23 +176,45 @@ const stateModelFactory = (
         self.statsFetchInProgress = aborter
       },
 
-      // this overrides the BaseLinearDisplayModel to avoid popping up a
-      // feature detail display, but still sets the feature selection on the
-      // model so listeners can detect a click
+      /**
+       * #action
+       * this overrides the BaseLinearDisplayModel to avoid popping up a
+       * feature detail display, but still sets the feature selection on the
+       * model so listeners can detect a click
+       */
       selectFeature(feature: Feature) {
         const session = getSession(self)
         if (isSelectionContainer(session)) {
           session.setSelection(feature)
         }
       },
+
+      /**
+       * #action
+       */
       setResolution(res: number) {
         self.resolution = res
       },
 
-      setFill(fill: boolean) {
-        self.fill = fill
+      /**
+       * #action
+       */
+      setFill(fill: number) {
+        if (fill === 0) {
+          self.fill = true
+          self.minSize = 0
+        } else if (fill === 1) {
+          self.fill = false
+          self.minSize = 1
+        } else if (fill === 2) {
+          self.fill = false
+          self.minSize = 2
+        }
       },
 
+      /**
+       * #action
+       */
       toggleLogScale() {
         if (self.scale !== 'log') {
           self.scale = 'log'
@@ -134,91 +223,157 @@ const stateModelFactory = (
         }
       },
 
+      /**
+       * #action
+       */
       setScaleType(scale?: string) {
         self.scale = scale
       },
 
+      /**
+       * #action
+       */
       setSummaryScoreMode(val: string) {
         self.summaryScoreMode = val
       },
 
+      /**
+       * #action
+       */
       setAutoscale(val: string) {
         self.autoscale = val
       },
 
+      /**
+       * #action
+       */
       setMaxScore(val?: number) {
         self.constraints.max = val
       },
 
+      /**
+       * #action
+       */
       setRendererType(val: string) {
         self.rendererTypeNameState = val
       },
 
+      /**
+       * #action
+       */
       setMinScore(val?: number) {
         self.constraints.min = val
       },
 
+      /**
+       * #action
+       */
       toggleCrossHatches() {
         self.displayCrossHatches = !self.displayCrossHatches
       },
 
+      /**
+       * #action
+       */
       setCrossHatches(cross: boolean) {
         self.displayCrossHatches = cross
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get TooltipComponent() {
         return Tooltip as unknown as React.FC
       },
 
+      /**
+       * #getter
+       */
       get adapterTypeName() {
         return self.adapterConfig.type
       },
 
+      /**
+       * #getter
+       */
+      get rendererTypeNameSimple() {
+        return self.rendererTypeNameState || getConf(self, 'defaultRendering')
+      },
+
+      /**
+       * #getter
+       */
       get rendererTypeName() {
-        const viewName =
-          self.rendererTypeNameState || getConf(self, 'defaultRendering')
-        const rendererType = rendererTypes.get(viewName)
+        const name = this.rendererTypeNameSimple
+        const rendererType = rendererTypes.get(name)
         if (!rendererType) {
-          throw new Error(`unknown alignments view name ${viewName}`)
+          throw new Error(`unknown renderer ${name}`)
         }
         return rendererType
       },
 
-      // subclasses can define these, as snpcoverage track does
+      /**
+       * #getter
+       * subclasses can define these, as snpcoverage track does
+       */
       get filters() {
         return undefined
       },
 
+      /**
+       * #getter
+       */
       get scaleType() {
         return self.scale || getConf(self, 'scaleType')
       },
 
+      /**
+       * #getter
+       */
       get maxScore() {
-        const { max } = self.constraints
-        return max !== undefined ? max : getConf(self, 'maxScore')
+        return self.constraints.max ?? getConf(self, 'maxScore')
       },
 
+      /**
+       * #getter
+       */
       get minScore() {
-        const { min } = self.constraints
-        return min !== undefined ? min : getConf(self, 'minScore')
+        return self.constraints.min ?? getConf(self, 'minScore')
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get rendererConfig() {
         const configBlob =
           getConf(self, ['renderers', self.rendererTypeName]) || {}
 
+        const {
+          color,
+          displayCrossHatches,
+          fill,
+          minSize,
+          negColor,
+          posColor,
+          summaryScoreMode,
+          scaleType,
+        } = self
+
         return self.rendererType.configSchema.create(
           {
             ...configBlob,
-            filled: self.fill,
-            scaleType: self.scaleType,
-            displayCrossHatches: self.displayCrossHatches,
-            summaryScoreMode: self.summaryScoreMode,
-            ...(self.color ? { color: self.color } : {}),
-            ...(self.negColor ? { negColor: self.negColor } : {}),
-            ...(self.posColor ? { posColor: self.posColor } : {}),
+            ...(scaleType ? { scaleType } : {}),
+            ...(fill !== undefined ? { filled: fill } : {}),
+            ...(displayCrossHatches !== undefined
+              ? { displayCrossHatches }
+              : {}),
+            ...(summaryScoreMode !== undefined ? { summaryScoreMode } : {}),
+            ...(color !== undefined ? { color } : {}),
+            ...(negColor !== undefined ? { negColor } : {}),
+            ...(posColor !== undefined ? { posColor } : {}),
+            ...(minSize !== undefined ? { minSize } : {}),
           },
           getEnv(self),
         )
@@ -227,23 +382,28 @@ const stateModelFactory = (
     .views(self => {
       let oldDomain: [number, number] = [0, 0]
       return {
+        /**
+         * #getter
+         */
         get filled() {
-          return typeof self.fill !== 'undefined'
-            ? self.fill
-            : readConfObject(self.rendererConfig, 'filled')
+          const { fill, rendererConfig: conf } = self
+          return fill ?? readConfObject(conf, 'filled')
         },
+        /**
+         * #getter
+         */
         get summaryScoreModeSetting() {
-          return (
-            self.summaryScoreMode ||
-            readConfObject(self.rendererConfig, 'summaryScoreMode')
-          )
+          const { summaryScoreMode, rendererConfig: conf } = self
+          return summaryScoreMode ?? readConfObject(conf, 'summaryScoreMode')
         },
+        /**
+         * #getter
+         */
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
-          const { scoreMin, scoreMax } = stats
 
           const ret = getNiceDomain({
-            domain: [scoreMin, scoreMax],
+            domain: [stats.scoreMin, stats.scoreMax],
             bounds: [minScore, maxScore],
             scaleType,
           })
@@ -261,12 +421,18 @@ const stateModelFactory = (
           return oldDomain
         },
 
+        /**
+         * #getter
+         */
         get needsScalebar() {
           return (
             self.rendererTypeName === 'XYPlotRenderer' ||
             self.rendererTypeName === 'LinePlotRenderer'
           )
         },
+        /**
+         * #getter
+         */
         get scaleOpts() {
           return {
             domain: this.domain,
@@ -277,76 +443,116 @@ const stateModelFactory = (
           }
         },
 
+        /**
+         * #getter
+         */
         get canHaveFill() {
           return self.rendererTypeName === 'XYPlotRenderer'
         },
 
+        /**
+         * #getter
+         */
         get autoscaleType() {
-          return self.autoscale || getConf(self, 'autoscale')
+          return self.autoscale ?? getConf(self, 'autoscale')
         },
 
+        /**
+         * #getter
+         */
         get displayCrossHatchesSetting() {
-          return (
-            self.displayCrossHatches ||
-            readConfObject(self.rendererConfig, 'displayCrossHatches')
-          )
+          const { displayCrossHatches: hatches, rendererConfig: conf } = self
+          return hatches ?? readConfObject(conf, 'displayCrossHatches')
         },
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       */
       get ticks() {
         const { scaleType, domain, height } = self
         const minimalTicks = getConf(self, 'minimalTicks')
+        const inverted = getConf(self, 'inverted')
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
         const scale = getScale({
           scaleType,
           domain,
           range,
-          inverted: getConf(self, 'inverted'),
+          inverted,
         })
         const ticks = axisPropsFromTickScale(scale, 4)
         return height < 100 || minimalTicks
           ? { ...ticks, values: domain }
           : ticks
       },
+
+      /**
+       * #getter
+       */
+      get adapterCapabilities() {
+        return pluginManager.getAdapterType(self.adapterTypeName)
+          .adapterCapabilities
+      },
     }))
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #method
+         */
         renderProps() {
           const superProps = superRenderProps()
+          const { filters, ticks, height, resolution, scaleOpts } = self
           return {
             ...superProps,
             notReady: superProps.notReady || !self.statsReady,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
-            scaleOpts: self.scaleOpts,
-            resolution: self.resolution,
-            height: self.height,
-            ticks: self.ticks,
-            displayCrossHatches: self.displayCrossHatches,
-            filters: self.filters,
+            displayCrossHatches: self.displayCrossHatchesSetting,
+            scaleOpts,
+            resolution,
+            height,
+            ticks,
+            filters,
           }
         },
-
-        get adapterCapabilities() {
-          return pluginManager.getAdapterType(self.adapterTypeName)
-            .adapterCapabilities
-        },
-
+        /**
+         * #getter
+         */
         get hasResolution() {
-          return this.adapterCapabilities.includes('hasResolution')
+          return self.adapterCapabilities.includes('hasResolution')
         },
 
+        /**
+         * #getter
+         */
         get hasGlobalStats() {
-          return this.adapterCapabilities.includes('hasGlobalStats')
+          return self.adapterCapabilities.includes('hasGlobalStats')
+        },
+
+        /**
+         * #getter
+         */
+        get fillSetting() {
+          if (self.filled) {
+            return 0
+          } else if (!self.filled && self.minSize === 1) {
+            return 1
+          } else {
+            return 2
+          }
         },
       }
     })
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
+      const hasRenderings = getConf(self, 'defaultRendering')
       return {
+        /**
+         * #method
+         */
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
@@ -357,63 +563,66 @@ const stateModelFactory = (
                     subMenu: [
                       {
                         label: 'Finer resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution * 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution * 5),
                       },
                       {
                         label: 'Coarser resolution',
-                        onClick: () => {
-                          self.setResolution(self.resolution / 5)
-                        },
+                        onClick: () => self.setResolution(self.resolution / 5),
                       },
                     ],
                   },
                   {
                     label: 'Summary score mode',
-                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => {
-                      return {
-                        label: elt,
-                        onClick: () => self.setSummaryScoreMode(elt),
-                      }
-                    }),
+                    subMenu: ['min', 'max', 'avg', 'whiskers'].map(elt => ({
+                      label: elt,
+                      type: 'radio',
+                      checked: self.summaryScoreModeSetting === elt,
+                      onClick: () => self.setSummaryScoreMode(elt),
+                    })),
                   },
                 ]
               : []),
+
             ...(self.canHaveFill
               ? [
                   {
-                    label: self.filled
-                      ? 'Turn off histogram fill'
-                      : 'Turn on histogram fill',
-                    onClick: () => {
-                      self.setFill(!self.filled)
-                    },
+                    label: 'Fill mode',
+                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
+                      (elt, idx) => ({
+                        label: elt,
+                        type: 'radio',
+                        checked: self.fillSetting === idx,
+                        onClick: () => self.setFill(idx),
+                      }),
+                    ),
                   },
                 ]
               : []),
             {
               label:
                 self.scaleType === 'log' ? 'Set linear scale' : 'Set log scale',
-              onClick: () => {
-                self.toggleLogScale()
-              },
-            },
-            {
-              type: 'checkbox',
-              label: 'Draw cross hatches',
-              checked: self.displayCrossHatchesSetting,
-              onClick: () => {
-                self.toggleCrossHatches()
-              },
+              onClick: () => self.toggleLogScale(),
             },
 
-            ...(Object.keys(getConf(self, 'renderers') || {}).length > 1
+            ...(self.needsScalebar
+              ? [
+                  {
+                    type: 'checkbox',
+                    label: 'Draw cross hatches',
+                    checked: self.displayCrossHatchesSetting,
+                    onClick: () => self.toggleCrossHatches(),
+                  },
+                ]
+              : []),
+
+            ...(hasRenderings
               ? [
                   {
                     label: 'Renderer type',
-                    subMenu: [...rendererTypes.keys()].map(key => ({
+                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
                       label: key,
+                      type: 'radio',
+                      checked: self.rendererTypeNameSimple === key,
                       onClick: () => self.setRendererType(key),
                     })),
                   },
@@ -430,30 +639,28 @@ const stateModelFactory = (
                     ]
                   : []),
                 ['localsd', 'Local ± 3σ'],
-              ].map(([val, label]) => {
-                return {
-                  label,
-                  onClick() {
-                    self.setAutoscale(val)
-                  },
-                }
-              }),
+              ].map(([val, label]) => ({
+                label,
+                type: 'radio',
+                checked: self.autoscaleType === val,
+                onClick: () => self.setAutoscale(val),
+              })),
             },
             {
               label: 'Set min/max score',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(handleClose => [
                   SetMinMaxDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
             {
               label: 'Set color',
               onClick: () => {
-                getSession(self).queueDialog((doneCallback: Function) => [
+                getSession(self).queueDialog(handleClose => [
                   SetColorDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
@@ -466,94 +673,19 @@ const stateModelFactory = (
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
-      async function getStats(opts: {
-        headers?: Record<string, string>
-        signal?: AbortSignal
-        filters?: string[]
-      }): Promise<FeatureStats> {
-        const { rpcManager } = getSession(self)
-        const nd = getConf(self, 'numStdDev') || 3
-        const { adapterConfig, autoscaleType } = self
-        const sessionId = getRpcSessionId(self)
-        const params = {
-          sessionId,
-          adapterConfig,
-          statusCallback: (message: string) => {
-            if (isAlive(self)) {
-              self.setMessage(message)
-            }
-          },
-          ...opts,
-        }
-
-        if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
-          const results: FeatureStats = (await rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          )) as FeatureStats
-          const { scoreMin, scoreMean, scoreStdDev } = results
-          // globalsd uses heuristic to avoid unnecessary scoreMin<0
-          // if the scoreMin is never less than 0
-          // helps with most coverage bigwigs just being >0
-          return autoscaleType === 'globalsd'
-            ? {
-                ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
-              }
-            : results
-        }
-        if (autoscaleType === 'local' || autoscaleType === 'localsd') {
-          const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
-          const results = (await rpcManager.call(
-            sessionId,
-            'WiggleGetMultiRegionStats',
-            {
-              ...params,
-              regions: dynamicBlocks.contentBlocks.map(region => {
-                const { start, end } = region
-                return {
-                  ...JSON.parse(JSON.stringify(region)),
-                  start: Math.floor(start),
-                  end: Math.ceil(end),
-                }
-              }),
-              bpPerPx,
-            },
-          )) as FeatureStats
-          const { scoreMin, scoreMean, scoreStdDev } = results
-
-          // localsd uses heuristic to avoid unnecessary scoreMin<0 if the
-          // scoreMin is never less than 0 helps with most coverage bigwigs
-          // just being >0
-          return autoscaleType === 'localsd'
-            ? {
-                ...results,
-                scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
-                scoreMax: scoreMean + nd * scoreStdDev,
-              }
-            : results
-        }
-        if (autoscaleType === 'zscale') {
-          return rpcManager.call(
-            sessionId,
-            'WiggleGetGlobalStats',
-            params,
-          ) as Promise<FeatureStats>
-        }
-        throw new Error(`invalid autoscaleType '${autoscaleType}'`)
-      }
       return {
-        // re-runs stats and refresh whole display on reload
+        /**
+         * #action
+         * re-runs stats and refresh whole display on reload
+         */
         async reload() {
           self.setError()
           const aborter = new AbortController()
-          let stats
+          self.setLoading(aborter)
           try {
-            stats = await getStats({
+            const stats = await getStats(self, {
               signal: aborter.signal,
-              filters: self.filters,
+              ...self.renderProps(),
             })
             if (isAlive(self)) {
               self.updateStats(stats)
@@ -564,45 +696,11 @@ const stateModelFactory = (
           }
         },
         afterAttach() {
-          addDisposer(
-            self,
-            autorun(
-              async () => {
-                try {
-                  const aborter = new AbortController()
-                  const view = getContainingView(self) as LGV
-                  self.setLoading(aborter)
-
-                  if (!view.initialized) {
-                    return
-                  }
-
-                  if (!self.estimatedStatsReady) {
-                    return
-                  }
-                  if (self.regionTooLarge) {
-                    return
-                  }
-
-                  const wiggleStats = await getStats({
-                    signal: aborter.signal,
-                    filters: self.filters,
-                  })
-
-                  if (isAlive(self)) {
-                    self.updateStats(wiggleStats)
-                  }
-                } catch (e) {
-                  if (!isAbortException(e) && isAlive(self)) {
-                    console.error(e)
-                    self.setError(e)
-                  }
-                }
-              },
-              { delay: 1000 },
-            ),
-          )
+          statsAutorun(self)
         },
+        /**
+         * #action
+         */
         async renderSvg(opts: ExportSvgOpts) {
           await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
@@ -623,6 +721,7 @@ const stateModelFactory = (
         },
       }
     })
+}
 
 export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>

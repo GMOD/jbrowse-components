@@ -2,10 +2,16 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { baseLinearDisplayConfigSchema } from '../BaseLinearDisplay'
 
-export default function configSchemaFactory(pluginManager: PluginManager) {
+/**
+ * #config LinearBasicDisplay
+ */
+function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearBasicDisplay',
     {
+      /**
+       * #slot
+       */
       mouseover: {
         type: 'string',
         description: 'what to display in a given mouseover',
@@ -13,8 +19,19 @@ export default function configSchemaFactory(pluginManager: PluginManager) {
 
         contextVariable: ['feature'],
       },
+      /**
+       * #slot
+       */
       renderer: pluginManager.pluggableConfigSchemaType('renderer'),
     },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {
+      /**
+       * #baseConfiguration
+       */
+      baseConfiguration: baseLinearDisplayConfigSchema,
+      explicitlyTyped: true,
+    },
   )
 }
+
+export default configSchemaFactory

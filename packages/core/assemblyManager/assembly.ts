@@ -1,17 +1,20 @@
-import jsonStableStringify from 'json-stable-stringify'
 import { getParent, types, Instance, IAnyType } from 'mobx-state-tree'
+import jsonStableStringify from 'json-stable-stringify'
 import AbortablePromiseCache from 'abortable-promise-cache'
-import { Feature } from '../util/simpleFeature'
-import { getConf } from '../configuration'
+
+// locals
+import { getConf, AnyConfigurationModel } from '../configuration'
 import {
   BaseRefNameAliasAdapter,
   RegionsAdapter,
 } from '../data_adapters/BaseAdapter'
 import PluginManager from '../PluginManager'
-import { Region } from '../util/types'
-import { makeAbortableReaction, when } from '../util'
+import { when, Region, Feature } from '../util'
 import QuickLRU from '../util/QuickLRU'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+
+const refNameRegex = new RegExp(
+  '[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*',
+)
 
 // Based on the UCSC Genome Browser chromosome color palette:
 // https://github.com/ucscGenomeBrowser/kent/blob/a50ed53aff81d6fb3e34e6913ce18578292bc24e/src/hg/inc/chromColors.h
@@ -48,7 +51,7 @@ const refNameColors = [
 
 async function loadRefNameMap(
   assembly: Assembly,
-  adapterConf: unknown,
+  adapterConfig: unknown,
   options: BaseOptions,
   signal?: AbortSignal,
 ) {
@@ -62,7 +65,7 @@ async function loadRefNameMap(
     sessionId,
     'CoreGetRefNames',
     {
-      adapterConfig: adapterConf,
+      adapterConfig,
       signal,
       ...options,
     },
@@ -97,11 +100,7 @@ async function loadRefNameMap(
 
 // Valid refName pattern from https://samtools.github.io/hts-specs/SAMv1.pdf
 function checkRefName(refName: string) {
-  if (
-    !refName.match(
-      /[0-9A-Za-z!#$%&+./:;?@^_|~-][0-9A-Za-z!#$%&*+./:;=?@^_|~-]*/,
-    )
-  ) {
+  if (!refName.match(refNameRegex)) {
     throw new Error(`Encountered invalid refName: "${refName}"`)
   }
 }
@@ -117,11 +116,17 @@ export interface BaseOptions {
   sessionId: string
   statusCallback?: Function
 }
+
 interface CacheData {
   adapterConf: unknown
   self: Assembly
   sessionId: string
   options: BaseOptions
+}
+
+export interface RefNameMap {
+  forwardMap: RefNameAliases
+  reverseMap: RefNameAliases
 }
 
 export interface BasicRegion {
@@ -130,15 +135,22 @@ export interface BasicRegion {
   refName: string
   assemblyName: string
 }
+
+export interface Loading {
+  adapterRegionsWithAssembly: Region[]
+  refNameAliases: RefNameAliases
+  lowerCaseRefNameAliases: RefNameAliases
+  cytobands: Feature[]
+}
 export default function assemblyFactory(
   assemblyConfigType: IAnyType,
-  pluginManager: PluginManager,
+  pm: PluginManager,
 ) {
-  const adapterLoads = new AbortablePromiseCache({
+  const adapterLoads = new AbortablePromiseCache<CacheData, RefNameMap>({
     cache: new QuickLRU({ maxSize: 1000 }),
     async fill(
       args: CacheData,
-      abortSignal?: AbortSignal,
+      signal?: AbortSignal,
       statusCallback?: Function,
     ) {
       const { adapterConf, self, options } = args
@@ -146,31 +158,45 @@ export default function assemblyFactory(
         self,
         adapterConf,
         { ...options, statusCallback },
-        abortSignal,
+        signal,
       )
     },
   })
-
   return types
     .model({
       configuration: types.safeReference(assemblyConfigType),
     })
     .volatile(() => ({
-      error: undefined as Error | undefined,
-      regions: undefined as BasicRegion[] | undefined,
-      refNameAliases: undefined as { [key: string]: string } | undefined,
+      error: undefined as unknown,
+      loaded: false,
+      loadingP: undefined as Promise<void> | undefined,
+      volatileRegions: undefined as BasicRegion[] | undefined,
+      refNameAliases: undefined as RefNameAliases | undefined,
+      lowerCaseRefNameAliases: undefined as RefNameAliases | undefined,
       cytobands: undefined as Feature[] | undefined,
     }))
     .views(self => ({
       get initialized() {
+        // @ts-ignore
+        self.load()
         return !!self.refNameAliases
       },
       get name(): string {
         return getConf(self, 'name')
       },
 
+      get regions() {
+        // @ts-ignore
+        self.load()
+        return self.volatileRegions
+      },
+
       get aliases(): string[] {
         return getConf(self, 'aliases')
+      },
+
+      get displayName(): string | undefined {
+        return getConf(self, 'displayName')
       },
 
       hasName(name: string) {
@@ -180,37 +206,58 @@ export default function assemblyFactory(
       get allAliases() {
         return [this.name, ...this.aliases]
       },
-      get refNames() {
-        return self.regions?.map(region => region.refName)
-      },
+
+      // note: lowerCaseRefNameAliases not included here: this allows the list
+      // of refnames to be just the "normal casing", but things like
+      // getCanonicalRefName can resolve a lower-case name if needed
       get allRefNames() {
         return !self.refNameAliases
           ? undefined
           : Object.keys(self.refNameAliases)
       },
+
+      get lowerCaseRefNames() {
+        return !self.lowerCaseRefNameAliases
+          ? undefined
+          : Object.keys(self.lowerCaseRefNameAliases || {})
+      },
+
+      get allRefNamesWithLowerCase() {
+        return this.allRefNames && this.lowerCaseRefNames
+          ? [...new Set([...this.allRefNames, ...this.lowerCaseRefNames])]
+          : undefined
+      },
       get rpcManager() {
-        return getParent(self, 2).rpcManager
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return getParent<any>(self, 2).rpcManager
       },
       get refNameColors() {
         const colors: string[] = getConf(self, 'refNameColors')
-        if (colors.length === 0) {
-          return refNameColors
-        }
-        return colors
+        return colors.length === 0 ? refNameColors : colors
+      },
+    }))
+    .views(self => ({
+      get refNames() {
+        return self.regions?.map(region => region.refName)
       },
     }))
     .views(self => ({
       getCanonicalRefName(refName: string) {
-        if (!self.refNameAliases) {
+        if (!self.refNameAliases || !self.lowerCaseRefNameAliases) {
           throw new Error(
             'aliases not loaded, we expect them to be loaded before getCanonicalRefName can be called',
           )
         }
-        return self.refNameAliases[refName]
+        return (
+          self.refNameAliases[refName] || self.lowerCaseRefNameAliases[refName]
+        )
       },
       getRefNameColor(refName: string) {
-        const idx = self.refNames?.findIndex(r => r === refName)
-        if (idx === undefined || idx === -1) {
+        if (!self.refNames) {
+          return undefined
+        }
+        const idx = self.refNames.findIndex(r => r === refName)
+        if (idx === -1) {
           return undefined
         }
         return self.refNameColors[idx % self.refNameColors.length]
@@ -225,45 +272,83 @@ export default function assemblyFactory(
       },
     }))
     .actions(self => ({
-      setLoading() {},
       setLoaded({
         adapterRegionsWithAssembly,
         refNameAliases,
+        lowerCaseRefNameAliases,
         cytobands,
-      }: {
-        adapterRegionsWithAssembly: Region[]
-        refNameAliases: RefNameAliases
-        cytobands: Feature[]
-      }) {
+      }: Loading) {
+        self.loaded = true
         this.setRegions(adapterRegionsWithAssembly)
-        this.setRefNameAliases(refNameAliases)
+        this.setRefNameAliases(refNameAliases, lowerCaseRefNameAliases)
         this.setCytobands(cytobands)
       },
-      setError(e: Error) {
+      setError(e: unknown) {
         console.error(e)
         self.error = e
       },
       setRegions(regions: Region[]) {
-        self.regions = regions
+        self.volatileRegions = regions
       },
-      setRefNameAliases(refNameAliases: RefNameAliases) {
-        self.refNameAliases = refNameAliases
+      setRefNameAliases(aliases: RefNameAliases, lcAliases: RefNameAliases) {
+        self.refNameAliases = aliases
+        self.lowerCaseRefNameAliases = lcAliases
       },
       setCytobands(cytobands: Feature[]) {
         self.cytobands = cytobands
       },
-      afterAttach() {
-        makeAbortableReaction(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          self as any,
-          // @ts-ignore
-          makeLoadAssemblyData(pluginManager),
-          loadAssemblyReaction,
-          { name: `${self.name} assembly loading`, fireImmediately: true },
-          this.setLoading,
-          this.setLoaded,
-          this.setError,
+      setLoadingP(p?: Promise<void>) {
+        self.loadingP = p
+      },
+      load() {
+        if (!self.loadingP) {
+          self.loadingP = this.loadPre().catch(e => {
+            this.setLoadingP(undefined)
+            this.setError(e)
+          })
+        }
+        return self.loadingP
+      },
+      async loadPre() {
+        const conf = self.configuration
+        const refNameAliasesAdapterConf = conf.refNameAliases?.adapter
+        const cytobandAdapterConf = conf.cytobands?.adapter
+        const sequenceAdapterConf = conf.sequence.adapter
+        const assemblyName = self.name
+
+        const regions = await getAssemblyRegions(sequenceAdapterConf, pm)
+        const adapterRegionsWithAssembly = regions.map(r => {
+          checkRefName(r.refName)
+          return { ...r, assemblyName }
+        })
+        const refNameAliases: RefNameAliases = {}
+
+        const ret = await getRefNameAliases(refNameAliasesAdapterConf, pm)
+        const cytobands = await getCytobands(cytobandAdapterConf, pm)
+        ret.forEach(({ refName, aliases }) => {
+          aliases.forEach(a => {
+            checkRefName(a)
+            refNameAliases[a] = refName
+          })
+        })
+        // add identity to the refNameAliases list
+        adapterRegionsWithAssembly.forEach(region => {
+          refNameAliases[region.refName] = region.refName
+        })
+
+        const lowerCaseRefNameAliases = Object.fromEntries(
+          Object.entries(refNameAliases).map(([key, val]) => [
+            key.toLowerCase(),
+            val,
+          ]),
         )
+
+        this.setLoaded({
+          adapterRegionsWithAssembly,
+          refNameAliases,
+          lowerCaseRefNameAliases,
+          cytobands,
+        })
       },
     }))
     .views(self => ({
@@ -312,98 +397,21 @@ export default function assemblyFactory(
     }))
 }
 
-function makeLoadAssemblyData(pluginManager: PluginManager) {
-  return (self: Assembly) => {
-    if (self.configuration) {
-      // use full configuration instead of snapshot of the config, the
-      // rpcManager normally receives a snapshot but we bypass rpcManager here
-      // to avoid spinning up a webworker
-      const { sequence, refNameAliases, cytobands } = self.configuration
-      const sequenceAdapterConfig = sequence.adapter
-      const refNameAliasesAdapterConfig = refNameAliases?.adapter
-      const cytobandAdapterConfig = cytobands?.adapter
-      return {
-        sequenceAdapterConfig,
-        assemblyName: self.name,
-        refNameAliasesAdapterConfig,
-        cytobandAdapterConfig,
-        pluginManager,
-      }
-    }
-    return undefined
-  }
-}
-async function loadAssemblyReaction(
-  props: ReturnType<ReturnType<typeof makeLoadAssemblyData>> | undefined,
-  signal: AbortSignal,
-) {
-  if (!props) {
-    return
-  }
-
-  const {
-    sequenceAdapterConfig,
-    assemblyName,
-    refNameAliasesAdapterConfig,
-    cytobandAdapterConfig,
-    pluginManager,
-  } = props
-
-  const adapterRegions = await getAssemblyRegions(
-    sequenceAdapterConfig,
-    pluginManager,
-    signal,
-  )
-  const adapterRegionsWithAssembly = adapterRegions.map(adapterRegion => {
-    checkRefName(adapterRegion.refName)
-    return { ...adapterRegion, assemblyName }
-  })
-  const refNameAliases: RefNameAliases = {}
-
-  const aliases = await getRefNameAliases(
-    refNameAliasesAdapterConfig,
-    pluginManager,
-    signal,
-  )
-  const cytobands = await getCytobands(cytobandAdapterConfig, pluginManager)
-  aliases.forEach(({ refName, aliases }) => {
-    aliases.forEach(alias => {
-      checkRefName(alias)
-      refNameAliases[alias] = refName
-    })
-  })
-  // add identity to the refNameAliases list
-  adapterRegionsWithAssembly.forEach(region => {
-    refNameAliases[region.refName] = region.refName
-  })
-
-  return { adapterRegionsWithAssembly, refNameAliases, cytobands }
-}
-
 async function getRefNameAliases(
   config: AnyConfigurationModel,
-  pluginManager: PluginManager,
+  pm: PluginManager,
   signal?: AbortSignal,
 ) {
-  const type = pluginManager.getAdapterType(config.type)
-  const CLASS = await type.getAdapterClass?.()
-  const adapter = new CLASS(
-    config,
-    undefined,
-    pluginManager,
-  ) as BaseRefNameAliasAdapter
-  return adapter.getRefNameAliases({
-    signal,
-  })
+  const type = pm.getAdapterType(config.type)
+  const CLASS = await type.getAdapterClass()
+  const adapter = new CLASS(config, undefined, pm) as BaseRefNameAliasAdapter
+  return adapter.getRefNameAliases({ signal })
 }
 
-async function getCytobands(
-  config: AnyConfigurationModel,
-  pluginManager: PluginManager,
-) {
-  const type = pluginManager.getAdapterType(config.type)
+async function getCytobands(config: AnyConfigurationModel, pm: PluginManager) {
+  const type = pm.getAdapterType(config.type)
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pluginManager)
+  const adapter = new CLASS(config, undefined, pm)
 
   // @ts-ignore
   return adapter.getData()
@@ -411,12 +419,12 @@ async function getCytobands(
 
 async function getAssemblyRegions(
   config: AnyConfigurationModel,
-  pluginManager: PluginManager,
+  pm: PluginManager,
   signal?: AbortSignal,
 ) {
-  const type = pluginManager.getAdapterType(config.type)
+  const type = pm.getAdapterType(config.type)
   const CLASS = await type.getAdapterClass()
-  const adapter = new CLASS(config, undefined, pluginManager) as RegionsAdapter
+  const adapter = new CLASS(config, undefined, pm) as RegionsAdapter
   return adapter.getRegions({ signal })
 }
 

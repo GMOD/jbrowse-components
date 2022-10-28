@@ -1,5 +1,6 @@
 import React from 'react'
-import { Grid, Paper, Typography, makeStyles } from '@material-ui/core'
+import { Grid, Paper, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
 import { LogoFull } from '@jbrowse/core/ui/Logo'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -8,9 +9,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import LauncherPanel from './LauncherPanel'
 import RecentSessionPanel from './RecentSessionsPanel'
 
-import { version } from '../../package.json'
+import packageJSON from '../../package.json'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     marginLeft: 100,
     marginRight: 100,
@@ -36,12 +37,12 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function LogoWithVersion() {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.logo}>
       <LogoFull />
       <Typography variant="h6" style={{ float: 'right' }}>
-        v{version}
+        v{packageJSON.version}
       </Typography>
     </div>
   )
@@ -53,7 +54,7 @@ export default function StartScreen({
   setPluginManager: (arg: PluginManager) => void
   setError: (arg: unknown) => void
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
   return (
     <div>

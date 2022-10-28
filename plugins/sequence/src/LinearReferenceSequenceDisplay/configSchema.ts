@@ -1,8 +1,18 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { configSchema as divSequenceRendererConfigSchema } from '../DivSequenceRenderer'
+import { default as divSequenceRendererConfigSchema } from '../DivSequenceRenderer/configSchema'
+
+/**
+ * #config LinearReferenceSequenceDisplay
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export const configSchema = ConfigurationSchema(
   'LinearReferenceSequenceDisplay',
-  { renderer: divSequenceRendererConfigSchema },
+  {
+    /**
+     * #slot
+     */
+    renderer: divSequenceRendererConfigSchema,
+  },
   { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )

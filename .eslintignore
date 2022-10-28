@@ -3,6 +3,7 @@
 **/node_modules/**
 **/build/**
 **/dist/**
+**/esm/**
 **/umd/**
 **/lib/**
 **/tmp/**
@@ -12,3 +13,9 @@ products/jbrowse-web/scripts/**
 /products/jbrowse-web/config/
 products/jbrowse-desktop/public/electron.js
 products/jbrowse-desktop/public/generateFastaIndex.js
+/demos/
+webpack.config.js
+craco.config.js
+packages/core/util/QuickLRU.js
+packages/core/util/QuickLRU.d.ts
+**/umd_plugin.js

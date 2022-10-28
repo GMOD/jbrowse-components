@@ -1,6 +1,6 @@
-import { types, getEnv, getParent } from 'mobx-state-tree'
+import { types, getParent, Instance } from 'mobx-state-tree'
 import { openLocation } from '@jbrowse/core/util/io'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getEnv } from '@jbrowse/core/util'
 
 // 30MB
 const IMPORT_SIZE_LIMIT = 30_000_000
@@ -48,7 +48,8 @@ const ImportWizard = types
       )
     },
     get canCancel() {
-      return getParent(self).readyToDisplay
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return getParent<any>(self).readyToDisplay
     },
 
     get fileName() {
@@ -64,10 +65,11 @@ const ImportWizard = types
     },
 
     isValidRefName(refName: string, assemblyName?: string) {
-      return getSession(self).assemblyManager.isValidRefName(
-        refName,
-        assemblyName,
-      )
+      const { assemblyManager } = getSession(self)
+      if (!assemblyName) {
+        return false
+      }
+      return assemblyManager.isValidRefName(refName, assemblyName)
     },
   }))
   .actions(self => ({
@@ -122,7 +124,8 @@ const ImportWizard = types
 
     cancelButton() {
       self.error = undefined
-      getParent(self).setDisplayMode()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getParent<any>(self).setDisplayMode()
     },
 
     // fetch and parse the file, make a new Spreadsheet model for it,
@@ -145,34 +148,39 @@ const ImportWizard = types
       }
 
       const { unzip } = await import('@gmod/bgzf-filehandle')
-
-      const filehandle = openLocation(
-        self.fileSource,
-        getEnv(self).pluginManager,
-      )
-
+      const { pluginManager } = getEnv(self)
+      const filehandle = openLocation(self.fileSource, pluginManager)
       try {
-        await filehandle.stat().then(stat => {
-          if (stat.size > IMPORT_SIZE_LIMIT) {
-            throw new Error(
-              `File is too big. Tabular files are limited to at most ${(
-                IMPORT_SIZE_LIMIT / 1000
-              ).toLocaleString()}kb.`,
-            )
-          }
-        })
+        const stat = await filehandle.stat()
+        if (stat.size > IMPORT_SIZE_LIMIT) {
+          throw new Error(
+            `File is too big. Tabular files are limited to at most ${(
+              IMPORT_SIZE_LIMIT / 1000
+            ).toLocaleString()}kb.`,
+          )
+        }
       } catch (e) {
+        // not required for stat to succeed to proceed, but it is helpful
         console.warn(e)
       }
-      await filehandle
-        .readFile()
-        .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
-        .then(buffer => typeParser(buffer, self))
-        .then(spreadsheet => {
-          this.setLoaded()
-          getParent(self).displaySpreadsheet(spreadsheet)
-        })
+
+      try {
+        await filehandle
+          .readFile()
+          .then(buffer => (self.requiresUnzip ? unzip(buffer) : buffer))
+          .then(buffer => typeParser(buffer, self))
+          .then(spreadsheet => {
+            this.setLoaded()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            getParent<any>(self).displaySpreadsheet(spreadsheet)
+          })
+      } catch (e) {
+        this.setError(e)
+      }
     },
   }))
+
+export type ImportWizardStateModel = typeof ImportWizard
+export type ImportWizardModel = Instance<ImportWizardStateModel>
 
 export default ImportWizard

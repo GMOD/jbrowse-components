@@ -88,3 +88,8 @@ The read vs reference visualization can show the "sequence track" on the "read"
 to see which bases are inserted. Users can also use the "Get sequence" click
 and drag to get the sequence of the contents of the insertions or unaligned
 portions of the read (e.g. softclipped parts)
+
+---
+
+![](/img/alignments/modifications2.png)
+A hypo-methylated CpG island shown using the MM tag with nanopore reads

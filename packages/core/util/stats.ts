@@ -17,7 +17,7 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreStdDev: number
 }
 
-/*
+/**
  * calculate standard deviation using the 'shortcut method' that accepts
  * the sum and the sum squares of the elements
  *
@@ -25,9 +25,8 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
  * @param sumSquares - sum(i^2, 1..n)
  * @param n - number of elements
  * @param population - boolean: use population instead of sample correction
- * @return the estimated std deviation
+ * @returns - the estimated std deviation
  */
-
 export function calcStdFromSums(
   sum: number,
   sumSquares: number,
@@ -51,9 +50,9 @@ export function calcStdFromSums(
   return variance < 0 ? 0 : Math.sqrt(variance)
 }
 
-/*
+/**
  * @param stats - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
- * @return - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
+ * @returns - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
  */
 export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   return {
@@ -68,11 +67,11 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
   }
 }
 
-/*
+/**
  * calculates per-base scores for variable width features over a region
  * @param region - object contains start, end
  * @param features - list of features with start, end, score
- * @return array of numeric scores
+ * @returns array of numeric scores
  */
 export function calcPerBaseStats(
   region: NoAssemblyRegion,
@@ -103,43 +102,38 @@ export function calcPerBaseStats(
   return scores
 }
 
-/*
+interface Seed {
+  scoreMin: number
+  scoreMax: number
+  scoreSum: number
+  scoreSumSquares: number
+  featureCount: number
+}
+
+/**
  * transform a list of scores to summary statistics
  * @param region - object with start, end
- * @param feats - array of features which are possibly summary features
- * @return - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
+ * @param features - array of features which are possibly summary features
+ * @returns - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export async function scoresToStats(
   region: NoAssemblyRegion,
   features: Observable<Feature>,
-): Promise<FeatureStats> {
+) {
   const { start, end } = region
 
   const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
     await features
       .pipe(
         reduce(
-          (
-            seed: {
-              scoreMin: number
-              scoreMax: number
-              scoreSum: number
-              scoreSumSquares: number
-              featureCount: number
-            },
-            f: Feature,
-          ) => {
-            const score = f.get('score')
-            seed.scoreMax = Math.max(
-              seed.scoreMax,
-              f.get('summary') ? f.get('maxScore') : score,
-            )
-            seed.scoreMin = Math.min(
-              seed.scoreMin,
-              f.get('summary') ? f.get('minScore') : score,
-            )
-            seed.scoreSum += score
-            seed.scoreSumSquares += score * score
+          (seed: Seed, f: Feature) => {
+            const s = f.get('score')
+            const summary = f.get('summary')
+            const { scoreMax, scoreMin } = seed
+            seed.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
+            seed.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
+            seed.scoreSum += s
+            seed.scoreSumSquares += s * s
             seed.featureCount += 1
 
             return seed

@@ -6,9 +6,9 @@ title: About tracks
 ## What is a track?
 
 A track is the place to display your data files in JBrowse Linear Genome View.
-For this tutorial we're going to add a gene track, an
-[alignments track](../../user_guide#alignments-tracks), and a
-[variants track](../../user_guide#variant-tracks). We're just going to use basic
+For this tutorial we're going to add a gene track, an [alignments
+track](/docs/user_guides/alignment_track), and a [variants
+track](/docs/user_guides/variant_track). We're just going to use basic
 configuration, but check the links for the track types to see what kinds of
 things you can configure in them.
 
@@ -45,8 +45,8 @@ jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments
 jbrowse add-track https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz --name "1000 Genomes Variant Calls" --category "1000 Genomes, Variants" --skipCheck
 ```
 
-Open "config.json" again and look at the tracks that were generated. You can see
-that again, it has guessed index locations for you, which you can change if
+Open "config.json" again and look at the tracks that were generated. You can
+see that again, it has guessed index locations for you, which you can change if
 needed. Create a new file called "tracks.js" and copy the tracks array into it
 and have it be exported, like this:
 

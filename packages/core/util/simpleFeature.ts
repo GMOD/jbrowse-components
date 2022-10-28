@@ -9,6 +9,7 @@ export interface Feature {
   get(name: 'refName'): string
   get(name: 'start'): number
   get(name: 'end'): number
+  get(name: 'subfeatures'): Feature[] | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(name: string): any
 
@@ -38,7 +39,7 @@ export interface Feature {
    */
   children(): Feature[] | undefined
 
-  /*
+  /**
    * Convert to JSON
    */
   toJSON(): SimpleFeatureSerialized
@@ -63,7 +64,7 @@ export interface SimpleFeatureArgs {
 }
 
 // subfeatures do not have to have uniqueId
-interface SimpleFeatureSerializedNoId {
+export interface SimpleFeatureSerializedNoId {
   [key: string]: unknown
   parentId?: string
   subfeatures?: SimpleFeatureSerializedNoId[]

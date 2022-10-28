@@ -3,17 +3,18 @@ import { observer } from 'mobx-react'
 import {
   Button,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   IconButton,
   Typography,
   TextField,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 
-import CloseIcon from '@material-ui/icons/Close'
+import CloseIcon from '@mui/icons-material/Close'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   root: {
     width: 500,
   },
@@ -28,15 +29,17 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function SetMaxHeightDlg(props: {
+function SetMaxHeightDlg({
+  model,
+  handleClose,
+}: {
   model: {
     maxHeight?: number
     setMaxHeight: Function
   }
   handleClose: () => void
 }) {
-  const { model, handleClose } = props
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { maxHeight = '' } = model
   const [max, setMax] = useState(`${maxHeight}`)
 
@@ -53,25 +56,27 @@ function SetMaxHeightDlg(props: {
           aria-label="close"
           className={classes.closeButton}
           onClick={handleClose}
+          size="large"
         >
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent>
-        <div className={classes.root}>
-          <Typography>Set max height for the track</Typography>
-          <TextField
-            value={max}
-            onChange={event => {
-              setMax(event.target.value)
-            }}
-            placeholder="Enter max score"
-          />
+      <DialogContent className={classes.root}>
+        <Typography>
+          Set max height for the track. For example, you can increase this if
+          the layout says &quot;Max height reached&quot;
+        </Typography>
+        <TextField
+          value={max}
+          onChange={event => setMax(event.target.value)}
+          placeholder="Enter max score"
+        />
+        <DialogActions>
           <Button
             variant="contained"
             color="primary"
             type="submit"
-            style={{ marginLeft: 20 }}
+            autoFocus
             onClick={() => {
               model.setMaxHeight(
                 max !== '' && !Number.isNaN(+max) ? +max : undefined,
@@ -81,7 +86,14 @@ function SetMaxHeightDlg(props: {
           >
             Submit
           </Button>
-        </div>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => handleClose()}
+          >
+            Cancel
+          </Button>
+        </DialogActions>
       </DialogContent>
     </Dialog>
   )

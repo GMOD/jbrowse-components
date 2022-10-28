@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config GtfAdapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const GtfAdapter = ConfigurationSchema(
   'GtfAdapter',
   {
+    /**
+     * #slot
+     */
     gtfLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.gtf', locationType: 'UriLocation' },
@@ -10,3 +18,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default GtfAdapter

@@ -1,19 +1,7 @@
 import { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { readConfObject } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
 import PAFAdapter from '../PAFAdapter/PAFAdapter'
-
-interface PafRecord {
-  records: NoAssemblyRegion[]
-  extra: {
-    blockLen: number
-    mappingQual: number
-    numMatches: number
-    strand: number
-  }
-}
 
 function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
@@ -101,24 +89,27 @@ function paf_delta2paf(lines: string[]) {
         }
         cigar.push((re - rs - x) << 4)
         for (let i = 0; i < cigar.length; ++i) {
-          blen += cigar[i] >> 4
-          cigar_str.push((cigar[i] >> 4) + 'MID'.charAt(cigar[i] & 0xf))
+          const rlen = cigar[i] >> 4
+          blen += rlen
+          cigar_str.push(rlen + 'MID'.charAt(cigar[i] & 0xf))
         }
 
         records.push({
-          records: [
-            { refName: qname, start: qs, end: qe },
-            { refName: rname, start: rs, end: re },
-          ],
+          qname,
+          qstart: qs,
+          qend: qe,
+          tname: rname,
+          tstart: rs,
+          tend: re,
+          strand,
           extra: {
             numMatches: blen - NM,
             blockLen: blen,
-            strand,
             mappingQual: 0,
             NM,
             cg: cigar_str.join(''),
           },
-        } as PafRecord)
+        })
       } else if (d > 0) {
         const l = d - 1
         x += l + 1
@@ -151,11 +142,8 @@ function paf_delta2paf(lines: string[]) {
 
 export default class DeltaAdapter extends PAFAdapter {
   async setupPre(opts?: BaseOptions) {
-    const deltaLocation = openLocation(
-      readConfObject(this.config, 'deltaLocation'),
-      this.pluginManager,
-    )
-    const buffer = (await deltaLocation.readFile(opts)) as Buffer
+    const loc = openLocation(this.getConf('deltaLocation'), this.pluginManager)
+    const buffer = (await loc.readFile(opts)) as Buffer
     const buf = isGzip(buffer) ? await unzip(buffer) : buffer
     // 512MB  max chrome string length is 512MB
     if (buf.length > 536_870_888) {
@@ -163,6 +151,6 @@ export default class DeltaAdapter extends PAFAdapter {
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
 
-    return paf_delta2paf(text.split('\n').filter(line => !!line))
+    return paf_delta2paf(text.split(/\n|\r\n|\r/).filter(line => !!line))
   }
 }

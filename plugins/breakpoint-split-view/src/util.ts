@@ -49,7 +49,7 @@ export function yPos(
   let offset = 0
   const { showCoverage, SNPCoverageDisplay } = display
   if (SNPCoverageDisplay && showCoverage) {
-    offset = SNPCoverageDisplay.height + 5
+    offset = SNPCoverageDisplay.height
   }
   return (
     clamp(c[TOP] - display.scrollTop + cheight(c) / 2 + offset, min, max) +

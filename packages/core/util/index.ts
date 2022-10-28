@@ -1,29 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useRef, useState } from 'react'
+import isObject from 'is-object'
+import PluginManager from '../PluginManager'
 import {
-  getParent,
-  isAlive,
-  IAnyStateTreeNode,
-  getSnapshot,
-  hasParent,
   addDisposer,
+  getParent,
+  getSnapshot,
+  getEnv as getEnvMST,
+  isAlive,
   isStateTreeNode,
+  hasParent,
+  IAnyStateTreeNode,
+  IStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import fromEntries from 'object.fromentries'
-import { useEffect, useRef, useState } from 'react'
-import merge from 'deepmerge'
 import SimpleFeature, { Feature, isFeature } from './simpleFeature'
 import {
-  TypeTestedByPredicate,
   isSessionModel,
   isDisplayModel,
   isViewModel,
   isTrackModel,
-  Region,
   AssemblyManager,
+  Region,
+  TypeTestedByPredicate,
 } from './types'
 import { isAbortException, checkAbortSignal } from './aborting'
+import { BaseBlock } from './blockTypes'
+import { isUriLocation } from './types'
 
+export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
@@ -33,11 +38,6 @@ export type { Feature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
-
-if (!Object.fromEntries) {
-  // @ts-ignore
-  fromEntries.shim()
-}
 
 export const inDevelopment =
   typeof process === 'object' &&
@@ -102,13 +102,13 @@ export function findParentThat(
   if (!hasParent(node)) {
     throw new Error('node does not have parent')
   }
-  let currentNode: IAnyStateTreeNode | undefined = getParent(node)
+  let currentNode: IAnyStateTreeNode | undefined = getParent<any>(node)
   while (currentNode && isAlive(currentNode)) {
     if (predicate(currentNode)) {
       return currentNode
     }
     if (hasParent(currentNode)) {
-      currentNode = getParent(currentNode)
+      currentNode = getParent<any>(currentNode)
     } else {
       break
     }
@@ -263,7 +263,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * ```
  */
 export function assembleLocString(region: ParsedLocString): string {
-  const { assemblyName, refName, start, end } = region
+  const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
   if (start !== undefined) {
@@ -282,7 +282,11 @@ export function assembleLocString(region: ParsedLocString): string {
   } else {
     endString = start !== undefined ? '..' : ''
   }
-  return `${assemblyNameString}${refName}${startString}${endString}`
+  let rev = ''
+  if (reversed) {
+    rev = '[rev]'
+  }
+  return `${assemblyNameString}${refName}${startString}${endString}${rev}`
 }
 
 export interface ParsedLocString {
@@ -290,6 +294,7 @@ export interface ParsedLocString {
   refName: string
   start?: number
   end?: number
+  reversed?: boolean
 }
 
 export function parseLocStringOneBased(
@@ -299,10 +304,14 @@ export function parseLocStringOneBased(
   if (!locString) {
     throw new Error('no location string provided, could not parse')
   }
+  let reversed = false
+  if (locString.endsWith('[rev]')) {
+    reversed = true
+    locString = locString.replace(/\[rev\]$/, '')
+  }
   // remove any whitespace
   locString = locString.replace(/\s/, '')
-  // refNames can have colons :(
-  // https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
+  // refNames can have colons, ref https://samtools.github.io/hts-specs/SAMv1.pdf Appendix A
   const assemblyMatch = locString.match(/(\{(.+)\})?(.+)/)
   if (!assemblyMatch) {
     throw new Error(`invalid location string: "${locString}"`)
@@ -314,7 +323,7 @@ export function parseLocStringOneBased(
   const lastColonIdx = location.lastIndexOf(':')
   if (lastColonIdx === -1) {
     if (isValidRefName(location, assemblyName)) {
-      return { assemblyName, refName: location }
+      return { assemblyName, refName: location, reversed }
     }
     throw new Error(`Unknown reference sequence "${location}"`)
   }
@@ -341,6 +350,7 @@ export function parseLocStringOneBased(
             refName: prefix,
             start: +start.replace(/,/g, ''),
             end: +end.replace(/,/g, ''),
+            reversed,
           }
         }
       } else if (singleMatch) {
@@ -352,6 +362,7 @@ export function parseLocStringOneBased(
               assemblyName,
               refName: prefix,
               start: +start.replace(/,/g, ''),
+              reversed,
             }
           }
           return {
@@ -359,6 +370,7 @@ export function parseLocStringOneBased(
             refName: prefix,
             start: +start.replace(/,/g, ''),
             end: +start.replace(/,/g, ''),
+            reversed,
           }
         }
       } else {
@@ -367,10 +379,10 @@ export function parseLocStringOneBased(
         )
       }
     } else {
-      return { assemblyName, refName: prefix }
+      return { assemblyName, refName: prefix, reversed }
     }
   } else if (isValidRefName(location, assemblyName)) {
-    return { assemblyName, refName: location }
+    return { assemblyName, refName: location, reversed }
   }
   throw new Error(`unknown reference sequence name in location "${locString}"`)
 }
@@ -472,7 +484,7 @@ export function compareLocStrings(
  * @param min -
  * @param  max -
  */
-export function clamp(num: number, min: number, max: number): number {
+export function clamp(num: number, min: number, max: number) {
   if (num < min) {
     return min
   }
@@ -482,7 +494,7 @@ export function clamp(num: number, min: number, max: number): number {
   return num
 }
 
-function roundToNearestPointOne(num: number): number {
+function roundToNearestPointOne(num: number) {
   return Math.round(num * 10) / 10
 }
 
@@ -493,29 +505,30 @@ function roundToNearestPointOne(num: number): number {
  */
 export function bpToPx(
   bp: number,
-  region: { start: number; end: number; reversed?: boolean },
+  {
+    reversed,
+    end = 0,
+    start = 0,
+  }: { start?: number; end?: number; reversed?: boolean },
   bpPerPx: number,
-): number {
-  if (region.reversed) {
-    return roundToNearestPointOne((region.end - bp) / bpPerPx)
-  }
-  return roundToNearestPointOne((bp - region.start) / bpPerPx)
+) {
+  return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
 const oneEightyOverPi = 180.0 / Math.PI
 const piOverOneEighty = Math.PI / 180.0
-export function radToDeg(radians: number): number {
+export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }
-export function degToRad(degrees: number): number {
+export function degToRad(degrees: number) {
   return (degrees * piOverOneEighty) % (2 * Math.PI)
 }
 
 /**
  * @returns [x, y]
  */
-export function polarToCartesian(rho: number, theta: number): [number, number] {
-  return [rho * Math.cos(theta), rho * Math.sin(theta)]
+export function polarToCartesian(rho: number, theta: number) {
+  return [rho * Math.cos(theta), rho * Math.sin(theta)] as [number, number]
 }
 
 /**
@@ -523,10 +536,10 @@ export function polarToCartesian(rho: number, theta: number): [number, number] {
  * @param y - the y
  * @returns [rho, theta]
  */
-export function cartesianToPolar(x: number, y: number): [number, number] {
+export function cartesianToPolar(x: number, y: number) {
   const rho = Math.sqrt(x * x + y * y)
   const theta = Math.atan(y / x)
-  return [rho, theta]
+  return [rho, theta] as [number, number]
 }
 
 export function featureSpanPx(
@@ -548,8 +561,6 @@ export function bpSpanPx(
   return region.reversed ? [end, start] : [start, end]
 }
 
-export const objectFromEntries = Object.fromEntries.bind(Object)
-
 // do an array map of an iterable
 export function iterMap<T, U>(
   iterable: Iterable<T>,
@@ -563,31 +574,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-interface Assembly {
-  name: string
-  [key: string]: any
-}
-interface Track {
-  trackId: string
-  [key: string]: any
-}
-interface Config {
-  savedSessions: unknown[]
-  assemblies: Assembly[]
-  tracks: Track[]
-  defaultSession?: {}
-}
-// similar to electron.js
-export function mergeConfigs(A: Config, B: Config) {
-  const merged = merge(A, B)
-  if (B.defaultSession) {
-    merged.defaultSession = B.defaultSession
-  } else if (A.defaultSession) {
-    merged.defaultSession = A.defaultSession
-  }
-  return merged
 }
 
 // https://stackoverflow.com/a/53187807
@@ -639,6 +625,7 @@ export function makeAbortableReaction<T, U, V>(
     model: T,
     handle: IReactionPublic,
   ) => Promise<V>,
+  // @ts-ignore
   reactionOptions: IReactionOptions,
   startedFunction: (aborter: AbortController) => void,
   successFunction: (arg: V) => void,
@@ -656,49 +643,51 @@ export function makeAbortableReaction<T, U, V>(
     }
   }
 
-  const reactionDisposer = reaction(
-    () => {
-      try {
-        return dataFunction(self)
-      } catch (e) {
-        handleError(e)
-        return undefined
-      }
-    },
-    async (data, mobxReactionHandle) => {
-      if (inProgress && !inProgress.signal.aborted) {
-        inProgress.abort()
-      }
-
-      if (!isAlive(self)) {
-        return
-      }
-      inProgress = new AbortController()
-
-      const thisInProgress = inProgress
-      startedFunction(thisInProgress)
-      try {
-        const result = await asyncReactionFunction(
-          data,
-          thisInProgress.signal,
-          self,
-          mobxReactionHandle,
-        )
-        checkAbortSignal(thisInProgress.signal)
-        if (isAlive(self)) {
-          successFunction(result)
+  addDisposer(
+    self,
+    reaction(
+      () => {
+        try {
+          return dataFunction(self)
+        } catch (e) {
+          handleError(e)
+          return undefined
         }
-      } catch (e) {
-        if (thisInProgress && !thisInProgress.signal.aborted) {
-          thisInProgress.abort()
+      },
+      async (data, mobxReactionHandle) => {
+        if (inProgress && !inProgress.signal.aborted) {
+          inProgress.abort()
         }
-        handleError(e)
-      }
-    },
-    reactionOptions,
+
+        if (!isAlive(self)) {
+          return
+        }
+        inProgress = new AbortController()
+
+        const thisInProgress = inProgress
+        startedFunction(thisInProgress)
+        try {
+          const result = await asyncReactionFunction(
+            data,
+            thisInProgress.signal,
+            self,
+            // @ts-ignore
+            mobxReactionHandle,
+          )
+          checkAbortSignal(thisInProgress.signal)
+          if (isAlive(self)) {
+            successFunction(result)
+          }
+        } catch (e) {
+          if (thisInProgress && !thisInProgress.signal.aborted) {
+            thisInProgress.abort()
+          }
+          handleError(e)
+        }
+      },
+      reactionOptions,
+    ),
   )
-
-  addDisposer(self, reactionDisposer)
   addDisposer(self, () => {
     if (inProgress && !inProgress.signal.aborted) {
       inProgress.abort()
@@ -717,6 +706,7 @@ export function renameRegionIfNeeded(
   if (region && refNameMap && refNameMap[region.refName]) {
     // clone the region so we don't modify it
     if (isStateTreeNode(region)) {
+      // @ts-ignore
       region = { ...getSnapshot(region) }
     } else {
       region = { ...region }
@@ -738,7 +728,7 @@ export async function renameRegionsIfNeeded<
     signal?: AbortSignal
     adapterConfig: unknown
     sessionId: string
-    statusCallback?: Function
+    statusCallback?: (arg: string) => void
   },
 >(assemblyManager: AssemblyManager, args: ARGTYPE) {
   const { regions = [], adapterConfig } = args
@@ -781,12 +771,14 @@ export function stringify({
   oob,
 }: {
   coord: number
-  refName: string
+  refName?: string
   oob?: boolean
 }) {
-  return `${refName}:${coord.toLocaleString('en-US')}${
-    oob ? ' (out of bounds)' : ''
-  }`
+  return refName
+    ? `${refName}:${coord.toLocaleString('en-US')}${
+        oob ? ' (out of bounds)' : ''
+      }`
+    : ''
 }
 
 // this is recommended in a later comment in https://github.com/electron/electron/issues/2288
@@ -798,7 +790,11 @@ export const isElectron = /electron/i.test(
 )
 
 export function revcom(seqString: string) {
-  return complement(seqString).split('').reverse().join('')
+  return reverse(complement(seqString))
+}
+
+export function reverse(seqString: string) {
+  return seqString.split('').reverse().join('')
 }
 
 export const complement = (() => {
@@ -847,12 +843,12 @@ export const complement = (() => {
   }
 })()
 
-export function blobToDataURL(blob: Blob) {
+export function blobToDataURL(blob: Blob): Promise<string> {
   const a = new FileReader()
   return new Promise((resolve, reject) => {
     a.onload = e => {
       if (e.target) {
-        resolve(e.target.result)
+        resolve(e.target.result as string)
       } else {
         reject(new Error('unknown result reading blob from canvas'))
       }
@@ -873,19 +869,19 @@ export const rIC =
       : (cb: Function) => setTimeout(() => cb(), 1)
     : (cb: Function) => cb()
 
+// prettier-ignore
+const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
+
 // xref https://gist.github.com/tophtucker/62f93a4658387bb61e4510c37e2e97cf
 export function measureText(str: unknown, fontSize = 10) {
-  // prettier-ignore
-  const widths = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.2796875,0.2765625,0.3546875,0.5546875,0.5546875,0.8890625,0.665625,0.190625,0.3328125,0.3328125,0.3890625,0.5828125,0.2765625,0.3328125,0.2765625,0.3015625,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.5546875,0.2765625,0.2765625,0.584375,0.5828125,0.584375,0.5546875,1.0140625,0.665625,0.665625,0.721875,0.721875,0.665625,0.609375,0.7765625,0.721875,0.2765625,0.5,0.665625,0.5546875,0.8328125,0.721875,0.7765625,0.665625,0.7765625,0.721875,0.665625,0.609375,0.721875,0.665625,0.94375,0.665625,0.665625,0.609375,0.2765625,0.3546875,0.2765625,0.4765625,0.5546875,0.3328125,0.5546875,0.5546875,0.5,0.5546875,0.5546875,0.2765625,0.5546875,0.5546875,0.221875,0.240625,0.5,0.221875,0.8328125,0.5546875,0.5546875,0.5546875,0.5546875,0.3328125,0.5,0.2765625,0.5546875,0.5,0.721875,0.5,0.5,0.5,0.3546875,0.259375,0.353125,0.5890625]
   const avg = 0.5279276315789471
-  return (
-    String(str)
-      .split('')
-      .map(c =>
-        c.charCodeAt(0) < widths.length ? widths[c.charCodeAt(0)] : avg,
-      )
-      .reduce((cur, acc) => acc + cur, 0) * fontSize
-  )
+  const s = String(str)
+  let total = 0
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i)
+    total += widths[code] ?? avg
+  }
+  return total * fontSize
 }
 
 export const defaultStarts = ['ATG']
@@ -1052,61 +1048,135 @@ export type ViewSnap = {
   interRegionPaddingWidth: number
   minimumBlockWidth: number
   width: number
-  displayedRegions: {
+  offsetPx: number
+  staticBlocks: { contentBlocks: BaseBlock[]; blocks: BaseBlock[] }
+  displayedRegions: (IStateTreeNode & {
     start: number
     end: number
     refName: string
     reversed: boolean
-  }[]
+    assemblyName: string
+  })[]
 }
-export function viewBpToPx({
-  refName,
-  coord,
-  regionNumber,
-  self,
+
+// supported adapter types by text indexer
+//  ensure that this matches the method found in @jbrowse/text-indexing/util
+export function supportedIndexingAdapters(type: string) {
+  return [
+    'Gff3TabixAdapter',
+    'VcfTabixAdapter',
+    'Gff3Adapter',
+    'VcfAdapter',
+  ].includes(type)
+}
+
+export function getBpDisplayStr(totalBp: number) {
+  let str
+  if (Math.floor(totalBp / 1_000_000) > 0) {
+    str = `${parseFloat((totalBp / 1_000_000).toPrecision(3))}Mbp`
+  } else if (Math.floor(totalBp / 1_000) > 0) {
+    str = `${parseFloat((totalBp / 1_000).toPrecision(3))}Kbp`
+  } else {
+    str = `${toLocale(Math.floor(totalBp))}bp`
+  }
+  return str
+}
+
+export function toLocale(n: number) {
+  return n.toLocaleString('en-US')
+}
+
+export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
+  let str
+  if (Math.floor(bpPerPx / 1_000) > 0) {
+    str = `${toLocale(parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
+  } else {
+    str = `${toLocale(Math.floor(totalBp))}`
+  }
+  return str
+}
+
+export function getViewParams(model: IAnyStateTreeNode, exportSVG?: boolean) {
+  // @ts-ignore
+  const { dynamicBlocks, staticBlocks, offsetPx } = getContainingView(model)
+  const b = dynamicBlocks?.contentBlocks[0] || {}
+  const staticblock = staticBlocks?.contentBlocks[0] || {}
+  const staticblock1 = staticBlocks?.contentBlocks[1] || {}
+  return {
+    offsetPx: exportSVG ? 0 : offsetPx - staticblock.offsetPx,
+    offsetPx1: exportSVG ? 0 : offsetPx - staticblock1.offsetPx,
+    start: b.start,
+    end: b.end,
+  }
+}
+
+export function getLayoutId({
+  sessionId,
+  layoutId,
 }: {
-  refName: string
-  coord: number
-  regionNumber?: number
-  self: ViewSnap
+  sessionId: string
+  layoutId: string
 }) {
-  let offsetBp = 0
+  return sessionId + '-' + layoutId
+}
 
-  const interRegionPaddingBp = self.interRegionPaddingWidth * self.bpPerPx
-  const minimumBlockBp = self.minimumBlockWidth * self.bpPerPx
-  const index = self.displayedRegions.findIndex((region, idx) => {
-    const len = region.end - region.start
-    if (
-      refName === region.refName &&
-      coord >= region.start &&
-      coord <= region.end
-    ) {
-      if (regionNumber ? regionNumber === idx : true) {
-        offsetBp += region.reversed ? region.end - coord : coord - region.start
-        return true
-      }
+// Hook from https://usehooks.com/useLocalStorage/
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') {
+      return initialValue
     }
-
-    // add the interRegionPaddingWidth if the boundary is in the screen
-    // e.g. offset>=0 && offset<width
-    if (
-      len > minimumBlockBp &&
-      offsetBp / self.bpPerPx >= 0 &&
-      offsetBp / self.bpPerPx < self.width
-    ) {
-      offsetBp += len + interRegionPaddingBp
-    } else {
-      offsetBp += len
+    try {
+      const item = window.localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch (error) {
+      console.error(error)
+      return initialValue
     }
-    return false
   })
-  const found = self.displayedRegions[index]
-  if (found) {
-    return {
-      index,
-      offsetPx: Math.round(offsetBp / self.bpPerPx),
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore =
+        value instanceof Function ? value(storedValue) : value
+      setStoredValue(valueToStore)
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore))
+      }
+    } catch (error) {
+      console.error(error)
     }
   }
+  return [storedValue, setValue] as const
+}
 
-  return undefined
+export function getUriLink(value: { uri: string; baseUri?: string }) {
+  const { uri, baseUri = '' } = value
+  let href
+  try {
+    href = new URL(uri, baseUri).href
+  } catch (e) {
+    href = uri
+  }
+  return href
+}
+
+export function getStr(obj: unknown) {
+  return isObject(obj)
+    ? isUriLocation(obj)
+      ? getUriLink(obj)
+      : JSON.stringify(obj)
+    : String(obj)
+}
+
+// heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
+export function measureGridWidth(elements: string[]) {
+  return Math.max(
+    ...elements.map(element =>
+      Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
+    ),
+  )
+}
+
+export function getEnv(obj: any) {
+  return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }

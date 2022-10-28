@@ -93,10 +93,7 @@ export function readConfObject(
     ) {
       subConf = confObject.get(slotName)
     }
-    if (!subConf) {
-      return undefined
-    }
-    return readConfObject(subConf, newPath, args)
+    return subConf ? readConfObject(subConf, newPath, args) : undefined
   }
   return readConfObject(confObject, slotName, args)
 }
@@ -176,7 +173,9 @@ export function isBareConfigurationSchemaType(
   return false
 }
 
-export function isConfigurationSchemaType(thing: unknown): boolean {
+export function isConfigurationSchemaType(
+  thing: unknown,
+): thing is AnyConfigurationSchemaType {
   if (!isType(thing)) {
     return false
   }

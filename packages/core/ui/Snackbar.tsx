@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { IconButton, Snackbar } from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
-import Alert from '@material-ui/lab/Alert'
+import { Alert, Button, IconButton, Snackbar } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { AbstractSessionModel, NotificationLevel } from '../util'
+import { AbstractSessionModel, NotificationLevel, SnackAction } from '../util'
 
-type SnackbarMessage = [string, NotificationLevel]
+type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
 interface SnackbarSession extends AbstractSessionModel {
   snackbarMessages: SnackbarMessage[]
@@ -57,19 +56,39 @@ function MessageSnackbar({
     popSnackbarMessage()
     setOpen(false)
   }
-
-  const [message, level] = snackbarMessage || []
+  const [message, level, action] = snackbarMessage || []
   return (
     <Snackbar
       open={open && !!message}
       onClose={handleClose}
-      action={
-        <IconButton aria-label="close" color="inherit" onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      }
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
-      <Alert onClose={handleClose} severity={level || 'warning'}>
+      <Alert
+        onClose={handleClose}
+        action={
+          action ? (
+            <>
+              <Button
+                color="inherit"
+                onClick={e => {
+                  action.onClick()
+                  handleClose(e)
+                }}
+              >
+                {action.name}
+              </Button>
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                onClick={handleClose}
+              >
+                <CloseIcon />
+              </IconButton>
+            </>
+          ) : null
+        }
+        severity={level || 'warning'}
+      >
         {message}
       </Alert>
     </Snackbar>

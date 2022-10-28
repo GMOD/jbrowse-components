@@ -17,27 +17,30 @@ import {
   Menu,
   MenuItem,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import WarningIcon from '@material-ui/icons/Warning'
-import SettingsIcon from '@material-ui/icons/Settings'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { LogoFull, FactoryResetDialog, ErrorMessage } from '@jbrowse/core/ui'
 
-import { LogoFull, FactoryResetDialog } from '@jbrowse/core/ui'
+// icons
+import WarningIcon from '@mui/icons-material/Warning'
+import SettingsIcon from '@mui/icons-material/Settings'
+
+// locals
 import {
   NewEmptySession,
   NewLinearGenomeViewSession,
   NewSVInspectorSession,
-} from '@jbrowse/core/ui/NewSessionCards'
+} from './NewSessionCards'
 import RecentSessionCard from './RecentSessionCard'
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   newSession: {
-    backgroundColor: theme.palette.grey['300'],
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(6),
+    backgroundColor: theme.palette?.grey['300'],
+    padding: 8,
+    marginTop: 8,
   },
   header: {
-    margin: theme.spacing(2),
+    margin: 8, // theme.spacing(2),
   },
   settings: {
     float: 'right',
@@ -104,16 +107,16 @@ export default function StartScreen({
   rootModel: any
   onFactoryReset: Function
 }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
 
-  const [sessions, setSessions] = useState<Record<string, any> | undefined>()
-  const [sessionToDelete, setSessionToDelete] = useState<string | undefined>()
-  const [sessionToLoad, setSessionToLoad] = useState<string | undefined>()
+  const [sessionNames, setSessionNames] = useState<string[]>([])
+  const [sessionToDelete, setSessionToDelete] = useState<string>()
+  const [sessionToLoad, setSessionToLoad] = useState<string>()
+  const [error, setError] = useState<unknown>()
   const [updateSessionsList, setUpdateSessionsList] = useState(true)
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [reset, setReset] = useState(false)
 
-  const sessionNames = sessions !== undefined ? sessions : []
   useEffect(() => {
     ;(async () => {
       try {
@@ -121,9 +124,7 @@ export default function StartScreen({
           rootModel.activateSession(sessionToLoad)
         }
       } catch (e) {
-        setSessions(() => {
-          throw e
-        })
+        setError(e)
       }
     })()
   }, [rootModel, sessionToLoad])
@@ -133,37 +134,26 @@ export default function StartScreen({
       try {
         if (updateSessionsList) {
           setUpdateSessionsList(false)
-          const savedRootSessions = rootModel.savedSessions.map(
-            (rootSavedSession: any) => {
-              return JSON.parse(JSON.stringify(rootSavedSession))?.name
-            },
-          )
-          setSessions(savedRootSessions)
+          setSessionNames(rootModel.savedSessions.map((s: any) => s?.name))
         }
       } catch (e) {
-        setSessions(() => {
-          throw e
-        })
+        setError(e)
       }
     })()
   }, [rootModel.savedSessions, updateSessionsList])
 
-  if (!sessions) {
-    return (
-      <CircularProgress
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          marginTop: -25,
-          marginLeft: -25,
-        }}
-        size={50}
-      />
-    )
-  }
-
-  return (
+  return !sessionNames ? (
+    <CircularProgress
+      style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        marginTop: -25,
+        marginLeft: -25,
+      }}
+      size={50}
+    />
+  ) : (
     <>
       <FactoryResetDialog
         open={reset}
@@ -217,15 +207,16 @@ export default function StartScreen({
               maxHeight: 200,
             }}
           >
-            {sessionNames?.map((sessionName: string) => (
+            {sessionNames?.map((name: string) => (
               <RecentSessionCard
-                key={sessionName}
-                sessionName={sessionName}
-                onClick={() => setSessionToLoad(sessionName)}
-                onDelete={() => setSessionToDelete(sessionName)}
+                key={name}
+                sessionName={name}
+                onClick={() => setSessionToLoad(name)}
+                onDelete={() => setSessionToDelete(name)}
               />
             ))}
           </List>
+          {error ? <ErrorMessage error={error} /> : null}
         </div>
       </Container>
 
@@ -233,9 +224,7 @@ export default function StartScreen({
         anchorEl={menuAnchorEl}
         keepMounted
         open={Boolean(menuAnchorEl)}
-        onClose={() => {
-          setMenuAnchorEl(null)
-        }}
+        onClose={() => setMenuAnchorEl(null)}
       >
         <ListSubheader>Advanced Settings</ListSubheader>
         <MenuItem

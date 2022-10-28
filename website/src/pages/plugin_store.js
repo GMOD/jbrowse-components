@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from 'react'
 import copy from 'copy-to-clipboard'
 
@@ -37,6 +36,10 @@ import pluginJSON from '../../plugins.json'
 import pluginStyles from '../css/pluginStyles.module.css'
 
 const { plugins } = pluginJSON
+
+const theme = createTheme({
+  palette: { secondary: { main: '#ccc' }, primary: { main: '#3f51b5' } },
+})
 
 function TopDocumentation() {
   const [aboutSectionOpen, setAboutSectionOpen] = useState(false)
@@ -285,7 +288,3 @@ const configExample = `{
 }`
 
 export default PluginStore
-
-const theme = createTheme({
-  palette: { secondary: { main: '#ccc' }, primary: { main: '#3f51b5' } },
-})

@@ -14,6 +14,8 @@ yalc.lock
 **/package-lock.json
 **/__diff_output__/
 **/dist/
+**/esm/
 lerna-debug.log
 .yarn
 .yarnrc
+*.tsbuildinfo

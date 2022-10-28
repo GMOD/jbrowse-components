@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config Gff3Adapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const Gff3Adapter = ConfigurationSchema(
   'Gff3Adapter',
   {
+    /**
+     * #slot
+     */
     gffLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/my.gff', locationType: 'UriLocation' },
@@ -10,3 +18,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default Gff3Adapter

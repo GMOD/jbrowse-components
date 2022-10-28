@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config BigWigAdapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const BigWigAdapter = ConfigurationSchema(
   'BigWigAdapter',
   {
+    /**
+     * #slot
+     */
     bigWigLocation: {
       type: 'fileLocation',
       defaultValue: {
@@ -10,6 +18,17 @@ export default ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+
+    /**
+     * #slot
+     */
+    source: {
+      type: 'string',
+      defaultValue: '',
+      description: 'Used for multiwiggle',
+    },
   },
   { explicitlyTyped: true },
 )
+
+export default BigWigAdapter

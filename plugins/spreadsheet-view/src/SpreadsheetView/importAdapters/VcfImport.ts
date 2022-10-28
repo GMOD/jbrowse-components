@@ -59,7 +59,7 @@ export function parseVcfBuffer(
   const rows: Row[] = []
   const vcfParser = new VCF({ header })
   header = '' // garbage collect
-  body.split('\n').forEach((line: string, lineNumber) => {
+  body.split(/\n|\r\n|\r/).forEach((line: string, lineNumber) => {
     if (/\S/.test(line)) {
       rows.push(vcfRecordToRow(vcfParser, line, lineNumber))
     }

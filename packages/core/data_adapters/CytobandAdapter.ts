@@ -3,9 +3,17 @@ import { ConfigurationSchema, readConfObject } from '../configuration'
 import { openLocation } from '../util/io'
 import { BaseAdapter } from './BaseAdapter'
 
+/**
+ * #config CytobandAdapter
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const configSchema = ConfigurationSchema(
   'CytobandAdapter',
   {
+    /**
+     * #slot
+     */
     cytobandLocation: {
       type: 'fileLocation',
       defaultValue: { uri: '/path/to/cytoband.txt.gz' },
@@ -22,7 +30,7 @@ class CytobandAdapter extends BaseAdapter {
     }
     const data = await openLocation(loc).readFile('utf8')
     return data
-      .split('\n')
+      .split(/\n|\r\n|\r/)
       .filter(f => !!f.trim())
       .map(line => {
         const [refName, start, end, name, type] = line.split('\t')

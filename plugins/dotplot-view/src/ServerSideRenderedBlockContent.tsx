@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import { Typography, LinearProgress } from '@material-ui/core'
+import { makeStyles } from 'tss-react/mui'
+import { Typography, LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   loading: {
     paddingLeft: '0.6em',
     backgroundColor: '#f1f1f1',
@@ -26,7 +26,7 @@ const useStyles = makeStyles({
 function LoadingMessage() {
   // only show the loading message after 300ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
-  const classes = useStyles()
+  const { classes } = useStyles()
   useEffect(() => {
     const timeout = setTimeout(() => setShown(true), 300)
     return () => clearTimeout(timeout)
@@ -41,7 +41,7 @@ function LoadingMessage() {
 }
 
 function BlockMessage({ messageText }: { messageText: string }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.blockMessage}>
       <Typography>{messageText}</Typography>
@@ -50,7 +50,7 @@ function BlockMessage({ messageText }: { messageText: string }) {
 }
 
 function BlockError({ error }: { error: Error }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.blockError}>
       <Typography>{error.message}</Typography>

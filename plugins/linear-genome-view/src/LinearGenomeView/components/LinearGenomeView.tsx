@@ -1,21 +1,22 @@
 import React from 'react'
-import { Button, Paper, Typography, makeStyles } from '@material-ui/core'
+import { Button, Paper, Typography } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { ErrorBoundary } from 'react-error-boundary'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { ErrorMessage } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import Header from './Header'
 import TrackContainer from './TrackContainer'
 import TracksContainer from './TracksContainer'
 import ImportForm from './ImportForm'
-import MiniControls from './MiniControls'
-import SequenceDialog from './SequenceDialog'
+import GetSequenceDialog from './GetSequenceDialog'
 import SearchResultsDialog from './SearchResultsDialog'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   note: {
     textAlign: 'center',
     paddingTop: theme.spacing(1),
@@ -44,8 +45,8 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
-  const { tracks, error, hideHeader, initialized, hasDisplayedRegions } = model
-  const classes = useStyles()
+  const { tracks, error, initialized, hasDisplayedRegions } = model
+  const { classes } = useStyles()
 
   if (!initialized && !error) {
     return (
@@ -58,54 +59,53 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
     return <ImportForm model={model} />
   }
 
+  const MiniControlsComponent = model.MiniControlsComponent()
+  const HeaderComponent = model.HeaderComponent()
+
   return (
     <div style={{ position: 'relative' }}>
       {model.seqDialogDisplayed ? (
-        <SequenceDialog
+        <GetSequenceDialog
           model={model}
-          handleClose={() => {
-            model.setSequenceDialogOpen(false)
-          }}
+          handleClose={() => model.setGetSequenceDialogOpen(false)}
         />
       ) : null}
       {model.isSearchDialogDisplayed ? (
         <SearchResultsDialog
           model={model}
-          handleClose={() => {
-            model.setSearchResults(undefined, undefined)
-          }}
+          handleClose={() => model.setSearchResults(undefined, undefined)}
         />
       ) : null}
-      {!hideHeader ? (
-        <Header model={model} />
-      ) : (
-        <div
-          style={{
-            position: 'absolute',
-            right: 0,
-            zIndex: 1001,
-          }}
-        >
-          <MiniControls model={model} />
-        </div>
-      )}
+      <HeaderComponent model={model} />
+      <MiniControlsComponent model={model} />
       <TracksContainer model={model}>
         {!tracks.length ? (
           <Paper variant="outlined" className={classes.note}>
-            <Typography>No tracks active.</Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={model.activateTrackSelector}
-              style={{ zIndex: 1000 }}
-              startIcon={<TrackSelectorIcon />}
-            >
-              Open track selector
-            </Button>
+            {!model.hideNoTracksActive ? (
+              <>
+                <Typography>No tracks active.</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={model.activateTrackSelector}
+                  style={{ zIndex: 1000 }}
+                  startIcon={<TrackSelectorIcon />}
+                >
+                  Open track selector
+                </Button>
+              </>
+            ) : (
+              <div style={{ height: '48px' }}></div>
+            )}
           </Paper>
         ) : (
           tracks.map(track => (
-            <TrackContainer key={track.id} model={model} track={track} />
+            <ErrorBoundary
+              key={track.id}
+              FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+            >
+              <TrackContainer model={model} track={track} />
+            </ErrorBoundary>
           ))
         )}
       </TracksContainer>

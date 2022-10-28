@@ -1,14 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from 'react'
+// note: AboutDialog is imported statically instead of as a lazy component
+// due to vite failing to load it xref #2896
 import {
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { getContainingView } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+import { version } from '../version'
 import {
   getMembers,
   getParent,
@@ -24,10 +28,11 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import InfoIcon from '@material-ui/icons/Info'
-import { ReferringNode } from '../types'
+import InfoIcon from '@mui/icons-material/Info'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+// locals
+import { ReferringNode } from '../types'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -45,6 +50,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       ),
       connectionInstances: types.array(
         pluginManager.pluggableMstType('connection', 'stateModel'),
+      ),
+      sessionTracks: types.array(
+        pluginManager.pluggableConfigSchemaType('track'),
       ),
     })
     .volatile((/* self */) => ({
@@ -64,52 +72,53 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       queueOfDialogs: [] as [DialogComponentType, any][],
     }))
     .views(self => ({
+      get disableAddTracks() {
+        return getParent<any>(self).disableAddTracks
+      },
       get DialogComponent() {
         if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[0]
+          return self.queueOfDialogs[0]?.[0]
         }
         return undefined
       },
       get DialogProps() {
         if (self.queueOfDialogs.length) {
-          const firstInQueue = self.queueOfDialogs[0]
-          return firstInQueue && firstInQueue[1]
+          return self.queueOfDialogs[0]?.[1]
         }
         return undefined
       },
       get textSearchManager(): TextSearchManager {
-        return getParent(self).textSearchManager
+        return getParent<any>(self).textSearchManager
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        return getParent<any>(self).rpcManager
       },
       get configuration() {
-        return getParent(self).config.configuration
+        return getParent<any>(self).config.configuration
       },
       get assemblies() {
-        return [getParent(self).config.assembly]
+        return [getParent<any>(self).config.assembly]
       },
       get assemblyNames() {
-        return [getParent(self).config.assemblyName]
+        return [getParent<any>(self).config.assemblyName]
       },
       get tracks() {
-        return getParent(self).config.tracks
+        return getParent<any>(self).config.tracks
       },
       get aggregateTextSearchAdapters() {
-        return getParent(self).config.aggregateTextSearchAdapters
+        return getParent<any>(self).config.aggregateTextSearchAdapters
       },
       get connections() {
-        return getParent(self).config.connections
+        return getParent<any>(self).config.connections
       },
       get adminMode() {
         return false
       },
       get assemblyManager() {
-        return getParent(self).assemblyManager
+        return getParent<any>(self).assemblyManager
       },
       get version() {
-        return ''
+        return version
       },
       get views() {
         return [self.view]
@@ -135,7 +144,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent(self), node => {
+        walk(getParent<any>(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
@@ -150,8 +159,20 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      addTrackConf(trackConf: AnyConfigurationModel) {
+        const { trackId, type } = trackConf
+        if (!type) {
+          throw new Error(`unknown track type ${type}`)
+        }
+        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
+        if (track) {
+          return track
+        }
+        const length = self.sessionTracks.push(trackConf)
+        return self.sessionTracks[length - 1]
+      },
       queueDialog(
-        callback: (doneCallback: Function) => [DialogComponentType, any],
+        callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
         const [component, props] = callback(() => {
           this.removeActiveDialog()
@@ -264,6 +285,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           ...initialState,
           type: typeName,
         }
+        return self.view
       },
 
       removeView() {},
@@ -328,7 +350,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent(self).renameCurrentSession(sessionName)
+        return getParent<any>(self).renameCurrentSession(sessionName)
       },
     }))
     .views(self => ({
@@ -337,7 +359,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.queueDialog((doneCallback: Function) => [
+              self.queueDialog(doneCallback => [
                 AboutDialog,
                 { config, handleClose: doneCallback },
               ])

@@ -1,0 +1,1492 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<LinearGenomeView /> renders one track, one region 1`] = `
+<div
+  style="position: relative;"
+>
+  <div>
+    <div
+      style="position: relative;"
+    >
+      <div
+        class="tss-16hdnmo-rubberBandControl"
+        role="presentation"
+      >
+        <div
+          class="tss-1420449-scaleBar"
+        >
+          <div
+            class="tss-1i1w1rp-scaleBarVisibleRegion"
+            style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
+          />
+          <div
+            class="tss-z1h6g4-scaleBarContig"
+            style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+          />
+          <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName css-ahj2mt-MuiTypography-root"
+              style="left: 3px; color: rgb(153, 102, 0);"
+            >
+              ctgA
+            </p>
+            <div
+              class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
+              >
+                20
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
+              >
+                40
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
+              >
+                60
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
+              >
+                80
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
+              >
+                100
+              </p>
+            </div>
+          </div>
+          <div
+            class="tss-z1h6g4-scaleBarContig"
+            style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="tss-1fs11k8-overview"
+    >
+      <svg
+        class="tss-1fsr3xw-overviewSvg"
+        height="48"
+      >
+        <polygon
+          fill="rgba(66, 165, 245, 0.3)"
+          points="0,48,101,48,800,0,0,0"
+          stroke="rgba(66, 165, 245, 0.8)"
+        />
+      </svg>
+      <div
+        class="tss-ig8oez-headerBar"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          title="Open track selector"
+          type="button"
+          value="track_select"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-m778v2-buttonSpacer css-i4bv87-MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+        <div
+          class="tss-1n1xfjh-spacer"
+        />
+        <div
+          class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ArrowBackIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ArrowForwardIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+          <div
+            class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
+            data-testid="autocomplete"
+            style="width: 200px;"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root tss-1vhven7-headerRefName css-wb57ya-MuiFormControl-root-MuiTextField-root"
+              style="margin: 7px; min-width: 175px;"
+            >
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+              >
+                <input
+                  aria-autocomplete="list"
+                  aria-expanded="false"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="refNameAutocomplete-lgv"
+                  placeholder="Search for location"
+                  role="combobox"
+                  spellcheck="false"
+                  type="text"
+                  value="ctgA:1..100"
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-1laqsz7-MuiInputAdornment-root"
+                  style="margin-right: 7px;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                    data-testid="SearchIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    />
+                  </svg>
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                      data-testid="HelpIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+                      />
+                    </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-ihdtdm"
+                  >
+                    <span
+                      class="notranslate"
+                    >
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body2 tss-1qpgd02-bp css-r40f8v-MuiTypography-root"
+        >
+          100bp
+        </p>
+        <div
+          class="tss-z84q6m-container"
+        >
+          <button
+            class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="zoom_out"
+            disabled=""
+            tabindex="-1"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ZoomOutIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
+              />
+            </svg>
+          </button>
+          <span
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
+          >
+            <span
+              class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
+            />
+            <span
+              class="MuiSlider-track css-1n40zqk-MuiSlider-track"
+              style="left: 0%; width: 0%;"
+            />
+            <span
+              class="MuiSlider-thumb MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall css-14gf62f-MuiSlider-thumb"
+              data-focusvisible="false"
+              data-index="0"
+              style="left: 0%;"
+            >
+              <input
+                aria-orientation="horizontal"
+                aria-valuemax="564.3856189774724"
+                aria-valuemin="284.799690655495"
+                aria-valuenow="284.799690655495"
+                data-index="0"
+                max="564.3856189774724"
+                min="284.799690655495"
+                step="1"
+                style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
+                type="range"
+                value="284.799690655495"
+              />
+            </span>
+          </span>
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="zoom_in"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ZoomInIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+              />
+              <path
+                d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+        <div
+          class="tss-1n1xfjh-spacer"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="tss-75rarj-tracksContainer"
+    data-testid="trackContainer"
+  >
+    <div
+      class="tss-1rfvwmf-verticalGuidesZoomContainer"
+    >
+      <div
+        class="tss-17gfnt3-verticalGuidesContainer"
+        style="left: -800px; width: 1700px;"
+      >
+        <div
+          class="tss-a9ifge-boundaryPaddingBlock"
+          style="width: 800px;"
+        />
+        <div
+          class="tss-1dmfa10-contentBlock"
+          style="width: 100px;"
+        >
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 119px;"
+          />
+        </div>
+        <div
+          class="tss-a9ifge-boundaryPaddingBlock"
+          style="width: 800px;"
+        />
+      </div>
+    </div>
+    <div
+      class="tss-16hdnmo-rubberBandControl"
+      data-testid="rubberBand_controls"
+      role="presentation"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-qo7a2p-scaleBarContainer css-172kgz0-MuiPaper-root"
+        data-resizer="true"
+        style="height: 17px; box-sizing: border-box;"
+      >
+        <div
+          class="tss-17t6jej-scaleBarZoomContainer"
+        >
+          <div
+            class="tss-1u2dss8-scaleBar"
+            style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
+          >
+            <div
+              class="tss-a9ifge-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
+            <div
+              class="tss-1dmfa10-contentBlock"
+              style="width: 100px;"
+            >
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: -1px;"
+              />
+            </div>
+            <div
+              class="tss-a9ifge-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
+          </div>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel css-ahj2mt-MuiTypography-root"
+          data-testid="refLabel-ctgA"
+          style="left: -1px; padding-left: 1px;"
+        >
+          ctgA
+        </p>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root css-172kgz0-MuiPaper-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root css-1ps6pg7-MuiPaper-root"
+      >
+        <span
+          class="tss-10js96-dragHandle"
+          data-testid="dragHandle-lgv-testConfig"
+          draggable="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon css-ptiqhd-MuiSvgIcon-root"
+            data-testid="DragIndicatorIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+            data-testid="CloseIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName css-ahj2mt-MuiTypography-root"
+        >
+          Foo Track
+        </span>
+        <button
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          data-testid="track_menu_icon"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+            data-testid="MoreVertIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
+        class="tss-1ql7uaq-trackRenderingContainer"
+        data-testid="trackRenderingContainer-lgv-testConfig"
+        style="height: 100px;"
+      >
+        <div
+          class="tss-v11ioz-renderingComponentContainer"
+          style="transform: scaleX(1);"
+        >
+          <div
+            class="tss-1y9lrrz-display"
+            data-testid="display-testConfig-LinearBareDisplay"
+          >
+            <div
+              class="tss-d6gpow-linearBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
+            >
+              <div
+                class="tss-a9ifge-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="tss-1dmfa10-contentBlock"
+                style="width: 100px;"
+              />
+              <div
+                class="tss-a9ifge-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="tss-1hk9st0-overlay"
+        style="height: 100px;"
+      />
+      <div
+        class="tss-14zcv15-horizontalHandle-resizeHandle"
+        data-resizer="true"
+        role="presentation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
+<div
+  style="position: relative;"
+>
+  <div>
+    <div
+      style="position: relative;"
+    >
+      <div
+        class="tss-16hdnmo-rubberBandControl"
+        role="presentation"
+      >
+        <div
+          class="tss-1420449-scaleBar"
+        >
+          <div
+            class="tss-1i1w1rp-scaleBarVisibleRegion"
+            style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
+          />
+          <div
+            class="tss-z1h6g4-scaleBarContig"
+            style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
+          />
+          <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName css-ahj2mt-MuiTypography-root"
+              style="left: 3px; color: rgb(153, 102, 0);"
+            >
+              ctgA
+            </p>
+            <div
+              class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
+            />
+          </div>
+          <div
+            class="tss-z1h6g4-scaleBarContig"
+            style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
+          />
+          <div>
+            <p
+              class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName css-ahj2mt-MuiTypography-root"
+              style="left: 75.72727272727273px;"
+            >
+              ctgB
+            </p>
+            <div
+              class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              style="left: 72.72727272727273px; width: 727.2727272727273px;"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 145.0909090909091px; pointer-events: none;"
+              >
+                1,200
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 290.1818181818182px; pointer-events: none;"
+              >
+                1,400
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 435.27272727272725px; pointer-events: none;"
+              >
+                1,600
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 580.3636363636364px; pointer-events: none;"
+              >
+                1,800
+              </p>
+              <p
+                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                style="left: 725.4545454545454px; pointer-events: none;"
+              >
+                2,000
+              </p>
+            </div>
+          </div>
+          <div
+            class="tss-z1h6g4-scaleBarContig"
+            style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="tss-1fs11k8-overview"
+    >
+      <svg
+        class="tss-1fsr3xw-overviewSvg"
+        height="48"
+      >
+        <polygon
+          fill="rgba(66, 165, 245, 0.3)"
+          points="0,48,802,48,580,0,0,0"
+          stroke="rgba(66, 165, 245, 0.8)"
+        />
+      </svg>
+      <div
+        class="tss-ig8oez-headerBar"
+      >
+        <button
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          tabindex="0"
+          title="Open track selector"
+          type="button"
+          value="track_select"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-m778v2-buttonSpacer css-i4bv87-MuiSvgIcon-root"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M21 19v-2H8v2h13m0-6v-2H8v2h13M8 7h13V5H8v2M4 5v2h2V5H4M3 5a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V5m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2m1 6v2h2v-2H4m-1 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+        <div
+          class="tss-1n1xfjh-spacer"
+        />
+        <div
+          class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
+        >
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ArrowBackIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+          <button
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ArrowForwardIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="m12 4-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+          <div
+            class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
+            data-testid="autocomplete"
+            style="width: 255.27500000000003px;"
+          >
+            <div
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root tss-1vhven7-headerRefName css-wb57ya-MuiFormControl-root-MuiTextField-root"
+              style="margin: 7px; min-width: 175px;"
+            >
+              <div
+                class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-154xyx0-MuiInputBase-root-MuiOutlinedInput-root"
+                style="padding: 0px; height: 32px; background: rgba(255, 255, 255, 0.8);"
+              >
+                <input
+                  aria-autocomplete="list"
+                  aria-expanded="false"
+                  aria-invalid="false"
+                  autocapitalize="none"
+                  autocomplete="off"
+                  class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-nxo287-MuiInputBase-input-MuiOutlinedInput-input"
+                  id="refNameAutocomplete-lgv"
+                  placeholder="Search for location"
+                  role="combobox"
+                  spellcheck="false"
+                  type="text"
+                  value="ctgA:1..100 ctgB:1,001..1,698"
+                />
+                <div
+                  class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-outlined MuiInputAdornment-sizeMedium css-1laqsz7-MuiInputAdornment-root"
+                  style="margin-right: 7px;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                    data-testid="SearchIcon"
+                    focusable="false"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    />
+                  </svg>
+                  <button
+                    class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1pe4mpk-MuiButtonBase-root-MuiIconButton-root"
+                    tabindex="0"
+                    type="button"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+                      data-testid="HelpIcon"
+                      focusable="false"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+                      />
+                    </svg>
+                    <span
+                      class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+                    />
+                  </button>
+                </div>
+                <fieldset
+                  aria-hidden="true"
+                  class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
+                >
+                  <legend
+                    class="css-ihdtdm"
+                  >
+                    <span
+                      class="notranslate"
+                    >
+                      ​
+                    </span>
+                  </legend>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body2 tss-1qpgd02-bp css-r40f8v-MuiTypography-root"
+        >
+          798bp
+        </p>
+        <div
+          class="tss-z84q6m-container"
+        >
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="zoom_out"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ZoomOutIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+          <span
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
+          >
+            <span
+              class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
+            />
+            <span
+              class="MuiSlider-track css-1n40zqk-MuiSlider-track"
+              style="left: 0%; width: 9.774680693120512%;"
+            />
+            <span
+              class="MuiSlider-thumb MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall css-14gf62f-MuiSlider-thumb"
+              data-focusvisible="false"
+              data-index="0"
+              style="left: 9.774680693120512%;"
+            >
+              <input
+                aria-orientation="horizontal"
+                aria-valuemax="564.3856189774724"
+                aria-valuemin="-61.143471208234715"
+                aria-valuenow="0"
+                data-index="0"
+                max="564.3856189774724"
+                min="-61.143471208234715"
+                step="1"
+                style="border: 0px; height: 100%; margin: -1px; overflow: hidden; padding: 0px; position: absolute; white-space: nowrap; width: 100%; direction: ltr;"
+                type="range"
+                value="0"
+              />
+            </span>
+          </span>
+          <button
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            data-testid="zoom_in"
+            tabindex="0"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root"
+              data-testid="ZoomInIcon"
+              focusable="false"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+              />
+              <path
+                d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"
+              />
+            </svg>
+            <span
+              class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+            />
+          </button>
+        </div>
+        <div
+          class="tss-1n1xfjh-spacer"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="tss-75rarj-tracksContainer"
+    data-testid="trackContainer"
+  >
+    <div
+      class="tss-1rfvwmf-verticalGuidesZoomContainer"
+    >
+      <div
+        class="tss-17gfnt3-verticalGuidesContainer"
+        style="left: -800px; width: 1702px;"
+      >
+        <div
+          class="tss-a9ifge-boundaryPaddingBlock"
+          style="width: 800px;"
+        />
+        <div
+          class="tss-1dmfa10-contentBlock"
+          style="width: 100px;"
+        >
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 119px;"
+          />
+        </div>
+        <div
+          class="tss-1x3apsi-interRegionPaddingBlock"
+          style="width: 2px;"
+        />
+        <div
+          class="tss-1dmfa10-contentBlock"
+          style="width: 800px;"
+        >
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: -1px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 19px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 39px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 59px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 79px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 99px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 119px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 139px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 159px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 179px;"
+          />
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: 199px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 219px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 239px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 259px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 279px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 299px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 319px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 339px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 359px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 379px;"
+          />
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: 399px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 419px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 439px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 459px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 479px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 499px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 519px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 539px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 559px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 579px;"
+          />
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: 599px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 619px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 639px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 659px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 679px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 699px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 719px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 739px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 759px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 779px;"
+          />
+          <div
+            class="tss-1nnah7t-tick-majorTick"
+            style="left: 799px;"
+          />
+          <div
+            class="tss-i794sq-tick-minorTick"
+            style="left: 819px;"
+          />
+        </div>
+      </div>
+    </div>
+    <div
+      class="tss-16hdnmo-rubberBandControl"
+      data-testid="rubberBand_controls"
+      role="presentation"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-qo7a2p-scaleBarContainer css-172kgz0-MuiPaper-root"
+        data-resizer="true"
+        style="height: 17px; box-sizing: border-box;"
+      >
+        <div
+          class="tss-17t6jej-scaleBarZoomContainer"
+        >
+          <div
+            class="tss-1u2dss8-scaleBar"
+            style="left: -801px; width: 1702px; height: 17px; box-sizing: border-box;"
+          >
+            <div
+              class="tss-a9ifge-boundaryPaddingBlock"
+              style="background: none; width: 800px;"
+            />
+            <div
+              class="tss-1dmfa10-contentBlock"
+              style="width: 100px;"
+            >
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: -1px;"
+              />
+            </div>
+            <div
+              class="tss-1x3apsi-interRegionPaddingBlock"
+              style="background: none; width: 2px;"
+            />
+            <div
+              class="tss-1dmfa10-contentBlock"
+              style="width: 800px;"
+            >
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: -1px;"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                >
+                  1,000
+                </p>
+              </div>
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: 199px;"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                >
+                  1,200
+                </p>
+              </div>
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: 399px;"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                >
+                  1,400
+                </p>
+              </div>
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: 599px;"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                >
+                  1,600
+                </p>
+              </div>
+              <div
+                class="tss-1f3h2yl-tick"
+                style="left: 799px;"
+              >
+                <p
+                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                >
+                  1,800
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p
+          class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel css-ahj2mt-MuiTypography-root"
+          data-testid="refLabel-ctgA"
+          style="left: -1px; padding-left: 1px;"
+        >
+          ctgA
+        </p>
+        <p
+          class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel css-ahj2mt-MuiTypography-root"
+          data-testid="refLabel-ctgB"
+          style="left: 101px; padding-left: 1px;"
+        >
+          ctgB
+        </p>
+      </div>
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root css-172kgz0-MuiPaper-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root css-1ps6pg7-MuiPaper-root"
+      >
+        <span
+          class="tss-10js96-dragHandle"
+          data-testid="dragHandle-lgv-testConfig"
+          draggable="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon css-ptiqhd-MuiSvgIcon-root"
+            data-testid="DragIndicatorIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+            data-testid="CloseIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName css-ahj2mt-MuiTypography-root"
+        >
+          Foo Track
+        </span>
+        <button
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          data-testid="track_menu_icon"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+            data-testid="MoreVertIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
+        class="tss-1ql7uaq-trackRenderingContainer"
+        data-testid="trackRenderingContainer-lgv-testConfig"
+        style="height: 100px;"
+      >
+        <div
+          class="tss-v11ioz-renderingComponentContainer"
+          style="transform: scaleX(1);"
+        >
+          <div
+            class="tss-1y9lrrz-display"
+            data-testid="display-testConfig-LinearBareDisplay"
+          >
+            <div
+              class="tss-d6gpow-linearBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
+            >
+              <div
+                class="tss-a9ifge-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="tss-1dmfa10-contentBlock"
+                style="width: 100px;"
+              >
+                <svg
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
+              </div>
+              <div
+                class="tss-1x3apsi-interRegionPaddingBlock"
+                style="background: none; width: 2px;"
+              />
+              <div
+                class="tss-1dmfa10-contentBlock"
+                style="width: 800px;"
+              >
+                <svg
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="800"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="tss-1hk9st0-overlay"
+        style="height: 100px;"
+      />
+      <div
+        class="tss-14zcv15-horizontalHandle-resizeHandle"
+        data-resizer="true"
+        role="presentation"
+      />
+    </div>
+    <div
+      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root css-172kgz0-MuiPaper-root"
+    >
+      <div
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root css-1ps6pg7-MuiPaper-root"
+      >
+        <span
+          class="tss-10js96-dragHandle"
+          data-testid="dragHandle-lgv-testConfig2"
+          draggable="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon css-ptiqhd-MuiSvgIcon-root"
+            data-testid="DragIndicatorIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+        </span>
+        <button
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          tabindex="0"
+          title="close this track"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+            data-testid="CloseIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+        <span
+          class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName css-ahj2mt-MuiTypography-root"
+        >
+          Bar Track
+        </span>
+        <button
+          aria-haspopup="true"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          data-testid="track_menu_icon"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-ptiqhd-MuiSvgIcon-root"
+            data-testid="MoreVertIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
+      </div>
+      <div
+        class="tss-1ql7uaq-trackRenderingContainer"
+        data-testid="trackRenderingContainer-lgv-testConfig2"
+        style="height: 100px;"
+      >
+        <div
+          class="tss-v11ioz-renderingComponentContainer"
+          style="transform: scaleX(1);"
+        >
+          <div
+            class="tss-1y9lrrz-display"
+            data-testid="display-testConfig2-LinearBareDisplay"
+          >
+            <div
+              class="tss-d6gpow-linearBlocks"
+              data-testid="Blockset"
+              style="left: -800px;"
+            >
+              <div
+                class="tss-a9ifge-boundaryPaddingBlock"
+                style="background: none; width: 800px;"
+              />
+              <div
+                class="tss-1dmfa10-contentBlock"
+                style="width: 100px;"
+              >
+                <svg
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="100"
+                />
+              </div>
+              <div
+                class="tss-1x3apsi-interRegionPaddingBlock"
+                style="background: none; width: 2px;"
+              />
+              <div
+                class="tss-1dmfa10-contentBlock"
+                style="width: 800px;"
+              >
+                <svg
+                  data-testid="svgfeatures"
+                  height="100"
+                  width="800"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="tss-1hk9st0-overlay"
+        style="height: 100px;"
+      />
+      <div
+        class="tss-14zcv15-horizontalHandle-resizeHandle"
+        data-resizer="true"
+        role="presentation"
+      />
+    </div>
+  </div>
+</div>
+`;

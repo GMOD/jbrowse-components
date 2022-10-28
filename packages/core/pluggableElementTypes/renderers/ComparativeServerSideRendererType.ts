@@ -93,19 +93,15 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * @returns true if this feature passes all configured filters
    */
   featurePassesFilters(renderArgs: RenderArgsDeserialized, feature: Feature) {
-    if (!renderArgs.filters) {
-      return true
-    }
-    return renderArgs.filters.passes(feature, renderArgs)
+    return renderArgs.filters
+      ? renderArgs.filters.passes(feature, renderArgs)
+      : true
   }
 
   async getFeatures(renderArgs: any) {
-    const { signal, sessionId, adapterConfig } = renderArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const pm = this.pluginManager
+    const { sessionId, adapterConfig } = renderArgs
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
 
     let regions = [] as Region[]
 
@@ -131,16 +127,10 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     })
 
     // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const featureObservable = (
-      dataAdapter as BaseFeatureDataAdapter
-    ).getFeaturesInMultipleRegions(requestRegions, {
-      signal,
-    })
-
-    return featureObservable
+    return (dataAdapter as BaseFeatureDataAdapter)
+      .getFeaturesInMultipleRegions(requestRegions, renderArgs)
       .pipe(
-        // @ts-ignore
-        filter(feature => this.featurePassesFilters(renderArgs, feature)),
+        filter(f => this.featurePassesFilters(renderArgs, f)),
         toArray(),
       )
       .toPromise()

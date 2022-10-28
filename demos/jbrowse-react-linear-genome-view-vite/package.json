@@ -1,0 +1,31 @@
+{
+  "name": "vite-react-lgv",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "aws s3 sync --delete dist s3://jbrowse.org/demos/lgv-vite/",
+    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/lgv-vite/*\""
+  },
+  "dependencies": {
+    "@fontsource/roboto": "^4.5.3",
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/react-linear-genome-view": "^2.0.0",
+    "@types/node": "^17.0.18",
+    "buffer": "^6.0.3",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
+    "@types/react": "^17.0.33",
+    "@types/react-dom": "^17.0.10",
+    "@vitejs/plugin-react": "^1.0.0",
+    "stream-browserify": "^3.0.0",
+    "typescript": "^4.4.4",
+    "vite": "^3.0.0"
+  }
+}

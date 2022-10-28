@@ -2,47 +2,55 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
+import { makeStyles } from 'tss-react/mui'
 import { AlignmentsDisplayModel } from '../models/model'
+
+const useStyles = makeStyles()(() => ({
+  resizeHandle: {
+    height: 2,
+    position: 'absolute',
+    zIndex: 2,
+  },
+}))
 
 function AlignmentsDisplay({ model }: { model: AlignmentsDisplayModel }) {
   const { PileupDisplay, SNPCoverageDisplay, showPileup, showCoverage } = model
+  const { classes } = useStyles()
+  const top = SNPCoverageDisplay.height
   return (
     <div
       data-testid={`display-${getConf(model, 'displayId')}`}
       style={{ position: 'relative' }}
     >
-      <div data-testid="Blockset-snpcoverage">
-        {showCoverage ? (
-          <SNPCoverageDisplay.RenderingComponent model={SNPCoverageDisplay} />
-        ) : null}
-      </div>
-      <ResizeHandle
-        onDrag={delta => {
-          if (SNPCoverageDisplay) {
-            SNPCoverageDisplay.setHeight(SNPCoverageDisplay.height + delta)
-            return delta
-          }
-          return 0
-        }}
-        style={{
-          position: 'absolute',
-          top: showCoverage ? SNPCoverageDisplay.height + 2 : 0,
-          height: 3,
-        }}
-      />
+      {showCoverage ? (
+        <>
+          <div data-testid="Blockset-snpcoverage">
+            <SNPCoverageDisplay.RenderingComponent model={SNPCoverageDisplay} />
+          </div>
+          <ResizeHandle
+            onDrag={delta => {
+              SNPCoverageDisplay.setHeight(SNPCoverageDisplay.height + delta)
+              return delta
+            }}
+            className={classes.resizeHandle}
+            style={{
+              top,
+            }}
+          />
+        </>
+      ) : null}
 
-      <div
-        data-testid="Blockset-pileup"
-        style={{
-          position: 'absolute',
-          top: showCoverage ? SNPCoverageDisplay.height + 5 : 0,
-          height: 3,
-        }}
-      >
-        {showPileup ? (
+      {showPileup ? (
+        <div
+          data-testid="Blockset-pileup"
+          style={{
+            position: 'absolute',
+            top: showCoverage ? SNPCoverageDisplay.height : 0,
+          }}
+        >
           <PileupDisplay.RenderingComponent model={PileupDisplay} />
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   )
 }

@@ -3,12 +3,13 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { configSchema as bigBedAdapterConfigSchema } from './BigBedAdapter'
 import { configSchema as bedTabixAdapterConfigSchema } from './BedTabixAdapter'
+import { configSchema as bedAdapterConfigSchema } from './BedAdapter'
 import { FileLocation } from '@jbrowse/core/util/types'
 import {
+  getFileName,
   makeIndex,
   makeIndexType,
   AdapterGuesser,
-  getFileName,
 } from '@jbrowse/core/util/tracks'
 
 export default class BedPlugin extends Plugin {
@@ -59,6 +60,16 @@ export default class BedPlugin extends Plugin {
             import('./BedTabixAdapter/BedTabixAdapter').then(r => r.default),
         }),
     )
+
+    pluginManager.addAdapterType(
+      () =>
+        new AdapterType({
+          name: 'BedAdapter',
+          configSchema: bedAdapterConfigSchema,
+          getAdapterClass: () =>
+            import('./BedAdapter/BedAdapter').then(r => r.default),
+        }),
+    )
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
@@ -79,6 +90,28 @@ export default class BedPlugin extends Plugin {
                 location: index || makeIndex(file, '.tbi'),
                 indexType: makeIndexType(indexName, 'CSI', 'TBI'),
               },
+            }
+          }
+          return adapterGuesser(file, index, adapterHint)
+        }
+      },
+    )
+
+    pluginManager.addToExtensionPoint(
+      'Core-guessAdapterForLocation',
+      (adapterGuesser: AdapterGuesser) => {
+        return (
+          file: FileLocation,
+          index?: FileLocation,
+          adapterHint?: string,
+        ) => {
+          const regexGuess = /\.bed$/i
+          const adapterName = 'BedAdapter'
+          const fileName = getFileName(file)
+          if (regexGuess.test(fileName) || adapterHint === adapterName) {
+            return {
+              type: adapterName,
+              bedLocation: file,
             }
           }
           return adapterGuesser(file, index, adapterHint)

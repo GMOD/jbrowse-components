@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-export default ConfigurationSchema(
+/**
+ * #config DivSequenceRenderer
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
+const DivSequenceRenderer = ConfigurationSchema(
   'DivSequenceRenderer',
   {
+    /**
+     * #slot
+     */
     height: {
       type: 'number',
       description: 'height in pixels of each line of sequence',
@@ -11,3 +19,5 @@ export default ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export default DivSequenceRenderer

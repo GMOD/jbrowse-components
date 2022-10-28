@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-canvas",
-  "version": "1.6.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 plugin for canvas features",
   "keywords": [
     "jbrowse",
@@ -35,9 +35,9 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "@jbrowse/core": "^2.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0"
   },

@@ -9,7 +9,7 @@ type BinaryRangeFetch = (
   options?: { headers?: HeadersInit; signal?: AbortSignal },
 ) => Promise<BinaryRangeResponse>
 
-interface BinaryRangeResponse {
+export interface BinaryRangeResponse {
   headers: Record<string, string>
   requestDate: Date
   responseDate: Date

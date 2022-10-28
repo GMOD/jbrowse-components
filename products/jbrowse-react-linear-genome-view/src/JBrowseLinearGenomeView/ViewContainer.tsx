@@ -1,27 +1,28 @@
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { lazy, useEffect, useState, Suspense } from 'react'
 import {
   IconButton,
   IconButtonProps as IconButtonPropsType,
   Paper,
   SvgIconProps,
   Typography,
-  makeStyles,
   useTheme,
-} from '@material-ui/core'
-import { alpha } from '@material-ui/core/styles'
-import MenuIcon from '@material-ui/icons/Menu'
+  alpha,
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import useDimensions from 'react-use-dimensions'
+import useMeasure from 'react-use-measure'
 import { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { Menu, Logomark } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 
-const useStyles = makeStyles(theme => ({
+const AboutDialog = lazy(() => import('./AboutDialog'))
+const useStyles = makeStyles()(theme => ({
   viewContainer: {
     overflow: 'hidden',
     background: theme.palette.secondary.main,
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.5),
   },
   icon: {
     color: theme.palette.secondary.contrastText,
@@ -58,7 +59,7 @@ const ViewMenu = observer(
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
 
-    if (!model.menuItems?.().length) {
+    if (!model.menuItems()?.length) {
       return null
     }
 
@@ -69,9 +70,7 @@ const ViewMenu = observer(
           aria-label="more"
           aria-controls="view-menu"
           aria-haspopup="true"
-          onClick={event => {
-            setAnchorEl(event.currentTarget)
-          }}
+          onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
         >
           <MenuIcon {...IconProps} />
@@ -83,9 +82,7 @@ const ViewMenu = observer(
             callback()
             setAnchorEl(undefined)
           }}
-          onClose={() => {
-            setAnchorEl(undefined)
-          }}
+          onClose={() => setAnchorEl(undefined)}
           menuItems={model.menuItems()}
         />
       </>
@@ -95,27 +92,25 @@ const ViewMenu = observer(
 
 const ViewContainer = observer(
   ({ view, children }: { view: IBaseViewModel; children: React.ReactNode }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const theme = useTheme()
     const session = getSession(view)
-    const [measureRef, { width }] = useDimensions()
-
+    const [dlgOpen, setDlgOpen] = useState(false)
+    const [ref, { width }] = useMeasure()
     const padWidth = theme.spacing(1)
 
     useEffect(() => {
-      if (width) {
-        if (isAlive(view)) {
-          view.setWidth(width - padWidth * 2)
-        }
+      if (width && isAlive(view)) {
+        view.setWidth(width - parseInt(padWidth, 10) * 2)
       }
     }, [padWidth, view, width])
 
     return (
       <Paper
         elevation={12}
-        ref={measureRef}
+        ref={ref}
         className={classes.viewContainer}
-        style={{ padding: `0px ${padWidth}px ${padWidth}px` }}
+        style={{ padding: `0px ${padWidth} ${padWidth}` }}
       >
         {session.DialogComponent ? (
           <Suspense fallback={<div />}>
@@ -138,11 +133,18 @@ const ViewContainer = observer(
             </Typography>
           ) : null}
           <div className={classes.grow} />
-          <div style={{ width: 20, height: 20 }}>
-            <Logomark variant="white" />
-          </div>
+          <IconButton onClick={() => setDlgOpen(true)}>
+            <div style={{ width: 22, height: 22 }}>
+              <Logomark variant="white" />
+            </div>
+          </IconButton>
         </div>
         <Paper>{children}</Paper>
+        {dlgOpen ? (
+          <Suspense fallback={<div />}>
+            <AboutDialog open onClose={() => setDlgOpen(false)} />
+          </Suspense>
+        ) : null}
       </Paper>
     )
   },

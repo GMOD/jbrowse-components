@@ -1,1 +1,1 @@
-declare module 'react-use-dimensions'
+declare module '@jbrowse/react-circular-genome-view'

@@ -1,21 +1,23 @@
 import React, { useEffect, useRef } from 'react'
+import { Paper } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
 import { ResizeHandle } from '@jbrowse/core/ui'
-import { useDebouncedCallback, getContainingView } from '@jbrowse/core/util'
-import clsx from 'clsx'
-import Paper from '@material-ui/core/Paper'
-import { makeStyles } from '@material-ui/core/styles'
+import { useDebouncedCallback } from '@jbrowse/core/util'
 
-import { LinearGenomeViewModel, RESIZE_HANDLE_HEIGHT } from '..'
+// locals
+import { LinearGenomeViewModel } from '..'
 import TrackLabel from './TrackLabel'
 
-const useStyles = makeStyles(theme => ({
-  root: {},
+const useStyles = makeStyles()({
+  root: {
+    marginTop: 2,
+  },
   resizeHandle: {
-    height: RESIZE_HANDLE_HEIGHT,
+    height: 3,
     boxSizing: 'border-box',
     position: 'relative',
     zIndex: 2,
@@ -27,8 +29,13 @@ const useStyles = makeStyles(theme => ({
     left: 0,
     width: '100%',
     zIndex: 3,
-    borderRadius: theme.shape.borderRadius,
   },
+  trackLabel: {
+    zIndex: 3,
+  },
+
+  // aligns with block bounderies. check for example the breakpoint split view
+  // demo to see if features align if wanting to change things
   renderingComponentContainer: {
     position: 'absolute',
     // -1 offset because of the 1px border of the Paper
@@ -36,11 +43,7 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     width: '100%',
   },
-  trackLabel: {
-    zIndex: 3,
-    margin: theme.spacing(1),
-  },
-  trackLabelInline: {
+  trackLabelOffset: {
     position: 'relative',
     display: 'inline-block',
   },
@@ -54,25 +57,46 @@ const useStyles = makeStyles(theme => ({
     position: 'relative',
     background: 'none',
     zIndex: 2,
-    boxSizing: 'content-box',
   },
-}))
+})
 
 type LGV = LinearGenomeViewModel
 
-function TrackContainer(props: {
-  model: LinearGenomeViewModel
+const TrackContainerLabel = observer(
+  ({ model, view }: { model: BaseTrackModel; view: LGV }) => {
+    const { classes, cx } = useStyles()
+    const display = model.displays[0]
+    const { trackLabel, trackLabelOverlap, trackLabelOffset } = classes
+    const labelStyle =
+      view.trackLabels !== 'overlapping' || display.prefersOffset
+        ? trackLabelOffset
+        : trackLabelOverlap
+
+    return view.trackLabels !== 'hidden' ? (
+      <TrackLabel track={model} className={cx(trackLabel, labelStyle)} />
+    ) : null
+  },
+)
+
+function TrackContainer({
+  model,
+  track,
+}: {
+  model: LGV
   track: BaseTrackModel
 }) {
-  const classes = useStyles()
-  const { model, track } = props
+  const { classes } = useStyles()
   const display = track.displays[0]
   const { horizontalScroll, draggingTrackId, moveTrack } = model
-  const { height } = display
-  const view = getContainingView(display) as LGV
+  const { height, RenderingComponent, DisplayBlurb } = display
   const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
-
+  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
+  const debouncedOnDragEnter = useDebouncedCallback(() => {
+    if (isAlive(display) && dimmed) {
+      moveTrack(draggingTrackId, track.id)
+    }
+  }, 100)
   useEffect(() => {
     if (ref.current) {
       model.trackRefs[trackId] = ref.current
@@ -81,44 +105,16 @@ function TrackContainer(props: {
       delete model.trackRefs[trackId]
     }
   }, [model.trackRefs, trackId])
-  function onDragEnter() {
-    if (
-      draggingTrackId !== undefined &&
-      isAlive(display) &&
-      draggingTrackId !== display.id
-    ) {
-      moveTrack(draggingTrackId, track.id)
-    }
-  }
-  const debouncedOnDragEnter = useDebouncedCallback(onDragEnter, 100)
-  const { RenderingComponent, DisplayBlurb } = display
-  const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
 
   return (
-    <div className={classes.root}>
-      {view.trackLabels !== 'hidden' ? (
-        <TrackLabel
-          track={track}
-          className={clsx(
-            classes.trackLabel,
-            view.trackLabels === 'overlapping'
-              ? classes.trackLabelOverlap
-              : classes.trackLabelInline,
-          )}
-        />
-      ) : null}
-
-      <Paper
-        variant="outlined"
+    <Paper className={classes.root} variant="outlined">
+      <TrackContainerLabel model={track} view={model} />
+      <div
         className={classes.trackRenderingContainer}
         style={{ height }}
-        onScroll={event => {
-          const target = event.target as HTMLDivElement
-          display.setScrollTop(target.scrollTop)
-        }}
+        onScroll={event => display.setScrollTop(event.currentTarget.scrollTop)}
         onDragEnter={debouncedOnDragEnter}
-        data-testid={`trackRenderingContainer-${view.id}-${trackId}`}
-        role="presentation"
+        data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
       >
         <div
           ref={ref}
@@ -127,7 +123,6 @@ function TrackContainer(props: {
         >
           <RenderingComponent
             model={display}
-            blockState={{}}
             onHorizontalScroll={horizontalScroll}
           />
         </div>
@@ -140,11 +135,10 @@ function TrackContainer(props: {
               top: display.height - 20,
             }}
           >
-            {' '}
             <DisplayBlurb model={display} />
           </div>
         ) : null}
-      </Paper>
+      </div>
       <div
         className={classes.overlay}
         style={{
@@ -157,7 +151,7 @@ function TrackContainer(props: {
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}
       />
-    </div>
+    </Paper>
   )
 }
 

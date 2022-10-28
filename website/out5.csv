@@ -1,0 +1,11 @@
+# created by LinkChecker at 2022-10-26 16:00:43-006
+# Read the documentation at https://linkchecker.github.io/linkchecker/
+# Write comments and bugs to https://github.com/linkchecker/linkchecker/issues
+urlname;parentname;base;result;warningstring;infostring;valid;url;line;column;name;dltime;size;checktime;cached;level;modified
+localhost:8999/?config=localhost:3000/jbrowse_config.json;http://localhost:3000/jb2/docs/tutorials/simple_plugin_tutorial/03_adding_pluggable_element/;;URL is unrecognized or has invalid syntax;;The URL is outside of the domain filter, checked only syntax.;False;localhost:8999/?config=localhost:3000/jbrowse_config.json;13;127935;localhost:8999/?config=localhost:3000/jbrowse_config.json;-1;-1;0;0;4;
+/jb2/docs/developer_guides/devguide_pluggable_elements/#creating-renderers;http://localhost:3000/jb2/docs/developer_guides/whats_in_a_plugin/;;404 Not Found;;;False;http://localhost:3000/jb2/docs/developer_guides/devguide_pluggable_elements/#creating-renderers;52;37;"creating
+renderers";-1;-1;3.470278263092041;0;4;
+/jb2/docs/pluggable_elements/#adding-track-context-menu-items;http://localhost:3000/jb2/docs/developer_guides/whats_in_a_plugin/;;404 Not Found;;;False;http://localhost:3000/jb2/docs/pluggable_elements/#adding-track-context-menu-items;69;4;"example for adding context menu
+items";-1;-1;3.3503594398498535;0;4;
+mailto:material@5.0.0;http://localhost:3000/jb2/blog/page/4/;;Invalid top level domain part of mail address `material@5.0.0'.;;The URL is outside of the domain filter, checked only syntax.;False;mailto:material@5.0.0;68;4735;material@5.0.0;-1;-1;0;0;5;
+# Stopped checking at 2022-10-26 16:03:43-006 (2 minutes, 59 seconds)

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from 'tss-react/mui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import {
@@ -16,7 +16,7 @@ import {
 } from './Block'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles()({
   linearBlocks: {
     whiteSpace: 'nowrap',
     textAlign: 'left',
@@ -39,7 +39,7 @@ const useStyles = makeStyles({
 })
 const RenderedBlocks = observer(
   ({ model }: { model: BaseLinearDisplayModel }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { blockDefinitions, blockState } = model
     return (
       <>
@@ -95,7 +95,7 @@ const RenderedBlocks = observer(
   },
 )
 function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { blockDefinitions } = model
   const viewModel = getContainingView(model) as LinearGenomeViewModel
   return (

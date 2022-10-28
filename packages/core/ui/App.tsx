@@ -9,47 +9,33 @@ import {
   Toolbar,
   Tooltip,
   Typography,
-  makeStyles,
-} from '@material-ui/core'
-import LaunchIcon from '@material-ui/icons/Launch'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import LaunchIcon from '@mui/icons-material/Launch'
+import { ErrorBoundary } from 'react-error-boundary'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 
 // locals
-import { readConfObject } from '../configuration'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
+import ErrorMessage from './ErrorMessage'
 import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
 import ViewContainer from './ViewContainer'
-import { NotificationLevel, SessionWithDrawerWidgets } from '../util'
+import {
+  AbstractViewModel,
+  NotificationLevel,
+  SessionWithDrawerWidgets,
+  SnackAction,
+} from '../util'
 import { MenuItem as JBMenuItem } from './index'
 
-const useStyles = makeStyles(theme => ({
-  '@global': {
-    html: {
-      'font-family': 'Roboto',
-    },
-    /* Based on: https://www.digitalocean.com/community/tutorials/css-scrollbars */
-    /* The emerging W3C standard
-       that is currently Firefox-only */
-    '*': {
-      'scrollbar-width': 'auto',
-      'scrollbar-color': 'rgba(0,0,0,.5) rgba(128,128,128)',
-    },
-    /* Works on Chrome/Edge/Safari */
-    '*::-webkit-scrollbar': {
-      '-webkit-appearance': 'none',
-      width: '12px',
-    },
-    '*::-webkit-scrollbar-thumb': {
-      'background-color': 'rgba(0,0,0,.5)',
-      '-webkit-box-shadow': '0 0 1px rgba(255,255,255,.5)',
-    },
-  },
+const useStyles = makeStyles()(theme => ({
   root: {
+    fontFamily: 'Roboto',
     display: 'grid',
     height: '100vh',
     width: '100%',
@@ -115,37 +101,26 @@ const Logo = observer(
   },
 )
 
-type SnackbarMessage = [string, NotificationLevel]
+type SnackbarMessage = [string, NotificationLevel, SnackAction]
 
-const App = observer(
+type AppSession = SessionWithDrawerWidgets & {
+  savedSessionNames: string[]
+  menus: { label: string; menuItems: JBMenuItem[] }[]
+  renameCurrentSession: (arg: string) => void
+  snackbarMessages: SnackbarMessage[]
+  popSnackbarMessage: () => unknown
+}
+
+const AppToolbar = observer(
   ({
     session,
     HeaderButtons = <div />,
   }: {
     HeaderButtons?: React.ReactElement
-    session: SessionWithDrawerWidgets & {
-      savedSessionNames: string[]
-      menus: { label: string; menuItems: JBMenuItem[] }[]
-      renameCurrentSession: (arg: string) => void
-      snackbarMessages: SnackbarMessage[]
-      popSnackbarMessage: () => unknown
-    }
+    session: AppSession
   }) => {
-    const classes = useStyles()
-    const { pluginManager } = getEnv(session)
-    const viewTypes = pluginManager.getElementTypeRecord('view').all()
-    const [value, setValue] = useState(viewTypes[0]?.name)
-    const {
-      visibleWidget,
-      drawerWidth,
-      minimized,
-      activeWidgets,
-      savedSessionNames,
-      name,
-      menus,
-      views,
-      drawerPosition,
-    } = session
+    const { classes } = useStyles()
+    const { savedSessionNames, name, menus } = session
 
     function handleNameChange(newName: string) {
       if (savedSessionNames?.includes(newName)) {
@@ -157,6 +132,111 @@ const App = observer(
         session.renameCurrentSession(newName)
       }
     }
+    return (
+      <Toolbar>
+        {menus.map(menu => (
+          <DropDownMenu
+            key={menu.label}
+            menuTitle={menu.label}
+            menuItems={menu.menuItems}
+            session={session}
+          />
+        ))}
+        <div className={classes.grow} />
+        <Tooltip title="Rename Session" arrow>
+          <EditableTypography
+            value={name}
+            setValue={handleNameChange}
+            variant="body1"
+            classes={{
+              inputBase: classes.inputBase,
+              inputRoot: classes.inputRoot,
+              inputFocused: classes.inputFocused,
+            }}
+          />
+        </Tooltip>
+        {HeaderButtons}
+        <div className={classes.grow} />
+        <div style={{ width: 150, maxHeight: 48 }}>
+          <Logo session={session} />
+        </div>
+      </Toolbar>
+    )
+  },
+)
+
+const ViewLauncher = observer(({ session }: { session: AppSession }) => {
+  const { classes } = useStyles()
+  const { pluginManager } = getEnv(session)
+  const viewTypes = pluginManager.getElementTypeRecord('view').all()
+  const [value, setValue] = useState(viewTypes[0]?.name)
+  return (
+    <Paper className={classes.selectPaper}>
+      <Typography>Select a view to launch</Typography>
+      <Select value={value} onChange={event => setValue(event.target.value)}>
+        {viewTypes.map(({ name }: { name: string }) => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+      </Select>
+      <Button
+        onClick={() => {
+          session.addView(value, {})
+        }}
+        variant="contained"
+        color="primary"
+      >
+        Launch view
+      </Button>
+    </Paper>
+  )
+})
+
+const ViewPanel = observer(
+  ({ view, session }: { view: AbstractViewModel; session: AppSession }) => {
+    const { pluginManager } = getEnv(session)
+    const viewType = pluginManager.getViewType(view.type)
+    if (!viewType) {
+      throw new Error(`unknown view type ${view.type}`)
+    }
+    const { ReactComponent } = viewType
+    return (
+      <ViewContainer view={view} onClose={() => session.removeView(view)}>
+        <Suspense fallback={<div>Loading...</div>}>
+          <ReactComponent
+            model={view}
+            session={session}
+            getTrackType={pluginManager.getTrackType}
+          />
+        </Suspense>
+      </ViewContainer>
+    )
+  },
+)
+
+const App = observer(
+  (props: {
+    HeaderButtons?: React.ReactElement
+    session: SessionWithDrawerWidgets & {
+      savedSessionNames: string[]
+      menus: { label: string; menuItems: JBMenuItem[] }[]
+      renameCurrentSession: (arg: string) => void
+      snackbarMessages: SnackbarMessage[]
+      popSnackbarMessage: () => unknown
+    }
+  }) => {
+    const { session } = props
+    const { classes } = useStyles()
+
+    const {
+      minimized,
+      visibleWidget,
+      drawerWidth,
+      activeWidgets,
+      views,
+      drawerPosition,
+    } = session
 
     const drawerVisible = visibleWidget && !minimized
 
@@ -191,84 +271,23 @@ const App = observer(
         <div className={classes.menuBarAndComponents}>
           <div className={classes.menuBar}>
             <AppBar className={classes.appBar} position="static">
-              <Toolbar>
-                {menus.map(menu => (
-                  <DropDownMenu
-                    key={menu.label}
-                    menuTitle={menu.label}
-                    menuItems={menu.menuItems}
-                    session={session}
-                  />
-                ))}
-                <div className={classes.grow} />
-                <Tooltip title="Rename Session" arrow>
-                  <EditableTypography
-                    value={name}
-                    setValue={handleNameChange}
-                    variant="body1"
-                    classes={{
-                      inputBase: classes.inputBase,
-                      inputRoot: classes.inputRoot,
-                      inputFocused: classes.inputFocused,
-                    }}
-                  />
-                </Tooltip>
-                {HeaderButtons}
-                <div className={classes.grow} />
-                <div style={{ width: 150, maxHeight: 48 }}>
-                  <Logo session={session} />
-                </div>
-              </Toolbar>
+              <AppToolbar {...props} />
             </AppBar>
           </div>
           <div className={classes.components}>
             {views.length ? (
-              views.map(view => {
-                const viewType = pluginManager.getViewType(view.type)
-                if (!viewType) {
-                  throw new Error(`unknown view type ${view.type}`)
-                }
-                const { ReactComponent } = viewType
-                return (
-                  // @ts-ignore
-                  <ViewContainer
-                    key={`view-${view.id}`}
-                    view={view}
-                    onClose={() => session.removeView(view)}
-                  >
-                    <Suspense fallback={<div>Loading...</div>}>
-                      <ReactComponent
-                        model={view}
-                        session={session}
-                        getTrackType={pluginManager.getTrackType}
-                      />
-                    </Suspense>
-                  </ViewContainer>
-                )
-              })
+              views.map(view => (
+                <ErrorBoundary
+                  key={`view-${view.id}`}
+                  FallbackComponent={({ error }) => (
+                    <ErrorMessage error={error} />
+                  )}
+                >
+                  <ViewPanel view={view} session={session} />
+                </ErrorBoundary>
+              ))
             ) : (
-              <Paper className={classes.selectPaper}>
-                <Typography>Select a view to launch</Typography>
-                <Select
-                  value={value}
-                  onChange={event => setValue(event.target.value)}
-                >
-                  {viewTypes.map(({ name }: { name: string }) => (
-                    <MenuItem key={name} value={name}>
-                      {name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                <Button
-                  onClick={() => {
-                    session.addView(value, {})
-                  }}
-                  variant="contained"
-                  color="primary"
-                >
-                  Launch view
-                </Button>
-              </Paper>
+              <ViewLauncher {...props} />
             )}
 
             {/* blank space at the bottom of screen allows scroll */}

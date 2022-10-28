@@ -2,22 +2,35 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { Instance } from 'mobx-state-tree'
 import { BaseInternetAccountConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
+/**
+ * #config HTTPBasicInternetAccount
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const HTTPBasicConfigSchema = ConfigurationSchema(
   'HTTPBasicInternetAccount',
   {
-    authHeader: {
-      description: 'custom auth header for authorization',
+    /**
+     * #slot
+     */
+    tokenType: {
+      description: 'a custom name for a token to include in the header',
       type: 'string',
-      defaultValue: 'Authorization',
+      defaultValue: 'Basic',
     },
-    domains: {
-      description:
-        'array of valid domains the url can contain to use this account. Empty = all domains',
-      type: 'stringArray',
-      defaultValue: [],
+    /**
+     * #slot
+     */
+    validateWithHEAD: {
+      description: 'validate the token with a HEAD request before using it',
+      type: 'boolean',
+      defaultValue: true,
     },
   },
   {
+    /**
+     * #baseConfiguration
+     */
     baseConfiguration: BaseInternetAccountConfig,
     explicitlyTyped: true,
   },

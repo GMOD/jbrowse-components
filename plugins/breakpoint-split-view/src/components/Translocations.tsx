@@ -1,38 +1,63 @@
-import Path from 'svg-path-generator'
-import { getSession } from '@jbrowse/core/util'
-
+import React, { useState, useMemo } from 'react'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
-import React, { useState } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
+import Path from 'svg-path-generator'
+
+// locals
 import { yPos, getPxFromCoordinate, useNextFrame } from '../util'
 import { BreakpointViewModel, LayoutRecord } from '../model'
 
 const [LEFT] = [0, 1, 2, 3]
 
+// Getting "matched" TRA means just return all TRA
+function getMatchedTranslocationFeatures(features: Map<string, Feature>) {
+  const feats: Feature[][] = []
+  const alreadySeen = new Set<string>()
+
+  for (const f of features.values()) {
+    if (!alreadySeen.has(f.id())) {
+      if (f.get('ALT')[0] === '<TRA>') {
+        feats.push([f])
+      }
+    }
+    alreadySeen.add(f.id())
+  }
+
+  return feats
+}
+
 const Translocations = observer(
   ({
     model,
-    trackConfigId,
+    trackId,
     parentRef: ref,
   }: {
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views } = model
     const session = getSession(model)
-    const features = model.getMatchedTranslocationFeatures(trackConfigId)
-    const totalFeatures = model.getTrackFeatures(trackConfigId)
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackConfigId,
-      features,
+    const { assemblyManager } = session
+    const totalFeatures = model.getTrackFeatures(trackId)
+    const layoutMatches = useMemo(
+      () =>
+        model.getMatchedFeaturesInLayout(
+          trackId,
+          getMatchedTranslocationFeatures(totalFeatures),
+        ),
+
+      [totalFeatures, trackId, model],
     )
+
     const [mouseoverElt, setMouseoverElt] = useState<string>()
     const snap = getSnapshot(model)
     useNextFrame(snap)
-    const { assemblyManager } = session
+
     const assembly = assemblyManager.get(views[0].assemblyNames[0])
     if (!assembly) {
+      console.warn('Unable to read assembly')
       return null
     }
 
@@ -54,9 +79,7 @@ const Translocations = observer(
         fill="none"
         stroke="green"
         strokeWidth={5}
-        data-testid={
-          layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
-        }
+        data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
       >
         {layoutMatches.map(chunk => {
           // we follow a path in the list of chunks, not from top to bottom,
@@ -88,11 +111,9 @@ const Translocations = observer(
               const reversed1 = views[level1].pxToBp(x1).reversed
               const reversed2 = views[level2].pxToBp(x2).reversed
 
-              const tracks = views.map(v => v.getTrack(trackConfigId))
-              const y1 =
-                yPos(trackConfigId, level1, views, tracks, c1) - yOffset
-              const y2 =
-                yPos(trackConfigId, level2, views, tracks, c2) - yOffset
+              const tracks = views.map(v => v.getTrack(trackId))
+              const y1 = yPos(trackId, level1, views, tracks, c1) - yOffset
+              const y2 = yPos(trackId, level2, views, tracks, c2) - yOffset
 
               const path = Path()
                 .moveTo(

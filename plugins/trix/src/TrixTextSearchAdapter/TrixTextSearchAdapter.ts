@@ -62,7 +62,7 @@ export default class TrixTextSearchAdapter
     )
   }
 
-  /*
+  /**
    * Returns list of results
    * @param args - search options/arguments include: search query
    * limit of results to return, searchType...prefix | full | exact", etc.

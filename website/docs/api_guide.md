@@ -1,13 +1,13 @@
 ---
 id: api_guide
-title: API guide
+title: API
 toplevel: true
 ---
 
 import Figure from './figure'
 
-In this guide, will cover API level documentation e.g. methods that can be
-called on different objects and data model formats
+This guide will cover the API level documentation for methods and tools
+useful to developers looking to enhance JBrowse or write plugins.
 
 ## MenuItems objects
 
@@ -108,7 +108,7 @@ As an example, the here is an array of MenuItems and the resulting menu:
 Users can customize the top-level menu items using these functions that are
 available on the rootModel:
 
-#### appendMenu
+#### `appendMenu`
 
 Add a top-level menu
 
@@ -122,7 +122,7 @@ Add a top-level menu
 
 The new length of the top-level menus array
 
-#### insertMenu
+#### `insertMenu`
 
 Insert a top-level menu
 
@@ -137,7 +137,7 @@ Insert a top-level menu
 
 The new length of the top-level menus array
 
-#### appendToMenu
+#### `appendToMenu`
 
 Add a menu item to a top-level menu
 
@@ -152,7 +152,7 @@ Add a menu item to a top-level menu
 
 The new length of the menu
 
-#### insertInMenu
+#### `insertInMenu`
 
 Insert a menu item into a top-level menu
 
@@ -168,7 +168,7 @@ Insert a menu item into a top-level menu
 
 The new length of the menu
 
-#### appendToSubMenu
+#### `appendToSubMenu`
 
 Add a menu item to a sub-menu
 
@@ -183,7 +183,7 @@ Add a menu item to a sub-menu
 
 The new length of the sub-menu
 
-#### insertInSubMenu
+#### `insertInSubMenu`
 
 Insert a menu item into a sub-menu
 
@@ -198,69 +198,3 @@ Insert a menu item into a sub-menu
 ##### Return value
 
 The new length of the sub-menu
-
-## Extension points
-
-In the core codebase, we have the concept of extension points that users can
-call or add to
-
-The API is
-
-```js
-pluginManager.evaluateExtensionPoint(extensionPointName, args)
-```
-
-There is also an async version
-
-```js
-pluginManager.evaluateAsyncExtensionPoint(extensionPointName, args)
-```
-
-Users can additionall add to extension points, so that when they are evaluated,
-it runs a chain of callbacks that are registered to that extension point
-
-This looks like
-
-```js
-pluginManager.addToExtensionPoint(extensionPointName, callback => newArgs)
-```
-
-Here are the extension points in the core codebase
-
-### Core-extendPluggableElement
-
-(sync) used to add extra functionality to existing state tree models, for
-example, extra right-click context menus
-
-### Core-guessAdapterForLocation
-
-(sync) used to infer an adapter type given a location type from the "Add track"
-workflow
-
-### Core-guessTrackTypeForLocation
-
-(sync) used to infer a track type given a location type from the "Add track
-workflow"
-
-### LaunchView-LinearGenomeView
-
-(async) launches a linear genome view given parameters
-
-- session:AbstractSessionModel - instance of the session which you can call
-  actions on
-- assembly:string - assembly name
-- loc:string - a locstring
-- tracks:string[] - array of trackIds
-
-### LaunchView-CircularView
-
-- session:AbstractSessionModel - instance of the session which you can call
-  actions on
-- assembly:string - assembly name
-- tracks:string[] - array of trackIds
-
-### Extension point footnote
-
-Users that want to add further extension points can do so. The naming system,
-"Core-" just refers to the fact that these extension points are from our core
-codebase. Plugin developers may choose their own prefix to avoid collisions

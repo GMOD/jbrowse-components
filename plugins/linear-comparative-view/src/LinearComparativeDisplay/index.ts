@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
 import {
   getConf,
   readConfObject,
@@ -15,17 +16,46 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import React from 'react'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
+import PluginManager from '@jbrowse/core/PluginManager'
 
-export { default as ReactComponent } from './components/LinearComparativeDisplay'
+import ReactComponent from './components/LinearComparativeDisplay'
 
+export default (pluginManager: PluginManager) => {
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory(pluginManager)
+    return new DisplayType({
+      name: 'LinearComparativeDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'SyntenyTrack',
+      viewType: 'LinearComparativeView',
+      ReactComponent,
+    })
+  })
+}
+
+/**
+ * #config LinearComparativeDisplay
+ */
 export function configSchemaFactory(pluginManager: any) {
   return ConfigurationSchema(
     'LinearComparativeDisplay',
-    { renderer: pluginManager.pluggableConfigSchemaType('renderer') },
-    { baseConfiguration: baseLinearDisplayConfigSchema, explicitlyTyped: true },
+    {
+      /**
+       * #slot
+       */
+      renderer: pluginManager.pluggableConfigSchemaType('renderer'),
+    },
+    {
+      /**
+       * #baseConfiguration
+       */
+      baseConfiguration: baseLinearDisplayConfigSchema,
+      explicitlyTyped: true,
+    },
   )
 }
 
@@ -179,3 +209,5 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
 
 export type LinearComparativeDisplayModel = ReturnType<typeof stateModelFactory>
 export type LinearComparativeDisplay = Instance<LinearComparativeDisplayModel>
+
+export { ReactComponent }

@@ -2,7 +2,8 @@ import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { useQueryParam, StringParam } from 'use-query-params'
-import { CssBaseline, ThemeProvider } from '@material-ui/core'
+import { CssBaseline } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
 
 // core
 import { getConf } from '@jbrowse/core/configuration'
@@ -13,6 +14,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
 import { SessionModel } from './sessionModelFactory'
+
+import './JBrowse.css'
 
 const JBrowse = observer(
   ({ pluginManager }: { pluginManager: PluginManager }) => {
@@ -34,16 +37,14 @@ const JBrowse = observer(
     }, [currentSessionId, rootModel, session, setSessionId])
 
     useEffect(() => {
-      if (!jbrowse) {
+      if (!jbrowse || !adminKey) {
         return
       }
-      onSnapshot(jbrowse, async snapshot => {
-        if (adminKey) {
+      return onSnapshot(jbrowse, async snapshot => {
+        try {
           const response = await fetch(adminServer || `/updateConfig`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               adminKey,
               configPath,
@@ -52,14 +53,10 @@ const JBrowse = observer(
           })
           if (!response.ok) {
             const message = await response.text()
-            if (session) {
-              session.notify(
-                `Admin server error: ${response.status} (${
-                  response.statusText
-                }) ${message || ''}`,
-              )
-            }
+            throw new Error(`HTTP ${response.status} (${message})`)
           }
+        } catch (e) {
+          session?.notify(`Admin server error: ${e}`)
         }
       })
     }, [jbrowse, session, adminKey, adminServer, configPath])

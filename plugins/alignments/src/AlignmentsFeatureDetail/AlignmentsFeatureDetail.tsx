@@ -6,8 +6,8 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  makeStyles,
-} from '@material-ui/core'
+} from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import copy from 'copy-to-clipboard'
@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { parseCigar } from '../BamAdapter/MismatchParser'
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles()(() => ({
   compact: {
     paddingRight: 0,
     paddingTop: 0,
@@ -30,7 +30,7 @@ const omit = ['clipPos', 'flags']
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AlignmentFlags(props: { feature: any }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { feature } = props
   const { flags } = feature
   const flagNames = [
@@ -77,12 +77,22 @@ function AlignmentFlags(props: { feature: any }) {
 
 function Formatter({ value }: { value: unknown }) {
   const [show, setShow] = useState(false)
+  const [copied, setCopied] = useState(false)
   const display = String(value)
   if (display.length > 100) {
     return (
       <>
-        <button type="button" onClick={() => copy(display)}>
-          Copy
+        <button
+          type="button"
+          onClick={() => {
+            copy(display)
+            setCopied(true)
+            setTimeout(() => {
+              setCopied(false)
+            }, 700)
+          }}
+        >
+          {copied ? 'Copied to clipboard' : 'Copy'}
         </button>
         <button type="button" onClick={() => setShow(val => !val)}>
           {show ? 'Show less' : 'Show more'}
@@ -134,7 +144,8 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             return (
               <li key={`${locString}-${index}`}>
                 <Link
-                  onClick={() => {
+                  onClick={event => {
+                    event.preventDefault()
                     const { view } = model
                     try {
                       if (view) {

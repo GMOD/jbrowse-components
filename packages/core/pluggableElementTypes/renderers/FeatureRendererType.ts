@@ -1,4 +1,4 @@
-import { filter, ignoreElements, tap } from 'rxjs/operators'
+import { toArray } from 'rxjs/operators'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
@@ -14,7 +14,7 @@ import ServerSideRendererType, {
   ResultsDeserialized as ServerSideResultsDeserialized,
   ResultsSerialized as ServerSideResultsSerialized,
 } from './ServerSideRendererType'
-import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -104,7 +104,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
   /**
    * Adds feature serialization to base server-side result serialization
    *
-   * @param results - object containing the results of calling the `render`
+   * @param result - object containing the results of calling the `render`
    * method
    * @param args - deserialized render args
    */
@@ -113,9 +113,10 @@ export default class FeatureRendererType extends ServerSideRendererType {
     args: RenderArgsDeserialized,
   ): ResultsSerialized {
     const serialized = super.serializeResultsInWorker(result, args)
+    const { features } = result
     return {
       ...serialized,
-      features: iterMap(result.features.values(), f => f.toJSON()),
+      features: iterMap(features.values(), f => f.toJSON(), features.size),
     }
   }
 
@@ -144,6 +145,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
       sessionId,
       adapterConfig,
     )
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error('Adapter does not support retrieving features')
+    }
     const features = new Map()
 
     if (!regions || regions.length === 0) {
@@ -167,33 +171,19 @@ export default class FeatureRendererType extends ServerSideRendererType {
 
     const featureObservable =
       requestRegions.length === 1
-        ? (dataAdapter as BaseFeatureDataAdapter).getFeatures(
+        ? dataAdapter.getFeatures(
             this.getExpandedRegion(region, renderArgs),
-            // @ts-ignore
             renderArgs,
           )
-        : // @ts-ignore
-          (dataAdapter as BaseFeatureDataAdapter).getFeaturesInMultipleRegions(
-            requestRegions,
-            renderArgs,
-          )
+        : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
-    await featureObservable
-      .pipe(
-        tap(() => checkAbortSignal(signal)),
-        filter(feature => this.featurePassesFilters(renderArgs, feature)),
-        tap(feature => {
-          const id = feature.id()
-          if (!id) {
-            throw new Error(`invalid feature id "${id}"`)
-          }
-          features.set(id, feature)
-        }),
-        ignoreElements(),
-      )
-      .toPromise()
-
-    return features
+    const feats = await featureObservable.pipe(toArray()).toPromise()
+    checkAbortSignal(signal)
+    return new Map(
+      feats
+        .filter(feat => this.featurePassesFilters(renderArgs, feat))
+        .map(feat => [feat.id(), feat]),
+    )
   }
 
   /**
@@ -221,5 +211,3 @@ export default class FeatureRendererType extends ServerSideRendererType {
     return { ...result, features }
   }
 }
-
-export class NewFeatureRendererType extends ServerSideRendererType {}

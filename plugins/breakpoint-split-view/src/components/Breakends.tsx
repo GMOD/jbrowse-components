@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import Path from 'svg-path-generator'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { parseBreakend, Breakend } from '@gmod/vcf'
@@ -13,36 +12,70 @@ import { BreakpointViewModel } from '../model'
 const [LEFT] = [0, 1, 2, 3]
 
 function findMatchingAlt(feat1: Feature, feat2: Feature) {
-  const candidates: Record<string, Breakend> = {}
   const alts = feat1.get('ALT') as string[] | undefined
-  alts
-    ?.map(alt => parseBreakend(alt))
-    .filter((f): f is Breakend => !!f)
-    .forEach(bnd => (candidates[bnd.MatePosition] = bnd))
+  if (alts) {
+    return Object.fromEntries(
+      alts
+        ?.map(alt => parseBreakend(alt))
+        .filter((f): f is Breakend => !!f)
+        .map(bnd => [bnd.MatePosition, bnd]),
+    )[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
+  }
+  return undefined
+}
 
-  return candidates[`${feat2.get('refName')}:${feat2.get('start') + 1}`]
+// Returns paired BND features across multiple views by inspecting
+// the ALT field to get exact coordinate matches
+function getMatchedBreakendFeatures(features: Map<string, Feature>) {
+  const candidates: Record<string, Feature[]> = {}
+  const alreadySeen = new Set<string>()
+
+  for (const f of features.values()) {
+    if (!alreadySeen.has(f.id())) {
+      if (f.get('type') === 'breakend') {
+        const alts = f.get('ALT') as string[] | undefined
+        alts?.forEach(a => {
+          const cur = `${f.get('refName')}:${f.get('start') + 1}`
+          const bnd = parseBreakend(a)
+          if (bnd) {
+            if (!candidates[cur]) {
+              candidates[bnd.MatePosition || 'none'] = [f]
+            } else {
+              candidates[cur].push(f)
+            }
+          }
+        })
+      }
+    }
+    alreadySeen.add(f.id())
+  }
+
+  return Object.values(candidates).filter(v => v.length > 1)
 }
 
 const Breakends = observer(
   ({
     model,
-    trackConfigId,
+    trackId,
     parentRef: ref,
   }: {
     model: BreakpointViewModel
-    trackConfigId: string
+    trackId: string
     parentRef: React.RefObject<SVGSVGElement>
   }) => {
     const { views } = model
     const session = getSession(model)
     const { assemblyManager } = session
-
-    const totalFeatures = model.getTrackFeatures(trackConfigId)
-    const features = model.getMatchedBreakendFeatures(trackConfigId)
-    const layoutMatches = model.getMatchedFeaturesInLayout(
-      trackConfigId,
-      features,
+    const totalFeatures = model.getTrackFeatures(trackId)
+    const layoutMatches = useMemo(
+      () =>
+        model.getMatchedFeaturesInLayout(
+          trackId,
+          getMatchedBreakendFeatures(totalFeatures),
+        ),
+      [totalFeatures, trackId, model],
     )
+
     const [mouseoverElt, setMouseoverElt] = useState<string>()
     const snap = getSnapshot(model)
     useNextFrame(snap)
@@ -63,9 +96,7 @@ const Breakends = observer(
         stroke="green"
         strokeWidth={5}
         fill="none"
-        data-testid={
-          layoutMatches.length ? `${trackConfigId}-loaded` : trackConfigId
-        }
+        data-testid={layoutMatches.length ? `${trackId}-loaded` : trackId}
       >
         {layoutMatches.map(chunk => {
           const ret = []
@@ -92,9 +123,9 @@ const Breakends = observer(
             const reversed1 = views[level1].pxToBp(x1).reversed
             const reversed2 = views[level2].pxToBp(x2).reversed
 
-            const tracks = views.map(v => v.getTrack(trackConfigId))
-            const y1 = yPos(trackConfigId, level1, views, tracks, c1) - yoff
-            const y2 = yPos(trackConfigId, level2, views, tracks, c2) - yoff
+            const tracks = views.map(v => v.getTrack(trackId))
+            const y1 = yPos(trackId, level1, views, tracks, c1) - yoff
+            const y2 = yPos(trackId, level2, views, tracks, c2) - yoff
             if (!relevantAlt) {
               console.warn(
                 'the relevant ALT allele was not found, cannot render',
@@ -128,7 +159,7 @@ const Breakends = observer(
                       'VariantFeatureWidget',
                       'variantFeature',
                       {
-                        featureData: totalFeatures.get(id),
+                        featureData: totalFeatures.get(id)?.toJSON(),
                       },
                     )
                     session.showWidget?.(featureWidget)

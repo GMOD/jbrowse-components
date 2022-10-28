@@ -80,7 +80,9 @@ const model = types
   }))
   .actions(self => ({
     addBlankColumnFilter(columnNumber: number) {
-      const { dataType } = getParent(self).spreadsheet.columns[columnNumber]
+      const { dataType } =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getParent<any>(self).spreadsheet.columns[columnNumber]
       self.columnFilters.push({
         type: dataType.type,
         columnNumber,

@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { lazy } from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import {
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
+import AboutDialog from '@jbrowse/core/ui/AboutDialog'
 import {
   getMembers,
   getParent,
@@ -21,12 +20,14 @@ import {
   Instance,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { readConfObject } from '@jbrowse/core/configuration'
-import InfoIcon from '@material-ui/icons/Info'
-import { ReferringNode } from '../types'
+import {
+  readConfObject,
+  AnyConfigurationModel,
+} from '@jbrowse/core/configuration'
+import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-
-const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
+import { ReferringNode } from '../types'
+import { version } from '../version'
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -77,34 +78,34 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return undefined
       },
       get rpcManager() {
-        return getParent(self).rpcManager
+        return getParent<any>(self).rpcManager
       },
       get configuration() {
-        return getParent(self).config.configuration
+        return getParent<any>(self).config.configuration
       },
       get assemblies() {
-        return [getParent(self).config.assembly]
+        return [getParent<any>(self).config.assembly]
       },
       get assemblyNames() {
-        return [getParent(self).config.assemblyName]
+        return [getParent<any>(self).config.assemblyName]
       },
       get tracks() {
-        return getParent(self).config.tracks
+        return getParent<any>(self).config.tracks
       },
       get aggregateTextSearchAdapters() {
-        return getParent(self).config.aggregateTextSearchAdapters
+        return getParent<any>(self).config.aggregateTextSearchAdapters
       },
       get connections() {
-        return getParent(self).config.connections
+        return getParent<any>(self).config.connections
       },
       get adminMode() {
         return false
       },
       get assemblyManager() {
-        return getParent(self).assemblyManager
+        return getParent<any>(self).assemblyManager
       },
       get version() {
-        return ''
+        return version
       },
       get views() {
         return [self.view]
@@ -130,7 +131,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
-        walk(getParent(self), node => {
+        walk(getParent<any>(self), node => {
           if (isModelType(getType(node))) {
             const members = getMembers(node)
             Object.entries(members.properties).forEach(([key, value]) => {
@@ -146,7 +147,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       queueDialog(
-        callback: (doneCallback: Function) => [DialogComponentType, any],
+        callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
         const [component, props] = callback(() => {
           this.removeActiveDialog()
@@ -259,6 +260,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           ...initialState,
           type: typeName,
         }
+        return self.view
       },
 
       removeView() {},
@@ -323,7 +325,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       renameCurrentSession(sessionName: string) {
-        return getParent(self).renameCurrentSession(sessionName)
+        return getParent<any>(self).renameCurrentSession(sessionName)
       },
     }))
     .views(self => ({
@@ -332,7 +334,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           {
             label: 'About track',
             onClick: () => {
-              self.queueDialog((doneCallback: Function) => [
+              self.queueDialog(doneCallback => [
                 AboutDialog,
                 { config, handleClose: doneCallback },
               ])

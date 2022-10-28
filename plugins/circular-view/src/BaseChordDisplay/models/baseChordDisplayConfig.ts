@@ -1,8 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+/**
+ * #config BaseChordDisplay
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const baseChordDisplayConfig = ConfigurationSchema(
   'BaseChordDisplay',
   {
+    /**
+     * #slot
+     */
     onChordClick: {
       type: 'boolean',
       description:
@@ -11,7 +19,12 @@ const baseChordDisplayConfig = ConfigurationSchema(
       contextVariable: ['feature', 'track', 'pluginManager'],
     },
   },
-  { explicitIdentifier: 'displayId' },
+  {
+    /**
+     * #identifier
+     */
+    explicitIdentifier: 'displayId',
+  },
 )
 
 export { baseChordDisplayConfig }

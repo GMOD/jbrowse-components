@@ -1,31 +1,27 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  FormGroup,
-  Typography,
-  makeStyles,
-  alpha,
-} from '@material-ui/core'
-import SearchBox from './SearchBox'
+import { Button, FormGroup, Typography, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
+import { getBpDisplayStr } from '@jbrowse/core/util'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
-import ArrowBackIcon from '@material-ui/icons/ArrowBack'
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
 import {
   LinearGenomeViewModel,
-  SPACING,
   WIDGET_HEIGHT,
+  SPACING,
   HEADER_BAR_HEIGHT,
 } from '..'
 import OverviewScaleBar from './OverviewScaleBar'
 import ZoomControls from './ZoomControls'
+import SearchBox from './SearchBox'
 
 type LGV = LinearGenomeViewModel
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles()(theme => ({
   headerBar: {
     height: HEADER_BAR_HEIGHT,
     display: 'flex',
@@ -59,7 +55,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const HeaderButtons = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <Button
       onClick={model.activateTrackSelector}
@@ -74,7 +70,7 @@ const HeaderButtons = observer(({ model }: { model: LGV }) => {
 })
 
 function PanControls({ model }: { model: LGV }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <>
       <Button
@@ -96,17 +92,17 @@ function PanControls({ model }: { model: LGV }) {
 }
 
 const RegionWidth = observer(({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { coarseTotalBp } = model
   return (
     <Typography variant="body2" color="textSecondary" className={classes.bp}>
-      {Math.round(coarseTotalBp).toLocaleString('en-US')} bp
+      {getBpDisplayStr(coarseTotalBp)}
     </Typography>
   )
 })
 
 const Controls = ({ model }: { model: LGV }) => {
-  const classes = useStyles()
+  const { classes } = useStyles()
   return (
     <div className={classes.headerBar}>
       <HeaderButtons model={model} />
@@ -123,13 +119,15 @@ const Controls = ({ model }: { model: LGV }) => {
 }
 
 const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
-  return model.hideHeaderOverview ? (
-    <Controls model={model} />
-  ) : (
-    <OverviewScaleBar model={model}>
+  return !model.hideHeader ? (
+    model.hideHeaderOverview ? (
       <Controls model={model} />
-    </OverviewScaleBar>
-  )
+    ) : (
+      <OverviewScaleBar model={model}>
+        <Controls model={model} />
+      </OverviewScaleBar>
+    )
+  ) : null
 })
 
 export default LinearGenomeViewHeader

@@ -1,23 +1,18 @@
 import React, { useRef, useEffect, useState } from 'react'
-import ReactPropTypes from 'prop-types'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import { Instance } from 'mobx-state-tree'
-// material ui
-import { alpha } from '@material-ui/core/styles/colorManipulator'
-import { makeStyles } from '@material-ui/core/styles'
-import Popover from '@material-ui/core/Popover'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
+import { observer } from 'mobx-react'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
-import { LinearGenomeViewStateModel, BpOffset } from '..'
+import { LinearGenomeViewModel } from '..'
 
-type LGV = Instance<LinearGenomeViewStateModel>
+type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => {
-  const background = theme.palette.tertiary
-    ? alpha(theme.palette.tertiary.main, 0.7)
-    : alpha(theme.palette.primary.main, 0.7)
+const useStyles = makeStyles()(theme => {
+  const { primary, tertiary } = theme.palette
+  const background = tertiary
+    ? alpha(tertiary.main, 0.7)
+    : alpha(primary.main, 0.7)
   return {
     rubberBand: {
       height: '100%',
@@ -33,9 +28,7 @@ const useStyles = makeStyles(theme => {
       minHeight: 8,
     },
     rubberBandText: {
-      color: theme.palette.tertiary
-        ? theme.palette.tertiary.contrastText
-        : theme.palette.primary.contrastText,
+      color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
     popover: {
       mouseEvents: 'none',
@@ -57,7 +50,7 @@ const useStyles = makeStyles(theme => {
 
 const VerticalGuide = observer(
   ({ model, coordX }: { model: LGV; coordX: number }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     return (
       <Tooltip
         open
@@ -94,10 +87,10 @@ function RubberBand({
     clientX: number
     clientY: number
   }>()
-  const [guideX, setGuideX] = useState<number | undefined>()
+  const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
   const rubberBandRef = useRef(null)
-  const classes = useStyles()
+  const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
   const { setOffsets, pxToBp } = model
@@ -109,7 +102,6 @@ function RubberBand({
       }
       let leftPx = startX
       let rightPx = offsetX
-      // handles clicking and draging to the left
       if (rightPx < leftPx) {
         ;[leftPx, rightPx] = [rightPx, leftPx]
       }
@@ -139,11 +131,11 @@ function RubberBand({
           clientX,
           clientY,
         })
-        const { leftOffset, rightOffset } = computeOffsets(offsetX) as {
-          leftOffset: BpOffset
-          rightOffset: BpOffset
+        const args = computeOffsets(offsetX)
+        if (args) {
+          const { leftOffset, rightOffset } = args
+          setOffsets(leftOffset, rightOffset)
         }
-        setOffsets(leftOffset, rightOffset)
         setGuideX(undefined)
       }
     }
@@ -311,15 +303,6 @@ function RubberBand({
       ) : null}
     </>
   )
-}
-
-RubberBand.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  ControlComponent: ReactPropTypes.node,
-}
-
-RubberBand.defaultProps = {
-  ControlComponent: <div />,
 }
 
 export default observer(RubberBand)

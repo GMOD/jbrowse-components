@@ -1,20 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react'
-import {
-  Popover,
-  Tooltip,
-  Typography,
-  makeStyles,
-  alpha,
-} from '@material-ui/core'
+import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { makeStyles } from 'tss-react/mui'
 import { getSession, stringify } from '@jbrowse/core/util'
-import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
+import { observer } from 'mobx-react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { LinearGenomeViewModel, HEADER_OVERVIEW_HEIGHT } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles(theme => {
+const useStyles = makeStyles()(theme => {
   const { tertiary, primary } = theme.palette
   const background = tertiary
     ? alpha(tertiary.main, 0.7)
@@ -66,7 +60,7 @@ const HoverTooltip = observer(
     guideX: number
     overview: Base1DViewModel
   }) => {
-    const classes = useStyles()
+    const { classes } = useStyles()
     const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
 
@@ -111,8 +105,8 @@ function OverviewRubberBand({
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberBandRef = useRef(null)
-  const classes = useStyles()
+  const rubberBandRef = useRef<HTMLDivElement>(null)
+  const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
   useEffect(() => {
@@ -125,30 +119,27 @@ function OverviewRubberBand({
     }
 
     function globalMouseUp() {
-      if (
-        controlsRef.current &&
-        startX !== undefined &&
-        currentX !== undefined
-      ) {
+      // click and drag
+      if (startX !== undefined && currentX !== undefined) {
         if (Math.abs(currentX - startX) > 3) {
-          model.zoomToDisplayedRegions(
-            overview.pxToBp(startX - cytobandOffset),
-            overview.pxToBp(currentX - cytobandOffset),
+          const left = Math.min(startX, currentX)
+          const right = Math.max(startX, currentX)
+          model.moveTo(
+            overview.pxToBp(left - cytobandOffset),
+            overview.pxToBp(right - cytobandOffset),
           )
         }
       }
-      /* handling clicking and centering at a specific Bp */
-      if (
-        controlsRef.current &&
-        startX !== undefined &&
-        currentX === undefined
-      ) {
-        const clickedAt = overview.pxToBp(startX - cytobandOffset)
-        model.centerAt(
-          Math.round(clickedAt.coord),
-          clickedAt.refName,
-          clickedAt.index,
-        )
+
+      // just a click
+      if (startX !== undefined && currentX === undefined) {
+        const click = overview.pxToBp(startX - cytobandOffset)
+        if (!click.refName) {
+          getSession(model).notify('unknown position clicked')
+          console.error('unknown position clicked', click)
+        } else {
+          model.centerAt(Math.round(click.coord), click.refName, click.index)
+        }
       }
       setStartX(undefined)
       setCurrentX(undefined)
@@ -314,16 +305,6 @@ function OverviewRubberBand({
       </div>
     </div>
   )
-}
-
-OverviewRubberBand.propTypes = {
-  model: MobxPropTypes.objectOrObservableObject.isRequired,
-  overview: MobxPropTypes.objectOrObservableObject.isRequired,
-  ControlComponent: ReactPropTypes.node,
-}
-
-OverviewRubberBand.defaultProps = {
-  ControlComponent: <div />,
 }
 
 export default observer(OverviewRubberBand)

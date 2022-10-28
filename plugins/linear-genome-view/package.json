@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-linear-genome-view",
-  "version": "1.6.5",
+  "version": "2.1.7",
   "description": "JBrowse 2 linear genome view",
   "keywords": [
     "jbrowse",
@@ -16,17 +16,21 @@
   },
   "author": "JBrowse Team",
   "distMain": "dist/index.js",
+  "distModule": "esm/index.js",
   "srcMain": "src/index.ts",
+  "srcModule": "src/index.ts",
   "main": "src/index.ts",
-  "distModule": "dist/plugin-linear-genome-view.esm.js",
-  "module": "",
   "files": [
     "dist",
-    "src"
+    "src",
+    "esm"
   ],
   "scripts": {
-    "start": "tsdx watch --verbose --noClean",
-    "build": "tsdx build",
+    "prebuild": "npm run clean",
+    "build": "npm-run-all build:*",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "clean": "rimraf dist esm *.tsbuildinfo",
     "test": "cd ../..; jest plugins/linear-genome-view",
     "prepublishOnly": "yarn test",
     "prepack": "yarn build; yarn useDist",
@@ -35,30 +39,30 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
-    "@material-ui/icons": "^4.9.1",
+    "@mui/icons-material": "^5.0.1",
     "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
     "clsx": "^1.0.4",
     "copy-to-clipboard": "^3.3.1",
     "file-saver": "^2.0.0",
-    "is-object": "^1.0.1",
-    "json-stable-stringify": "^1.0.1",
+    "material-ui-popup-state": "^3.0.0",
     "normalize-wheel": "^1.0.1",
-    "react-popper": "^2.0.0",
-    "react-sizeme": "^3.0.2"
+    "react-popper": "^2.0.0"
   },
   "peerDependencies": {
-    "@jbrowse/core": "^1.0.0",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/lab": "^4.0.0-alpha.45",
-    "mobx": "^5.0.0",
-    "mobx-react": "^6.0.0",
-    "mobx-state-tree": "3.14.1",
+    "@jbrowse/core": "^2.0.0",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
+    "react-dom": ">=16.8.0",
+    "react-error-boundary": "^3.0.0",
+    "tss-react": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "module": ""
 }

@@ -16,6 +16,9 @@ let topLevel = false
     if (line.startsWith('import Figure')) {
       continue
     }
+    if (line.startsWith('import config')) {
+      continue
+    }
     if (!readingHeader && line === '---') {
       readingHeader = true
       continue

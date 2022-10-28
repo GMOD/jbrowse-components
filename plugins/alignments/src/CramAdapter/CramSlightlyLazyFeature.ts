@@ -3,7 +3,7 @@ import {
   Feature,
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
-
+import { CramRecord } from '@gmod/cram'
 import CramAdapter from './CramAdapter'
 
 export interface Mismatch {
@@ -18,12 +18,10 @@ export interface Mismatch {
 }
 
 export default class CramSlightlyLazyFeature implements Feature {
-  private _store: CramAdapter
+  // uses parameter properties to automatically create fields on the class
+  // https://www.typescriptlang.org/docs/handbook/classes.html#parameter-properties
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(private record: any, store: CramAdapter) {
-    this._store = store
-  }
+  constructor(private record: CramRecord, private _store: CramAdapter) {}
 
   _get_name() {
     return this.record.readName
@@ -34,7 +32,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_end() {
-    return this.record.alignmentStart + this.record.lengthOnRef - 1
+    return this.record.alignmentStart + (this.record.lengthOnRef ?? 1) - 1
   }
 
   _get_cram_read_features() {
@@ -125,6 +123,9 @@ export default class CramSlightlyLazyFeature implements Feature {
     let cigar = ''
     let op = 'M'
     let oplen = 0
+    if (!this.record._refRegion) {
+      return ''
+    }
 
     // not sure I should access these, but...
     const ref = this.record._refRegion.seq
@@ -132,8 +133,10 @@ export default class CramSlightlyLazyFeature implements Feature {
     let last_pos = this.record.alignmentStart
     let sublen = 0
     if (typeof this.record.readFeatures !== 'undefined') {
+      let insLen = 0
       // @ts-ignore
-      this.record.readFeatures.forEach(({ code, refPos, sub, data }) => {
+      for (let i = 0; i < this.record.readFeatures.length; i++) {
+        const { code, refPos, sub, data } = this.record.readFeatures[i]
         sublen = refPos - last_pos
         seq += ref.substring(last_pos - refStart, refPos - refStart)
         last_pos = refPos
@@ -145,6 +148,10 @@ export default class CramSlightlyLazyFeature implements Feature {
         if (sublen) {
           op = 'M'
           oplen += sublen
+        }
+        if (insLen > 0 && code !== 'i') {
+          cigar += `${insLen}I`
+          insLen = 0
         }
 
         if (code === 'b') {
@@ -182,11 +189,11 @@ export default class CramSlightlyLazyFeature implements Feature {
           oplen = 0
         } else if (code === 'i') {
           // Single base insertion
-          seq += data
+          // seq += data
           if (oplen) {
             cigar += oplen + op
           }
-          cigar += `${1}I`
+          insLen++
           oplen = 0
         } else if (code === 'P') {
           // Padding
@@ -202,7 +209,7 @@ export default class CramSlightlyLazyFeature implements Feature {
           cigar += `${data}H`
           oplen = 0
         } // else q or Q
-      })
+      }
     } else {
       sublen = this.record.readLength - seq.length
     }
@@ -232,7 +239,6 @@ export default class CramSlightlyLazyFeature implements Feature {
         prop =>
           prop.startsWith('_get_') &&
           prop !== '_get_mismatches' &&
-          prop !== '_get_skips_and_dels' &&
           prop !== '_get_cram_read_features',
       )
       .map(methodName => methodName.replace('_get_', ''))
@@ -282,19 +288,12 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   toJSON(): SimpleFeatureSerialized {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tags: Record<string, any> = {}
-    this.tags().forEach((t: string) => {
-      const val = this.get(t)
-      if (val !== undefined) {
-        tags[t] = val
-      }
-    })
-
     return {
-      ...tags,
-      name: this.get('name'),
-      type: this.get('type'),
+      ...Object.fromEntries(
+        this.tags()
+          .map(t => [t, this.get(t)])
+          .filter(elt => elt[1] !== undefined),
+      ),
       uniqueId: this.id(),
     }
   }
@@ -306,99 +305,95 @@ export default class CramSlightlyLazyFeature implements Feature {
       return []
     }
     const start = this.get('start')
-    const mismatches: Mismatch[] = []
-    readFeatures.forEach(
-      (args: {
-        code: string
-        refPos: number
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any
-        pos: number
-        sub: string
-        ref: string
-      }) => {
-        const { code, pos, data, sub, ref } = args
-        const refPos = args.refPos - 1 - start
-        if (code === 'X') {
-          // substitution
-          mismatches.push({
-            start: refPos,
-            length: 1,
-            base: sub,
-            qual: qual?.[pos],
-            altbase: ref,
-            type: 'mismatch',
-          })
-        } else if (code === 'I') {
-          // insertion
-          mismatches.push({
-            start: refPos,
-            type: 'insertion',
-            base: `${data.length}`,
-            length: 0,
-          })
-        } else if (code === 'N') {
-          // reference skip
-          mismatches.push({
-            type: 'skip',
-            length: data,
-            start: refPos,
-            base: 'N',
-          })
-        } else if (code === 'S') {
-          // soft clip
-          const len = data.length
-          mismatches.push({
-            start: refPos,
-            type: 'softclip',
-            base: `S${len}`,
-            cliplen: len,
-            length: 1,
-          })
-        } else if (code === 'P') {
-          // padding
-        } else if (code === 'H') {
-          // hard clip
-          const len = data
-          mismatches.push({
-            start: refPos,
-            type: 'hardclip',
-            base: `H${len}`,
-            cliplen: len,
-            length: 1,
-          })
-        } else if (code === 'D') {
-          // deletion
-          mismatches.push({
-            type: 'deletion',
-            length: data,
-            start: refPos,
-            base: '*',
-          })
-        } else if (code === 'b') {
-          // stretch of bases
-        } else if (code === 'q') {
-          // stretch of qual scores
-        } else if (code === 'B') {
-          // a pair of [base, qual]
-        } else if (code === 'i') {
-          // single-base insertion
-          // insertion
-          mismatches.push({
-            start: refPos,
-            type: 'insertion',
-            base: data,
-            length: 1,
-          })
-        } else if (code === 'Q') {
-          // single quality value
-        }
-      },
-    )
-    return mismatches
-  }
+    const mismatches: Mismatch[] = new Array(readFeatures.length)
+    let j = 0
+    let insLen = 0
 
-  _get_skips_and_dels(): Mismatch[] {
-    return this._get_mismatches()
+    let refPos = 0
+    for (let i = 0; i < readFeatures.length; i++) {
+      const f = readFeatures[i]
+      const { code, pos, data, sub, ref } = f
+      if (insLen > 0 && code !== 'i') {
+        mismatches[j++] = {
+          start: refPos,
+          type: 'insertion',
+          base: `${insLen}`,
+          length: 0,
+        }
+        insLen = 0
+      }
+      refPos = f.refPos - 1 - start
+
+      if (code === 'X') {
+        // substitution
+        mismatches[j++] = {
+          start: refPos,
+          length: 1,
+          base: sub,
+          qual: qual?.[pos],
+          altbase: ref,
+          type: 'mismatch',
+        }
+      } else if (code === 'I') {
+        // insertion
+        mismatches[j++] = {
+          start: refPos,
+          type: 'insertion',
+          base: `${data.length}`,
+          length: 0,
+        }
+      } else if (code === 'N') {
+        // reference skip
+        mismatches[j++] = {
+          type: 'skip',
+          length: data,
+          start: refPos,
+          base: 'N',
+        }
+      } else if (code === 'S') {
+        // soft clip
+        const len = data.length
+        mismatches[j++] = {
+          start: refPos,
+          type: 'softclip',
+          base: `S${len}`,
+          cliplen: len,
+          length: 1,
+        }
+      } else if (code === 'P') {
+        // padding
+      } else if (code === 'H') {
+        // hard clip
+        const len = data
+        mismatches[j++] = {
+          start: refPos,
+          type: 'hardclip',
+          base: `H${len}`,
+          cliplen: len,
+          length: 1,
+        }
+      } else if (code === 'D') {
+        // deletion
+        mismatches[j++] = {
+          type: 'deletion',
+          length: data,
+          start: refPos,
+          base: '*',
+        }
+      } else if (code === 'b') {
+        // stretch of bases
+      } else if (code === 'q') {
+        // stretch of qual scores
+      } else if (code === 'B') {
+        // a pair of [base, qual]
+      } else if (code === 'i') {
+        // single-base insertion
+        // insertion
+        insLen++
+      } else if (code === 'Q') {
+        // single quality value
+      }
+    }
+    return mismatches.slice(0, j)
   }
 }

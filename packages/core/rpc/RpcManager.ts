@@ -1,10 +1,8 @@
 import PluginManager from '../PluginManager'
-import { readConfObject } from '../configuration'
-
+import { readConfObject, AnyConfigurationModel } from '../configuration'
 import rpcConfigSchema from './configSchema'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver'
 import MainThreadRpcDriver from './MainThreadRpcDriver'
-import { AnyConfigurationModel } from '../configuration/configurationSchema'
 
 type DriverClass = WebWorkerRpcDriver | MainThreadRpcDriver
 type BackendConfigurations = {
@@ -43,22 +41,35 @@ export default class RpcManager {
     if (driver) {
       return driver
     }
+    let newDriver
+    const config = this.mainConfiguration.drivers.get('WebWorkerRpcDriver')
+    if (backendName === 'MainThreadRpcDriver') {
+      const backendConfiguration =
+        this.backendConfigurations.MainThreadRpcDriver
 
-    const backendConfiguration = this.backendConfigurations[backendName]
-    const DriverClassImpl = DriverClasses[backendName]
-
-    if (!DriverClassImpl) {
+      if (!backendConfiguration) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is missing config`,
+        )
+      }
+      newDriver = new MainThreadRpcDriver({ ...backendConfiguration, config })
+    } else if (backendName === 'WebWorkerRpcDriver') {
+      const backendConfiguration = this.backendConfigurations.WebWorkerRpcDriver
+      if (!backendConfiguration) {
+        throw new Error(
+          `requested RPC driver "${backendName}" is missing config`,
+        )
+      }
+      newDriver = new WebWorkerRpcDriver(
+        { ...backendConfiguration, config },
+        {
+          plugins: this.pluginManager.runtimePluginDefinitions,
+          windowHref: window.location.href,
+        },
+      )
+    } else {
       throw new Error(`requested RPC driver "${backendName}" is not installed`)
     }
-
-    if (!backendConfiguration) {
-      throw new Error(`requested RPC driver "${backendName}" is missing config`)
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newDriver = new DriverClassImpl(backendConfiguration as any, {
-      plugins: this.pluginManager.runtimePluginDefinitions,
-    })
     this.driverObjects.set(backendName, newDriver)
     return newDriver
   }
@@ -76,7 +87,6 @@ export default class RpcManager {
   }
 
   async call(sessionId: string, functionName: string, args: {}, opts = {}) {
-    // console.log(sessionId, functionName)
     if (!sessionId) {
       throw new Error('sessionId is required')
     }
