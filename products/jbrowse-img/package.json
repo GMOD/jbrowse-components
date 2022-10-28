@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
+    "@emotion/cache": "^11.7.1",
+    "@emotion/react": "^11.9.0",
     "@jbrowse/plugin-linear-genome-view": "^2.1.7",
     "@jbrowse/react-linear-genome-view": "^2.1.7",
     "abortcontroller-polyfill": "^1.7.3",
