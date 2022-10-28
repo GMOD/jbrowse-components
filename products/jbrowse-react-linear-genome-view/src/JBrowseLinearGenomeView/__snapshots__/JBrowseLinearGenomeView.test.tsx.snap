@@ -2,13 +2,13 @@
 
 exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
 <div
-  class="tss-jn2cxo-avoidParentStyle"
+  class="css-jn2cxo-avoidParentStyle"
 >
   <div
     class="MuiScopedCssBaseline-root mui-1pa2gw3-MuiScopedCssBaseline-root"
   >
     <div
-      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 tss-1wati62-viewContainer mui-15s4tt4-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation12 mui-11n9l57-MuiPaper-root-viewContainer"
       style="padding: 0px 4px 4px;"
     >
       <div
@@ -18,14 +18,14 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           aria-controls="view-menu"
           aria-haspopup="true"
           aria-label="more"
-          class="MuiButtonBase-root MuiIconButton-root tss-smxndn-iconRoot MuiIconButton-edgeStart MuiIconButton-sizeSmall mui-p2zbmj-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall mui-kk3tj3-MuiButtonBase-root-MuiIconButton-root-iconRoot"
           data-testid="view_menu_icon"
           tabindex="0"
           type="button"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-1pela2z-icon mui-havevq-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-1pgqsr-MuiSvgIcon-root-icon"
             data-testid="MenuIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -39,10 +39,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
           />
         </button>
         <div
-          class="tss-122lw0e-grow"
+          class="mui-122lw0e-grow"
         />
         <div
-          class="tss-122lw0e-grow"
+          class="mui-122lw0e-grow"
         />
         <button
           class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall mui-zubjuh-MuiButtonBase-root-MuiIconButton-root"
@@ -93,63 +93,63 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               style="position: relative;"
             >
               <div
-                class="tss-16hdnmo-rubberBandControl"
+                class="mui-16hdnmo-rubberBandControl"
                 role="presentation"
               >
                 <div
-                  class="tss-1420449-scaleBar"
+                  class="mui-1420449-scaleBar"
                 >
                   <div
-                    class="tss-1i1w1rp-scaleBarVisibleRegion"
+                    class="mui-1i1w1rp-scaleBarVisibleRegion"
                     style="width: 267px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                   />
                   <div
-                    class="tss-z1h6g4-scaleBarContig"
+                    class="mui-z1h6g4-scaleBarContig"
                     style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
                   />
                   <div>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName mui-k0xfey-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 mui-m9dzie-MuiTypography-root-scaleBarRefName"
                       style="left: 3px; color: rgb(153, 102, 0);"
                     >
                       ctgA
                     </p>
                     <div
-                      class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+                      class="mui-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
                       style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                     >
                       <p
-                        class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel mui-dmccyy-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body2 mui-u5temn-MuiTypography-root-scaleBarLabel"
                         style="left: 133.33333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
                         20
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel mui-dmccyy-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body2 mui-u5temn-MuiTypography-root-scaleBarLabel"
                         style="left: 266.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
                         40
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel mui-dmccyy-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body2 mui-u5temn-MuiTypography-root-scaleBarLabel"
                         style="left: 400px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
                         60
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel mui-dmccyy-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body2 mui-u5temn-MuiTypography-root-scaleBarLabel"
                         style="left: 533.3333333333334px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
                         80
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel mui-dmccyy-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body2 mui-u5temn-MuiTypography-root-scaleBarLabel"
                         style="left: 666.6666666666667px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
                         100
                       </p>
                       <p
-                        class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel mui-dmccyy-MuiTypography-root"
+                        class="MuiTypography-root MuiTypography-body2 mui-u5temn-MuiTypography-root-scaleBarLabel"
                         style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
                       >
                         120
@@ -157,17 +157,17 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    class="tss-z1h6g4-scaleBarContig"
+                    class="mui-z1h6g4-scaleBarContig"
                     style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
                   />
                 </div>
               </div>
             </div>
             <div
-              class="tss-1fs11k8-overview"
+              class="mui-1fs11k8-overview"
             >
               <svg
-                class="tss-1fsr3xw-overviewSvg"
+                class="mui-1fsr3xw-overviewSvg"
                 height="48"
               >
                 <polygon
@@ -177,10 +177,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <div
-                class="tss-ig8oez-headerBar"
+                class="mui-ig8oez-headerBar"
               >
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall tss-fnrte0-toggleButton mui-1vn1biu-MuiButtonBase-root-MuiButton-root"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeSmall MuiButton-textSizeSmall mui-zeujpb-MuiButtonBase-root-MuiButton-root-toggleButton"
                   tabindex="0"
                   title="Open track selector"
                   type="button"
@@ -188,7 +188,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-m4bx9v-buttonSpacer mui-havevq-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium mui-7t563h-MuiSvgIcon-root-buttonSpacer"
                     focusable="false"
                     viewBox="0 0 24 24"
                   >
@@ -201,13 +201,13 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   />
                 </button>
                 <div
-                  class="tss-1n1xfjh-spacer"
+                  class="mui-1n1xfjh-spacer"
                 />
                 <div
-                  class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm mui-qfz70r-MuiFormGroup-root"
+                  class="MuiFormGroup-root MuiFormGroup-row mui-1gwpy8f-MuiFormGroup-root-headerForm"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall mui-1qt216-MuiButtonBase-root-MuiButton-root-panButton"
                     tabindex="0"
                     type="button"
                   >
@@ -227,7 +227,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall tss-7ktir1-panButton mui-1d4nfeo-MuiButtonBase-root-MuiButton-root"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall mui-1qt216-MuiButtonBase-root-MuiButton-root-panButton"
                     tabindex="0"
                     type="button"
                   >
@@ -252,7 +252,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     style="width: 200px;"
                   >
                     <div
-                      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root tss-1vhven7-headerRefName mui-1z10yd4-MuiFormControl-root-MuiTextField-root"
+                      class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root mui-19wwqcl-MuiFormControl-root-MuiTextField-root-headerRefName"
                       style="margin: 7px; min-width: 175px;"
                     >
                       <div
@@ -328,12 +328,12 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </div>
                 </div>
                 <p
-                  class="MuiTypography-root MuiTypography-body2 tss-1qpgd02-bp mui-1g9rejo-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body2 mui-1uinl1m-MuiTypography-root-bp"
                 >
                   40bp
                 </p>
                 <div
-                  class="tss-z84q6m-container"
+                  class="mui-z84q6m-container"
                 >
                   <button
                     class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge mui-prm3h8-MuiButtonBase-root-MuiIconButton-root"
@@ -357,7 +357,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <span
-                    class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider mui-1csk8ad-MuiSlider-root"
+                    class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall mui-1o4aykj-MuiSlider-root-slider"
                   >
                     <span
                       class="MuiSlider-rail mui-14pt78w-MuiSlider-rail"
@@ -413,494 +413,494 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </button>
                 </div>
                 <div
-                  class="tss-1n1xfjh-spacer"
+                  class="mui-1n1xfjh-spacer"
                 />
               </div>
             </div>
           </div>
           <div
-            class="tss-75rarj-tracksContainer"
+            class="mui-75rarj-tracksContainer"
             data-testid="trackContainer"
           >
             <div
-              class="tss-1rfvwmf-verticalGuidesZoomContainer"
+              class="mui-1rfvwmf-verticalGuidesZoomContainer"
             >
               <div
-                class="tss-17gfnt3-verticalGuidesContainer"
+                class="mui-17gfnt3-verticalGuidesContainer"
                 style="left: -800px; width: 2400px;"
               >
                 <div
-                  class="tss-a9ifge-boundaryPaddingBlock"
+                  class="mui-a9ifge-boundaryPaddingBlock"
                   style="width: 800px;"
                 />
                 <div
-                  class="tss-1dmfa10-contentBlock"
+                  class="mui-1dmfa10-contentBlock"
                   style="width: 800px;"
                 >
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: -20px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 0px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 20px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 40px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 60px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 80px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 100px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 120px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 140px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 160px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 180px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 200px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 220px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 240px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 260px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 280px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 300px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 320px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 340px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 360px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 380px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 400px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 420px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 440px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 460px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 480px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 500px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 520px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 540px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 560px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 580px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 600px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 620px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 640px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 660px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 680px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 700px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 720px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 740px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 760px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 780px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 800px;"
                   />
                 </div>
                 <div
-                  class="tss-1dmfa10-contentBlock"
+                  class="mui-1dmfa10-contentBlock"
                   style="width: 800px;"
                 >
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: -20px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 0px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 20px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 40px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 60px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 80px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 100px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 120px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 140px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 160px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 180px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 200px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 220px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 240px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 260px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 280px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 300px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 320px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 340px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 360px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 380px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 400px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 420px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 440px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 460px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 480px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 500px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 520px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 540px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 560px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 580px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 600px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 620px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 640px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 660px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 680px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 700px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 720px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 740px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 760px;"
                   />
                   <div
-                    class="tss-1nnah7t-tick-majorTick"
+                    class="mui-1nnah7t-tick-majorTick"
                     style="left: 780px;"
                   />
                   <div
-                    class="tss-i794sq-tick-minorTick"
+                    class="mui-i794sq-tick-minorTick"
                     style="left: 800px;"
                   />
                 </div>
               </div>
             </div>
             <div
-              class="tss-16hdnmo-rubberBandControl"
+              class="mui-16hdnmo-rubberBandControl"
               data-testid="rubberBand_controls"
               role="presentation"
             >
               <div
-                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-qo7a2p-scaleBarContainer mui-172kgz0-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded mui-1gfu64w-MuiPaper-root-scaleBarContainer"
                 data-resizer="true"
                 style="height: 17px; box-sizing: border-box;"
               >
                 <div
-                  class="tss-17t6jej-scaleBarZoomContainer"
+                  class="mui-17t6jej-scaleBarZoomContainer"
                 >
                   <div
-                    class="tss-1u2dss8-scaleBar"
+                    class="mui-1u2dss8-scaleBar"
                     style="left: -801px; width: 2400px; height: 17px; box-sizing: border-box;"
                   >
                     <div
-                      class="tss-a9ifge-boundaryPaddingBlock"
+                      class="mui-a9ifge-boundaryPaddingBlock"
                       style="background: none; width: 800px;"
                     />
                     <div
-                      class="tss-1dmfa10-contentBlock"
+                      class="mui-1dmfa10-contentBlock"
                       style="width: 800px;"
                     >
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: -20px;"
                       />
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 180px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           10
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 380px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           20
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 580px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           30
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 780px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           40
                         </p>
                       </div>
                     </div>
                     <div
-                      class="tss-1dmfa10-contentBlock"
+                      class="mui-1dmfa10-contentBlock"
                       style="width: 800px;"
                     >
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: -20px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           40
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 180px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           50
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 380px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           60
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 580px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           70
                         </p>
                       </div>
                       <div
-                        class="tss-1f3h2yl-tick"
+                        class="mui-1f3h2yl-tick"
                         style="left: 780px;"
                       >
                         <p
-                          class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel mui-k0xfey-MuiTypography-root"
+                          class="MuiTypography-root MuiTypography-body1 mui-1e8tst7-MuiTypography-root-majorTickLabel"
                         >
                           80
                         </p>
@@ -909,7 +909,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </div>
                 </div>
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel mui-k0xfey-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 mui-x1763-MuiTypography-root-refLabel"
                   data-testid="refLabel-ctgA"
                   style="left: -1px; padding-left: 1px;"
                 >
@@ -918,19 +918,19 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               </div>
             </div>
             <div
-              class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root mui-172kgz0-MuiPaper-root"
+              class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded mui-dewezf-MuiPaper-root-root"
             >
               <div
-                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root mui-1ps6pg7-MuiPaper-root"
+                class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 mui-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
               >
                 <span
-                  class="tss-10js96-dragHandle"
+                  class="mui-10js96-dragHandle"
                   data-testid="dragHandle-test_view-volvox_refseq"
                   draggable="true"
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon mui-196n7va-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall mui-dqspj3-MuiSvgIcon-root-dragHandleIcon"
                     data-testid="DragIndicatorIcon"
                     focusable="false"
                     viewBox="0 0 24 24"
@@ -941,7 +941,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   </svg>
                 </span>
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-17dsj6n-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall mui-1am0e2x-MuiButtonBase-root-MuiIconButton-root-iconButton"
                   tabindex="0"
                   title="close this track"
                   type="button"
@@ -962,13 +962,13 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   />
                 </button>
                 <span
-                  class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName mui-k0xfey-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 mui-bpawrf-MuiTypography-root-trackName"
                 >
                   Reference sequence (volvox)
                 </span>
                 <button
                   aria-haspopup="true"
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall tss-17dsj6n-iconButton mui-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall mui-1am0e2x-MuiButtonBase-root-MuiIconButton-root-iconButton"
                   data-testid="track_menu_icon"
                   tabindex="0"
                   type="button"
@@ -990,29 +990,29 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </button>
               </div>
               <div
-                class="tss-1ql7uaq-trackRenderingContainer"
+                class="mui-1ql7uaq-trackRenderingContainer"
                 data-testid="trackRenderingContainer-test_view-volvox_refseq"
                 style="height: 180px;"
               >
                 <div
-                  class="tss-v11ioz-renderingComponentContainer"
+                  class="mui-v11ioz-renderingComponentContainer"
                   style="transform: scaleX(1);"
                 >
                   <div
-                    class="tss-1y9lrrz-display"
+                    class="mui-1y9lrrz-display"
                     data-testid="display-volvox_refseq-LinearReferenceSequenceDisplay"
                   >
                     <div
-                      class="tss-d6gpow-linearBlocks"
+                      class="mui-d6gpow-linearBlocks"
                       data-testid="Blockset"
                       style="left: -800px;"
                     >
                       <div
-                        class="tss-a9ifge-boundaryPaddingBlock"
+                        class="mui-a9ifge-boundaryPaddingBlock"
                         style="background: none; width: 800px;"
                       />
                       <div
-                        class="tss-1dmfa10-contentBlock"
+                        class="mui-1dmfa10-contentBlock"
                         style="width: 800px;"
                       >
                         <svg
@@ -3854,7 +3854,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                         </svg>
                       </div>
                       <div
-                        class="tss-1dmfa10-contentBlock"
+                        class="mui-1dmfa10-contentBlock"
                         style="width: 800px;"
                       >
                         <svg
@@ -6898,11 +6898,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 </div>
               </div>
               <div
-                class="tss-1hk9st0-overlay"
+                class="mui-1hk9st0-overlay"
                 style="height: 180px;"
               />
               <div
-                class="tss-14zcv15-horizontalHandle-resizeHandle"
+                class="mui-14zcv15-horizontalHandle-resizeHandle"
                 data-resizer="true"
                 role="presentation"
               />

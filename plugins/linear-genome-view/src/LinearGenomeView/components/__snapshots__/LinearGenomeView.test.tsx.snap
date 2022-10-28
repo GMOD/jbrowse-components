@@ -9,57 +9,57 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       style="position: relative;"
     >
       <div
-        class="tss-16hdnmo-rubberBandControl"
+        class="css-16hdnmo-rubberBandControl"
         role="presentation"
       >
         <div
-          class="tss-1420449-scaleBar"
+          class="css-1420449-scaleBar"
         >
           <div
-            class="tss-1i1w1rp-scaleBarVisibleRegion"
+            class="css-1i1w1rp-scaleBarVisibleRegion"
             style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
           />
           <div
-            class="tss-z1h6g4-scaleBarContig"
+            class="css-z1h6g4-scaleBarContig"
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div>
             <p
-              class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName css-ahj2mt-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-6v00mp-MuiTypography-root-scaleBarRefName"
               style="left: 3px; color: rgb(153, 102, 0);"
             >
               ctgA
             </p>
             <div
-              class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              class="css-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
               style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 20
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 40
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 60
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 80
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 100
@@ -67,17 +67,17 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </div>
           </div>
           <div
-            class="tss-z1h6g4-scaleBarContig"
+            class="css-z1h6g4-scaleBarContig"
             style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
           />
         </div>
       </div>
     </div>
     <div
-      class="tss-1fs11k8-overview"
+      class="css-1fs11k8-overview"
     >
       <svg
-        class="tss-1fsr3xw-overviewSvg"
+        class="css-1fsr3xw-overviewSvg"
         height="48"
       >
         <polygon
@@ -87,10 +87,10 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         />
       </svg>
       <div
-        class="tss-ig8oez-headerBar"
+        class="css-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -98,7 +98,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-m778v2-buttonSpacer css-i4bv87-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1mgxsmk-MuiSvgIcon-root-buttonSpacer"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -111,13 +111,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           />
         </button>
         <div
-          class="tss-1n1xfjh-spacer"
+          class="css-1n1xfjh-spacer"
         />
         <div
-          class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
+          class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -137,7 +137,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -162,7 +162,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="width: 200px;"
           >
             <div
-              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root tss-1vhven7-headerRefName css-wb57ya-MuiFormControl-root-MuiTextField-root"
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"
               style="margin: 7px; min-width: 175px;"
             >
               <div
@@ -238,12 +238,12 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           </div>
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body2 tss-1qpgd02-bp css-r40f8v-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-1lztmv5-MuiTypography-root-bp"
         >
           100bp
         </p>
         <div
-          class="tss-z84q6m-container"
+          class="css-z84q6m-container"
         >
           <button
             class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
@@ -265,7 +265,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </svg>
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-s3dms4-MuiSlider-root-slider"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -321,103 +321,103 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           </button>
         </div>
         <div
-          class="tss-1n1xfjh-spacer"
+          class="css-1n1xfjh-spacer"
         />
       </div>
     </div>
   </div>
   <div
-    class="tss-75rarj-tracksContainer"
+    class="css-75rarj-tracksContainer"
     data-testid="trackContainer"
   >
     <div
-      class="tss-1rfvwmf-verticalGuidesZoomContainer"
+      class="css-1rfvwmf-verticalGuidesZoomContainer"
     >
       <div
-        class="tss-17gfnt3-verticalGuidesContainer"
+        class="css-17gfnt3-verticalGuidesContainer"
         style="left: -800px; width: 1700px;"
       >
         <div
-          class="tss-a9ifge-boundaryPaddingBlock"
+          class="css-a9ifge-boundaryPaddingBlock"
           style="width: 800px;"
         />
         <div
-          class="tss-1dmfa10-contentBlock"
+          class="css-1dmfa10-contentBlock"
           style="width: 100px;"
         >
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: -1px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 19px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 39px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 59px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 79px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 99px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 119px;"
           />
         </div>
         <div
-          class="tss-a9ifge-boundaryPaddingBlock"
+          class="css-a9ifge-boundaryPaddingBlock"
           style="width: 800px;"
         />
       </div>
     </div>
     <div
-      class="tss-16hdnmo-rubberBandControl"
+      class="css-16hdnmo-rubberBandControl"
       data-testid="rubberBand_controls"
       role="presentation"
     >
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-qo7a2p-scaleBarContainer css-172kgz0-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1gfu64w-MuiPaper-root-scaleBarContainer"
         data-resizer="true"
         style="height: 17px; box-sizing: border-box;"
       >
         <div
-          class="tss-17t6jej-scaleBarZoomContainer"
+          class="css-17t6jej-scaleBarZoomContainer"
         >
           <div
-            class="tss-1u2dss8-scaleBar"
+            class="css-1u2dss8-scaleBar"
             style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
           >
             <div
-              class="tss-a9ifge-boundaryPaddingBlock"
+              class="css-a9ifge-boundaryPaddingBlock"
               style="background: none; width: 800px;"
             />
             <div
-              class="tss-1dmfa10-contentBlock"
+              class="css-1dmfa10-contentBlock"
               style="width: 100px;"
             >
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: -1px;"
               />
             </div>
             <div
-              class="tss-a9ifge-boundaryPaddingBlock"
+              class="css-a9ifge-boundaryPaddingBlock"
               style="background: none; width: 800px;"
             />
           </div>
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel css-ahj2mt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
           data-testid="refLabel-ctgA"
           style="left: -1px; padding-left: 1px;"
         >
@@ -426,19 +426,19 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root css-172kgz0-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root css-1ps6pg7-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
       >
         <span
-          class="tss-10js96-dragHandle"
+          class="css-10js96-dragHandle"
           data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon css-ptiqhd-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
             data-testid="DragIndicatorIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -449,7 +449,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           </svg>
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
           tabindex="0"
           title="close this track"
           type="button"
@@ -470,13 +470,13 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           />
         </button>
         <span
-          class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName css-ahj2mt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
         >
           Foo Track
         </span>
         <button
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
           data-testid="track_menu_icon"
           tabindex="0"
           type="button"
@@ -498,33 +498,33 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         </button>
       </div>
       <div
-        class="tss-1ql7uaq-trackRenderingContainer"
+        class="css-1ql7uaq-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
         style="height: 100px;"
       >
         <div
-          class="tss-v11ioz-renderingComponentContainer"
+          class="css-v11ioz-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="tss-1y9lrrz-display"
+            class="css-1y9lrrz-display"
             data-testid="display-testConfig-LinearBareDisplay"
           >
             <div
-              class="tss-d6gpow-linearBlocks"
+              class="css-d6gpow-linearBlocks"
               data-testid="Blockset"
               style="left: -800px;"
             >
               <div
-                class="tss-a9ifge-boundaryPaddingBlock"
+                class="css-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
               <div
-                class="tss-1dmfa10-contentBlock"
+                class="css-1dmfa10-contentBlock"
                 style="width: 100px;"
               />
               <div
-                class="tss-a9ifge-boundaryPaddingBlock"
+                class="css-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
             </div>
@@ -532,11 +532,11 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         </div>
       </div>
       <div
-        class="tss-1hk9st0-overlay"
+        class="css-1hk9st0-overlay"
         style="height: 100px;"
       />
       <div
-        class="tss-14zcv15-horizontalHandle-resizeHandle"
+        class="css-14zcv15-horizontalHandle-resizeHandle"
         data-resizer="true"
         role="presentation"
       />
@@ -554,73 +554,73 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       style="position: relative;"
     >
       <div
-        class="tss-16hdnmo-rubberBandControl"
+        class="css-16hdnmo-rubberBandControl"
         role="presentation"
       >
         <div
-          class="tss-1420449-scaleBar"
+          class="css-1420449-scaleBar"
         >
           <div
-            class="tss-1i1w1rp-scaleBarVisibleRegion"
+            class="css-1i1w1rp-scaleBarVisibleRegion"
             style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
           />
           <div
-            class="tss-z1h6g4-scaleBarContig"
+            class="css-z1h6g4-scaleBarContig"
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div>
             <p
-              class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName css-ahj2mt-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-6v00mp-MuiTypography-root-scaleBarRefName"
               style="left: 3px; color: rgb(153, 102, 0);"
             >
               ctgA
             </p>
             <div
-              class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              class="css-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
               style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
             />
           </div>
           <div
-            class="tss-z1h6g4-scaleBarContig"
+            class="css-z1h6g4-scaleBarContig"
             style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
           />
           <div>
             <p
-              class="MuiTypography-root MuiTypography-body1 tss-1lje7uj-scaleBarRefName css-ahj2mt-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-body1 css-6v00mp-MuiTypography-root-scaleBarRefName"
               style="left: 75.72727272727273px;"
             >
               ctgB
             </p>
             <div
-              class="tss-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              class="css-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
               style="left: 72.72727272727273px; width: 727.2727272727273px;"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 145.0909090909091px; pointer-events: none;"
               >
                 1,200
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 290.1818181818182px; pointer-events: none;"
               >
                 1,400
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 435.27272727272725px; pointer-events: none;"
               >
                 1,600
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 580.3636363636364px; pointer-events: none;"
               >
                 1,800
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 tss-e2q157-scaleBarLabel css-e784if-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
                 style="left: 725.4545454545454px; pointer-events: none;"
               >
                 2,000
@@ -628,17 +628,17 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </div>
           </div>
           <div
-            class="tss-z1h6g4-scaleBarContig"
+            class="css-z1h6g4-scaleBarContig"
             style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
           />
         </div>
       </div>
     </div>
     <div
-      class="tss-1fs11k8-overview"
+      class="css-1fs11k8-overview"
     >
       <svg
-        class="tss-1fsr3xw-overviewSvg"
+        class="css-1fsr3xw-overviewSvg"
         height="48"
       >
         <polygon
@@ -648,10 +648,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         />
       </svg>
       <div
-        class="tss-ig8oez-headerBar"
+        class="css-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium tss-19jxj46-toggleButton css-1d3f8j8-MuiButtonBase-root-MuiButton-root"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -659,7 +659,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium tss-m778v2-buttonSpacer css-i4bv87-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1mgxsmk-MuiSvgIcon-root-buttonSpacer"
             focusable="false"
             viewBox="0 0 24 24"
           >
@@ -672,13 +672,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           />
         </button>
         <div
-          class="tss-1n1xfjh-spacer"
+          class="css-1n1xfjh-spacer"
         />
         <div
-          class="MuiFormGroup-root MuiFormGroup-row tss-4gub8h-headerForm css-qfz70r-MuiFormGroup-root"
+          class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -698,7 +698,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium tss-7ktir1-panButton css-1rwt2y5-MuiButtonBase-root-MuiButton-root"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -723,7 +723,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="width: 255.27500000000003px;"
           >
             <div
-              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root tss-1vhven7-headerRefName css-wb57ya-MuiFormControl-root-MuiTextField-root"
+              class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-1efd6m0-MuiFormControl-root-MuiTextField-root-headerRefName"
               style="margin: 7px; min-width: 175px;"
             >
               <div
@@ -799,12 +799,12 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </div>
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body2 tss-1qpgd02-bp css-r40f8v-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body2 css-1lztmv5-MuiTypography-root-bp"
         >
           798bp
         </p>
         <div
-          class="tss-z84q6m-container"
+          class="css-z84q6m-container"
         >
           <button
             class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
@@ -828,7 +828,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall tss-1c03ro5-slider css-53tbrc-MuiSlider-root"
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-s3dms4-MuiSlider-root-slider"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -884,322 +884,322 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </button>
         </div>
         <div
-          class="tss-1n1xfjh-spacer"
+          class="css-1n1xfjh-spacer"
         />
       </div>
     </div>
   </div>
   <div
-    class="tss-75rarj-tracksContainer"
+    class="css-75rarj-tracksContainer"
     data-testid="trackContainer"
   >
     <div
-      class="tss-1rfvwmf-verticalGuidesZoomContainer"
+      class="css-1rfvwmf-verticalGuidesZoomContainer"
     >
       <div
-        class="tss-17gfnt3-verticalGuidesContainer"
+        class="css-17gfnt3-verticalGuidesContainer"
         style="left: -800px; width: 1702px;"
       >
         <div
-          class="tss-a9ifge-boundaryPaddingBlock"
+          class="css-a9ifge-boundaryPaddingBlock"
           style="width: 800px;"
         />
         <div
-          class="tss-1dmfa10-contentBlock"
+          class="css-1dmfa10-contentBlock"
           style="width: 100px;"
         >
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: -1px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 19px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 39px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 59px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 79px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 99px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 119px;"
           />
         </div>
         <div
-          class="tss-1x3apsi-interRegionPaddingBlock"
+          class="css-1x3apsi-interRegionPaddingBlock"
           style="width: 2px;"
         />
         <div
-          class="tss-1dmfa10-contentBlock"
+          class="css-1dmfa10-contentBlock"
           style="width: 800px;"
         >
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: -1px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 19px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 39px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 59px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 79px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 99px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 119px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 139px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 159px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 179px;"
           />
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: 199px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 219px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 239px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 259px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 279px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 299px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 319px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 339px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 359px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 379px;"
           />
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: 399px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 419px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 439px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 459px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 479px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 499px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 519px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 539px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 559px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 579px;"
           />
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: 599px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 619px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 639px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 659px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 679px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 699px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 719px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 739px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 759px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 779px;"
           />
           <div
-            class="tss-1nnah7t-tick-majorTick"
+            class="css-1nnah7t-tick-majorTick"
             style="left: 799px;"
           />
           <div
-            class="tss-i794sq-tick-minorTick"
+            class="css-i794sq-tick-minorTick"
             style="left: 819px;"
           />
         </div>
       </div>
     </div>
     <div
-      class="tss-16hdnmo-rubberBandControl"
+      class="css-16hdnmo-rubberBandControl"
       data-testid="rubberBand_controls"
       role="presentation"
     >
       <div
-        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-qo7a2p-scaleBarContainer css-172kgz0-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1gfu64w-MuiPaper-root-scaleBarContainer"
         data-resizer="true"
         style="height: 17px; box-sizing: border-box;"
       >
         <div
-          class="tss-17t6jej-scaleBarZoomContainer"
+          class="css-17t6jej-scaleBarZoomContainer"
         >
           <div
-            class="tss-1u2dss8-scaleBar"
+            class="css-1u2dss8-scaleBar"
             style="left: -801px; width: 1702px; height: 17px; box-sizing: border-box;"
           >
             <div
-              class="tss-a9ifge-boundaryPaddingBlock"
+              class="css-a9ifge-boundaryPaddingBlock"
               style="background: none; width: 800px;"
             />
             <div
-              class="tss-1dmfa10-contentBlock"
+              class="css-1dmfa10-contentBlock"
               style="width: 100px;"
             >
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: -1px;"
               />
             </div>
             <div
-              class="tss-1x3apsi-interRegionPaddingBlock"
+              class="css-1x3apsi-interRegionPaddingBlock"
               style="background: none; width: 2px;"
             />
             <div
-              class="tss-1dmfa10-contentBlock"
+              class="css-1dmfa10-contentBlock"
               style="width: 800px;"
             >
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: -1px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
                 >
                   1,000
                 </p>
               </div>
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: 199px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
                 >
                   1,200
                 </p>
               </div>
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: 399px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
                 >
                   1,400
                 </p>
               </div>
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: 599px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
                 >
                   1,600
                 </p>
               </div>
               <div
-                class="tss-1f3h2yl-tick"
+                class="css-1f3h2yl-tick"
                 style="left: 799px;"
               >
                 <p
-                  class="MuiTypography-root MuiTypography-body1 tss-lm3kvf-majorTickLabel css-ahj2mt-MuiTypography-root"
+                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
                 >
                   1,800
                 </p>
@@ -1208,14 +1208,14 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </div>
         </div>
         <p
-          class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel css-ahj2mt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
           data-testid="refLabel-ctgA"
           style="left: -1px; padding-left: 1px;"
         >
           ctgA
         </p>
         <p
-          class="MuiTypography-root MuiTypography-body1 tss-1thb321-refLabel css-ahj2mt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
           data-testid="refLabel-ctgB"
           style="left: 101px; padding-left: 1px;"
         >
@@ -1224,19 +1224,19 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root css-172kgz0-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root css-1ps6pg7-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
       >
         <span
-          class="tss-10js96-dragHandle"
+          class="css-10js96-dragHandle"
           data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon css-ptiqhd-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
             data-testid="DragIndicatorIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -1247,7 +1247,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </svg>
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
           tabindex="0"
           title="close this track"
           type="button"
@@ -1268,13 +1268,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           />
         </button>
         <span
-          class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName css-ahj2mt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
         >
           Foo Track
         </span>
         <button
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
           data-testid="track_menu_icon"
           tabindex="0"
           type="button"
@@ -1296,29 +1296,29 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         </button>
       </div>
       <div
-        class="tss-1ql7uaq-trackRenderingContainer"
+        class="css-1ql7uaq-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig"
         style="height: 100px;"
       >
         <div
-          class="tss-v11ioz-renderingComponentContainer"
+          class="css-v11ioz-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="tss-1y9lrrz-display"
+            class="css-1y9lrrz-display"
             data-testid="display-testConfig-LinearBareDisplay"
           >
             <div
-              class="tss-d6gpow-linearBlocks"
+              class="css-d6gpow-linearBlocks"
               data-testid="Blockset"
               style="left: -800px;"
             >
               <div
-                class="tss-a9ifge-boundaryPaddingBlock"
+                class="css-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
               <div
-                class="tss-1dmfa10-contentBlock"
+                class="css-1dmfa10-contentBlock"
                 style="width: 100px;"
               >
                 <svg
@@ -1328,11 +1328,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 />
               </div>
               <div
-                class="tss-1x3apsi-interRegionPaddingBlock"
+                class="css-1x3apsi-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div
-                class="tss-1dmfa10-contentBlock"
+                class="css-1dmfa10-contentBlock"
                 style="width: 800px;"
               >
                 <svg
@@ -1346,29 +1346,29 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         </div>
       </div>
       <div
-        class="tss-1hk9st0-overlay"
+        class="css-1hk9st0-overlay"
         style="height: 100px;"
       />
       <div
-        class="tss-14zcv15-horizontalHandle-resizeHandle"
+        class="css-14zcv15-horizontalHandle-resizeHandle"
         data-resizer="true"
         role="presentation"
       />
     </div>
     <div
-      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded tss-1wpon1s-root css-172kgz0-MuiPaper-root"
+      class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-dewezf-MuiPaper-root-root"
     >
       <div
-        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 tss-v8mjql-trackLabel-trackLabelOverlap-root css-1ps6pg7-MuiPaper-root"
+        class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
       >
         <span
-          class="tss-10js96-dragHandle"
+          class="css-10js96-dragHandle"
           data-testid="dragHandle-lgv-testConfig2"
           draggable="true"
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall tss-1ru4suz-dragHandleIcon css-ptiqhd-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1cz9l96-MuiSvgIcon-root-dragHandleIcon"
             data-testid="DragIndicatorIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -1379,7 +1379,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           </svg>
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
           tabindex="0"
           title="close this track"
           type="button"
@@ -1400,13 +1400,13 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           />
         </button>
         <span
-          class="MuiTypography-root MuiTypography-body1 tss-j2z8q4-trackName css-ahj2mt-MuiTypography-root"
+          class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
         >
           Bar Track
         </span>
         <button
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium tss-1lt70d9-iconButton css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
           data-testid="track_menu_icon"
           tabindex="0"
           type="button"
@@ -1428,29 +1428,29 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         </button>
       </div>
       <div
-        class="tss-1ql7uaq-trackRenderingContainer"
+        class="css-1ql7uaq-trackRenderingContainer"
         data-testid="trackRenderingContainer-lgv-testConfig2"
         style="height: 100px;"
       >
         <div
-          class="tss-v11ioz-renderingComponentContainer"
+          class="css-v11ioz-renderingComponentContainer"
           style="transform: scaleX(1);"
         >
           <div
-            class="tss-1y9lrrz-display"
+            class="css-1y9lrrz-display"
             data-testid="display-testConfig2-LinearBareDisplay"
           >
             <div
-              class="tss-d6gpow-linearBlocks"
+              class="css-d6gpow-linearBlocks"
               data-testid="Blockset"
               style="left: -800px;"
             >
               <div
-                class="tss-a9ifge-boundaryPaddingBlock"
+                class="css-a9ifge-boundaryPaddingBlock"
                 style="background: none; width: 800px;"
               />
               <div
-                class="tss-1dmfa10-contentBlock"
+                class="css-1dmfa10-contentBlock"
                 style="width: 100px;"
               >
                 <svg
@@ -1460,11 +1460,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 />
               </div>
               <div
-                class="tss-1x3apsi-interRegionPaddingBlock"
+                class="css-1x3apsi-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div
-                class="tss-1dmfa10-contentBlock"
+                class="css-1dmfa10-contentBlock"
                 style="width: 800px;"
               >
                 <svg
@@ -1478,11 +1478,11 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         </div>
       </div>
       <div
-        class="tss-1hk9st0-overlay"
+        class="css-1hk9st0-overlay"
         style="height: 100px;"
       />
       <div
-        class="tss-14zcv15-horizontalHandle-resizeHandle"
+        class="css-14zcv15-horizontalHandle-resizeHandle"
         data-resizer="true"
         role="presentation"
       />

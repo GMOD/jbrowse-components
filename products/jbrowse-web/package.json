@@ -59,7 +59,7 @@
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",
-    "node-polyfill-webpack-plugin": "^1.1.4",
+    "node-polyfill-webpack-plugin": "^2.0.1",
     "pako": "^1.0.10",
     "prop-types": "^15.7.2",
     "react": "^17.0.0",
@@ -69,7 +69,7 @@
     "rxjs": "^6.5.2",
     "serialize-error": "^8.0.0",
     "shortid": "^2.2.15",
-    "tss-react": "^3.7.0",
+    "tss-react": "^4.4.1",
     "use-query-params": "^2.0.0",
     "webpack": "^5.72.0"
   },

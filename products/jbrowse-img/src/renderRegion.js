@@ -1,5 +1,8 @@
+import React from 'react'
 import { createViewState } from '@jbrowse/react-linear-genome-view'
 import { renderToSvg } from '@jbrowse/plugin-linear-genome-view'
+import createCache from '@emotion/cache'
+import { CacheProvider } from '@emotion/react'
 import path from 'path'
 import fs from 'fs'
 import { booleanize } from './util'
@@ -269,6 +272,13 @@ export function readData(opts) {
   return configData
 }
 
+// without this, the styles can become messed up especially in lgv header
+// xref https://github.com/garronej/tss-react/issues/25
+export const muiCache = createCache({
+  key: 'mui',
+  prepend: true,
+})
+
 export async function renderRegion(opts = {}) {
   const model = createViewState(readData(opts))
   const {
@@ -376,5 +386,11 @@ export async function renderRegion(opts = {}) {
   }
   trackList.forEach(track => process(track, extra => path.basename(extra)))
 
-  return renderToSvg(view, { rasterizeLayers: !opts.noRasterize, ...opts })
+  return renderToSvg(view, {
+    rasterizeLayers: !opts.noRasterize,
+    ...opts,
+    Wrapper: ({ children }) => (
+      <CacheProvider value={muiCache}>{children}</CacheProvider>
+    ),
+  })
 }

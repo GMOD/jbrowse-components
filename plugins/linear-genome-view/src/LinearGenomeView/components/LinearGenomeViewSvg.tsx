@@ -263,6 +263,7 @@ function SVGTracks({
 // render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
+  const { Wrapper = ({ children }) => <>{children}</> } = opts
   const { width, tracks, showCytobands } = model
   const shift = 50
   const offset =
@@ -282,24 +283,26 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <svg
-      width={width}
-      height={height}
-      xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink"
-      viewBox={[0, 0, width + shift * 2, height].toString()}
-    >
-      {/* background white */}
-      <rect width={width + shift * 2} height={height} fill="white" />
+    <Wrapper>
+      <svg
+        width={width}
+        height={height}
+        xmlns="http://www.w3.org/2000/svg"
+        xmlnsXlink="http://www.w3.org/1999/xlink"
+        viewBox={[0, 0, width + shift * 2, height].toString()}
+      >
+        {/* background white */}
+        <rect width={width + shift * 2} height={height} fill="white" />
 
-      <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
-        <SVGHeader model={model} />
-        <SVGTracks
-          model={model}
-          displayResults={displayResults}
-          offset={offset}
-        />
-      </g>
-    </svg>,
+        <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+          <SVGHeader model={model} />
+          <SVGTracks
+            model={model}
+            displayResults={displayResults}
+            offset={offset}
+          />
+        </g>
+      </svg>
+    </Wrapper>,
   )
 }
