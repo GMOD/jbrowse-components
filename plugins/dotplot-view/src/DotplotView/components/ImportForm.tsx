@@ -141,12 +141,12 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               <FormControlLabel
                 value="tracklist"
                 control={<Radio />}
-                label="Select from tracklist"
+                label="Existing track"
               />
               <FormControlLabel
                 value="custom"
                 control={<Radio />}
-                label="Open custom file"
+                label="New track"
               />
             </RadioGroup>
           </FormControl>

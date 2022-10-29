@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Select, MenuItem, Paper, Typography } from '@mui/material'
 import { getSession } from '@jbrowse/core/util'
-
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import {
   AnyConfigurationModel,
@@ -10,8 +9,7 @@ import {
 } from '@jbrowse/core/configuration'
 
 import { observer } from 'mobx-react'
-import { DotplotViewModel } from '../model'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { LinearSyntenyViewModel } from '../model'
 
 function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
   const assemblyNames = readConfObject(track, 'assemblyNames')
@@ -29,26 +27,27 @@ const Selector = observer(
     assembly2,
     setShowTrackId,
   }: {
-    model: DotplotViewModel
+    model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
     setShowTrackId: (arg: string) => void
   }) => {
     const session = getSession(model)
-    const { tracks, sessionTracks } = session
+    const { tracks = [], sessionTracks = [] } = session
     const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
     const filteredTracks = allTracks.filter(t => f(t, assembly2, assembly1))
     const resetTrack = filteredTracks[0]?.trackId || ''
     const [value, setValue] = useState(resetTrack)
     useEffect(() => {
-      // if assembly1/assembly2 changes, then we will want to use this effect to change
-      // the state of the useState because it otherwise gets locked to a stale value
+      // if assembly1/assembly2 changes, then we will want to use this effect to
+      // change the state of the useState because it otherwise gets locked to a
+      // stale value
       setValue(resetTrack)
     }, [resetTrack])
 
     useEffect(() => {
-      // sets track data in a useEffect because the initial load is needed as well as
-      // onChange's to the select box
+      // sets track data in a useEffect because the initial load is needed as well
+      // as onChange's to the select box
       setShowTrackId(value)
     }, [value, setShowTrackId])
     return (
@@ -58,11 +57,6 @@ const Selector = observer(
           you hit "Launch".
         </Typography>
 
-        <Typography paragraph>
-          Note: there is a track selector <i>inside</i> the DotplotView, which
-          can turn on one or more SyntenyTracks (more than one can be displayed
-          at once). Look for the track selector icon <TrackSelectorIcon />
-        </Typography>
         {filteredTracks.length ? (
           <Select
             value={value}

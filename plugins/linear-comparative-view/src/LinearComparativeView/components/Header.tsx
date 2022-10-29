@@ -10,6 +10,7 @@ import LinkOffIcon from '@mui/icons-material/LinkOff'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { LinearComparativeViewModel } from '../model'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 type LCV = LinearComparativeViewModel
 
@@ -33,6 +34,17 @@ const useStyles = makeStyles()(() => ({
     display: 'flex',
   },
 }))
+
+const TrackSelector = observer(({ model }: { model: LCV }) => {
+  return (
+    <IconButton
+      onClick={model.activateTrackSelector}
+      title="Open track selector"
+    >
+      <TrackSelectorIcon color="secondary" />
+    </IconButton>
+  )
+})
 
 const LinkViews = observer(({ model }: { model: LCV }) => {
   return (
@@ -66,6 +78,7 @@ const Header = observer(
     const anyShowHeaders = model.views.some(view => !view.hideHeader)
     return (
       <div className={classes.headerBar}>
+        <TrackSelector model={model} />
         <LinkViews model={model} />
         <SquareView model={model} />
         {ExtraButtons}

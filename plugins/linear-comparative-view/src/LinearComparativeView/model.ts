@@ -318,6 +318,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       clearView() {
         self.views = cast([])
+        self.tracks = cast([])
       },
     }))
     .views(self => ({
