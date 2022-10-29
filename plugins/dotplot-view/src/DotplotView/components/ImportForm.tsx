@@ -9,7 +9,6 @@ import {
   Paper,
   Radio,
   RadioGroup,
-  Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -47,7 +46,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [sessionTrackData, setSessionTrackData] = useState<any>()
   const [showTrackId, setShowTrackId] = useState<string>()
-  const [choice, setChoice] = useState('tracklist')
+  const [choice, setChoice] = useState('none')
 
   function onOpenClick() {
     try {
@@ -100,7 +99,6 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               alignItems="center"
             >
               <Grid item>
-                <Typography>X-axis</Typography>
                 <AssemblySelector
                   extra={0}
                   selected={assembly1}
@@ -109,7 +107,6 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
                 />
               </Grid>
               <Grid item>
-                <Typography>Y-axis</Typography>
                 <AssemblySelector
                   extra={1}
                   selected={assembly2}
@@ -132,7 +129,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
           </Paper>
           <FormControl>
             <FormLabel id="group-label">
-              (Optional) Select or add a syteny track
+              (Optional) Select or add a synteny track
             </FormLabel>
             <RadioGroup
               row
@@ -140,6 +137,7 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               onChange={event => setChoice(event.target.value)}
               aria-labelledby="group-label"
             >
+              <FormControlLabel value="none" control={<Radio />} label="None" />
               <FormControlLabel
                 value="tracklist"
                 control={<Radio />}
