@@ -157,7 +157,8 @@ export default function RootModel(
             ) {
               self.history.redo()
             }
-          } else if (self.history.canUndo) {
+          }
+          if (self.history.canUndo) {
             // ctrl+z or cmd+z
             if (cm && !e.shiftKey && e.code === 'KeyZ') {
               self.history.undo()
