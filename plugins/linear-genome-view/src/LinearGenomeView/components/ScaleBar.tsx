@@ -1,18 +1,9 @@
+import React from 'react'
 import { Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import {
-  ContentBlock,
-  ElidedBlock,
-  InterRegionPaddingBlock,
-} from '@jbrowse/core/util/blockTypes'
+import { ContentBlock } from '@jbrowse/core/util/blockTypes'
 import { observer } from 'mobx-react'
-import React from 'react'
 import { LinearGenomeViewModel } from '..'
-import {
-  ContentBlock as ContentBlockComponent,
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
 import { makeTicks } from '../util'
 import { getTickDisplayStr } from '@jbrowse/core/util'
 
@@ -96,54 +87,38 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
 
 const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
-  const { bpPerPx, staticBlocks } = model
+  const { staticBlocks, bpPerPx } = model
 
   return (
     <>
-      {staticBlocks.map((block, index) => {
-        const { reversed, start, end, key, widthPx } = block
+      {staticBlocks.map(block => {
+        const { reversed, start, end } = block
         if (block instanceof ContentBlock) {
           const ticks = makeTicks(start, end, bpPerPx, true, false)
 
-          return (
-            <ContentBlockComponent key={`${key}-${index}`} block={block}>
-              {ticks.map(tick => {
-                if (tick.type === 'major') {
-                  const x =
-                    (reversed ? end - tick.base : tick.base - start) / bpPerPx
-                  const baseNumber = tick.base + 1
-                  return (
-                    <div
-                      key={tick.base}
-                      className={classes.tick}
-                      style={{ left: x }}
-                    >
-                      {baseNumber ? (
-                        <Typography className={classes.majorTickLabel}>
-                          {getTickDisplayStr(baseNumber, bpPerPx)}
-                        </Typography>
-                      ) : null}
-                    </div>
-                  )
-                }
-                return null
-              })}
-            </ContentBlockComponent>
-          )
+          return ticks
+            .filter(t => t.type === 'major')
+            .map(t => {
+              const x = (reversed ? end - t.base : t.base - start) / bpPerPx
+              const baseNumber = t.base + 1
+              return (
+                <div
+                  key={t.base}
+                  className={classes.tick}
+                  style={{
+                    left: x + block.offsetPx - model.staticBlocks.offsetPx,
+                  }}
+                >
+                  {baseNumber ? (
+                    <Typography className={classes.majorTickLabel}>
+                      {getTickDisplayStr(baseNumber, bpPerPx)}
+                    </Typography>
+                  ) : null}
+                </div>
+              )
+            })
         }
-        if (block instanceof ElidedBlock) {
-          return <ElidedBlockComponent key={key} width={widthPx} />
-        }
-        if (block instanceof InterRegionPaddingBlock) {
-          return (
-            <InterRegionPaddingBlockComponent
-              key={key}
-              width={widthPx}
-              style={{ background: 'none' }}
-              boundary={block.variant === 'boundary'}
-            />
-          )
-        }
+
         return null
       })}
     </>

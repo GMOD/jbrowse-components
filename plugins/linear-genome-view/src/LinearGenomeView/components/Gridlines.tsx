@@ -1,18 +1,15 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import {
   ContentBlock,
   ElidedBlock,
   InterRegionPaddingBlock,
 } from '@jbrowse/core/util/blockTypes'
+import { useTheme } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { LinearGenomeViewModel } from '..'
-import {
-  ContentBlock as ContentBlockComponent,
-  ElidedBlock as ElidedBlockComponent,
-  InterRegionPaddingBlock as InterRegionPaddingBlockComponent,
-} from '../../BaseLinearDisplay/components/Block'
 
+// locals
+import { LinearGenomeViewModel } from '..'
 import { makeTicks } from '../util'
 
 type LGV = LinearGenomeViewModel
@@ -45,56 +42,84 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
-  const { classes, cx } = useStyles()
+  const { staticBlocks, bpPerPx } = model
+  const theme = useTheme()
+  const ref = useRef<HTMLCanvasElement>(null)
+  const w = staticBlocks.totalWidthPx
+  useEffect(() => {
+    const canvas = ref.current
+    if (!canvas) {
+      return
+    }
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      return
+    }
+    const height = canvas.getBoundingClientRect().height
+    ctx.clearRect(0, 0, w, height)
+    ctx.resetTransform()
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
+    staticBlocks.forEach(b => {
+      if (b instanceof ContentBlock) {
+        makeTicks(b.start, b.end, model.bpPerPx).forEach(t => {
+          const x = (b.reversed ? b.end - t.base : t.base - b.start) / bpPerPx
+          ctx.fillStyle =
+            t.type === 'major' || t.type === 'labeledMajor'
+              ? theme.palette.text.secondary
+              : theme.palette.divider
+          ctx.fillRect(
+            x + b.offsetPx - staticBlocks.offsetPx,
+            0,
+            0.7,
+            height * 2,
+          )
+        })
+      }
+      if (b instanceof ElidedBlock) {
+        ctx.fillStyle = '#999'
+        ctx.fillRect(
+          b.offsetPx - staticBlocks.offsetPx,
+          0,
+          b.widthPx,
+          height * 2,
+        )
+      }
+      if (b instanceof InterRegionPaddingBlock) {
+        ctx.fillStyle = '#999'
+        ctx.fillRect(
+          b.offsetPx - staticBlocks.offsetPx,
+          0,
+          b.widthPx,
+          height * 2,
+        )
+      }
+    })
+  }, [
+    bpPerPx,
+    w,
+    staticBlocks,
+    model.bpPerPx,
+    theme.palette.text.secondary,
+    theme.palette.divider,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(staticBlocks),
+  ])
   return (
-    <>
-      {model.staticBlocks.map((block, index) => {
-        if (block instanceof ContentBlock) {
-          const ticks = makeTicks(block.start, block.end, model.bpPerPx)
-          return (
-            <ContentBlockComponent key={`${block.key}-${index}`} block={block}>
-              {ticks.map(tick => {
-                const x =
-                  (block.reversed
-                    ? block.end - tick.base
-                    : tick.base - block.start) / model.bpPerPx
-                return (
-                  <div
-                    key={tick.base}
-                    className={cx(
-                      classes.tick,
-                      tick.type === 'major' || tick.type === 'labeledMajor'
-                        ? classes.majorTick
-                        : classes.minorTick,
-                    )}
-                    style={{ left: x }}
-                  />
-                )
-              })}
-            </ContentBlockComponent>
-          )
-        }
-        if (block instanceof ElidedBlock) {
-          return <ElidedBlockComponent key={block.key} width={block.widthPx} />
-        }
-        if (block instanceof InterRegionPaddingBlock) {
-          return (
-            <InterRegionPaddingBlockComponent
-              key={block.key}
-              width={block.widthPx}
-              boundary={block.variant === 'boundary'}
-            />
-          )
-        }
-        return null
-      })}
-    </>
+    <canvas
+      ref={ref}
+      width={w * window.devicePixelRatio}
+      style={{
+        width: w,
+        height: '100%',
+      }}
+    />
   )
 })
 function VerticalGuides({ model }: { model: LGV }) {
   const { classes } = useStyles()
+  const { staticBlocks } = model
   // find the block that needs pinning to the left side for context
-  const offsetLeft = model.staticBlocks.offsetPx - model.offsetPx
+  const offsetLeft = staticBlocks.offsetPx - model.offsetPx
   return (
     <div
       className={classes.verticalGuidesZoomContainer}
@@ -107,7 +132,7 @@ function VerticalGuides({ model }: { model: LGV }) {
         className={classes.verticalGuidesContainer}
         style={{
           left: offsetLeft,
-          width: model.staticBlocks.totalWidthPx,
+          width: staticBlocks.totalWidthPx,
         }}
       >
         <RenderedVerticalGuides model={model} />

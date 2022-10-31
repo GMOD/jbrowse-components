@@ -227,6 +227,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
     )
     .volatile(() => ({
       volatileWidth: undefined as number | undefined,
+      volatileHeight: undefined as number | undefined,
       minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
       volatileError: undefined as undefined | Error,

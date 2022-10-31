@@ -337,46 +337,9 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="css-17gfnt3-verticalGuidesContainer"
         style="left: -800px; width: 1700px;"
       >
-        <div
-          class="css-a9ifge-boundaryPaddingBlock"
-          style="width: 800px;"
-        />
-        <div
-          class="css-1dmfa10-contentBlock"
-          style="width: 100px;"
-        >
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: -1px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 19px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 39px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 59px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 79px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 99px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 119px;"
-          />
-        </div>
-        <div
-          class="css-a9ifge-boundaryPaddingBlock"
-          style="width: 800px;"
+        <canvas
+          style="width: 1700px; height: 100%;"
+          width="1700"
         />
       </div>
     </div>
@@ -398,21 +361,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
           >
             <div
-              class="css-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
-            />
-            <div
-              class="css-1dmfa10-contentBlock"
-              style="width: 100px;"
-            >
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: -1px;"
-              />
-            </div>
-            <div
-              class="css-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
+              class="css-1f3h2yl-tick"
+              style="left: 799px;"
             />
           </div>
         </div>
@@ -900,220 +850,10 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="css-17gfnt3-verticalGuidesContainer"
         style="left: -800px; width: 1702px;"
       >
-        <div
-          class="css-a9ifge-boundaryPaddingBlock"
-          style="width: 800px;"
+        <canvas
+          style="width: 1702px; height: 100%;"
+          width="1702"
         />
-        <div
-          class="css-1dmfa10-contentBlock"
-          style="width: 100px;"
-        >
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: -1px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 19px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 39px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 59px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 79px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 99px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 119px;"
-          />
-        </div>
-        <div
-          class="css-1x3apsi-interRegionPaddingBlock"
-          style="width: 2px;"
-        />
-        <div
-          class="css-1dmfa10-contentBlock"
-          style="width: 800px;"
-        >
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: -1px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 19px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 39px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 59px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 79px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 99px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 119px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 139px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 159px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 179px;"
-          />
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: 199px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 219px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 239px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 259px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 279px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 299px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 319px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 339px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 359px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 379px;"
-          />
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: 399px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 419px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 439px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 459px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 479px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 499px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 519px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 539px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 559px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 579px;"
-          />
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: 599px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 619px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 639px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 659px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 679px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 699px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 719px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 739px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 759px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 779px;"
-          />
-          <div
-            class="css-1nnah7t-tick-majorTick"
-            style="left: 799px;"
-          />
-          <div
-            class="css-i794sq-tick-minorTick"
-            style="left: 819px;"
-          />
-        </div>
       </div>
     </div>
     <div
@@ -1134,76 +874,58 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             style="left: -801px; width: 1702px; height: 17px; box-sizing: border-box;"
           >
             <div
-              class="css-a9ifge-boundaryPaddingBlock"
-              style="background: none; width: 800px;"
+              class="css-1f3h2yl-tick"
+              style="left: 799px;"
             />
             <div
-              class="css-1dmfa10-contentBlock"
-              style="width: 100px;"
+              class="css-1f3h2yl-tick"
+              style="left: 901px;"
             >
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: -1px;"
-              />
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
+              >
+                1,000
+              </p>
             </div>
             <div
-              class="css-1x3apsi-interRegionPaddingBlock"
-              style="background: none; width: 2px;"
-            />
-            <div
-              class="css-1dmfa10-contentBlock"
-              style="width: 800px;"
+              class="css-1f3h2yl-tick"
+              style="left: 1101px;"
             >
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: -1px;"
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
-                >
-                  1,000
-                </p>
-              </div>
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: 199px;"
+                1,200
+              </p>
+            </div>
+            <div
+              class="css-1f3h2yl-tick"
+              style="left: 1301px;"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
-                >
-                  1,200
-                </p>
-              </div>
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: 399px;"
+                1,400
+              </p>
+            </div>
+            <div
+              class="css-1f3h2yl-tick"
+              style="left: 1501px;"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
-                >
-                  1,400
-                </p>
-              </div>
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: 599px;"
+                1,600
+              </p>
+            </div>
+            <div
+              class="css-1f3h2yl-tick"
+              style="left: 1701px;"
+            >
+              <p
+                class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
-                >
-                  1,600
-                </p>
-              </div>
-              <div
-                class="css-1f3h2yl-tick"
-                style="left: 799px;"
-              >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-p92emw-MuiTypography-root-majorTickLabel"
-                >
-                  1,800
-                </p>
-              </div>
+                1,800
+              </p>
             </div>
           </div>
         </div>
