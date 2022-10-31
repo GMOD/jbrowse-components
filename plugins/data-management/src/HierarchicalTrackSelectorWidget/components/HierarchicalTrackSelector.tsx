@@ -256,7 +256,7 @@ const HierarchicalTrackSelector = observer(
     const [headerHeight, setHeaderHeight] = useState(0)
 
     const { assemblyNames } = model
-    const assemblyName = assemblyNames.length ? assemblyNames[assemblyIdx] : ''
+    const assemblyName = assemblyNames[assemblyIdx]
     return assemblyName ? (
       <>
         <Header

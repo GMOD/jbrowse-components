@@ -29,6 +29,7 @@ const CloseConnectionDialog = lazy(() => import('./CloseConnectionDialog'))
 const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
 const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
 const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
+const FacetedDialog = lazy(() => import('./FacetedDialog'))
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {
@@ -72,6 +73,7 @@ function HierarchicalTrackSelectorHeader({
   const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
+  const [facetedOpen, setFacetedOpen] = useState(false)
   const { assemblyNames } = model
 
   function breakConnection(
@@ -211,6 +213,12 @@ function HierarchicalTrackSelectorHeader({
             ),
           }}
         />
+        <IconButton
+          className={classes.menuIcon}
+          onClick={() => setFacetedOpen(true)}
+        >
+          <MenuIcon />
+        </IconButton>
       </div>
       <JBrowseMenu
         anchorEl={connectionEl}
@@ -276,6 +284,12 @@ function HierarchicalTrackSelectorHeader({
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}
+          />
+        ) : null}
+        {facetedOpen ? (
+          <FacetedDialog
+            handleClose={() => setFacetedOpen(false)}
+            model={model}
           />
         ) : null}
       </Suspense>
