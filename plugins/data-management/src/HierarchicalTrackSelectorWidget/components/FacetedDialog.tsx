@@ -12,14 +12,20 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSession, measureGridWidth } from '@jbrowse/core/util'
-import { readConfObject } from '@jbrowse/core/configuration'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
 import ClearIcon from '@mui/icons-material/Clear'
+import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { matches, HierarchicalTrackSelectorModel } from '../model'
@@ -33,6 +39,12 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+export interface InfoArgs {
+  target: HTMLElement
+  id: string
+  conf: AnyConfigurationModel
+}
+
 function FacetedDlg({
   handleClose,
   model,
@@ -43,6 +55,7 @@ function FacetedDlg({
   const { classes } = useStyles()
   const { assemblyNames, view } = model
   const [filterText, setFilterText] = useState('')
+  const [info, setInfo] = useState<InfoArgs>()
   const assemblyName = assemblyNames[0]
   const session = getSession(model)
   const tracks = model
@@ -52,18 +65,62 @@ function FacetedDlg({
     id: track.trackId,
     name: getTrackName(track, session),
     category: readConfObject(track, 'category')?.join(', '),
+    conf: track,
   }))
-  const infoFields = ['name', 'category'].map(e => ({
-    field: e,
-    // @ts-ignore
-    width: measureGridWidth(rows.map(r => r[e])),
-  }))
+  const infoFields = [
+    {
+      field: 'name',
+      renderCell: (params: GridCellParams) => {
+        const { value, id, row } = params
+        console.log({ params })
+        return (
+          <>
+            {value}
+            <IconButton
+              onClick={e =>
+                setInfo({
+                  target: e.currentTarget,
+                  id: id as string,
+                  conf: row.conf,
+                })
+              }
+              style={{ padding: 0 }}
+              color="secondary"
+              data-testid={`htsTrackEntryMenu-${id}`}
+            >
+              <MoreHoriz />
+            </IconButton>
+          </>
+        )
+      },
+      width: measureGridWidth(rows.map(r => r.name)) + 15,
+    },
+    ...['category'].map(e => ({
+      field: e,
+      // @ts-ignore
+      width: measureGridWidth(rows.map(r => r[e])),
+    })),
+  ]
   const shownTrackIds: string[] = view.tracks.map(
     (t: any) => t.configuration.trackId,
   )
 
   return (
     <Dialog open onClose={handleClose} maxWidth="xl">
+      {info ? (
+        <JBrowseMenu
+          anchorEl={info?.target}
+          menuItems={[
+            ...(getSession(model).getTrackActionMenuItems?.(info.conf) || []),
+          ]}
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setInfo(undefined)
+          }}
+          open={Boolean(info)}
+          onClose={() => setInfo(undefined)}
+        />
+      ) : null}
       <DialogTitle>
         Track selector
         <IconButton

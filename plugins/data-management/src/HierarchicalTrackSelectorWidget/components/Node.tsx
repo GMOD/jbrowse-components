@@ -7,22 +7,17 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import { getSession } from '@jbrowse/core/util'
 
 // icons
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
-// other
+// locals
 import { HierarchicalTrackSelectorModel, TreeNode } from '../model'
-import JBrowseMenu from '@jbrowse/core/ui/Menu'
-import { getSession } from '@jbrowse/core/util'
 
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
-import { getAllChildren } from './util'
 
 const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
