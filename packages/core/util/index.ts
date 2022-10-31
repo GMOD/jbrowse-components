@@ -262,11 +262,21 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * ```
  */
 export function assembleLocString(region: ParsedLocString): string {
+  return assembleLocStringFast(region, toLocale)
+}
+
+// same as assembleLocString above, but does not perform toLocaleString which
+// can slow down the speed of block calculations which use assembleLocString
+// for block.key
+export function assembleLocStringFast(
+  region: ParsedLocString,
+  cb = (n: number): string | number => n,
+): string {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
   if (start !== undefined) {
-    startString = `:${(start + 1).toLocaleString('en-US')}`
+    startString = `:${cb(start + 1)}`
   } else if (end !== undefined) {
     startString = ':1'
   } else {
@@ -274,10 +284,7 @@ export function assembleLocString(region: ParsedLocString): string {
   }
   let endString
   if (end !== undefined) {
-    endString =
-      start !== undefined && start + 1 === end
-        ? ''
-        : `..${end.toLocaleString('en-US')}`
+    endString = start !== undefined && start + 1 === end ? '' : `..${cb(end)}`
   } else {
     endString = start !== undefined ? '..' : ''
   }
@@ -774,9 +781,7 @@ export function stringify({
   oob?: boolean
 }) {
   return refName
-    ? `${refName}:${coord.toLocaleString('en-US')}${
-        oob ? ' (out of bounds)' : ''
-      }`
+    ? `${refName}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
     : ''
 }
 

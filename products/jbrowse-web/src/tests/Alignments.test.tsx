@@ -29,12 +29,12 @@ test('opens an alignments track', async () => {
   const { findByTestId: f1 } = within(
     await findByTestId('Blockset-pileup', {}, delay),
   )
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:1..4,000-0'), {}, delay))
+  expectCanvasMatch(await f1(pc('{volvox}ctgA:1..4000-0'), {}, delay))
 
   const { findByTestId: f2 } = within(
     await findByTestId('Blockset-snpcoverage', {}, delay),
   )
-  expectCanvasMatch(await f2(pc('{volvox}ctgA:1..4,000-0'), {}, delay))
+  expectCanvasMatch(await f2(pc('{volvox}ctgA:1..4000-0'), {}, delay))
 
   const track = await findAllByTestId('pileup_overlay_canvas')
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
@@ -68,6 +68,6 @@ test('test snpcoverage doesnt count snpcoverage', async () => {
     await findByTestId('Blockset-snpcoverage', {}, delay),
   )
 
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:2,657..2,688-0'), {}, delay))
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:2,689..2,720-0'), {}, delay))
+  expectCanvasMatch(await f1(pc('{volvox}ctgA:2657..2688-0'), {}, delay))
+  expectCanvasMatch(await f1(pc('{volvox}ctgA:2689..2720-0'), {}, delay))
 }, 30000)

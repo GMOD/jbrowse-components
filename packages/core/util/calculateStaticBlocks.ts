@@ -1,5 +1,5 @@
 import { isStateTreeNode, getSnapshot, Instance } from 'mobx-state-tree'
-import { assembleLocString } from '.'
+import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
@@ -103,7 +103,7 @@ export default function calculateStaticBlocks(
         isRightEndOfDisplayedRegion,
         key: '',
       }
-      blockData.key = `${assembleLocString(blockData)}-${regionNumber}${
+      blockData.key = `${assembleLocStringFast(blockData)}-${regionNumber}${
         reversed ? '-reversed' : ''
       }`
 

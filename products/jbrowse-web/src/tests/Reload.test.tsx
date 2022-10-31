@@ -140,9 +140,7 @@ test('reloads bigwig (BW 404)', async () => {
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(
-    await findByTestId(pc('{volvox}ctgA:1..8,000-0'), {}, delay),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..8000-0'), {}, delay))
 }, 20000)
 
 test('reloads vcf (VCF.GZ 404)', async () => {

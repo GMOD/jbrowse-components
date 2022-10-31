@@ -38,7 +38,7 @@ test('launch read vs ref panel', async () => {
 
   expect(session.views[1].type).toBe('LinearSyntenyView')
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 20000)
+}, 40000)
 
 test('launch read vs ref dotplot', async () => {
   console.warn = jest.fn()
@@ -59,4 +59,4 @@ test('launch read vs ref dotplot', async () => {
 
   expect(session.views[1].type).toBe('DotplotView')
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
-}, 20000)
+}, 40000)
