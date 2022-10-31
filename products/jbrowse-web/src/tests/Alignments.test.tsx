@@ -45,7 +45,7 @@ test('opens an alignments track', async () => {
   fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
 
   // this is to confirm a alignment detail widget opened
-  await findByTestId('alignment-side-drawer')
+  await findByTestId('alignment-side-drawer', {}, delay)
 }, 20000)
 
 test('test that bam with small max height displays message', async () => {
