@@ -429,356 +429,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 class="css-17gfnt3-verticalGuidesContainer"
                 style="left: -800px; width: 2400px;"
               >
-                <div
-                  class="css-a9ifge-boundaryPaddingBlock"
-                  style="width: 800px;"
+                <canvas
+                  style="width: 2400px; height: 100%;"
+                  width="2400"
                 />
-                <div
-                  class="css-1dmfa10-contentBlock"
-                  style="width: 800px;"
-                >
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: -20px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 0px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 20px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 40px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 60px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 80px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 100px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 120px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 140px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 160px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 180px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 200px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 220px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 240px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 260px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 280px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 300px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 320px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 340px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 360px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 380px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 400px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 420px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 440px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 460px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 480px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 500px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 520px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 540px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 560px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 580px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 600px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 620px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 640px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 660px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 680px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 700px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 720px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 740px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 760px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 780px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 800px;"
-                  />
-                </div>
-                <div
-                  class="css-1dmfa10-contentBlock"
-                  style="width: 800px;"
-                >
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: -20px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 0px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 20px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 40px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 60px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 80px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 100px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 120px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 140px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 160px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 180px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 200px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 220px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 240px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 260px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 280px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 300px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 320px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 340px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 360px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 380px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 400px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 420px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 440px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 460px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 480px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 500px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 520px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 540px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 560px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 580px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 600px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 620px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 640px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 660px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 680px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 700px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 720px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 740px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 760px;"
-                  />
-                  <div
-                    class="css-1nnah7t-tick-majorTick"
-                    style="left: 780px;"
-                  />
-                  <div
-                    class="css-i794sq-tick-minorTick"
-                    style="left: 800px;"
-                  />
-                </div>
               </div>
             </div>
             <div
@@ -799,119 +453,101 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     style="left: -801px; width: 2400px; height: 17px; box-sizing: border-box;"
                   >
                     <div
-                      class="css-a9ifge-boundaryPaddingBlock"
-                      style="background: none; width: 800px;"
-                    />
-                    <div
-                      class="css-1dmfa10-contentBlock"
-                      style="width: 800px;"
+                      class="css-1f3h2yl-tick"
+                      style="left: 980px;"
                     >
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: -20px;"
-                      />
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 180px;"
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          10
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 380px;"
-                      >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          20
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 580px;"
-                      >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          30
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 780px;"
-                      >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          40
-                        </p>
-                      </div>
+                        10
+                      </p>
                     </div>
                     <div
-                      class="css-1dmfa10-contentBlock"
-                      style="width: 800px;"
+                      class="css-1f3h2yl-tick"
+                      style="left: 1180px;"
                     >
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: -20px;"
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          40
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 180px;"
+                        20
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 1380px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          50
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 380px;"
+                        30
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 1580px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          60
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 580px;"
+                        40
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 1580px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          70
-                        </p>
-                      </div>
-                      <div
-                        class="css-1f3h2yl-tick"
-                        style="left: 780px;"
+                        40
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 1780px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
                       >
-                        <p
-                          class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
-                        >
-                          80
-                        </p>
-                      </div>
+                        50
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 1980px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
+                      >
+                        60
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 2180px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
+                      >
+                        70
+                      </p>
+                    </div>
+                    <div
+                      class="css-1f3h2yl-tick"
+                      style="left: 2380px;"
+                    >
+                      <p
+                        class="MuiTypography-root MuiTypography-body1 css-1e8tst7-MuiTypography-root-majorTickLabel"
+                      >
+                        80
+                      </p>
                     </div>
                   </div>
                 </div>
                 <p
                   class="MuiTypography-root MuiTypography-body1 css-x1763-MuiTypography-root-refLabel"
                   data-testid="refLabel-ctgA"
-                  style="left: -1px; padding-left: 1px;"
+                  style="left: 0px; padding-left: 0px;"
                 >
                   ctgA
                 </p>
@@ -1008,8 +644,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       style="left: -800px;"
                     >
                       <div
-                        class="css-a9ifge-boundaryPaddingBlock"
-                        style="background: none; width: 800px;"
+                        style="width: 800px;"
                       />
                       <div
                         class="css-1dmfa10-contentBlock"

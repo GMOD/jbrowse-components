@@ -50,7 +50,7 @@ describe('ScaleBar genome view component', () => {
     const { getByTestId } = render(<ScaleBar model={model} />)
     const ret1 = getByTestId('refLabel-ctgA')
     const ret2 = getByTestId('refLabel-ctgB')
-    expect(ret1.style.left).toBe('-1px')
+    expect(ret1.style.left).toBe('0px')
     expect(ret2.style.left).toBe('101px')
   })
   it('renders two regions when scrolled to the left, the label is ctgA to the actual blocks', () => {
@@ -92,7 +92,7 @@ describe('ScaleBar genome view component', () => {
     const { getByTestId } = render(<ScaleBar model={model} />)
     const ret1 = getByTestId('refLabel-ctgA')
     const ret2 = getByTestId('refLabel-ctgB')
-    expect(ret1.style.left).toBe('99px')
+    expect(ret1.style.left).toBe('100px')
     expect(ret2.style.left).toBe('201px')
   })
 

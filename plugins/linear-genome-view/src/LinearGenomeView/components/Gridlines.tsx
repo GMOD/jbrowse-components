@@ -44,13 +44,14 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
     if (!ctx) {
       return
     }
-    const height = canvas.getBoundingClientRect().height
     const p = theme.palette
     const light = p.divider
     const dark = p.text.secondary
+    const height = canvas.height
+    const w = canvas.width
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     ctx.clearRect(0, 0, w, height)
     ctx.resetTransform()
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     staticBlocks.forEach(b => {
       const offset = b.offsetPx - staticBlocks.offsetPx
       if (b instanceof ContentBlock) {
@@ -61,16 +62,16 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
           }
           ctx.fillStyle =
             t.type === 'major' || t.type === 'labeledMajor' ? dark : light
-          ctx.fillRect(Math.round(x + offset), 0, 1, height * 2)
+          ctx.fillRect(Math.round(x + offset), 0, 1, height)
         })
       }
       if (b instanceof ElidedBlock) {
         ctx.fillStyle = '#999'
-        ctx.fillRect(offset, 0, b.widthPx, height * 2)
+        ctx.fillRect(Math.round(offset), 0, b.widthPx, height)
       }
       if (b instanceof InterRegionPaddingBlock) {
-        ctx.fillStyle = '#999'
-        ctx.fillRect(offset, 0, b.widthPx, height * 2)
+        ctx.fillStyle = b.key.includes('Region') ? '#999' : '#000'
+        ctx.fillRect(Math.round(offset), 0, b.widthPx, height)
       }
     })
   }, [

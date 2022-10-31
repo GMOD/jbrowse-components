@@ -359,17 +359,12 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           <div
             class="css-1u2dss8-scaleBar"
             style="left: -801px; width: 1700px; height: 17px; box-sizing: border-box;"
-          >
-            <div
-              class="css-1f3h2yl-tick"
-              style="left: 799px;"
-            />
-          </div>
+          />
         </div>
         <p
           class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
           data-testid="refLabel-ctgA"
-          style="left: -1px; padding-left: 1px;"
+          style="left: 0px; padding-left: 0px;"
         >
           ctgA
         </p>
@@ -466,16 +461,14 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
               style="left: -800px;"
             >
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="width: 800px;"
               />
               <div
                 class="css-1dmfa10-contentBlock"
                 style="width: 100px;"
               />
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="width: 800px;"
               />
             </div>
           </div>
@@ -875,10 +868,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <div
               class="css-1f3h2yl-tick"
-              style="left: 799px;"
-            />
-            <div
-              class="css-1f3h2yl-tick"
               style="left: 901px;"
             >
               <p
@@ -932,7 +921,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         <p
           class="MuiTypography-root MuiTypography-body1 css-1vlu65o-MuiTypography-root-refLabel"
           data-testid="refLabel-ctgA"
-          style="left: -1px; padding-left: 1px;"
+          style="left: 0px; padding-left: 0px;"
         >
           ctgA
         </p>
@@ -1036,8 +1025,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="left: -800px;"
             >
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="width: 800px;"
               />
               <div
                 class="css-1dmfa10-contentBlock"
@@ -1050,8 +1038,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 />
               </div>
               <div
-                class="css-1x3apsi-interRegionPaddingBlock"
-                style="background: none; width: 2px;"
+                style="width: 2px;"
               />
               <div
                 class="css-1dmfa10-contentBlock"
@@ -1168,8 +1155,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
               style="left: -800px;"
             >
               <div
-                class="css-a9ifge-boundaryPaddingBlock"
-                style="background: none; width: 800px;"
+                style="width: 800px;"
               />
               <div
                 class="css-1dmfa10-contentBlock"
@@ -1182,8 +1168,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                 />
               </div>
               <div
-                class="css-1x3apsi-interRegionPaddingBlock"
-                style="background: none; width: 2px;"
+                style="width: 2px;"
               />
               <div
                 class="css-1dmfa10-contentBlock"
