@@ -59,9 +59,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_dropbox'), {}, delay),
   )
-  expectCanvasMatch(
-    await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..4000-0'), {}, delay))
 }, 25000)
 
 test('opens a bigwig track that needs external token authentication', async () => {
@@ -109,9 +107,7 @@ test('opens a bigwig track that needs external token authentication', async () =
   expect(Object.keys(sessionStorage)).toContain('ExternalTokenTest-token')
   expect(Object.values(sessionStorage)).toContain('testentry')
 
-  expectCanvasMatch(
-    await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..4000-0'), {}, delay))
 }, 25000)
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
@@ -155,7 +151,5 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
     sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
   ).toContain(btoa(`username:password`))
 
-  expectCanvasMatch(
-    await findByTestId(pc('{volvox}ctgA:1..4,000-0'), {}, delay),
-  )
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..4000-0'), {}, delay))
 }, 25000)

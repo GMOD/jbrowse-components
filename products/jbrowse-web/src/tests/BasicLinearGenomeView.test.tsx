@@ -66,7 +66,7 @@ test('click and drag to reorder tracks', async () => {
     {},
     delay,
   )
-  const trackRenderingContainer1 = await findByTestId(
+  const container1 = await findByTestId(
     'trackRenderingContainer-integration_test-volvox_filtered_vcf',
     {},
     delay,
@@ -79,7 +79,7 @@ test('click and drag to reorder tracks', async () => {
   fireEvent.mouseDown(dragHandle0, { clientX: 10, clientY: 100 })
   fireEvent(dragHandle0, dragStartEvent)
   fireEvent.mouseMove(dragHandle0, { clientX: 10, clientY: 220 })
-  fireEvent.dragEnter(trackRenderingContainer1)
+  fireEvent.dragEnter(container1)
   fireEvent.dragEnd(dragHandle0, { clientX: 10, clientY: 220 })
   fireEvent.mouseUp(dragHandle0, { clientX: 10, clientY: 220 })
   await waitFor(() => expect(view.tracks[0].id).toBe(trackId1))

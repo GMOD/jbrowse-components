@@ -35,7 +35,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
 
   expectCanvasMatch(
-    await findByTestId(pc('{volvox}ctgA:1..12,000-0'), {}, delay),
+    await findByTestId(pc('{volvox}ctgA:1..12000-0'), {}, delay),
   )
 }, 30000)
 
@@ -53,7 +53,7 @@ test('test stats estimation pileup, force load to see', async () => {
   fireEvent.click(buttons[0])
 
   expectCanvasMatch(
-    await findByTestId(pc('{volvox}ctgA:1..20,063-0'), {}, delay),
+    await findByTestId(pc('{volvox}ctgA:1..20063-0'), {}, delay),
   )
 }, 30000)
 
