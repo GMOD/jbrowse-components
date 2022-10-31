@@ -56,42 +56,29 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
       return
     }
     const height = canvas.getBoundingClientRect().height
+    const p = theme.palette
+    const light = p.divider
+    const dark = p.text.secondary
     ctx.clearRect(0, 0, w, height)
     ctx.resetTransform()
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio)
     staticBlocks.forEach(b => {
+      const offset = b.offsetPx - staticBlocks.offsetPx
       if (b instanceof ContentBlock) {
         makeTicks(b.start, b.end, model.bpPerPx).forEach(t => {
           const x = (b.reversed ? b.end - t.base : t.base - b.start) / bpPerPx
           ctx.fillStyle =
-            t.type === 'major' || t.type === 'labeledMajor'
-              ? theme.palette.text.secondary
-              : theme.palette.divider
-          ctx.fillRect(
-            x + b.offsetPx - staticBlocks.offsetPx,
-            0,
-            0.7,
-            height * 2,
-          )
+            t.type === 'major' || t.type === 'labeledMajor' ? dark : light
+          ctx.fillRect(x + offset, 0, 1, height * 2)
         })
       }
       if (b instanceof ElidedBlock) {
         ctx.fillStyle = '#999'
-        ctx.fillRect(
-          b.offsetPx - staticBlocks.offsetPx,
-          0,
-          b.widthPx,
-          height * 2,
-        )
+        ctx.fillRect(offset, 0, b.widthPx, height * 2)
       }
       if (b instanceof InterRegionPaddingBlock) {
-        ctx.fillStyle = '#999'
-        ctx.fillRect(
-          b.offsetPx - staticBlocks.offsetPx,
-          0,
-          b.widthPx,
-          height * 2,
-        )
+        ctx.fillStyle = '#000'
+        ctx.fillRect(offset, 0, b.widthPx, height * 2)
       }
     })
   }, [
