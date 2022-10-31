@@ -96,7 +96,7 @@ export function drawXY(
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       if (feature.get('summary')) {
-        const w = rightPx - leftPx + fudgeFactor
+        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
         const max = feature.get('maxScore')
         const c = colorCallback(feature, max)
         const effectiveC = crossingOrigin
