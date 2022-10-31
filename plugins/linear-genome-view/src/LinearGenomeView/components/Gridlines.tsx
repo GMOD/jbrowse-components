@@ -14,7 +14,7 @@ import { makeTicks } from '../util'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   verticalGuidesZoomContainer: {
     position: 'absolute',
     height: '100%',
@@ -29,18 +29,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     display: 'flex',
   },
-  tick: {
-    position: 'absolute',
-    height: '100%',
-    width: 1,
-  },
-  majorTick: {
-    background: theme.palette.text.secondary,
-  },
-  minorTick: {
-    background: theme.palette.divider,
-  },
-}))
+})
 const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
   const { staticBlocks, bpPerPx } = model
   const theme = useTheme()
@@ -67,9 +56,12 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
       if (b instanceof ContentBlock) {
         makeTicks(b.start, b.end, model.bpPerPx).forEach(t => {
           const x = (b.reversed ? b.end - t.base : t.base - b.start) / bpPerPx
+          if (x < 0 || x > b.widthPx) {
+            return
+          }
           ctx.fillStyle =
             t.type === 'major' || t.type === 'labeledMajor' ? dark : light
-          ctx.fillRect(x + offset, 0, 1, height * 2)
+          ctx.fillRect(Math.round(x + offset), 0, 1, height * 2)
         })
       }
       if (b instanceof ElidedBlock) {
@@ -77,7 +69,7 @@ const RenderedVerticalGuides = observer(({ model }: { model: LGV }) => {
         ctx.fillRect(offset, 0, b.widthPx, height * 2)
       }
       if (b instanceof InterRegionPaddingBlock) {
-        ctx.fillStyle = '#000'
+        ctx.fillStyle = '#999'
         ctx.fillRect(offset, 0, b.widthPx, height * 2)
       }
     })

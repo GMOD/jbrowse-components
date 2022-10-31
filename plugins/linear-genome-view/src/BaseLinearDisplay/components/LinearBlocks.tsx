@@ -72,21 +72,14 @@ const RenderedBlocks = observer(
           }
           if (block instanceof ElidedBlock) {
             return (
-              <ElidedBlockComponent
+              <div
                 key={`${model.id}-${block.key}`}
-                width={block.widthPx}
+                style={{ width: block.widthPx }}
               />
             )
           }
           if (block instanceof InterRegionPaddingBlock) {
-            return (
-              <InterRegionPaddingBlockComponent
-                key={block.key}
-                width={block.widthPx}
-                style={{ background: 'none' }}
-                boundary={block.variant === 'boundary'}
-              />
-            )
+            return <div key={block.key} style={{ width: block.widthPx }} />
           }
           throw new Error(`invalid block type ${typeof block}`)
         })}
