@@ -3,6 +3,7 @@ import {
   AppBar,
   Button,
   Fab,
+  FormControl,
   MenuItem,
   Paper,
   Select,
@@ -173,22 +174,26 @@ const ViewLauncher = observer(({ session }: { session: AppSession }) => {
   return (
     <Paper className={classes.selectPaper}>
       <Typography>Select a view to launch</Typography>
-      <Select value={value} onChange={event => setValue(event.target.value)}>
-        {viewTypes.map(({ name }: { name: string }) => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
-      </Select>
-      <Button
-        onClick={() => {
-          session.addView(value, {})
-        }}
-        variant="contained"
-        color="primary"
-      >
-        Launch view
-      </Button>
+      <FormControl style={{ margin: 2 }}>
+        <Select value={value} onChange={event => setValue(event.target.value)}>
+          {viewTypes.map(({ name }: { name: string }) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl style={{ margin: 2 }}>
+        <Button
+          onClick={() => {
+            session.addView(value, {})
+          }}
+          variant="contained"
+          color="primary"
+        >
+          Launch view
+        </Button>
+      </FormControl>
     </Paper>
   )
 })

@@ -3127,6 +3127,40 @@ Object {
     },
     Object {
       "adapter": Object {
+        "pafLocation": Object {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_ins.paf",
+        },
+        "queryAssembly": "volvox_ins",
+        "targetAssembly": "volvox",
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": Array [
+        "volvox",
+        "volvox_ins",
+      ],
+      "displays": Array [
+        Object {
+          "displayId": "volvox_ins.paf-1658813720770-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        Object {
+          "displayId": "volvox_ins.paf-1658813720770-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        Object {
+          "displayId": "volvox_ins.paf-1658813720770-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_ins.paf",
+      "trackId": "volvox_ins.paf-1658813720770",
+      "type": "SyntenyTrack",
+    },
+    Object {
+      "adapter": Object {
         "type": "VcfAdapter",
         "vcfLocation": Object {
           "internetAccountId": undefined,
