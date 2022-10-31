@@ -12,7 +12,7 @@ page no-build plugin for JBrowse 2.
 ## Prerequisites
 
 - you can run an instance of JBrowse 2 on the web, see [any of our quickstart
-  guides](../../quickstart_cli) for details
+  guides](/docs/quickstart_cli) for details
 - a stable and recent version of [node](https://nodejs.org/en/)
 - basic familiarity with the command line and navigating the file system
 
@@ -23,7 +23,7 @@ https://github.com/GMOD/jbrowse-plugin-template which uses `rollup` to compile
 extra dependencies that your plugin might use. In contrast, "no-build" plugins
 have no build step and can be hand edited. This can be useful for adding [extra
 jexl config callbacks for making extra config callbacks or similar
-modifications](/docs/config_guide/#making-sophisticated-color-callbacks).
+modifications](/docs/config_guides/customizing_feature_colors/).
 
 ## Writing a no-build plugin
 
@@ -235,7 +235,7 @@ should look like the following:
 Congratulations! You built and ran a single file no-build plugin in JBrowse.
 
 If you'd like some general development information, checkout the series of
-[developer guides](../../developer_guide) available.
+[developer guides](/docs/developer_guide) available.
 
 Have some questions? [Contact us](/contact) through our various communication
 channels.

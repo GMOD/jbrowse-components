@@ -22,9 +22,10 @@ You can also do this configuration with JBrowse CLI. See that guide
 
 This tutorial requires having the following software installed
 
-- [JBrowse CLI](../../quickstart_cli/#installing-the-cli-tools)
+- [JBrowse CLI](/docs/quickstart_cli/#installing-the-cli-tools)
 
-- [JBrowse 2 web application](../../quickstart_cli/#using-jbrowse-create-to-download-jbrowse-2)
+- [JBrowse 2 web
+  application](/docs/quickstart_cli/#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 
@@ -37,8 +38,8 @@ The `admin-server` is meant to be used temporarily for configuration, **not in
 production.**
 :::
 
-The `admin-server` launches an instance of JBrowse 2 in "admin mode", which then
-lets you:
+The `admin-server` launches an instance of JBrowse 2 in "admin mode", which
+then lets you:
 
 - Add and edit assemblies with the "Assembly manager"
 - Add tracks and edit tracks
@@ -166,9 +167,7 @@ select the currently open session, or any of your previously saved sessions.
 ## Additional resources
 
 There are a number of additional features for configuring JBrowse 2. Make sure
-to refer to the [config guide](/docs/config_guide) for topics such as [adding
-tracks](/docs/config_guide/#track-configurations) or [adding an assembly with
-the CLI](/docs/config_guide/#adding-an-assembly-with-the-cli).
+to refer to the [config guide](/docs/config_guide) for more topics.
 
 ## Conclusion
 

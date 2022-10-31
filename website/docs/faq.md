@@ -181,14 +181,15 @@ An example of a Jexl configuration callback might look like this:
     "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
 ```
 
-See our [configuration callbacks guide](/docs/config_guides/jexl) for more information.
+See our [configuration callbacks guide](/docs/config_guides/jexl) for more
+information.
 
 ### My jexl is too complicated, how can I simplify it?
 
 You can create a small plugin that adds a new function to the jexl language.
 
-See [here](../config_guide/#making-sophisticated-color-callbacks) for an example
-of making a color callback.
+See [here](/docs/config_guides/customizing_feature_colors/) for an example of
+making a color callback.
 
 ### Adding color callbacks in the GUI
 
