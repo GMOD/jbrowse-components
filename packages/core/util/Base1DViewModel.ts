@@ -7,13 +7,38 @@ import calculateDynamicBlocks from './calculateDynamicBlocks'
 import calculateStaticBlocks from './calculateStaticBlocks'
 import { moveTo, pxToBp, bpToPx, BpOffset } from './Base1DUtils'
 
+/**
+ * #stateModel Base1DView
+ * used in non-lgv view representations of a 1d view e.g. the two axes of the
+ * dotplot use this
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const Base1DView = types
   .model('Base1DView', {
+    /**
+     * #property
+     */
     id: ElementId,
+    /**
+     * #property
+     */
     displayedRegions: types.array(Region),
+    /**
+     * #property
+     */
     bpPerPx: 0,
+    /**
+     * #property
+     */
     offsetPx: 0,
+    /**
+     * #property
+     */
     interRegionPaddingWidth: types.optional(types.number, 0),
+    /**
+     * #property
+     */
     minimumBlockWidth: types.optional(types.number, 0),
   })
   .volatile(() => ({
@@ -21,41 +46,68 @@ const Base1DView = types
     volatileWidth: 0,
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
     setDisplayedRegions(regions: IRegion[]) {
       self.displayedRegions = cast(regions)
     },
+    /**
+     * #action
+     */
     setBpPerPx(val: number) {
       self.bpPerPx = val
     },
+    /**
+     * #action
+     */
     setVolatileWidth(width: number) {
       self.volatileWidth = width
     },
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
     get width() {
       return self.volatileWidth
     },
+    /**
+     * #getter
+     */
     get assemblyNames() {
       return [
         ...new Set(self.displayedRegions.map(region => region.assemblyName)),
       ]
     },
-
+    /**
+     * #getter
+     */
     get displayedRegionsTotalPx() {
       return this.totalBp / self.bpPerPx
     },
 
+    /**
+     * #getter
+     */
     get maxOffset() {
       // objectively determined to keep the linear genome on the main screen
       const leftPadding = 10
       return this.displayedRegionsTotalPx - leftPadding
     },
 
+    /**
+     * #getter
+     */
     get minOffset() {
       // objectively determined to keep the linear genome on the main screen
       const rightPadding = 30
       return -this.width + rightPadding
     },
+
+    /**
+     * #getter
+     */
     get totalBp() {
       return self.displayedRegions
         .map(a => a.end - a.start)
@@ -63,12 +115,23 @@ const Base1DView = types
     },
   }))
   .views(self => ({
+    /**
+     * #getter
+     */
     get dynamicBlocks() {
       return calculateDynamicBlocks(self)
     },
+
+    /**
+     * #getter
+     */
     get staticBlocks() {
       return calculateStaticBlocks(self)
     },
+
+    /**
+     * #getter
+     */
     get currBp() {
       return this.dynamicBlocks
         .map(a => a.end - a.start)
@@ -76,9 +139,16 @@ const Base1DView = types
     },
   }))
   .views(self => ({
+    /**
+     * #method
+     */
     pxToBp(px: number) {
       return pxToBp(self, px)
     },
+
+    /**
+     * #method
+     */
     bpToPx({
       refName,
       coord,
@@ -92,25 +162,40 @@ const Base1DView = types
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
     setFeatures(features: Feature[]) {
       self.features = features
     },
 
-    // this makes a zoomed out view that shows all displayedRegions
-    // that makes the overview bar square with the scale bar
+    /**
+     * #action
+     * this makes a zoomed out view that shows all displayedRegions that makes
+     * the overview bar square with the scale bar
+     */
     showAllRegions() {
       self.bpPerPx = self.totalBp / self.width
       self.offsetPx = 0
     },
 
+    /**
+     * #action
+     */
     zoomOut() {
       this.zoomTo(self.bpPerPx * 2)
     },
 
+    /**
+     * #action
+     */
     zoomIn() {
       this.zoomTo(self.bpPerPx / 2)
     },
 
+    /**
+     * #action
+     */
     zoomTo(newBpPerPx: number, offset = self.width / 2) {
       const bpPerPx = newBpPerPx
       if (bpPerPx === self.bpPerPx) {
@@ -128,11 +213,17 @@ const Base1DView = types
       return self.bpPerPx
     },
 
+    /**
+     * #action
+     */
     scrollTo(offsetPx: number) {
       const newOffsetPx = clamp(offsetPx, self.minOffset, self.maxOffset)
       self.offsetPx = newOffsetPx
       return newOffsetPx
     },
+    /**
+     * #action
+     */
     centerAt(coord: number, refName: string | undefined, regionNumber: number) {
       if (!refName) {
         return
@@ -147,9 +238,12 @@ const Base1DView = types
       }
     },
 
+    /**
+     * #action
+     * note: the scroll is clamped to keep the view on the main screen
+     */
     scroll(distance: number) {
       const oldOffsetPx = self.offsetPx
-      // the scroll is clamped to keep the linear genome on the main screen
       const newOffsetPx = clamp(
         self.offsetPx + distance,
         self.minOffset,
@@ -161,6 +255,7 @@ const Base1DView = types
   }))
   .actions(self => ({
     /**
+     * #action
      * offset is the base-pair-offset in the displayed region, index is the index of the
      * displayed region in the linear genome view
      *

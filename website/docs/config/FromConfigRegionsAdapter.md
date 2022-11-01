@@ -21,12 +21,3 @@ features: {
       defaultValue: [],
     }
 ```
-
-#### slot: featureClass
-
-```js
-featureClass: {
-      type: 'string',
-      defaultValue: 'SimpleFeature',
-    }
-```
