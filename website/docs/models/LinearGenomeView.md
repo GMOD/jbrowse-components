@@ -195,6 +195,132 @@ number
 any[]
 ```
 
+#### getter: assemblyErrors
+
+```js
+// type
+string
+```
+
+#### getter: assembliesInitialized
+
+```js
+// type
+boolean
+```
+
+#### getter: initialized
+
+```js
+// type
+any
+```
+
+#### getter: hasDisplayedRegions
+
+```js
+// type
+boolean
+```
+
+#### getter: isSearchDialogDisplayed
+
+```js
+// type
+boolean
+```
+
+#### getter: scaleBarHeight
+
+```js
+// type
+number
+```
+
+#### getter: headerHeight
+
+```js
+// type
+number
+```
+
+#### getter: trackHeights
+
+```js
+// type
+any
+```
+
+#### getter: trackHeightsWithResizeHandles
+
+```js
+// type
+any
+```
+
+#### getter: height
+
+```js
+// type
+any
+```
+
+#### getter: totalBp
+
+```js
+// type
+number
+```
+
+#### getter: maxBpPerPx
+
+```js
+// type
+number
+```
+
+#### getter: minBpPerPx
+
+```js
+// type
+number
+```
+
+#### getter: error
+
+```js
+// type
+any
+```
+
+#### getter: maxOffset
+
+```js
+// type
+number
+```
+
+#### getter: minOffset
+
+```js
+// type
+number
+```
+
+#### getter: displayedRegionsTotalPx
+
+```js
+// type
+number
+```
+
+#### getter: trackTypeActions
+
+```js
+// type
+Map<string, MenuItem[]>
+```
+
 #### getter: canShowCytobands
 
 ```js
@@ -288,6 +414,57 @@ any
 ```
 
 ### LinearGenomeView - Methods
+
+#### method: MiniControlsComponent
+
+```js
+// type signature
+MiniControlsComponent: () => React.FC<any>
+```
+
+#### method: HeaderComponent
+
+```js
+// type signature
+HeaderComponent: () => React.FC<any>
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
+```
+
+#### method: searchScope
+
+```js
+// type signature
+searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }
+```
+
+#### method: getTrack
+
+```js
+// type signature
+getTrack: (id: string) => any
+```
+
+#### method: rankSearchResults
+
+```js
+// type signature
+rankSearchResults: (results: BaseResult[]) => BaseResult[]
+```
+
+#### method: rewriteOnClicks
+
+modifies view menu action onClick to apply to all tracks of same type
+
+```js
+// type signature
+rewriteOnClicks: (trackType: string, viewMenuActions: MenuItem[]) => void
+```
 
 #### method: getSelectedRegions
 
@@ -471,6 +648,13 @@ showTrack: (
   initialSnapshot?: {},
   displayInitialSnapshot?: {},
 ) => any
+```
+
+#### action: hideTrack
+
+```js
+// type signature
+hideTrack: (trackId: string) => number
 ```
 
 #### action: moveTrack

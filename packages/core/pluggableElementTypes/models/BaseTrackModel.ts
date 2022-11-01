@@ -8,49 +8,70 @@ import {
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession, getEnv } from '../../util'
+import { getContainingView, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
-// these MST models only exist for tracks that are *shown*.
-// they should contain only UI state for the track, and have
-// a reference to a track configuration (stored under
-// session.configuration.assemblies.get(assemblyName).tracks).
+// these MST models only exist for tracks that are *shown*. they should contain
+// only UI state for the track, and have a reference to a track configuration
+// (stored under session.configuration.assemblies.get(assemblyName).tracks).
+
+/**
+ * #stateModel BaseViewModel
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 // note that multiple displayed tracks could use the same configuration.
 export function createBaseTrackModel(
-  pluginManager: PluginManager,
+  pm: PluginManager,
   trackType: string,
   baseTrackConfig: AnyConfigurationSchemaType,
 ) {
   return types
     .model(trackType, {
+      /**
+       * #property
+       */
       id: ElementId,
+      /**
+       * #property
+       */
       type: types.literal(trackType),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(baseTrackConfig),
-      displays: types.array(
-        pluginManager.pluggableMstType('display', 'stateModel'),
-      ),
+      /**
+       * #property
+       */
+      displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
+      /**
+       * #getter
+       * decides how to assign tracks to rpc, by default uses the trackId
+       */
       get rpcSessionId() {
         return self.configuration.trackId
       },
-
+      /**
+       * #getter
+       */
       get name() {
         return getConf(self, 'name')
       },
-
+      /**
+       * #getter
+       */
       get textSearchAdapter() {
         return getConf(self, 'textSearchAdapter')
       },
 
       /**
-       * the PluggableElementType for the currently defined adapter
+       * #getter
        */
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
-        const { pluginManager: pm } = getEnv(self)
         if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
         }
@@ -61,6 +82,9 @@ export function createBaseTrackModel(
         return adapterType
       },
 
+      /**
+       * #getter
+       */
       get viewMenuActions(): MenuItem[] {
         const menuItems: MenuItem[] = []
         self.displays.forEach(display => {
@@ -68,6 +92,10 @@ export function createBaseTrackModel(
         })
         return menuItems
       },
+
+      /**
+       * #getter
+       */
       get canConfigure() {
         const session = getSession(self)
         return (
@@ -82,6 +110,9 @@ export function createBaseTrackModel(
       },
     }))
     .actions(self => ({
+      /**
+       * #actions
+       */
       activateConfigurationUI() {
         const session = getSession(self)
         const view = getContainingView(self)
@@ -96,10 +127,14 @@ export function createBaseTrackModel(
           }
         }
       },
+
+      /**
+       * #actions
+       */
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const displayType = pluginManager.getDisplayType(conf.type)
+        const displayType = pm.getDisplayType(conf.type)
         if (!displayType) {
           throw new Error(`unknown display type ${conf.type}`)
         }
@@ -111,13 +146,20 @@ export function createBaseTrackModel(
         self.displays.push(display)
       },
 
+      /**
+       * #actions
+       */
       hideDisplay(displayId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
         const t = self.displays.filter(d => d.configuration === conf)
         transaction(() => t.forEach(d => self.displays.remove(d)))
         return t.length
       },
+
+      /**
+       * #actions
+       */
       replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
         const idx = self.displays.findIndex(
           d => d.configuration.displayId === oldId,
@@ -125,9 +167,9 @@ export function createBaseTrackModel(
         if (idx === -1) {
           throw new Error(`could not find display id ${oldId} to replace`)
         }
-        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), newId)
-        const displayType = pluginManager.getDisplayType(conf.type)
+        const displayType = pm.getDisplayType(conf.type)
         if (!displayType) {
           throw new Error(`unknown display type ${conf.type}`)
         }
@@ -139,14 +181,17 @@ export function createBaseTrackModel(
       },
     }))
     .views(self => ({
-      trackMenuItems(): MenuItem[] {
+      /**
+       * #method
+       */
+      trackMenuItems() {
         const menuItems: MenuItem[] = []
         self.displays.forEach(display => {
           menuItems.push(...display.trackMenuItems())
         })
         const displayChoices: MenuItem[] = []
         const view = getContainingView(self)
-        const viewType = pluginManager.getViewType(view.type)
+        const viewType = pm.getViewType(view.type)
         const compatibleDisplayTypes = viewType.displayTypes.map(
           displayType => displayType.name,
         )

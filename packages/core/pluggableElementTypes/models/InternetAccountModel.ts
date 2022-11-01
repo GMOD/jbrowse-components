@@ -7,37 +7,68 @@ import { UriLocation, AnyReactComponentType } from '../../util/types'
 
 const inWebWorker = typeof sessionStorage === 'undefined'
 
+/**
+ * #stateModel BaseInternetAccountModel
+ */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 export const InternetAccount = types
   .model('InternetAccount', {
+    /**
+     * #property
+     */
     id: ElementId,
+    /**
+     * #property
+     */
     type: types.string,
   })
   .views(self => ({
+    /**
+     * #getter
+     */
     get name(): string {
       return getConf(self, 'name')
     },
+    /**
+     * #getter
+     */
     get description(): string {
       return getConf(self, 'description')
     },
+    /**
+     * #getter
+     */
     get internetAccountId(): string {
       return getConf(self, 'internetAccountId')
     },
+    /**
+     * #getter
+     */
     get authHeader(): string {
       return getConf(self, 'authHeader')
     },
+    /**
+     * #getter
+     */
     get tokenType(): string {
       return getConf(self, 'tokenType')
     },
+    /**
+     * #getter
+     */
     get domains(): string[] {
       return getConf(self, 'domains')
     },
     /**
+     * #getter
      * Can use this to customize what is displayed in fileSelector's toggle box
      */
     get toggleContents(): React.ReactNode {
       return null
     },
     /**
+     * #getter
      * Can use this to customize what the fileSelector. It takes a prop called
      * `setLocation` that should be used to set a UriLocation
      */
@@ -45,6 +76,7 @@ export const InternetAccount = types
       return undefined
     },
     /**
+     * #getter
      * Can use this to add a label to the UrlChooser. Has no effect if a custom
      * SelectorComponent is supplied
      */
@@ -54,16 +86,16 @@ export const InternetAccount = types
   }))
   .views(self => ({
     /**
+     * #method
      * Determine whether this internetAccount provides credentials for a URL
      * @param location  - UriLocation of resource
      * @returns true or false
      */
-    handlesLocation(location: UriLocation): boolean {
-      return self.domains.some((domain: string) =>
-        location?.uri.includes(domain),
-      )
+    handlesLocation(location: UriLocation) {
+      return self.domains.some(domain => location?.uri.includes(domain))
     },
     /**
+     * #getter
      * The key used to store this internetAccount's token in sessionStorage
      */
     get tokenKey() {
@@ -72,6 +104,7 @@ export const InternetAccount = types
   }))
   .actions(self => ({
     /**
+     * #action
      * Must be implemented by a model extending or composing this one. Pass the
      * user's token to `resolve`.
      * @param resolve - Pass the token to this function
@@ -83,16 +116,26 @@ export const InternetAccount = types
     ): void {
       throw new Error('getTokenFromUser must be implemented by extending model')
     },
+    /**
+     * #action
+     */
     storeToken(token: string) {
       sessionStorage.setItem(self.tokenKey, token)
     },
+    /**
+     * #action
+     */
     removeToken() {
       sessionStorage.removeItem(self.tokenKey)
     },
+    /**
+     * #action
+     */
     retrieveToken() {
       return sessionStorage.getItem(self.tokenKey)
     },
     /**
+     * #action
      * This can be used by an internetAccount to validate a token works before
      * it is used. This is run when preAuthorizationInformation is requested, so
      * it can be used to check that a token is valid before sending it to a
@@ -101,10 +144,10 @@ export const InternetAccount = types
      * if the original one was invalid. Should throw an error if a token is
      * invalid.
      * @param token - Auth token
-     * @param location - UriLocation of the resource
+     * @param loc - UriLocation of the resource
      * @returns - Valid auth token
      */
-    async validateToken(token: string, location: UriLocation) {
+    async validateToken(token: string, loc: UriLocation) {
       return token
     },
   }))
@@ -112,6 +155,7 @@ export const InternetAccount = types
     let tokenPromise: Promise<string> | undefined = undefined
     return {
       /**
+       * #action
        * Try to get the token from the location pre-auth, from local storage,
        * or from a previously cached promise. If token is not available, uses
        * `getTokenFromUser`.
@@ -153,6 +197,9 @@ export const InternetAccount = types
     }
   })
   .actions(self => ({
+    /**
+     * #action
+     */
     addAuthHeaderToInit(init: RequestInit = {}, token: string) {
       const tokenInfoString = self.tokenType
         ? `${self.tokenType} ${token}`
@@ -162,6 +209,7 @@ export const InternetAccount = types
       return { ...init, headers: newHeaders }
     },
     /**
+     * #action
      * Gets the token and returns it along with the information needed to
      * create a new internetAccount.
      * @param location - UriLocation of the resource
@@ -184,20 +232,16 @@ export const InternetAccount = types
   }))
   .actions(self => ({
     /**
+     * #action
      * Get a fetch method that will add any needed authentication headers to
      * the request before sending it. If location is provided, it will be
      * checked to see if it includes a token in it pre-auth information.
-     * @param location - UriLocation of the resource
+     * @param loc - UriLocation of the resource
      * @returns A function that can be used to fetch
      */
-    getFetcher(
-      location?: UriLocation,
-    ): (input: RequestInfo, init?: RequestInit) => Promise<Response> {
-      return async (
-        input: RequestInfo,
-        init?: RequestInit,
-      ): Promise<Response> => {
-        const authToken = await self.getToken(location)
+    getFetcher(loc?: UriLocation) {
+      return async (input: RequestInfo, init?: RequestInit) => {
+        const authToken = await self.getToken(loc)
         const newInit = self.addAuthHeaderToInit(init, authToken)
         return fetch(input, newInit)
       }
@@ -205,6 +249,7 @@ export const InternetAccount = types
   }))
   .actions(self => ({
     /**
+     * #action
      * Gets a filehandle that uses a fetch that adds auth headers
      * @param location - UriLocation of the resource
      * @returns A filehandle
