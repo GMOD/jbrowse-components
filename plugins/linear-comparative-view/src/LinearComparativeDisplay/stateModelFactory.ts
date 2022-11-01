@@ -43,10 +43,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .volatile((/* self */) => ({
       renderInProgress: undefined as AbortController | undefined,
       filled: false,
-      data: undefined as any,
+      data: undefined as unknown,
       reactElement: undefined as React.ReactElement | undefined,
       message: undefined as string | undefined,
-      renderingComponent: undefined as any,
+      renderingComponent: undefined as unknown,
       ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
@@ -71,21 +71,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       let renderInProgress: undefined | AbortController
 
       return {
-        afterAttach() {
-          makeAbortableReaction(
-            self as any,
-            renderBlockData as any,
-            renderBlockEffect as any,
-            {
-              name: `${self.type} ${self.id} rendering`,
-              delay: 1000,
-              fireImmediately: true,
-            },
-            this.setLoading,
-            this.setRendered,
-            this.setError,
-          )
-        },
         /**
          * #action
          * controlled by a reaction
@@ -120,7 +105,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setRendered(args: {
-          data: any
+          data: unknown
           reactElement: React.ReactElement
           renderingComponent: React.Component
         }) {
@@ -153,12 +138,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterAttach() {
+        makeAbortableReaction(
+          // @ts-ignore
+          self,
+          renderBlockData,
+          renderBlockEffect,
+          {
+            name: `${self.type} ${self.id} rendering`,
+            delay: 1000,
+            fireImmediately: true,
+          },
+          self.setLoading,
+          self.setRendered,
+          self.setError,
+        )
+      },
+    }))
 }
 function renderBlockData(self: LinearComparativeDisplay) {
-  const { rpcManager } = getSession(self) as any
+  const { rpcManager } = getSession(self)
   const display = self
-
-  const { rendererType }: { rendererType: any } = display
+  const { rendererType } = display
 
   // Alternative to readConfObject(config) is below used because renderProps is
   // something under our control.  Compare to serverSideRenderedBlock
@@ -190,6 +192,7 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
 
   const { rendererType, rpcManager, renderProps } = props
 
+  // @ts-ignore
   const { reactElement, ...data } = await rendererType.renderInClient(
     rpcManager,
     renderProps,

@@ -34,3 +34,7 @@ export async function readFile(file: GenericFilehandle, opts?: BaseOptions) {
     isGzip(buffer) ? await unzip(buffer) : buffer,
   )
 }
+
+export function zip(a: number[], b: number[]) {
+  return a.map((e, i) => [e, b[i]] as [number, number])
+}

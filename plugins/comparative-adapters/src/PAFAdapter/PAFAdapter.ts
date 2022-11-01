@@ -12,6 +12,11 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
+
+// locals
+import { zip, isGzip } from '../util'
+const { getMismatches } = MismatchParser
 
 export interface PAFRecord {
   qname: string
@@ -27,14 +32,6 @@ export interface PAFRecord {
     numMatches?: number
     meanScore?: number
   }
-}
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
-
-function zip(a: number[], b: number[]) {
-  return a.map((e, i) => [e, b[i]] as [number, number])
 }
 
 // based on "weighted mean" method from dotPlotly
@@ -225,7 +222,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
   async getRefNames(opts: BaseOptions = {}) {
     // @ts-ignore
-    const r1 = opts.querys?.[0].assemblyName
+    const r1 = opts.regions?.[0].assemblyName
     const feats = await this.setup(opts)
 
     const idx = this.getAssemblyNames().indexOf(r1)
@@ -305,6 +302,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               // which is actually different than how it works in e.g.
               // BAM/SAM (which is visible during alignments track read vs ref)
               revCigar: true,
+              mismatches: getMismatches(extra.cg),
 
               // depending on whether the query or target is queried, the
               // "rev" flag

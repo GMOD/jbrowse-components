@@ -4,8 +4,9 @@ import {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { BamRecord } from '@gmod/bam'
-import { getMismatches } from './MismatchParser'
 
+// locals
+import { getMismatches } from './MismatchParser'
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {

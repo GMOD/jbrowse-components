@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import PluginManager from '@jbrowse/core/PluginManager'
 
