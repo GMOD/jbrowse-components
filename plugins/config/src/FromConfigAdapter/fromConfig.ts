@@ -16,7 +16,7 @@ const configSchema = ConfigurationSchema(
       defaultValue: [],
     },
   },
-  { explicitlyTyped: true },
+  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )
 
 export default configSchema

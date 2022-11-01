@@ -214,18 +214,18 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames() {
-    let assemblyNames = this.getConf('assemblyNames') as string[]
+    const assemblyNames = this.getConf('assemblyNames') as string[]
     if (assemblyNames.length === 0) {
       const query = this.getConf('queryAssembly') as string
       const target = this.getConf('targetAssembly') as string
-      assemblyNames = [query, target]
+      return [query, target]
     }
     return assemblyNames
   }
 
   async getRefNames(opts: BaseOptions = {}) {
     // @ts-ignore
-    const r1 = opts.regions?.[0].assemblyName
+    const r1 = opts.querys?.[0].assemblyName
     const feats = await this.setup(opts)
 
     const idx = this.getAssemblyNames().indexOf(r1)
@@ -241,7 +241,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getFeatures(
-    region: Region,
+    query: Region,
     opts: BaseOptions & { config?: AnyConfigurationModel } = {},
   ) {
     return ObservableCreate<Feature>(async observer => {
@@ -251,66 +251,70 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         pafRecords = getWeightedMeans(pafRecords)
       }
       const assemblyNames = this.getAssemblyNames()
-      const { assemblyName } = region
 
-      // The index of the assembly name in the region list corresponds to the
+      // The index of the assembly name in the query list corresponds to the
       // adapter in the subadapters list
-      const index = assemblyNames.indexOf(assemblyName)
-      if (index !== -1) {
-        for (let i = 0; i < pafRecords.length; i++) {
-          const r = pafRecords[i]
-          let start = 0
-          let end = 0
-          let refName = ''
-          let mateName = ''
-          let mateStart = 0
-          let mateEnd = 0
-          if (index === 0) {
-            start = r.qstart
-            end = r.qend
-            refName = r.qname
-            mateName = r.tname
-            mateStart = r.tstart
-            mateEnd = r.tend
-          } else {
-            start = r.tstart
-            end = r.tend
-            refName = r.tname
-            mateName = r.qname
-            mateStart = r.qstart
-            mateEnd = r.qend
-          }
-          const { extra, strand } = r
+      const index = assemblyNames.indexOf(query.assemblyName)
+      if (index === -1) {
+        console.warn(`${query.assemblyName} not found in this adapter`)
+        observer.complete()
+      }
 
-          if (
-            refName === region.refName &&
-            doesIntersect2(region.start, region.end, start, end)
-          ) {
-            const { numMatches, blockLen } = extra
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `${i}`,
-                start,
-                end,
-                refName,
-                strand,
-                revCigar: true,
-                // this is a special property of how to interpret CIGAR on PAF,
-                // intrinsic to the data format. the CIGAR is read backwards
-                // for features aligning to the negative strand of the target,
-                // which is actually different than how it works in e.g.
-                // BAM/SAM (which is visible during alignments track read vs ref)
-                assemblyName,
+      for (let i = 0; i < pafRecords.length; i++) {
+        const r = pafRecords[i]
+        let start = 0
+        let end = 0
+        let refName = ''
+        let mateName = ''
+        let mateStart = 0
+        let mateEnd = 0
+        if (index === 0) {
+          start = r.qstart
+          end = r.qend
+          refName = r.qname
+          mateName = r.tname
+          mateStart = r.tstart
+          mateEnd = r.tend
+        } else {
+          start = r.tstart
+          end = r.tend
+          refName = r.tname
+          mateName = r.qname
+          mateStart = r.qstart
+          mateEnd = r.qend
+        }
+        const { extra, strand } = r
 
-                // depending on whether the query or target is queried, the "rev" flag
-                flipInsDel: index === 0,
-                syntenyId: i,
-                identity: (numMatches || 0) / (blockLen || 1),
-                mate: { start: mateStart, end: mateEnd, refName: mateName },
-                ...extra,
-              }),
-            )
-          }
+        if (
+          refName === query.refName &&
+          doesIntersect2(query.start, query.end, start, end)
+        ) {
+          const { numMatches = 0, blockLen = 1 } = extra
+          observer.next(
+            new SimpleFeature({
+              uniqueId: `${i}`,
+              assemblyName: query.assemblyName,
+              start,
+              end,
+              refName,
+              strand,
+
+              // this is a special property of how to interpret CIGAR on PAF,
+              // intrinsic to the data format. the CIGAR is read backwards
+              // for features aligning to the negative strand of the target,
+              // which is actually different than how it works in e.g.
+              // BAM/SAM (which is visible during alignments track read vs ref)
+              revCigar: true,
+
+              // depending on whether the query or target is queried, the
+              // "rev" flag
+              flipInsDel: index === 0,
+              syntenyId: i,
+              identity: numMatches / blockLen,
+              mate: { start: mateStart, end: mateEnd, refName: mateName },
+              ...extra,
+            }),
+          )
         }
       }
 
@@ -318,5 +322,5 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  freeResources(/* { region } */): void {}
+  freeResources(/* { query } */): void {}
 }

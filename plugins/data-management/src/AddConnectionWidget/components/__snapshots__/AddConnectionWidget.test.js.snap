@@ -39,10 +39,10 @@ exports[`<AddConnectionWidget /> renders 1`] = `
           </svg>
         </span>
         <span
-          class="MuiStepLabel-labelContainer css-16ubnlw-MuiStepLabel-labelContainer"
+          class="MuiStepLabel-labelContainer css-1vyamtt-MuiStepLabel-labelContainer"
         >
           <span
-            class="MuiStepLabel-label Mui-active css-qivjh0-MuiStepLabel-label"
+            class="MuiStepLabel-label Mui-active css-1hv8oq8-MuiStepLabel-label"
           >
             Select a Connection Type
           </span>
@@ -68,7 +68,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   class="MuiFormControl-root MuiFormControl-fullWidth MuiTextField-root css-wb57ya-MuiFormControl-root-MuiTextField-root"
                 >
                   <label
-                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
+                    class="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined MuiFormLabel-colorPrimary MuiFormLabel-filled MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiInputLabel-outlined css-1sumxir-MuiFormLabel-root-MuiInputLabel-root"
                     data-shrink="true"
                     for="mui-1"
                     id="mui-1-label"
@@ -112,7 +112,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                       class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                     >
                       <legend
-                        class="css-1in441m"
+                        class="css-14lo706"
                       >
                         <span>
                           connectionType
@@ -154,7 +154,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                 class="css-1spe31o-actionsContainer"
               >
                 <button
-                  class="MuiButtonBase-root Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium css-1j3hqkx-MuiButtonBase-root-MuiButton-root-button"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium Mui-disabled MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeMedium MuiButton-textSizeMedium css-1j3hqkx-MuiButtonBase-root-MuiButton-root-button"
                   disabled=""
                   tabindex="-1"
                   type="button"
@@ -162,7 +162,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   Back
                 </button>
                 <button
-                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1xo5g2a-MuiButtonBase-root-MuiButton-root-button"
+                  class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium MuiButton-root MuiButton-contained MuiButton-containedPrimary MuiButton-sizeMedium MuiButton-containedSizeMedium css-1xo5g2a-MuiButtonBase-root-MuiButton-root-button"
                   data-testid="addConnectionNext"
                   tabindex="0"
                   type="button"
@@ -217,10 +217,10 @@ exports[`<AddConnectionWidget /> renders 1`] = `
           </svg>
         </span>
         <span
-          class="MuiStepLabel-labelContainer css-16ubnlw-MuiStepLabel-labelContainer"
+          class="MuiStepLabel-labelContainer css-1vyamtt-MuiStepLabel-labelContainer"
         >
           <span
-            class="MuiStepLabel-label Mui-disabled css-qivjh0-MuiStepLabel-label"
+            class="MuiStepLabel-label Mui-disabled css-1hv8oq8-MuiStepLabel-label"
           >
             Configure Connection
           </span>

@@ -18,6 +18,7 @@ const regionsConfigSchema = ConfigurationSchema(
   },
   {
     explicitlyTyped: true,
+    implicitIdentifier: 'adapterId',
   },
 )
 export default regionsConfigSchema
