@@ -14,15 +14,8 @@ const sequenceConfigSchema = ConfigurationSchema(
       type: 'frozen',
       defaultValue: [],
     },
-    /**
-     * #slot
-     */
-    featureClass: {
-      type: 'string',
-      defaultValue: 'SimpleFeature',
-    },
   },
-  { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
+  { explicitlyTyped: true },
 )
 
 export default sequenceConfigSchema

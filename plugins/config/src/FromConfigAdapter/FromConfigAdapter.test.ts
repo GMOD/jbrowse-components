@@ -1,6 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './FromConfigAdapter'
-import { configSchema } from './configSchema'
+import configSchema from './fromConfig'
 
 test('adapter can fetch features', async () => {
   const features = [
