@@ -1,8 +1,14 @@
-import React, { useState, lazy } from 'react'
+import React, { useState, useEffect, lazy } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import {
+  Button,
+  CircularProgress,
+  FormControl,
+  Container,
+  Grid,
+} from '@mui/material'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import CloseIcon from '@mui/icons-material/Close'
@@ -10,7 +16,7 @@ import CloseIcon from '@mui/icons-material/Close'
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults, splitLast } from './util'
-import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles()(theme => ({
@@ -44,8 +50,14 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     : 'No configured assemblies'
   const regions = assembly?.regions || []
   const err = assemblyError || importError
-  const [myVal, setValue] = useState('')
-  const value = myVal || regions[0]?.refName
+  const [value, setValue] = useState('')
+  const r0 = regions[0]?.refName
+
+  // useEffect resets to an "initial state" of displaying first region from assembly
+  // after assembly change
+  useEffect(() => {
+    setValue(r0)
+  }, [r0])
 
   function navToOption(option: BaseResult) {
     const location = option.getLocation()
@@ -100,8 +112,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  const height = WIDGET_HEIGHT + 5
-
   // implementation notes:
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
@@ -124,47 +134,49 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             alignItems="center"
           >
             <Grid item>
-              <AssemblySelector
-                onChange={val => {
-                  setImportError('')
-                  setSelectedAsm(val)
-                  setValue('')
-                }}
-                session={session}
-                selected={selectedAsm}
-                InputProps={{ style: { height } }}
-              />
+              <FormControl>
+                <AssemblySelector
+                  onChange={val => {
+                    setImportError('')
+                    setSelectedAsm(val)
+                    setValue('')
+                  }}
+                  session={session}
+                  selected={selectedAsm}
+                />
+              </FormControl>
             </Grid>
             <Grid item>
               {selectedAsm ? (
                 err ? (
                   <CloseIcon style={{ color: 'red' }} />
                 ) : value ? (
-                  <RefNameAutocomplete
-                    fetchResults={queryString =>
-                      fetchResults({
-                        queryString,
-                        assembly,
-                        textSearchManager,
-                        rankSearchResults,
-                        searchScope,
-                      })
-                    }
-                    model={model}
-                    assemblyName={assemblyError ? undefined : selectedAsm}
-                    value={value}
-                    // note: minWidth 270 accomodates full width of helperText
-                    minWidth={270}
-                    onChange={str => setValue(str)}
-                    onSelect={val => setOption(val)}
-                    TextFieldProps={{
-                      variant: 'outlined',
-                      helperText:
-                        'Enter sequence name, feature name, or location',
-                      style: { minWidth: '175px' },
-                      InputProps: { style: { height } },
-                    }}
-                  />
+                  <FormControl>
+                    <RefNameAutocomplete
+                      fetchResults={queryString =>
+                        fetchResults({
+                          queryString,
+                          assembly,
+                          textSearchManager,
+                          rankSearchResults,
+                          searchScope,
+                        })
+                      }
+                      model={model}
+                      assemblyName={assemblyError ? undefined : selectedAsm}
+                      value={value}
+                      // note: minWidth 270 accomodates full width of helperText
+                      minWidth={270}
+                      onChange={str => setValue(str)}
+                      onSelect={val => setOption(val)}
+                      TextFieldProps={{
+                        variant: 'outlined',
+                        helperText:
+                          'Enter sequence name, feature name, or location',
+                        style: { minWidth: '175px' },
+                      }}
+                    />
+                  </FormControl>
                 ) : (
                   <CircularProgress
                     role="progressbar"
@@ -175,27 +187,31 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               ) : null}
             </Grid>
             <Grid item>
-              <Button
-                type="submit"
-                disabled={!value}
-                className={classes.button}
-                variant="contained"
-                color="primary"
-              >
-                Open
-              </Button>
-              <Button
-                disabled={!value}
-                className={classes.button}
-                onClick={() => {
-                  model.setError(undefined)
-                  model.showAllRegionsInAssembly(selectedAsm)
-                }}
-                variant="contained"
-                color="secondary"
-              >
-                Show all regions in assembly
-              </Button>
+              <FormControl>
+                <Button
+                  type="submit"
+                  disabled={!value}
+                  className={classes.button}
+                  variant="contained"
+                  color="primary"
+                >
+                  Open
+                </Button>
+              </FormControl>
+              <FormControl>
+                <Button
+                  disabled={!value}
+                  className={classes.button}
+                  onClick={() => {
+                    model.setError(undefined)
+                    model.showAllRegionsInAssembly(selectedAsm)
+                  }}
+                  variant="contained"
+                  color="secondary"
+                >
+                  Show all regions in assembly
+                </Button>
+              </FormControl>
             </Grid>
           </Grid>
         </form>
