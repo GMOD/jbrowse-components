@@ -1,6 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import configSchemaFactory from './configSchema'
+import configSchema from './configSchema'
 import { capabilities } from './SNPCoverageAdapter'
 
 export default (pluginManager: PluginManager) => {
@@ -16,7 +16,7 @@ export default (pluginManager: PluginManager) => {
         },
         getAdapterClass: () =>
           import('./SNPCoverageAdapter').then(r => r.default),
-        configSchema: configSchemaFactory(pluginManager),
+        configSchema,
         adapterCapabilities: capabilities,
       }),
   )

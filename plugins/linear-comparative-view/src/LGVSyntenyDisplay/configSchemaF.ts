@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearPileupDisplayConfigSchemaFactory } from '@jbrowse/plugin-alignments'
 
 /**
  * #config LGVSyntenyDisplay
@@ -13,7 +13,7 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration: linearPileupDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

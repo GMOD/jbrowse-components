@@ -8,7 +8,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-function PileupConfigFactory(pluginManager: PluginManager) {
+function configSchemaF(pluginManager: PluginManager) {
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearPileupDisplay',
@@ -64,8 +64,6 @@ function PileupConfigFactory(pluginManager: PluginManager) {
   )
 }
 
-export type LinearPileupDisplayConfigModel = ReturnType<
-  typeof PileupConfigFactory
->
+export type LinearPileupDisplayConfigModel = ReturnType<typeof configSchemaF>
 export type LinearPileupDisplayConfig = Instance<LinearPileupDisplayConfigModel>
-export default PileupConfigFactory
+export default configSchemaF

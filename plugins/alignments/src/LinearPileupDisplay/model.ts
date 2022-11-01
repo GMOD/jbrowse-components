@@ -314,6 +314,8 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         )
 
         // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        // asynchronously. this is needed due to how we do not serialize all
+        // features from the BAM/CRAM over the rpc
         addDisposer(
           self,
           autorun(async () => {
@@ -719,39 +721,31 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
               subMenu: [
                 {
                   label: 'Normal',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'normal' })
-                  },
+                  onClick: () => self.setColorScheme({ type: 'normal' }),
                 },
                 {
                   label: 'Mapping quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'mappingQuality' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'mappingQuality' }),
                 },
                 {
                   label: 'Strand',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'strand' })
-                  },
+                  onClick: () => self.setColorScheme({ type: 'strand' }),
                 },
                 {
                   label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'pairOrientation' }),
                 },
                 {
                   label: 'Per-base quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'perBaseQuality' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'perBaseQuality' }),
                 },
                 {
                   label: 'Per-base lettering',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'perBaseLettering' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'perBaseLettering' }),
                 },
                 {
                   label: 'Modifications or methylation',
@@ -764,15 +758,12 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
                 },
                 {
                   label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
+                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
                 },
                 {
                   label: 'Stranded paired-end',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'reverseTemplate' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'reverseTemplate' }),
                 },
                 {
                   label: 'Color by tag...',
@@ -817,9 +808,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
               label: 'Fade mismatches by quality',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
-              onClick: () => {
-                self.toggleMismatchAlpha()
-              },
+              onClick: () => self.toggleMismatchAlpha(),
             },
           ]
         },

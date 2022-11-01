@@ -17,3 +17,8 @@ export default function register(pluginManager: PluginManager) {
     })
   })
 }
+
+export {
+  modelFactory as linearPileupDisplayStateModelFactory,
+  configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
+}

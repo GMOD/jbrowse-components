@@ -2,7 +2,7 @@ import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearPileupDisplayStateModelFactory } from '@jbrowse/plugin-alignments'
 import { types } from 'mobx-state-tree'
 
 /**
@@ -13,7 +13,7 @@ import { types } from 'mobx-state-tree'
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types.compose(
     'LGVSyntenyDisplay',
-    linearBasicDisplayModelFactory(schema),
+    linearPileupDisplayStateModelFactory(schema),
     types.model({
       /**
        * #property
