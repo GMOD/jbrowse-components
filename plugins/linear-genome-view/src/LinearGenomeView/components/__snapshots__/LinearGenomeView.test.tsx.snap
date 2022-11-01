@@ -90,7 +90,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
         class="css-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -117,7 +117,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -137,7 +137,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -224,7 +224,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-ihdtdm"
+                    class="css-hdw1oc"
                   >
                     <span
                       class="notranslate"
@@ -651,7 +651,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
         class="css-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
+          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -678,7 +678,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -698,7 +698,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -785,7 +785,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
                   class="MuiOutlinedInput-notchedOutline css-1d3z3hw-MuiOutlinedInput-notchedOutline"
                 >
                   <legend
-                    class="css-ihdtdm"
+                    class="css-hdw1oc"
                   >
                     <span
                       class="notranslate"

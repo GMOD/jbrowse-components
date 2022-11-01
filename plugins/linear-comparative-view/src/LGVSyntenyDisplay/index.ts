@@ -1,28 +1,17 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-
-import {
-  linearBasicDisplayConfigSchemaFactory,
-  linearBasicDisplayModelFactory,
-  BaseLinearDisplayComponent,
-} from '@jbrowse/plugin-linear-genome-view'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import configSchemaF from './configSchemaF'
+import stateModelF from './stateModelFactory'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
-    const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
-    let str = 'LGVSyntenyDisplay'
-    const newConfig = ConfigurationSchema(
-      str,
-      {},
-      { baseConfiguration: configSchema, explicitlyTyped: true },
-    )
-    const stateModel = linearBasicDisplayModelFactory(newConfig)
-    const newModel = stateModel.named(str).props({ type: str })
+    const configSchema = configSchemaF(pluginManager)
+    const stateModel = stateModelF(configSchema)
     return new DisplayType({
-      name: str,
-      configSchema: newConfig,
-      stateModel: newModel,
+      name: 'LGVSyntenyDisplay',
+      configSchema,
+      stateModel,
       trackType: 'SyntenyTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,
