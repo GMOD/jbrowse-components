@@ -290,6 +290,7 @@ export default function stateModelFactory(pm: PluginManager) {
         self.hview.setDisplayedRegions([])
         self.vview.setDisplayedRegions([])
         self.assemblyNames = cast([])
+        self.tracks.clear()
       },
       /**
        * #action
