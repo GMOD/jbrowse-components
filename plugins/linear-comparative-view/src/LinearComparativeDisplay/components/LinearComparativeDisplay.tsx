@@ -1,7 +1,7 @@
 import { observer, PropTypes as MobxPropTypes } from 'mobx-react'
 import PropTypes from 'prop-types'
 import React from 'react'
-import { LinearComparativeDisplay as LCD } from '..'
+import { LinearComparativeDisplay as LCD } from '../stateModelFactory'
 
 const LinearComparativeDisplay: React.FC<{
   model: LCD

@@ -2,16 +2,18 @@ import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-
 import { linearBasicDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
 import { types } from 'mobx-state-tree'
 
-export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
-) {
+/**
+ * #stateModel LGVSyntenyDisplay
+ * extends `LinearBasicDisplay`, displays location of "synteny" features in a
+ * plain LGV, allowing linking out to external synteny views
+ */
+function stateModelFactory(schema: AnyConfigurationSchemaType) {
   return types.compose(
     'LGVSyntenyDisplay',
-    linearBasicDisplayModelFactory(configSchema),
+    linearBasicDisplayModelFactory(schema),
     types.model({
       /**
        * #property
@@ -20,7 +22,9 @@ export default function stateModelFactory(
       /**
        * #property
        */
-      configuration: ConfigurationReference(configSchema),
+      configuration: ConfigurationReference(schema),
     }),
   )
 }
+
+export default stateModelFactory

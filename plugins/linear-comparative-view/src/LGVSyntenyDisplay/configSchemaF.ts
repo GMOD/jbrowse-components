@@ -11,7 +11,7 @@ function configSchemaF(pluginManager: PluginManager) {
     {},
     {
       /**
-       * #derives
+       * #baseConfiguration
        */
       baseConfiguration: linearBasicDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,

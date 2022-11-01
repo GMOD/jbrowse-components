@@ -8,6 +8,8 @@ Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
+## Docs
+
 extends `LinearBasicDisplay`
 very similar to basic display, but provides custom widget on feature click
 

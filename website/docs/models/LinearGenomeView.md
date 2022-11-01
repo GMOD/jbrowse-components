@@ -8,6 +8,8 @@ Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
+## Docs
+
 ### LinearGenomeView - Properties
 
 #### property: id
@@ -294,7 +296,7 @@ Retrieves the corresponding regions that were selected by the rubberband
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => BaseBlock[]
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; key: string; offsetPx: number; widthPx: number; variant?: string; isLeftEndOfDisplayedRegion?: boolean; }[]
 ```
 
 #### method: menuItems
@@ -630,7 +632,7 @@ navigate to the given locstring
 
 ```js
 // type signature
-navToLocString: (locString: string, optAssemblyName?: string) => void
+navToLocString: (locString: string, optAssemblyName?: string) => Promise<void>
 ```
 
 #### action: navTo
