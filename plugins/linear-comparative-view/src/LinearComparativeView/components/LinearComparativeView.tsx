@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -71,13 +71,24 @@ const MiddleComparativeView = observer(
     const { views } = model
     const { pluginManager } = getEnv(model)
     const { ReactComponent } = pluginManager.getViewType(views[0].type)
+    const [rubberbandMouseOver, setRubberbandMouseOver] = useState(false)
 
     return (
       <div className={classes.rubberbandContainer}>
         <Header ExtraButtons={ExtraButtons} model={model} />
         <RubberBand
           model={model}
-          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
+          ControlComponent={
+            <div
+              style={{
+                width: '100%',
+                background: rubberbandMouseOver ? '#999' : '#ccc',
+                height: 15,
+              }}
+              onMouseOver={() => setRubberbandMouseOver(true)}
+              onMouseLeave={() => setRubberbandMouseOver(false)}
+            />
+          }
         />
         <div className={classes.container}>
           <ReactComponent model={views[0]} />
@@ -106,12 +117,23 @@ const OverlayComparativeView = observer(
     const { classes } = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
+    const [rubberbandMouseOver, setRubberbandMouseOver] = useState(false)
     return (
       <div className={classes.rubberbandContainer}>
         <Header model={model} ExtraButtons={ExtraButtons} />
         <RubberBand
           model={model}
-          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
+          ControlComponent={
+            <div
+              style={{
+                width: '100%',
+                background: rubberbandMouseOver ? '#aaa' : '#ccc',
+                height: 15,
+              }}
+              onMouseOver={() => setRubberbandMouseOver(true)}
+              onMouseLeave={() => setRubberbandMouseOver(false)}
+            />
+          }
         />
 
         <div className={classes.container}>

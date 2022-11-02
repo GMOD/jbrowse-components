@@ -17,9 +17,9 @@ const ExtraButtons = observer(({ model }: { model: LSV }) => {
       title="Toggle drawing straight or curved synteny lines"
     >
       {model.drawCurves ? (
-        <StraightLines color="secondary" />
+        <StraightLines color="primary" />
       ) : (
-        <Curves color="secondary" />
+        <Curves color="primary" />
       )}
     </IconButton>
   )

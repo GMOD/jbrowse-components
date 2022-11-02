@@ -41,7 +41,7 @@ const TrackSelector = observer(({ model }: { model: LCV }) => {
       onClick={model.activateTrackSelector}
       title="Open track selector"
     >
-      <TrackSelectorIcon color="secondary" />
+      <TrackSelectorIcon color="primary" />
     </IconButton>
   )
 })
@@ -53,9 +53,9 @@ const LinkViews = observer(({ model }: { model: LCV }) => {
       title="Toggle linked scrolls and behavior across views"
     >
       {model.linkViews ? (
-        <LinkOffIcon color="secondary" />
+        <LinkOffIcon color="primary" />
       ) : (
-        <LinkIcon color="secondary" />
+        <LinkIcon color="primary" />
       )}
     </IconButton>
   )
@@ -67,7 +67,7 @@ const SquareView = observer(({ model }: { model: LCV }) => {
       onClick={model.squareView}
       title="Square view (make both the same zoom level)"
     >
-      <CropFreeIcon color="secondary" />
+      <CropFreeIcon color="primary" />
     </IconButton>
   )
 })

@@ -106,6 +106,7 @@ const TooltipWhereMouseovered = observer(
     const ref = useRef<HTMLDivElement>(null)
     const rect = ref.current?.getBoundingClientRect() || blank
     const offset = 6
+    const w = rect.height + offset * 2
     return (
       <>
         {mouserect ? (
@@ -113,14 +114,8 @@ const TooltipWhereMouseovered = observer(
             ref={ref}
             className={classes.popover}
             style={{
-              left:
-                offset +
-                mouserect[0] -
-                (xdistance < 0 ? rect.width + offset * 2 : 0),
-              top:
-                offset +
-                mouserect[1] -
-                (ydistance < 0 ? rect.height + offset * 2 : 0),
+              left: offset + mouserect[0] - (xdistance < 0 ? w : 0),
+              top: offset + mouserect[1] - (ydistance < 0 ? w : 0),
             }}
           >
             {`x - ${locstr(mouserect[0], hview)}`}
