@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { Typography, LinearProgress } from '@mui/material'
+import { Typography } from '@mui/material'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
@@ -33,9 +34,8 @@ function LoadingMessage() {
   }, [])
 
   return shown ? (
-    <div data-testid="loading-synteny" className={classes.loading}>
-      <Typography>Loading &hellip;</Typography>
-      <LinearProgress />
+    <div className={classes.loading}>
+      <LoadingEllipses />
     </div>
   ) : null
 }
