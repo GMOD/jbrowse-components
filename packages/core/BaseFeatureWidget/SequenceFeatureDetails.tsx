@@ -20,6 +20,7 @@ import { BaseProps } from './types'
 import { getConf } from '../configuration'
 import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
 import { ParentFeat, SeqState, ErrorState } from './util'
+import { LoadingEllipses } from '../ui'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -255,7 +256,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
             {error ? (
               <Typography color="error">{`${error}`}</Typography>
             ) : loading ? (
-              <Typography>Loading gene sequence...</Typography>
+              <LoadingEllipses />
             ) : sequence ? (
               'error' in sequence ? (
                 <>

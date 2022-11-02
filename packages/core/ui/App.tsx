@@ -22,6 +22,7 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import ErrorMessage from './ErrorMessage'
+import LoadingEllipses from './LoadingEllipses'
 import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
@@ -208,7 +209,7 @@ const ViewPanel = observer(
     const { ReactComponent } = viewType
     return (
       <ViewContainer view={view} onClose={() => session.removeView(view)}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ReactComponent
             model={view}
             session={session}
