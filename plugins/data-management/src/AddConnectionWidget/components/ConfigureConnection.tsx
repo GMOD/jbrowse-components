@@ -1,9 +1,10 @@
 import React, { Suspense } from 'react'
-import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { observer } from 'mobx-react'
+import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 
 const ConfigureConnection = observer(
   (props: {
@@ -16,7 +17,7 @@ const ConfigureConnection = observer(
       connectionType.configEditorComponent || ConfigurationEditor
 
     return (
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoadingEllipses />}>
         <ConfigEditorComponent model={{ target: model }} session={session} />
       </Suspense>
     )

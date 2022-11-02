@@ -34,6 +34,7 @@ interface Props extends TypographyProps {
 
 export default function LoadingEllipses({
   message = 'Loading',
+  variant = 'body2',
   ...rest
 }: Props) {
   const { classes } = useStyles()
