@@ -27,7 +27,7 @@
     "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",
-    "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m 'Bump version.js'",
+    "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "prepack": "npm run build",
     "build:esm": "tsc -b tsconfig.build.esm.json",
     "build:es5": "tsc -b tsconfig.build.es5.json",
