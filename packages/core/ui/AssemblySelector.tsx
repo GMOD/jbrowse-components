@@ -60,7 +60,7 @@ const AssemblySelector = observer(
         label="Assembly"
         variant="outlined"
         helperText={error || 'Select assembly to view'}
-        value={selection}
+        value={selection || ''}
         inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => setLastSelected(event.target.value)}
         error={!!error}
