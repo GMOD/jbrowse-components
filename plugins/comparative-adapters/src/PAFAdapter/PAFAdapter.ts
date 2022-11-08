@@ -306,20 +306,18 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           mateEnd = r.qend
         }
         const { extra, strand } = r
-
-        if (
-          refName === query.refName &&
-          doesIntersect2(query.start, query.end, start, end)
-        ) {
+        const { start: qstart, end: qend, refName: qref, assemblyName } = query
+        if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1 } = extra
+          const flip = index === 0
           observer.next(
             new SimpleFeature({
               uniqueId: `${i}`,
-              assemblyName: query.assemblyName,
+              assemblyName,
               start,
               end,
               refName,
-              strand,
+              strand, // : !flip ? strand * -1 : strand,
 
               // this is a special property of how to interpret CIGAR on PAF,
               // intrinsic to the data format. the CIGAR is read backwards
@@ -327,13 +325,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               // which is actually different than how it works in e.g.
               // BAM/SAM (which is visible during alignments track read vs ref)
               revCigar: true,
-              mismatches: extra.cg
-                ? getOrientedMismatches(index === 0, extra.cg)
-                : [],
+              mismatches: extra.cg ? getOrientedMismatches(flip, extra.cg) : [],
 
               // depending on whether the query or target is queried, the
               // "rev" flag
-              flipInsDel: index === 0,
+              flipInsDel: flip,
               syntenyId: i,
               identity: numMatches / blockLen,
               mate: { start: mateStart, end: mateEnd, refName: mateName },
