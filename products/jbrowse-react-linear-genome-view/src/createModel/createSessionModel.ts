@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { version } from '../version'
 import {
+  cast,
   getMembers,
   getParent,
   getSnapshot,
@@ -30,6 +31,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import InfoIcon from '@mui/icons-material/Info'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { ReferringNode } from '../types'
@@ -39,7 +41,8 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     .model('ReactLinearGenomeViewSession', {
       name: types.identifier,
       margin: 0,
-      view: pluginManager.getViewType('LinearGenomeView').stateModel,
+      view: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel,
       widgets: types.map(
         pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
@@ -281,10 +284,10 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown view type ${typeName}`)
         }
 
-        self.view = {
+        self.view = cast({
           ...initialState,
           type: typeName,
-        }
+        })
         return self.view
       },
 
