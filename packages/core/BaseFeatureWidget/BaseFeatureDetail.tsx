@@ -311,6 +311,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
+  omitSingleLevel?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
@@ -369,8 +370,10 @@ const DataGridDetails = ({
     }))
 
     const rowHeight = 25
-    const hideFooter = rows.length < 100
-    const headerHeight = 80
+    const hideFoot = rows.length < 100
+    const headHeight = 80
+    const height =
+      Math.min(rows.length, 100) * rowHeight + headHeight + (hideFoot ? 0 : 50)
     // disableSelection on click helps avoid
     // https://github.com/mui-org/material-ui-x/issues/1197
     return (
@@ -378,10 +381,7 @@ const DataGridDetails = ({
         <FieldName prefix={prefix} name={name} />
         <div
           style={{
-            height:
-              Math.min(rows.length, 100) * rowHeight +
-              headerHeight +
-              (hideFooter ? 0 : 50),
+            height,
             width: '100%',
           }}
         >
@@ -389,10 +389,9 @@ const DataGridDetails = ({
             disableSelectionOnClick
             rowHeight={rowHeight}
             rows={rows}
-            rowsPerPageOptions={[]}
             hideFooterSelectedRowCount
             columns={columns}
-            hideFooter={hideFooter}
+            hideFooter={hideFoot}
           />
         </div>
       </>
@@ -401,7 +400,10 @@ const DataGridDetails = ({
   return null
 }
 
-// arr = ['a','b'], obj = {a:{b:'hello}}, returns hello (with special addition to grab description also)
+// pick using a path from an object, similar to _.get from lodash with special logic
+// for Descriptions from e.g. VCF headers
+// @param arr  example ['a','b'], obj = {a:{b:'hello}}
+// @returns hello (with special addition to grab description also)
 function accessNested(arr: string[], obj: Record<string, any> = {}) {
   arr.forEach(elt => {
     if (obj) {
@@ -415,15 +417,13 @@ function accessNested(arr: string[], obj: Record<string, any> = {}) {
     : undefined
 }
 
-function generateMaxWidth(array: any, prefix: any) {
-  // @ts-ignore
-  const arr = []
-  array.forEach((key: any, value: any) => {
+function generateMaxWidth(array: unknown[][], prefix: any) {
+  const arr = [] as number[]
+  array.forEach(key => {
     const val = [...prefix, key[0]].join('.')
     arr.push(measureText(val, 12))
   })
 
-  // @ts-ignore
   return Math.ceil(Math.max(...arr)) + 10
 }
 
@@ -456,12 +456,14 @@ export function Attributes(props: AttributeProps) {
   const {
     attributes,
     omit = [],
+    omitSingleLevel = [],
     descriptions,
     formatter = val => val,
     hideUris,
     prefix = [],
   } = props
-  const omits = [...omit, ...globalOmit]
+
+  const omits = [...omit, ...globalOmit, ...omitSingleLevel]
   const { __jbrowsefmt, ...rest } = attributes
   const formattedAttributes = { ...rest, ...__jbrowsefmt }
 
@@ -498,6 +500,7 @@ export function Attributes(props: AttributeProps) {
               />
             )
           } else if (isObject(value)) {
+            const { omitSingleLevel, ...rest } = props
             return isUriLocation(value) ? (
               hideUris ? null : (
                 <UriAttribute
@@ -509,8 +512,7 @@ export function Attributes(props: AttributeProps) {
               )
             ) : (
               <Attributes
-                {...props}
-                omit={omits}
+                {...rest}
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
@@ -588,7 +590,8 @@ export const FeatureDetails = (props: {
       <Attributes
         attributes={feature}
         {...props}
-        omit={[...omit, ...coreDetails]}
+        omit={omit}
+        omitSingleLevel={coreDetails}
       />
 
       <ErrorBoundary

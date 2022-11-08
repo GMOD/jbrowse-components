@@ -27,6 +27,7 @@ export interface PAFRecord {
   tend: number
   strand: number
   extra: {
+    cg?: string
     blockLen?: number
     mappingQual: number
     numMatches?: number
@@ -302,7 +303,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               // which is actually different than how it works in e.g.
               // BAM/SAM (which is visible during alignments track read vs ref)
               revCigar: true,
-              mismatches: getMismatches(extra.cg),
+              mismatches: extra.cg ? getMismatches(extra.cg) : [],
 
               // depending on whether the query or target is queried, the
               // "rev" flag

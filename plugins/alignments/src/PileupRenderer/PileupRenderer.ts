@@ -178,9 +178,9 @@ export default class PileupRenderer extends BoxRendererType {
 
     // Expand the start and end of feature when softclipping enabled
     if (showSoftClip) {
-      const mismatches = feature.get('mismatches') as Mismatch[]
+      const mismatches = feature.get('mismatches') as Mismatch[] | undefined
       const seq = feature.get('seq') as string
-      if (seq) {
+      if (seq && mismatches) {
         for (let i = 0; i < mismatches.length; i += 1) {
           const { type, start, cliplen = 0 } = mismatches[i]
           if (type === 'softclip') {
@@ -849,7 +849,7 @@ export default class PileupRenderer extends BoxRendererType {
 
     const pxPerBp = Math.min(1 / bpPerPx, 2)
     const w = Math.max(minSubfeatureWidth, pxPerBp)
-    const mismatches: Mismatch[] = feature.get('mismatches')
+    const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     const heightLim = charHeight - 2
 
     // extraHorizontallyFlippedOffset is used to draw interbase items, which
@@ -857,6 +857,10 @@ export default class PileupRenderer extends BoxRendererType {
     const extraHorizontallyFlippedOffset = region.reversed
       ? 1 / bpPerPx + 1
       : -1
+
+    if (!mismatches) {
+      return
+    }
 
     // two pass rendering: first pass, draw all the mismatches except wide
     // insertion markers
@@ -1052,7 +1056,7 @@ export default class PileupRenderer extends BoxRendererType {
     const { regions, bpPerPx } = renderArgs
     const [region] = regions
     const minFeatWidth = readConfObject(config, 'minSubfeatureWidth')
-    const mismatches: Mismatch[] = feature.get('mismatches')
+    const mismatches = feature.get('mismatches') as Mismatch[] | undefined
     const seq = feature.get('seq')
     const { charWidth, charHeight } = this.getCharWidthHeight()
     const { bases } = theme.palette
@@ -1065,59 +1069,49 @@ export default class PileupRenderer extends BoxRendererType {
     }
 
     // Display all bases softclipped off in lightened colors
-    if (seq) {
-      mismatches
-        .filter(mismatch => mismatch.type === 'softclip')
-        .forEach(mismatch => {
-          const softClipLength = mismatch.cliplen || 0
-          const s = feature.get('start')
-          const softClipStart =
-            mismatch.start === 0 ? s - softClipLength : s + mismatch.start
-
-          for (let k = 0; k < softClipLength; k += 1) {
-            const base = seq.charAt(k + mismatch.start)
-
-            // If softclip length+start is longer than sequence, no need to
-            // continue showing base
-            if (!base) {
-              return
-            }
-
-            const [softClipLeftPx, softClipRightPx] = bpSpanPx(
-              softClipStart + k,
-              softClipStart + k + 1,
-              region,
-              bpPerPx,
-            )
-            const softClipWidthPx = Math.max(
-              minFeatWidth,
-              Math.abs(softClipLeftPx - softClipRightPx),
-            )
-
-            // Black accounts for IUPAC ambiguity code bases such as N that
-            // show in soft clipping
-            const baseColor = colorForBase[base] || '#000000'
-            ctx.fillStyle = baseColor
-            fillRect(
-              ctx,
-              softClipLeftPx,
-              topPx,
-              softClipWidthPx,
-              heightPx,
-              canvasWidth,
-            )
-
-            if (softClipWidthPx >= charWidth && heightPx >= charHeight - 5) {
-              ctx.fillStyle = theme.palette.getContrastText(baseColor)
-              ctx.fillText(
-                base,
-                softClipLeftPx + (softClipWidthPx - charWidth) / 2 + 1,
-                topPx + heightPx,
-              )
-            }
-          }
-        })
+    if (!(seq && mismatches)) {
+      return
     }
+    mismatches
+      .filter(mismatch => mismatch.type === 'softclip')
+      .forEach(mismatch => {
+        const len = mismatch.cliplen || 0
+        const s = feature.get('start')
+        const start = mismatch.start === 0 ? s - len : s + mismatch.start
+
+        for (let k = 0; k < len; k += 1) {
+          const base = seq.charAt(k + mismatch.start)
+
+          // If softclip length+start is longer than sequence, no need to
+          // continue showing base
+          if (!base) {
+            return
+          }
+
+          const [leftPx, rightPx] = bpSpanPx(
+            start + k,
+            start + k + 1,
+            region,
+            bpPerPx,
+          )
+          const widthPx = Math.max(minFeatWidth, rightPx - leftPx)
+
+          // Black accounts for IUPAC ambiguity code bases such as N that
+          // show in soft clipping
+          const baseColor = colorForBase[base] || '#000000'
+          ctx.fillStyle = baseColor
+          fillRect(ctx, leftPx, topPx, widthPx, heightPx, canvasWidth)
+
+          if (widthPx >= charWidth && heightPx >= charHeight - 5) {
+            ctx.fillStyle = theme.palette.getContrastText(baseColor)
+            ctx.fillText(
+              base,
+              leftPx + (widthPx - charWidth) / 2 + 1,
+              topPx + heightPx,
+            )
+          }
+        }
+      })
   }
 
   makeImageData({
