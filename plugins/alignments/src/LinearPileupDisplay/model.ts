@@ -55,6 +55,7 @@ type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearPileupDisplay
+ * extends `BaseLinearDisplay`
  */
 function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
   return types
@@ -117,6 +118,10 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             extra: types.frozen(),
           }),
         ),
+
+        /**
+         * #property
+         */
         filterBy: types.optional(
           types.model({
             flagInclude: types.optional(types.number, 0),
@@ -134,6 +139,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
+      currSortBpPerPx: 0,
       ready: false,
     }))
     .actions(self => ({
@@ -142,6 +148,12 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
        */
       setReady(flag: boolean) {
         self.ready = flag
+      },
+      /**
+       * #action
+       */
+      setCurrSortBpPerPx(n: number) {
+        self.currSortBpPerPx = n
       },
       /**
        * #action
@@ -288,7 +300,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
                     ...self.renderProps(),
                   })
                   self.setReady(true)
-                  self.setCurrBpPerPx(bpPerPx)
+                  self.setCurrSortBpPerPx(bpPerPx)
                 } else {
                   self.setReady(true)
                 }
@@ -567,7 +579,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             colorBy,
             filterBy,
             rpcDriverName,
-            currBpPerPx,
+            currSortBpPerPx,
             ready,
           } = self
 
@@ -578,7 +590,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             notReady:
               superProps.notReady ||
               !ready ||
-              (sortedBy && currBpPerPx !== view.bpPerPx),
+              (sortedBy && currSortBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,
