@@ -1,3 +1,81 @@
+## 2.2.0 (2022-11-04)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/text-indexing                  |                                                                   |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-arc                     |                                                                   |
+| @jbrowse/plugin-authentication          | https://www.npmjs.com/package/@jbrowse/plugin-authentication      |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-comparative-adapters    |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-jobs-management         |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-menus                   |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-text-indexing           |                                                                   |
+| @jbrowse/plugin-trackhub-registry       |                                                                   |
+| @jbrowse/plugin-trix                    | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3296](https://github.com/GMOD/jbrowse-components/pull/3296) Add option to use OAuth "state" param in internet accounts ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3285](https://github.com/GMOD/jbrowse-components/pull/3285) Use typescript version of @gmod/cram ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3299](https://github.com/GMOD/jbrowse-components/pull/3299) Add ability to open a synteny track directly from the dotplot/linear synteny view import forms ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3287](https://github.com/GMOD/jbrowse-components/pull/3287) Lazy-load assemblies on demand instead of all at app startup ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3279](https://github.com/GMOD/jbrowse-components/pull/3279) Remove unnecessary expanded region query and small refactors ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#3309](https://github.com/GMOD/jbrowse-components/pull/3309) Fix animated "Loading..." message keyframes ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3306](https://github.com/GMOD/jbrowse-components/pull/3306) Fix the RefNameAutocomplete displaying a stale value for chromosome names ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3302](https://github.com/GMOD/jbrowse-components/pull/3302) Improve rubberband zooming across elided regions ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3293](https://github.com/GMOD/jbrowse-components/pull/3293) Fix CRAM plotting for data files that encode insertions in uncommon way ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- `core`, `text-indexing`
+  - [#3278](https://github.com/GMOD/jbrowse-components/pull/3278) Auto-generate docs ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- [#3310](https://github.com/GMOD/jbrowse-components/pull/3310) Remove CacheProvider emotion cache ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 3
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+- Scott Cain ([@scottcain](https://github.com/scottcain))
+
 ## 2.1.7 (2022-10-20)
 
 <details><summary>Packages in this release</summary>

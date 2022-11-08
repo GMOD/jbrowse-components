@@ -13,7 +13,7 @@ Juicebox software suite. It uses the hic-straw module developed by the
 juicebox/igv.js team to visualize it in JBrowse.
 
 Currently configuration options are basic for Hi-C tracks, see [the
-comprehensive config guide](/docs/config_guide#hictrack-config) for info about
+comprehensive config guide](/docs/config_guides/hic_track/) for info about
 configuring Hi-C tracks.
 
 <Figure caption="Screenshot of a Hi-C track." src="/img/hic_track.png" />

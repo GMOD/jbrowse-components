@@ -1,8 +1,7 @@
-import { makeStyles } from 'tss-react/mui'
-import { LinearProgress } from '@mui/material'
-import { observer } from 'mobx-react'
-import PropTypes from 'prop-types'
 import React, { useEffect, useState } from 'react'
+import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()({
   loading: {
@@ -13,13 +12,6 @@ const useStyles = makeStyles()({
     height: '100%',
     width: '100%',
     textAlign: 'center',
-  },
-  error: {
-    display: 'block',
-    color: 'red',
-    width: '30em',
-    wordWrap: 'normal',
-    whiteSpace: 'normal',
   },
   blockMessage: {
     background: '#f1f1f1',
@@ -42,9 +34,8 @@ function LoadingMessage() {
   })
 
   return shown ? (
-    <div data-testid="loading-synteny" className={classes.loading}>
-      Loading &hellip;
-      <LinearProgress />
+    <div className={classes.loading}>
+      <LoadingEllipses />
     </div>
   ) : null
 }
@@ -52,9 +43,6 @@ function LoadingMessage() {
 function BlockMessage({ messageText }: { messageText: string }) {
   const { classes } = useStyles()
   return <div className={classes.blockMessage}>{messageText}</div>
-}
-BlockMessage.propTypes = {
-  messageText: PropTypes.string.isRequired,
 }
 
 function BlockError({ error }: { error: Error }) {

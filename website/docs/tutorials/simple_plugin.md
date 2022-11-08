@@ -835,7 +835,7 @@ JBrowse plugin store so others can access our plugin.
 
 To learn more about the various pluggable elements available in JBrowse (and
 thus more that you can do with plugins!) checkout our [developer guide
-documentation](../../../developer_guide/).
+documentation](/docs/developer_guide/).
 
 If you have further questions about plugin development, or development with
 JBrowse in general, stop by the JBrowse team [gitter

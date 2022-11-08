@@ -548,7 +548,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             ) {
               self.history.redo()
             }
-          } else if (self.history.canUndo) {
+          }
+          if (self.history.canUndo) {
             if (
               // ctrl+z or cmd+z
               (e.ctrlKey || e.metaKey) &&

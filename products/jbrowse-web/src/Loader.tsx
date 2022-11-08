@@ -9,7 +9,7 @@ import {
   useQueryParam,
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-import { FatalErrorDialog } from '@jbrowse/core/ui'
+import { LoadingEllipses, FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
 import shortid from 'shortid'
@@ -191,7 +191,7 @@ const StartScreenErrorMessage = ({ error }: { error: unknown }) => {
           .
         </div>
       ) : (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ErrorMessage error={error} />
         </Suspense>
       )}
@@ -371,7 +371,7 @@ const Renderer = observer(
     }
     if (pm) {
       return !pm.rootModel?.session ? (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <StartScreen rootModel={pm.rootModel} onFactoryReset={factoryReset} />
         </Suspense>
       ) : (

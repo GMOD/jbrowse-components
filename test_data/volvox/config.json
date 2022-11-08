@@ -1799,6 +1799,21 @@
       }
     },
     {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_ins.paf-1658813720770",
+      "name": "volvox_ins.paf",
+      "assemblyNames": ["volvox", "volvox_ins"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "targetAssembly": "volvox",
+        "queryAssembly": "volvox_ins",
+        "pafLocation": {
+          "uri": "volvox_ins.paf"
+        }
+      }
+    },
+
+    {
       "type": "VariantTrack",
       "trackId": "variant_effect_demo_data",
       "name": "Ensembl VEP example",

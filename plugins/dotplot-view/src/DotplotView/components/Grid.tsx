@@ -26,7 +26,7 @@ function Grid({
   const rx = Math.max(hbottom, 0)
   const ry = Math.max(viewHeight - vtop, 0)
   const w = Math.min(htop - hbottom, viewWidth)
-  const h = Math.min(vtop - vbottom, viewHeight)
+  const h = Math.min(viewHeight - vbottom - ry, viewHeight)
   return (
     <svg
       style={{ background: 'rgba(0,0,0,0.12)' }}

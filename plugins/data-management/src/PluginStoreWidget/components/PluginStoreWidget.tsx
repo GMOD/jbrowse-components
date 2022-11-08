@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { observer } from 'mobx-react'
-import { getEnv } from 'mobx-state-tree'
 
 import {
   Accordion,
@@ -12,8 +10,10 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
+import { observer } from 'mobx-react'
+import { getEnv } from 'mobx-state-tree'
 import { JBrowsePlugin } from '@jbrowse/core/util/types'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 
 // icons
@@ -177,7 +177,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
               />
             ))
         ) : (
-          <Typography>Loading...</Typography>
+          <LoadingEllipses />
         )}
       </Accordion>
     </div>

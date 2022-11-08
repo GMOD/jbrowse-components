@@ -10,6 +10,7 @@ import LinkOffIcon from '@mui/icons-material/LinkOff'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 
 import { LinearComparativeViewModel } from '../model'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 type LCV = LinearComparativeViewModel
 
@@ -34,6 +35,17 @@ const useStyles = makeStyles()(() => ({
   },
 }))
 
+const TrackSelector = observer(({ model }: { model: LCV }) => {
+  return (
+    <IconButton
+      onClick={model.activateTrackSelector}
+      title="Open track selector"
+    >
+      <TrackSelectorIcon color="primary" />
+    </IconButton>
+  )
+})
+
 const LinkViews = observer(({ model }: { model: LCV }) => {
   return (
     <IconButton
@@ -41,9 +53,9 @@ const LinkViews = observer(({ model }: { model: LCV }) => {
       title="Toggle linked scrolls and behavior across views"
     >
       {model.linkViews ? (
-        <LinkOffIcon color="secondary" />
+        <LinkOffIcon color="primary" />
       ) : (
-        <LinkIcon color="secondary" />
+        <LinkIcon color="primary" />
       )}
     </IconButton>
   )
@@ -55,7 +67,7 @@ const SquareView = observer(({ model }: { model: LCV }) => {
       onClick={model.squareView}
       title="Square view (make both the same zoom level)"
     >
-      <CropFreeIcon color="secondary" />
+      <CropFreeIcon color="primary" />
     </IconButton>
   )
 })
@@ -66,6 +78,7 @@ const Header = observer(
     const anyShowHeaders = model.views.some(view => !view.hideHeader)
     return (
       <div className={classes.headerBar}>
+        <TrackSelector model={model} />
         <LinkViews model={model} />
         <SquareView model={model} />
         {ExtraButtons}

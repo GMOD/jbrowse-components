@@ -42,8 +42,7 @@ There are several ways to create multi-quantitative tracks from scratch.
    and then creating a multi-wiggle track from the tracks in your selection
 3. Hardcoding the multiwiggle track in your config file (see
    [multi-quantitative track
-   configuration](/docs/config_guide/#multiquantitativetrack-config) for more
-   info)
+   configuration](/docs/config_guides/multiquantitative_track/) for more info)
 
 <Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
 <Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget let's you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />

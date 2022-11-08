@@ -15,6 +15,7 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '../configuration'
+import LoadingEllipses from './LoadingEllipses'
 import { getSession, getEnv } from '../util'
 import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
@@ -81,7 +82,7 @@ export function FileInfo({ config }: { config: AnyConfigurationModel }) {
       {error ? (
         <Typography color="error">{`${error}`}</Typography>
       ) : info === undefined ? (
-        'Loading file data...'
+        <LoadingEllipses message="Loading file data" />
       ) : (
         <Attributes attributes={details} />
       )}

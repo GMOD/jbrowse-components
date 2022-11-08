@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { LinearProgress } from '@mui/material'
-import { Menu, ResizeHandle } from '@jbrowse/core/ui'
+import { LoadingEllipses, Menu, ResizeHandle } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
 import { makeStyles } from 'tss-react/mui'
@@ -107,6 +106,7 @@ const TooltipWhereMouseovered = observer(
     const ref = useRef<HTMLDivElement>(null)
     const rect = ref.current?.getBoundingClientRect() || blank
     const offset = 6
+    const w = rect.height + offset * 2
     return (
       <>
         {mouserect ? (
@@ -114,14 +114,8 @@ const TooltipWhereMouseovered = observer(
             ref={ref}
             className={classes.popover}
             style={{
-              left:
-                offset +
-                mouserect[0] -
-                (xdistance < 0 ? rect.width + offset * 2 : 0),
-              top:
-                offset +
-                mouserect[1] -
-                (ydistance < 0 ? rect.height + offset * 2 : 0),
+              left: offset + mouserect[0] - (xdistance < 0 ? w : 0),
+              top: offset + mouserect[1] - (ydistance < 0 ? w : 0),
             }}
           >
             {`x - ${locstr(mouserect[0], hview)}`}
@@ -393,12 +387,7 @@ const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
   }
 
   if (loading) {
-    return (
-      <div>
-        <p>Loading...</p>
-        <LinearProgress />
-      </div>
-    )
+    return <LoadingEllipses variant="h5" />
   }
 
   return <DotplotViewInternal model={model} />

@@ -1448,10 +1448,10 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.3.tgz#e45e384e4b8ec16bce2fd903af78450f6bf7ec98"
   integrity sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==
 
-"@jbrowse/core@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-2.1.7.tgz#1439eba5010ae1ab16bab26b094a865c9cd6273d"
-  integrity sha512-mZzmU3hh8EY05hIwCdt3XFTstEaztsmunVCvKZAP24iF2sqrOK6fa5Dfh0OiF/o8dP4eXLQteR6rsyB4Rp1v3g==
+"@jbrowse/core@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/core/-/core-2.2.0.tgz#7f867685210939a85f4a2d05cc8924981eef182f"
+  integrity sha512-Z9SmkS+7mgSnTvmDHMFW0qASV76XXkN6tTJEW9OnH4IpNnNCgJkk8NpN4nWyP1NOMBKYjSAKmWuxdd83NtG6+A==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@mui/icons-material" "^5.0.1"
@@ -1482,25 +1482,25 @@
     shortid "^2.2.13"
     svg-path-generator "^1.1.0"
 
-"@jbrowse/plugin-circular-view@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-2.1.7.tgz#1a522341965d2034852919745cea3e2f5594dc53"
-  integrity sha512-W4f/rxcbJWogkdOI07svnHzRydfssG8OZmcifCep89bxxdsxRMWPlkzZvH3P+S1ooS9t/EXnRlHOFa1ckrna5A==
+"@jbrowse/plugin-circular-view@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-circular-view/-/plugin-circular-view-2.2.0.tgz#03d3c1252e91b5839dbde890bfe0523d981fa5d2"
+  integrity sha512-B0iofU+afd2g31zAwlijhcLUPn7ak5A2zDUuKFjb0RTLu+qzXDdaIS+9Uek7jfNxqhnqs5ar7M1Y3Rk4fbK2dA==
   dependencies:
     "@mui/icons-material" "^5.0.1"
 
-"@jbrowse/plugin-config@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-2.1.7.tgz#23376d0dc03929e39fdc3b7bf55e3260809f6806"
-  integrity sha512-ZEUyJBsyE5hUDbnF+8VWOlrYf1aBOGKfPh4WZrkyrep936X8XKx3OQgw5GSVB97n39v5RdeThTlPV98fyrBG0w==
+"@jbrowse/plugin-config@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-config/-/plugin-config-2.2.0.tgz#acd7815f4e2cc766d4e877af6ce298acd4f08513"
+  integrity sha512-qa9wjnIkRG6O+w6V+gai6zAyPUYuhx7i4+zmia9XCt4ANMsNj3Pyn/QMZD0IXF/vpaT7TnOkycSzFn3ZmETkzQ==
   dependencies:
     "@mui/icons-material" "^5.0.1"
     pluralize "^8.0.0"
 
-"@jbrowse/plugin-data-management@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-data-management/-/plugin-data-management-2.1.7.tgz#5d9399b542c25e13d8458ca618ec7f0a4e392fef"
-  integrity sha512-VMGlFKwwx4FgURbCnh+vLFo1Z6S3wdX5dsFIBZf1DT5JJBGjSn4aAgmGIDgXVvD4Z7i4o/rlotPAFCZY2ghimg==
+"@jbrowse/plugin-data-management@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-data-management/-/plugin-data-management-2.2.0.tgz#0df893381549aee685369bb1c0eb961c83ebcb4e"
+  integrity sha512-XycutIz9VOFPHruCtxMedCc1I2KW06IhSF2qivbYu3Ly/stM117Fklaub6pEaA6V5tOuTJojWRvvMEQMyfq9bw==
   dependencies:
     "@gmod/ucsc-hub" "^0.1.6"
     "@mui/icons-material" "^5.0.1"
@@ -1509,10 +1509,10 @@
     react-vtree "^3.0.0-beta.1"
     react-window "^1.8.6"
 
-"@jbrowse/plugin-linear-genome-view@^2.0.0":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-2.1.7.tgz#8b42067066f71e29b1272b8843385fd9f813f4b8"
-  integrity sha512-DNRfFg4ZWtYC81ZEnhtQ7JkRc7I4PunWrq1K4WrGyXOzoRtybvMIhvrPc3lzVVKbBQJYZmw/sZcmCkoG6k8ACw==
+"@jbrowse/plugin-linear-genome-view@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-linear-genome-view/-/plugin-linear-genome-view-2.2.0.tgz#cf25e8a14ef702578a917b426451a37596959e53"
+  integrity sha512-IEnHhad8ljltO5m4rjBQshqvQ9Y/q2Y/xCjzSV42drJ6EHNiMfFYo/OvhxAFjmzqHoLLqsiqe8FJD8IwAPKpcg==
   dependencies:
     "@mui/icons-material" "^5.0.1"
     "@popperjs/core" "^2.11.0"
@@ -1524,19 +1524,19 @@
     normalize-wheel "^1.0.1"
     react-popper "^2.0.0"
 
-"@jbrowse/plugin-sequence@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-2.1.7.tgz#d5bb1b30a78ca8a990af448377acacda0424c5c4"
-  integrity sha512-F6GwLvC/tqKrKvhFxZIV2QehY0h2EzkVUDedn3YHojXu2OFB+/awdmWTqxzcdtPkROokQkPRIWTDsWvZKvhBJA==
+"@jbrowse/plugin-sequence@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-sequence/-/plugin-sequence-2.2.0.tgz#82065216bdac64e60051a87ef61e4288ef15a1f4"
+  integrity sha512-z04BU3NPHeAF8JwnDsn1NypevQNy3qLHBMy0Ep5g8KisDPJ0utnzD8/B3Eblf3vnQJIJvakRGVn3dfRLi4GKyw==
   dependencies:
     "@gmod/indexedfasta" "^2.0.2"
     "@gmod/twobit" "^1.1.12"
     abortable-promise-cache "^1.5.0"
 
-"@jbrowse/plugin-variants@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-variants/-/plugin-variants-2.1.7.tgz#4db48178ce5a6e10b2ed7f5878b30dfcce883873"
-  integrity sha512-6l/L/u7usDqfew1VN6ln7tMVkfQH1O++jF3GrlfO0sxipyI0CWHtrYAx6czqF44nwkh1nr7YMU3gRvb+7O7B8A==
+"@jbrowse/plugin-variants@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-variants/-/plugin-variants-2.2.0.tgz#dad7b12f9705d96ac0db92561e794955fa36f2d5"
+  integrity sha512-hBukM8MFrC+INIrTNMuhwjKXbvGe4zrOa4vv5QV/+Pxkmp1IWq3lllw+F9bZAzAmBPkSjKIRJ4YVzPQDHx1L9A==
   dependencies:
     "@flatten-js/interval-tree" "^1.0.15"
     "@gmod/bgzf-filehandle" "^1.4.3"
@@ -1546,10 +1546,10 @@
     "@mui/x-data-grid" "^5.0.1"
     generic-filehandle "^3.0.0"
 
-"@jbrowse/plugin-wiggle@^2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-2.1.7.tgz#6b70de6e13d709240850eaba20d7951fe720dfe0"
-  integrity sha512-MVBfytaPJzeQZTgw1gmVMJu2OAfC31tHTo3y4xJOAppEl+8YY5g+w5kroeU840a4/yygVS25H5LRD6/wsz8zZA==
+"@jbrowse/plugin-wiggle@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/plugin-wiggle/-/plugin-wiggle-2.2.0.tgz#03d80fd3c2bc4c3853f198144b8e7402b2beb7a7"
+  integrity sha512-iycNVSjYHV794QfQEy7NFwJ7nE+lbqivk/Z18GnBRYA4tYjyk09lp83gmg7zAjMUYaiQmvxAwidmZVDTTiPe0Q==
   dependencies:
     "@gmod/bbi" "^2.0.3"
     "@mui/icons-material" "^5.0.2"
@@ -1564,22 +1564,22 @@
     react-draggable "^4.4.5"
     react-popper "^2.0.0"
 
-"@jbrowse/react-circular-genome-view@^2.0.0":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@jbrowse/react-circular-genome-view/-/react-circular-genome-view-2.1.7.tgz#7e5e4a60099f0ce717e8eb34858dea29c0db2792"
-  integrity sha512-S5H+SJZkc0ofykejGcRKbWajFMIbOlOrmV/kgC2qJmlWLlDb/2Nu9NZX/RZX5lCYACeafLL87aA0QI+mBEldJg==
+"@jbrowse/react-circular-genome-view@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jbrowse/react-circular-genome-view/-/react-circular-genome-view-2.2.0.tgz#f902540929b4be6d0feab2822b5b6e849bd0ebf7"
+  integrity sha512-gb4mbbtkEaXyUisvwbJsCV7lTKPzsUXJH9Mr93UYJlzjwlRRND6aEfgvIqSa0p7q0Hshz/FkLnN7LZk4IZeisw==
   dependencies:
     "@babel/runtime" "^7.17.9"
     "@emotion/cache" "^11.7.1"
     "@emotion/react" "^11.9.0"
     "@emotion/styled" "^11.8.1"
-    "@jbrowse/core" "^2.1.7"
-    "@jbrowse/plugin-circular-view" "^2.1.7"
-    "@jbrowse/plugin-config" "^2.1.7"
-    "@jbrowse/plugin-data-management" "^2.1.7"
-    "@jbrowse/plugin-sequence" "^2.1.7"
-    "@jbrowse/plugin-variants" "^2.1.7"
-    "@jbrowse/plugin-wiggle" "^2.1.7"
+    "@jbrowse/core" "^2.2.0"
+    "@jbrowse/plugin-circular-view" "^2.2.0"
+    "@jbrowse/plugin-config" "^2.2.0"
+    "@jbrowse/plugin-data-management" "^2.2.0"
+    "@jbrowse/plugin-sequence" "^2.2.0"
+    "@jbrowse/plugin-variants" "^2.2.0"
+    "@jbrowse/plugin-wiggle" "^2.2.0"
     "@mui/icons-material" "^5.0.0"
     "@mui/material" "^5.0.0"
     mobx "^6.6.0"
@@ -1588,7 +1588,7 @@
     prop-types "^15.0.0"
     react-use-measure "^2.1.1"
     rxjs "^6.0.0"
-    tss-react "^3.7.0"
+    tss-react "^4.4.1"
 
 "@jest/console@^27.5.1":
   version "27.5.1"
@@ -9901,10 +9901,10 @@ tslib@^2.0.3:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
   integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
 
-tss-react@^3.7.0:
-  version "3.7.1"
-  resolved "https://registry.yarnpkg.com/tss-react/-/tss-react-3.7.1.tgz#119647731490f9e7e62c7f6a38a78df981929a4b"
-  integrity sha512-dfWUoxBlKZfIG9UC1A2h02OmcE/Ni0itCmmZu94E9g+KyBhKMHKcsKvUm0bNlRqTmYjXiCgPJDmj5fyc8CSrLg==
+tss-react@^4.4.1:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/tss-react/-/tss-react-4.4.2.tgz#0c09d677dd5ba2a532291a4c926325776ba65728"
+  integrity sha512-typ6yVmBGz1GIHmWaN+bmwHaAfxZLImfiNTiGIfJCFgas3rEpdYSty2/JENXAFvzKFl53CHc/6Z/FM2EkE2ZTQ==
   dependencies:
     "@emotion/cache" "*"
     "@emotion/serialize" "*"

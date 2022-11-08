@@ -3,6 +3,7 @@ import {
   AppBar,
   Button,
   Fab,
+  FormControl,
   MenuItem,
   Paper,
   Select,
@@ -21,6 +22,7 @@ import { readConfObject, AnyConfigurationModel } from '../configuration'
 import DrawerWidget from './DrawerWidget'
 import DropDownMenu from './DropDownMenu'
 import ErrorMessage from './ErrorMessage'
+import LoadingEllipses from './LoadingEllipses'
 import EditableTypography from './EditableTypography'
 import { LogoFull } from './Logo'
 import Snackbar from './Snackbar'
@@ -173,22 +175,26 @@ const ViewLauncher = observer(({ session }: { session: AppSession }) => {
   return (
     <Paper className={classes.selectPaper}>
       <Typography>Select a view to launch</Typography>
-      <Select value={value} onChange={event => setValue(event.target.value)}>
-        {viewTypes.map(({ name }: { name: string }) => (
-          <MenuItem key={name} value={name}>
-            {name}
-          </MenuItem>
-        ))}
-      </Select>
-      <Button
-        onClick={() => {
-          session.addView(value, {})
-        }}
-        variant="contained"
-        color="primary"
-      >
-        Launch view
-      </Button>
+      <FormControl style={{ margin: 2 }}>
+        <Select value={value} onChange={event => setValue(event.target.value)}>
+          {viewTypes.map(({ name }: { name: string }) => (
+            <MenuItem key={name} value={name}>
+              {name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl style={{ margin: 2 }}>
+        <Button
+          onClick={() => {
+            session.addView(value, {})
+          }}
+          variant="contained"
+          color="primary"
+        >
+          Launch view
+        </Button>
+      </FormControl>
     </Paper>
   )
 })
@@ -203,7 +209,7 @@ const ViewPanel = observer(
     const { ReactComponent } = viewType
     return (
       <ViewContainer view={view} onClose={() => session.removeView(view)}>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ReactComponent
             model={view}
             session={session}

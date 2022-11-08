@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import SearchIcon from '@mui/icons-material/Search'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
 import deepmerge from 'deepmerge'
@@ -171,7 +172,7 @@ function QuickstartPanel({
               </div>
             ))
         ) : (
-          <Typography>Loading...</Typography>
+          <LoadingEllipses />
         )}
       </div>
 

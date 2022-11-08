@@ -161,7 +161,7 @@ chromosomes which have, for example, chr1 vs 1.
 
 Returning the refNames used by a given file or resource allows JBrowse to
 automatically smooth these small naming disparities over. See [reference
-renaming](/docs/config_guide/#configuring-reference-name-aliasing).
+renaming](/docs/config_guides/assemblies/#configuring-reference-name-aliasing).
 
 #### getFeatures
 

@@ -61,6 +61,14 @@ const OAuthConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
+    state: {
+      description: 'optional state for the authorization call',
+      type: 'string',
+      defaultValue: '',
+    },
+    /**
+     * #slot
+     */
     responseType: {
       description: 'the type of response from the authorization endpoint',
       type: 'string',

@@ -54,7 +54,7 @@ const ImportForm = observer(({ model }: { model: any }) => {
             variant="contained"
             color="primary"
           >
-            {regions.length ? 'Open' : 'Loading…'}
+            {regions.length ? 'Open' : 'Loading&hellip;'}
           </Button>
         </Grid>
       </Grid>
