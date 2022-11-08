@@ -1,9 +1,8 @@
 import React from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { ErrorBoundary } from 'react-error-boundary'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { LoadingEllipses, ErrorMessage } from '@jbrowse/core/ui'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // locals
@@ -75,14 +74,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
             )}
           </Paper>
         ) : (
-          tracks.map(track => (
-            <ErrorBoundary
-              key={track.id}
-              FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-            >
-              <TrackContainer model={model} track={track} />
-            </ErrorBoundary>
-          ))
+          tracks.map(track => <TrackContainer model={model} track={track} />)
         )}
       </TracksContainer>
     </div>
