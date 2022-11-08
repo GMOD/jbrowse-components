@@ -131,6 +131,30 @@ function weightedMean(tuples: [number, number][]) {
   return valueSum / weightSum
 }
 
+function getOrientedMismatches(flip: boolean, cigar: string) {
+  const mismatches = getMismatches(cigar)
+  if (flip) {
+    let startReadjuster = 0
+    return mismatches.map(m => {
+      if (m.type === 'insertion') {
+        m.type = 'deletion'
+        m.length = +m.base
+        m.start += startReadjuster
+        startReadjuster += m.length
+      } else if (m.type === 'deletion') {
+        const len = m.length
+        m.type = 'insertion'
+        m.base = `${len}`
+        m.length = 0
+        m.start += startReadjuster
+        startReadjuster -= len
+      }
+      return m
+    })
+  }
+  return mismatches
+}
+
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<PAFRecord[]>
 
@@ -303,7 +327,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               // which is actually different than how it works in e.g.
               // BAM/SAM (which is visible during alignments track read vs ref)
               revCigar: true,
-              mismatches: extra.cg ? getMismatches(extra.cg) : [],
+              mismatches: extra.cg
+                ? getOrientedMismatches(index === 0, extra.cg)
+                : [],
 
               // depending on whether the query or target is queried, the
               // "rev" flag
