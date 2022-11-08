@@ -47,15 +47,31 @@ const excludeIds = ['gtf_plain_text_test', 'lollipop_track', 'arc_track']
 
 const assembly = volvoxConfig.assemblies[0]
 const tracks = volvoxConfig.tracks.filter(
-  t => supportedTrackTypes.includes(t.type) && !excludeIds.includes(t.trackId),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (t: any) =>
+    supportedTrackTypes.includes(t.type) && !excludeIds.includes(t.trackId),
 )
 const defaultSession = {
   name: 'Storybook',
-  view: volvoxConfig.defaultSession.views[0],
+  view: {
+    ...volvoxConfig.defaultSession.views[0],
+    type: 'LinearGenomeView' as const,
+  },
 }
+const nextstrainSession = {
+  ...nextstrainConfig.defaultSession,
+  view: {
+    ...nextstrainConfig.defaultSession.view,
+    type: 'LinearGenomeView' as const,
+  },
+}
+
 const longReadsSession = {
   ...defaultSession,
-  view: volvoxSession.session.views[0],
+  view: {
+    ...volvoxSession.session.views[0],
+    type: 'LinearGenomeView' as const,
+  },
 }
 export const WithWebWorker = () => {
   const state = createViewState({
@@ -384,11 +400,11 @@ export const CustomTheme = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 export const NextstrainExample = () => {
-  const { assembly, tracks, defaultSession } = nextstrainConfig
+  const { assembly, tracks } = nextstrainConfig
   const state = createViewState({
     assembly,
     tracks,
-    defaultSession,
+    defaultSession: nextstrainSession,
     location: 'SARS-CoV-2:1..29,903',
     onChange: patch => {
       console.log('patch', patch)
