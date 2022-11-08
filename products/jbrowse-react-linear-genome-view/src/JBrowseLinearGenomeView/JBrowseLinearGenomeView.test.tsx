@@ -41,7 +41,7 @@ const defaultSession = {
   name: 'Test',
   view: {
     id: 'test_view',
-    type: 'LinearGenomeView' as const,
+    type: 'LinearGenomeView',
     bpPerPx: 0.05,
     displayedRegions: [
       {

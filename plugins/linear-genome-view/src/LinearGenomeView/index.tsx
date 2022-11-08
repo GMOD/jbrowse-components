@@ -137,7 +137,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        type: types.literal('LinearGenomeView'),
+        type: types.literal('LinearGenomeView') as unknown as string,
 
         /**
          * #property
