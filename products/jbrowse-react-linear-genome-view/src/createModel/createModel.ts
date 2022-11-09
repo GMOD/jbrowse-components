@@ -93,6 +93,9 @@ export default function createModel(
       get jbrowse() {
         return self.config
       },
+      get isAssemblyEditing() {
+        return false
+      },
     }))
   return { model: rootModel, pluginManager }
 }
