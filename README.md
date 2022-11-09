@@ -68,8 +68,7 @@ cd products/jbrowse-desktop
 yarn start
 ```
 
-For running like jbrowse-react-linear-genome-view you can use
-storybook
+For running e.g. jbrowse-react-linear-genome-view you can use storybook
 
 ```sh
 cd products/jbrowse-react-linear-genome-view
