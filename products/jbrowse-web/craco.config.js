@@ -2,7 +2,7 @@ const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { getLoader, loaderByName } = require('@craco/craco')
 const webpack = require('webpack')
-
+const path = require('path')
 const cp = require('child_process')
 
 function getWorkspaces(fromDir) {
