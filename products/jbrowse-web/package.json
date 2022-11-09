@@ -3,18 +3,16 @@
   "version": "2.2.0",
   "license": "Apache-2.0",
   "homepage": ".",
-  "main": "build",
-  "dir": "src",
   "scripts": {
     "start": "craco --max-http-header-size=100000 start",
-    "build": "cross-env NODE_OPTIONS='--max-old-space-size=7000' craco build",
-    "postbuild": "node -e \"fs.writeFileSync('build/version.txt',JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)\"",
+    "build": "if test \"$BUILDALL\" = \"true\" ; then NODE_OPTIONS='--max-old-space-size=7000' craco build; fi;",
+    "postbuild": "mkdir -p build && node write_version.js",
     "test": "craco test",
     "eject": "craco eject",
     "checktypes": "tsc --noEmit",
     "jtest": "jest --config ../../jest.config.js --roots products/jbrowse-web/",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx src",
-    "prepack": "yarn build"
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@fontsource/roboto": "^4.5.0",
