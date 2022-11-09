@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:es5": "if test \"$BUILDALL\" = \"true\" ; then tsc --build tsconfig.build.es5.json; fi",
     "build": "npm run build:esm && npm run build:es5",
     "test": "cd ../..; jest packages/text-indexing",
     "clean": "rimraf dist esm *.tsbuildinfo",

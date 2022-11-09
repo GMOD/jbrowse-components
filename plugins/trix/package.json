@@ -33,7 +33,7 @@
     "useSrc": "node ../../scripts/useSrc.js",
     "prebuild": "npm run clean",
     "build:esm": "tsc --build tsconfig.build.esm.json",
-    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "build:es5": "if test \"$BUILDALL\" = \"true\" ; then tsc --build tsconfig.build.es5.json; fi",
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "peerDependencies": {

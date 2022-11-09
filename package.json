@@ -8,7 +8,8 @@
     "plugins/*"
   ],
   "scripts": {
-    "build": "yarn useDist && node scripts/build.js && yarn useSrc",
+    "build": "yarn useDist && BUILDALL=true node scripts/build.js && yarn useSrc",
+    "fastbuild": "yarn useDist && BUILDALL=false node scripts/build.js && yarn useSrc",
     "changelog": "lerna-changelog",
     "useDist": "lerna run useDist --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
     "useSrc": "lerna run useSrc --scope \"@jbrowse/plugin*\" --scope @jbrowse/text-indexing",
