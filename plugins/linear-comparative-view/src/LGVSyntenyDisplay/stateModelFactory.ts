@@ -2,7 +2,7 @@ import {
   ConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 import {
   MismatchParser,
   linearPileupDisplayStateModelFactory,
@@ -44,6 +44,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   {
                     label: 'Test',
                     onClick: () => {
+                      const session = getSession(self)
                       const view = getContainingView(self)
                       const r0 = view.dynamicBlocks.contentBlocks[0]
                       const cigar = parseCigar(feature.get('cg') || '')
@@ -93,6 +94,24 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                         }
                       }
                       console.log({ p0, p1 })
+
+                      const view2 = session.addView('LinearSyntenyView', {
+                        type: 'LinearSyntenyView',
+                        views: [
+                          {
+                            type: 'LinearGenomeView',
+                            hideHeader: true,
+                          },
+                          {
+                            type: 'LinearGenomeView',
+                            hideHeader: true,
+                          },
+                        ],
+                      })
+                      // @ts-ignore
+                      view2.views[0].navToLocString('{hg19}chr1:1-500')
+                      // @ts-ignore
+                      view2.views[1].navToLocString('{hg38}chr1:500-1000')
                     },
                   },
                 ]

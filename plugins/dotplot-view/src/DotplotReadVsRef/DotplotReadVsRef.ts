@@ -6,10 +6,9 @@ import {
   getLengthSansClipping,
   gatherOverlaps,
   ReducedFeature,
-} from './util'
+} from '../util'
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { getSession, Feature } from '@jbrowse/core/util'
 import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
 
 export function onClick(feature: Feature, self: LinearPileupDisplayModel) {

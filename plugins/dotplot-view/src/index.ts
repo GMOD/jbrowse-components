@@ -21,10 +21,10 @@ export default class DotplotPlugin extends Plugin {
     DotplotDisplayF(pluginManager)
     DotplotRendererF(pluginManager)
     LaunchDotplotViewF(pluginManager)
+    DotplotReadVsRefMenuItem(pluginManager)
 
     // install our comparative rendering rpc callback
     pluginManager.addRpcMethod(() => new ComparativeRenderer(pluginManager))
-    DotplotReadVsRefMenuItem(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

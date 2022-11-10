@@ -14,14 +14,13 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
+import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getSession, getContainingView, Feature } from '@jbrowse/core/util'
+
 // icons
 import CloseIcon from '@mui/icons-material/Close'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 
 const { parseCigar } = MismatchParser
 
@@ -167,13 +166,16 @@ function gatherOverlaps(regions: BasicFeature[]) {
     .flat()
 }
 
-export function WindowSizeDlg(props: {
+export function WindowSizeDlg({
+  track,
+  feature: preFeature,
+  handleClose,
+}: {
   feature: Feature
   handleClose: () => void
   track: any
 }) {
   const { classes } = useStyles()
-  const { track, feature: preFeature, handleClose } = props
 
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
@@ -188,6 +190,7 @@ export function WindowSizeDlg(props: {
   useEffect(() => {
     let done = false
     ;(async () => {
+      setError(undefined)
       try {
         if (preFeature.get('flags') & 2048) {
           const SA: string = getTag(preFeature, 'SA') || ''
@@ -329,10 +332,7 @@ export function WindowSizeDlg(props: {
       )
 
       const expand = 2 * windowSize
-      const refLength = features.reduce(
-        (a, f) => a + f.end - f.start + expand,
-        0,
-      )
+      const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
 
       const seqTrackId = `${readName}_${Date.now()}`
       const sequenceTrackConf = getConf(assembly, 'sequence')
@@ -375,7 +375,7 @@ export function WindowSizeDlg(props: {
             type: 'LinearGenomeView',
             hideHeader: true,
             offsetPx: 0,
-            bpPerPx: refLength / view.width,
+            bpPerPx: refLen / view.width,
             displayedRegions: lgvRegions,
             tracks: [
               {
@@ -439,15 +439,13 @@ export function WindowSizeDlg(props: {
                         adapter: {
                           type: 'FromConfigAdapter',
                           noAssemblyManager: true,
-                          features: qual.split(' ').map((score, index) => {
-                            return {
-                              start: index,
-                              end: index + 1,
-                              refName: readName,
-                              score: +score,
-                              uniqueId: `feat_${index}`,
-                            }
-                          }),
+                          features: qual.split(' ').map((score, index) => ({
+                            start: index,
+                            end: index + 1,
+                            refName: readName,
+                            score: +score,
+                            uniqueId: `feat_${index}`,
+                          })),
                         },
                       },
                       displays: [
@@ -559,6 +557,3 @@ export function WindowSizeDlg(props: {
     </Dialog>
   )
 }
-
-
-
