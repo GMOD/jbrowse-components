@@ -31,34 +31,28 @@ export default class ComparativeRender extends RpcMethodType {
   }
 
   getRenderer(rendererType: string) {
-    return this.pluginManager.getRendererType(
-      rendererType,
-    ) as ComparativeRenderer
+    const pm = this.pluginManager
+    return pm.getRendererType(rendererType) as ComparativeRenderer
   }
 
-  async serializeArguments(args: RenderArgs, rpcDriverClassName: string) {
+  async serializeArguments(args: RenderArgs, rpcDriver: string) {
     const { rendererType } = args
     const renderer = this.getRenderer(rendererType)
-    const result = await this.renameRegionsIfNeeeded(
-      (await super.serializeArguments(args, rpcDriverClassName)) as RenderArgs,
-      renderer,
-    )
+    const n = (await super.serializeArguments(args, rpcDriver)) as RenderArgs
+    const result = await this.renameRegionsIfNeeeded(n, renderer)
 
-    return rpcDriverClassName === 'MainThreadRpcDriver'
+    return rpcDriver === 'MainThreadRpcDriver'
       ? result
       : renderer.serializeArgsInClient(result)
   }
 
   async execute(
     args: RenderArgsSerialized & { signal?: RemoteAbortSignal },
-    rpcDriverClassName: string,
+    rpcDriver: string,
   ) {
     let deserializedArgs = args
-    if (rpcDriverClassName !== 'MainThreadRpcDriver') {
-      deserializedArgs = await this.deserializeArguments(
-        args,
-        rpcDriverClassName,
-      )
+    if (rpcDriver !== 'MainThreadRpcDriver') {
+      deserializedArgs = await this.deserializeArguments(args, rpcDriver)
     }
     const { sessionId, rendererType, signal } = deserializedArgs
     if (!sessionId) {
@@ -68,28 +62,26 @@ export default class ComparativeRender extends RpcMethodType {
     checkAbortSignal(signal)
 
     const renderer = this.getRenderer(rendererType)
-    return rpcDriverClassName === 'MainThreadRpcDriver'
+    return rpcDriver === 'MainThreadRpcDriver'
       ? renderer.render(deserializedArgs)
       : renderer.renderInWorker(deserializedArgs)
   }
 
   async deserializeReturn(
-    serializedReturn: RenderResults | ResultsSerialized,
+    val: RenderResults | ResultsSerialized,
     args: RenderArgs,
-    rpcDriverClassName: string,
+    rpcDriver: string,
   ): Promise<unknown> {
-    const superDeserialized = await super.deserializeReturn(
-      serializedReturn,
+    const ret = (await super.deserializeReturn(
+      val,
       args,
-      rpcDriverClassName,
-    )
-    if (rpcDriverClassName === 'MainThreadRpcDriver') {
-      return superDeserialized
+      rpcDriver,
+    )) as ResultsSerialized
+    if (rpcDriver === 'MainThreadRpcDriver') {
+      return ret
     }
 
-    return this.getRenderer(args.rendererType).deserializeResultsInClient(
-      superDeserialized as ResultsSerialized,
-      args,
-    )
+    const renderer = this.getRenderer(args.rendererType)
+    return renderer.deserializeResultsInClient(ret, args)
   }
 }

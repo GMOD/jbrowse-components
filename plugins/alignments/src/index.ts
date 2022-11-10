@@ -30,6 +30,7 @@ import {
   AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
+
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
 

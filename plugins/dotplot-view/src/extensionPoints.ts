@@ -5,7 +5,7 @@ import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import AddIcon from '@mui/icons-material/Add'
 import { onClick } from './DotplotReadVsRef'
 
-export function dotplotReadVsRef(pluginManager: PluginManager) {
+export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-extendPluggableElement',
     (pluggableElement: PluggableElementType) => {

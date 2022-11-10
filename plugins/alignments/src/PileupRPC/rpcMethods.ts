@@ -1,11 +1,12 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
+import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
 import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
-import { renameRegionsIfNeeded } from '@jbrowse/core/util'
-import { Region } from '@jbrowse/core/util/types'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
-import { toArray } from 'rxjs/operators'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { toArray } from 'rxjs/operators'
+
+// locals
 import { getTagAlt } from '../util'
 import { getModificationTypes } from '../BamAdapter/MismatchParser'
 
@@ -41,14 +42,11 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
     },
     rpcDriverClassName: string,
   ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
-    const { adapterConfig, sessionId, regions, tag } = deserializedArgs
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const pm = this.pluginManager
+    const deArgs = await this.deserializeArguments(args, rpcDriverClassName)
+    const { adapterConfig, sessionId, regions, tag } = deArgs
+    const dataAdapter = (await getAdapter(pm, sessionId, adapterConfig))
+      .dataAdapter as BaseFeatureDataAdapter
 
     const features = dataAdapter.getFeaturesInMultipleRegions(regions)
     const featuresArray = await features.pipe(toArray()).toPromise()
@@ -96,14 +94,11 @@ export class PileupGetVisibleModifications extends RpcMethodType {
     },
     rpcDriverClassName: string,
   ) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
-    const { adapterConfig, sessionId, regions } = deserializedArgs
-    const dataAdapter = (
-      await getAdapter(this.pluginManager, sessionId, adapterConfig)
-    ).dataAdapter as BaseFeatureDataAdapter
+    const pm = this.pluginManager
+    const deArgs = await this.deserializeArguments(args, rpcDriverClassName)
+    const { adapterConfig, sessionId, regions } = deArgs
+    const dataAdapter = (await getAdapter(pm, sessionId, adapterConfig))
+      .dataAdapter as BaseFeatureDataAdapter
 
     const features = dataAdapter.getFeaturesInMultipleRegions(regions)
     const featuresArray = await features.pipe(toArray()).toPromise()
