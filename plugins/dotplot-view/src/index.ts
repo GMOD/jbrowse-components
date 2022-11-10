@@ -10,8 +10,8 @@ import DotplotViewF from './DotplotView'
 import DotplotDisplayF from './DotplotDisplay'
 import DotplotRendererF from './DotplotRenderer'
 import LaunchDotplotViewF from './LaunchDotplotView'
-import ComparativeRender from './DotplotRenderer/ComparativeRenderRpc'
-import DotplotReadVsRefMenuItem from './extensionPoints'
+import ComparativeRenderer from './ComparativeRenderer'
+import DotplotReadVsRefMenuItem from './DotplotReadVsRef'
 
 export default class DotplotPlugin extends Plugin {
   name = 'DotplotPlugin'
@@ -23,7 +23,7 @@ export default class DotplotPlugin extends Plugin {
     LaunchDotplotViewF(pluginManager)
 
     // install our comparative rendering rpc callback
-    pluginManager.addRpcMethod(() => new ComparativeRender(pluginManager))
+    pluginManager.addRpcMethod(() => new ComparativeRenderer(pluginManager))
     DotplotReadVsRefMenuItem(pluginManager)
   }
 
