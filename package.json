@@ -118,7 +118,6 @@
     "eslint-plugin-tsdoc": "^0.2.4",
     "file-loader": "^6.2.0",
     "find-yarn-workspace-root": "^2.0.0",
-    "get-yarn-workspaces": "^1.0.2",
     "husky": "^8.0.0",
     "jest": "^28.1.1",
     "jest-environment-jsdom": "^28.0.0",
