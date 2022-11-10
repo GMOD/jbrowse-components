@@ -6,6 +6,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Divider,
+  Link,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -25,6 +26,8 @@ import {
   getSession,
   getUriLink,
   isUriLocation,
+  assembleLocString,
+  ParsedLocString,
 } from '../util'
 import { ErrorMessage, SanitizedHTML } from '../ui'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
@@ -249,15 +252,52 @@ const ArrayValue = ({
 }
 const toLocale = (n: number) => n.toLocaleString('en-US')
 
+function Position(props: BaseProps) {
+  const { model = {}, feature } = props
+  const { view } = model
+  const strand = feature.strand as number
+  const strandMap: Record<string, string> = {
+    '-1': '-',
+    '0': '',
+    '1': '+',
+  }
+  const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  // @ts-ignore
+  const loc = assembleLocString(feature as ParsedLocString)
+  const pos = `${loc} ${str}`
+
+  return (
+    <>
+      {/* @ts-ignore*/}
+      {view?.navToLocString ? (
+        <Link
+          href="#"
+          onClick={event => {
+            event.preventDefault()
+            // @ts-ignore
+            view.navToLocString(loc)
+          }}
+        >
+          {pos}
+        </Link>
+      ) : (
+        pos
+      )}
+    </>
+  )
+}
+
 function CoreDetails(props: BaseProps) {
   const { feature } = props
   const obj = feature as SimpleFeatureSerializedNoId & {
     start: number
     end: number
+    assemblyName?: string
     strand: number
     refName: string
     __jbrowsefmt: {
       start?: number
+      assemblyName?: string
       end?: number
       refName?: string
       name?: string
@@ -266,33 +306,28 @@ function CoreDetails(props: BaseProps) {
 
   // eslint-disable-next-line no-underscore-dangle
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
-  const { start, strand, end, refName } = formattedFeat
+  const { start, end } = formattedFeat
 
-  const strandMap: Record<string, string> = {
-    '-1': '-',
-    '0': '',
-    '1': '+',
-  }
-  const str = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayedDetails: Record<string, any> = {
     ...formattedFeat,
     length: toLocale(end - start),
-    position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
   const coreRenderedDetails = {
-    position: 'Position',
     description: 'Description',
     name: 'Name',
     length: 'Length',
     type: 'Type',
-    assemblyName: 'Assembly name',
   }
   return (
     <>
+      <SimpleValue
+        name="Position"
+        value={<Position {...props} feature={formattedFeat} />}
+      />
       {Object.entries(coreRenderedDetails)
         .map(([key, name]) => [name, displayedDetails[key]])
-        .filter(([, value]) => value !== null && value !== undefined)
+        .filter(([, value]) => value != null)
         .map(([name, value]) => (
           <SimpleValue key={name} name={name} value={value} />
         ))}
@@ -569,7 +604,7 @@ export const FeatureDetails = (props: {
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) => {
-  const { omit = [], model, feature, depth = 0 } = props
+  const { omit = [], model, view, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
@@ -583,6 +618,14 @@ export const FeatureDetails = (props: {
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
+      {feature.mate ? (
+        <>
+          <Divider />
+          <Typography>Mate details</Typography>
+          {/* @ts-ignore */}
+          <CoreDetails {...props} feature={feature.mate} />
+        </>
+      ) : null}
       <Divider />
 
       <Typography>Attributes</Typography>

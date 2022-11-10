@@ -155,6 +155,18 @@ function getOrientedMismatches(flip: boolean, cigar: string) {
   return mismatches
 }
 
+class SyntenyFeature extends SimpleFeature {
+  get(arg: string): any {
+    if (arg === 'mismatches') {
+      const cg = this.get('cg')
+      const flip = this.get('flipInsDel')
+
+      return cg ? getOrientedMismatches(flip, cg) : []
+    }
+    return super.get(arg)
+  }
+}
+
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<PAFRecord[]>
 
@@ -277,8 +289,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // The index of the assembly name in the query list corresponds to the
       // adapter in the subadapters list
       const index = assemblyNames.indexOf(query.assemblyName)
+      const { start: qstart, end: qend, refName: qref, assemblyName } = query
       if (index === -1) {
-        console.warn(`${query.assemblyName} not found in this adapter`)
+        console.warn(`${assemblyName} not found in this adapter`)
         observer.complete()
       }
 
@@ -306,16 +319,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           mateEnd = r.qend
         }
         const { extra, strand } = r
-        const { start: qstart, end: qend, refName: qref, assemblyName } = query
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1 } = extra
           const flip = index === 0
           observer.next(
-            new SimpleFeature({
+            new SyntenyFeature({
               uniqueId: `${i}`,
-              assemblyName,
+              assemblyName: assemblyNames[+!flip],
               start,
               end,
+              type: 'match',
               refName,
               strand, // : !flip ? strand * -1 : strand,
 
@@ -325,14 +338,18 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               // which is actually different than how it works in e.g.
               // BAM/SAM (which is visible during alignments track read vs ref)
               revCigar: true,
-              mismatches: extra.cg ? getOrientedMismatches(flip, extra.cg) : [],
 
               // depending on whether the query or target is queried, the
               // "rev" flag
               flipInsDel: flip,
               syntenyId: i,
               identity: numMatches / blockLen,
-              mate: { start: mateStart, end: mateEnd, refName: mateName },
+              mate: {
+                start: mateStart,
+                end: mateEnd,
+                refName: mateName,
+                assemblyName: assemblyNames[+flip],
+              },
               ...extra,
             }),
           )
