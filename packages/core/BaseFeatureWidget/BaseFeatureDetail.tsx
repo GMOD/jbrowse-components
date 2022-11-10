@@ -597,6 +597,11 @@ function generateTitle(name: unknown, id: unknown, type: unknown) {
     .join(' - ')
 }
 
+interface PanelDescriptor {
+  name: string
+  Component: React.FC<any>
+}
+
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerializedNoId
@@ -604,16 +609,16 @@ export const FeatureDetails = (props: {
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) => {
-  const { omit = [], model, view, feature, depth = 0 } = props
+  const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
-  const { pluginManager } = getEnv(model)
+  const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
-  const ExtraPanel = pluginManager?.evaluateExtensionPoint(
-    'Core-extraFeaturePanel',
-    null,
-    { session, feature, model },
-  ) as { name: string; Component: React.FC<any> } | undefined
+  const ExtraPanel = pm.evaluateExtensionPoint('Core-extraFeaturePanel', null, {
+    session,
+    feature,
+    model,
+  }) as PanelDescriptor | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>

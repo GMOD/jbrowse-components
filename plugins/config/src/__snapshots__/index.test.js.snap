@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Config editing adds config editor widget 1`] = `Object {}`;
+exports[`Config editing adds config editor widget 1`] = `{}`;
 
 exports[`Config editing creates proper FromConfigAdapter 1`] = `
-Object {
+{
   "adapterId": "testFromConfigAdapterId",
   "type": "FromConfigAdapter",
 }

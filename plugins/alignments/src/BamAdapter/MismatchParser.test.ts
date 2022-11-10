@@ -139,76 +139,76 @@ test('more skip', () => {
       (a, b) => a.start - b.start,
     ),
   ).toMatchInlineSnapshot(`
-    Array [
-      Object {
+    [
+      {
         "altbase": "G",
         "base": "A",
         "length": 1,
         "start": 6,
         "type": "mismatch",
       },
-      Object {
+      {
         "altbase": "C",
         "base": "A",
         "length": 1,
         "start": 11,
         "type": "mismatch",
       },
-      Object {
+      {
         "base": "1",
         "length": 0,
         "start": 31,
         "type": "insertion",
       },
-      Object {
+      {
         "altbase": "G",
         "base": "C",
         "length": 1,
         "start": 32,
         "type": "mismatch",
       },
-      Object {
+      {
         "altbase": "A",
         "base": "C",
         "length": 1,
         "start": 34,
         "type": "mismatch",
       },
-      Object {
+      {
         "altbase": "C",
         "base": "C",
         "length": 1,
         "start": 40,
         "type": "mismatch",
       },
-      Object {
+      {
         "altbase": "A",
         "base": "C",
         "length": 1,
         "start": 46,
         "type": "mismatch",
       },
-      Object {
+      {
         "base": "*",
         "length": 1,
         "start": 48,
         "type": "deletion",
       },
-      Object {
+      {
         "altbase": "A",
         "base": "G",
         "length": 1,
         "start": 52,
         "type": "mismatch",
       },
-      Object {
+      {
         "altbase": "G",
         "base": "G",
         "length": 1,
         "start": 68,
         "type": "mismatch",
       },
-      Object {
+      {
         "altbase": "G",
         "base": "G",
         "length": 1,

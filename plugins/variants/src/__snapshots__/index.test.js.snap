@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `Object {}`;
+exports[`plugin in a stock JBrowse 1`] = `{}`;
 
 exports[`plugin in a stock JBrowse 2`] = `
-Object {
-  "displays": Array [
-    Object {
+{
+  "displays": [
+    {
       "displayId": "trackId0-LinearVariantDisplay",
       "type": "LinearVariantDisplay",
     },
-    Object {
+    {
       "displayId": "trackId0-ChordVariantDisplay",
       "type": "ChordVariantDisplay",
     },

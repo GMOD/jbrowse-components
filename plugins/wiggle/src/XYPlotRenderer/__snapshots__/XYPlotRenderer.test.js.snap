@@ -1,16 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`several features 1`] = `
-Object {
+{
   "imageData": Any<Object>,
-  "reducedFeatures": Array [
-    Object {
+  "reducedFeatures": [
+    {
       "end": 100,
       "score": 1,
       "start": 1,
       "uniqueId": "t1",
     },
-    Object {
+    {
       "end": 200,
       "score": 2,
       "start": 101,
