@@ -16,6 +16,12 @@ yalc.lock
 **/dist/
 **/esm/
 lerna-debug.log
-.yarn
 .yarnrc
 *.tsbuildinfo
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
