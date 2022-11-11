@@ -42,7 +42,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
             ...(feature
               ? [
                   {
-                    label: 'Test',
+                    label: 'Open synteny view for this position',
                     onClick: () => {
                       const session = getSession(self)
                       const view = getContainingView(self)
@@ -93,7 +93,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                           t0 += l2
                         }
                       }
-                      console.log({ p0, p1 })
 
                       const view2 = session.addView('LinearSyntenyView', {
                         type: 'LinearSyntenyView',
@@ -109,9 +108,9 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                         ],
                       })
                       // @ts-ignore
-                      view2.views[0].navToLocString('{hg19}chr1:1-500')
+                      view2.views[0].navToLocString(r0, 'hg19')
                       // @ts-ignore
-                      view2.views[1].navToLocString('{hg38}chr1:500-1000')
+                      view2.views[1].navToLocString('chr1:500-1000', 'hg38')
                     },
                   },
                 ]
