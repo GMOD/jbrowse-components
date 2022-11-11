@@ -73,6 +73,9 @@
     "use-query-params": "^2.0.0",
     "webpack": "^5.72.0"
   },
+  "devDependencies": {
+    "@craco/craco": "^7.0.0"
+  },
   "browserslist": {
     "production": [
       ">0.2%",

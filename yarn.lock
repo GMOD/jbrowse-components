@@ -1715,6 +1715,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@craco/craco@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "@craco/craco@npm:7.0.0"
+  dependencies:
+    autoprefixer: ^10.4.12
+    cosmiconfig: ^7.0.1
+    cosmiconfig-typescript-loader: ^1.0.0
+    cross-spawn: ^7.0.3
+    lodash: ^4.17.21
+    semver: ^7.3.7
+    webpack-merge: ^5.8.0
+  peerDependencies:
+    react-scripts: ^5.0.0
+  bin:
+    craco: dist/bin/craco.js
+  checksum: d8371d5508a586ea00070d66010e632c8dab2761c2dd51163003e5b4e62e044f5931b081c3d19f02eea187fd970f9ddffeeaefcae004962e63286682e41e86b1
+  languageName: node
+  linkType: hard
+
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"
@@ -3271,6 +3290,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jbrowse/web@workspace:products/jbrowse-web"
   dependencies:
+    "@craco/craco": ^7.0.0
     "@fontsource/roboto": ^4.5.0
     "@jbrowse/core": ^2.2.0
     "@jbrowse/plugin-alignments": ^2.2.0
@@ -7320,7 +7340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/eslint@npm:*, @types/eslint@npm:^7.29.0 || ^8.4.1":
+"@types/eslint@npm:*, @types/eslint@npm:^7.29.0 || ^8.4.1, @types/eslint@npm:^8":
   version: 8.4.10
   resolution: "@types/eslint@npm:8.4.10"
   dependencies:
@@ -9629,7 +9649,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:^10.4.11":
+"autoprefixer@npm:^10.4.11, autoprefixer@npm:^10.4.12":
   version: 10.4.13
   resolution: "autoprefixer@npm:10.4.13"
   dependencies:
@@ -14344,7 +14364,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.3.0":
+"eslint@npm:^8.27.0, eslint@npm:^8.3.0":
   version: 8.27.0
   resolution: "eslint@npm:8.27.0"
   dependencies:
@@ -25194,6 +25214,7 @@ __metadata:
     "@types/detect-node": ^2.0.0
     "@types/dompurify": ^2.0.2
     "@types/escape-html": ^0.0.20
+    "@types/eslint": ^8
     "@types/express": ^4.17.8
     "@types/file-saver": ^2.0.1
     "@types/get-value": ^3.0.1
@@ -25237,6 +25258,7 @@ __metadata:
     electron-builder: ^23.0.3
     electron-mock-ipc: ^0.3.8
     electron-notarize: ^1.0.0
+    eslint: ^8.27.0
     eslint-config-prettier: ^8.5.0
     eslint-config-react-app: ^7.0.0
     eslint-plugin-cypress: ^2.12.1
@@ -28772,7 +28794,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-merge@npm:^5.7.3":
+"webpack-merge@npm:^5.7.3, webpack-merge@npm:^5.8.0":
   version: 5.8.0
   resolution: "webpack-merge@npm:5.8.0"
   dependencies:

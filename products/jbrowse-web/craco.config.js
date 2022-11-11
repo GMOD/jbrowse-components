@@ -8,11 +8,12 @@ const cp = require('child_process')
 function getWorkspaces(fromDir) {
   const cwd = fromDir || process.cwd()
   const workspacesStr = cp
-    .execSync('yarn -s workspaces info', { cwd })
+    .execSync('yarn workspaces list --json', { cwd })
     .toString()
-  return Object.values(JSON.parse(workspacesStr)).map(e =>
-    path.resolve(path.join('..', '..', e.location)),
-  )
+  return workspacesStr
+    .trim()
+    .split(/\n|\r\n|\r/)
+    .map(line => path.resolve(path.join('..', '..', JSON.parse(line).location)))
 }
 
 module.exports = {
