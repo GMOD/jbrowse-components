@@ -46,6 +46,7 @@ function NoConfigMessage() {
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
     ['test_data/config_wormbase.json', 'Wormbase'],
+    ['test_data/config_human_dotplot.json', 'Human dotplot'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (

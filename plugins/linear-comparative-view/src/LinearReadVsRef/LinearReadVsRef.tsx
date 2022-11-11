@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
 import {
   Button,
@@ -166,13 +165,14 @@ function gatherOverlaps(regions: BasicFeature[]) {
     .flat()
 }
 
-export function WindowSizeDlg({
+export default function ReadVsRefDialog({
   track,
   feature: preFeature,
   handleClose,
 }: {
   feature: Feature
   handleClose: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   track: any
 }) {
   const { classes } = useStyles()
@@ -246,13 +246,13 @@ export function WindowSizeDlg({
       const feature = primaryFeature
       const session = getSession(track)
       const view = getContainingView(track)
-      const cigar = feature.get('CIGAR')
-      const clipPos = getClip(cigar, 1)
-      const flags = feature.get('flags')
+      const cigar = feature.get('CIGAR') as string
+      const flags = feature.get('flags') as number
       const qual = feature.get('qual') as string
-      const origStrand = feature.get('strand')
-      const SA: string = getTag(feature, 'SA') || ''
-      const readName = feature.get('name')
+      const origStrand = feature.get('strand') as number
+      const SA = (getTag(feature, 'SA') as string) || ''
+      const readName = feature.get('name') as string
+      const clipPos = getClip(cigar, 1)
 
       const readAssembly = `${readName}_assembly_${Date.now()}`
       const [trackAssembly] = getConf(track, 'assemblyNames')
@@ -322,7 +322,7 @@ export function WindowSizeDlg({
       })
       features.sort((a, b) => a.clipPos - b.clipPos)
 
-      const featSeq = feature.get('seq')
+      const featSeq = feature.get('seq') as string
 
       // the config feature store includes synthetic mate features
       // mapped to the read assembly

@@ -59,6 +59,7 @@ import Header from './components/Header'
 import ZoomControls from './components/ZoomControls'
 import LinearGenomeView from './components/LinearGenomeView'
 
+// lazies
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
 )
@@ -1377,7 +1378,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      navToMultiple(locations: NavLocation[]) {
+      async navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
         const {
@@ -1391,7 +1392,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const session = getSession(self)
         const { assemblyManager } = session
-        const assembly = assemblyManager.get(assemblyName)
+        const assembly = await assemblyManager.waitForAssembly(assemblyName)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {
@@ -1462,18 +1463,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               )
               return
             }
-            let locationIndex = 0
-            let locationStart = 0
-            let locationEnd = 0
-            for (
-              locationIndex;
-              locationIndex < locations.length;
-              locationIndex++
-            ) {
-              const location = locations[locationIndex]
-              const region = self.displayedRegions[index + locationIndex]
-              locationStart = location.start || region.start
-              locationEnd = location.end || region.end
+            let idx = 0
+            let start = 0
+            let end = 0
+            for (idx; idx < locations.length; idx++) {
+              const location = locations[idx]
+              const region = self.displayedRegions[index + idx]
+              start = location.start || region.start
+              end = location.end || region.end
               if (location.refName !== region.refName) {
                 throw new Error(
                   `Entered location ${assembleLocString(
@@ -1482,10 +1479,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 )
               }
             }
-            locationIndex -= 1
+            idx -= 1
             const startDisplayedRegion = self.displayedRegions[index]
-            const endDisplayedRegion =
-              self.displayedRegions[index + locationIndex]
+            const endDisplayedRegion = self.displayedRegions[index + idx]
             this.moveTo(
               {
                 index,
@@ -1494,10 +1490,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   : s - startDisplayedRegion.start,
               },
               {
-                index: index + locationIndex,
+                index: index + idx,
                 offset: endDisplayedRegion.reversed
-                  ? endDisplayedRegion.end - locationStart
-                  : locationEnd - endDisplayedRegion.start,
+                  ? endDisplayedRegion.end - start
+                  : end - endDisplayedRegion.start,
               },
             )
             return

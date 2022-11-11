@@ -1,11 +1,13 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { getSession, getContainingTrack } from '@jbrowse/core/util'
 import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
-import { WindowSizeDlg } from './LinearReadVsRef'
+import { getSession, getContainingTrack } from '@jbrowse/core/util'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
+
+// locals
+import ReadVsRefDialog from './LinearReadVsRef'
 
 function isDisplay(elt: { name: string }): elt is DisplayType {
   return elt.name === 'LinearPileupDisplay'
@@ -34,7 +36,7 @@ export default function (pm: PluginManager) {
                         icon: AddIcon,
                         onClick: () => {
                           getSession(self).queueDialog(handleClose => [
-                            WindowSizeDlg,
+                            ReadVsRefDialog,
                             {
                               track,
                               feature,

@@ -156,6 +156,7 @@ function getOrientedMismatches(flip: boolean, cigar: string) {
 }
 
 class SyntenyFeature extends SimpleFeature {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(arg: string): any {
     if (arg === 'mismatches') {
       const cg = this.get('cg')
@@ -165,6 +166,10 @@ class SyntenyFeature extends SimpleFeature {
     }
     return super.get(arg)
   }
+}
+
+interface PAFOptions extends BaseOptions {
+  config?: AnyConfigurationModel
 }
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
@@ -274,10 +279,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  getFeatures(
-    query: Region,
-    opts: BaseOptions & { config?: AnyConfigurationModel } = {},
-  ) {
+  getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       let pafRecords = await this.setup(opts)
       const { config } = opts
