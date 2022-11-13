@@ -49,6 +49,7 @@
     "@jbrowse/plugin-circular-view": "^2.2.0",
     "@jbrowse/plugin-config": "^2.2.0",
     "@jbrowse/plugin-data-management": "^2.2.0",
+    "@jbrowse/plugin-gccontent": "^2.2.0",
     "@jbrowse/plugin-gff3": "^2.2.0",
     "@jbrowse/plugin-legacy-jbrowse": "^2.2.0",
     "@jbrowse/plugin-linear-genome-view": "^2.2.0",

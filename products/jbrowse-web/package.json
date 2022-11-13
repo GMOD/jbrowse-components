@@ -29,6 +29,7 @@
     "@jbrowse/plugin-config": "^2.2.0",
     "@jbrowse/plugin-data-management": "^2.2.0",
     "@jbrowse/plugin-dotplot-view": "^2.2.0",
+    "@jbrowse/plugin-gccontent": "^2.2.0",
     "@jbrowse/plugin-gff3": "^2.2.0",
     "@jbrowse/plugin-grid-bookmark": "^2.2.0",
     "@jbrowse/plugin-gtf": "^2.2.0",

@@ -389,6 +389,10 @@ Object {
         "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
         "type": "LinearReferenceSequenceDisplay",
       },
+      Object {
+        "displayId": "sequenceConfigId-LinearGCContentDisplay",
+        "type": "LinearGCContentDisplay",
+      },
     ],
     "trackId": "sequenceConfigId",
     "type": "ReferenceSequenceTrack",

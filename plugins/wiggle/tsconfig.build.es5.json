@@ -14,9 +14,6 @@
   "references": [
     {
       "path": "../../packages/core/tsconfig.build.json"
-    },
-    {
-      "path": "../linear-genome-view/tsconfig.build.es5.json"
     }
   ]
 }

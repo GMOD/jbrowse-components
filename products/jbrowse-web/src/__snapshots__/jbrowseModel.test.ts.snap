@@ -95,6 +95,10 @@ Object {
             "displayId": "volvox_refseq-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
+          Object {
+            "displayId": "volvox_refseq-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
         ],
         "formatAbout": Object {
           "config": "jexl:{extraField:'important data'}",
@@ -130,6 +134,10 @@ Object {
             "displayId": "volvox_refseq2-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
+          Object {
+            "displayId": "volvox_refseq2-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
         ],
         "trackId": "volvox_refseq2",
         "type": "ReferenceSequenceTrack",
@@ -157,6 +165,10 @@ Object {
           Object {
             "displayId": "volvox_refseq404-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
+          },
+          Object {
+            "displayId": "volvox_refseq404-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox_refseq404",
@@ -192,6 +204,10 @@ Object {
             "displayId": "volvox_del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
+          Object {
+            "displayId": "volvox_del-ReferenceSequenceTrack-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
         ],
         "trackId": "volvox_del-ReferenceSequenceTrack",
         "type": "ReferenceSequenceTrack",
@@ -225,6 +241,10 @@ Object {
           Object {
             "displayId": "volvox_ins-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
+          },
+          Object {
+            "displayId": "volvox_ins-ReferenceSequenceTrack-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
           },
         ],
         "trackId": "volvox_ins-ReferenceSequenceTrack",
