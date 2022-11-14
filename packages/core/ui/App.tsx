@@ -209,13 +209,18 @@ const ViewPanel = observer(
     const { ReactComponent } = viewType
     return (
       <ViewContainer view={view} onClose={() => session.removeView(view)}>
-        <Suspense fallback={<LoadingEllipses />}>
-          <ReactComponent
-            model={view}
-            session={session}
-            getTrackType={pluginManager.getTrackType}
-          />
-        </Suspense>
+        <ErrorBoundary
+          key={`view-${view.id}`}
+          FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+        >
+          <Suspense fallback={<LoadingEllipses />}>
+            <ReactComponent
+              model={view}
+              session={session}
+              getTrackType={pluginManager.getTrackType}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </ViewContainer>
     )
   },
@@ -283,14 +288,11 @@ const App = observer(
           <div className={classes.components}>
             {views.length ? (
               views.map(view => (
-                <ErrorBoundary
+                <ViewPanel
                   key={`view-${view.id}`}
-                  FallbackComponent={({ error }) => (
-                    <ErrorMessage error={error} />
-                  )}
-                >
-                  <ViewPanel view={view} session={session} />
-                </ErrorBoundary>
+                  view={view}
+                  session={session}
+                />
               ))
             ) : (
               <ViewLauncher {...props} />
