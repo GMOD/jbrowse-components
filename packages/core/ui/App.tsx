@@ -210,7 +210,6 @@ const ViewPanel = observer(
     return (
       <ViewContainer view={view} onClose={() => session.removeView(view)}>
         <ErrorBoundary
-          key={`view-${view.id}`}
           FallbackComponent={({ error }) => <ErrorMessage error={error} />}
         >
           <Suspense fallback={<LoadingEllipses />}>

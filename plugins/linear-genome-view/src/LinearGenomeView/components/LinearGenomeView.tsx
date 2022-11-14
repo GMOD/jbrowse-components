@@ -74,7 +74,9 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
             )}
           </Paper>
         ) : (
-          tracks.map(track => <TrackContainer model={model} track={track} />)
+          tracks.map(track => (
+            <TrackContainer key={track.id} model={model} track={track} />
+          ))
         )}
       </TracksContainer>
     </div>
