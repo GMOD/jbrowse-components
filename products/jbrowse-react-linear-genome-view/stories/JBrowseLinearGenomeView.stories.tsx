@@ -619,6 +619,41 @@ export const WithExternalPlugins = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+export const WithInternetAccounts = () => {
+  const state = createViewState({
+    assembly,
+    tracks: [
+      {
+        type: 'QuantitativeTrack',
+        trackId: 'google_bigwig',
+        name: 'Google Drive BigWig',
+        category: ['Authentication'],
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            locationType: 'UriLocation',
+            uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
+            internetAccountId: 'manualGoogleEntry',
+          },
+        },
+      },
+    ],
+    defaultSession,
+    location: 'ctgA:1105..1221',
+    internetAccounts: [
+      {
+        type: 'ExternalTokenInternetAccount',
+        internetAccountId: 'manualGoogleEntry',
+        name: 'Google Drive Manual Token Entry',
+        description: 'Manually enter a token to access Google Drive files',
+        tokenType: 'Bearer',
+      },
+    ],
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
 const JBrowseLinearGenomeViewStories = {
   title: 'Linear View',
 }
