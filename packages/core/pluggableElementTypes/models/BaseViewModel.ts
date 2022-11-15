@@ -13,21 +13,23 @@ const BaseViewModel = types
      * #property
      */
     id: ElementId,
+
     /**
      * #property
      * displayName is displayed in the header of the view, or assembly names
      * being used if none is specified
      */
     displayName: types.maybe(types.string),
+
     /**
      * #property
      */
     minimized: false,
   })
-  .volatile((/* self */) => ({
+  .volatile(() => ({
     width: 800,
   }))
-  .views((/* self */) => ({
+  .views(() => ({
     /**
      * #getter
      */
@@ -45,15 +47,19 @@ const BaseViewModel = types
 
     /**
      * #action
-     * width is an "important" attribute of the view model, when it becomes set, it
+     * width is an important attribute of the view model, when it becomes set, it
      * often indicates when the app can start drawing to it. certain views like
      * lgv are strict about this because if it tries to draw before it knows the
      * width it should draw to, it may start fetching data for regions it doesn't
      * need to
+     *
+     * setWidth is updated by a ResizeObserver generally, the views often need
+     * to know how wide they are to properly draw genomic regions
      */
     setWidth(newWidth: number) {
       self.width = newWidth
     },
+
     /**
      * #action
      */

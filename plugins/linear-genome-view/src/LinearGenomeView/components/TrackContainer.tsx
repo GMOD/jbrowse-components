@@ -117,10 +117,8 @@ function TrackContainer({
       >
         <div
           className={classes.trackRenderingContainer}
-          style={{ height }}
-          onScroll={event =>
-            display.setScrollTop(event.currentTarget.scrollTop)
-          }
+          style={{ height: minimized ? 20 : height }}
+          onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
           onDragEnter={debouncedOnDragEnter}
           data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
         >

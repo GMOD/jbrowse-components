@@ -76,6 +76,11 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
     })
 
     const items = [
+      {
+        label: minimized ? 'Restore track' : 'Minimize track',
+        icon: minimized ? AddIcon : MinimizeIcon,
+        onClick: () => track.setMinimized(!minimized),
+      },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
       ...track.trackMenuItems(),
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
@@ -105,18 +110,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           color="secondary"
         >
           <CloseIcon fontSize="small" />
-        </IconButton>
-        <IconButton
-          onClick={() => track.setMinimized(!minimized)}
-          className={classes.iconButton}
-          title={minimized ? 'restore this track' : 'minimize this track'}
-          color="secondary"
-        >
-          {minimized ? (
-            <AddIcon fontSize="small" />
-          ) : (
-            <MinimizeIcon fontSize="small" />
-          )}
         </IconButton>
 
         <Typography
