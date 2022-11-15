@@ -771,6 +771,12 @@ export function minmax(a: number, b: number) {
   return [Math.min(a, b), Math.max(a, b)]
 }
 
+export function shorten(name: string, max = 70, short = 30) {
+  return name.length > max
+    ? name.slice(0, short) + '...' + name.slice(-short)
+    : name
+}
+
 export function stringify({
   refName,
   coord,
@@ -781,7 +787,7 @@ export function stringify({
   oob?: boolean
 }) {
   return refName
-    ? `${refName}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
+    ? `${shorten(refName)}:${toLocale(coord)}${oob ? ' (out of bounds)' : ''}`
     : ''
 }
 

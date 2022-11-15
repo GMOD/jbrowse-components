@@ -21,7 +21,6 @@ import {
   types,
   Instance,
   SnapshotIn,
-  IAnyModelType,
 } from 'mobx-state-tree'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -257,9 +256,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        ) as IAnyModelType
+        const schema = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         if (!configuration) {
           throw new Error(`track not found ${trackId}`)
