@@ -1061,59 +1061,57 @@ export function stateModelFactory(pluginManager: PluginManager) {
             icon: SyncAltIcon,
             onClick: self.horizontallyFlip,
           },
-          { type: 'divider' },
           {
-            label: 'Show all regions in assembly',
+            label: 'Show...',
             icon: VisibilityIcon,
-            onClick: self.showAllRegionsInAssembly,
+            subMenu: [
+              {
+                label: 'Show all regions in assembly',
+                onClick: self.showAllRegionsInAssembly,
+              },
+              {
+                label: 'Show center line',
+                type: 'checkbox',
+                checked: self.showCenterLine,
+                onClick: self.toggleCenterLine,
+              },
+              {
+                label: 'Show header',
+                type: 'checkbox',
+                checked: !self.hideHeader,
+                onClick: self.toggleHeader,
+              },
+              {
+                label: 'Show header overview',
+                type: 'checkbox',
+                checked: !self.hideHeaderOverview,
+                onClick: self.toggleHeaderOverview,
+                disabled: self.hideHeader,
+              },
+              {
+                label: 'Show no tracks active button',
+                type: 'checkbox',
+                checked: !self.hideNoTracksActive,
+                onClick: self.toggleNoTracksActive,
+              },
+              {
+                label: 'Show guidelines',
+                type: 'checkbox',
+                checked: self.showGridlines,
+                onClick: self.toggleShowGridlines,
+              },
+              ...(canShowCytobands
+                ? [
+                    {
+                      label: 'Show ideogram',
+                      type: 'checkbox' as const,
+                      checked: self.showCytobands,
+                      onClick: () => self.setShowCytobands(!showCytobands),
+                    },
+                  ]
+                : []),
+            ],
           },
-          {
-            label: 'Show center line',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: self.showCenterLine,
-            onClick: self.toggleCenterLine,
-          },
-          {
-            label: 'Show header',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: !self.hideHeader,
-            onClick: self.toggleHeader,
-          },
-          {
-            label: 'Show header overview',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: !self.hideHeaderOverview,
-            onClick: self.toggleHeaderOverview,
-            disabled: self.hideHeader,
-          },
-          {
-            label: 'Show no tracks active button',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: !self.hideNoTracksActive,
-            onClick: self.toggleNoTracksActive,
-          },
-          {
-            label: 'Show guidelines',
-            icon: VisibilityIcon,
-            type: 'checkbox',
-            checked: self.showGridlines,
-            onClick: self.toggleShowGridlines,
-          },
-          ...(canShowCytobands
-            ? [
-                {
-                  label: 'Show ideogram',
-                  icon: VisibilityIcon,
-                  type: 'checkbox' as const,
-                  checked: self.showCytobands,
-                  onClick: () => self.setShowCytobands(!showCytobands),
-                },
-              ]
-            : []),
           {
             label: 'Track labels',
             icon: LabelIcon,

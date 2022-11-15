@@ -343,6 +343,9 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       moveViewUp(id: string) {
         const idx = self.views.findIndex(v => v.id === id)
 
@@ -353,6 +356,9 @@ export default function sessionModelFactory(
           self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
         }
       },
+      /**
+       * #action
+       */
       moveViewDown(id: string) {
         const idx = self.views.findIndex(v => v.id === id)
 

@@ -71,19 +71,23 @@ const ViewMenu = observer(
     const { menuItems } = model
     const session = getSession(model)
 
-    // <=1.3.3 didn't use a function
     const items = [
-      {
-        label: 'Move view up',
-        icon: ArrowUpward,
-        onClick: () => session.moveViewUp(model.id),
-      },
-      {
-        label: 'Move view down',
-        icon: ArrowDownward,
-        onClick: () => session.moveViewDown(model.id),
-      },
+      ...(session.views.length > 1
+        ? [
+            {
+              label: 'Move view up',
+              icon: ArrowUpward,
+              onClick: () => session.moveViewUp(model.id),
+            },
+            {
+              label: 'Move view down',
+              icon: ArrowDownward,
+              onClick: () => session.moveViewDown(model.id),
+            },
+          ]
+        : []),
 
+      // <=1.3.3 didn't use a function, so check as value also
       ...((typeof menuItems === 'function' ? menuItems() : menuItems) || []),
     ]
 
