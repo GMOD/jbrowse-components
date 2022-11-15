@@ -19,21 +19,23 @@ import { getEnv } from 'mobx-state-tree'
 
 // locals
 import { readConfObject, AnyConfigurationModel } from '../configuration'
-import DrawerWidget from './DrawerWidget'
-import DropDownMenu from './DropDownMenu'
-import ErrorMessage from './ErrorMessage'
-import LoadingEllipses from './LoadingEllipses'
-import EditableTypography from './EditableTypography'
-import { LogoFull } from './Logo'
-import Snackbar from './Snackbar'
-import ViewContainer from './ViewContainer'
 import {
   AbstractViewModel,
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
 } from '../util'
-import { MenuItem as JBMenuItem } from './index'
+
+// ui elements
+import DrawerWidget from './DrawerWidget'
+import DropDownMenu from './DropDownMenu'
+import ErrorMessage from './ErrorMessage'
+import LoadingEllipses from './LoadingEllipses'
+import EditableTypography from './EditableTypography'
+import Snackbar from './Snackbar'
+import ViewContainer from './ViewContainer'
+import { LogoFull } from './Logo'
+import { MenuItem as JBMenuItem } from './Menu'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -186,9 +188,7 @@ const ViewLauncher = observer(({ session }: { session: AppSession }) => {
       </FormControl>
       <FormControl style={{ margin: 2 }}>
         <Button
-          onClick={() => {
-            session.addView(value, {})
-          }}
+          onClick={() => session.addView(value, {})}
           variant="contained"
           color="primary"
         >
@@ -208,18 +208,26 @@ const ViewPanel = observer(
     }
     const { ReactComponent } = viewType
     return (
-      <ViewContainer view={view} onClose={() => session.removeView(view)}>
-        <ErrorBoundary
-          FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-        >
-          <Suspense fallback={<LoadingEllipses />}>
-            <ReactComponent
-              model={view}
-              session={session}
-              getTrackType={pluginManager.getTrackType}
-            />
-          </Suspense>
-        </ErrorBoundary>
+      <ViewContainer
+        view={view}
+        onClose={() => session.removeView(view)}
+        onMinimize={() => view.setMinimized(!view.minimized)}
+      >
+        {!view.minimized ? (
+          <ErrorBoundary
+            FallbackComponent={({ error }) => <ErrorMessage error={error} />}
+          >
+            <Suspense fallback={<LoadingEllipses />}>
+              <ReactComponent
+                model={view}
+                session={session}
+                getTrackType={pluginManager.getTrackType}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        ) : (
+          false
+        )}
       </ViewContainer>
     )
   },

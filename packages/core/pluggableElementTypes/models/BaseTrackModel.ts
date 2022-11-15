@@ -12,16 +12,15 @@ import { getContainingView, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
-// these MST models only exist for tracks that are *shown*. they should contain
-// only UI state for the track, and have a reference to a track configuration
-// (stored under session.configuration.assemblies.get(assemblyName).tracks).
-
 /**
- * #stateModel BaseViewModel
+ * #stateModel BaseTrackModel
+ * these MST models only exist for tracks that are *shown*.
+ * they should contain only UI state for the track, and have
+ * a reference to a track configuration (stored under
+ * session.configuration.assemblies.get(assemblyName).tracks).
+ * note that multiple displayed tracks could use the same 
+ * configuration.
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
-// note that multiple displayed tracks could use the same configuration.
 export function createBaseTrackModel(
   pm: PluginManager,
   trackType: string,
@@ -44,12 +43,16 @@ export function createBaseTrackModel(
       /**
        * #property
        */
+      minimized: false,
+      /**
+       * #property
+       */
       displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
       /**
        * #getter
-       * decides how to assign tracks to rpc, by default uses the trackId
+       * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
         return self.configuration.trackId
@@ -86,11 +89,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get viewMenuActions(): MenuItem[] {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.viewMenuActions)
-        })
-        return menuItems
+        return self.displays.map(d => d.viewMenuActions).flat()
       },
 
       /**
@@ -111,7 +110,13 @@ export function createBaseTrackModel(
     }))
     .actions(self => ({
       /**
-       * #actions
+       * #action
+       */
+      setMinimized(flag: boolean) {
+        self.minimized = flag
+      },
+      /**
+       * #action
        */
       activateConfigurationUI() {
         const session = getSession(self)
@@ -129,7 +134,7 @@ export function createBaseTrackModel(
       },
 
       /**
-       * #actions
+       * #action
        */
       showDisplay(displayId: string, initialSnapshot = {}) {
         const schema = pm.pluggableConfigSchemaType('display')
@@ -147,7 +152,7 @@ export function createBaseTrackModel(
       },
 
       /**
-       * #actions
+       * #action
        */
       hideDisplay(displayId: string) {
         const schema = pm.pluggableConfigSchemaType('display')
@@ -158,7 +163,7 @@ export function createBaseTrackModel(
       },
 
       /**
-       * #actions
+       * #action
        */
       replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
         const idx = self.displays.findIndex(
@@ -185,19 +190,15 @@ export function createBaseTrackModel(
        * #method
        */
       trackMenuItems() {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.trackMenuItems())
-        })
+        const menuItems: MenuItem[] = self.displays
+          .map(d => d.trackMenuItems())
+          .flat()
         const displayChoices: MenuItem[] = []
         const view = getContainingView(self)
         const viewType = pm.getViewType(view.type)
-        const compatibleDisplayTypes = viewType.displayTypes.map(
-          displayType => displayType.name,
-        )
+        const compatibleDisplayTypes = viewType.displayTypes.map(d => d.name)
         const compatibleDisplays = self.configuration.displays.filter(
-          (displayConf: AnyConfigurationModel) =>
-            compatibleDisplayTypes.includes(displayConf.type),
+          (d: AnyConfigurationModel) => compatibleDisplayTypes.includes(d.type),
         )
         const shownId = self.displays[0].configuration.displayId
         if (compatibleDisplays.length > 1) {

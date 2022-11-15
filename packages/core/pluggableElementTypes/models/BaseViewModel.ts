@@ -19,6 +19,10 @@ const BaseViewModel = types
      * being used if none is specified
      */
     displayName: types.maybe(types.string),
+    /**
+     * #property
+     */
+    minimized: false,
   })
   .volatile((/* self */) => ({
     width: 800,
@@ -49,6 +53,12 @@ const BaseViewModel = types
      */
     setWidth(newWidth: number) {
       self.width = newWidth
+    },
+    /**
+     * #action
+     */
+    setMinimized(flag: boolean) {
+      self.minimized = flag
     },
   }))
 

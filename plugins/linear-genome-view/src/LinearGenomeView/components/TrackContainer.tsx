@@ -93,6 +93,7 @@ function TrackContainer({
   const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
+  const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
     if (isAlive(display) && dimmed) {
       moveTrack(draggingTrackId, track.id)
@@ -123,27 +124,31 @@ function TrackContainer({
           onDragEnter={debouncedOnDragEnter}
           data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
         >
-          <div
-            ref={ref}
-            className={classes.renderingComponentContainer}
-            style={{ transform: `scaleX(${model.scaleFactor})` }}
-          >
-            <RenderingComponent
-              model={display}
-              onHorizontalScroll={horizontalScroll}
-            />
-          </div>
+          {!minimized ? (
+            <>
+              <div
+                ref={ref}
+                className={classes.renderingComponentContainer}
+                style={{ transform: `scaleX(${model.scaleFactor})` }}
+              >
+                <RenderingComponent
+                  model={display}
+                  onHorizontalScroll={horizontalScroll}
+                />
+              </div>
 
-          {DisplayBlurb ? (
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: display.height - 20,
-              }}
-            >
-              <DisplayBlurb model={display} />
-            </div>
+              {DisplayBlurb ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: display.height - 20,
+                  }}
+                >
+                  <DisplayBlurb model={display} />
+                </div>
+              ) : null}
+            </>
           ) : null}
         </div>
       </ErrorBoundary>

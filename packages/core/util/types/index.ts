@@ -234,7 +234,9 @@ export interface AbstractViewModel {
   id: string
   type: string
   width: number
+  minimized: boolean
   setWidth(width: number): void
+  setMinimized(flag: boolean): void
   displayName: string | undefined
   setDisplayName: (arg: string) => void
   menuItems: () => MenuItem[]
