@@ -1,15 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { autorun } from 'mobx'
-import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import { transaction } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   addDisposer,
   cast,
@@ -22,8 +10,22 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
+import { autorun, transaction } from 'mobx'
+
+// jbrowse
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@jbrowse/plugin-linear-genome-view'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 /**
@@ -159,6 +161,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         })
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSubviewAction(actionName: string, path: string, args: any[] = []) {
         self.views.forEach(view => {
           const ret = getPath(view)
@@ -201,6 +204,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * removes the view itself from the state tree entirely by calling the parent removeView
        */
       closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 

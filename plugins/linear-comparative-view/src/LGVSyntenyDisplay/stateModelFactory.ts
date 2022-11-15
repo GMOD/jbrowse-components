@@ -27,8 +27,10 @@ async function navToSynteny(feature: Feature, self: any) {
   const regStart = reg.start
   const regEnd = reg.end
   const featStart = feature.get('start')
+  const featEnd = feature.get('end')
   const mate = feature.get('mate')
   const mateStart = mate.start
+  const mateEnd = mate.end
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
   const featAsm = reg.assemblyName
@@ -39,32 +41,37 @@ async function navToSynteny(feature: Feature, self: any) {
   let rFeatStart = featStart
   let rFeatEnd = featStart
 
-  for (let i = 0; i < cigar.length && rFeatStart < regStart; i += 2) {
-    const len = +cigar[i]
-    const op = cigar[i + 1]
-    if (op === 'I') {
-      rMateStart += len
-    } else if (op === 'D') {
-      rFeatStart += len
-    } else if (op === 'M') {
-      const l2 = Math.min(len, regStart - rFeatStart)
+  if (cigar.length) {
+    for (let i = 0; i < cigar.length && rFeatStart < regStart; i += 2) {
+      const len = +cigar[i]
+      const op = cigar[i + 1]
+      if (op === 'I') {
+        rMateStart += len
+      } else if (op === 'D') {
+        rFeatStart += len
+      } else if (op === 'M') {
+        const l2 = Math.min(len, regStart - rFeatStart)
 
-      rMateStart += l2
-      rFeatStart += l2
+        rMateStart += l2
+        rFeatStart += l2
+      }
     }
-  }
-  for (let i = 0; i < cigar.length && rFeatEnd < regEnd; i += 2) {
-    const len = +cigar[i]
-    const op = cigar[i + 1]
-    if (op === 'I') {
-      rMateEnd += len
-    } else if (op === 'D') {
-      rFeatEnd += len
-    } else if (op === 'M') {
-      const l2 = Math.min(len, regEnd - rFeatEnd)
-      rMateEnd += l2
-      rFeatEnd += l2
+    for (let i = 0; i < cigar.length && rFeatEnd < regEnd; i += 2) {
+      const len = +cigar[i]
+      const op = cigar[i + 1]
+      if (op === 'I') {
+        rMateEnd += len
+      } else if (op === 'D') {
+        rFeatEnd += len
+      } else if (op === 'M') {
+        const l2 = Math.min(len, regEnd - rFeatEnd)
+        rMateEnd += l2
+        rFeatEnd += l2
+      }
     }
+  } else {
+    rFeatEnd = featEnd
+    rMateEnd = mateEnd
   }
   const trackId = track.configuration.trackId
 
@@ -72,10 +79,12 @@ async function navToSynteny(feature: Feature, self: any) {
     type: 'LinearSyntenyView',
     views: [
       {
+        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
       },
       {
+        id: `${Math.random()}`,
         type: 'LinearGenomeView',
         hideHeader: true,
       },
@@ -96,7 +105,9 @@ async function navToSynteny(feature: Feature, self: any) {
   const f = (n: number) => Math.floor(n)
   const l1 = `${featRef}:${f(rFeatStart)}-${f(rFeatEnd)}`
   const l2 = `${mateRef}:${f(rMateStart)}-${f(rMateEnd)}`
+  console.log({ l1, l2 })
   await when(() => view2.width !== undefined)
+  console.log('done')
   // @ts-ignore
   view2.views[0].navToLocString(l1, featAsm)
   // @ts-ignore

@@ -15,6 +15,7 @@ interface BareFeature {
   end: number
   score: number
   name: string
+  assemblyName: string
 }
 
 type Row = [
@@ -106,6 +107,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       // the adapter in the subadapters list
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
+        const flip = index === 0
         feats.forEach(f => {
           const [f11, f12, f21, f22, score, strand, rowNum] = f
           let r1 = {
@@ -118,7 +120,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
             start: Math.min(f21.start, f22.start),
             end: Math.max(f21.end, f22.end),
           }
-          if (index === 1) {
+          if (!flip) {
             ;[r2, r1] = [r1, r2]
           }
           if (
@@ -130,9 +132,13 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
                 ...r1,
                 uniqueId: `${rowNum}`,
                 syntenyId: rowNum,
+                assemblyName: assemblyNames[+!flip],
                 score,
                 strand,
-                mate: r2 as BareFeature,
+                mate: {
+                  ...r2,
+                  assemblyName: assemblyNames[+flip],
+                } as BareFeature,
               }),
             )
           }
