@@ -1378,7 +1378,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      async navToMultiple(locations: NavLocation[]) {
+      navToMultiple(locations: NavLocation[]) {
         const firstLocation = locations[0]
         let { refName } = firstLocation
         const {
@@ -1392,7 +1392,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         const session = getSession(self)
         const { assemblyManager } = session
-        const assembly = await assemblyManager.waitForAssembly(assemblyName)
+        const assembly = assemblyManager.get(assemblyName)
         if (assembly) {
           const canonicalRefName = assembly.getCanonicalRefName(refName)
           if (canonicalRefName) {
