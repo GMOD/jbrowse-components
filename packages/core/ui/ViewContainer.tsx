@@ -17,8 +17,11 @@ import CloseIcon from '@mui/icons-material/Close'
 import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
 import MenuIcon from '@mui/icons-material/Menu'
+import ArrowDownward from '@mui/icons-material/ArrowDownward'
+import ArrowUpward from '@mui/icons-material/ArrowUpward'
 
 // locals
+import { getSession } from '../util'
 import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
@@ -66,15 +69,28 @@ const ViewMenu = observer(
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()
     const { menuItems } = model
+    const session = getSession(model)
 
     // <=1.3.3 didn't use a function
-    const items = typeof menuItems === 'function' ? menuItems() : menuItems
+    const items = [
+      {
+        label: 'Move view up',
+        icon: ArrowUpward,
+        onClick: () => session.moveViewUp(model.id),
+      },
+      {
+        label: 'Move view down',
+        icon: ArrowDownward,
+        onClick: () => session.moveViewDown(model.id),
+      },
 
-    return items?.length ? (
+      ...((typeof menuItems === 'function' ? menuItems() : menuItems) || []),
+    ]
+
+    return (
       <>
         <IconButton
           {...IconButtonProps}
-          style={{ padding: 3 }}
           onClick={event => setAnchorEl(event.currentTarget)}
           data-testid="view_menu_icon"
         >
@@ -88,10 +104,10 @@ const ViewMenu = observer(
             setAnchorEl(undefined)
           }}
           onClose={() => setAnchorEl(undefined)}
-          menuItems={model.menuItems()}
+          menuItems={items}
         />
       </>
-    ) : null
+    )
   },
 )
 const ViewContainer = observer(

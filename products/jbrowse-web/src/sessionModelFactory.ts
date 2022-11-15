@@ -343,6 +343,27 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      moveViewUp(id: string) {
+        const idx = self.views.findIndex(v => v.id === id)
+
+        if (idx === -1) {
+          return
+        }
+        if (idx > 0) {
+          self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
+        }
+      },
+      moveViewDown(id: string) {
+        const idx = self.views.findIndex(v => v.id === id)
+
+        if (idx === -1) {
+          return
+        }
+
+        if (idx < self.views.length - 1) {
+          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
+        }
+      },
       /**
        * #action
        */
