@@ -13,13 +13,15 @@ describe('VariantTrack widget', () => {
     const pluginManager = new PluginManager([])
     const Session = types.model({
       rpcManager: types.optional(types.frozen(), {}),
-      pluginManager: types.optional(types.frozen(), {}),
       configuration: ConfigurationSchema('test', {}),
       widget: stateModelFactory(pluginManager),
     })
-    const model = Session.create({
-      widget: { type: 'VariantFeatureWidget' },
-    })
+    const model = Session.create(
+      {
+        widget: { type: 'VariantFeatureWidget' },
+      },
+      { pluginManager },
+    )
     model.widget.setFeatureData({
       refName: 'ctgA',
       start: 176,

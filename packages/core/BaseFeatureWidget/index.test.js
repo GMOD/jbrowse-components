@@ -13,14 +13,16 @@ test('open up a widget', async () => {
   const pluginManager = new PluginManager([])
 
   const Session = types.model({
-    pluginManager: types.optional(types.frozen(), {}),
     rpcManager: types.optional(types.frozen(), {}),
     configuration: ConfigurationSchema('test', {}),
     widget: stateModelFactory(pluginManager),
   })
-  const model = Session.create({
-    widget: { type: 'BaseFeatureWidget' },
-  })
+  const model = Session.create(
+    {
+      widget: { type: 'BaseFeatureWidget' },
+    },
+    { pluginManager },
+  )
   const { container, findByText } = render(
     <BaseFeatureDetails model={model.widget} />,
   )
