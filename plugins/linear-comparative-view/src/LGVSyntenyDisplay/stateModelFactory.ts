@@ -13,11 +13,12 @@ import {
   linearPileupDisplayStateModelFactory,
 } from '@jbrowse/plugin-alignments'
 import { types } from 'mobx-state-tree'
+import { when } from 'mobx'
 
 const { parseCigar } = MismatchParser
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function navToSynteny(feature: Feature, self: any) {
+async function navToSynteny(feature: Feature, self: any) {
   const session = getSession(self)
   const track = getContainingTrack(self)
   const view = getContainingView(self)
@@ -95,6 +96,7 @@ function navToSynteny(feature: Feature, self: any) {
   const f = (n: number) => Math.floor(n)
   const l1 = `${featRef}:${f(rFeatStart)}-${f(rFeatEnd)}`
   const l2 = `${mateRef}:${f(rMateStart)}-${f(rMateEnd)}`
+  await when(() => view2.width !== undefined)
   // @ts-ignore
   view2.views[0].navToLocString(l1, featAsm)
   // @ts-ignore

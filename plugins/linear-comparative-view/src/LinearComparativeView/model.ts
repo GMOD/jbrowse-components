@@ -96,7 +96,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      width: 800,
+      width: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -109,7 +109,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
-        return self.views.length > 0
+        return self.width !== undefined && self.views.length > 0
       },
 
       /**
