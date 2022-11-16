@@ -203,27 +203,28 @@ function stateModelFactory(
       /**
        * #action
        */
-      setSNPCoverageDisplay(displayConfig: AnyConfigurationModel) {
+      setSNPCoverageDisplay(configuration: AnyConfigurationModel) {
         self.SNPCoverageDisplay = {
           type: 'LinearSNPCoverageDisplay',
-          configuration: displayConfig,
+          configuration,
           height: self.snpCovHeight,
         }
       },
       /**
        * #action
        */
-      setUserFeatureScreenDensity(limit: number) {
-        self.PileupDisplay.setUserFeatureScreenDensity(limit)
-        self.SNPCoverageDisplay.setUserFeatureScreenDensity(limit)
+      updateStatsLimit(stats: unknown) {
+        self.PileupDisplay.updateStats(stats)
+        self.SNPCoverageDisplay.updateStats(stats)
       },
+
       /**
        * #action
        */
-      setPileupDisplay(displayConfig: AnyConfigurationModel) {
+      setPileupDisplay(configuration: AnyConfigurationModel) {
         self.PileupDisplay = {
           type: 'LinearPileupDisplay',
-          configuration: displayConfig,
+          configuration,
         }
       },
       /**
