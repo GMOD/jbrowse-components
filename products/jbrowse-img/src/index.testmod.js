@@ -53,6 +53,27 @@ test('renders volvox with variety of args', async () => {
   expect(result).toBeTruthy()
 }, 40000)
 
+test('renders human large region with remote urls', async () => {
+  console.error = jest.fn()
+  const result = await renderRegion({
+    fasta: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+    trackList: [
+      [
+        'cram',
+        [
+          'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram',
+        ],
+      ],
+    ],
+    loc: '1:10,000,000-11,000,000',
+  })
+  fs.writeFileSync(
+    require.resolve('../test/human_remote_urls_large_region.svg'),
+    result,
+  )
+  expect(result).toBeTruthy()
+}, 40000)
+
 test('renders volvox with variety of args (noRasterize)', async () => {
   const fp = f => require.resolve('../data/volvox/' + f)
   console.error = jest.fn()
