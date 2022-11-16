@@ -1,45 +1,51 @@
 /* eslint-disable no-console */
 import fs from 'fs'
 import yargs from 'yargs'
-import { standardizeArgv, parseArgv } from './parseArgv'
-import { renderRegion } from './renderRegion'
-import tmp from 'tmp'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
-import { spawnSync } from 'child_process'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 import { JSDOM } from 'jsdom'
 import { Image, createCanvas } from 'canvas'
 
+// locals
+import { standardizeArgv, parseArgv } from './parseArgv'
+import { renderRegion, Opts } from './renderRegion'
+import { convert } from './util'
+
+// @ts-ignore
 global.nodeImage = Image
+// @ts-ignore
 global.nodeCreateCanvas = createCanvas
 
 const { document } = new JSDOM(`...`).window
 global.document = document
 
 if (!global.fetch) {
+  // @ts-ignore
   global.fetch = fetch
+  // @ts-ignore
   global.Headers = Headers
+  // @ts-ignore
   global.Response = Response
+  // @ts-ignore
   global.Request = Request
 }
 
 const err = console.error
-console.error = (...args) => {
-  if (`${args[0]}`.match('useLayoutEffect')) {
-    return null
-  } else {
-    err(args)
+console.error = (...p: unknown[]) => {
+  if (!`${p[0]}`.match('useLayoutEffect')) {
+    err(p)
   }
 }
 
-console.warn = (...args) => {
-  if (`${args[0]}`.match('estimation reached timeout')) {
-    return null
-  } else {
-    err(args)
+const warn = console.warn
+console.warn = (...p: unknown[]) => {
+  if (!`${p[0]}`.match('estimation reached timeout')) {
+    warn(p)
   }
 }
 
+// note: yargs is actually unused except for printing help
+// we do custom command line parsing, see parseArgv.ts
 // eslint-disable-next-line no-unused-expressions
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
@@ -151,14 +157,6 @@ yargs
   .alias('help', 'h')
   .alias('width', 'w').argv
 
-// prints to stderr the time it takes to execute cb
-async function time(cb) {
-  const start = +Date.now()
-  const ret = await cb()
-  console.log(`Finished rendering: ${(+Date.now() - start) / 1000}s`)
-  return ret
-}
-
 const args = standardizeArgv(parseArgv(process.argv.slice(2)), [
   'bam',
   'cram',
@@ -171,50 +169,16 @@ const args = standardizeArgv(parseArgv(process.argv.slice(2)), [
   'configtracks',
 ])
 
-time(async () => {
+;(async () => {
   try {
-    const result = await renderRegion(args)
-    const outfile = args.out || 'out.svg'
-    if (outfile.endsWith('.png')) {
-      const tmpobj = tmp.fileSync({
-        mode: 0o644,
-        prefix: 'prefix-',
-        postfix: '.svg',
-      })
-      fs.writeFileSync(tmpobj.name, result)
-      const ls = spawnSync('rsvg-convert', [
-        '-w',
-        args.pngwidth || 2048,
-        tmpobj.name,
-        '-o',
-        outfile,
-      ])
-
-      console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-      console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
-      fs.unlinkSync(tmpobj.name)
-    } else if (outfile.endsWith('.pdf')) {
-      const tmpobj = tmp.fileSync({
-        mode: 0o644,
-        prefix: 'prefix-',
-        postfix: '.svg',
-      })
-      fs.writeFileSync(tmpobj.name, result)
-      const ls = spawnSync('rsvg-convert', [
-        '-w',
-        args.pngwidth || 2048,
-        tmpobj.name,
-        '-f',
-        'pdf',
-        '-o',
-        outfile,
-      ])
-
-      console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-      console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
-      fs.unlinkSync(tmpobj.name)
+    const result = await renderRegion(args as Opts)
+    const { out = 'out.svg', pngwidth = '2048' } = args
+    if (out.endsWith('.png')) {
+      convert(result, { out, pngwidth })
+    } else if (out.endsWith('.pdf')) {
+      convert(result, { out, pngwidth }, ['-f', 'pdf'])
     } else {
-      fs.writeFileSync(outfile, result)
+      fs.writeFileSync(out, result)
     }
 
     // manually exit the process after done rendering because autoruns or
@@ -225,4 +189,4 @@ time(async () => {
     console.error(e)
     process.exit(1)
   }
-})
+})()
