@@ -19,16 +19,34 @@ global.nodeCreateCanvas = createCanvas
 const { document } = new JSDOM(`...`).window
 global.document = document
 
-if (!global.fetch) {
-  // @ts-ignore
-  global.fetch = fetch
-  // @ts-ignore
-  global.Headers = Headers
-  // @ts-ignore
-  global.Response = Response
-  // @ts-ignore
-  global.Request = Request
-}
+// force use of node-fetch polyfill, even if node 18+ fetch is available.
+// native node 18+ fetch currently gives errors related to unidici and
+// Uint8Array:
+//
+//
+// % node --version
+// v18.12.1
+//
+// % jb2export --fasta https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.fa --bam https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam --loc ctgA:1-1000 --out out4.svg
+// [
+//   '(node:1387934) ExperimentalWarning: The Fetch API is an experimental feature. This feature could change at any time\n' +
+//     '(Use `node --trace-warnings ...` to show where the warning was created)'
+// ]
+// [
+//   RangeError: offset is out of bounds
+//       at Uint8Array.set (<anonymous>)
+//       at Response.arrayBuffer (node:internal/deps/undici/undici:6117:23)
+//       at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+// ]
+
+// @ts-ignore
+global.fetch = fetch
+// @ts-ignore
+global.Headers = Headers
+// @ts-ignore
+global.Response = Response
+// @ts-ignore
+global.Request = Request
 
 const err = console.error
 console.error = (...p: unknown[]) => {
