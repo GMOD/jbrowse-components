@@ -84,6 +84,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = undefined
           renderInProgress = abortController
         },
+
         /**
          * #action
          * controlled by a reaction
@@ -100,15 +101,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = undefined
           renderInProgress = undefined
         },
+
         /**
          * #action
          * controlled by a reaction
          */
-        setRendered(args: {
+        setRendered(args?: {
           data: unknown
           reactElement: React.ReactElement
           renderingComponent: React.Component
         }) {
+          if (!args) {
+            return
+          }
           const { data, reactElement, renderingComponent } = args
           self.filled = true
           self.message = undefined
@@ -118,6 +123,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.renderingComponent = renderingComponent
           renderInProgress = undefined
         },
+
         /**
          * #action
          * controlled by a reaction
@@ -171,23 +177,25 @@ function renderBlockData(self: LinearComparativeDisplay) {
   const sessionId = getRpcSessionId(self)
   getSnapshot(parent)
 
-  return {
-    rendererType,
-    rpcManager,
-    renderProps: {
-      ...display.renderProps(),
-      view: clone(getSnapshot(parent)),
-      adapterConfig,
-      rendererType: rendererType.name,
-      sessionId,
-      timeout: 1000000,
-    },
-  }
+  return parent.initialized
+    ? {
+        rendererType,
+        rpcManager,
+        renderProps: {
+          ...display.renderProps(),
+          view: clone(getSnapshot(parent)),
+          adapterConfig,
+          rendererType: rendererType.name,
+          sessionId,
+          timeout: 1000000,
+        },
+      }
+    : undefined
 }
 
 async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   if (!props) {
-    throw new Error('cannot render with no props')
+    return
   }
 
   const { rendererType, rpcManager, renderProps } = props

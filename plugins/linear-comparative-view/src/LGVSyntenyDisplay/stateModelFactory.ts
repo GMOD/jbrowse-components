@@ -105,9 +105,7 @@ async function navToSynteny(feature: Feature, self: any) {
   const f = (n: number) => Math.floor(n)
   const l1 = `${featRef}:${f(rFeatStart)}-${f(rFeatEnd)}`
   const l2 = `${mateRef}:${f(rMateStart)}-${f(rMateEnd)}`
-  console.log({ l1, l2 })
   await when(() => view2.width !== undefined)
-  console.log('done')
   // @ts-ignore
   view2.views[0].navToLocString(l1, featAsm)
   // @ts-ignore

@@ -15,7 +15,6 @@ interface BareFeature {
   end: number
   score: number
   name: string
-  assemblyName: string
 }
 
 type Row = [
@@ -138,7 +137,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
                 mate: {
                   ...r2,
                   assemblyName: assemblyNames[+flip],
-                } as BareFeature,
+                },
               }),
             )
           }
