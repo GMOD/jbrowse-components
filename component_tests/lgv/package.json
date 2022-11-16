@@ -31,6 +31,7 @@
     "@jbrowse/plugin-circular-view": "file:./packed/jbrowse-plugin-circular-view.tgz",
     "@jbrowse/plugin-config": "file:./packed/jbrowse-plugin-config.tgz",
     "@jbrowse/plugin-data-management": "file:./packed/jbrowse-plugin-data-management.tgz",
+    "@jbrowse/plugin-gccontent": "file:./packed/jbrowse-plugin-gccontent.tgz",
     "@jbrowse/plugin-gff3": "file:./packed/jbrowse-plugin-gff3.tgz",
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",

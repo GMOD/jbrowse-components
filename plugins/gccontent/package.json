@@ -1,0 +1,58 @@
+{
+  "name": "@jbrowse/plugin-gccontent",
+  "version": "2.2.0",
+  "description": "JBrowse 2 gccontent concepts",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/gccontent"
+  },
+  "author": "JBrowse Team",
+  "distMain": "dist/index.js",
+  "srcMain": "src/index.ts",
+  "main": "src/index.ts",
+  "files": [
+    "dist",
+    "src",
+    "esm"
+  ],
+  "scripts": {
+    "build": "npm-run-all build:*",
+    "test": "cd ../..; jest plugins/gccontent",
+    "prepublishOnly": "yarn test",
+    "prepack": "yarn build; yarn useDist",
+    "postpack": "yarn useSrc",
+    "useDist": "node ../../scripts/useDist.js",
+    "useSrc": "node ../../scripts/useSrc.js",
+    "prebuild": "npm run clean",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
+    "clean": "rimraf dist esm *.tsbuildinfo"
+  },
+  "peerDependencies": {
+    "@jbrowse/core": "^2.0.0",
+    "@jbrowse/plugin-linear-genome-view": "^2.0.0",
+    "@jbrowse/plugin-wiggle": "^2.0.0",
+    "@jbrowse/plugin-sequence": "^2.0.0",
+    "@mui/material": "^5.0.0",
+    "mobx": "^6.0.0",
+    "mobx-react": "^7.0.0",
+    "mobx-state-tree": "^5.0.0",
+    "prop-types": "^15.0.0",
+    "react": ">=16.8.0",
+    "rxjs": "^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "distModule": "esm/index.js",
+  "srcModule": "src/index.ts",
+  "module": ""
+}

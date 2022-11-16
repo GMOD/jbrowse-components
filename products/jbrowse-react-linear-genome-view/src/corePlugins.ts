@@ -9,6 +9,7 @@ import Sequence from '@jbrowse/plugin-sequence'
 import SVG from '@jbrowse/plugin-svg'
 import Variants from '@jbrowse/plugin-variants'
 import Wiggle from '@jbrowse/plugin-wiggle'
+import GCContent from '@jbrowse/plugin-gccontent'
 import Trix from '@jbrowse/plugin-trix'
 
 const corePlugins = [
@@ -23,6 +24,7 @@ const corePlugins = [
   Sequence,
   Variants,
   Wiggle,
+  GCContent,
   Trix,
 ]
 

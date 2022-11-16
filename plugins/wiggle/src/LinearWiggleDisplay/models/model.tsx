@@ -10,6 +10,7 @@ import {
   getSession,
   getContainingView,
   isSelectionContainer,
+  Feature,
 } from '@jbrowse/core/util'
 import {
   BaseLinearDisplay,
@@ -19,7 +20,6 @@ import { when } from 'mobx'
 import { isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import {
   getNiceDomain,
@@ -143,8 +143,8 @@ function stateModelFactory(
           Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
           self.stats = { scoreMin, scoreMax }
-          self.statsReady = true
         }
+        self.statsReady = true
       },
       /**
        * #action
@@ -491,8 +491,8 @@ function stateModelFactory(
        * #getter
        */
       get adapterCapabilities() {
-        return pluginManager.getAdapterType(self.adapterTypeName)
-          .adapterCapabilities
+        const type = self.adapterTypeName
+        return pluginManager.getAdapterType(type).adapterCapabilities
       },
     }))
     .views(self => {
