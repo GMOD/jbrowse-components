@@ -46,6 +46,7 @@ function NoConfigMessage() {
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
     ['test_data/config_wormbase.json', 'Wormbase'],
+    ['test_data/config_human_dotplot.json', 'Human dotplot'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (
@@ -185,7 +186,7 @@ const StartScreenErrorMessage = ({ error }: { error: unknown }) => {
         >
           No config.json found. If you want to learn how to complete your setup,
           visit our{' '}
-          <a href="https://jbrowse.org/jb2/docs/quickstarts/quickstart_web/">
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web/">
             quick start guide
           </a>
           .

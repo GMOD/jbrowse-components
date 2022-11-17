@@ -1,5 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `Object {}`;
+exports[`plugin in a stock JBrowse 1`] = `{}`;
 
-exports[`plugin in a stock JBrowse 2`] = `Object {}`;
+exports[`plugin in a stock JBrowse 2`] = `{}`;

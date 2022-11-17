@@ -57,7 +57,6 @@ const Translocations = observer(
 
     const assembly = assemblyManager.get(views[0].assemblyNames[0])
     if (!assembly) {
-      console.warn('Unable to read assembly')
       return null
     }
 

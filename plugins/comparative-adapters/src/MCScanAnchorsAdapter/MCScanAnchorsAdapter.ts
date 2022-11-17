@@ -2,11 +2,14 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { doesIntersect2 } from '@jbrowse/core/util'
+import {
+  doesIntersect2,
+  SimpleFeature,
+  Feature,
+  Region,
+} from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { readFile, parseBed } from '../util'
 
 interface BareFeature {
@@ -89,9 +92,10 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       // the adapter in the subadapters list
       const index = assemblyNames.indexOf(region.assemblyName)
       if (index !== -1) {
+        const flip = index === 0
         feats.forEach(f => {
           const [r1, r2, score, rowNum] = f
-          const [f1, f2] = index === 1 ? [r2, r1] : [r1, r2]
+          const [f1, f2] = !flip ? [r2, r1] : [r1, r2]
           if (
             f1.refName === region.refName &&
             doesIntersect2(region.start, region.end, f1.start, f1.end)
@@ -101,11 +105,16 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
                 ...f1,
                 uniqueId: `${index}-${rowNum}`,
                 syntenyId: rowNum,
-                // note: strand would be -1 if the two features are on opposite strands,
-                // indicating inverted alignment
+
+                // note: strand would be -1 if the two features are on opposite
+                // strands, indicating inverted alignment
                 strand: f1.strand * f2.strand,
+                assemblyName: assemblyNames[+!flip],
                 score,
-                mate: f2 as BareFeature,
+                mate: {
+                  ...f2,
+                  assemblyName: assemblyNames[+flip],
+                },
               }),
             )
           }

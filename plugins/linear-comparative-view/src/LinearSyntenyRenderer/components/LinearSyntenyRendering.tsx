@@ -20,7 +20,7 @@ import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 // locals
 import { interstitialYPos, generateMatches } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
-import { LinearComparativeDisplay } from '../../LinearComparativeDisplay'
+import { LinearComparativeDisplay } from '../../LinearComparativeDisplay/stateModelFactory'
 import SyntenyTooltip from './SyntenyTooltip'
 
 const [LEFT, , RIGHT] = [0, 1, 2, 3]

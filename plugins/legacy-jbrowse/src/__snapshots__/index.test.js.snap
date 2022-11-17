@@ -1,10 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`plugin in a stock JBrowse 1`] = `Object {}`;
+exports[`plugin in a stock JBrowse 1`] = `{}`;
 
 exports[`test creating a text search adapter 1`] = `
-Object {
-  "namesIndexLocation": Object {
+{
+  "namesIndexLocation": {
     "internetAccountId": undefined,
     "internetAccountPreAuthorization": undefined,
     "locationType": "UriLocation",

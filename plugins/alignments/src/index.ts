@@ -12,7 +12,10 @@ import SNPCoverageRendererF from './SNPCoverageRenderer'
 import PileupRendererF from './PileupRenderer'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay'
-import LinearPileupDisplayF from './LinearPileupDisplay'
+import LinearPileupDisplayF, {
+  linearPileupDisplayStateModelFactory,
+  linearPileupDisplayConfigSchemaFactory,
+} from './LinearPileupDisplay'
 import AlignmentsTrackF from './AlignmentsTrack'
 import AlignmentsFeatureWidgetF from './AlignmentsFeatureDetail'
 
@@ -27,9 +30,6 @@ import {
   AdapterGuesser,
   TrackTypeGuesser,
 } from '@jbrowse/core/util/tracks'
-
-export { MismatchParser }
-export type { LinearPileupDisplayModel }
 
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'
@@ -125,3 +125,10 @@ export default class AlignmentsPlugin extends Plugin {
     )
   }
 }
+
+export {
+  linearPileupDisplayConfigSchemaFactory,
+  linearPileupDisplayStateModelFactory,
+  MismatchParser,
+}
+export type { LinearPileupDisplayModel }

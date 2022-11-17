@@ -108,7 +108,6 @@ const AlignmentConnections = observer(
     }
 
     if (!assembly) {
-      console.warn('Unable to read assembly')
       return null
     }
 

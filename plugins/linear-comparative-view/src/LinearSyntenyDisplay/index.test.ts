@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { configSchemaFactory } from './index'
+import configSchemaFactory from './configSchemaF'
 import ThisPlugin from '..'
 
 test('create config', () => {

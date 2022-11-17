@@ -59,6 +59,7 @@ import Header from './components/Header'
 import ZoomControls from './components/ZoomControls'
 import LinearGenomeView from './components/LinearGenomeView'
 
+// lazies
 const SequenceSearchDialog = lazy(
   () => import('./components/SequenceSearchDialog'),
 )
@@ -277,16 +278,25 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       MiniControlsComponent(): React.FC<any> {
         return MiniControls
       },
 
+      /**
+       * #method
+       */
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       HeaderComponent(): React.FC<any> {
         return Header
       },
 
+      /**
+       * #getter
+       */
       get assemblyErrors() {
         const { assemblyManager } = getSession(self)
         const { assemblyNames } = self
@@ -296,23 +306,46 @@ export function stateModelFactory(pluginManager: PluginManager) {
           .join(', ')
       },
 
+      /**
+       * #getter
+       */
       get assembliesInitialized() {
         const { assemblyManager } = getSession(self)
         const { assemblyNames } = self
         return assemblyNames.every(a => assemblyManager.get(a)?.initialized)
       },
+
+      /**
+       * #getter
+       */
       get initialized() {
         return self.volatileWidth !== undefined && this.assembliesInitialized
       },
+
+      /**
+       * #getter
+       */
       get hasDisplayedRegions() {
         return self.displayedRegions.length > 0
       },
+
+      /**
+       * #getter
+       */
       get isSearchDialogDisplayed() {
         return self.searchResults !== undefined
       },
+
+      /**
+       * #getter
+       */
       get scaleBarHeight() {
         return SCALE_BAR_HEIGHT + RESIZE_HANDLE_HEIGHT
       },
+
+      /**
+       * #getter
+       */
       get headerHeight() {
         if (self.hideHeader) {
           return 0
@@ -322,15 +355,26 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         return HEADER_BAR_HEIGHT + HEADER_OVERVIEW_HEIGHT
       },
+
+      /**
+       * #getter
+       */
       get trackHeights() {
         return self.tracks
           .map(t => t.displays[0].height)
           .reduce((a, b) => a + b, 0)
       },
 
+      /**
+       * #getter
+       */
       get trackHeightsWithResizeHandles() {
         return this.trackHeights + self.tracks.length * RESIZE_HANDLE_HEIGHT
       },
+
+      /**
+       * #getter
+       */
       get height() {
         return (
           this.trackHeightsWithResizeHandles +
@@ -338,38 +382,63 @@ export function stateModelFactory(pluginManager: PluginManager) {
           this.scaleBarHeight
         )
       },
+
+      /**
+       * #getter
+       */
       get totalBp() {
         return self.displayedRegions.reduce((a, b) => a + b.end - b.start, 0)
       },
 
+      /**
+       * #getter
+       */
       get maxBpPerPx() {
         return this.totalBp / (self.width * 0.9)
       },
 
+      /**
+       * #getter
+       */
       get minBpPerPx() {
         return 1 / 50
       },
 
+      /**
+       * #getter
+       */
       get error() {
         return self.volatileError || this.assemblyErrors
       },
 
+      /**
+       * #getter
+       */
       get maxOffset() {
         // objectively determined to keep the linear genome on the main screen
         const leftPadding = 10
         return this.displayedRegionsTotalPx - leftPadding
       },
 
+      /**
+       * #getter
+       */
       get minOffset() {
         // objectively determined to keep the linear genome on the main screen
         const rightPadding = 30
         return -self.width + rightPadding
       },
 
+      /**
+       * #getter
+       */
       get displayedRegionsTotalPx() {
         return this.totalBp / self.bpPerPx
       },
 
+      /**
+       * #method
+       */
       renderProps() {
         return {
           ...getParentRenderProps(self),
@@ -381,6 +450,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #method
+       */
       searchScope(assemblyName: string) {
         return {
           assemblyName,
@@ -389,10 +461,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
       },
 
+      /**
+       * #method
+       */
       getTrack(id: string) {
         return self.tracks.find(t => t.configuration.trackId === id)
       },
 
+      /**
+       * #method
+       */
       rankSearchResults(results: BaseResult[]) {
         // order of rank
         const openTrackIds = self.tracks.map(
@@ -406,7 +484,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return results
       },
 
-      // modifies view menu action onClick to apply to all tracks of same type
+      /**
+       * #method
+       * modifies view menu action onClick to apply to all tracks of same type
+       */
       rewriteOnClicks(trackType: string, viewMenuActions: MenuItem[]) {
         viewMenuActions.forEach(action => {
           // go to lowest level menu
@@ -425,7 +506,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
           }
         })
       },
-
+      /**
+       * #getter
+       */
       get trackTypeActions() {
         const allActions: Map<string, MenuItem[]> = new Map()
         self.tracks.forEach(track => {
@@ -612,7 +695,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         return t[0]
       },
-
+      /**
+       * #action
+       */
       hideTrack(trackId: string) {
         const schema = pluginManager.pluggableConfigSchemaType('track')
         const conf = resolveIdentifier(schema, getRoot(self), trackId)
@@ -1378,18 +1463,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
               )
               return
             }
-            let locationIndex = 0
-            let locationStart = 0
-            let locationEnd = 0
-            for (
-              locationIndex;
-              locationIndex < locations.length;
-              locationIndex++
-            ) {
-              const location = locations[locationIndex]
-              const region = self.displayedRegions[index + locationIndex]
-              locationStart = location.start || region.start
-              locationEnd = location.end || region.end
+            let idx = 0
+            let start = 0
+            let end = 0
+            for (idx; idx < locations.length; idx++) {
+              const location = locations[idx]
+              const region = self.displayedRegions[index + idx]
+              start = location.start || region.start
+              end = location.end || region.end
               if (location.refName !== region.refName) {
                 throw new Error(
                   `Entered location ${assembleLocString(
@@ -1398,10 +1479,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
                 )
               }
             }
-            locationIndex -= 1
+            idx -= 1
             const startDisplayedRegion = self.displayedRegions[index]
-            const endDisplayedRegion =
-              self.displayedRegions[index + locationIndex]
+            const endDisplayedRegion = self.displayedRegions[index + idx]
             this.moveTo(
               {
                 index,
@@ -1410,10 +1490,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   : s - startDisplayedRegion.start,
               },
               {
-                index: index + locationIndex,
+                index: index + idx,
                 offset: endDisplayedRegion.reversed
-                  ? endDisplayedRegion.end - locationStart
-                  : locationEnd - endDisplayedRegion.start,
+                  ? endDisplayedRegion.end - start
+                  : end - endDisplayedRegion.start,
               },
             )
             return

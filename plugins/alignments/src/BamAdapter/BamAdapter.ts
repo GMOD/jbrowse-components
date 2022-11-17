@@ -4,11 +4,12 @@ import {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { Region } from '@jbrowse/core/util/types'
-import { bytesForRegions, updateStatus } from '@jbrowse/core/util'
+import { bytesForRegions, updateStatus, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { toArray } from 'rxjs/operators'
+
+// locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
 
 interface Header {

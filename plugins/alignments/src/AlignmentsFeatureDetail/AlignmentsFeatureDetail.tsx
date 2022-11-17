@@ -11,6 +11,7 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import copy from 'copy-to-clipboard'
+import clone from 'clone'
 import {
   FeatureDetails,
   BaseCard,
@@ -18,13 +19,13 @@ import {
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { parseCigar } from '../BamAdapter/MismatchParser'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   compact: {
     paddingRight: 0,
     paddingTop: 0,
     paddingBottom: 0,
   },
-}))
+})
 
 const omit = ['clipPos', 'flags']
 
@@ -144,12 +145,12 @@ function SupplementaryAlignments(props: { tag: string; model: any }) {
             return (
               <li key={`${locString}-${index}`}>
                 <Link
-                  onClick={event => {
+                  onClick={async event => {
                     event.preventDefault()
                     const { view } = model
                     try {
                       if (view) {
-                        view.navToLocString(locString)
+                        await view.navToLocString(locString)
                       } else {
                         throw new Error(
                           'No view associated with this view anymore',
@@ -177,17 +178,15 @@ function PairLink({ locString, model }: { locString: string; model: any }) {
   const session = getSession(model)
   return (
     <Link
-      onClick={() => {
+      onClick={async () => {
         const { view } = model
+        if (!view) {
+          throw new Error(
+            'No view associated with this feature detail panel anymore',
+          )
+        }
         try {
-          if (view) {
-            view.navToLocString(locString)
-          } else {
-            session.notify(
-              'No view associated with this feature detail panel anymore',
-              'warning',
-            )
-          }
+          await view.navToLocString(locString)
         } catch (e) {
           console.error(e)
           session.notify(`${e}`)
@@ -203,7 +202,7 @@ function PairLink({ locString, model }: { locString: string; model: any }) {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AlignmentFeatureDetails(props: { model: any }) {
   const { model } = props
-  const feat = JSON.parse(JSON.stringify(model.featureData))
+  const feat = clone(model.featureData)
   const SA = (feat.tags && feat.tags.SA) || feat.SA
   return (
     <Paper data-testid="alignment-side-drawer">
@@ -211,7 +210,7 @@ function AlignmentFeatureDetails(props: { model: any }) {
         {...props}
         omit={omit}
         feature={feat}
-        formatter={(value: unknown, key: string) => {
+        formatter={(value, key) => {
           return key === 'next_segment_position' ? (
             <PairLink model={model} locString={value as string} />
           ) : (
@@ -220,7 +219,9 @@ function AlignmentFeatureDetails(props: { model: any }) {
         }}
       />
       {SA ? <SupplementaryAlignments model={model} tag={SA} /> : null}
-      <AlignmentFlags feature={feat} {...props} />
+      {feat.flags !== undefined ? (
+        <AlignmentFlags feature={feat} {...props} />
+      ) : null}
     </Paper>
   )
 }

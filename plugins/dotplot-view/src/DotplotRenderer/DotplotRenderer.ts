@@ -89,8 +89,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const palette = readConfObject(config, 'thresholdsPalette')
     const isCallback = config.color.isCallback
     const [hview, vview] = views
-    const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
-    const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
+    const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
+    const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
     const warnings = [] as { message: string; effect: string }[]
     ctx.lineWidth = lineWidth
 

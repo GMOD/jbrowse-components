@@ -8,6 +8,8 @@ Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
+## Docs
+
 Extends `BaseLinearDisplay`
 
 ### LinearWiggleDisplay - Properties

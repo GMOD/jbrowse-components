@@ -9,6 +9,10 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
+### BaseTrack - Identifier
+
+#### slot: explicitIdentifier
+
 ### BaseTrack - Slots
 
 #### slot: name
@@ -132,5 +136,25 @@ depth: {
           defaultValue: 2,
           description:
             'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
+        }
+```
+
+#### slot: formatAbout.config
+
+```js
+config: {
+          type: 'frozen',
+          description: 'formats configuration object in about dialog',
+          defaultValue: {},
+          contextVariable: ['config'],
+        }
+```
+
+#### slot: formatAbout.hideUris
+
+```js
+hideUris: {
+          type: 'boolean',
+          defaultValue: false,
         }
 ```

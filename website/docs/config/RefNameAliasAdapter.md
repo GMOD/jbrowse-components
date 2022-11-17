@@ -9,6 +9,9 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
+can read "chromAliases" type files from UCSC or any tab separated file of
+refName aliases
+
 ### RefNameAliasAdapter - Slots
 
 #### slot: location
@@ -24,6 +27,9 @@ location: {
 ```
 
 #### slot: refNameColumn
+
+by default, the "ref names that match the fasta" are assumed to be in the
+first column (0), change this variable if needed
 
 ```js
 refNameColumn: {

@@ -56,7 +56,7 @@ async function loadRefNameMap(
   signal?: AbortSignal,
 ) {
   const { sessionId } = options
-  await when(() => Boolean(assembly.regions && assembly.refNameAliases), {
+  await when(() => !!(assembly.regions && assembly.refNameAliases), {
     signal,
     name: 'when assembly ready',
   })

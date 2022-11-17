@@ -12,6 +12,11 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { unzip } from '@gmod/bgzf-filehandle'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
+
+// locals
+import { zip, isGzip } from '../util'
+const { getMismatches } = MismatchParser
 
 export interface PAFRecord {
   qname: string
@@ -22,19 +27,12 @@ export interface PAFRecord {
   tend: number
   strand: number
   extra: {
+    cg?: string
     blockLen?: number
     mappingQual: number
     numMatches?: number
     meanScore?: number
   }
-}
-
-function isGzip(buf: Buffer) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
-
-function zip(a: number[], b: number[]) {
-  return a.map((e, i) => [e, b[i]] as [number, number])
 }
 
 // based on "weighted mean" method from dotPlotly
@@ -133,6 +131,47 @@ function weightedMean(tuples: [number, number][]) {
   return valueSum / weightSum
 }
 
+function getOrientedMismatches(flip: boolean, cigar: string) {
+  const mismatches = getMismatches(cigar)
+  if (flip) {
+    let startReadjuster = 0
+    return mismatches.map(m => {
+      if (m.type === 'insertion') {
+        m.type = 'deletion'
+        m.length = +m.base
+        m.start += startReadjuster
+        startReadjuster += m.length
+      } else if (m.type === 'deletion') {
+        const len = m.length
+        m.type = 'insertion'
+        m.base = `${len}`
+        m.length = 0
+        m.start += startReadjuster
+        startReadjuster -= len
+      }
+      return m
+    })
+  }
+  return mismatches
+}
+
+class SyntenyFeature extends SimpleFeature {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  get(arg: string): any {
+    if (arg === 'mismatches') {
+      const cg = this.get('cg')
+      const flip = this.get('flipInsDel')
+
+      return cg ? getOrientedMismatches(flip, cg) : []
+    }
+    return super.get(arg)
+  }
+}
+
+interface PAFOptions extends BaseOptions {
+  config?: AnyConfigurationModel
+}
+
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<PAFRecord[]>
 
@@ -214,11 +253,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames() {
-    let assemblyNames = this.getConf('assemblyNames') as string[]
+    const assemblyNames = this.getConf('assemblyNames') as string[]
     if (assemblyNames.length === 0) {
       const query = this.getConf('queryAssembly') as string
       const target = this.getConf('targetAssembly') as string
-      assemblyNames = [query, target]
+      return [query, target]
     }
     return assemblyNames
   }
@@ -240,10 +279,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  getFeatures(
-    region: Region,
-    opts: BaseOptions & { config?: AnyConfigurationModel } = {},
-  ) {
+  getFeatures(query: Region, opts: PAFOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       let pafRecords = await this.setup(opts)
       const { config } = opts
@@ -251,66 +287,74 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         pafRecords = getWeightedMeans(pafRecords)
       }
       const assemblyNames = this.getAssemblyNames()
-      const { assemblyName } = region
 
-      // The index of the assembly name in the region list corresponds to the
+      // The index of the assembly name in the query list corresponds to the
       // adapter in the subadapters list
-      const index = assemblyNames.indexOf(assemblyName)
-      if (index !== -1) {
-        for (let i = 0; i < pafRecords.length; i++) {
-          const r = pafRecords[i]
-          let start = 0
-          let end = 0
-          let refName = ''
-          let mateName = ''
-          let mateStart = 0
-          let mateEnd = 0
-          if (index === 0) {
-            start = r.qstart
-            end = r.qend
-            refName = r.qname
-            mateName = r.tname
-            mateStart = r.tstart
-            mateEnd = r.tend
-          } else {
-            start = r.tstart
-            end = r.tend
-            refName = r.tname
-            mateName = r.qname
-            mateStart = r.qstart
-            mateEnd = r.qend
-          }
-          const { extra, strand } = r
+      const index = assemblyNames.indexOf(query.assemblyName)
+      const { start: qstart, end: qend, refName: qref, assemblyName } = query
+      if (index === -1) {
+        console.warn(`${assemblyName} not found in this adapter`)
+        observer.complete()
+      }
 
-          if (
-            refName === region.refName &&
-            doesIntersect2(region.start, region.end, start, end)
-          ) {
-            const { numMatches, blockLen } = extra
-            observer.next(
-              new SimpleFeature({
-                uniqueId: `${i}`,
-                start,
-                end,
-                refName,
-                strand,
-                revCigar: true,
-                // this is a special property of how to interpret CIGAR on PAF,
-                // intrinsic to the data format. the CIGAR is read backwards
-                // for features aligning to the negative strand of the target,
-                // which is actually different than how it works in e.g.
-                // BAM/SAM (which is visible during alignments track read vs ref)
-                assemblyName,
+      for (let i = 0; i < pafRecords.length; i++) {
+        const r = pafRecords[i]
+        let start = 0
+        let end = 0
+        let refName = ''
+        let mateName = ''
+        let mateStart = 0
+        let mateEnd = 0
+        if (index === 0) {
+          start = r.qstart
+          end = r.qend
+          refName = r.qname
+          mateName = r.tname
+          mateStart = r.tstart
+          mateEnd = r.tend
+        } else {
+          start = r.tstart
+          end = r.tend
+          refName = r.tname
+          mateName = r.qname
+          mateStart = r.qstart
+          mateEnd = r.qend
+        }
+        const { extra, strand } = r
+        if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
+          const { numMatches = 0, blockLen = 1 } = extra
+          const flip = index === 0
+          observer.next(
+            new SyntenyFeature({
+              uniqueId: `${i}`,
+              assemblyName: assemblyNames[+!flip],
+              start,
+              end,
+              type: 'match',
+              refName,
+              strand, // : !flip ? strand * -1 : strand,
 
-                // depending on whether the query or target is queried, the "rev" flag
-                flipInsDel: index === 0,
-                syntenyId: i,
-                identity: (numMatches || 0) / (blockLen || 1),
-                mate: { start: mateStart, end: mateEnd, refName: mateName },
-                ...extra,
-              }),
-            )
-          }
+              // this is a special property of how to interpret CIGAR on PAF,
+              // intrinsic to the data format. the CIGAR is read backwards
+              // for features aligning to the negative strand of the target,
+              // which is actually different than how it works in e.g.
+              // BAM/SAM (which is visible during alignments track read vs ref)
+              revCigar: true,
+
+              // depending on whether the query or target is queried, the
+              // "rev" flag
+              flipInsDel: flip,
+              syntenyId: i,
+              identity: numMatches / blockLen,
+              mate: {
+                start: mateStart,
+                end: mateEnd,
+                refName: mateName,
+                assemblyName: assemblyNames[+flip],
+              },
+              ...extra,
+            }),
+          )
         }
       }
 
@@ -318,5 +362,5 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  freeResources(/* { region } */): void {}
+  freeResources(/* { query } */): void {}
 }

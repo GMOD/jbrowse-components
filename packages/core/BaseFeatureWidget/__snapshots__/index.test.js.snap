@@ -69,9 +69,7 @@ exports[`open up a widget 1`] = `
               <div
                 class="css-1omt041-fieldValue"
               >
-                <div>
-                  ctgA:3..102 (+)
-                </div>
+                ctgA:3..102 (+)
               </div>
             </div>
             <div

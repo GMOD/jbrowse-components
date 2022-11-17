@@ -1,15 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { autorun } from 'mobx'
-import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import { transaction } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   addDisposer,
   cast,
@@ -21,10 +9,23 @@ import {
   types,
   Instance,
   SnapshotIn,
-  IAnyModelType,
 } from 'mobx-state-tree'
+import { autorun, transaction } from 'mobx'
+
+// jbrowse
+import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@jbrowse/plugin-linear-genome-view'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 /**
@@ -96,7 +97,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       }),
     )
     .volatile(() => ({
-      width: 800,
+      width: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -109,7 +110,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
-        return self.views.length > 0
+        return self.width !== undefined && self.views.length > 0
       },
 
       /**
@@ -160,6 +161,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         })
       },
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSubviewAction(actionName: string, path: string, args: any[] = []) {
         self.views.forEach(view => {
           const ret = getPath(view)
@@ -202,6 +204,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * removes the view itself from the state tree entirely by calling the parent removeView
        */
       closeView() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self, 2).removeView(self)
       },
 
@@ -257,9 +260,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType(
-          'track',
-        ) as IAnyModelType
+        const schema = pluginManager.pluggableConfigSchemaType('track')
         const configuration = resolveIdentifier(schema, getRoot(self), trackId)
         if (!configuration) {
           throw new Error(`track not found ${trackId}`)

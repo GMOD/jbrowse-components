@@ -16,7 +16,7 @@ export function parseCigar(cigar = '') {
 }
 export function cigarToMismatches(
   ops: string[],
-  seq: string,
+  seq?: string,
   ref?: string,
   qual?: Buffer,
 ): Mismatch[] {
@@ -70,7 +70,7 @@ export function cigarToMismatches(
         length: len,
       })
     } else if (op === 'X') {
-      const r = seq.slice(soffset, soffset + len)
+      const r = seq?.slice(soffset, soffset + len) || []
       const q = qual?.slice(soffset, soffset + len) || []
 
       for (let j = 0; j < len; j++) {
@@ -209,8 +209,8 @@ export function mdToMismatches(
 
 export function getMismatches(
   cigar: string,
-  md: string,
-  seq: string,
+  md?: string,
+  seq?: string,
   ref?: string,
   qual?: Buffer,
 ): Mismatch[] {
@@ -223,7 +223,7 @@ export function getMismatches(
   }
 
   // now let's look for CRAM or MD mismatches
-  if (md) {
+  if (md && seq) {
     mismatches = mismatches.concat(
       mdToMismatches(md, ops, mismatches, seq, qual),
     )
@@ -332,7 +332,7 @@ export function getModificationTypes(mm: string) {
 
       const matches = basemod.match(modificationRegex)
       if (!matches) {
-        throw new Error('bad format for MM tag')
+        throw new Error(`bad format for MM tag: ${mm}`)
       }
       const [, , , typestr] = matches
 

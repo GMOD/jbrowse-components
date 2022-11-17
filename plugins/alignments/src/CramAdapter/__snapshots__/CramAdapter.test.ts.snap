@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
-Array [
-  Object {
+[
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5540,
@@ -16,7 +16,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5440,
     "strand": -1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -28,7 +28,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1618",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5541,
@@ -42,7 +42,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5441,
     "strand": -1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -54,7 +54,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1619",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5544,
@@ -68,7 +68,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5444,
     "strand": 1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -80,7 +80,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1620",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5553,
@@ -94,7 +94,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5453,
     "strand": 1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -106,7 +106,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1621",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5554,
@@ -120,7 +120,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5454,
     "strand": 1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -132,7 +132,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1622",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5559,
@@ -146,7 +146,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5459,
     "strand": -1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -158,7 +158,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1623",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5560,
@@ -172,7 +172,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5460,
     "strand": 1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -184,7 +184,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1624",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5568,
@@ -198,7 +198,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5468,
     "strand": 1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -210,7 +210,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1625",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5594,
@@ -224,7 +224,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5494,
     "strand": -1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,
@@ -236,7 +236,7 @@ Array [
     "type": "match",
     "uniqueId": "test-1626",
   },
-  Object {
+  {
     "CIGAR": "100M",
     "clipPos": 0,
     "end": 5596,
@@ -250,7 +250,7 @@ Array [
     "seq_id": "ctgA",
     "start": 5496,
     "strand": 1,
-    "tags": Object {
+    "tags": {
       "X0": 1,
       "X1": 0,
       "XG": 0,

@@ -8,6 +8,8 @@ Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
+## Docs
+
 note that many properties of the root model are available through the session, which
 may be preferable since using getSession() is better relied on than getRoot()
 
@@ -49,7 +51,7 @@ session: types.maybe(Session)
 
 ```js
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: Error; regions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & { ...; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _No...
+IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 4 more...
 // code
 assemblyManager: types.optional(AssemblyManager, {})
 ```

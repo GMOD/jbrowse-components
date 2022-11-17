@@ -1,73 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react'
 import {
   Button,
   CircularProgress,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   IconButton,
   TextField,
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { getSession, getContainingView } from '@jbrowse/core/util'
+import { getSession, getContainingView, Feature } from '@jbrowse/core/util'
+
+// locals
+import {
+  getClip,
+  getLength,
+  getLengthOnRef,
+  getLengthSansClipping,
+  getTag,
+  mergeIntervals,
+} from './util'
+
 // icons
 import CloseIcon from '@mui/icons-material/Close'
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-
-const { parseCigar } = MismatchParser
-
-function getLengthOnRef(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let lengthOnRef = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'I') {
-      lengthOnRef += len
-    }
-  }
-  return lengthOnRef
-}
-
-function getLength(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let length = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'D' && op !== 'N') {
-      length += len
-    }
-  }
-  return length
-}
-
-function getLengthSansClipping(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let length = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
-      length += len
-    }
-  }
-  return length
-}
-function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
-}
 
 interface ReducedFeature {
   refName: string
@@ -99,51 +58,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function getTag(f: Feature, tag: string) {
-  const tags = f.get('tags')
-  return tags ? tags[tag] : f.get(tag)
-}
-
-function mergeIntervals<T extends { start: number; end: number }>(
-  intervals: T[],
-  w = 5000,
-) {
-  // test if there are at least 2 intervals
-  if (intervals.length <= 1) {
-    return intervals
-  }
-
-  const stack = []
-  let top = null
-
-  // sort the intervals based on their start values
-  intervals = intervals.sort((a, b) => a.start - b.start)
-
-  // push the 1st interval into the stack
-  stack.push(intervals[0])
-
-  // start from the next interval and merge if needed
-  for (let i = 1; i < intervals.length; i++) {
-    // get the top element
-    top = stack[stack.length - 1]
-
-    // if the current interval doesn't overlap with the
-    // stack top element, push it to the stack
-    if (top.end + w < intervals[i].start - w) {
-      stack.push(intervals[i])
-    }
-    // otherwise update the end value of the top element
-    // if end of current interval is higher
-    else if (top.end < intervals[i].end) {
-      top.end = Math.max(top.end, intervals[i].end)
-      stack.pop()
-      stack.push(top)
-    }
-  }
-
-  return stack
-}
-
 interface BasicFeature {
   end: number
   start: number
@@ -167,20 +81,23 @@ function gatherOverlaps(regions: BasicFeature[]) {
     .flat()
 }
 
-export function WindowSizeDlg(props: {
+export default function ReadVsRefDialog({
+  track,
+  feature: preFeature,
+  handleClose,
+}: {
   feature: Feature
   handleClose: () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   track: any
 }) {
   const { classes } = useStyles()
-  const { track, feature: preFeature, handleClose } = props
 
   // window size stored as string, because it corresponds to a textfield which
   // is parsed as number on submit
   const [windowSizeText, setWindowSize] = useState('0')
   const [error, setError] = useState<unknown>()
   const [primaryFeature, setPrimaryFeature] = useState<Feature>()
-  const [qualTrack, setQualTrack] = useState(false)
   const windowSize = +windowSizeText
 
   // we need to fetch the primary alignment if the selected feature is 2048.
@@ -188,6 +105,7 @@ export function WindowSizeDlg(props: {
   useEffect(() => {
     let done = false
     ;(async () => {
+      setError(undefined)
       try {
         if (preFeature.get('flags') & 2048) {
           const SA: string = getTag(preFeature, 'SA') || ''
@@ -243,13 +161,12 @@ export function WindowSizeDlg(props: {
       const feature = primaryFeature
       const session = getSession(track)
       const view = getContainingView(track)
-      const cigar = feature.get('CIGAR')
+      const cigar = feature.get('CIGAR') as string
+      const flags = feature.get('flags') as number
+      const origStrand = feature.get('strand') as number
+      const SA = (getTag(feature, 'SA') as string) || ''
+      const readName = feature.get('name') as string
       const clipPos = getClip(cigar, 1)
-      const flags = feature.get('flags')
-      const qual = feature.get('qual') as string
-      const origStrand = feature.get('strand')
-      const SA: string = getTag(feature, 'SA') || ''
-      const readName = feature.get('name')
 
       const readAssembly = `${readName}_assembly_${Date.now()}`
       const [trackAssembly] = getConf(track, 'assemblyNames')
@@ -319,7 +236,7 @@ export function WindowSizeDlg(props: {
       })
       features.sort((a, b) => a.clipPos - b.clipPos)
 
-      const featSeq = feature.get('seq')
+      const featSeq = feature.get('seq') as string
 
       // the config feature store includes synthetic mate features
       // mapped to the read assembly
@@ -329,10 +246,7 @@ export function WindowSizeDlg(props: {
       )
 
       const expand = 2 * windowSize
-      const refLength = features.reduce(
-        (a, f) => a + f.end - f.start + expand,
-        0,
-      )
+      const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
 
       const seqTrackId = `${readName}_${Date.now()}`
       const sequenceTrackConf = getConf(assembly, 'sequence')
@@ -375,7 +289,7 @@ export function WindowSizeDlg(props: {
             type: 'LinearGenomeView',
             hideHeader: true,
             offsetPx: 0,
-            bpPerPx: refLength / view.width,
+            bpPerPx: refLen / view.width,
             displayedRegions: lgvRegions,
             tracks: [
               {
@@ -425,41 +339,6 @@ export function WindowSizeDlg(props: {
                   },
                 ],
               },
-
-              ...(qualTrack
-                ? [
-                    {
-                      id: `${Math.random()}`,
-                      type: 'QuantitativeTrack',
-                      configuration: {
-                        trackId: 'qualTrack',
-                        assemblyNames: [readAssembly],
-                        name: 'Read quality',
-                        type: 'QuantitativeTrack',
-                        adapter: {
-                          type: 'FromConfigAdapter',
-                          noAssemblyManager: true,
-                          features: qual.split(' ').map((score, index) => {
-                            return {
-                              start: index,
-                              end: index + 1,
-                              refName: readName,
-                              score: +score,
-                              uniqueId: `feat_${index}`,
-                            }
-                          }),
-                        },
-                      },
-                      displays: [
-                        {
-                          id: `${Math.random()}`,
-                          type: 'LinearWiggleDisplay',
-                          height: 100,
-                        },
-                      ],
-                    },
-                  ]
-                : []),
             ],
           },
         ],
@@ -530,15 +409,6 @@ export function WindowSizeDlg(props: {
               value={windowSize}
               onChange={event => setWindowSize(event.target.value)}
               label="Set window size"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={qualTrack}
-                  onChange={() => setQualTrack(val => !val)}
-                />
-              }
-              label="Show qual track"
             />
           </div>
         )}

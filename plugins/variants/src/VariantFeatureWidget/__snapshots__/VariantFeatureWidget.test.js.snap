@@ -73,9 +73,7 @@ exports[`VariantTrack widget renders with just the required model elements 1`] =
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
-                    ctgA:177..177 
-                  </div>
+                  ctgA:177 
                 </div>
               </div>
               <div
