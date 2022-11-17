@@ -44,7 +44,7 @@ const configSchema = ConfigurationSchema(
     fetchSizeLimit: {
       type: 'number',
       description:
-        'used to determine when to display a warning to the user that too much data will be fetched',
+        'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 5_000_000,
     },
     /**
