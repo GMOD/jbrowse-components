@@ -107,10 +107,7 @@ Some jbrowse track types (alignments, gene tracks, etc) will not display if
 zoomed too far out. Add force:true to make it render
 
 ```bash
-jb2export --config data/config.json \
-  --loc 1:1,100,000-1,200,000 \
-  --assembly hg19 \
-  --configtracks hg00096_lowcov force:true
+jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 ```
 
 ### Render the sequence track
