@@ -103,6 +103,15 @@ using nodesource or nvm to get your nodejs for this.
 Also note that the @jbrowse/cli tool is just made for preparing your
 config.json, it is **not used to run any server-side code**.
 
+### How can I make a header on a jbrowse-web instance
+
+You can edit the index.html that comes with jbrowse-web to have custom
+contents. The jbrowse-web app just looks at the div that it renders into, but
+any contents outside of that you can edit for custom purposes. If you need more
+advanced embedding, you can consider @jbrowse/react-linear-genome-view or
+similar, but the jbrowse-web app is not available as an npm installable package
+yet.
+
 ### How do I update my instance of jbrowse-web
 
 You can use the command, after installing:
