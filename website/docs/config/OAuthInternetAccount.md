@@ -71,6 +71,16 @@ scopes: {
     }
 ```
 
+#### slot: state
+
+```js
+state: {
+      description: 'optional state for the authorization call',
+      type: 'string',
+      defaultValue: '',
+    }
+```
+
 #### slot: responseType
 
 ```js

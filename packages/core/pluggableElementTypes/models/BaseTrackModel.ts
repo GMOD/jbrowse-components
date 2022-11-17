@@ -18,7 +18,7 @@ import { ElementId } from '../../util/types/mst'
  * they should contain only UI state for the track, and have
  * a reference to a track configuration (stored under
  * session.configuration.assemblies.get(assemblyName).tracks).
- * note that multiple displayed tracks could use the same 
+ * note that multiple displayed tracks could use the same
  * configuration.
  */
 export function createBaseTrackModel(

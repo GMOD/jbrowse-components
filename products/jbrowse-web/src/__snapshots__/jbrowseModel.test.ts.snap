@@ -95,7 +95,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_refseq-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          Object {
+          {
             "displayId": "volvox_refseq-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
           },
@@ -134,7 +134,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_refseq2-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          Object {
+          {
             "displayId": "volvox_refseq2-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
           },
@@ -166,7 +166,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_refseq404-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          Object {
+          {
             "displayId": "volvox_refseq404-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
           },
@@ -204,7 +204,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          Object {
+          {
             "displayId": "volvox_del-ReferenceSequenceTrack-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
           },
@@ -242,7 +242,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
             "displayId": "volvox_ins-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
             "type": "LinearReferenceSequenceDisplay",
           },
-          Object {
+          {
             "displayId": "volvox_ins-ReferenceSequenceTrack-LinearGCContentDisplay",
             "type": "LinearGCContentDisplay",
           },

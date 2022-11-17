@@ -1,0 +1,157 @@
+---
+id: basetrackmodel
+title: BaseTrackModel
+toplevel: true
+---
+
+Note: this document is automatically generated from mobx-state-tree objects in
+our source code. See [Core concepts and intro to pluggable
+elements](/docs/developer_guide/) for more info
+
+## Docs
+
+these MST models only exist for tracks that are _shown_.
+they should contain only UI state for the track, and have
+a reference to a track configuration (stored under
+session.configuration.assemblies.get(assemblyName).tracks).
+note that multiple displayed tracks could use the same
+configuration.
+
+### BaseTrackModel - Properties
+
+#### property: id
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: type
+
+```js
+// type signature
+ISimpleType<string>
+// code
+type: types.literal(trackType)
+```
+
+#### property: configuration
+
+```js
+// type signature
+ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(baseTrackConfig)
+```
+
+#### property: minimized
+
+```js
+// type signature
+false
+// code
+minimized: false
+```
+
+#### property: displays
+
+```js
+// type signature
+IArrayType<IAnyType>
+// code
+displays: types.array(pm.pluggableMstType('display', 'stateModel'))
+```
+
+### BaseTrackModel - Getters
+
+#### getter: rpcSessionId
+
+determines which webworker to send the track to, currently based on trackId
+
+```js
+// type
+any
+```
+
+#### getter: name
+
+```js
+// type
+any
+```
+
+#### getter: textSearchAdapter
+
+```js
+// type
+any
+```
+
+#### getter: adapterType
+
+```js
+// type
+AdapterType
+```
+
+#### getter: viewMenuActions
+
+```js
+// type
+MenuItem[]
+```
+
+#### getter: canConfigure
+
+```js
+// type
+any
+```
+
+### BaseTrackModel - Methods
+
+#### method: trackMenuItems
+
+```js
+// type signature
+trackMenuItems: () => MenuItem[]
+```
+
+### BaseTrackModel - Actions
+
+#### action: setMinimized
+
+```js
+// type signature
+setMinimized: (flag: boolean) => void
+```
+
+#### action: activateConfigurationUI
+
+```js
+// type signature
+activateConfigurationUI: () => void
+```
+
+#### action: showDisplay
+
+```js
+// type signature
+showDisplay: (displayId: string, initialSnapshot?: {}) => void
+```
+
+#### action: hideDisplay
+
+```js
+// type signature
+hideDisplay: (displayId: string) => number
+```
+
+#### action: replaceDisplay
+
+```js
+// type signature
+replaceDisplay: (oldId: string, newId: string, initialSnapshot?: {}) => void
+```

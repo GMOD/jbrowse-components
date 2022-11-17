@@ -21,114 +21,64 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 id: ElementId
 ```
 
-#### property: type
+#### property: displayName
+
+displayName is displayed in the header of the view, or assembly names
+being used if none is specified
 
 ```js
 // type signature
-ISimpleType<string>
+IMaybe<ISimpleType<string>>
 // code
-type: types.literal(trackType)
+displayName: types.maybe(types.string)
 ```
 
-#### property: configuration
+#### property: minimized
 
 ```js
 // type signature
-ITypeUnion<any, any, any>
+false
 // code
-configuration: ConfigurationReference(baseTrackConfig)
-```
-
-#### property: displays
-
-```js
-// type signature
-IArrayType<IAnyType>
-// code
-displays: types.array(pm.pluggableMstType('display', 'stateModel'))
+minimized: false
 ```
 
 ### BaseViewModel - Getters
 
-#### getter: rpcSessionId
-
-decides how to assign tracks to rpc, by default uses the trackId
+#### getter: menuItems
 
 ```js
 // type
-any
-```
-
-#### getter: name
-
-```js
-// type
-any
-```
-
-#### getter: textSearchAdapter
-
-```js
-// type
-any
-```
-
-#### getter: adapterType
-
-```js
-// type
-AdapterType
-```
-
-#### getter: viewMenuActions
-
-```js
-// type
-MenuItem[]
-```
-
-#### getter: canConfigure
-
-```js
-// type
-any
-```
-
-### BaseViewModel - Methods
-
-#### method: trackMenuItems
-
-```js
-// type signature
-trackMenuItems: () => MenuItem[]
+() => MenuItem[]
 ```
 
 ### BaseViewModel - Actions
 
-#### action: s
+#### action: setDisplayName
 
 ```js
 // type signature
-s: () => void
+setDisplayName: (name: string) => void
 ```
 
-#### action: s
+#### action: setWidth
+
+width is an important attribute of the view model, when it becomes set, it
+often indicates when the app can start drawing to it. certain views like
+lgv are strict about this because if it tries to draw before it knows the
+width it should draw to, it may start fetching data for regions it doesn't
+need to
+
+setWidth is updated by a ResizeObserver generally, the views often need
+to know how wide they are to properly draw genomic regions
 
 ```js
 // type signature
-s: (displayId: string, initialSnapshot?: {}) => void
+setWidth: (newWidth: number) => void
 ```
 
-#### action: s
+#### action: setMinimized
 
 ```js
 // type signature
-s: (displayId: string) => number
-```
-
-#### action: s
-
-```js
-// type signature
-s: (oldId: string, newId: string, initialSnapshot?: {}) => void
+setMinimized: (flag: boolean) => void
 ```

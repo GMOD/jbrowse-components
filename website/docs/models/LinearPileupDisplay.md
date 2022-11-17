@@ -10,6 +10,8 @@ elements](/docs/developer_guide/) for more info
 
 ## Docs
 
+extends `BaseLinearDisplay`
+
 ### LinearPileupDisplay - Properties
 
 #### property: type
@@ -116,6 +118,25 @@ colorBy: types.maybe(
         )
 ```
 
+#### property: filterBy
+
+```js
+// type signature
+IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
+filterBy: types.optional(
+          types.model({
+            flagInclude: types.optional(types.number, 0),
+            flagExclude: types.optional(types.number, 1540),
+            readName: types.maybe(types.string),
+            tagFilter: types.maybe(
+              types.model({ tag: types.string, value: types.string }),
+            ),
+          }),
+          {},
+        )
+```
+
 ### LinearPileupDisplay - Getters
 
 #### getter: maxHeight
@@ -197,6 +218,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```js
 // type signature
 setReady: (flag: boolean) => void
+```
+
+#### action: setCurrSortBpPerPx
+
+```js
+// type signature
+setCurrSortBpPerPx: (n: number) => void
 ```
 
 #### action: setMaxHeight

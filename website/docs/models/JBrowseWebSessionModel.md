@@ -329,6 +329,20 @@ getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { set
 
 ### JBrowseWebSessionModel - Actions
 
+#### action: moveViewUp
+
+```js
+// type signature
+moveViewUp: (id: string) => void
+```
+
+#### action: moveViewDown
+
+```js
+// type signature
+moveViewDown: (id: string) => void
+```
+
 #### action: setDrawerPosition
 
 ```js

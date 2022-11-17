@@ -63,5 +63,5 @@ string[]
 
 ```js
 // type signature
-renderProps: () => { rpcDriverName: string; displayModel: { id: string; type: never; rpcDriverName: string; configuration: any; height: number; } & NonEmptyObject & { rendererTypeName: string; error: unknown; } & ... 5 more ... & IStateTreeNode<...>; config: any; width: number; height: number; }
+renderProps: () => { rpcDriverName: string; displayModel: { id: string; type: never; rpcDriverName: string; configuration: any; height: number; } & NonEmptyObject & { rendererTypeName: string; error: unknown; } & ... 6 more ... & IStateTreeNode<...>; config: any; width: number; height: number; }
 ```

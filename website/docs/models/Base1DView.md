@@ -10,6 +10,9 @@ elements](/docs/developer_guide/) for more info
 
 ## Docs
 
+used in non-lgv view representations of a 1d view e.g. the two axes of the
+dotplot use this
+
 ### Base1DView - Properties
 
 #### property: id

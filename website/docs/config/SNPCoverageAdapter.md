@@ -16,5 +16,8 @@ our source code. See [Config guide](/docs/config_guide) for more info
 normally refers to a BAM or CRAM adapter
 
 ```js
-subadapter: pluginManager.pluggableConfigSchemaType('adapter')
+subadapter: {
+      type: 'frozen',
+      defaultValue: null,
+    }
 ```
