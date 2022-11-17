@@ -5,6 +5,7 @@ import { PluginConstructor } from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import { UriLocation } from '@jbrowse/core/util'
 import { cast, getSnapshot, Instance, SnapshotIn, types } from 'mobx-state-tree'
 import corePlugins from '../corePlugins'
 import createConfigModel from './createConfigModel'
@@ -29,6 +30,9 @@ export default function createModel(
       session: Session,
       assemblyManager: types.optional(AssemblyManager, {}),
       disableAddTracks: types.optional(types.boolean, false),
+      internetAccounts: types.array(
+        pluginManager.pluggableMstType('internet account', 'stateModel'),
+      ),
     })
     .volatile(self => ({
       error: undefined as Error | undefined,
@@ -54,6 +58,34 @@ export default function createModel(
       },
       setError(errorMessage: Error | undefined) {
         self.error = errorMessage
+      },
+      addInternetAccount(
+        internetAccount: SnapshotIn<typeof self.internetAccounts[0]>,
+      ) {
+        self.internetAccounts.push(internetAccount)
+      },
+      findAppropriateInternetAccount(location: UriLocation) {
+        // find the existing account selected from menu
+        const selectedId = location.internetAccountId
+        if (selectedId) {
+          const selectedAccount = self.internetAccounts.find(account => {
+            return account.internetAccountId === selectedId
+          })
+          if (selectedAccount) {
+            return selectedAccount
+          }
+        }
+
+        // if no existing account or not found, try to find working account
+        for (const account of self.internetAccounts) {
+          const handleResult = account.handlesLocation(location)
+          if (handleResult) {
+            return account
+          }
+        }
+
+        // no available internet accounts
+        return null
       },
     }))
 

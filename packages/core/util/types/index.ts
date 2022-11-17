@@ -324,6 +324,24 @@ export function isAppRootModel(thing: unknown): thing is AppRootModel {
   )
 }
 
+export interface RootModelWithInternetAccounts extends AbstractRootModel {
+  internetAccounts: BaseInternetAccountModel[]
+  findAppropriateInternetAccount(
+    location: UriLocation,
+  ): BaseInternetAccountModel | undefined
+}
+
+export function isRootModelWithInternetAccounts(
+  thing: unknown,
+): thing is RootModelWithInternetAccounts {
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'internetAccounts' in thing &&
+    'findAppropriateInternetAccount' in thing
+  )
+}
+
 /** a root model that manages global menus */
 export interface AbstractMenuManager {
   appendMenu(menuName: string): void

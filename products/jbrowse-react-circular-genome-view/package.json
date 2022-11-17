@@ -44,6 +44,7 @@
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@jbrowse/core": "^2.2.0",
+    "@jbrowse/plugin-authentication": "^2.1.7",
     "@jbrowse/plugin-circular-view": "^2.2.0",
     "@jbrowse/plugin-config": "^2.2.0",
     "@jbrowse/plugin-data-management": "^2.2.0",

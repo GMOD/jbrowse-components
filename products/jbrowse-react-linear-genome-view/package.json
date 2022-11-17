@@ -45,6 +45,7 @@
     "@emotion/styled": "^11.8.1",
     "@jbrowse/core": "^2.2.0",
     "@jbrowse/plugin-alignments": "^2.2.0",
+    "@jbrowse/plugin-authentication": "^2.1.7",
     "@jbrowse/plugin-bed": "^2.2.0",
     "@jbrowse/plugin-circular-view": "^2.2.0",
     "@jbrowse/plugin-config": "^2.2.0",

@@ -53,6 +53,9 @@ export default function createConfigModel(
       }),
       assembly: assemblyConfigSchemasType,
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      internetAccounts: types.array(
+        pluginManager.pluggableConfigSchemaType('internet account'),
+      ),
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),

@@ -10,6 +10,7 @@ type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
 type Assembly = ConfigSnapshot['assembly']
 type Tracks = ConfigSnapshot['tracks']
+type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 
 interface Location {
@@ -22,6 +23,7 @@ interface Location {
 interface ViewStateOptions {
   assembly: Assembly
   tracks: Tracks
+  internetAccounts?: InternetAccounts
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
@@ -36,6 +38,7 @@ export default function createViewState(opts: ViewStateOptions) {
   const {
     assembly,
     tracks,
+    internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
     plugins,
@@ -64,6 +67,7 @@ export default function createViewState(opts: ViewStateOptions) {
         configuration,
         assembly,
         tracks,
+        internetAccounts,
         aggregateTextSearchAdapters,
       },
       disableAddTracks,
@@ -71,6 +75,18 @@ export default function createViewState(opts: ViewStateOptions) {
     },
     { pluginManager },
   )
+  stateTree.config.internetAccounts.forEach(account => {
+    const internetAccountType = pluginManager.getInternetAccountType(
+      account.type,
+    )
+    if (!internetAccountType) {
+      throw new Error(`unknown internet account type ${account.type}`)
+    }
+    stateTree.addInternetAccount({
+      type: account.type,
+      configuration: account,
+    })
+  })
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
   if (location) {
