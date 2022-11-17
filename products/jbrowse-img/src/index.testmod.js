@@ -65,6 +65,7 @@ xtest('renders human large region with remote urls', async () => {
         'cram',
         [
           'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram',
+          'force:true',
         ],
       ],
     ],

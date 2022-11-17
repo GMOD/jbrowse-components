@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import fs from 'fs'
 import yargs from 'yargs'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
@@ -64,7 +63,7 @@ console.warn = (...p: unknown[]) => {
 
 // note: yargs is actually unused except for printing help
 // we do custom command line parsing, see parseArgv.ts
-// eslint-disable-next-line no-unused-expressions
+
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {

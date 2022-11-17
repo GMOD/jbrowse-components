@@ -25,7 +25,8 @@ export function convert(
   fs.writeFileSync(name, result)
   const a = ['-w', pngwidth, name, '-o', out, ...spawnArgs] as string[]
   const ls = spawnSync('rsvg-convert', a)
-  console.log(`rsvg-convert stderr: ${ls.stderr.toString()}`)
-  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`)
+
+  console.error(`rsvg-convert stderr: ${ls.stderr.toString()}`)
+  console.log(`rsvg-convert stdout: ${ls.stdout.toString()}`) // eslint-disable-line no-console
   fs.unlinkSync(name)
 }
