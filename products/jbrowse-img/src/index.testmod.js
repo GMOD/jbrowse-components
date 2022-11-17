@@ -10,8 +10,7 @@ global.document = document
 global.nodeImage = Image
 global.nodeCreateCanvas = createCanvas
 
-// commented out for using remote files currently
-test('renders a region with --session and --config args', async () => {
+xtest('renders a region with --session and --config args', async () => {
   const result = await renderRegion({
     session: require.resolve('../test/clingen_session.json'),
     config: require.resolve('../data/config.json'),
@@ -20,7 +19,7 @@ test('renders a region with --session and --config args', async () => {
   expect(result).toMatchSnapshot()
 }, 40000)
 
-test('renders a region with --session, --tracks, and --assembly args', async () => {
+xtest('renders a region with --session, --tracks, and --assembly args', async () => {
   const result = await renderRegion({
     session: require.resolve('../test/clingen_session.json'),
     tracks: require.resolve('../data/tracks.json'),
@@ -99,38 +98,30 @@ test('renders volvox with variety of args (noRasterize)', async () => {
 }, 40000)
 
 // commented out for using remote files currently
-test(
-  'configtracks arg with urls',
-  async () => {
-    const result = await renderRegion({
-      config: 'data/config.json',
-      trackList: [['configtracks', ['ncbi_refseq_109_hg38']]],
-      assembly: 'GRCh38',
-      loc: 'chr1:50,000-60,000',
-    })
-    fs.writeFileSync('svg_configtracks_simple.svg', result)
-    expect(result).toBeTruthy()
-  },
-  40000 * 3,
-)
+xtest('configtracks arg with urls', async () => {
+  const result = await renderRegion({
+    config: 'data/config.json',
+    trackList: [['configtracks', ['ncbi_refseq_109_hg38']]],
+    assembly: 'GRCh38',
+    loc: 'chr1:50,000-60,000',
+  })
+  fs.writeFileSync('svg_configtracks_simple.svg', result)
+  expect(result).toBeTruthy()
+}, 40000)
 
-test(
-  'configtracks arg with local files',
-  async () => {
-    const result = await renderRegion({
-      config: require.resolve('../data/volvox/config.json'),
-      trackList: [['configtracks', ['volvox_sv']]],
-      assembly: 'volvox',
-      loc: 'ctgA:1-50,000',
-    })
-    fs.writeFileSync(
-      require.resolve('../test/svg_configtracks_local.svg'),
-      result,
-    )
-    expect(result).toBeTruthy()
-  },
-  40000 * 3,
-)
+test('configtracks arg with local files', async () => {
+  const result = await renderRegion({
+    config: require.resolve('../data/volvox/config.json'),
+    trackList: [['configtracks', ['volvox_sv']]],
+    assembly: 'volvox',
+    loc: 'ctgA:1-50,000',
+  })
+  fs.writeFileSync(
+    require.resolve('../test/svg_configtracks_local.svg'),
+    result,
+  )
+  expect(result).toBeTruthy()
+}, 40000)
 
 xtest('renders --hic', async () => {
   const result = await renderRegion({
