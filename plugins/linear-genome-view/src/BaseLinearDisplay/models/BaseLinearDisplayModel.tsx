@@ -43,10 +43,8 @@ export interface Layout {
   name: string
 }
 
-// stabilize clipid under test for snapshot
 function getId(id: string, index: number) {
-  const isJest = typeof jest === 'undefined'
-  return `clip-${isJest ? id : 'jest'}-${index}`
+  return `clip-${id}-${index}`
 }
 
 type LayoutRecord = [number, number, number, number]
