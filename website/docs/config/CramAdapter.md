@@ -19,7 +19,7 @@ used to configure CRAM adapter
 fetchSizeLimit: {
       type: 'number',
       description:
-        'used to determine when to display a warning to the user that too much data will be fetched',
+        'size in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 3_000_000,
     }
 ```
@@ -56,8 +56,7 @@ currently needs to be manually added
 ```js
 sequenceAdapter: {
       type: 'frozen',
-      description:
-        'sequence data adapter, used to calculate SNPs when BAM reads lacking MD tags',
+      description: 'sequence data adapter',
       defaultValue: null,
     }
 ```

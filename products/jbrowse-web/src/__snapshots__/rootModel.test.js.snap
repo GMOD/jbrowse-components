@@ -389,7 +389,7 @@ exports[`Root MST model adds track and connection configs to an assembly 1`] = `
         "displayId": "sequenceConfigId-LinearReferenceSequenceDisplay",
         "type": "LinearReferenceSequenceDisplay",
       },
-      Object {
+      {
         "displayId": "sequenceConfigId-LinearGCContentDisplay",
         "type": "LinearGCContentDisplay",
       },

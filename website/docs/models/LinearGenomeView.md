@@ -23,11 +23,15 @@ id: ElementId
 
 #### property: type
 
+this is a string instead of the const literal 'LinearGenomeView' to reduce some
+typescripting strictness, but you should pass the string 'LinearGenomeView' to
+the model explicitly
+
 ```js
 // type signature
-ISimpleType<"LinearGenomeView">
+string
 // code
-type: types.literal('LinearGenomeView')
+type: types.literal('LinearGenomeView') as unknown as string
 ```
 
 #### property: offsetPx

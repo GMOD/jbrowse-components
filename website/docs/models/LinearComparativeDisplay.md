@@ -81,7 +81,7 @@ controlled by a reaction
 
 ```js
 // type signature
-setRendered: (args: { data: any; reactElement: React.ReactElement; renderingComponent: React.Component; }) => void
+setRendered: (args?: { data: unknown; reactElement: React.ReactElement; renderingComponent: React.Component; }) => void
 ```
 
 #### action: setError
