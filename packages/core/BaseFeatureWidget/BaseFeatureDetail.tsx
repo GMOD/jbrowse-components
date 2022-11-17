@@ -6,7 +6,6 @@ import {
   AccordionDetails,
   AccordionSummary,
   Divider,
-  Link,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -253,8 +252,7 @@ const ArrayValue = ({
 const toLocale = (n: number) => n.toLocaleString('en-US')
 
 function Position(props: BaseProps) {
-  const { model = {}, feature } = props
-  const { view } = model
+  const { feature } = props
   const strand = feature.strand as number
   const strandMap: Record<string, string> = {
     '-1': '-',
@@ -264,27 +262,7 @@ function Position(props: BaseProps) {
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
   // @ts-ignore
   const loc = assembleLocString(feature as ParsedLocString)
-  const pos = `${loc} ${str}`
-
-  return (
-    <>
-      {/* @ts-ignore*/}
-      {view?.navToLocString ? (
-        <Link
-          href="#"
-          onClick={event => {
-            event.preventDefault()
-            // @ts-ignore
-            view.navToLocString(loc)
-          }}
-        >
-          {pos}
-        </Link>
-      ) : (
-        pos
-      )}
-    </>
-  )
+  return <>{`${loc} ${str}`}</>
 }
 
 function CoreDetails(props: BaseProps) {
