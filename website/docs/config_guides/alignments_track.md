@@ -53,6 +53,7 @@ Example `BamAdapter` config:
 
 - `cramLocation` - a 'file location' for the CRAM
 - `craiLocation` - a 'file location' for the CRAI
+- `sequenceAdapter` - a subadapter describing the location of the reference assembly (*e.g.* an [IndexedFastaAdapter](/docs/config_guides/assemblies/#IndexedFastaAdapter))
 
 Example `CramAdapter` config:
 
@@ -64,6 +65,17 @@ Example `CramAdapter` config:
   },
   "craiLocation": {
     "uri": "http://yourhost/file.cram.crai"
+  },
+  "sequenceAdapter" : {
+    "type": "IndexedFastaAdapter",
+    "fastaLocation": {
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa",
+      "locationType": "UriLocation"
+    },
+    "faiLocation": {
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai",
+      "locationType": "UriLocation"
+    }
   }
 }
 ```
