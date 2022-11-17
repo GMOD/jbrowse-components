@@ -1,7 +1,8 @@
 {
   "name": "@jbrowse/img",
   "version": "2.2.0",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "esm/index.js",
   "author": "JBrowse Team",
   "license": "Apache-2.0",
   "engines": {
@@ -11,13 +12,16 @@
     "jb2export": "./dist/bin.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "esm",
+    "src"
   ],
   "scripts": {
     "pretest": "cd ../jbrowse-react-linear-genome-view; yarn build; cd ../jb2export",
     "test": "jest",
     "prebuild": "rm -rf dist",
-    "build": "babel --root-mode upward src -d dist",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
+    "build:es5": "tsc --build tsconfig.build.es5.json",
     "preversion": "npm run build"
   },
   "dependencies": {

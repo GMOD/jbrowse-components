@@ -17,7 +17,6 @@
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "typecheck": "tsc --noEmit",
-    "pretest-jbimg": "cd products/jbrowse-react-linear-genome-view;yarn build;cd ../../",
     "test-jbimg": "jest --env node --testMatch '**/*testmod.js'",
     "test-ci": "cross-env NODE_OPTIONS='--max-old-space-size=7000' jest --ci --coverage && npm run test-jbimg",
     "built-test-ci": "jest --ci integration.test.js",
