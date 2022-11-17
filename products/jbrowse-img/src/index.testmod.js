@@ -3,10 +3,15 @@ import fs from 'fs'
 import { JSDOM } from 'jsdom'
 import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { Image, createCanvas } from 'canvas'
+import fetch, { Headers, Response, Request } from 'node-fetch'
+
+global.fetch = fetch
+global.Headers = Headers
+global.Response = Response
+global.Request = Request
 
 const { document } = new JSDOM(`...`).window
 global.document = document
-
 global.nodeImage = Image
 global.nodeCreateCanvas = createCanvas
 
@@ -52,8 +57,7 @@ test('renders volvox with variety of args', async () => {
   expect(result).toBeTruthy()
 }, 40000)
 
-test('renders human large region with remote urls', async () => {
-  console.error = jest.fn()
+xtest('renders human large region with remote urls', async () => {
   const result = await renderRegion({
     fasta: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
     trackList: [
@@ -64,14 +68,31 @@ test('renders human large region with remote urls', async () => {
         ],
       ],
     ],
-    loc: '1:10,000,000-11,000,000',
+    loc: '1:10,000,000-10,030,000',
   })
   fs.writeFileSync(
     require.resolve('../test/human_remote_urls_large_region.svg'),
     result,
   )
   expect(result).toBeTruthy()
-}, 40000)
+}, 120000)
+
+xtest('renders volvox with remote urls', async () => {
+  const result = await renderRegion({
+    fasta: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.fa',
+    trackList: [
+      [
+        'bam',
+        [
+          'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+        ],
+      ],
+    ],
+    loc: 'ctgA:1-1000',
+  })
+  fs.writeFileSync(require.resolve('../test/volvox_remote_region.svg'), result)
+  expect(result).toBeTruthy()
+}, 20000)
 
 test('renders volvox with variety of args (noRasterize)', async () => {
   const fp = f => require.resolve('../data/volvox/' + f)
