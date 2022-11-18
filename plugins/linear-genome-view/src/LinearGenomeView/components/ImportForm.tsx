@@ -54,10 +54,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const r0 = regions[0]?.refName
 
   // useEffect resets to an "initial state" of displaying first region from assembly
-  // after assembly change
+  // after assembly change. needs to react to selectedAsm as well as r0 because changing
+  // assembly will run setValue('') and then r0 may not change if assembly names are the
+  // same across assemblies, but it still needs to be reset
   useEffect(() => {
     setValue(r0)
-  }, [r0])
+  }, [r0, selectedAsm])
 
   function navToOption(option: BaseResult) {
     const location = option.getLocation()
