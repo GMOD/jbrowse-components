@@ -902,7 +902,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * this "clears the view" and makes the view return to the import form
        */
       clearView() {
-        this.setDisplayedRegions([])
+        self.displayedRegions.clear()
         self.tracks.clear()
         // it is necessary to run these after setting displayed regions empty
         // or else model.offsetPx gets set to Infinity and breaks

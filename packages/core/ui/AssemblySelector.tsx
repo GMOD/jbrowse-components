@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
@@ -33,14 +33,17 @@ const AssemblySelector = observer(
     // constructs a localstorage key based on host/path/config to help
     // remember. non-config assists usage with e.g. embedded apps
     const config = new URLSearchParams(window.location.search).get('config')
-    const [lastSelected, setLastSelected] = useLocalStorage(
-      `lastAssembly-${[
-        window.location.host + window.location.pathname,
-        config,
-        extra,
-      ].join('-')}`,
-      selected,
-    )
+    const [lastSelected, setLastSelected] =
+      typeof jest === 'undefined'
+        ? useLocalStorage(
+            `lastAssembly-${[
+              window.location.host + window.location.pathname,
+              config,
+              extra,
+            ].join('-')}`,
+            selected,
+          )
+        : useState(selected)
 
     const selection = assemblyNames.includes(lastSelected || '')
       ? lastSelected

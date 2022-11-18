@@ -11,6 +11,8 @@ import {
 } from '@mui/material'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+
+// icons
 import CloseIcon from '@mui/icons-material/Close'
 
 // locals
@@ -39,7 +41,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { assemblyNames, assemblyManager, textSearchManager } = session
   const { rankSearchResults, isSearchDialogDisplayed, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
-  const [importError, setImportError] = useState(error)
   const [option, setOption] = useState<BaseResult>()
 
   const searchScope = model.searchScope(selectedAsm)
@@ -49,7 +50,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     ? assembly?.error
     : 'No configured assemblies'
   const regions = assembly?.regions || []
-  const err = assemblyError || importError
+  const displayError = assemblyError || error
   const [value, setValue] = useState('')
   const r0 = regions[0]?.refName
 
@@ -118,7 +119,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
     <div className={classes.container}>
-      {err ? <ErrorMessage error={err} /> : null}
+      {displayError ? <ErrorMessage error={displayError} /> : null}
       <Container className={classes.importFormContainer}>
         <form
           onSubmit={event => {
@@ -139,7 +140,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               <FormControl>
                 <AssemblySelector
                   onChange={val => {
-                    setImportError('')
                     setSelectedAsm(val)
                     setValue('')
                   }}
@@ -150,7 +150,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             </Grid>
             <Grid item>
               {selectedAsm ? (
-                err ? (
+                assemblyError ? (
                   <CloseIcon style={{ color: 'red' }} />
                 ) : value ? (
                   <FormControl>

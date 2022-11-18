@@ -73,6 +73,23 @@
       }
     },
     {
+      "name": "misc",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "misc_asm",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "misc.fa"
+          },
+          "faiLocation": {
+            "uri": "misc.fa.fai"
+          }
+        }
+      }
+    },
+
+    {
       "name": "volvox_del",
       "sequence": {
         "type": "ReferenceSequenceTrack",
