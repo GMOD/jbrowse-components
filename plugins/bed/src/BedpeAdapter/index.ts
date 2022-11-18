@@ -7,9 +7,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'BedTabixAdapter',
+        name: 'BedpeAdapter',
         configSchema,
-        getAdapterClass: () => import('./BedTabixAdapter').then(r => r.default),
+        getAdapterClass: () => import('./BedpeAdapter').then(r => r.default),
       }),
   )
 }

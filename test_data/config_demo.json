@@ -1346,6 +1346,19 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "skbr3_bedpe",
+      "name": "SKBR3 BEDPE",
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "variants_hg002_ncbi",
       "name": "HG002 GIAB consensus SV NCBI (BED)",
       "assemblyNames": ["hg19"],
