@@ -1,18 +1,17 @@
-import React, { useEffect } from 'react'
-import { observer } from 'mobx-react'
+import React, { useState, useEffect } from 'react'
 import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
-import { useLocalStorage } from '@jbrowse/core/util'
+import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { getConf } from '../configuration'
-import { AbstractSessionModel } from '../util'
+import { useLocalStorage, AbstractSessionModel } from '../util'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   importFormEntry: {
     minWidth: 180,
   },
-}))
+})
 
 const AssemblySelector = observer(
   ({
@@ -24,7 +23,7 @@ const AssemblySelector = observer(
   }: {
     session: AbstractSessionModel
     onChange: (arg: string) => void
-    selected: string | undefined
+    selected?: string
     InputProps?: IIP
     extra?: unknown
   }) => {
@@ -34,14 +33,17 @@ const AssemblySelector = observer(
     // constructs a localstorage key based on host/path/config to help
     // remember. non-config assists usage with e.g. embedded apps
     const config = new URLSearchParams(window.location.search).get('config')
-    const [lastSelected, setLastSelected] = useLocalStorage(
-      `lastAssembly-${[
-        window.location.host + window.location.pathname,
-        config,
-        extra,
-      ].join('-')}`,
-      selected,
-    )
+    const [lastSelected, setLastSelected] =
+      typeof jest === 'undefined'
+        ? useLocalStorage(
+            `lastAssembly-${[
+              window.location.host + window.location.pathname,
+              config,
+              extra,
+            ].join('-')}`,
+            selected,
+          )
+        : useState(selected)
 
     const selection = assemblyNames.includes(lastSelected || '')
       ? lastSelected

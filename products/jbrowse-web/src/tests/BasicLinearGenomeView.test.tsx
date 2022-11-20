@@ -131,35 +131,22 @@ test('click to display center line with correct value', async () => {
 
 test('test choose option from dropdown refName autocomplete', async () => {
   const {
-    view,
     findByText,
     findByTestId,
-    getByPlaceholderText,
     findAllByText,
     findByPlaceholderText,
+    getByPlaceholderText,
   } = createView()
 
   await findAllByText('ctgA', {}, delay)
   fireEvent.click(await findByText('Help'))
-  // need this to complete before we can try to search
-  // fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
-
+  fireEvent.click(await findByPlaceholderText('Search for location'))
   const autocomplete = await findByTestId('autocomplete')
-  const inputBox = await findByPlaceholderText('Search for location')
-  await waitFor(() =>
-    expect(view.coarseDynamicBlocks.length).toBeGreaterThan(0),
-  )
-  fireEvent.mouseDown(inputBox)
   autocomplete.focus()
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
   fireEvent.click((await screen.findAllByText('ctgB'))[0])
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-
-  await waitFor(
-    () => expect(view.displayedRegions[0].refName).toEqual('ctgB'),
-    delay,
-  )
 
   await waitFor(() => {
     const n = getByPlaceholderText('Search for location') as HTMLInputElement

@@ -68,12 +68,10 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   return pluginManager
 }
 
-export function generateReadBuffer(
-  getFileFunction: (str: string) => GenericFilehandle,
-) {
+export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
   return async (request: Request) => {
     try {
-      const file = getFileFunction(request.url)
+      const file = getFile(request.url)
       const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
       const r = request.headers.get('range')
       if (r) {
@@ -170,4 +168,32 @@ export function doBeforeEach(
   fetch.resetMocks()
   // @ts-ignore
   fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
+}
+
+export async function doSetupForImportForm(val?: unknown) {
+  const args = createView(val)
+  const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
+    args
+
+  // clear view takes us to the import form
+  view.clearView()
+
+  const autocomplete = await findByTestId('autocomplete')
+  const input = (await findByPlaceholderText(
+    'Search for location',
+  )) as HTMLInputElement
+
+  // this will be the input that is obtained after opening the LGV from the import form
+  const getInputValue = () =>
+    (getByPlaceholderText('Search for location') as HTMLInputElement).value
+
+  autocomplete.focus()
+  input.focus()
+
+  return {
+    autocomplete,
+    input,
+    getInputValue,
+    ...args,
+  }
 }

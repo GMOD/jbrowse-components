@@ -176,6 +176,44 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
     {
+      "name": "misc",
+      "sequence": {
+        "adapter": {
+          "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "misc.fa.fai",
+          },
+          "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "misc.fa",
+          },
+          "metadataLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "misc_asm-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {
+            "displayId": "misc_asm-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
+        ],
+        "trackId": "misc_asm",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
+    {
       "name": "volvox_del",
       "sequence": {
         "adapter": {

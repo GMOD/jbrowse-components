@@ -1,4 +1,4 @@
-import { screen, waitFor, fireEvent } from '@testing-library/react'
+import { waitFor, fireEvent } from '@testing-library/react'
 
 // locals
 import { setup, doBeforeEach, createView } from './util'
@@ -35,19 +35,19 @@ test('single result, searching: eden.1', async () => {
 }, 30000)
 
 test('dialog with multiple results, searching seg02', async () => {
-  const { input, view, autocomplete } = await doSetup()
+  const { input, view, findByText, autocomplete } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search results', {}, delay)
+  await findByText('Search results', {}, delay)
   await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)
 
 test('dialog with multiple results with jb1 config, searching: eden.1', async () => {
-  const { input, view, autocomplete } = await doSetup(jb1_config)
+  const { input, view, findByText, autocomplete } = await doSetup(jb1_config)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await screen.findByText('Search results', {}, delay)
+  await findByText('Search results', {}, delay)
   expect(view.searchResults?.length).toBeGreaterThan(0)
 }, 30000)
 
@@ -88,13 +88,10 @@ test('nav lower case refnames, searching: contigb:1-100', async () => {
 }, 30000)
 
 test('description of gene, searching: kinase', async () => {
-  console.warn = jest.fn()
-  const { input, autocomplete } = await doSetup()
+  const { input, findByText, autocomplete } = await doSetup()
 
-  fireEvent.mouseDown(input)
   fireEvent.change(input, { target: { value: 'kinase' } })
-
-  fireEvent.click(await screen.findByText('EDEN (protein kinase)', {}, delay))
+  fireEvent.click(await findByText('EDEN (protein kinase)', {}, delay))
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)
