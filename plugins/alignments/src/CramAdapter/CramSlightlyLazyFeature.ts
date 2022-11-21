@@ -130,15 +130,15 @@ export default class CramSlightlyLazyFeature implements Feature {
     // not sure I should access these, but...
     const ref = this.record._refRegion.seq
     const refStart = this.record._refRegion.start
-    let last_pos = this.record.alignmentStart
+    let lastPos = this.record.alignmentStart
     let sublen = 0
     if (this.record.readFeatures !== undefined) {
       let insLen = 0
       for (let i = 0; i < this.record.readFeatures.length; i++) {
         const { code, refPos, sub, data } = this.record.readFeatures[i]
-        sublen = refPos - last_pos
-        seq += ref.substring(last_pos - refStart, refPos - refStart)
-        last_pos = refPos
+        sublen = refPos - lastPos
+        seq += ref.substring(lastPos - refStart, refPos - refStart)
+        lastPos = refPos
 
         if (insLen > 0 && sublen) {
           cigar += `${insLen}I`
@@ -155,21 +155,21 @@ export default class CramSlightlyLazyFeature implements Feature {
           const ret = data.split(',')
           const added = String.fromCharCode(...ret)
           seq += added
-          last_pos += added.length
+          lastPos += added.length
           oplen += added.length
         } else if (code === 'B') {
           // Single base (+ qual score)
           seq += sub
-          last_pos++
+          lastPos++
           oplen++
         } else if (code === 'X') {
           // Substitution
           seq += sub
-          last_pos++
+          lastPos++
           oplen++
         } else if (code === 'D' || code === 'N') {
           // Deletion or Ref Skip
-          last_pos += data
+          lastPos += data
           if (oplen) {
             cigar += oplen + op
           }
@@ -211,7 +211,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     }
     if (seq.length !== this.record.readLength) {
       sublen = this.record.readLength - seq.length
-      seq += ref.substring(last_pos - refStart, last_pos - refStart + sublen)
+      seq += ref.substring(lastPos - refStart, lastPos - refStart + sublen)
 
       if (oplen && op !== 'M') {
         cigar += oplen + op
@@ -307,13 +307,13 @@ export default class CramSlightlyLazyFeature implements Feature {
 
     let refPos = 0
     let sublen = 0
-    let last_pos = this.record.alignmentStart
+    let lastPos = this.record.alignmentStart
 
     for (let i = 0; i < readFeatures.length; i++) {
       const f = readFeatures[i]
       const { code, pos, data, sub, ref } = f
-      sublen = refPos - last_pos
-      last_pos = refPos
+      sublen = refPos - lastPos
+      lastPos = refPos
 
       if (sublen && insLen > 0) {
         mismatches[j++] = {
