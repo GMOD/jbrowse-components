@@ -1,3 +1,68 @@
+## 2.2.1 (2022-11-21)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication          | https://www.npmjs.com/package/@jbrowse/plugin-authentication      |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-comparative-adapters    |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gccontent               | https://www.npmjs.com/package/@jbrowse/plugin-gccontent           |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-rdf                     |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3277](https://github.com/GMOD/jbrowse-components/pull/3277) Create new "Add track workflow" that allows pasting JSON track configs ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3328](https://github.com/GMOD/jbrowse-components/pull/3328) Add GC content display type to the reference sequence track ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3316](https://github.com/GMOD/jbrowse-components/pull/3316) Add LGV typescripting to @jbrowse/react-linear-genome-view ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3298](https://github.com/GMOD/jbrowse-components/pull/3298) Add authentication plugin to embedded components ([@garrettjstevens](https://github.com/garrettjstevens))
+  - [#3329](https://github.com/GMOD/jbrowse-components/pull/3329) Add ability to minimize/collapse tracks and views and move views up/down in view stack ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3308](https://github.com/GMOD/jbrowse-components/pull/3308) Add ability to display synteny track in a normal LGV showing regions of synteny as features ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3317](https://github.com/GMOD/jbrowse-components/pull/3317) Move ErrorBoundary so that tracks/views that have crashed can be closed more easily ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3342](https://github.com/GMOD/jbrowse-components/pull/3342) Fix CRAM mismatches calculation regression in v2.2.0 ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3319](https://github.com/GMOD/jbrowse-components/pull/3319) Fix pileup "sort by" setting being lost on zoom level change ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3340](https://github.com/GMOD/jbrowse-components/pull/3340) Fix linear genome view import form going into infinite loading state changing assemblies with same refnames ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3339](https://github.com/GMOD/jbrowse-components/pull/3339) Fix force flag for drawing large regions and node-fetch polyfill for node 18 fix in @jbrowse/img ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 2.2.0 (2022-11-04)
 
 <details><summary>Packages in this release</summary>
