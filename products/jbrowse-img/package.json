@@ -17,8 +17,7 @@
     "src"
   ],
   "scripts": {
-    "pretest": "cd ../jbrowse-react-linear-genome-view; yarn build; cd ../jb2export",
-    "test": "jest",
+    "test": "cd ../../; jest --env node --testMatch '**/*testmod.js' products/jbrowse-img",
     "clean": "rm -rf dist esm *.tsbuildinfo",
     "prebuild": "yarn clean",
     "build": "npm-run-all build:*",
