@@ -37,7 +37,7 @@ export class FetchableSmallFasta {
     if (!entry) {
       throw new Error(`no sequence with id ${id} exists`)
     }
-    return entry.sequence.substr(start - 1, length)
+    return entry.sequence.slice(start, start + length)
   }
 
   async getSequenceList() {

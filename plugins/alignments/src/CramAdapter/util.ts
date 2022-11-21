@@ -24,7 +24,6 @@ export function readFeaturesToMismatches(
   const mismatches: Mismatch[] = new Array(readFeatures.length)
   let j = 0
   let insLen = 0
-
   let refPos = 0
   let sublen = 0
   let lastPos = start
@@ -52,8 +51,8 @@ export function readFeaturesToMismatches(
         start: refPos,
         length: 1,
         base: sub,
-        qual: qual?.[pos],
-        altbase: ref,
+        qual: qual?.[pos - 1],
+        altbase: ref?.toUpperCase(),
         type: 'mismatch',
       }
     } else if (code === 'I') {
