@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-text-indexing",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "JBrowse 2 text indexing rpc method",
   "keywords": [
     "jbrowse",
@@ -37,7 +37,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@jbrowse/text-indexing": "^2.2.0"
+    "@jbrowse/text-indexing": "^2.2.1"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",

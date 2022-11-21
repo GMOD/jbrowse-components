@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-protein",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "JBrowse 2 protein-specific renderers, etc.",
   "keywords": [
     "jbrowse",
