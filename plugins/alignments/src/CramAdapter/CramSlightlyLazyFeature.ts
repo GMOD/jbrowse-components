@@ -132,26 +132,22 @@ export default class CramSlightlyLazyFeature implements Feature {
     const refStart = this.record._refRegion.start
     let last_pos = this.record.alignmentStart
     let sublen = 0
-    if (typeof this.record.readFeatures !== 'undefined') {
+    if (this.record.readFeatures !== undefined) {
       let insLen = 0
-      // @ts-ignore
       for (let i = 0; i < this.record.readFeatures.length; i++) {
         const { code, refPos, sub, data } = this.record.readFeatures[i]
         sublen = refPos - last_pos
         seq += ref.substring(last_pos - refStart, refPos - refStart)
         last_pos = refPos
 
-        if (oplen && op !== 'M') {
-          cigar += oplen + op
-          oplen = 0
+        if (insLen > 0 && sublen) {
+          cigar += `${insLen}I`
+          insLen = 0
         }
+
         if (sublen) {
           op = 'M'
           oplen += sublen
-        }
-        if (insLen > 0 && code !== 'i') {
-          cigar += `${insLen}I`
-          insLen = 0
         }
 
         if (code === 'b') {
@@ -310,10 +306,16 @@ export default class CramSlightlyLazyFeature implements Feature {
     let insLen = 0
 
     let refPos = 0
+    let sublen = 0
+    let last_pos = this.record.alignmentStart
+
     for (let i = 0; i < readFeatures.length; i++) {
       const f = readFeatures[i]
       const { code, pos, data, sub, ref } = f
-      if (insLen > 0 && code !== 'i') {
+      sublen = refPos - last_pos
+      last_pos = refPos
+
+      if (sublen && insLen > 0) {
         mismatches[j++] = {
           start: refPos,
           type: 'insertion',
