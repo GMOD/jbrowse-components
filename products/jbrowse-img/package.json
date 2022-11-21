@@ -19,7 +19,9 @@
   "scripts": {
     "pretest": "cd ../jbrowse-react-linear-genome-view; yarn build; cd ../jb2export",
     "test": "jest",
-    "prebuild": "rm -rf dist",
+    "clean": "rm -rf dist esm *.tsbuildinfo",
+    "prebuild": "yarn clean",
+    "build": "npm-run-all build:*",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:es5": "tsc --build tsconfig.build.es5.json",
     "preversion": "npm run build"
