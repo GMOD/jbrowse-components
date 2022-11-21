@@ -195,10 +195,7 @@ export function mdToMismatches(
         }
         const s = getTemplateCoordLocal(curr.start)
         curr.base = seq[s] || 'X'
-        const qualScore = qual?.[s]
-        if (qualScore) {
-          curr.qual = qualScore
-        }
+        curr.qual = qual?.[s]
         curr.altbase = token
         nextRecord()
       }
