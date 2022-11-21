@@ -160,7 +160,10 @@ export function readFeaturesToCIGAR(
         cigar += `${insLen}I`
         insLen = 0
       }
-
+      if (oplen && op !== 'M') {
+        cigar += oplen + op
+        oplen = 0
+      }
       if (sublen) {
         op = 'M'
         oplen += sublen
@@ -206,6 +209,7 @@ export function readFeaturesToCIGAR(
           cigar += oplen + op
         }
         insLen++
+        seq += data
         oplen = 0
       } else if (code === 'P') {
         // Padding
@@ -242,5 +246,6 @@ export function readFeaturesToCIGAR(
   if (oplen) {
     cigar += oplen + op
   }
+
   return cigar
 }

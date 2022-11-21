@@ -60,10 +60,12 @@ async function getFeats(f1: string, f2: string) {
   return { bamFeaturesArray, cramFeaturesArray }
 }
 
-test('match CIGAR across file types', async () => {
+type M = { start: number }
+
+async function cigarCheck(f: string) {
   const { cramFeaturesArray, bamFeaturesArray } = await getFeats(
-    '../test_data/volvox-sorted.cram',
-    '../test_data/volvox-sorted.bam',
+    `../test_data/${f}.cram`,
+    `../test_data/${f}.bam`,
   )
   const cramMap = Object.fromEntries(
     cramFeaturesArray.map(f => [f.get('name'), f.get('CIGAR')]),
@@ -72,39 +74,34 @@ test('match CIGAR across file types', async () => {
     bamFeaturesArray.map(f => [f.get('name'), f.get('CIGAR')]),
   )
   expect(bamMap).toEqual(cramMap)
-})
+}
 
-test('mismatches same across file types', async () => {
+async function mismatchesCheck(f: string) {
   const { cramFeaturesArray, bamFeaturesArray } = await getFeats(
-    '../test_data/volvox-sorted.cram',
-    '../test_data/volvox-sorted.bam',
+    `../test_data/${f}.cram`,
+    `../test_data/${f}.bam`,
   )
   const cramMap = Object.fromEntries(
     cramFeaturesArray.map(f => [
       f.get('name'),
-      f
-        .get('mismatches')
-        .sort(
-          (a: { start: number }, b: { start: number }) => b.start - a.start,
-        ),
+      f.get('mismatches').sort((a: M, b: M) => b.start - a.start),
     ]),
   )
   const bamMap = Object.fromEntries(
     bamFeaturesArray.map(f => [
       f.get('name'),
-      f
-        .get('mismatches')
-        .sort(
-          (a: { start: number }, b: { start: number }) => b.start - a.start,
-        ),
+      f.get('mismatches').sort((a: M, b: M) => b.start - a.start),
     ]),
   )
-  const b = bamFeaturesArray.find(
-    f => f.get('name') === 'ctgA_9977_10531_4:0:0_5:0:0_11f1',
-  )
-  const c = cramFeaturesArray.find(
-    f => f.get('name') === 'ctgA_9977_10531_4:0:0_5:0:0_11f1',
-  )
-
   expect(bamMap).toEqual(cramMap)
+}
+
+test('match CIGAR across file types', async () => {
+  await cigarCheck('volvox-sorted')
+  await cigarCheck('volvox-long-reads.fastq.sorted')
+})
+
+test('mismatches same across file types', async () => {
+  await mismatchesCheck('volvox-sorted')
+  await mismatchesCheck('volvox-long-reads.fastq.sorted')
 })
