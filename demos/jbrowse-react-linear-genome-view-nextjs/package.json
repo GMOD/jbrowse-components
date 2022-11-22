@@ -14,7 +14,7 @@
   "dependencies": {
     "@fontsource/roboto": "^4.5.7",
     "@jbrowse/react-linear-genome-view": "^2.0.0",
-    "next": "^13.0.4",
+    "next": "^12.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
