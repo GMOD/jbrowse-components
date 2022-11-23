@@ -60,7 +60,7 @@ function RenderedFeatureGlyph(props: {
   const { reversed } = region
   const start = feature.get(reversed ? 'end' : 'start')
   const startPx = bpToPx(start, region, bpPerPx)
-  const labelsAllowed = displayMode !== 'compact' && displayMode !== 'collapsed'
+  const labelAllowed = displayMode !== 'collapsed'
 
   const rootLayout = new SceneGraph('root', 0, 0, 0, 0)
   const GlyphComponent = chooseGlyphComponent(feature, extraGlyphs)
@@ -78,7 +78,7 @@ function RenderedFeatureGlyph(props: {
   let description = ''
   let fontHeight = 0
   let expansion = 0
-  if (labelsAllowed) {
+  if (labelAllowed) {
     const showLabels = readConfObject(config, 'showLabels')
     const showDescriptions = readConfObject(config, 'showDescriptions')
     fontHeight = readConfObject(config, ['labels', 'fontSize'], { feature })
@@ -95,8 +95,7 @@ function RenderedFeatureGlyph(props: {
     description = String(
       readConfObject(config, ['labels', 'description'], { feature }) || '',
     )
-    shouldShowDescription =
-      /\S/.test(description) && showLabels && showDescriptions
+    shouldShowDescription = /\S/.test(description) && showDescriptions
 
     if (shouldShowName) {
       rootLayout.addChild(
