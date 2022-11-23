@@ -1,14 +1,14 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import ReactComponent from './components/HicRendering'
+import ReactComponent from './ArcRendering'
 import configSchema from './configSchema'
-import HicRenderer from './HicRenderer'
+import ArcRenderer from './ArcRenderer'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(
     () =>
-      new HicRenderer({
-        name: 'HicRenderer',
+      new ArcRenderer({
+        name: 'ArcRenderer',
         ReactComponent,
         configSchema,
         pluginManager,

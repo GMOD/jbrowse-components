@@ -1,42 +1,36 @@
-import { lazy } from 'react'
-import { when } from 'mobx'
-
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+
+// icons
 import LineStyleIcon from '@mui/icons-material/LineStyle'
+
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
-  baseLinearDisplayConfigSchema,
   BlockModel,
+  baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
-import {
+import LinearBareDisplayF, {
   configSchemaFactory as linearBareDisplayConfigSchemaFactory,
-  stateModelFactory as LinearBareDisplayStateModelFactory,
 } from './LinearBareDisplay'
-import {
+import LinearGenomeViewF, {
+  renderToSvg,
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-  stateModelFactory as linearGenomeViewStateModelFactory,
-  renderToSvg,
   RefNameAutocomplete,
   SearchBox,
   ZoomControls,
   LinearGenomeView,
 } from './LinearGenomeView'
-
-import {
+import LinearBasicDisplayF, {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
 
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
-
-type LGV = LinearGenomeViewModel
+import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -53,99 +47,10 @@ export default class LinearGenomeViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
     BasicTrackF(pluginManager)
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearBareDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearBareDisplay',
-        configSchema,
-        stateModel: LinearBareDisplayStateModelFactory(configSchema),
-        trackType: 'BasicTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
-
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearBasicDisplay',
-        configSchema,
-        stateModel: linearBasicDisplayModelFactory(configSchema),
-        trackType: 'FeatureTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
-
-    pluginManager.addViewType(
-      () =>
-        new ViewType({
-          name: 'LinearGenomeView',
-          stateModel: linearGenomeViewStateModelFactory(pluginManager),
-          ReactComponent: lazy(
-            () => import('./LinearGenomeView/components/LinearGenomeView'),
-          ),
-        }),
-    )
-
-    pluginManager.addToExtensionPoint(
-      'LaunchView-LinearGenomeView',
-      // @ts-ignore
-      async ({
-        session,
-        assembly,
-        loc,
-        tracks = [],
-      }: {
-        session: AbstractSessionModel
-        assembly?: string
-        loc: string
-        tracks?: string[]
-      }) => {
-        try {
-          const { assemblyManager } = session
-          const view = session.addView('LinearGenomeView', {}) as LGV
-
-          await when(() => !!view.volatileWidth)
-
-          if (!assembly) {
-            throw new Error(
-              'No assembly provided when launching linear genome view',
-            )
-          }
-
-          const asm = await assemblyManager.waitForAssembly(assembly)
-          if (!asm) {
-            throw new Error(
-              `Assembly "${assembly}" not found when launching linear genome view`,
-            )
-          }
-
-          view.navToLocString(loc, assembly)
-
-          const idsNotFound = [] as string[]
-          tracks.forEach(track => {
-            try {
-              view.showTrack(track)
-            } catch (e) {
-              if (`${e}`.match('Could not resolve identifier')) {
-                idsNotFound.push(track)
-              } else {
-                throw e
-              }
-            }
-          })
-          if (idsNotFound.length) {
-            throw new Error(
-              `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-            )
-          }
-        } catch (e) {
-          session.notify(`${e}`, 'error')
-          throw e
-        }
-      },
-    )
+    LinearBasicDisplayF(pluginManager)
+    LinearGenomeViewF(pluginManager)
+    LinearBareDisplayF(pluginManager)
+    LaunchLinearGenomeViewF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

@@ -6,9 +6,9 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'Gff3Adapter',
+        name: 'HicAdapter',
         configSchema,
-        getAdapterClass: () => import('./Gff3Adapter').then(r => r.default),
+        getAdapterClass: () => import('./HicAdapter').then(r => r.default),
       }),
   )
 }

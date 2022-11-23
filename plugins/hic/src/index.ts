@@ -1,22 +1,11 @@
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
-import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 import { FileLocation } from '@jbrowse/core/util/types'
-import configSchemaF from './configSchema'
 import Color from 'color'
-import HicRenderer, {
-  configSchema as hicRendererConfigSchema,
-  ReactComponent as HicRendererReactComponent,
-} from './HicRenderer'
-import {
-  configSchemaFactory as linearHicdisplayConfigSchemaFactory,
-  modelFactory as linearHicdisplayModelFactory,
-} from './LinearHicDisplay'
-import hicAdapterConfigSchema from './HicAdapter/configSchema'
+import HicRendererF from './HicRenderer'
+import HicTrackF from './HicTrack'
+import LinearHicDisplayF from './LinearHicDisplay'
+import HicAdapterF from './HicAdapter'
 import {
   AdapterGuesser,
   getFileName,
@@ -27,15 +16,11 @@ export default class HicPlugin extends Plugin {
   name = 'HicPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addAdapterType(
-      () =>
-        new AdapterType({
-          name: 'HicAdapter',
-          configSchema: hicAdapterConfigSchema,
-          getAdapterClass: () =>
-            import('./HicAdapter/HicAdapter').then(r => r.default),
-        }),
-    )
+    HicAdapterF(pluginManager)
+    HicRendererF(pluginManager)
+    HicTrackF(pluginManager)
+    LinearHicDisplayF(pluginManager)
+
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
       (adapterGuesser: AdapterGuesser) => {
@@ -72,38 +57,6 @@ export default class HicPlugin extends Plugin {
         }
       },
     )
-    pluginManager.addRendererType(
-      () =>
-        new HicRenderer({
-          name: 'HicRenderer',
-          ReactComponent: HicRendererReactComponent,
-          configSchema: hicRendererConfigSchema,
-          pluginManager,
-        }),
-    )
-    pluginManager.addTrackType(() => {
-      const configSchema = configSchemaF(pluginManager)
-      return new TrackType({
-        name: 'HicTrack',
-        configSchema,
-        stateModel: createBaseTrackModel(
-          pluginManager,
-          'HicTrack',
-          configSchema,
-        ),
-      })
-    })
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearHicdisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearHicDisplay',
-        configSchema,
-        stateModel: linearHicdisplayModelFactory(configSchema),
-        trackType: 'HicTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
   }
 
   configure(pluginManager: PluginManager) {
