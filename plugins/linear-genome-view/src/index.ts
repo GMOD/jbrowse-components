@@ -1,5 +1,3 @@
-import { when } from 'mobx'
-
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
@@ -10,22 +8,21 @@ import LineStyleIcon from '@mui/icons-material/LineStyle'
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
-  baseLinearDisplayConfigSchema,
   BlockModel,
+  baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
 import LinearBareDisplayF, {
   configSchemaFactory as linearBareDisplayConfigSchemaFactory,
 } from './LinearBareDisplay'
 import LinearGenomeViewF, {
+  renderToSvg,
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-  renderToSvg,
   RefNameAutocomplete,
   SearchBox,
   ZoomControls,
   LinearGenomeView,
 } from './LinearGenomeView'
-
 import LinearBasicDisplayF, {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
@@ -33,8 +30,7 @@ import LinearBasicDisplayF, {
 
 import FeatureTrackF from './FeatureTrack'
 import BasicTrackF from './BasicTrack'
-
-type LGV = LinearGenomeViewModel
+import LaunchLinearGenomeViewF from './LaunchLinearGenomeView'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
@@ -54,65 +50,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
     LinearBasicDisplayF(pluginManager)
     LinearGenomeViewF(pluginManager)
     LinearBareDisplayF(pluginManager)
-
-    pluginManager.addToExtensionPoint(
-      'LaunchView-LinearGenomeView',
-      // @ts-ignore
-      async ({
-        session,
-        assembly,
-        loc,
-        tracks = [],
-      }: {
-        session: AbstractSessionModel
-        assembly?: string
-        loc: string
-        tracks?: string[]
-      }) => {
-        try {
-          const { assemblyManager } = session
-          const view = session.addView('LinearGenomeView', {}) as LGV
-
-          await when(() => !!view.volatileWidth)
-
-          if (!assembly) {
-            throw new Error(
-              'No assembly provided when launching linear genome view',
-            )
-          }
-
-          const asm = await assemblyManager.waitForAssembly(assembly)
-          if (!asm) {
-            throw new Error(
-              `Assembly "${assembly}" not found when launching linear genome view`,
-            )
-          }
-
-          view.navToLocString(loc, assembly)
-
-          const idsNotFound = [] as string[]
-          tracks.forEach(track => {
-            try {
-              view.showTrack(track)
-            } catch (e) {
-              if (`${e}`.match('Could not resolve identifier')) {
-                idsNotFound.push(track)
-              } else {
-                throw e
-              }
-            }
-          })
-          if (idsNotFound.length) {
-            throw new Error(
-              `Could not resolve identifiers: ${idsNotFound.join(',')}`,
-            )
-          }
-        } catch (e) {
-          session.notify(`${e}`, 'error')
-          throw e
-        }
-      },
-    )
+    LaunchLinearGenomeViewF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

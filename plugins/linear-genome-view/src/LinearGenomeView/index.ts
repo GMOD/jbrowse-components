@@ -1,14 +1,14 @@
 import { lazy } from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
-import modelFactory from './model'
+import { stateModelFactory } from './model'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addViewType(
     () =>
       new ViewType({
         name: 'LinearGenomeView',
-        stateModel: modelFactory(pluginManager),
+        stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(() => import('./components/LinearGenomeView')),
       }),
   )
