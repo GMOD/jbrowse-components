@@ -1,6 +1,6 @@
 ---
 id: config_gui
-title: Configure JBrowse using the GUI
+title: JBrowse web setup using the GUI
 toplevel: true
 ---
 
