@@ -1652,10 +1652,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.6.tgz#62c3ef806c542f255381d7fe59faa16ab2f95bf5"
   integrity sha512-7WggfnPpNsELg0GGszEpXJhlGK3jnKcJsyGY6oPIfKwf7M+1a9gLbeqperuLlINPXuM4oQ0H4hlad9YUNYEGeg==
 
-"@gmod/vcf@^5.0.5":
-  version "5.0.8"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.8.tgz#97fde5a39df20ffb488a9ae419580b99def16ca4"
-  integrity sha512-nba3qxE6aGTrljqG+zOhqK46+l8c8hQnr+SqlYteo2Ee20Zh8pZQv2959+/n2xMQ5/DZwdE/NrQxxu3vgAyabg==
+"@gmod/vcf@^5.0.9":
+  version "5.0.9"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.9.tgz#258ea28c5343efcfc2d510f9c5cda45b00bc66d8"
+  integrity sha512-pqv1irMcJ8qO9YvVwEvtD9YD6Up3YsYp5FplWOK+mR5YtsiopPQKNgmkL1Ks3Jv9aQNko0wQ9T1FZkNgzd6Fzg==
 
 "@hapi/hoek@^9.0.0":
   version "9.3.0"
