@@ -4,7 +4,11 @@ import {
   AbstractSessionModel,
   isAbstractMenuManager,
 } from '@jbrowse/core/util/types'
+
+// icons
 import TableChartIcon from '@mui/icons-material/TableChart'
+
+// locals
 import SvInspectorViewF from './SvInspectorView'
 import LaunchSvInspectorViewF from './LaunchSvInspectorView'
 

@@ -1587,3 +1587,5 @@ export {
 
 export type LinearGenomeViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearGenomeViewModel = Instance<LinearGenomeViewStateModel>
+
+export { default as ReactComponent } from './components/LinearGenomeView'
