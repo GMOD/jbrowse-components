@@ -2,18 +2,10 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
 } from '@jbrowse/core/configuration/configurationSchema'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { types } from 'mobx-state-tree'
+import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
-export function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
-  pluginManager: PluginManager,
-) {
-  const LGVPlugin = pluginManager.getPlugin(
-    'LinearGenomeViewPlugin',
-  ) as import('@jbrowse/plugin-linear-genome-view').default
-  // @ts-ignore
-  const { BaseLinearDisplay } = LGVPlugin.exports
+export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearArcDisplay',
