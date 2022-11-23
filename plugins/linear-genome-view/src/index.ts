@@ -1,26 +1,24 @@
-import { lazy } from 'react'
 import { when } from 'mobx'
 
-import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
+
+// icons
 import LineStyleIcon from '@mui/icons-material/LineStyle'
+
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
   BlockModel,
 } from './BaseLinearDisplay'
-import {
+import LinearBareDisplayF, {
   configSchemaFactory as linearBareDisplayConfigSchemaFactory,
-  stateModelFactory as LinearBareDisplayStateModelFactory,
 } from './LinearBareDisplay'
-import {
+import LinearGenomeViewF, {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
-  stateModelFactory as linearGenomeViewStateModelFactory,
   renderToSvg,
   RefNameAutocomplete,
   SearchBox,
@@ -28,7 +26,7 @@ import {
   LinearGenomeView,
 } from './LinearGenomeView'
 
-import {
+import LinearBasicDisplayF, {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
 } from './LinearBasicDisplay'
@@ -53,40 +51,9 @@ export default class LinearGenomeViewPlugin extends Plugin {
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
     BasicTrackF(pluginManager)
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearBareDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearBareDisplay',
-        configSchema,
-        stateModel: LinearBareDisplayStateModelFactory(configSchema),
-        trackType: 'BasicTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
-
-    pluginManager.addDisplayType(() => {
-      const configSchema = linearBasicDisplayConfigSchemaFactory(pluginManager)
-      return new DisplayType({
-        name: 'LinearBasicDisplay',
-        configSchema,
-        stateModel: linearBasicDisplayModelFactory(configSchema),
-        trackType: 'FeatureTrack',
-        viewType: 'LinearGenomeView',
-        ReactComponent: BaseLinearDisplayComponent,
-      })
-    })
-
-    pluginManager.addViewType(
-      () =>
-        new ViewType({
-          name: 'LinearGenomeView',
-          stateModel: linearGenomeViewStateModelFactory(pluginManager),
-          ReactComponent: lazy(
-            () => import('./LinearGenomeView/components/LinearGenomeView'),
-          ),
-        }),
-    )
+    LinearBasicDisplayF(pluginManager)
+    LinearGenomeViewF(pluginManager)
+    LinearBareDisplayF(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'LaunchView-LinearGenomeView',

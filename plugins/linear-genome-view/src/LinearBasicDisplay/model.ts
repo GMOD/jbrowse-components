@@ -18,7 +18,8 @@ const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
 /**
  * #stateModel LinearBasicDisplay
- * used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
+ * used by `FeatureTrack`, has simple settings like "show/hide feature labels",
+ * etc.
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
