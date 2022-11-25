@@ -19,7 +19,7 @@ const useStyles = makeStyles()(theme => {
     ? alpha(tertiary.main, 0.7)
     : alpha(primary.main, 0.7)
   return {
-    rubberBand: {
+    rubberband: {
       height: '100%',
       background,
       position: 'absolute',
@@ -27,12 +27,12 @@ const useStyles = makeStyles()(theme => {
       textAlign: 'center',
       overflow: 'hidden',
     },
-    rubberBandControl: {
+    rubberbandControl: {
       cursor: 'crosshair',
       width: '100%',
       minHeight: 8,
     },
-    rubberBandText: {
+    rubberbandText: {
       color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
     popover: {
@@ -183,8 +183,8 @@ function RubberBand({
           <VerticalGuide model={model} coordX={guideX} />
         ) : null}
         <div
-          data-testid="rubberBand_controls"
-          className={classes.rubberBandControl}
+          data-testid="rubberband_controls"
+          className={classes.rubberbandControl}
           role="presentation"
           ref={controlsRef}
           onMouseDown={mouseDown}
@@ -213,6 +213,17 @@ function RubberBand({
         left={left}
         numOfBpSelected={numOfBpSelected}
       />
+      <div
+        data-testid="rubberband_controls"
+        className={classes.rubberbandControl}
+        role="presentation"
+        ref={controlsRef}
+        onMouseDown={mouseDown}
+        onMouseOut={mouseOut}
+        onMouseMove={mouseMove}
+      >
+        {ControlComponent}
+      </div>
       {anchorPosition ? (
         <Menu
           anchorReference="anchorPosition"

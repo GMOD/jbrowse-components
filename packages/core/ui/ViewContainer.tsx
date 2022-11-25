@@ -153,7 +153,7 @@ const ViewContainer = observer(
         ref={ref}
         elevation={12}
         className={classes.viewContainer}
-        style={{ ...style, margin: 20, padding: `0px ${padWidth} ${padWidth}` }}
+        style={{ ...style, padding: `0px ${padWidth} ${padWidth}` }}
       >
         <div ref={scrollRef} style={{ display: 'flex' }}>
           <ViewMenu model={view} IconProps={{ className: classes.icon }} />

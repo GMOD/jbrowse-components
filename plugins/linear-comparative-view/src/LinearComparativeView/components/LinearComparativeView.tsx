@@ -7,7 +7,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
 import { LinearComparativeViewModel } from '../model'
-import RubberBand from './RubberBand'
+import Rubberband from './Rubberband'
 import Header from './Header'
 
 const useStyles = makeStyles()(() => ({
@@ -76,7 +76,7 @@ const MiddleComparativeView = observer(
     return (
       <div className={classes.rubberbandContainer}>
         <Header ExtraButtons={ExtraButtons} model={model} />
-        <RubberBand
+        <Rubberband
           model={model}
           ControlComponent={
             <div
@@ -121,7 +121,7 @@ const OverlayComparativeView = observer(
     return (
       <div className={classes.rubberbandContainer}>
         <Header model={model} ExtraButtons={ExtraButtons} />
-        <RubberBand
+        <Rubberband
           model={model}
           ControlComponent={
             <div

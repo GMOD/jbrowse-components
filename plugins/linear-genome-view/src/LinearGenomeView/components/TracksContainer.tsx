@@ -8,8 +8,8 @@ import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
 import { useSideScroll, useShiftSelect, useWheelScroll } from './hooks'
 
 // local components
-import RubberBand from './Rubberband'
-import ScaleBar from './ScaleBar'
+import Rubberband from './Rubberband'
+import Scalebar from './Scalebar'
 import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
 import VerticalGuide from './VerticalGuide'
@@ -94,10 +94,10 @@ function TracksContainer({
         />
       ) : null}
 
-      <RubberBand
+      <Rubberband
         model={model}
         ControlComponent={
-          <ScaleBar
+          <Scalebar
             model={model}
             style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
           />

@@ -14,7 +14,7 @@ const useStyles = makeStyles()(theme => {
     ? alpha(tertiary.main, 0.7)
     : alpha(primary.main, 0.7)
   return {
-    rubberBand: {
+    rubberband: {
       height: '100%',
       background,
       position: 'absolute',
@@ -22,12 +22,12 @@ const useStyles = makeStyles()(theme => {
       textAlign: 'center',
       overflow: 'hidden',
     },
-    rubberBandControl: {
+    rubberbandControl: {
       cursor: 'crosshair',
       width: '100%',
       minHeight: 8,
     },
-    rubberBandText: {
+    rubberbandText: {
       color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
     popover: {
@@ -105,7 +105,7 @@ function OverviewRubberBand({
   const [currentX, setCurrentX] = useState<number>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberBandRef = useRef<HTMLDivElement>(null)
+  const rubberbandRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined
 
@@ -203,7 +203,7 @@ function OverviewRubberBand({
           />
         ) : null}
         <div
-          className={classes.rubberBandControl}
+          className={classes.rubberbandControl}
           role="presentation"
           ref={controlsRef}
           onMouseDown={mouseDown}
@@ -235,7 +235,7 @@ function OverviewRubberBand({
 
   return (
     <div style={{ position: 'relative' }}>
-      {rubberBandRef.current ? (
+      {rubberbandRef.current ? (
         <>
           <Popover
             className={classes.popover}
@@ -243,7 +243,7 @@ function OverviewRubberBand({
               paper: classes.paper,
             }}
             open
-            anchorEl={rubberBandRef.current}
+            anchorEl={rubberbandRef.current}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'left',
@@ -265,7 +265,7 @@ function OverviewRubberBand({
               paper: classes.paper,
             }}
             open
-            anchorEl={rubberBandRef.current}
+            anchorEl={rubberbandRef.current}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',
@@ -284,8 +284,8 @@ function OverviewRubberBand({
         </>
       ) : null}
       <div
-        ref={rubberBandRef}
-        className={classes.rubberBand}
+        ref={rubberbandRef}
+        className={classes.rubberband}
         style={{
           left,
           width: Math.abs(width),
@@ -293,8 +293,8 @@ function OverviewRubberBand({
         }}
       />
       <div
-        data-testid="rubberBand_controls"
-        className={classes.rubberBandControl}
+        data-testid="rubberband_controls"
+        className={classes.rubberbandControl}
         role="presentation"
         ref={controlsRef}
         onMouseDown={mouseDown}

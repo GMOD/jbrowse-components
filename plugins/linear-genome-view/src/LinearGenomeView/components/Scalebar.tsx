@@ -94,7 +94,7 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
+const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
   const { bpPerPx, staticBlocks } = model
 
@@ -150,13 +150,13 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-interface ScaleBarProps {
+interface ScalebarProps {
   model: LGV
   style?: React.CSSProperties
   className?: string
 }
 
-const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
+const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
   ({ model, style, className, ...other }, ref) => {
     const { classes, cx } = useStyles()
 
@@ -187,7 +187,7 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
               ...style,
             }}
           >
-            <RenderedScaleBarLabels model={model} />
+            <RenderedScalebarLabels model={model} />
           </div>
         </div>
         <RenderedRefNameLabels model={model} />
@@ -196,4 +196,4 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
   },
 )
 
-export default observer(ScaleBar)
+export default observer(Scalebar)
