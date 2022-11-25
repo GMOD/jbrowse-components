@@ -2,13 +2,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import normalizeWheel from 'normalize-wheel'
+import { Menu } from '@jbrowse/core/ui'
 
 // locals
 import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
-import RubberBand from './RubberBand'
+import RubberBand from './Rubberband'
 import ScaleBar from './ScaleBar'
 import Gridlines from './Gridlines'
 import CenterLine from './CenterLine'
+import VerticalGuide from './VerticalGuide'
+import RubberbandSpan from './RubberbandSpan'
 
 const useStyles = makeStyles()({
   tracksContainer: {
@@ -24,23 +27,19 @@ const useStyles = makeStyles()({
 type LGV = LinearGenomeViewModel
 type Timer = ReturnType<typeof setTimeout>
 
-function TracksContainer({
-  children,
-  model,
-}: {
-  children: React.ReactNode
-  model: LGV
-}) {
-  const { classes } = useStyles()
+function getRelativeX<
+  T extends { clientX: number; target: EventTarget | null },
+>(event: T, element: HTMLElement | null) {
+  return event.clientX - (element?.getBoundingClientRect().left || 0)
+}
+
+function useSideScroll(model: LGV) {
+  const [mouseDragging, setMouseDragging] = useState(false)
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
-  const delta = useRef(0)
   const scheduled = useRef(false)
-  const timeout = useRef<Timer>()
-  const ref = useRef<HTMLDivElement>(null)
-  const prevX = useRef<number>(0)
 
-  const [mouseDragging, setMouseDragging] = useState(false)
+  const prevX = useRef<number>(0)
 
   useEffect(() => {
     let cleanup = () => {}
@@ -82,6 +81,9 @@ function TracksContainer({
   }, [model, mouseDragging, prevX])
 
   function mouseDown(event: React.MouseEvent) {
+    if (event.shiftKey) {
+      return
+    }
     // check if clicking a draggable element or a resize handle
     const target = event.target as HTMLElement
     if (target.draggable || target.dataset.resizer) {
@@ -101,13 +103,166 @@ function TracksContainer({
     event.preventDefault()
     setMouseDragging(false)
   }
+  return { mouseDown, mouseUp }
+}
 
-  function mouseLeave(event: React.MouseEvent) {
-    event.preventDefault()
-  }
+function useShiftSelect(ref: React.RefObject<HTMLDivElement>, model: LGV) {
+  const [startX, setStartX] = useState<number>()
+  const [currentX, setCurrentX] = useState<number>()
+
+  // clientX and clientY used for anchorPosition for menu
+  // offsetX used for calculations about width of selection
+  const [anchorPosition, setAnchorPosition] = useState<{
+    offsetX: number
+    clientX: number
+    clientY: number
+  }>()
+  const [guideX, setGuideX] = useState<number>()
+  const mouseDragging = startX !== undefined && anchorPosition === undefined
 
   useEffect(() => {
+    function computeOffsets(offsetX: number) {
+      if (startX === undefined) {
+        return
+      }
+      let leftPx = startX
+      let rightPx = offsetX
+      if (rightPx < leftPx) {
+        ;[leftPx, rightPx] = [rightPx, leftPx]
+      }
+      const leftOffset = model.pxToBp(leftPx)
+      const rightOffset = model.pxToBp(rightPx)
+
+      return { leftOffset, rightOffset }
+    }
+
+    function globalMouseMove(event: MouseEvent) {
+      if (ref.current && mouseDragging) {
+        const relativeX = getRelativeX(event, ref.current)
+        setCurrentX(relativeX)
+      }
+    }
+
+    function globalMouseUp(event: MouseEvent) {
+      if (startX !== undefined && ref.current) {
+        const { clientX, clientY } = event
+        const offsetX = getRelativeX(event, ref.current)
+        // as stated above, store both clientX/Y and offsetX for different
+        // purposes
+        setAnchorPosition({
+          offsetX,
+          clientX,
+          clientY,
+        })
+        const args = computeOffsets(offsetX)
+        if (args) {
+          const { leftOffset, rightOffset } = args
+          model.setOffsets(leftOffset, rightOffset)
+        }
+        setGuideX(undefined)
+      }
+    }
+    if (mouseDragging) {
+      window.addEventListener('mousemove', globalMouseMove)
+      window.addEventListener('mouseup', globalMouseUp)
+      return () => {
+        window.removeEventListener('mousemove', globalMouseMove)
+        window.removeEventListener('mouseup', globalMouseUp)
+      }
+    }
+    return () => {}
+  }, [startX, mouseDragging, anchorPosition, model, ref])
+
+  useEffect(() => {
+    if (
+      !mouseDragging &&
+      currentX !== undefined &&
+      startX !== undefined &&
+      Math.abs(currentX - startX) <= 3
+    ) {
+      handleClose()
+    }
+  }, [mouseDragging, currentX, startX])
+
+  function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
+    if (!event.shiftKey) {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    const relativeX = getRelativeX(event, ref.current)
+    setStartX(relativeX)
+    setCurrentX(relativeX)
+  }
+
+  function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
+    if (event.shiftKey) {
+      setGuideX(getRelativeX(event, ref.current))
+    } else {
+      setGuideX(undefined)
+    }
+  }
+
+  function mouseOut() {
+    setGuideX(undefined)
+    model.setOffsets(undefined, undefined)
+  }
+
+  function handleClose() {
+    setAnchorPosition(undefined)
+    setStartX(undefined)
+    setCurrentX(undefined)
+  }
+
+  function handleMenuItemClick(_: unknown, callback: Function) {
+    callback()
+    handleClose()
+  }
+
+  const open = Boolean(anchorPosition)
+  if (startX === undefined) {
+    return {
+      open,
+      guideX,
+      mouseDown,
+      mouseMove,
+      mouseOut,
+      handleMenuItemClick,
+    }
+  } else {
+    const right = anchorPosition ? anchorPosition.offsetX : currentX || 0
+    const left = right < startX ? right : startX
+    const width = Math.abs(right - startX)
+    const leftBpOffset = model.pxToBp(left)
+    const rightBpOffset = model.pxToBp(left + width)
+    const numOfBpSelected = Math.ceil(width * model.bpPerPx)
+
+    return {
+      open,
+      rubberbandOn: true,
+      mouseDown,
+      mouseMove,
+      mouseOut,
+      handleClose,
+      handleMenuItemClick,
+      leftBpOffset,
+      rightBpOffset,
+      anchorPosition,
+      numOfBpSelected,
+      width,
+      left,
+    }
+  }
+}
+
+function useWheelScroll(ref: React.RefObject<HTMLDivElement>, model: LGV) {
+  const delta = useRef(0)
+  const timeout = useRef<Timer>()
+  const scheduled = useRef(false)
+  useEffect(() => {
     const curr = ref.current
+
     // if ctrl is held down, zoom in with y-scroll
     // else scroll horizontally with x-scroll
     function onWheel(origEvent: WheelEvent) {
@@ -157,19 +312,74 @@ function TracksContainer({
       }
     }
     return () => {}
-  }, [model])
+  }, [model, ref])
+}
+
+function TracksContainer({
+  children,
+  model,
+}: {
+  children: React.ReactNode
+  model: LGV
+}) {
+  const { classes } = useStyles()
+  const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
+  const ref = useRef<HTMLDivElement>(null)
+  const {
+    guideX,
+    rubberbandOn,
+    leftBpOffset,
+    rightBpOffset,
+    numOfBpSelected,
+    width,
+    left,
+    anchorPosition,
+    handleMenuItemClick,
+    open,
+    handleClose,
+    mouseDown: mouseDown2,
+    mouseMove,
+  } = useShiftSelect(ref, model)
+  useWheelScroll(ref, model)
 
   return (
     <div
       ref={ref}
       data-testid="trackContainer"
       className={classes.tracksContainer}
-      onMouseDown={mouseDown}
+      onMouseDown={event => {
+        mouseDown1(event)
+        mouseDown2(event)
+      }}
+      onMouseMove={mouseMove}
       onMouseUp={mouseUp}
-      onMouseLeave={mouseLeave}
     >
       {model.showGridlines ? <Gridlines model={model} /> : null}
       {model.showCenterLine ? <CenterLine model={model} /> : null}
+      {guideX !== undefined ? (
+        <VerticalGuide model={model} coordX={guideX} />
+      ) : rubberbandOn ? (
+        <RubberbandSpan
+          leftBpOffset={leftBpOffset}
+          rightBpOffset={rightBpOffset}
+          numOfBpSelected={numOfBpSelected}
+          width={width}
+          left={left}
+        />
+      ) : null}
+      {anchorPosition ? (
+        <Menu
+          anchorReference="anchorPosition"
+          anchorPosition={{
+            left: anchorPosition.clientX,
+            top: anchorPosition.clientY,
+          }}
+          onMenuItemClick={handleMenuItemClick}
+          open={open}
+          onClose={handleClose}
+          menuItems={model.rubberBandMenuItems()}
+        />
+      ) : null}
 
       <RubberBand
         model={model}

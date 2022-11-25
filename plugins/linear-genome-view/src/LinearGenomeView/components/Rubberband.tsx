@@ -1,9 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Popover, Tooltip, Typography, alpha } from '@mui/material'
+import { Popover, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+// core
 import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
+
+// locals
+import VerticalGuide from './VerticalGuide'
 import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -47,28 +52,6 @@ const useStyles = makeStyles()(theme => {
     },
   }
 })
-
-const VerticalGuide = observer(
-  ({ model, coordX }: { model: LGV; coordX: number }) => {
-    const { classes } = useStyles()
-    return (
-      <Tooltip
-        open
-        placement="top"
-        title={stringify(model.pxToBp(coordX))}
-        arrow
-      >
-        <div
-          className={classes.guide}
-          style={{
-            left: coordX,
-            background: 'red',
-          }}
-        />
-      </Tooltip>
-    )
-  },
-)
 
 function RubberBand({
   model,
