@@ -2,7 +2,7 @@ import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
 
 import { Popover, Typography, alpha } from '@mui/material'
-import { stringify } from '@jbrowse/core/util'
+import { stringify, toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => {
   const { primary, tertiary } = theme.palette
@@ -56,58 +56,55 @@ function RubberbandSpan({
   left: number
   width: number
 }) {
-  const rubberbandRef = useRef(null)
+  const ref = useRef(null)
   const { classes } = useStyles()
-  console.log({ leftBpOffset })
   return (
     <>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open
-        anchorEl={rubberbandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
-        }}
-        keepMounted
-        disableRestoreFocus
-      >
-        <Typography>{stringify(leftBpOffset)}</Typography>
-      </Popover>
-      <Popover
-        className={classes.popover}
-        classes={{
-          paper: classes.paper,
-        }}
-        open
-        anchorEl={rubberbandRef.current}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left',
-        }}
-        keepMounted
-        disableRestoreFocus
-      >
-        <Typography>{stringify(rightBpOffset)}</Typography>
-      </Popover>
-      <div
-        ref={rubberbandRef}
-        className={classes.rubberband}
-        style={{ left, width }}
-      >
+      {ref.current ? (
+        <>
+          <Popover
+            className={classes.popover}
+            classes={{ paper: classes.paper }}
+            open
+            anchorEl={ref.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'left',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            keepMounted
+            disableRestoreFocus
+          >
+            <Typography>{stringify(leftBpOffset)}</Typography>
+          </Popover>
+          <Popover
+            className={classes.popover}
+            classes={{
+              paper: classes.paper,
+            }}
+            open
+            anchorEl={ref.current}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'left',
+            }}
+            keepMounted
+            disableRestoreFocus
+          >
+            <Typography>{stringify(rightBpOffset)}</Typography>
+          </Popover>
+        </>
+      ) : null}
+      <div ref={ref} className={classes.rubberband} style={{ left, width }}>
         <Typography variant="h6" className={classes.rubberbandText}>
-          {numOfBpSelected.toLocaleString('en-US')} bp
+          {toLocale(numOfBpSelected)} bp
         </Typography>
       </div>
     </>

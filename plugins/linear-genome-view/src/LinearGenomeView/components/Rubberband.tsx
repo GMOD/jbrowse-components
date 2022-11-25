@@ -1,14 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Popover, Typography, alpha } from '@mui/material'
+import { alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // core
-import { stringify } from '@jbrowse/core/util'
 import { Menu } from '@jbrowse/core/ui'
 
 // locals
 import VerticalGuide from './VerticalGuide'
+import RubberbandSpan from './RubberbandSpan'
 import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
@@ -72,7 +72,6 @@ function RubberBand({
   }>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberBandRef = useRef(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
@@ -207,70 +206,13 @@ function RubberBand({
   const numOfBpSelected = Math.ceil(width * model.bpPerPx)
   return (
     <>
-      {rubberBandRef.current ? (
-        <>
-          <Popover
-            className={classes.popover}
-            classes={{
-              paper: classes.paper,
-            }}
-            open
-            anchorEl={rubberBandRef.current}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            keepMounted
-            disableRestoreFocus
-          >
-            <Typography>{stringify(leftBpOffset)}</Typography>
-          </Popover>
-          <Popover
-            className={classes.popover}
-            classes={{
-              paper: classes.paper,
-            }}
-            open
-            anchorEl={rubberBandRef.current}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
-            keepMounted
-            disableRestoreFocus
-          >
-            <Typography>{stringify(rightBpOffset)}</Typography>
-          </Popover>
-        </>
-      ) : null}
-      <div
-        ref={rubberBandRef}
-        className={classes.rubberBand}
-        style={{ left, width }}
-      >
-        <Typography variant="h6" className={classes.rubberBandText}>
-          {numOfBpSelected.toLocaleString('en-US')} bp
-        </Typography>
-      </div>
-      <div
-        data-testid="rubberBand_controls"
-        className={classes.rubberBandControl}
-        role="presentation"
-        ref={controlsRef}
-        onMouseDown={mouseDown}
-        onMouseOut={mouseOut}
-        onMouseMove={mouseMove}
-      >
-        {ControlComponent}
-      </div>
+      <RubberbandSpan
+        leftBpOffset={leftBpOffset}
+        rightBpOffset={rightBpOffset}
+        width={width}
+        left={left}
+        numOfBpSelected={numOfBpSelected}
+      />
       {anchorPosition ? (
         <Menu
           anchorReference="anchorPosition"
