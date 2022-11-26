@@ -84,6 +84,7 @@ export function useSideScroll(model: LGV) {
 export function useShiftSelect(
   ref: React.RefObject<HTMLDivElement>,
   model: LGV,
+  shiftOnly: boolean,
 ) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
@@ -163,7 +164,7 @@ export function useShiftSelect(
   }, [mouseDragging, currentX, startX])
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    if (!event.shiftKey) {
+    if (shiftOnly && !event.shiftKey) {
       return
     }
 
@@ -175,7 +176,7 @@ export function useShiftSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (event.shiftKey) {
+    if (shiftOnly && event.shiftKey) {
       setGuideX(getRelativeX(event, ref.current))
     } else {
       setGuideX(undefined)

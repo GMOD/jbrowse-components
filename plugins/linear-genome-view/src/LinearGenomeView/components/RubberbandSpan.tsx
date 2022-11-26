@@ -52,7 +52,7 @@ function RubberbandSpan({
 }: {
   leftBpOffset: Offset
   rightBpOffset: Offset
-  numOfBpSelected: number
+  numOfBpSelected?: number
   left: number
   width: number
 }) {
@@ -102,11 +102,13 @@ function RubberbandSpan({
           </Popover>
         </>
       ) : null}
-      <div ref={ref} className={classes.rubberband} style={{ left, width }}>
-        <Typography variant="h6" className={classes.rubberbandText}>
-          {toLocale(numOfBpSelected)} bp
-        </Typography>
-      </div>
+      {numOfBpSelected ? (
+        <div ref={ref} className={classes.rubberband} style={{ left, width }}>
+          <Typography variant="h6" className={classes.rubberbandText}>
+            {toLocale(numOfBpSelected)} bp
+          </Typography>
+        </div>
+      ) : null}
     </>
   )
 }

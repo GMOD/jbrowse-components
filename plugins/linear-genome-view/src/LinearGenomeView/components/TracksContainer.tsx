@@ -52,7 +52,7 @@ function TracksContainer({
     handleClose,
     mouseMove,
     mouseDown: mouseDown2,
-  } = useShiftSelect(ref, model)
+  } = useShiftSelect(ref, model, true)
   useWheelScroll(ref, model)
 
   return (
