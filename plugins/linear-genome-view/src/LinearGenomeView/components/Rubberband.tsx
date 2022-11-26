@@ -75,7 +75,6 @@ function RubberBand({
       <div
         data-testid="rubberband_controls"
         className={classes.rubberbandControl}
-        role="presentation"
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}

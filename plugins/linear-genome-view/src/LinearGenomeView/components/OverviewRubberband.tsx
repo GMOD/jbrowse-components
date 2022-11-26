@@ -6,6 +6,7 @@ import { observer } from 'mobx-react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { LinearGenomeViewModel } from '..'
 import RubberbandSpan from './RubberbandSpan'
+import { getRelativeX } from './util'
 
 type LGV = LinearGenomeViewModel
 
@@ -88,8 +89,7 @@ function OverviewRubberBand({
     function globalMouseMove(event: MouseEvent) {
       const ref = controlsRef.current
       if (ref && mouseDragging) {
-        const relativeX = event.clientX - ref.getBoundingClientRect().left
-        setCurrentX(relativeX)
+        setCurrentX(getRelativeX(event, ref))
       }
     }
 
@@ -147,19 +147,11 @@ function OverviewRubberBand({
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
-    if (controlsRef.current) {
-      setStartX(
-        event.clientX - controlsRef.current.getBoundingClientRect().left,
-      )
-    }
+    setStartX(getRelativeX(event, controlsRef.current))
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (controlsRef.current) {
-      setGuideX(
-        event.clientX - controlsRef.current.getBoundingClientRect().left,
-      )
-    }
+    setGuideX(getRelativeX(event, controlsRef.current))
   }
 
   function mouseOut() {
