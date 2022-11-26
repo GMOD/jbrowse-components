@@ -68,7 +68,7 @@ const HoverTooltip = observer(
   },
 )
 
-function OverviewRubberBand({
+function OverviewRubberband({
   model,
   overview,
   ControlComponent = <div />,
@@ -225,4 +225,4 @@ function OverviewRubberBand({
   )
 }
 
-export default observer(OverviewRubberBand)
+export default observer(OverviewRubberband)

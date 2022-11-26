@@ -19,7 +19,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function RubberBand({
+function Rubberband({
   model,
   ControlComponent = <div />,
 }: {
@@ -82,21 +82,8 @@ function RubberBand({
       >
         {ControlComponent}
       </div>
-      {anchorPosition ? (
-        <Menu
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            left: anchorPosition.clientX,
-            top: anchorPosition.clientY,
-          }}
-          onMenuItemClick={handleMenuItemClick}
-          open={open}
-          onClose={handleClose}
-          menuItems={model.rubberBandMenuItems()}
-        />
-      ) : null}
     </>
   )
 }
 
-export default observer(RubberBand)
+export default observer(Rubberband)

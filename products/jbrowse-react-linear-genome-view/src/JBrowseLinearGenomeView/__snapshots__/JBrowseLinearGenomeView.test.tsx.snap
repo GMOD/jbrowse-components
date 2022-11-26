@@ -784,18 +784,17 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
             <div
               class="css-dznme2-rubberbandControl"
               data-testid="rubberband_controls"
-              role="presentation"
             >
               <div
-                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1gfu64w-MuiPaper-root-scaleBarContainer"
+                class="MuiPaper-root MuiPaper-outlined MuiPaper-rounded css-1coqp07-MuiPaper-root-scalebarContainer"
                 data-resizer="true"
                 style="height: 17px; box-sizing: border-box;"
               >
                 <div
-                  class="css-17t6jej-scaleBarZoomContainer"
+                  class="css-khofof-scalebarZoomContainer"
                 >
                   <div
-                    class="css-1u2dss8-scaleBar"
+                    class="css-y3821b-scalebar"
                     style="left: -801px; width: 2400px; height: 17px; box-sizing: border-box;"
                   >
                     <div

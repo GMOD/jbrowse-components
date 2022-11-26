@@ -16,7 +16,7 @@ const useStyles = makeStyles()(theme => {
     ? alpha(tertiary.main, 0.7)
     : alpha(primary.main, 0.7)
   return {
-    rubberBand: {
+    rubberband: {
       height: '100%',
       background,
       position: 'absolute',
@@ -24,12 +24,12 @@ const useStyles = makeStyles()(theme => {
       textAlign: 'center',
       overflow: 'hidden',
     },
-    rubberBandControl: {
+    rubberbandControl: {
       cursor: 'crosshair',
       width: '100%',
       minHeight: 8,
     },
-    rubberBandText: {
+    rubberbandText: {
       color: tertiary ? tertiary.contrastText : primary.contrastText,
     },
     popover: {
@@ -81,7 +81,7 @@ const VerticalGuide = observer(
   },
 )
 
-function RubberBand({
+function Rubberband({
   model,
   ControlComponent = <div />,
 }: {
@@ -100,7 +100,7 @@ function RubberBand({
   }>()
   const [guideX, setGuideX] = useState<number>()
   const controlsRef = useRef<HTMLDivElement>(null)
-  const rubberBandRef = useRef(null)
+  const rubberbandRef = useRef(null)
   const { classes } = useStyles()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
@@ -213,8 +213,8 @@ function RubberBand({
           <VerticalGuide model={model} coordX={guideX} />
         ) : null}
         <div
-          data-testid="rubberBand_controls"
-          className={classes.rubberBandControl}
+          data-testid="rubberband_controls"
+          className={classes.rubberbandControl}
           role="presentation"
           ref={controlsRef}
           onMouseDown={mouseDown}
@@ -237,7 +237,7 @@ function RubberBand({
   const numOfBpSelected = views.map(view => Math.ceil(width * view.bpPerPx))
   return (
     <>
-      {rubberBandRef.current ? (
+      {rubberbandRef.current ? (
         <>
           <Popover
             className={classes.popover}
@@ -245,7 +245,7 @@ function RubberBand({
               paper: classes.paper,
             }}
             open
-            anchorEl={rubberBandRef.current}
+            anchorEl={rubberbandRef.current}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'left',
@@ -267,7 +267,7 @@ function RubberBand({
               paper: classes.paper,
             }}
             open
-            anchorEl={rubberBandRef.current}
+            anchorEl={rubberbandRef.current}
             anchorOrigin={{
               vertical: 'top',
               horizontal: 'right',
@@ -286,11 +286,11 @@ function RubberBand({
         </>
       ) : null}
       <div
-        ref={rubberBandRef}
-        className={classes.rubberBand}
+        ref={rubberbandRef}
+        className={classes.rubberband}
         style={{ left, width }}
       >
-        <Typography variant="h6" className={classes.rubberBandText}>
+        <Typography variant="h6" className={classes.rubberbandText}>
           {numOfBpSelected.map((n, i) => (
             <Typography key={`${n}_${i}`}>{`${n.toLocaleString(
               'en-US',
@@ -299,8 +299,8 @@ function RubberBand({
         </Typography>
       </div>
       <div
-        data-testid="rubberBand_controls"
-        className={classes.rubberBandControl}
+        data-testid="rubberband_controls"
+        className={classes.rubberbandControl}
         role="presentation"
         ref={controlsRef}
         onMouseDown={mouseDown}
@@ -326,4 +326,4 @@ function RubberBand({
   )
 }
 
-export default observer(RubberBand)
+export default observer(Rubberband)
