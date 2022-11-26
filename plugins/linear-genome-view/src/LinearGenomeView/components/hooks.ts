@@ -81,21 +81,23 @@ export function useSideScroll(model: LGV) {
   return { mouseDown, mouseUp }
 }
 
-export function useShiftSelect(
+interface AnchorPosition {
+  offsetX: number
+  clientX: number
+  clientY: number
+}
+
+export function useRangeSelect(
   ref: React.RefObject<HTMLDivElement>,
   model: LGV,
-  shiftOnly: boolean,
+  shiftOnly?: boolean,
 ) {
   const [startX, setStartX] = useState<number>()
   const [currentX, setCurrentX] = useState<number>()
 
   // clientX and clientY used for anchorPosition for menu
   // offsetX used for calculations about width of selection
-  const [anchorPosition, setAnchorPosition] = useState<{
-    offsetX: number
-    clientX: number
-    clientY: number
-  }>()
+  const [anchorPosition, setAnchorPosition] = useState<AnchorPosition>()
   const [guideX, setGuideX] = useState<number>()
   const mouseDragging = startX !== undefined && anchorPosition === undefined
 
@@ -104,15 +106,12 @@ export function useShiftSelect(
       if (startX === undefined) {
         return
       }
-      let leftPx = startX
-      let rightPx = offsetX
-      if (rightPx < leftPx) {
-        ;[leftPx, rightPx] = [rightPx, leftPx]
+      const leftPx = Math.min(startX, offsetX)
+      const rightPx = Math.max(startX, offsetX)
+      return {
+        leftOffset: model.pxToBp(leftPx),
+        rightOffset: model.pxToBp(rightPx),
       }
-      const leftOffset = model.pxToBp(leftPx)
-      const rightOffset = model.pxToBp(rightPx)
-
-      return { leftOffset, rightOffset }
     }
 
     function globalMouseMove(event: MouseEvent) {
@@ -135,8 +134,7 @@ export function useShiftSelect(
         })
         const args = computeOffsets(offsetX)
         if (args) {
-          const { leftOffset, rightOffset } = args
-          model.setOffsets(leftOffset, rightOffset)
+          model.setOffsets(args.leftOffset, args.rightOffset)
         }
         setGuideX(undefined)
       }

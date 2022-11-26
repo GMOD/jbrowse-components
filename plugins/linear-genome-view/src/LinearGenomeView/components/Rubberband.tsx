@@ -6,8 +6,8 @@ import { Menu } from '@jbrowse/core/ui'
 // locals
 import VerticalGuide from './VerticalGuide'
 import RubberbandSpan from './RubberbandSpan'
+import { useRangeSelect } from './hooks'
 import { LinearGenomeViewModel } from '..'
-import { useShiftSelect } from './hooks'
 
 type LGV = LinearGenomeViewModel
 
@@ -43,7 +43,7 @@ function RubberBand({
     handleClose,
     mouseMove,
     mouseDown,
-  } = useShiftSelect(ref, model)
+  } = useRangeSelect(ref, model)
 
   return (
     <>

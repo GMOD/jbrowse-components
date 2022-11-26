@@ -5,7 +5,7 @@ import { Menu } from '@jbrowse/core/ui'
 
 // local utils
 import { LinearGenomeViewModel, SCALE_BAR_HEIGHT } from '..'
-import { useSideScroll, useShiftSelect, useWheelScroll } from './hooks'
+import { useSideScroll, useRangeSelect, useWheelScroll } from './hooks'
 
 // local components
 import Rubberband from './Rubberband'
@@ -52,7 +52,7 @@ function TracksContainer({
     handleClose,
     mouseMove,
     mouseDown: mouseDown2,
-  } = useShiftSelect(ref, model, true)
+  } = useRangeSelect(ref, model, true)
   useWheelScroll(ref, model)
 
   return (
