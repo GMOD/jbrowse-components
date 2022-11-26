@@ -28,8 +28,8 @@ import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 // locals
-import TooLargeMessage from './TooLargeMessage'
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
+import TooLargeMessage from '../components/TooLargeMessage'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
@@ -104,10 +104,10 @@ function stateModelFactory() {
     )
     .volatile(() => ({
       currBpPerPx: 0,
+      scrollTop: 0,
       message: '',
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      scrollTop: 0,
       estimatedRegionStatsP: undefined as undefined | Promise<Stats>,
       estimatedRegionStats: undefined as undefined | Stats,
     }))

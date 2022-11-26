@@ -8,7 +8,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export const baseLinearDisplayConfigSchema = ConfigurationSchema(
+const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
   {
     /**
@@ -37,3 +37,5 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
     explicitIdentifier: 'displayId',
   },
 )
+
+export default baseLinearDisplayConfigSchema

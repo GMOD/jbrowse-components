@@ -1,8 +1,10 @@
-import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseLinearDisplayComponent } from '../BaseLinearDisplay'
+import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
+
+// locals
 import { configSchemaFactory } from './configSchema'
 import { stateModelFactory } from './model'
+import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {

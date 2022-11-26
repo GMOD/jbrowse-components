@@ -12,6 +12,7 @@ import SNPCoverageRendererF from './SNPCoverageRenderer'
 import PileupRendererF from './PileupRenderer'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay'
 import LinearSNPCoverageDisplayF from './LinearSNPCoverageDisplay'
+import LinearAlignmentsArcsDisplayF from './LinearAlignmentsArcsDisplay'
 import LinearPileupDisplayF, {
   linearPileupDisplayStateModelFactory,
   linearPileupDisplayConfigSchemaFactory,
@@ -45,6 +46,7 @@ export default class AlignmentsPlugin extends Plugin {
       HtsgetBamAdapterF,
       PileupRendererF,
       SNPCoverageRendererF,
+      LinearAlignmentsArcsDisplayF,
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
     ].map(f => f(pluginManager))
