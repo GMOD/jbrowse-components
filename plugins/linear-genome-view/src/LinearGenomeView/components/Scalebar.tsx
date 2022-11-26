@@ -19,15 +19,15 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
-  scaleBarContainer: {
+  scalebarContainer: {
     overflow: 'hidden',
     position: 'relative',
   },
-  scaleBarZoomContainer: {
+  scalebarZoomContainer: {
     position: 'relative',
     zIndex: 1,
   },
-  scaleBar: {
+  scalebar: {
     position: 'absolute',
     display: 'flex',
     pointerEvents: 'none',
@@ -164,14 +164,14 @@ const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={cx(classes.scaleBarContainer, className)}
+        className={cx(classes.scalebarContainer, className)}
         variant="outlined"
         ref={ref}
         style={style}
         {...other}
       >
         <div
-          className={classes.scaleBarZoomContainer}
+          className={classes.scalebarZoomContainer}
           style={{
             transform:
               model.scaleFactor !== 1
@@ -180,7 +180,7 @@ const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
           }}
         >
           <div
-            className={classes.scaleBar}
+            className={classes.scalebar}
             style={{
               left: offsetLeft - 1,
               width: model.staticBlocks.totalWidthPx,

@@ -174,10 +174,14 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (shiftOnly && event.shiftKey) {
-      setGuideX(getRelativeX(event, ref.current))
+    if (shiftOnly) {
+      if (event.shiftKey) {
+        setGuideX(getRelativeX(event, ref.current))
+      } else {
+        setGuideX(undefined)
+      }
     } else {
-      setGuideX(undefined)
+      setGuideX(getRelativeX(event, ref.current))
     }
   }
 

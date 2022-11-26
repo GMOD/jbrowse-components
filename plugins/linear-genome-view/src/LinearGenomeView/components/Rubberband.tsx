@@ -43,6 +43,7 @@ function RubberBand({
     handleClose,
     mouseMove,
     mouseDown,
+    mouseOut,
   } = useRangeSelect(ref, model)
 
   return (
@@ -78,6 +79,7 @@ function RubberBand({
         ref={ref}
         onMouseDown={mouseDown}
         onMouseMove={mouseMove}
+        onMouseOut={mouseOut}
       >
         {ControlComponent}
       </div>

@@ -9,57 +9,57 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       style="position: relative;"
     >
       <div
-        class="css-16hdnmo-rubberBandControl"
+        class="css-dznme2-rubberbandControl"
         role="presentation"
       >
         <div
-          class="css-1420449-scaleBar"
+          class="css-16vhz0m-scalebar"
         >
           <div
-            class="css-1i1w1rp-scaleBarVisibleRegion"
+            class="css-den3n5-scalebarVisibleRegion"
             style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
           />
           <div
-            class="css-z1h6g4-scaleBarContig"
+            class="css-osn2dd-scalebarContig"
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div>
             <p
-              class="MuiTypography-root MuiTypography-body1 css-6v00mp-MuiTypography-root-scaleBarRefName"
+              class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
               style="left: 3px; color: rgb(153, 102, 0);"
             >
               ctgA
             </p>
             <div
-              class="css-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              class="css-c4j89u-scalebarContig-scalebarContigForward-scalebarBorder"
               style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 160px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 20
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 320px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 40
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 480px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 60
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 640px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 80
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 800px; pointer-events: none; color: rgb(153, 102, 0);"
               >
                 100
@@ -67,7 +67,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
             </div>
           </div>
           <div
-            class="css-z1h6g4-scaleBarContig"
+            class="css-osn2dd-scalebarContig"
             style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
           />
         </div>
@@ -381,8 +381,8 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
       </div>
     </div>
     <div
-      class="css-16hdnmo-rubberBandControl"
-      data-testid="rubberBand_controls"
+      class="css-dznme2-rubberbandControl"
+      data-testid="rubberband_controls"
       role="presentation"
     >
       <div
@@ -554,73 +554,73 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       style="position: relative;"
     >
       <div
-        class="css-16hdnmo-rubberBandControl"
+        class="css-dznme2-rubberbandControl"
         role="presentation"
       >
         <div
-          class="css-1420449-scaleBar"
+          class="css-16vhz0m-scalebar"
         >
           <div
-            class="css-1i1w1rp-scaleBarVisibleRegion"
+            class="css-den3n5-scalebarVisibleRegion"
             style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
           />
           <div
-            class="css-z1h6g4-scaleBarContig"
+            class="css-osn2dd-scalebarContig"
             style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
           />
           <div>
             <p
-              class="MuiTypography-root MuiTypography-body1 css-6v00mp-MuiTypography-root-scaleBarRefName"
+              class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
               style="left: 3px; color: rgb(153, 102, 0);"
             >
               ctgA
             </p>
             <div
-              class="css-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              class="css-c4j89u-scalebarContig-scalebarContigForward-scalebarBorder"
               style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
             />
           </div>
           <div
-            class="css-z1h6g4-scaleBarContig"
+            class="css-osn2dd-scalebarContig"
             style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
           />
           <div>
             <p
-              class="MuiTypography-root MuiTypography-body1 css-6v00mp-MuiTypography-root-scaleBarRefName"
+              class="MuiTypography-root MuiTypography-body1 css-1hokke9-MuiTypography-root-scalebarRefName"
               style="left: 75.72727272727273px;"
             >
               ctgB
             </p>
             <div
-              class="css-1an6zsa-scaleBarContig-scaleBarContigForward-scaleBarBorder"
+              class="css-c4j89u-scalebarContig-scalebarContigForward-scalebarBorder"
               style="left: 72.72727272727273px; width: 727.2727272727273px;"
             >
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 145.0909090909091px; pointer-events: none;"
               >
                 1,200
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 290.1818181818182px; pointer-events: none;"
               >
                 1,400
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 435.27272727272725px; pointer-events: none;"
               >
                 1,600
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 580.3636363636364px; pointer-events: none;"
               >
                 1,800
               </p>
               <p
-                class="MuiTypography-root MuiTypography-body2 css-23pkd3-MuiTypography-root-scaleBarLabel"
+                class="MuiTypography-root MuiTypography-body2 css-7mggk8-MuiTypography-root-scalebarLabel"
                 style="left: 725.4545454545454px; pointer-events: none;"
               >
                 2,000
@@ -628,7 +628,7 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
             </div>
           </div>
           <div
-            class="css-z1h6g4-scaleBarContig"
+            class="css-osn2dd-scalebarContig"
             style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
           />
         </div>
@@ -1117,8 +1117,8 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
       </div>
     </div>
     <div
-      class="css-16hdnmo-rubberBandControl"
-      data-testid="rubberBand_controls"
+      class="css-dznme2-rubberbandControl"
+      data-testid="rubberband_controls"
       role="presentation"
     >
       <div
