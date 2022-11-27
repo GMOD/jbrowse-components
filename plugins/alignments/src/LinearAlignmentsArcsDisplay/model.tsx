@@ -1,18 +1,19 @@
-import { lazy } from 'react'
+import React, { lazy } from 'react'
+import clone from 'clone'
 import { autorun } from 'mobx'
-import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import {
-  AnyConfigurationModel,
-  ConfigurationReference,
-  getConf,
-} from '@jbrowse/core/configuration'
+  addDisposer,
+  cast,
+  getSnapshot,
+  types,
+  Instance,
+} from 'mobx-state-tree'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import {
   getEnv,
   getSession,
-  isSessionModelWithWidgets,
   getContainingView,
   getContainingTrack,
-  Feature,
 } from '@jbrowse/core/util'
 
 import {
@@ -39,6 +40,12 @@ const rendererTypes = new Map([
 
 type LGV = LinearGenomeViewModel
 
+interface Filter {
+  flagInclude: number
+  flagExclude: number
+  readName?: string
+  tagFilter?: { tag: string; value: string }
+}
 interface ReducedFeature {
   name: string
   refName: string
@@ -92,21 +99,21 @@ function stateModelFactory(
     )
     .volatile(() => ({
       arcFeatures: undefined as ReducedFeature[] | undefined,
-      ready: false,
+      ref: null as HTMLCanvasElement | null,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setReady(flag: boolean) {
-        self.ready = flag
+      setMaxHeight(n: number) {
+        self.trackMaxHeight = n
       },
 
       /**
        * #action
        */
-      setMaxHeight(n: number) {
-        self.trackMaxHeight = n
+      setRef(ref: HTMLCanvasElement | null) {
+        self.ref = ref
       },
 
       /**
@@ -135,14 +142,12 @@ function stateModelFactory(
                   return
                 }
 
-                const { staticBlocks } = view
-
                 const ret = (await rpcManager.call(
                   sessionId,
                   'PileupGetFeatures',
                   {
                     sessionId,
-                    regions: staticBlocks.contentBlocks,
+                    regions: view.staticBlocks.contentBlocks,
                     adapterConfig: self.adapterConfig,
                     layoutId: view.id,
                     rendererType: 'PileupRenderer',
@@ -157,54 +162,88 @@ function stateModelFactory(
             { delay: 1000 },
           ),
         )
+
+        const height = 1200
+        addDisposer(
+          self,
+          autorun(
+            async () => {
+              try {
+                const view = getContainingView(self) as LGV
+                const canvas = self.ref
+                if (!canvas) {
+                  return
+                }
+                const width = canvas.getBoundingClientRect().width * 2
+                const ctx = canvas.getContext('2d')
+                if (!ctx) {
+                  return
+                }
+                canvas.width = width
+                ctx.clearRect(0, 0, width, height)
+                ctx.scale(2, 2)
+                const map = {} as { [key: string]: any[] }
+
+                // pair features
+                self.arcFeatures
+                  ?.filter(f => f.flags & 1)
+                  .forEach(f => {
+                    if (!map[f.name]) {
+                      map[f.name] = []
+                    }
+                    map[f.name].push(f)
+                  })
+
+                Object.values(map)
+                  .filter(val => val.length === 2)
+                  .forEach(val => {
+                    const [v0, v1] = val
+                    const sameRef = v0.refName === v1.refName
+                    if (sameRef) {
+                      const s = Math.min(v0.start, v1.start)
+                      const e = Math.max(v0.end, v1.end)
+                      const r1 = view.bpToPx({ refName: v0.refName, coord: s })
+                      const r2 = view.bpToPx({ refName: v0.refName, coord: e })
+
+                      if (!r1 || !r2) {
+                        return
+                      }
+                      const radius = (r2.offsetPx - r1.offsetPx) / 2
+                      const absrad = Math.abs(radius)
+                      const p = r1.offsetPx - view.offsetPx
+                      ctx.moveTo(p, 0)
+                      ctx.beginPath()
+                      ctx.strokeStyle = `hsl(${
+                        Math.log10(Math.abs(e - s)) * 10
+                      },50%,50%)`
+                      ctx.arc(p + radius, 0, absrad, 0, Math.PI)
+                      ctx.stroke()
+                    }
+                  })
+              } catch (e) {
+                console.error(e)
+                self.setError(e)
+              }
+            },
+            { delay: 1000 },
+          ),
+        )
       },
 
       /**
        * #action
        */
-      selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const featureWidget = session.addWidget(
-            'AlignmentsFeatureWidget',
-            'alignmentFeature',
-            { featureData: feature.toJSON(), view: getContainingView(self) },
-          )
-          session.showWidget(featureWidget)
-        }
-        session.setSelection(feature)
-      },
-
-      /**
-       * #action
-       */
-      setConfig(configuration: AnyConfigurationModel) {
-        self.configuration = configuration
-      },
-
-      setFilterBy(filter: {
-        flagInclude: number
-        flagExclude: number
-        readName?: string
-        tagFilter?: { tag: string; value: string }
-      }) {
+      setFilterBy(filter: Filter) {
         self.filterBy = cast(filter)
       },
+
+      /**
+       * #action
+       */
+      renderSvg() {
+        return <></>
+      },
     }))
-    .actions(self => {
-      // resets the sort object and refresh whole display on reload
-      const superReload = self.reload
-
-      return {
-        /**
-         * #action
-         */
-        reload() {
-          superReload()
-        },
-      }
-    })
-
     .views(self => ({
       /**
        * #getter
@@ -275,14 +314,14 @@ function stateModelFactory(
          * #method
          */
         renderProps() {
-          const { filterBy, rpcDriverName, ready } = self
+          const { filterBy, rpcDriverName } = self
           const superProps = superRenderProps()
           return {
             ...superProps,
-            notReady: superProps.notReady || !ready,
+            notReady: superProps.notReady,
             rpcDriverName,
-            displayModel: self,
-            filterBy: JSON.parse(JSON.stringify(filterBy)),
+            displayModel: getSnapshot(self),
+            filterBy: clone(filterBy),
             config: self.rendererConfig,
           }
         },
