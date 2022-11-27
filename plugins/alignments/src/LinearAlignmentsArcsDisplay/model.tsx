@@ -1,20 +1,11 @@
 import React, { lazy } from 'react'
-import clone from 'clone'
 import { autorun } from 'mobx'
-import {
-  addDisposer,
-  cast,
-  getSnapshot,
-  types,
-  Instance,
-} from 'mobx-state-tree'
+import { addDisposer, cast, types, Instance } from 'mobx-state-tree'
 import {
   ConfigurationReference,
   ConfigurationSchema,
-  getConf,
 } from '@jbrowse/core/configuration'
 import {
-  getEnv,
   getSession,
   getContainingView,
   getContainingTrack,
@@ -26,7 +17,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
-import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
@@ -98,6 +88,7 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
+      loading: false,
       arcFeatures: undefined as ArcMap | undefined,
       ref: null as HTMLCanvasElement | null,
     }))
@@ -122,6 +113,13 @@ function stateModelFactory(
       setArcFeatures(f: ArcMap) {
         self.arcFeatures = f
       },
+
+      /**
+       * #action
+       */
+      setLoading(f: boolean) {
+        self.loading = f
+      },
     }))
     .actions(self => ({
       afterAttach() {
@@ -137,6 +135,7 @@ function stateModelFactory(
                 if (!view.initialized) {
                   return
                 }
+                self.setLoading(true)
 
                 const ret = (await rpcManager.call(
                   sessionId,
@@ -148,6 +147,7 @@ function stateModelFactory(
                   },
                 )) as ArcMap
                 self.setArcFeatures(ret)
+                self.setLoading(false)
               } catch (e) {
                 console.error(e)
                 self.setError(e)
@@ -242,45 +242,11 @@ function stateModelFactory(
           return 'PileupRenderer'
         },
 
-        renderProps(): any {
+        renderProps() {
           return {
             ...superRenderProps(),
+            notReady: true,
             config: ConfigurationSchema('empty', {}).create(),
-          }
-        },
-        /**
-         * #method
-         */
-        contextMenuItems() {
-          const feat = self.contextMenuFeature
-          return feat
-            ? [
-                {
-                  label: 'Open feature details',
-                  icon: MenuOpenIcon,
-                  onClick: () => {
-                    self.clearFeatureSelection()
-                    if (feat) {
-                      self.selectFeature(feat)
-                    }
-                  },
-                },
-              ]
-            : []
-        },
-
-        /**
-         * #method
-         */
-        renderProps() {
-          const { filterBy, rpcDriverName } = self
-          const superProps = superRenderProps()
-          return {
-            ...superProps,
-            notReady: superProps.notReady,
-            rpcDriverName,
-            displayModel: getSnapshot(self),
-            filterBy: clone(filterBy),
           }
         },
 

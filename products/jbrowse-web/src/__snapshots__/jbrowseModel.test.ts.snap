@@ -532,6 +532,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram_alignments-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_cram_alignments-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.cram (contigA, default display)",
       "trackId": "volvox_cram_alignments",
@@ -579,6 +583,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_cram_pileup-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_cram_pileup-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "metadata": {
@@ -630,6 +638,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram_snpcoverage-LinearPileupDisplay",
           "type": "LinearPileupDisplay",
         },
+        {
+          "displayId": "volvox_cram_snpcoverage-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.cram (contigA, LinearSNPCoverageDisplay)",
       "trackId": "volvox_cram_snpcoverage",
@@ -676,6 +688,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_cram_alignments_ctga-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_cram_alignments_ctga-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.cram (ctgA, default display)",
@@ -724,6 +740,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram_pileup_ctga-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_cram_pileup_ctga-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.cram (ctgA, LinearPileupDisplay)",
       "trackId": "volvox_cram_pileup_ctga",
@@ -770,6 +790,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_cram_snpcoverage_ctga-LinearPileupDisplay",
           "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox_cram_snpcoverage_ctga-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.cram (ctgA, LinearSNPCoverageDisplay)",
@@ -818,6 +842,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_alignments-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (ctgA)",
       "trackId": "volvox_alignments",
@@ -859,6 +887,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam_snpcoverage-LinearPileupDisplay",
           "type": "LinearPileupDisplay",
+        },
+        {
+          "displayId": "volvox_bam_snpcoverage-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
@@ -902,6 +934,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_bam_pileup-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_bam_pileup-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (contigA LinearPileupDisplay)",
       "trackId": "volvox_bam_pileup",
@@ -944,6 +980,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments_pileup_coverage-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (ctgA, canvas)",
       "trackId": "volvox_alignments_pileup_coverage",
@@ -985,6 +1025,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam_altname-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_bam_altname-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.bam (contigA)",
@@ -1037,6 +1081,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam_small_max_height-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_bam_small_max_height-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.bam (small max height)",
@@ -1148,6 +1196,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_alignments_bam_nonexist-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_alignments_bam_nonexist-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.bam (bam nonexist 404)",
       "trackId": "volvox_alignments_bam_nonexist",
@@ -1189,6 +1241,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_alignments_bai_nonexist-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_alignments_bai_nonexist-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.bam (bai nonexist 404)",
@@ -1541,6 +1597,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-long-reads-sv-bam-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox-long-reads-sv-bam-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-long reads with SV",
       "trackId": "volvox-long-reads-sv-bam",
@@ -1587,6 +1647,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-long-reads-sv-cram-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-long-reads-sv-cram-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-long reads with SV (cram)",
@@ -1635,6 +1699,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-long-reads-cram-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox-long-reads-cram-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-long reads (cram)",
       "trackId": "volvox-long-reads-cram",
@@ -1676,6 +1744,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-long-reads-bam-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-long-reads-bam-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-long reads",
@@ -1724,6 +1796,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_samspec_cram-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_samspec_cram-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-samspec (cram)",
       "trackId": "volvox_samspec_cram",
@@ -1765,6 +1841,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_samspec-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_samspec-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-samspec",
@@ -1813,6 +1893,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_sv_cram-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_sv_cram-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sv (cram)",
       "trackId": "volvox_sv_cram",
@@ -1854,6 +1938,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_sv-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_sv-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sv",
@@ -1943,6 +2031,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_cram-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox_cram-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-sorted.cram",
       "trackId": "volvox_cram",
@@ -1984,6 +2076,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_bam-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox_bam-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-sorted.bam",
@@ -2599,6 +2695,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox-rg-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "volvox-rg-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "volvox-rg (read groups, bam)",
       "trackId": "volvox-rg",
@@ -2645,6 +2745,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox-rg-cram-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "volvox-rg-cram-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-rg (read groups, cram)",
@@ -2764,6 +2868,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "MM-chebi-volvox-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "MM-chebi-volvox-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "MM-chebi-volvox",
       "trackId": "MM-chebi-volvox",
@@ -2812,6 +2920,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "MM-double-volvox-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "MM-double-volvox-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "MM-double-volvox",
@@ -2862,6 +2974,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "MM-multi-volvox-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "MM-multi-volvox-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "MM-multi-volvox",
       "trackId": "MM-multi-volvox",
@@ -2910,6 +3026,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "MM-orient-volvox-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "MM-orient-volvox-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "MM-orient-volvox",
@@ -3079,6 +3199,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "Deep sequencing-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
         },
+        {
+          "displayId": "Deep sequencing-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
+        },
       ],
       "name": "Deep sequencing",
       "trackId": "Deep sequencing",
@@ -3190,6 +3314,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "spliced-LinearSNPCoverageDisplay",
           "type": "LinearSNPCoverageDisplay",
+        },
+        {
+          "displayId": "spliced-LinearAlignmentsArcsDisplay",
+          "type": "LinearAlignmentsArcsDisplay",
         },
       ],
       "name": "volvox-rnaseq demo",

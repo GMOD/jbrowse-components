@@ -2,25 +2,20 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 
 // locals
-import ReactComponent from './ReactComponent'
-import configSchemaFactory from './configSchema'
-import modelFactory from './model'
+import ReactComponent from './components/ReactComponent'
+import configSchemaF from './configSchema'
+import modelF from './model'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaFactory(pluginManager)
+    const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearAlignmentsArcsDisplay',
       configSchema,
-      stateModel: modelFactory(configSchema),
+      stateModel: modelF(configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent,
     })
   })
-}
-
-export {
-  modelFactory as linearPileupDisplayStateModelFactory,
-  configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
 }

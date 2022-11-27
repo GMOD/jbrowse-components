@@ -1,7 +1,10 @@
 import React from 'react'
 import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import { LinearAlignmentsArcsDisplayModel } from './model'
+import { LoadingEllipses } from '@jbrowse/core/ui'
+
+// local
+import { LinearAlignmentsArcsDisplayModel } from '../model'
 
 const height = 1200
 
@@ -10,7 +13,9 @@ function LinearAlignmentsArcDisplay({
 }: {
   model: LinearAlignmentsArcsDisplayModel
 }) {
-  return (
+  return model.loading ? (
+    <LoadingEllipses />
+  ) : (
     <canvas
       ref={ref => {
         if (isAlive(model)) {

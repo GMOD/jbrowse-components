@@ -11,12 +11,13 @@ import {
   getViewParams,
   isSelectionContainer,
   isSessionModelWithWidgets,
+  isFeature,
+  Feature,
 } from '@jbrowse/core/util'
 import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -29,8 +30,8 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 // locals
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
-import TooLargeMessage from '../components/TooLargeMessage'
 import { Tooltip } from '../components/BaseLinearDisplay'
+import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
 type LGV = LinearGenomeViewModel
