@@ -154,7 +154,7 @@ export class PileupGetFeatures extends RpcMethodType {
 
     const features = dataAdapter.getFeaturesInMultipleRegions(regions)
     const featuresArray = await features.pipe(toArray()).toPromise()
-    return featuresArray.map(f => ({
+    const reduced = featuresArray.map(f => ({
       id: f.id(),
       refName: f.get('refName'),
       name: f.get('name'),
@@ -162,5 +162,19 @@ export class PileupGetFeatures extends RpcMethodType {
       end: f.get('end'),
       flags: f.get('flags'),
     }))
+
+    type ReducedFeature = typeof reduced[0]
+    const map = {} as { [key: string]: ReducedFeature[] }
+
+    // pair features
+    reduced
+      .filter(f => f.flags & 1)
+      .forEach(f => {
+        if (!map[f.name]) {
+          map[f.name] = []
+        }
+        map[f.name].push(f)
+      })
+    return map
   }
 }

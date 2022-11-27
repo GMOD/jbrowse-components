@@ -8,7 +8,11 @@ import {
   types,
   Instance,
 } from 'mobx-state-tree'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  ConfigurationSchema,
+  getConf,
+} from '@jbrowse/core/configuration'
 import {
   getEnv,
   getSession,
@@ -32,12 +36,6 @@ import { LinearAlignmentsArcsDisplayConfigModel } from './configSchema'
 const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
 
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['pileup', 'PileupRenderer'],
-  ['svg', 'SvgFeatureRenderer'],
-])
-
 type LGV = LinearGenomeViewModel
 
 interface Filter {
@@ -54,6 +52,8 @@ interface ReducedFeature {
   id: string
   flags: number
 }
+
+type ArcMap = { [key: string]: ReducedFeature[] }
 
 /**
  * #stateModel LinearAlignmentsArcsDisplay
@@ -98,7 +98,7 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      arcFeatures: undefined as ReducedFeature[] | undefined,
+      arcFeatures: undefined as ArcMap | undefined,
       ref: null as HTMLCanvasElement | null,
     }))
     .actions(self => ({
@@ -119,7 +119,7 @@ function stateModelFactory(
       /**
        * #action
        */
-      setArcFeatures(f: ReducedFeature[]) {
+      setArcFeatures(f: ArcMap) {
         self.arcFeatures = f
       },
     }))
@@ -145,10 +145,8 @@ function stateModelFactory(
                     sessionId,
                     regions: view.staticBlocks.contentBlocks,
                     adapterConfig: self.adapterConfig,
-                    layoutId: view.id,
-                    rendererType: 'PileupRenderer',
                   },
-                )) as ReducedFeature[]
+                )) as ArcMap
                 self.setArcFeatures(ret)
               } catch (e) {
                 console.error(e)
@@ -165,6 +163,9 @@ function stateModelFactory(
           autorun(
             async () => {
               try {
+                if (!self.arcFeatures) {
+                  return
+                }
                 const view = getContainingView(self) as LGV
                 const canvas = self.ref
                 if (!canvas) {
@@ -178,19 +179,8 @@ function stateModelFactory(
                 canvas.width = width
                 ctx.clearRect(0, 0, width, height)
                 ctx.scale(2, 2)
-                const map = {} as { [key: string]: ReducedFeature[] }
 
-                // pair features
-                self.arcFeatures
-                  ?.filter(f => f.flags & 1)
-                  .forEach(f => {
-                    if (!map[f.name]) {
-                      map[f.name] = []
-                    }
-                    map[f.name].push(f)
-                  })
-
-                Object.values(map)
+                Object.values(self.arcFeatures)
                   .filter(val => val.length === 2)
                   .forEach(val => {
                     const [v0, v1] = val
@@ -240,32 +230,7 @@ function stateModelFactory(
         return <></>
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get maxHeight() {
-        const conf = getConf(self, ['renderers', self.rendererTypeName]) || {}
-        return self.trackMaxHeight !== undefined
-          ? self.trackMaxHeight
-          : conf.maxHeight
-      },
 
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        const configBlob =
-          getConf(self, ['renderers', self.rendererTypeName]) || {}
-        return self.rendererType.configSchema.create(
-          {
-            ...configBlob,
-            maxHeight: this.maxHeight,
-          },
-          getEnv(self),
-        )
-      },
-    }))
     .views(self => {
       const {
         trackMenuItems: superTrackMenuItems,
@@ -273,18 +238,16 @@ function stateModelFactory(
       } = self
 
       return {
-        /**
-         * #getter
-         */
         get rendererTypeName() {
-          const viewName = getConf(self, 'defaultRendering')
-          const rendererType = rendererTypes.get(viewName)
-          if (!rendererType) {
-            throw new Error(`unknown alignments view name ${viewName}`)
-          }
-          return rendererType
+          return 'PileupRenderer'
         },
 
+        renderProps(): any {
+          return {
+            ...superRenderProps(),
+            config: ConfigurationSchema('empty', {}).create(),
+          }
+        },
         /**
          * #method
          */
@@ -318,7 +281,6 @@ function stateModelFactory(
             rpcDriverName,
             displayModel: getSnapshot(self),
             filterBy: clone(filterBy),
-            config: self.rendererConfig,
           }
         },
 
@@ -343,9 +305,9 @@ function stateModelFactory(
             {
               label: 'Set max height',
               onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
+                getSession(self).queueDialog(handleClose => [
                   SetMaxHeightDlg,
-                  { model: self, handleClose: doneCallback },
+                  { model: self, handleClose },
                 ])
               },
             },
