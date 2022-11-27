@@ -134,11 +134,7 @@ function stateModelFactory(
                 const { rpcManager } = getSession(self)
                 const view = getContainingView(self) as LGV
 
-                if (
-                  !view.initialized ||
-                  !self.estimatedStatsReady ||
-                  self.regionTooLarge
-                ) {
+                if (!view.initialized) {
                   return
                 }
 
@@ -182,7 +178,7 @@ function stateModelFactory(
                 canvas.width = width
                 ctx.clearRect(0, 0, width, height)
                 ctx.scale(2, 2)
-                const map = {} as { [key: string]: any[] }
+                const map = {} as { [key: string]: ReducedFeature[] }
 
                 // pair features
                 self.arcFeatures

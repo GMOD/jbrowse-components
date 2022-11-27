@@ -1,4 +1,5 @@
 import React from 'react'
+import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 import { LinearAlignmentsArcsDisplayModel } from './model'
 
@@ -11,7 +12,11 @@ function LinearAlignmentsArcDisplay({
 }) {
   return (
     <canvas
-      ref={ref => model.setRef(ref)}
+      ref={ref => {
+        if (isAlive(model)) {
+          model.setRef(ref)
+        }
+      }}
       style={{ width: '100%', height }}
       height={height * 2}
     />
