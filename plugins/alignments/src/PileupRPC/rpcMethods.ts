@@ -18,7 +18,7 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
       signal?: AbortSignal
       statusCallback?: (arg: string) => void
     },
-    rpcDriverClassName: string,
+    rpcDriver: string,
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel?.session?.assemblyManager
@@ -28,7 +28,7 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
 
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
 
-    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+    return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
   async execute(
@@ -40,10 +40,10 @@ export class PileupGetGlobalValueForTag extends RpcMethodType {
       sessionId: string
       tag: string
     },
-    rpcDriverClassName: string,
+    rpcDriver: string,
   ) {
     const pm = this.pluginManager
-    const deArgs = await this.deserializeArguments(args, rpcDriverClassName)
+    const deArgs = await this.deserializeArguments(args, rpcDriver)
     const { adapterConfig, sessionId, regions, tag } = deArgs
     const dataAdapter = (await getAdapter(pm, sessionId, adapterConfig))
       .dataAdapter as BaseFeatureDataAdapter
@@ -70,7 +70,7 @@ export class PileupGetVisibleModifications extends RpcMethodType {
       signal?: AbortSignal
       statusCallback?: (arg: string) => void
     },
-    rpcDriverClassName: string,
+    rpcDriver: string,
   ) {
     const { rootModel } = this.pluginManager
     const assemblyManager = rootModel?.session?.assemblyManager
@@ -80,7 +80,7 @@ export class PileupGetVisibleModifications extends RpcMethodType {
 
     const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
 
-    return super.serializeArguments(renamedArgs, rpcDriverClassName)
+    return super.serializeArguments(renamedArgs, rpcDriver)
   }
 
   async execute(
@@ -92,10 +92,10 @@ export class PileupGetVisibleModifications extends RpcMethodType {
       sessionId: string
       tag: string
     },
-    rpcDriverClassName: string,
+    rpcDriver: string,
   ) {
     const pm = this.pluginManager
-    const deArgs = await this.deserializeArguments(args, rpcDriverClassName)
+    const deArgs = await this.deserializeArguments(args, rpcDriver)
     const { adapterConfig, sessionId, regions } = deArgs
     const dataAdapter = (await getAdapter(pm, sessionId, adapterConfig))
       .dataAdapter as BaseFeatureDataAdapter
@@ -110,5 +110,57 @@ export class PileupGetVisibleModifications extends RpcMethodType {
       }
     })
     return [...uniqueValues]
+  }
+}
+
+// specialized get features to return limited data about alignments
+export class PileupGetFeatures extends RpcMethodType {
+  name = 'PileupGetFeatures'
+
+  async serializeArguments(
+    args: RenderArgs & {
+      signal?: AbortSignal
+      statusCallback?: (arg: string) => void
+    },
+    rpcDriver: string,
+  ) {
+    const { rootModel } = this.pluginManager
+    const assemblyManager = rootModel?.session?.assemblyManager
+    if (!assemblyManager) {
+      throw new Error('no assembly manager available')
+    }
+
+    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
+
+    return super.serializeArguments(renamedArgs, rpcDriver)
+  }
+
+  async execute(
+    args: {
+      adapterConfig: {}
+      signal?: RemoteAbortSignal
+      headers?: Record<string, string>
+      regions: Region[]
+      sessionId: string
+      tag: string
+    },
+    rpcDriver: string,
+  ) {
+    const pm = this.pluginManager
+    const deArgs = await this.deserializeArguments(args, rpcDriver)
+    const { adapterConfig, sessionId, regions } = deArgs
+    const dataAdapter = (await getAdapter(pm, sessionId, adapterConfig))
+      .dataAdapter as BaseFeatureDataAdapter
+
+    const features = dataAdapter.getFeaturesInMultipleRegions(regions)
+    const featuresArray = await features.pipe(toArray()).toPromise()
+    return featuresArray.map(f => ({
+      id: f.id(),
+      refName: f.get('refName'),
+      name: f.get('name'),
+      start: f.get('start'),
+      end: f.get('end'),
+      flags: f.get('flags'),
+    }))
   }
 }

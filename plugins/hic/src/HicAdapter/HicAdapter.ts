@@ -57,17 +57,19 @@ export function openFilehandleWrapper(location: FileLocation) {
   return new GenericFilehandleWrapper(openLocation(location))
 }
 
+interface HicParser {
+  getContactRecords: (
+    normalize: string,
+    ref: Ref,
+    ref2: Ref,
+    units: string,
+    binsize: number,
+  ) => Promise<ContactRecord[]>
+  getMetaData: () => Promise<HicMetadata>
+}
+
 export default class HicAdapter extends BaseFeatureDataAdapter {
-  private hic: {
-    getContactRecords: (
-      normalize: string,
-      ref: Ref,
-      ref2: Ref,
-      units: string,
-      binsize: number,
-    ) => Promise<ContactRecord[]>
-    getMetaData: () => Promise<HicMetadata>
-  }
+  private hic: HicParser
 
   public constructor(
     config: AnyConfigurationModel,
