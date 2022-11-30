@@ -32,7 +32,7 @@ orientationType: {
       model: types.enumeration('orientationType', ['fr', 'rf', 'ff']),
       defaultValue: 'fr',
       description:
-        'read sequencer orienation. fr is normal "reads pointing at each other ---> <--- while some other sequencers can use other options',
+        'read sequencer orientation. fr is normal "reads pointing at each other ---> <--- while some other sequencers can use other options',
     }
 ```
 

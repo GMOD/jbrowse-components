@@ -230,7 +230,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
 // ...
 ```
 
-Within the `.actions` method, we're definining methods for the model. These can
+Within the `.actions` method, we're defining methods for the model. These can
 be far more complex than just accessors and mutators (anything you want
 really).
 
@@ -396,7 +396,7 @@ import { getSession } from '@jbrowse/core/util'
     /* .jexl.addFunction is the method to add a function
        the first parameter is the name of your jexl function, and how you'll
        call it
-       the second paramter is the supplementary properties the function
+       the second parameter is the supplementary properties the function
        needs, here, we need these three properties for
        the circular view's chord click function */
     pluginManager.jexl.addFunction(
@@ -428,7 +428,7 @@ import { getSession } from '@jbrowse/core/util'
 Now that we've configured the jexl function to our JBrowse session, we can use
 it essentially anywhere.
 
-While we could programatically tell certain displays to use this jexl function
+While we could programmatically tell certain displays to use this jexl function
 when they perform an action, for our use case (clicking a chord on the circular
 view), we can simply write it into our config file.
 
@@ -487,7 +487,7 @@ Take some time to dissect what's being added here:
   names of the assembly
 
 We're now going to add a track that will make use of our jexl function. As
-mentioned previously, you _could_ add your jexl function programatically to all
+mentioned previously, you _could_ add your jexl function programmatically to all
 tracks of this type, but for now we're just adding it to our assembly _for this
 specific track_.
 
@@ -674,9 +674,9 @@ it('can access the widget', () => {
   // .get can retrieve a given property of an element, data-testid is used for testing with jest and works well
   cy.get('[data-testid="circular_track_select"]').click()
   cy.contains('demo_vcf').click()
-  // if any asyncronous calls are made it might be pertinent to .wait
+  // if any asynchronous calls are made it might be pertinent to .wait
   cy.wait(2000)
-  // we use force: true here to make sure we can click the chord, that's an svg overlayed over many other svg's
+  // we use force: true here to make sure we can click the chord, that's an svg overlaid over many other svg's
   cy.get('[data-testid="chord-1591034956-148"]').click({ force: true })
   // we can see this text, so we know we've accomplished our goal
   cy.contains('Care to change the widget byline?')
@@ -717,7 +717,7 @@ organization's needs, but you also might want to share it with the greater
 community. That's where the [plugin store](/plugin_store) shows off its
 strengths.
 
-As a plugin developer, you can publish your plugin to NPM, and then reqest that
+As a plugin developer, you can publish your plugin to NPM, and then request that
 your plugin be added to the plugin store. After your plugin is successfully
 whitelisted, you will see it within the JBrowse app's plugin store widget and
 you and others can freely install the plugin into their JBrowse session. Any

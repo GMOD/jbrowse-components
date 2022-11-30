@@ -28,7 +28,7 @@ Here is a video recording of the presentation that we made
 
 You can also follow along with the text presented below
 
-### Pre-requsites
+### Pre-requisites
 
 Please have the following
 

@@ -8,7 +8,7 @@ import { configSchema as ncListAdapterConfigSchema } from './NCListAdapter'
 import {
   AdapterClass as JBrowse1TextSearchAdapterClass,
   configSchema as jbrowse1AdapterConfigSchema,
-} from './JBrowse1TextSeachAdapter'
+} from './JBrowse1TextSearchAdapter'
 import { AdapterGuesser, getFileName } from '@jbrowse/core/util/tracks'
 
 import {

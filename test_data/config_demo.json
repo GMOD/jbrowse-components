@@ -603,7 +603,7 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "nanopore_targetted_alignments_0.1",
+      "trackId": "nanopore_targeted_alignments_0.1",
       "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": ["hg38"],
@@ -637,7 +637,7 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "nanopore_targetted_alignments",
+      "trackId": "nanopore_targeted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": ["hg38"],

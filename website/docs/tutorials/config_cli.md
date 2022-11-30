@@ -32,7 +32,7 @@ the `--out` command followed by your target directory, e.g. `--out /var/www/html
     BAM/CRAM processing
   - [Genometools](http://genometools.org/) installed e.g. `sudo apt install genometools` or `brew install genometools`, (further, `brew install brewsci` and `brew install bio`) used for sorting GFF3 for creating tabix
     GFF
-  - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g. `sudo apt intall tabix` and `brew install htslib`, used for creating tabix indexes
+  - [tabix](http://www.htslib.org/doc/tabix.html) installed e.g. `sudo apt install tabix` and `brew install htslib`, used for creating tabix indexes
     for BED/VCF/GFF files
 
 ### Loading a local FASTA file

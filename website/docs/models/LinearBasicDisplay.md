@@ -10,7 +10,8 @@ elements](/docs/developer_guide/) for more info
 
 ## Docs
 
-used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
+used by `FeatureTrack`, has simple settings like "show/hide feature labels",
+etc.
 
 ### LinearBasicDisplay - Properties
 

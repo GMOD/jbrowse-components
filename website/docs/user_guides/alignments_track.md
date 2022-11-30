@@ -90,7 +90,7 @@ format, then the alignments track can use these merks to color these
 modification. It uses two modes:
 
 1. Modifications mode - draws the modifications as they are
-2. Methylation mode - draws both unmodified and modifified CpGs (unmodified
+2. Methylation mode - draws both unmodified and modified CpGs (unmodified
    positions are not indicated by the MM tag and this mode considers the
    sequence context)
 
@@ -134,7 +134,7 @@ soft/hard clipped read counts at all positions, and mark significant positions
 
 Also, insertions that are larger than 10bp are marked with a larger purple
 rectangle, seen in the screenshot below. Generally, long reads span larger
-insertions better, so this feature is more prominant with large reads.
+insertions better, so this feature is more prominent with large reads.
 
 <Figure caption="Large insertion indicator drawn from long reads, along with the 'show soft clipping' setting turned on for a short read track." src="/img/insertion_indicators.png" />
 

@@ -114,7 +114,7 @@ async function navToSynteny(feature: Feature, self: any) {
 
 /**
  * #stateModel LGVSyntenyDisplay
- * extends `LinearBasicDisplay`, displays location of "synteny" featur in a
+ * extends `LinearBasicDisplay`, displays location of "synteny" feature in a
  * plain LGV, allowing linking out to external synteny views
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {

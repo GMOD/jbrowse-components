@@ -12,7 +12,7 @@ Welcome to the JBrowse 2 documentation.
 - [Quick start for JBrowse web](quickstart_web) - a quick start guide to
   running JBrowse 2 in a browser
 - [Quick start for JBrowse web via CLI](quickstart_cli) - a quick start guide
-  to intalling the JBrowse 2 CLI and getting JBrowse web running locally on a
+  to installing the JBrowse 2 CLI and getting JBrowse web running locally on a
   browser
 
 ### User and developer guides
