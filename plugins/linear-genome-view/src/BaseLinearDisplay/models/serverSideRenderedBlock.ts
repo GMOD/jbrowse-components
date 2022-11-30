@@ -173,7 +173,7 @@ const blockState = types
         const { rpcManager } = getSession(self)
         const { rendererType } = display
         const { renderArgs } = renderBlockData(cast(self))
-        // renderArgs can be undefined if an error occured in this block
+        // renderArgs can be undefined if an error occurred in this block
         if (renderArgs) {
           rendererType
             .freeResourcesInClient(

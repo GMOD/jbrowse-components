@@ -50,13 +50,13 @@ export default class extends BaseFeatureDataAdapter {
       const feats = await ret.pipe(toArray()).toPromise()
       const residues: string = feats[0]?.get('seq') || ''
       const search = this.getConf('search')
-      const searchFoward = this.getConf('searchForward')
+      const searchForward = this.getConf('searchForward')
       const searchReverse = this.getConf('searchReverse')
       const caseInsensitive = this.getConf('caseInsensitive')
       const re = new RegExp(search, 'g' + (caseInsensitive ? 'i' : ''))
 
       if (search) {
-        if (searchFoward) {
+        if (searchForward) {
           const matches = residues.matchAll(re)
           for (const match of matches) {
             const s = queryStart + (match.index || 0)

@@ -10,7 +10,7 @@ elements](/docs/developer_guide/) for more info
 
 ## Docs
 
-extends `LinearBasicDisplay`, displays location of "synteny" featur in a
+extends `LinearBasicDisplay`, displays location of "synteny" feature in a
 plain LGV, allowing linking out to external synteny views
 
 ### LGVSyntenyDisplay - Properties

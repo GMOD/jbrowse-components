@@ -214,7 +214,7 @@ export default class MyNoBuildPlugin {
     pluginManager.rootModel.appendToMenu('Citations', {
       label: 'Cite this JBrowse session',
       onClick: session => {
-        // upon clicking on htis menu item, we need to add and show our new widget
+        // upon clicking on this menu item, we need to add and show our new widget
         const widget = session.addWidget('CiteWidget', 'citeWidget', {
           view: self,
         })

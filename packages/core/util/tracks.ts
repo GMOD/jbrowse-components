@@ -105,7 +105,7 @@ export function storeBlobLocation(location: PreFileLocation) {
  * creates a new location from the provided location including the appropriate suffix and location type
  * @param location - the FileLocation
  * @param suffix - the file suffix (e.g. .bam)
- * @returns the constructed location object from the provided prameters
+ * @returns the constructed location object from the provided parameters
  */
 export function makeIndex(location: FileLocation, suffix: string) {
   if ('uri' in location) {

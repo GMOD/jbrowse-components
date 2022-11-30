@@ -43,7 +43,7 @@ any
 
 #### getter: rendererType
 
-the pluggable element type object for this diplay's
+the pluggable element type object for this display's
 renderer
 
 ```js

@@ -26,7 +26,7 @@ interface RenderArgsSerialized extends ComparativeRenderArgsSerialized {
 export default class ComparativeRender extends RpcMethodType {
   name = 'ComparativeRender'
 
-  async renameRegionsIfNeeeded(args: RenderArgs, rend: ComparativeRenderer) {
+  async renameRegionsIfNeeded(args: RenderArgs, rend: ComparativeRenderer) {
     return rend.renameRegionsIfNeeded(args)
   }
 
@@ -39,7 +39,7 @@ export default class ComparativeRender extends RpcMethodType {
     const { rendererType } = args
     const renderer = this.getRenderer(rendererType)
     const n = (await super.serializeArguments(args, rpcDriver)) as RenderArgs
-    const result = await this.renameRegionsIfNeeeded(n, renderer)
+    const result = await this.renameRegionsIfNeeded(n, renderer)
 
     return rpcDriver === 'MainThreadRpcDriver'
       ? result

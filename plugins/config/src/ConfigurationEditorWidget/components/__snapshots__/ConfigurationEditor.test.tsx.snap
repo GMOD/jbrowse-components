@@ -1405,7 +1405,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   id="mui-18-helper-text"
                                 >
                                   <div>
-                                    read sequencer orienation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
+                                    read sequencer orientation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
                                   </div>
                                 </div>
                               </div>

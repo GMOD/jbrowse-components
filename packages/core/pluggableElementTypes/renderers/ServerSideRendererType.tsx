@@ -166,7 +166,7 @@ export default class ServerSideRenderer extends RendererType {
    * Render method called on the client. Serializes args, then calls
    * "CoreRender" with the RPC manager.
    *
-   * @param rpcManager - RPC mananger
+   * @param rpcManager - RPC manager
    * @param args - render args
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {

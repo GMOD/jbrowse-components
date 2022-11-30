@@ -35,7 +35,7 @@ const useStyles = makeStyles()({
     zIndex: 3,
   },
 
-  // aligns with block bounderies. check for example the breakpoint split view
+  // aligns with block boundaries. check for example the breakpoint split view
   // demo to see if features align if wanting to change things
   renderingComponentContainer: {
     position: 'absolute',

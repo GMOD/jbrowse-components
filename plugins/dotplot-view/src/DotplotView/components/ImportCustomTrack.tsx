@@ -214,7 +214,7 @@ const OpenTrack = observer(
               <div>
                 <div style={{ margin: 20 }}>
                   Open the {value} and .bed files for both genome assemblies
-                  from the MCScan (Python verson) pipeline{' '}
+                  from the MCScan (Python version) pipeline{' '}
                   <a href="https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)">
                     (more info)
                   </a>
