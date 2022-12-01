@@ -4,9 +4,9 @@
 
 import fs from 'fs'
 import * as path from 'path'
-import { setup } from '../testUtil'
+import { setup, readConf, dataDir } from '../testUtil'
 
-const { readFile, copyFile, rename } = fs.promises
+const { copyFile, rename } = fs.promises
 
 const defaultConfig = {
   assemblies: [
@@ -61,24 +61,9 @@ const defaultConfig = {
   ],
 }
 
-const simpleBam = path.join(__dirname, '..', '..', 'test', 'data', 'simple.bam')
-const simpleDefaultSession = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'sampleDefaultSession.json',
-)
-
-const testConfig = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'test_config.json',
-)
+const simpleBam = dataDir('simple.bam')
+const simpleDefaultSession = dataDir('sampleDefaultSession.json')
+const testConfig = dataDir('test_config.json')
 
 const setupWithAddTrack = setup
   .do(async ctx => {
@@ -178,10 +163,9 @@ describe('set-default-session', () => {
     })
     .command(['set-default-session', '--delete'])
     .it('deletes a default session', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+
+      expect(contents).toEqual({
         ...defaultConfig,
         tracks: [],
         defaultSession: undefined,
@@ -198,10 +182,8 @@ describe('set-default-session', () => {
     })
     .command(['set-default-session', '--session', simpleDefaultSession])
     .it('adds a default session from a file', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         tracks: [],
         defaultSession: {
@@ -232,10 +214,8 @@ describe('set-default-session', () => {
     .it(
       'adds a default session that is a linear genome view and a simple track',
       async ctx => {
-        const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-          encoding: 'utf8',
-        })
-        expect(JSON.parse(contents)).toEqual({
+        const contents = await readConf(ctx)
+        expect(contents).toEqual({
           ...defaultConfig,
           defaultSession: {
             name: 'New Default Session',

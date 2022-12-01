@@ -152,7 +152,7 @@ export default abstract class JBrowseCommand extends Command {
     return fsPromises.readFile(location, { encoding: 'utf8' })
   }
 
-  async readJsonFile(location: string) {
+  async readJsonFile(location: string): Promise<Record<string, unknown>> {
     let contents
     try {
       contents = await fsPromises.readFile(location, { encoding: 'utf8' })

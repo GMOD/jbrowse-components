@@ -5,9 +5,9 @@
 import fs from 'fs'
 import * as path from 'path'
 
-import { setup } from '../testUtil'
+import { setup, ctxDir, dataDir, readConf } from '../testUtil'
 
-const { rename, copyFile, readdir, readFile, writeFile, mkdir } = fs.promises
+const { rename, copyFile, writeFile, mkdir } = fs.promises
 
 const defaultConfig = {
   assemblies: [],
@@ -140,11 +140,8 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.fasta', '--load', 'copy'])
     .it('adds an assembly from a FASTA', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -193,11 +190,8 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.fa', '--load', 'copy'])
     .it('adds an assembly from a FASTA (.fa extension)', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -246,11 +240,8 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.fasta.gz', '--load', 'copy'])
     .it('adds an assembly from a compressed FASTA', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -292,11 +283,8 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .it('adds an assembly from a 2bit', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -333,11 +321,8 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.chrom.sizes', '--load', 'copy'])
     .it('adds an assembly from a chrom.sizes', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -374,11 +359,8 @@ describe('add-assembly', () => {
     })
     .command(['add-assembly', 'simple.json', '--load', 'copy'])
     .it('adds an assembly from a custom adapter JSON file', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -420,11 +402,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('adds an assembly from a custom adapter inline JSON', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -480,11 +459,8 @@ describe('add-assembly', () => {
     .it(
       "can specify --type when the type can't be inferred from the extension",
       async ctx => {
-        expect(await readdir(ctx.dir)).toContain('config.json')
-        const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-          encoding: 'utf8',
-        })
-        expect(JSON.parse(contents)).toEqual({
+        const contents = await readConf(ctx)
+        expect(contents).toEqual({
           ...defaultConfig,
           assemblies: [
             {
@@ -541,11 +517,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a custom faiLocation and gziLocation', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -585,14 +558,11 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a custom name and and alias', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
+      const contents = await readConf(ctx)
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
         'Added assembly "customName" to ./config.json\n',
       )
-      expect(JSON.parse(contents)).toEqual({
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -623,11 +593,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a multiple aliases', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -668,11 +635,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a refNameAliases file', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -723,11 +687,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a custom refNameAliases adapter', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -756,11 +717,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can specify a custom name and and alias', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -795,11 +753,8 @@ describe('add-assembly', () => {
       'copy',
     ])
     .it('can use an existing config file', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -815,39 +770,20 @@ describe('add-assembly', () => {
 
   setup
     .do(async ctx => {
-      const simple2bit = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.2bit',
-      )
-      await copyFile(simple2bit, path.join(ctx.dir, path.basename(simple2bit)))
+      await copyFile(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
     })
     .command(['add-assembly', 'simple.2bit', '--load', 'copy'])
     .command(['add-assembly', 'simple.2bit', '--overwrite', '--load', 'copy'])
     .it('can use --overwrite to replace an existing assembly', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents).assemblies.length).toBe(1)
+      const contents = await readConf(ctx)
+      expect(contents.assemblies.length).toBe(1)
     })
 
   setup
     .do(async ctx => {
       await mkdir('jbrowse')
       await rename('manifest.json', path.join('jbrowse', 'manifest.json'))
-      const simple2bit = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.2bit',
-      )
-      await copyFile(simple2bit, path.join(ctx.dir, path.basename(simple2bit)))
+      await copyFile(dataDir('simple.2bit'), path.join(ctx.dir, 'simple.2bit'))
       process.chdir('jbrowse')
     })
     .command([
@@ -863,11 +799,8 @@ describe('add-assembly', () => {
     )
     .command(['add-assembly', 'https://mysite.com/data/simple.2bit'])
     .it('adds an assembly from a URL', async ctx => {
-      expect(await readdir(ctx.dir)).toContain('config.json')
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         assemblies: [
           {
@@ -903,10 +836,7 @@ describe('add-assembly', () => {
       'testing',
     ])
     .it('can use --out to make a new directory', async ctx => {
-      const contents = await readFile(
-        path.join(ctx.dir, 'testing', 'config.json'),
-        { encoding: 'utf8' },
-      )
-      expect(JSON.parse(contents).assemblies.length).toBe(1)
+      const contents = await readConf(ctx, 'testing')
+      expect(contents.assemblies.length).toBe(1)
     })
 })

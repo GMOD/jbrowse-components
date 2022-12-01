@@ -210,9 +210,10 @@ async function createWindow() {
       ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
   )
-  mainWindow.webContents.on('new-window', (event, outboundUrl) => {
-    event.preventDefault()
-    shell.openExternal(outboundUrl)
+
+  mainWindow.webContents.setWindowOpenHandler(details => {
+    shell.openExternal(details.url)
+    return { action: 'deny' }
   })
 
   // open url in a browser and prevent default
