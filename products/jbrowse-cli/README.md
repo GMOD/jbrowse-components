@@ -53,6 +53,7 @@ It is likely preferable in most cases to install the tools globally with `npm in
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse text-index`](#jbrowse-text-index)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
@@ -415,6 +416,29 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
+
+## `jbrowse remove-track TRACK`
+
+Remove a track configuration from a JBrowse 2 configuration. Be aware that this can cause crashes in saved sessions that refer to this track!
+
+```
+USAGE
+  $ jbrowse remove-track TRACK
+
+ARGUMENTS
+  TRACK  track JSON file or command line arg blob
+
+OPTIONS
+  --out=out        synonym for target
+
+  --target=target  path to config file in JB2 installation directory to write out to.
+                   Creates ./config.json if nonexistent
+
+EXAMPLE
+  $ jbrowse remove-track-json trackId
+```
+
+_See code: [src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.2.1/products/jbrowse-cli/src/commands/remove-track.ts)_
 
 ## `jbrowse set-default-session`
 
