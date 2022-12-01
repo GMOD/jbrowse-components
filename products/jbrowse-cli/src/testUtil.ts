@@ -4,7 +4,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-const fsPromises = fs.promises
+const { readFile, mkdir, mkdtemp, writeFile } = fs.promises
 
 // increase test timeout for all tests
 jest.setTimeout(20000)
@@ -79,8 +79,8 @@ export const setup = test
   .add('originalDir', () => process.cwd())
   .add('dir', async () => {
     const jbrowseTmpDir = path.join(tmpDir, 'jbrowse')
-    await fsPromises.mkdir(jbrowseTmpDir, { recursive: true })
-    return fsPromises.mkdtemp(path.join(jbrowseTmpDir, path.sep))
+    await mkdir(jbrowseTmpDir, { recursive: true })
+    return mkdtemp(path.join(jbrowseTmpDir, path.sep))
   })
   .finally(async ctx => {
     await del([`${ctx.dir}/**`, ctx.dir], { force: true })
@@ -88,5 +88,11 @@ export const setup = test
   })
   .do(async ctx => {
     process.chdir(ctx.dir)
-    await fsPromises.writeFile('manifest.json', '{"name":"JBrowse"}')
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
   })
+
+export function readConf(ctx: { dir: string }) {
+  return readFile(path.join(ctx.dir, 'config.json'), {
+    encoding: 'utf8',
+  })
+}

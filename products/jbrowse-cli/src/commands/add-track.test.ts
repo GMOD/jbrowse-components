@@ -5,9 +5,9 @@
 import fs from 'fs'
 import * as path from 'path'
 
-import { setup } from '../testUtil'
+import { setup, readConf } from '../testUtil'
 
-const { writeFile, readFile, copyFile } = fs.promises
+const { writeFile, copyFile } = fs.promises
 
 const baseDir = path.join(__dirname, '..', '..', 'test', 'data')
 const simpleBam = path.join(baseDir, 'simple.bam')
@@ -26,12 +26,6 @@ function init2bit(ctx: { dir: string }) {
     path.join(baseDir, 'simple.2bit'),
     path.join(ctx.dir, 'simple.2bit'),
   )
-}
-
-async function readConf(ctx: { dir: string }) {
-  return readFile(path.join(ctx.dir, 'config.json'), {
-    encoding: 'utf8',
-  })
 }
 
 describe('add-track', () => {
