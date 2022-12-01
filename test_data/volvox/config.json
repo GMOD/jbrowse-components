@@ -1,8 +1,4 @@
 {
-  "plugins": [
-    { "name": "UMDLocPlugin", "umdLoc": { "uri": "umd_plugin.js" } },
-    { "name": "UMDUrlPlugin", "umdUrl": "umd_plugin.js" }
-  ],
   "assemblies": [
     {
       "name": "volvox",
@@ -88,7 +84,6 @@
         }
       }
     },
-
     {
       "name": "volvox_del",
       "sequence": {
@@ -120,6 +115,24 @@
           },
           "faiLocation": {
             "uri": "volvox_ins.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox-rev",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox-rev-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox-rev.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox-rev.fa.fai",
             "locationType": "UriLocation"
           }
         }
@@ -1829,7 +1842,6 @@
         }
       }
     },
-
     {
       "type": "VariantTrack",
       "trackId": "variant_effect_demo_data",
@@ -1857,6 +1869,45 @@
       },
       "category": ["VCF"],
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox-vs-rev",
+      "name": "volvox-vs-rev",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox-vs-rev.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox-rev", "volvox"]
+      },
+      "assemblyNames": ["volvox-rev", "volvox"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "volvox-rev",
+      "name": "volvox-rev",
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "volvox-rev.gff.gz",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox-rev"]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "UMDLocPlugin",
+      "umdLoc": {
+        "uri": "umd_plugin.js"
+      }
+    },
+    {
+      "name": "UMDUrlPlugin",
+      "umdUrl": "umd_plugin.js"
     }
   ],
   "aggregateTextSearchAdapters": [
