@@ -1,3 +1,9 @@
+/**
+ * @jest-environment node
+ */
+
+// the above jest-environment node is important to check true usage as a CLI tool
+
 import { renderRegion } from './renderRegion'
 import fs from 'fs'
 import { JSDOM } from 'jsdom'

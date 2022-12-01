@@ -5,7 +5,7 @@
 import fs from 'fs'
 import * as path from 'path'
 
-import { setup } from '../testUtil'
+import { setup, readConf } from '../testUtil'
 
 const { copyFile, readFile, rename } = fs.promises
 
@@ -99,9 +99,7 @@ describe('add-connection', () => {
     })
     .command(['add-connection', 'https://mysite.com/data/hub.txt'])
     .it('adds an UCSCTrackHubConnection connection from a url', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
+      const contents = await readConf(ctx)
       expect(JSON.parse(contents)).toEqual({
         ...defaultConfig,
         connections: [
