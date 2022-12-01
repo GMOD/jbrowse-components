@@ -137,6 +137,24 @@
           }
         }
       }
+    },
+    {
+      "name": "volvox-rev-del",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox-rev-del-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox-rev-del.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox-rev-del.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "configuration": {},
@@ -1372,6 +1390,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_fake_synteny_alt",
       "name": "volvox_fake_synteny_alt",
       "assemblyNames": ["volvox", "volvox"],
@@ -1386,6 +1405,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_fake_synteny",
       "name": "volvox_fake_synteny",
       "assemblyNames": ["volvox", "volvox"],
@@ -1816,6 +1836,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_del.paf-1658813720770",
       "name": "volvox_del.paf",
       "assemblyNames": ["volvox", "volvox_del"],
@@ -1830,6 +1851,7 @@
     },
     {
       "type": "SyntenyTrack",
+      "category": ["Synteny"],
       "trackId": "volvox_ins.paf-1658813720770",
       "name": "volvox_ins.paf",
       "assemblyNames": ["volvox", "volvox_ins"],
@@ -1873,6 +1895,7 @@
     {
       "type": "SyntenyTrack",
       "trackId": "volvox-vs-rev",
+      "category": ["Synteny"],
       "name": "volvox-vs-rev",
       "adapter": {
         "type": "PAFAdapter",
@@ -1896,6 +1919,34 @@
         }
       },
       "assemblyNames": ["volvox-rev"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox-rev-del",
+      "category": ["Synteny"],
+      "name": "volvox-rev-del",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox-rev-del.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox-rev-del", "volvox"]
+      },
+      "assemblyNames": ["volvox-rev-del", "volvox"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "volvox-rev-del-annotations",
+      "name": "volvox-rev-del-annotations",
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "volvox-rev-del.gff",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["volvox-rev-del"]
     }
   ],
   "plugins": [

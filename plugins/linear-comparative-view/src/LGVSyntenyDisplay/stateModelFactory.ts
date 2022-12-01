@@ -17,6 +17,34 @@ import { when } from 'mobx'
 
 const { parseCigar } = MismatchParser
 
+function findPosInCigarString(
+  cigar: string[],
+  x: number,
+  featStart: number,
+  mateStart: number,
+) {
+  let featX = 0
+  let mateX = 0
+  for (let i = 0; i < cigar.length; i += 2) {
+    const len = +cigar[i]
+    const op = cigar[i + 1]
+    const coord = featStart + featX
+    const min = Math.min(len, x - coord)
+
+    if (coord >= x) {
+      break
+    } else if (op === 'I') {
+      mateX += len
+    } else if (op === 'D') {
+      featX += min
+    } else if (op === 'M') {
+      mateX += min
+      featX += min
+    }
+  }
+  return [featX, mateX]
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function navToSynteny(feature: Feature, self: any) {
   const session = getSession(self)
@@ -24,6 +52,7 @@ async function navToSynteny(feature: Feature, self: any) {
   const view = getContainingView(self)
   const reg = view.dynamicBlocks.contentBlocks[0]
   const cigar = parseCigar(feature.get('cg') || '')
+  const strand = feature.get('strand')
   const regStart = reg.start
   const regEnd = reg.end
   const featStart = feature.get('start')
@@ -42,32 +71,29 @@ async function navToSynteny(feature: Feature, self: any) {
   let rFeatEnd = featStart
 
   if (cigar.length) {
-    for (let i = 0; i < cigar.length && rFeatStart < regStart; i += 2) {
-      const len = +cigar[i]
-      const op = cigar[i + 1]
-      if (op === 'I') {
-        rMateStart += len
-      } else if (op === 'D') {
-        rFeatStart += len
-      } else if (op === 'M') {
-        const l2 = Math.min(len, regStart - rFeatStart)
+    const [featStartX, mateStartX] = findPosInCigarString(
+      cigar,
+      regStart,
+      featStart,
+      mateStart,
+    )
+    const [featEndX, mateEndX] = findPosInCigarString(
+      cigar,
+      regEnd,
+      featStart,
+      mateStart,
+    )
 
-        rMateStart += l2
-        rFeatStart += l2
-      }
-    }
-    for (let i = 0; i < cigar.length && rFeatEnd < regEnd; i += 2) {
-      const len = +cigar[i]
-      const op = cigar[i + 1]
-      if (op === 'I') {
-        rMateEnd += len
-      } else if (op === 'D') {
-        rFeatEnd += len
-      } else if (op === 'M') {
-        const l2 = Math.min(len, regEnd - rFeatEnd)
-        rMateEnd += l2
-        rFeatEnd += l2
-      }
+    if (strand === -1) {
+      rFeatStart = featStart + featStartX
+      rFeatEnd = featStart + featEndX
+      rMateStart = mateEnd - mateEndX
+      rMateEnd = mateEnd - mateStartX
+    } else {
+      rFeatStart = featStart + featStartX
+      rFeatEnd = featStart + featEndX
+      rMateStart = mateStart + mateStartX
+      rMateEnd = mateStart + mateEndX
     }
   } else {
     rFeatEnd = featEnd
