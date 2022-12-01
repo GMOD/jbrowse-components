@@ -10,16 +10,15 @@ beforeEach(() => {
 
 const delay = { timeout: 15000 }
 
-test('click and drag rubberBand, bookmarks region', async () => {
+test('click and drag rubberband, bookmarks region', async () => {
   const { session, view, findByTestId, findByText } = createView()
-  const rubberband = await findByTestId('rubberBand_controls', {}, delay)
+  const rubberband = await findByTestId('rubberband_controls', {}, delay)
 
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
-  const bookmarkMenuItem = await findByText('Bookmark region')
-  fireEvent.click(bookmarkMenuItem)
+  fireEvent.click(await findByText('Bookmark region'))
 
   // @ts-ignore
   const { widgets } = session
@@ -51,8 +50,7 @@ test('navigates to bookmarked region from widget', async () => {
     delay,
   )
 
-  const viewMenu = await findByTestId('view_menu_icon')
-  fireEvent.click(viewMenu)
+  fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Open bookmark widget'))
 
   // @ts-ignore

@@ -3,6 +3,7 @@ import { Typography, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 
+// core
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -15,46 +16,46 @@ import {
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
 import { chooseGridPitch } from '../util'
-import OverviewRubberBand from './OverviewRubberBand'
+import OverviewRubberband from './OverviewRubberband'
 
 const wholeSeqSpacer = 2
 
 const useStyles = makeStyles()(theme => ({
-  scaleBar: {
+  scalebar: {
     height: HEADER_OVERVIEW_HEIGHT,
   },
-  scaleBarBorder: {
+  scalebarBorder: {
     border: '1px solid',
   },
-  scaleBarContig: {
+  scalebarContig: {
     backgroundColor: theme.palette.background.default,
     position: 'absolute',
     top: 0,
     height: HEADER_OVERVIEW_HEIGHT,
   },
-  scaleBarContigForward: {
+  scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
   },
-  scaleBarContigReverse: {
+  scalebarContigReverse: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
   },
 
-  scaleBarRefName: {
+  scalebarRefName: {
     position: 'absolute',
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
   },
-  scaleBarLabel: {
+  scalebarLabel: {
     height: HEADER_OVERVIEW_HEIGHT,
     position: 'absolute',
     display: 'flex',
     justifyContent: 'center',
     pointerEvents: 'none',
   },
-  scaleBarVisibleRegion: {
+  scalebarVisibleRegion: {
     position: 'absolute',
     height: HEADER_OVERVIEW_HEIGHT,
     pointerEvents: 'none',
@@ -328,19 +329,19 @@ const OverviewBox = observer(
             left: block.offsetPx + 3,
             color: canDisplayCytobands ? 'black' : refNameColor,
           }}
-          className={classes.scaleBarRefName}
+          className={classes.scalebarRefName}
         >
           {refName}
         </Typography>
         <div
           className={cx(
-            classes.scaleBarContig,
+            classes.scalebarContig,
             canDisplayCytobands
               ? undefined
               : reversed
-              ? classes.scaleBarContigReverse
-              : classes.scaleBarContigForward,
-            !canDisplayCytobands ? classes.scaleBarBorder : undefined,
+              ? classes.scalebarContigReverse
+              : classes.scalebarContigForward,
+            !canDisplayCytobands ? classes.scalebarBorder : undefined,
           )}
           style={{
             left: block.offsetPx + cytobandOffset,
@@ -352,7 +353,7 @@ const OverviewBox = observer(
             ? tickLabels.map((tickLabel, labelIdx) => (
                 <Typography
                   key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
-                  className={classes.scaleBarLabel}
+                  className={classes.scalebarLabel}
                   variant="body2"
                   style={{
                     left: ((labelIdx + 1) * majorPitch) / scale,
@@ -380,7 +381,7 @@ const OverviewBox = observer(
   },
 )
 
-const ScaleBar = observer(
+const Scalebar = observer(
   ({
     model,
     scale,
@@ -397,7 +398,7 @@ const ScaleBar = observer(
     const overviewVisibleRegions = overview.dynamicBlocks
 
     const { tertiary, primary } = theme.palette
-    const scaleBarColor = tertiary ? tertiary.light : primary.light
+    const scalebarColor = tertiary ? tertiary.light : primary.light
 
     if (!visibleRegions.length) {
       return null
@@ -416,13 +417,13 @@ const ScaleBar = observer(
         coord: last.reversed ? last.start : last.end,
       }) || 0
 
-    const color = showCytobands ? '#f00' : scaleBarColor
+    const color = showCytobands ? '#f00' : scalebarColor
     const transparency = showCytobands ? 0.1 : 0.3
 
     return (
-      <div className={classes.scaleBar}>
+      <div className={classes.scalebar}>
         <div
-          className={classes.scaleBarVisibleRegion}
+          className={classes.scalebarVisibleRegion}
           style={{
             width: lastOverviewPx - firstOverviewPx,
             left: firstOverviewPx + cytobandOffset,
@@ -435,7 +436,7 @@ const ScaleBar = observer(
           return !(block instanceof ContentBlock) ? (
             <div
               key={`${JSON.stringify(block)}-${idx}`}
-              className={classes.scaleBarContig}
+              className={classes.scalebarContig}
               style={{
                 width: block.widthPx,
                 left: block.offsetPx,
@@ -459,7 +460,7 @@ const ScaleBar = observer(
   },
 )
 
-function OverviewScaleBar({
+function OverviewScalebar({
   model,
   children,
 }: {
@@ -484,11 +485,11 @@ function OverviewScaleBar({
 
   return (
     <div>
-      <OverviewRubberBand
+      <OverviewRubberband
         model={model}
         overview={overview}
         ControlComponent={
-          <ScaleBar model={model} overview={overview} scale={scale} />
+          <Scalebar model={model} overview={overview} scale={scale} />
         }
       />
       <div className={classes.overview}>
@@ -501,6 +502,6 @@ function OverviewScaleBar({
   )
 }
 
-export default observer(OverviewScaleBar)
+export default observer(OverviewScalebar)
 
 export { Cytobands, Polygon }

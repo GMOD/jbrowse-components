@@ -19,15 +19,15 @@ import { getTickDisplayStr } from '@jbrowse/core/util'
 type LGV = LinearGenomeViewModel
 
 const useStyles = makeStyles()(theme => ({
-  scaleBarContainer: {
+  scalebarContainer: {
     overflow: 'hidden',
     position: 'relative',
   },
-  scaleBarZoomContainer: {
+  scalebarZoomContainer: {
     position: 'relative',
     zIndex: 1,
   },
-  scaleBar: {
+  scalebar: {
     position: 'absolute',
     display: 'flex',
     pointerEvents: 'none',
@@ -94,7 +94,7 @@ const RenderedRefNameLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
+const RenderedScalebarLabels = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
   const { bpPerPx, staticBlocks } = model
 
@@ -150,13 +150,13 @@ const RenderedScaleBarLabels = observer(({ model }: { model: LGV }) => {
   )
 })
 
-interface ScaleBarProps {
+interface ScalebarProps {
   model: LGV
   style?: React.CSSProperties
   className?: string
 }
 
-const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
+const Scalebar = React.forwardRef<HTMLDivElement, ScalebarProps>(
   ({ model, style, className, ...other }, ref) => {
     const { classes, cx } = useStyles()
 
@@ -164,14 +164,14 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
     return (
       <Paper
         data-resizer="true" // used to avoid click-and-drag scrolls on trackscontainer
-        className={cx(classes.scaleBarContainer, className)}
+        className={cx(classes.scalebarContainer, className)}
         variant="outlined"
         ref={ref}
         style={style}
         {...other}
       >
         <div
-          className={classes.scaleBarZoomContainer}
+          className={classes.scalebarZoomContainer}
           style={{
             transform:
               model.scaleFactor !== 1
@@ -180,14 +180,14 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
           }}
         >
           <div
-            className={classes.scaleBar}
+            className={classes.scalebar}
             style={{
               left: offsetLeft - 1,
               width: model.staticBlocks.totalWidthPx,
               ...style,
             }}
           >
-            <RenderedScaleBarLabels model={model} />
+            <RenderedScalebarLabels model={model} />
           </div>
         </div>
         <RenderedRefNameLabels model={model} />
@@ -196,4 +196,4 @@ const ScaleBar = React.forwardRef<HTMLDivElement, ScaleBarProps>(
   },
 )
 
-export default observer(ScaleBar)
+export default observer(Scalebar)

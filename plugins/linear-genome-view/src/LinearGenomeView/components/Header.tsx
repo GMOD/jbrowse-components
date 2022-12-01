@@ -16,7 +16,7 @@ import {
   SPACING,
   HEADER_BAR_HEIGHT,
 } from '..'
-import OverviewScaleBar from './OverviewScaleBar'
+import OverviewScalebar from './OverviewScalebar'
 import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
 
@@ -123,9 +123,9 @@ const LinearGenomeViewHeader = observer(({ model }: { model: LGV }) => {
     model.hideHeaderOverview ? (
       <Controls model={model} />
     ) : (
-      <OverviewScaleBar model={model}>
+      <OverviewScalebar model={model}>
         <Controls model={model} />
-      </OverviewScaleBar>
+      </OverviewScalebar>
     )
   ) : null
 })

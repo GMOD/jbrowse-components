@@ -14,11 +14,11 @@ import {
   ExportSvgOptions,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import { Polygon, Cytobands } from './OverviewScaleBar'
+import { Polygon, Cytobands } from './OverviewScalebar'
 
 type LGV = LinearGenomeViewModel
 
-function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
+function Scalebar({ model, fontSize }: { model: LGV; fontSize: number }) {
   const {
     offsetPx,
     dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx, totalBp },
@@ -178,7 +178,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
       ) : null}
 
       <g transform={`translate(0 ${fontSize + cytobandHeight})`}>
-        <ScaleBar model={model} fontSize={fontSize} />
+        <Scalebar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerHeight + cytobandHeight})`}>
         <SVGRuler model={model} fontSize={fontSize} width={width} />

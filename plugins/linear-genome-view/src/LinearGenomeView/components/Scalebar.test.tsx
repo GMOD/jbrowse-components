@@ -2,10 +2,10 @@
 import React from 'react'
 import { render } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import ScaleBar from './ScaleBar'
+import Scalebar from './Scalebar'
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
-describe('ScaleBar genome view component', () => {
+describe('Scalebar genome view component', () => {
   it('renders two regions', () => {
     const session = createTestSession({
       views: [
@@ -47,7 +47,7 @@ describe('ScaleBar genome view component', () => {
       },
     })
     const model = session.views[0]
-    const { getByTestId } = render(<ScaleBar model={model} />)
+    const { getByTestId } = render(<Scalebar model={model} />)
     const ret1 = getByTestId('refLabel-ctgA')
     const ret2 = getByTestId('refLabel-ctgB')
     expect(ret1.style.left).toBe('-1px')
@@ -89,7 +89,7 @@ describe('ScaleBar genome view component', () => {
       },
     })
     const model = session.views[0]
-    const { getByTestId } = render(<ScaleBar model={model} />)
+    const { getByTestId } = render(<Scalebar model={model} />)
     const ret1 = getByTestId('refLabel-ctgA')
     const ret2 = getByTestId('refLabel-ctgB')
     expect(ret1.style.left).toBe('99px')
@@ -134,7 +134,7 @@ describe('ScaleBar genome view component', () => {
       },
     })
     const model = session.views[0]
-    const { queryByTestId } = render(<ScaleBar model={model} />)
+    const { queryByTestId } = render(<Scalebar model={model} />)
     const ret2 = queryByTestId('refLabel-ctgB')
     const ret3 = queryByTestId('refLabel-ctgC')
     const ret4 = queryByTestId('refLabel-ctgD')

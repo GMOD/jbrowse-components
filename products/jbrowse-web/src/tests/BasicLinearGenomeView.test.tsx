@@ -34,7 +34,7 @@ test('click and drag to move sideways', async () => {
 
 test('click and drag to rubberband', async () => {
   const { view, findByTestId, findByText } = createView()
-  const track = await findByTestId('rubberBand_controls', {}, delay)
+  const track = await findByTestId('rubberband_controls', {}, delay)
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
@@ -43,9 +43,9 @@ test('click and drag to rubberband', async () => {
   expect(view.bpPerPx).toEqual(0.02)
 }, 30000)
 
-test('click and drag rubberBand, click get sequence to open sequenceDialog', async () => {
+test('click and drag rubberband, click get sequence to open sequenceDialog', async () => {
   const { view, findByTestId, findByText } = createView()
-  const rubberband = await findByTestId('rubberBand_controls', {}, delay)
+  const rubberband = await findByTestId('rubberband_controls', {}, delay)
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
