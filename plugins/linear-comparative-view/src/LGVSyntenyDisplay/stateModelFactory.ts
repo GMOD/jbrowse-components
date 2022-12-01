@@ -15,23 +15,22 @@ import {
 import { types } from 'mobx-state-tree'
 import { when } from 'mobx'
 
+// locals
+import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+
+type LSV = LinearSyntenyViewModel
+
 const { parseCigar } = MismatchParser
 
-function findPosInCigarString(
-  cigar: string[],
-  x: number,
-  featStart: number,
-  mateStart: number,
-) {
+function findPosInCigar(cigar: string[], x: number) {
   let featX = 0
   let mateX = 0
   for (let i = 0; i < cigar.length; i += 2) {
     const len = +cigar[i]
     const op = cigar[i + 1]
-    const coord = featStart + featX
-    const min = Math.min(len, x - coord)
+    const min = Math.min(len, x - featX)
 
-    if (coord >= x) {
+    if (featX >= x) {
       break
     } else if (op === 'I') {
       mateX += len
@@ -51,7 +50,7 @@ async function navToSynteny(feature: Feature, self: any) {
   const track = getContainingTrack(self)
   const view = getContainingView(self)
   const reg = view.dynamicBlocks.contentBlocks[0]
-  const cigar = parseCigar(feature.get('cg') || '')
+  const cigar = parseCigar(feature.get('cg'))
   const strand = feature.get('strand')
   const regStart = reg.start
   const regEnd = reg.end
@@ -71,30 +70,15 @@ async function navToSynteny(feature: Feature, self: any) {
   let rFeatEnd = featStart
 
   if (cigar.length) {
-    const [featStartX, mateStartX] = findPosInCigarString(
-      cigar,
-      regStart,
-      featStart,
-      mateStart,
-    )
-    const [featEndX, mateEndX] = findPosInCigarString(
-      cigar,
-      regEnd,
-      featStart,
-      mateStart,
-    )
+    const [featStartX, mateStartX] = findPosInCigar(cigar, regStart - featStart)
+    const [featEndX, mateEndX] = findPosInCigar(cigar, regEnd - featStart)
 
-    if (strand === -1) {
-      rFeatStart = featStart + featStartX
-      rFeatEnd = featStart + featEndX
-      rMateStart = mateEnd - mateEndX
-      rMateEnd = mateEnd - mateStartX
-    } else {
-      rFeatStart = featStart + featStartX
-      rFeatEnd = featStart + featEndX
-      rMateStart = mateStart + mateStartX
-      rMateEnd = mateStart + mateEndX
-    }
+    // avoid multiply by 0 with strand undefined
+    const flipper = strand === -1 ? -1 : 1
+    rFeatStart = featStart + featStartX
+    rFeatEnd = featStart + featEndX
+    rMateStart = mateStart + mateStartX * flipper
+    rMateEnd = mateStart + mateEndX * flipper
   } else {
     rFeatEnd = featEnd
     rMateEnd = mateEnd
@@ -127,22 +111,20 @@ async function navToSynteny(feature: Feature, self: any) {
         ],
       },
     ],
-  })
+  }) as LSV
   const f = (n: number) => Math.floor(n)
   const l1 = `${featRef}:${f(rFeatStart)}-${f(rFeatEnd)}`
   const l2 = `${mateRef}:${f(rMateStart)}-${f(rMateEnd)}${
     strand === -1 ? '[rev]' : ''
   }`
   await when(() => view2.width !== undefined)
-  // @ts-ignore
   view2.views[0].navToLocString(l1, featAsm)
-  // @ts-ignore
   view2.views[1].navToLocString(l2, mateAsm)
 }
 
 /**
  * #stateModel LGVSyntenyDisplay
- * extends `LinearBasicDisplay`, displays location of "synteny" feature in a
+ * extends `LinearPileupDisplay`, displays location of "synteny" feature in a
  * plain LGV, allowing linking out to external synteny views
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
