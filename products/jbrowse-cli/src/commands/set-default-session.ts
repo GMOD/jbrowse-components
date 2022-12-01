@@ -22,7 +22,7 @@ interface Config {
   configuration?: {}
   connections?: unknown[]
   defaultSession?: DefaultSession
-  tracks: Track[]
+  tracks?: Track[]
 }
 
 export default class SetDefaultSession extends JBrowseCommand {
@@ -142,7 +142,7 @@ export default class SetDefaultSession extends JBrowseCommand {
         trackIds = tracks.split(',').map(c => c.trim())
         trackIds.forEach(trackId => {
           this.log(trackId)
-          const matchingTrack = configContents.tracks.find(
+          const matchingTrack = configContents.tracks?.find(
             track => trackId === track.trackId,
           )
           if (!matchingTrack) {

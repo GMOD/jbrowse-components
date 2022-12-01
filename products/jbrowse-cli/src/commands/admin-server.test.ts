@@ -4,10 +4,12 @@
 
 import fs from 'fs'
 import * as path from 'path'
-import fetch from '../fetchWithProxy'
-import { setup } from '../testUtil'
 
-const { copyFile, rename, chmod, readFile } = fs.promises
+// locals
+import fetch from '../fetchWithProxy'
+import { setup, dataDir, readConf } from '../testUtil'
+
+const { copyFile, rename, chmod } = fs.promises
 
 const defaultConfig = {
   assemblies: [],
@@ -19,14 +21,7 @@ const defaultConfig = {
   tracks: [],
 }
 
-const testConfig = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'test_config.json',
-)
+const testConfig = dataDir('test_config.json')
 
 const testConfigContents = {
   assemblies: [
@@ -54,14 +49,8 @@ const testConfigContents = {
 }
 
 // extend setup to include the addition of a simple HTML index to serve statically
-const testIndex = path.join(
-  __dirname,
-  '..',
-  '..',
-  'test',
-  'data',
-  'simpleIndex.html',
-)
+const testIndex = dataDir('simpleIndex.html')
+
 const setupWithCreate = setup.do(async ctx => {
   await copyFile(testIndex, path.join(ctx.dir, path.basename(testIndex)))
 })
@@ -87,10 +76,9 @@ describe('admin-server', () => {
       await killExpress(ctx, 9091)
     })
     .it('creates a default config', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual(defaultConfig)
+      const contents = await readConf(ctx)
+
+      expect(contents).toEqual(defaultConfig)
     })
   setupWithCreate
     .do(async ctx => {
@@ -106,10 +94,8 @@ describe('admin-server', () => {
       await killExpress(ctx, 9092)
     })
     .it('does not overwrite an existing config', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual(testConfigContents)
+      const contents = await readConf(ctx)
+      expect(contents).toEqual(testConfigContents)
     })
   setupWithCreate
     .command(['admin-server'])
@@ -165,11 +151,10 @@ describe('admin-server', () => {
         },
         body: JSON.stringify(payload),
       })
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
+      const contents = await readConf(ctx)
+
       expect(await response.text()).toBe('Config written to disk')
-      expect(JSON.parse(contents)).toEqual(config)
+      expect(contents).toEqual(config)
     })
   setupWithCreate
     .command(['admin-server', '--port', '9095'])

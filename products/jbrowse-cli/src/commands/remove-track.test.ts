@@ -19,7 +19,7 @@ describe('add-assembly', () => {
     .command(['remove-track', 'simple'])
     .it('can use --out to make a new directory', async ctx => {
       const contents = await readConf(ctx)
-      expect(JSON.parse(contents).assemblies.length).toBe(1)
-      expect(JSON.parse(contents).tracks.length).toBe(0)
+      expect(contents.assemblies.length).toBe(1)
+      expect(contents.tracks.length).toBe(0)
     })
 })

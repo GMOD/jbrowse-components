@@ -2,13 +2,14 @@
  * @jest-environment node
  */
 
-import { setup } from '../testUtil'
 import fs from 'fs'
 import path from 'path'
 import { Scope } from 'nock'
 
-const dir = path.join(__dirname, '..', '..', 'test', 'data')
-const configPath = path.join(dir, 'indexing_config.json')
+// locals
+import { setup, dataDir, copyDir } from '../testUtil'
+
+const configPath = dataDir('indexing_config.json')
 const volvoxDir = path.join(
   __dirname,
   '..',
@@ -23,7 +24,7 @@ function mockRemote1(exampleSite: Scope) {
   return exampleSite
     .get('/GMOD/jbrowse/master/tests/data/au9_scaffold_subset_sync.gff3')
     .reply(200, () =>
-      fs.createReadStream(path.join(dir, 'au9_scaffold_subset_sync.gff3')),
+      fs.createReadStream(dataDir('au9_scaffold_subset_sync.gff3')),
     )
 }
 
@@ -32,7 +33,7 @@ function mockRemote2(exampleSite: Scope) {
     .get(
       '/GMOD/jbrowse-components/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
     )
-    .reply(200, fs.createReadStream(path.join(dir, 'volvox.sort.gff3.gz')))
+    .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
 }
 
 const ixLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ix')
@@ -84,7 +85,7 @@ describe('textIndexCommandErrors', () => {
 describe('text-index', () => {
   setup
     .do(async ctx => {
-      const gff3File = path.join(dir, 'au9_scaffold_subset_sync.gff3')
+      const gff3File = dataDir('au9_scaffold_subset_sync.gff3')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -96,7 +97,7 @@ describe('text-index', () => {
 describe('text-index tracks', () => {
   setup
     .do(async ctx => {
-      const gff3File = path.join(dir, 'volvox.sort.gff3.gz')
+      const gff3File = dataDir('volvox.sort.gff3.gz')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -137,8 +138,8 @@ describe('text-index tracks', () => {
 describe('text-index tracks', () => {
   setup
     .do(ctx => {
-      const gff3File = path.join(dir, 'volvox.sort.gff3.gz')
-      const gff3File2 = path.join(dir, 'au9_scaffold_subset_sync.gff3')
+      const gff3File = dataDir('volvox.sort.gff3.gz')
+      const gff3File2 = dataDir('au9_scaffold_subset_sync.gff3')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(gff3File2, path.join(ctx.dir, path.basename(gff3File2)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
@@ -170,7 +171,7 @@ describe('text-index tracks', () => {
 describe('text-index tracks', () => {
   setup
     .do(ctx => {
-      const gff3File = path.join(dir, 'volvox.sort.gff3.gz')
+      const gff3File = dataDir('volvox.sort.gff3.gz')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -185,7 +186,7 @@ describe('text-index tracks', () => {
 describe('text-index tracks', () => {
   setup
     .do(ctx => {
-      const gff3File = path.join(dir, 'volvox.sort.gff3.gz')
+      const gff3File = dataDir('volvox.sort.gff3.gz')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -204,7 +205,7 @@ describe('text-index tracks', () => {
 describe('text-index tracks', () => {
   setup
     .do(ctx => {
-      const gff3File = path.join(dir, 'volvox.sort.gff3.gz')
+      const gff3File = dataDir('volvox.sort.gff3.gz')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
       fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json'))
     })
@@ -249,22 +250,6 @@ describe('text-index with single per-file', () => {
       expect(ixx).toMatchSnapshot()
     })
 })
-
-// source https://stackoverflow.com/a/64255382/2129219
-async function copyDir(src: string, dest: string) {
-  await fs.promises.mkdir(dest, { recursive: true })
-  const entries = await fs.promises.readdir(src, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name)
-    const destPath = path.join(dest, entry.name)
-
-    entry.isDirectory()
-      ? await copyDir(srcPath, destPath)
-      : await fs.promises.copyFile(srcPath, destPath)
-  }
-}
-
 describe('run with a single assembly similar to embedded config', () => {
   let preVolvoxIx = ''
   let preVolvoxIxx = ''

@@ -7,7 +7,7 @@ import * as path from 'path'
 
 import { setup, readConf } from '../testUtil'
 
-const { copyFile, readFile, rename } = fs.promises
+const { copyFile, rename } = fs.promises
 
 const defaultConfig = {
   assemblies: [
@@ -100,7 +100,7 @@ describe('add-connection', () => {
     .command(['add-connection', 'https://mysite.com/data/hub.txt'])
     .it('adds an UCSCTrackHubConnection connection from a url', async ctx => {
       const contents = await readConf(ctx)
-      expect(JSON.parse(contents)).toEqual({
+      expect(contents).toEqual({
         ...defaultConfig,
         connections: [
           {
@@ -128,10 +128,8 @@ describe('add-connection', () => {
     })
     .command(['add-connection', 'https://mysite.com/jbrowse/data'])
     .it('adds an JBrowse1 connection from a url', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         connections: [
           {
@@ -194,10 +192,8 @@ describe('add-connection', () => {
       '{"url":{"uri":"https://mysite.com/custom"}, "locationType": "UriLocation"}',
     ])
     .it('adds a custom connection with user set fields', async ctx => {
-      const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-        encoding: 'utf8',
-      })
-      expect(JSON.parse(contents)).toEqual({
+      const contents = await readConf(ctx)
+      expect(contents).toEqual({
         ...defaultConfig,
         connections: [
           {
@@ -272,10 +268,8 @@ describe('add-connection', () => {
     .it(
       'overwrites an existing custom connection and does not check URL',
       async ctx => {
-        const contents = await readFile(path.join(ctx.dir, 'config.json'), {
-          encoding: 'utf8',
-        })
-        expect(JSON.parse(contents)).toEqual({
+        const contents = await readConf(ctx)
+        expect(contents).toEqual({
           ...defaultConfig,
           connections: [
             {

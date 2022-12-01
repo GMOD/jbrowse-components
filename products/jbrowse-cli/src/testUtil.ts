@@ -91,8 +91,41 @@ export const setup = test
     await writeFile('manifest.json', '{"name":"JBrowse"}')
   })
 
-export function readConf(ctx: { dir: string }) {
-  return readFile(path.join(ctx.dir, 'config.json'), {
-    encoding: 'utf8',
-  })
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Conf = Record<string, any>
+
+export async function readConf(
+  ctx: {
+    dir: string
+  },
+  ...args: string[]
+): Promise<Conf> {
+  return JSON.parse(
+    await readFile(path.join(ctx.dir, ...args, 'config.json'), {
+      encoding: 'utf8',
+    }),
+  )
+}
+
+export function dataDir(str: string) {
+  return path.join(__dirname, '..', 'test', 'data', str)
+}
+
+export function ctxDir(ctx: { dir: string }, str: string) {
+  return path.join(ctx.dir, str)
+}
+
+// source https://stackoverflow.com/a/64255382/2129219
+export async function copyDir(src: string, dest: string) {
+  await fs.promises.mkdir(dest, { recursive: true })
+  const entries = await fs.promises.readdir(src, { withFileTypes: true })
+
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name)
+    const destPath = path.join(dest, entry.name)
+
+    entry.isDirectory()
+      ? await copyDir(srcPath, destPath)
+      : await fs.promises.copyFile(srcPath, destPath)
+  }
 }
