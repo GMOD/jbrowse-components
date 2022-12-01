@@ -16,7 +16,7 @@ import config from '../docusaurus.config.json'
 - [Samtools](http://www.htslib.org/) installed e.g. `sudo apt install samtools`
   or `brew install samtools`, used for creating FASTA index and BAM/CRAM
   processing for creating tabix GFF
-- [tabix](http://www.htslib.org/doc/tabix.html) installed e.g. `sudo apt intall tabix` and `brew install htslib`, used for creating tabix indexes for
+- [tabix](http://www.htslib.org/doc/tabix.html) installed e.g. `sudo apt install tabix` and `brew install htslib`, used for creating tabix indexes for
   BED/VCF/GFF files
 - (optional) [`genometools`](http://genometools.org/) installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools` used for
   sorting GFF3. can use awk instead of `genometools` instead
@@ -165,7 +165,7 @@ symlink the files instead. To see more options adding the track, such as
 specifying a name, run `jbrowse add-track --help`.
 
 If you have JBrowse 2 [running as
-described](/docs/quickstart_cli/#running-jbrowse-2) in the JBrowse web
+described](/docs/quickstart_web/#running-jbrowse-2) in the JBrowse web
 quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the alignments
 track.
@@ -304,7 +304,7 @@ type a gene name into the "search box" in the linear genome view or other views
 and quickly navigate to genes by gene name.
 
 See the [text-index](/docs/cli#jbrowse-text-index) command docs for more info.
-Also see the [FAQ entries for text searching](../../faq#text-searching)
+Also see the [FAQ entries for text searching](/docs/faq#text-searching)
 
 ## Conclusion
 

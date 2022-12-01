@@ -82,7 +82,7 @@ this.
 
 ### How can I setup JBrowse 2 on my web server
 
-We recommend following the steps in the [quickstart web via CLI](../quickstart_cli/) guide.
+We recommend following the steps in the [quickstart web via CLI](../quickstart_web/) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in

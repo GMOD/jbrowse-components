@@ -22,10 +22,10 @@ You can also do this configuration with JBrowse CLI. See that guide
 
 This tutorial requires having the following software installed
 
-- [JBrowse CLI](/docs/quickstart_cli/#installing-the-cli-tools)
+- [JBrowse CLI](/docs/quickstart_web/#installing-the-cli-tools)
 
 - [JBrowse 2 web
-  application](/docs/quickstart_cli/#using-jbrowse-create-to-download-jbrowse-2)
+  application](/docs/quickstart_web/#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 

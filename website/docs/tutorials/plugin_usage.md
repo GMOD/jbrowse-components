@@ -14,7 +14,7 @@ Those plugins featured here are a part of the cancer-related database plugins on
 
 - JBrowse 2 is [installed on web or desktop](../../quickstart_web)
 - Familiarity editing JSON
-- Optionally, the [JBrowse CLI installed](../../quickstart_cli)
+- Optionally, the [JBrowse CLI installed](../../quickstart_web)
 
 ## Installing plugins with one click
 
