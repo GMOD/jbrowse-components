@@ -225,7 +225,7 @@ In brief, to add a configuration callback to a track using the CLI, your
 `add-track` is going to look something like this:
 
 ```bash
-jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "my_BasicDisplay", "type": "LinearBasicDisplay", "renderer": {"color1": "jexl:get(feature, 'strand') == -1 ? 'red' : 'blue'" }}]}'
+jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"displayId": "my_BasicDisplay", "type": "LinearBasicDisplay", "renderer": {"color1": "jexl:get(feature, '\''strand'\'') == -1 ? '\''red'\'' : '\''blue'\''" }}]}'
 ```
 
 While adding the track to the `config.json`, you're adding additional
