@@ -11,7 +11,7 @@ Welcome to the JBrowse 2 documentation.
   to getting JBrowse desktop running on your machine
 - [Quick start for JBrowse web](quickstart_web) - a quick start guide to
   running JBrowse 2 in a browser
-- [Quick start for JBrowse web via CLI](quickstart_cli) - a quick start guide
+- [Quick start for JBrowse web via CLI](quickstart_web) - a quick start guide
   to installing the JBrowse 2 CLI and getting JBrowse web running locally on a
   browser
 

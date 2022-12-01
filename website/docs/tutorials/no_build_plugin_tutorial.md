@@ -12,7 +12,7 @@ page no-build plugin for JBrowse 2.
 ## Prerequisites
 
 - you can run an instance of JBrowse 2 on the web, see [any of our quickstart
-  guides](/docs/quickstart_cli) for details
+  guides](/docs/quickstart_web) for details
 - a stable and recent version of [node](https://nodejs.org/en/)
 - basic familiarity with the command line and navigating the file system
 

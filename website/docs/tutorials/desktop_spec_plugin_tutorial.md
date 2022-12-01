@@ -15,8 +15,8 @@ plugin to run external tools such as bcftools and tabix on a VCF file.
 - A stable and recent version of [node](https://nodejs.org/en/)
 - yarn or npm
 - basic familiarity with the command line, React, package management, and npm
-- bcftools installed `brew install bcftool`s or `sudo apt install bcftools`
-- tabix installed `brew install htslib` or `sudo apt install htslib`
+- `bcftools` installed `brew install bcftools` or `sudo apt install bcftools`
+- `tabix` installed `brew install htslib` or `sudo apt install htslib`
 
 ## Why might I need a desktop-specific plugin
 

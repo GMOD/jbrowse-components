@@ -5,4 +5,4 @@ toplevel: true
 ---
 
 The contents of this page have been moved and merged into the [Configure
-JBrowse using the CLI](../tutorials/config_cli) guide under User tutorials.
+JBrowse using the CLI](/docs/tutorials/config_cli) guide under User tutorials.

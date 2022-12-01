@@ -1,6 +1,6 @@
 ---
 id: simple_plugin
-title: Developing a simple jbrowse plugin
+title: Developing a simple JBrowse plugin
 toplevel: true
 ---
 
@@ -286,7 +286,7 @@ const CircularViewChordWidget = observer(({ model }: { model: any }) => {
       {/* features will always have a name, start, end, and id; they can
       have additional information too */}
       <BaseCard title={featureData.name}>
-        {/* here we're just demonstrating using a basic property from the 
+        {/* here we're just demonstrating using a basic property from the
         model and updating it with observer */}
         <h2>{widgetByline}</h2>
         <p>Care to change the widget byline?</p>

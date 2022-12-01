@@ -4,13 +4,7 @@
     {
       "type": "category",
       "label": "Quickstart guides",
-      "items": [
-        "quickstart_desktop",
-        "quickstart_web",
-        "quickstart_cli",
-        "tutorials/config_cli",
-        "tutorials/config_gui"
-      ]
+      "items": ["quickstart_desktop", "quickstart_web", "tutorials/config_gui"]
     },
     {
       "type": "category",
