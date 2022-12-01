@@ -289,6 +289,44 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "type": "ReferenceSequenceTrack",
       },
     },
+    {
+      "name": "volvox-rev-del",
+      "sequence": {
+        "adapter": {
+          "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox-rev-del.fa.fai",
+          },
+          "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "volvox-rev-del.fa",
+          },
+          "metadataLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "volvox-rev-del-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {
+            "displayId": "volvox-rev-del-ReferenceSequenceTrack-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
+        ],
+        "trackId": "volvox-rev-del-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": {},
   "connections": [],
@@ -2424,6 +2462,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
         "volvox",
       ],
+      "category": [
+        "Synteny",
+      ],
       "displays": [
         {
           "displayId": "volvox_fake_synteny_alt-DotplotDisplay",
@@ -2463,6 +2504,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
         "volvox",
+      ],
+      "category": [
+        "Synteny",
       ],
       "displays": [
         {
@@ -3173,6 +3217,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "volvox",
         "volvox_del",
       ],
+      "category": [
+        "Synteny",
+      ],
       "displays": [
         {
           "displayId": "volvox_del.paf-1658813720770-DotplotDisplay",
@@ -3210,6 +3257,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
         "volvox_ins",
+      ],
+      "category": [
+        "Synteny",
       ],
       "displays": [
         {
@@ -3292,6 +3342,76 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "Jannovar example",
       "trackId": "variant_effect_demo_jannovar",
       "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox-rev-del",
+          "volvox",
+        ],
+        "pafLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-rev-del.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox-rev-del",
+        "volvox",
+      ],
+      "category": [
+        "Synteny",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-rev-del-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox-rev-del-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox-rev-del-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox-rev-del-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox-rev-del",
+      "trackId": "volvox-rev-del",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "gffLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-rev-del.gff",
+        },
+        "type": "Gff3Adapter",
+      },
+      "assemblyNames": [
+        "volvox-rev-del",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-rev-del-annotations-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "volvox-rev-del-annotations-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "volvox-rev-del-annotations",
+      "trackId": "volvox-rev-del-annotations",
+      "type": "FeatureTrack",
     },
   ],
 }
