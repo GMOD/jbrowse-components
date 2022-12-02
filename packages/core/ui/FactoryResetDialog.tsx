@@ -1,10 +1,11 @@
-import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
-import DialogTitle from '@mui/material/DialogTitle'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogActions from '@mui/material/DialogActions'
 import React from 'react'
+import {
+  Button,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+} from '@mui/material'
+import Dialog from '@jbrowse/core/ui/Dialog'
 
 export default ({
   onClose,
@@ -23,10 +24,9 @@ export default ({
   }
 
   return (
-    <Dialog open={open} onClose={() => handleDialogClose()}>
-      <DialogTitle id="alert-dialog-title">Reset</DialogTitle>
+    <Dialog title="Reset" onClose={() => handleDialogClose()} open={open}>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
+        <DialogContentText>
           Are you sure you want to reset? This will restore the default
           configuration.
         </DialogContentText>
