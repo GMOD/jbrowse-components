@@ -216,8 +216,8 @@ function ConfigTriaged({
           loader.setConfigSnapshot({ ...session, id: shortid() })
           handleClose()
         }}
-        onCancel={() => {
-          factoryReset()
+        onCancel={async () => {
+          await factoryReset()
           handleClose()
         }}
         reason={loader.sessionTriaged.reason}

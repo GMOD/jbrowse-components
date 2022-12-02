@@ -38,7 +38,7 @@ export default (pluginManager: PluginManager) => {
           )
         }
 
-        view.navToLocString(loc, assembly)
+        await view.navToLocString(loc, assembly)
 
         const idsNotFound = [] as string[]
         tracks.forEach(track => {

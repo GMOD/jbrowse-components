@@ -193,6 +193,7 @@ const ShareDialog = observer(
 
     useEffect(() => {
       let cancelled = false
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         if (currentSetting === 'short') {
           try {
@@ -225,9 +226,9 @@ const ShareDialog = observer(
 
     useEffect(() => {
       let cancelled = false
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       ;(async () => {
         try {
-          // generate long URL
           const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
           const longUrl = new URL(window.location.href)
           const longParams = new URLSearchParams(longUrl.search)

@@ -92,14 +92,18 @@ export default function createViewState(opts: ViewStateOptions) {
   if (location) {
     autorun(async reaction => {
       const { session } = stateTree
-      if (!session.view.initialized) {
-        return
-      }
+      try {
+        if (!session.view.initialized) {
+          return
+        }
 
-      if (typeof location === 'string') {
-        session.view.navToLocString(location, assembly.name)
-      } else {
-        session.view.navTo(location)
+        if (typeof location === 'string') {
+          await session.view.navToLocString(location, assembly.name)
+        } else {
+          session.view.navTo(location)
+        }
+      } catch (e) {
+        session.notify(`${e}`, 'error')
       }
       reaction.dispose()
     })

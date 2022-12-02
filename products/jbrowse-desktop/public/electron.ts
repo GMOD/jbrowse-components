@@ -89,6 +89,8 @@ autoUpdater.on('update-available', async () => {
   })
 
   if (result.response === 0) {
+    // unsure how to handle
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     autoUpdater.downloadUpdate()
   }
 })
@@ -185,6 +187,7 @@ async function updatePreconfiguredSessions() {
 
 async function createWindow() {
   // no need to await, just update in background
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   updatePreconfiguredSessions()
 
   const mainWindowState = windowStateKeeper({
@@ -205,21 +208,16 @@ async function createWindow() {
     },
   })
   mainWindowState.manage(mainWindow)
-  mainWindow.loadURL(
+  await mainWindow.loadURL(
     isDev
       ? url.format(devServerUrl)
       : `file://${path.join(app.getAppPath(), 'build', 'index.html')}`,
   )
 
   mainWindow.webContents.setWindowOpenHandler(details => {
+    // unsure how to handle
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
-  // open url in a browser and prevent default
-  // also has <base target="_blank"> in <head> to redirect links by default
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
     return { action: 'deny' }
   })
 
@@ -335,6 +333,8 @@ async function createWindow() {
   })
 
   mainWindow.once('ready-to-show', () => {
+    // unsure how to error handle
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     autoUpdater.checkForUpdatesAndNotify()
   })
 }
@@ -356,6 +356,8 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (mainWindow === null) {
+    // unsure how to handle error
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     createWindow()
   }
 })
@@ -454,6 +456,8 @@ ipcMain.handle(
       },
     })
     win.title = `JBrowseAuthWindow-${internetAccountId}`
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     win.loadURL(url)
 
     return new Promise(resolve => {
@@ -608,6 +612,7 @@ autoUpdater.on('error', err => {
 })
 
 autoUpdater.on('update-downloaded', () => {
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   dialog.showMessageBox({
     type: 'info',
     title: 'Update completed',

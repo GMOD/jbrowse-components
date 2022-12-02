@@ -43,6 +43,7 @@ function generateStateModelDocs(files: string[]) {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
   generateStateModelDocs(await getAllFiles())
 
@@ -146,7 +147,7 @@ ${getterstr}
 ${methodstr}
 
 ${actionstr}
- 
+
 `,
         )
       }

@@ -107,6 +107,7 @@ export default function SequenceFeatureDetails({ model, feature }: BaseProps) {
       return (feat?.get('seq') as string) || ''
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         setError(undefined)

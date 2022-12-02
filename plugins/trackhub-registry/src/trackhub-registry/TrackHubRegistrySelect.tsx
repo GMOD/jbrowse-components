@@ -76,7 +76,8 @@ function TrackHubRegistrySelect({
   useEffect(() => {
     const controller = new AbortController()
     const { signal } = controller
-    async function getAssemblies() {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       try {
         const pingResponse = await mfetch(
           'https://www.trackhubregistry.org/api/info/ping',
@@ -97,9 +98,7 @@ function TrackHubRegistrySelect({
           setError(e)
         }
       }
-    }
-
-    getAssemblies()
+    })()
 
     return () => {
       controller.abort()
@@ -110,54 +109,55 @@ function TrackHubRegistrySelect({
     const controller = new AbortController()
     const { signal } = controller
     async function getHubs(reset?: boolean) {
-      try {
-        const entriesPerPage = 10
-        const newHubs = reset ? new Map() : new Map(hubs)
-        const page = Math.floor(hubs.size / entriesPerPage) + 1
-        const response = await post_with_params(
-          'https://www.trackhubregistry.org/api/search',
-          { page, entries_per_page: entriesPerPage },
-          {
-            body: JSON.stringify({ assembly: selectedTrackhubAssembly }),
-            signal,
-          },
-        )
-        if (response) {
-          for (const item of response.items) {
-            if (item.hub.url.startsWith('ftp://')) {
-              item.error = 'JBrowse cannot add connections from FTP sources'
-            } else {
-              const hub = openLocation({
-                uri: item.hub.url,
-                locationType: 'UriLocation',
-              })
-              try {
-                await hub.stat()
-              } catch (error) {
-                item.error = `${error}`
-              }
+      const entriesPerPage = 10
+      const newHubs = reset ? new Map() : new Map(hubs)
+      const page = Math.floor(hubs.size / entriesPerPage) + 1
+      const response = await post_with_params(
+        'https://www.trackhubregistry.org/api/search',
+        { page, entries_per_page: entriesPerPage },
+        {
+          body: JSON.stringify({ assembly: selectedTrackhubAssembly }),
+          signal,
+        },
+      )
+      if (response) {
+        for (const item of response.items) {
+          if (item.hub.url.startsWith('ftp://')) {
+            item.error = 'JBrowse cannot add connections from FTP sources'
+          } else {
+            const hub = openLocation({
+              uri: item.hub.url,
+              locationType: 'UriLocation',
+            })
+            try {
+              await hub.stat()
+            } catch (error) {
+              item.error = `${error}`
             }
-            newHubs.set(item.id, item)
           }
-          setHubs(newHubs)
-          if (newHubs.size === response.total_entries) {
-            setAllHubsRetrieved(true)
+          newHubs.set(item.id, item)
+        }
+        setHubs(newHubs)
+        if (newHubs.size === response.total_entries) {
+          setAllHubsRetrieved(true)
+        }
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      try {
+        if (!error) {
+          if (selectedTrackhubAssembly && !hubs.size) {
+            await getHubs(true)
+          } else if (hubs.size && !allHubsRetrieved) {
+            await getHubs()
           }
         }
       } catch (e) {
         if (!isAbortException(e)) {
           console.error(e)
           setError(e)
-        }
-      }
-    }
-
-    ;(async () => {
-      if (!error) {
-        if (selectedTrackhubAssembly && !hubs.size) {
-          getHubs(true)
-        } else if (hubs.size && !allHubsRetrieved) {
-          getHubs()
         }
       }
     })()

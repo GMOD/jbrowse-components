@@ -104,6 +104,7 @@ export default function ReadVsRefDialog({
   // this should be the first in the list of the SA tag
   useEffect(() => {
     let done = false
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       setError(undefined)
       try {

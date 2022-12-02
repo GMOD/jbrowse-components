@@ -18,9 +18,7 @@ export default (pluginManager: PluginManager) => {
       fileType?: string
     }) => {
       // add view, make typescript happy with return type
-      const view = session.addView(
-        'SvInspectorView',
-      ) as unknown as SvInspectorViewModel
+      const view = session.addView('SvInspectorView') as SvInspectorViewModel
 
       if (!view) {
         throw new Error('Failed to initialize view')
@@ -31,17 +29,13 @@ export default (pluginManager: PluginManager) => {
         ext = exts?.pop()?.toUpperCase()
       }
 
-      // @ts-ignore
       view.spreadsheetView.importWizard.setFileType(fileType || ext || '')
-      // @ts-ignore
       view.spreadsheetView.importWizard.setSelectedAssemblyName(assembly)
-      // @ts-ignore
       view.spreadsheetView.importWizard.setFileSource({
         uri,
         locationType: 'UriLocation',
       })
-      // @ts-ignore
-      view.spreadsheetView.importWizard.import(assembly)
+      await view.spreadsheetView.importWizard.import(assembly)
     },
   )
 }

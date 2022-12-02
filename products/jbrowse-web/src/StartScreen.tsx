@@ -58,6 +58,7 @@ const DeleteSessionDialog = ({
 }) => {
   const [deleteSession, setDeleteSession] = useState(false)
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (deleteSession) {
@@ -118,6 +119,7 @@ export default function StartScreen({
   const [reset, setReset] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (sessionToLoad) {
@@ -130,6 +132,7 @@ export default function StartScreen({
   }, [rootModel, sessionToLoad])
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (updateSessionsList) {

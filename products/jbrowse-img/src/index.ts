@@ -63,7 +63,7 @@ console.warn = (...p: unknown[]) => {
 
 // note: yargs is actually unused except for printing help
 // we do custom command line parsing, see parseArgv.ts
-
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 yargs
   .command('jb2export', 'Creates a jbrowse 2 image snapshot')
   .option('config', {
@@ -186,6 +186,7 @@ const args = standardizeArgv(parseArgv(process.argv.slice(2)), [
   'configtracks',
 ])
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
   try {
     const result = await renderRegion(args as Opts)

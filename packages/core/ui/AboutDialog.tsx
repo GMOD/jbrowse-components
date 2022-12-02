@@ -34,7 +34,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export function FileInfo({ config }: { config: AnyConfigurationModel }) {
+export function FileInfoPanel({ config }: { config: AnyConfigurationModel }) {
   const [error, setError] = useState<unknown>()
   const [info, setInfo] = useState<FileInfo>()
   const session = getSession(config)
@@ -44,6 +44,7 @@ export function FileInfo({ config }: { config: AnyConfigurationModel }) {
     const aborter = new AbortController()
     const { signal } = aborter
     let cancelled = false
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const adapterConfig = readConfObject(config, 'adapter')
@@ -147,7 +148,7 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfo config={config} />
+      <FileInfoPanel config={config} />
     </>
   )
 }

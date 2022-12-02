@@ -94,6 +94,7 @@ function RefNameAutocomplete({
   useEffect(() => {
     let active = true
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (debouncedSearch === '' || !assemblyName) {

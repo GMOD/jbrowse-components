@@ -34,7 +34,7 @@ export default (pluginManager: PluginManager) => {
         uri,
         locationType: 'UriLocation',
       })
-      view.importWizard.import(assembly)
+      await view.importWizard.import(assembly)
     },
   )
 }

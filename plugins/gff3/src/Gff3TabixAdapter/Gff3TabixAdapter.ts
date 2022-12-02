@@ -68,7 +68,7 @@ export default class extends BaseFeatureDataAdapter {
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const metadata = await this.gff.getMetadata()
-      this.getFeaturesHelper(query, opts, metadata, observer, true)
+      await this.getFeaturesHelper(query, opts, metadata, observer, true)
     }, opts.signal)
   }
 
@@ -111,7 +111,7 @@ export default class extends BaseFeatureDataAdapter {
         if (maxEnd > query.end || minStart < query.start) {
           // make a new feature callback to only return top-level features
           // in the original query range
-          this.getFeaturesHelper(
+          await this.getFeaturesHelper(
             { ...query, start: minStart, end: maxEnd },
             opts,
             metadata,

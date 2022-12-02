@@ -331,8 +331,8 @@ export default function rootModelFactory(pluginManager: PluginManager) {
             {
               label: 'Exit',
               icon: MeetingRoomIcon,
-              onClick: () => {
-                ipcRenderer.invoke('quit')
+              onClick: async () => {
+                await ipcRenderer.invoke('quit')
               },
             },
           ],

@@ -62,11 +62,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     setValue(r0)
   }, [r0, selectedAsm])
 
-  function navToOption(option: BaseResult) {
+  async function navToOption(option: BaseResult) {
     const location = option.getLocation()
     const trackId = option.getTrackId()
     if (location) {
-      model.navToLocString(location, selectedAsm)
+      await model.navToLocString(location, selectedAsm)
       if (trackId) {
         model.showTrack(trackId)
       }
@@ -81,7 +81,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   async function handleSelectedRegion(input: string) {
     try {
       if (option?.getDisplayString() === input && option.hasLocation()) {
-        navToOption(option)
+        await navToOption(option)
       } else {
         const [ref, rest] = splitLast(input, ':')
         const allRefs = assembly?.allRefNamesWithLowerCase || []
@@ -89,7 +89,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           allRefs.includes(input) ||
           (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
         ) {
-          model.navToLocString(input, selectedAsm)
+          await model.navToLocString(input, selectedAsm)
         } else {
           const results = await fetchResults({
             queryString: input,
@@ -103,9 +103,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           if (results.length > 1) {
             model.setSearchResults(results, input.toLowerCase())
           } else if (results.length === 1) {
-            navToOption(results[0])
+            await navToOption(results[0])
           } else {
-            model.navToLocString(input, selectedAsm)
+            await model.navToLocString(input, selectedAsm)
           }
         }
       }
@@ -122,11 +122,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       {displayError ? <ErrorMessage error={displayError} /> : null}
       <Container className={classes.importFormContainer}>
         <form
-          onSubmit={event => {
+          onSubmit={async event => {
             event.preventDefault()
             model.setError(undefined)
             if (value) {
-              handleSelectedRegion(value)
+              // has it's own error handling
+              await handleSelectedRegion(value)
             }
           }}
         >

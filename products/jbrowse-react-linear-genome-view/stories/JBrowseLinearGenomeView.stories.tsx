@@ -513,7 +513,8 @@ export const WithExternalPlugins = () => {
   // we manually call loadPlugins, and pass the result to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
-    async function getPlugins() {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       const loadedPlugins = await loadPlugins([
         {
           name: 'UCSC',
@@ -521,8 +522,7 @@ export const WithExternalPlugins = () => {
         },
       ])
       setPlugins(loadedPlugins)
-    }
-    getPlugins()
+    })()
   }, [setPlugins])
 
   if (!plugins) {

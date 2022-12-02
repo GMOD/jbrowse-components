@@ -1,22 +1,4 @@
 import React from 'react'
-import { observer } from 'mobx-react'
-import { types, getType, getParent } from 'mobx-state-tree'
-import { doesIntersect2, isContainedWithin } from '@jbrowse/core/util/range'
-import ClearIcon from '@mui/icons-material/Clear'
-import {
-  when,
-  compareLocs,
-  getSession,
-  parseLocString,
-} from '@jbrowse/core/util'
-import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-
-import {
-  getPropertyType,
-  getEnumerationValues,
-  getSubType,
-} from '@jbrowse/core/util/mst-reflection'
-
 import {
   IconButton,
   TextField,
@@ -25,7 +7,29 @@ import {
   Select,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import { observer } from 'mobx-react'
+import { types, getType, getParent } from 'mobx-state-tree'
+
+// jbrowse imports
+import {
+  getPropertyType,
+  getEnumerationValues,
+  getSubType,
+} from '@jbrowse/core/util/mst-reflection'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import {
+  doesIntersect2,
+  isContainedWithin,
+  compareLocs,
+  getSession,
+  parseLocString,
+} from '@jbrowse/core/util'
+
+// icons
+import ClearIcon from '@mui/icons-material/Clear'
+
+// locals
+import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 
 type LGV = LinearGenomeViewModel
 
@@ -45,56 +49,55 @@ const useStyles = makeStyles()({
 })
 
 // React component for the column filter control
-
-const FilterReactComponent = observer(
+const FilterReactComponent = observer(function ({
+  filterModel,
+}: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ filterModel }: { filterModel: any }) => {
-    const { classes } = useStyles()
-    const operationChoices = getEnumerationValues(
-      getSubType(getPropertyType(getType(filterModel), 'operation')),
-    )
-    return (
-      <>
-        <Select
-          value={filterModel.operation}
-          onChange={event => {
-            filterModel.setOperation(String(event.target.value))
-          }}
-        >
-          {operationChoices.map(name => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
-          ))}
-        </Select>{' '}
-        <TextField
-          label="range"
-          placeholder="chr1:100-200"
-          error={filterModel.locStringIsInvalid}
-          value={filterModel.locString}
-          onChange={evt => filterModel.setLocString(evt.target.value)}
-          className={classes.textFilterControl}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment
-                className={classes.textFilterControlAdornment}
-                position="end"
+  filterModel: any
+}) {
+  const { classes } = useStyles()
+  const operationChoices = getEnumerationValues(
+    getSubType(getPropertyType(getType(filterModel), 'operation')),
+  )
+  return (
+    <>
+      <Select
+        value={filterModel.operation}
+        onChange={event => filterModel.setOperation(String(event.target.value))}
+      >
+        {operationChoices.map(name => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+      </Select>{' '}
+      <TextField
+        label="range"
+        placeholder="chr1:100-200"
+        error={filterModel.locStringIsInvalid}
+        value={filterModel.locString}
+        onChange={evt => filterModel.setLocString(evt.target.value)}
+        className={classes.textFilterControl}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment
+              className={classes.textFilterControlAdornment}
+              position="end"
+            >
+              <IconButton
+                aria-label="clear filter"
+                onClick={() => filterModel.setLocString('')}
+                color="secondary"
               >
-                <IconButton
-                  aria-label="clear filter"
-                  onClick={() => filterModel.setLocString('')}
-                  color="secondary"
-                >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </>
-    )
-  },
-)
+                <ClearIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+    </>
+  )
+})
 
 const OPERATIONS = [
   'overlaps with',
@@ -268,63 +271,48 @@ async function locationLinkClick(
   cell: any,
 ) {
   const session = getSession(spreadsheet)
-  const { assemblyManager } = session
   const { assemblyName } = spreadsheet
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { id } = getParent<any>(spreadsheet)
 
-  try {
-    const assembly = await assemblyManager.waitForAssembly(assemblyName)
-    if (!assembly) {
-      throw new Error(`assembly not found "${assemblyName}"`)
-    }
-    const loc = parseLocString(cell.text, name =>
-      assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
-    )
-    const { refName } = loc
-    const canonicalRefName = assembly.getCanonicalRefName(refName)
-    const newDisplayedRegion = assembly.regions?.find(
-      region => region.refName === canonicalRefName,
-    )
-
-    const newViewId = `${id}_${assemblyName}`
-    let view = session.views.find(v => v.id === newViewId) as LGV
-    if (!view) {
-      view = session.addView('LinearGenomeView', {
-        displayName: assemblyName,
-        id: newViewId,
-      }) as LGV
-
-      await when(() => view.initialized)
-
-      // note that we have to clone this because otherwise it adds "same object
-      // twice to the mst tree"
-      view.setDisplayedRegions([JSON.parse(JSON.stringify(newDisplayedRegion))])
-    }
-    view.navToLocString(cell.text)
-  } catch (e) {
-    session.notify(`${e}`, 'error')
+  const newViewId = `${id}_${assemblyName}`
+  let view = session.views.find(v => v.id === newViewId) as LGV
+  if (!view) {
+    view = session.addView('LinearGenomeView', {
+      id: newViewId,
+    }) as LGV
   }
+  await view.navToLocString(cell.text, assemblyName)
 }
 
-const DataCellReactComponent = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ cell, columnNumber, spreadsheet }: any) => {
-    return (
-      <a
-        onClick={evt => {
-          evt.preventDefault()
-          locationLinkClick(spreadsheet, columnNumber, cell)
-        }}
-        title="open a new linear genome view here"
-        href="#link"
-      >
-        {cell.text}
-      </a>
-    )
-  },
-)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DataCell = any
+
+const DataCellReactComponent = observer(function ({
+  cell,
+  columnNumber,
+  spreadsheet,
+}: DataCell) {
+  return (
+    <a
+      onClick={async evt => {
+        evt.preventDefault()
+        const session = getSession(spreadsheet)
+        try {
+          await locationLinkClick(spreadsheet, columnNumber, cell)
+        } catch (e) {
+          console.error(e)
+          session.notify(`${e}`, 'error')
+        }
+      }}
+      title="open a new linear genome view here"
+      href="#link"
+    >
+      {cell.text}
+    </a>
+  )
+})
 
 const LocStringColumnType = MakeSpreadsheetColumnType('LocString', {
   categoryName: 'Location',

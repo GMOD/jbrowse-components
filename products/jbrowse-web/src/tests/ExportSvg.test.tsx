@@ -32,7 +32,7 @@ test('export svg', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
-  view.exportSvg()
+  await view.exportSvg()
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
   // @ts-ignore
