@@ -32,7 +32,7 @@ import {
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
 
-const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
+const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order

@@ -1,5 +1,11 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, TextField, Typography } from '@mui/material'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 
 export default function SetMinMaxDlg(props: {
@@ -32,7 +38,7 @@ export default function SetMinMaxDlg(props: {
 
   return (
     <Dialog open onClose={handleClose} title="Set min/max score for track">
-      <DialogContent style={{ overflowX: 'hidden' }}>
+      <DialogContent>
         <Typography>Enter min/max score: </Typography>
         {!ok ? (
           <Typography color="error">
@@ -48,19 +54,16 @@ export default function SetMinMaxDlg(props: {
 
         <TextField
           value={min}
-          onChange={event => {
-            setMin(event.target.value)
-          }}
+          onChange={event => setMin(event.target.value)}
           placeholder="Enter min score"
         />
         <TextField
           value={max}
-          onChange={event => {
-            setMax(event.target.value)
-          }}
+          onChange={event => setMax(event.target.value)}
           placeholder="Enter max score"
         />
-
+      </DialogContent>
+      <DialogActions>
         <Button
           variant="contained"
           color="primary"
@@ -79,7 +82,7 @@ export default function SetMinMaxDlg(props: {
         >
           Submit
         </Button>
-      </DialogContent>
+      </DialogActions>
     </Dialog>
   )
 }
