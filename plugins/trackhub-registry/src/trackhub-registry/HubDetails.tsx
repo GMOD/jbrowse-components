@@ -25,7 +25,8 @@ function HubDetails(props: {
   const { url: hubUrl, longLabel, shortLabel } = hub
 
   useEffect(() => {
-    async function getHubTxt() {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       try {
         const hubHandle = openLocation({
           uri: hubUrl,
@@ -38,9 +39,7 @@ function HubDetails(props: {
         console.error(error)
         setError(error)
       }
-    }
-
-    getHubTxt()
+    })()
   }, [hubUrl])
 
   if (error) {

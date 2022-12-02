@@ -106,6 +106,7 @@ function SequenceDialog({
     let active = true
     const controller = new AbortController()
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (regionsSelected.length > 0) {

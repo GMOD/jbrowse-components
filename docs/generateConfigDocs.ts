@@ -38,8 +38,9 @@ async function generateConfigDocs(files: string[]) {
   })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
-  generateConfigDocs(await getAllFiles())
+  await generateConfigDocs(await getAllFiles())
 
   Object.values(contents).forEach(({ config, slots, id, derives }) => {
     if (config) {
@@ -96,7 +97,7 @@ ${idstr}
 ${slotstr}
 
 ${derivesstr}
- 
+
 `,
       )
     }

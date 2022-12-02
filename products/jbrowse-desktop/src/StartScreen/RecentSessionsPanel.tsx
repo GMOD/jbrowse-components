@@ -259,6 +259,7 @@ export default function RecentSessionPanel({
   )
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const sessions = await ipcRenderer.invoke(

@@ -162,7 +162,7 @@ export default abstract class BaseRpcDriver {
 
   async remoteAbort(sessionId: string, functionName: string, signalId: number) {
     const worker = await this.getWorker(sessionId)
-    worker.call(
+    await worker.call(
       functionName,
       { signalId },
       { timeout: 1000000, rpcDriverClassName: this.name },

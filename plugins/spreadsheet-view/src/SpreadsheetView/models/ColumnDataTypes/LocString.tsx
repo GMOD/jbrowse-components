@@ -57,9 +57,9 @@ const FilterReactComponent = observer(
       <>
         <Select
           value={filterModel.operation}
-          onChange={event => {
+          onChange={event =>
             filterModel.setOperation(String(event.target.value))
-          }}
+          }
         >
           {operationChoices.map(name => (
             <MenuItem key={name} value={name}>
@@ -274,38 +274,34 @@ async function locationLinkClick(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { id } = getParent<any>(spreadsheet)
 
-  try {
-    const assembly = await assemblyManager.waitForAssembly(assemblyName)
-    if (!assembly) {
-      throw new Error(`assembly not found "${assemblyName}"`)
-    }
-    const loc = parseLocString(cell.text, name =>
-      assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
-    )
-    const { refName } = loc
-    const canonicalRefName = assembly.getCanonicalRefName(refName)
-    const newDisplayedRegion = assembly.regions?.find(
-      region => region.refName === canonicalRefName,
-    )
-
-    const newViewId = `${id}_${assemblyName}`
-    let view = session.views.find(v => v.id === newViewId) as LGV
-    if (!view) {
-      view = session.addView('LinearGenomeView', {
-        displayName: assemblyName,
-        id: newViewId,
-      }) as LGV
-
-      await when(() => view.initialized)
-
-      // note that we have to clone this because otherwise it adds "same object
-      // twice to the mst tree"
-      view.setDisplayedRegions([JSON.parse(JSON.stringify(newDisplayedRegion))])
-    }
-    view.navToLocString(cell.text)
-  } catch (e) {
-    session.notify(`${e}`, 'error')
+  const assembly = await assemblyManager.waitForAssembly(assemblyName)
+  if (!assembly) {
+    throw new Error(`assembly not found "${assemblyName}"`)
   }
+  const loc = parseLocString(cell.text, name =>
+    assemblyManager.isValidRefName(name, spreadsheet.assemblyName),
+  )
+  const { refName } = loc
+  const canonicalRefName = assembly.getCanonicalRefName(refName)
+  const newDisplayedRegion = assembly.regions?.find(
+    region => region.refName === canonicalRefName,
+  )
+
+  const newViewId = `${id}_${assemblyName}`
+  let view = session.views.find(v => v.id === newViewId) as LGV
+  if (!view) {
+    view = session.addView('LinearGenomeView', {
+      displayName: assemblyName,
+      id: newViewId,
+    }) as LGV
+
+    await when(() => view.initialized)
+
+    // note that we have to clone this because otherwise it adds "same object
+    // twice to the mst tree"
+    view.setDisplayedRegions([JSON.parse(JSON.stringify(newDisplayedRegion))])
+  }
+  await view.navToLocString(cell.text)
 }
 
 const DataCellReactComponent = observer(
@@ -313,9 +309,15 @@ const DataCellReactComponent = observer(
   ({ cell, columnNumber, spreadsheet }: any) => {
     return (
       <a
-        onClick={evt => {
+        onClick={async evt => {
           evt.preventDefault()
-          locationLinkClick(spreadsheet, columnNumber, cell)
+          const session = getSession(spreadsheet)
+          try {
+            await locationLinkClick(spreadsheet, columnNumber, cell)
+          } catch (e) {
+            console.error(e)
+            session.notify(`${e}`, 'error')
+          }
         }}
         title="open a new linear genome view here"
         href="#link"

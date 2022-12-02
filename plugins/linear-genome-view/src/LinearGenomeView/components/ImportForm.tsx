@@ -105,7 +105,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           } else if (results.length === 1) {
             await navToOption(results[0])
           } else {
-            model.navToLocString(input, selectedAsm)
+            await model.navToLocString(input, selectedAsm)
           }
         }
       }
@@ -122,11 +122,12 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
       {displayError ? <ErrorMessage error={displayError} /> : null}
       <Container className={classes.importFormContainer}>
         <form
-          onSubmit={event => {
+          onSubmit={async event => {
             event.preventDefault()
             model.setError(undefined)
             if (value) {
-              handleSelectedRegion(value)
+              // has it's own error handling
+              await handleSelectedRegion(value)
             }
           }}
         >

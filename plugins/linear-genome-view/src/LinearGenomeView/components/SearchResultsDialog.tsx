@@ -143,14 +143,19 @@ export default function SearchResultsDialog({
                       </TableCell>
                       <TableCell align="right">
                         <Button
-                          onClick={() => {
-                            const location = result.getLocation()
-                            if (location) {
-                              handleClick(location)
-                              const resultTrackId = result.getTrackId()
-                              if (resultTrackId) {
-                                model.showTrack(resultTrackId)
+                          onClick={async () => {
+                            try {
+                              const location = result.getLocation()
+                              if (location) {
+                                await handleClick(location)
+                                const resultTrackId = result.getTrackId()
+                                if (resultTrackId) {
+                                  model.showTrack(resultTrackId)
+                                }
                               }
+                            } catch (e) {
+                              console.error(e)
+                              session.notify(`${e}`, 'error')
                             }
                             handleClose()
                           }}

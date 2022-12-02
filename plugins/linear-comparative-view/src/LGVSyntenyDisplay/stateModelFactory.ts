@@ -118,8 +118,10 @@ async function navToSynteny(feature: Feature, self: any) {
     strand === -1 ? '[rev]' : ''
   }`
   await when(() => view2.width !== undefined)
-  view2.views[0].navToLocString(l1, featAsm)
-  view2.views[1].navToLocString(l2, mateAsm)
+  await Promise.all([
+    view2.views[0].navToLocString(l1, featAsm),
+    view2.views[1].navToLocString(l2, mateAsm),
+  ])
 }
 
 /**

@@ -1,65 +1,47 @@
 import { saveAs } from 'file-saver'
-
-import {
-  getSession,
-  parseLocString,
-  when,
-  assembleLocString,
-} from '@jbrowse/core/util'
+import { getSession, assembleLocString } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { AbstractViewModel } from '@jbrowse/core/util/types'
 
+// locals
 import { GridBookmarkModel } from './model'
 import { NavigableViewModel, LabeledRegion } from './types'
+
+type LGV = LinearGenomeViewModel
 
 export async function navToBookmark(
   locString: string,
   views: AbstractViewModel[],
   model: GridBookmarkModel,
 ) {
-  const { selectedAssembly } = model
-  const lgv = views.find(
-    view =>
-      view.type === 'LinearGenomeView' &&
-      // @ts-ignore
-      view.assemblyNames[0] === selectedAssembly,
-  ) as NavigableViewModel
+  const session = getSession(model)
+  try {
+    const { selectedAssembly } = model
+    const lgv = views.find(
+      view =>
+        view.type === 'LinearGenomeView' &&
+        // @ts-ignore
+        view.assemblyNames[0] === selectedAssembly,
+    ) as NavigableViewModel
 
-  if (lgv) {
-    lgv.navToLocString(locString)
-  } else {
-    const session = getSession(model)
-    const { assemblyManager } = session
-    const assembly = await assemblyManager.waitForAssembly(selectedAssembly)
-    if (assembly) {
-      try {
-        const loc = parseLocString(locString, refName =>
-          session.assemblyManager.isValidRefName(refName, selectedAssembly),
-        )
-        const { refName } = loc
-        const { regions } = assembly
-        const canonicalRefName = assembly.getCanonicalRefName(refName)
-
-        let newDisplayedRegion
-        if (regions) {
-          newDisplayedRegion = regions.find(
-            region => region.refName === canonicalRefName,
-          )
-        }
-
+    if (lgv) {
+      await lgv.navToLocString(locString)
+    } else {
+      const { assemblyManager } = session
+      const assembly = await assemblyManager.waitForAssembly(selectedAssembly)
+      if (assembly) {
         const view = session.addView('LinearGenomeView', {
           displayName: selectedAssembly,
-        }) as LinearGenomeViewModel
-        await when(() => view.initialized)
+        }) as LGV
 
-        view.setDisplayedRegions([
-          JSON.parse(JSON.stringify(newDisplayedRegion)),
-        ])
-        view.navToLocString(locString)
-      } catch (e) {
-        session.notify(`${e}`, 'error')
+        await view.navToLocString(locString)
+      } else {
+        throw new Error('assembly not found')
       }
     }
+  } catch (e) {
+    console.error(e)
+    session.notify(`${e}`, 'error')
   }
 }
 
@@ -82,12 +64,7 @@ export function downloadBookmarkFile(
 
       if (fileFormat === 'BED') {
         if (b.assemblyName === selectedAssembly || selectedAssembly === 'all') {
-          // the "name" column (column 4) in a BED has a max of 255 characters
-          // according to the new spec: https://github.com/samtools/hts-specs/pull/570
-          return `${b.refName}\t${b.start}\t${b.end}\t${labelVal.slice(
-            0,
-            255,
-          )}\n`
+          return `${b.refName}\t${b.start}\t${b.end}\t${labelVal}\n`
         }
         return ''
       } else {

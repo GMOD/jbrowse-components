@@ -44,7 +44,8 @@ async function getFiles(dir) {
     .reduce((all, folderContents) => all.concat(folderContents), [])
 }
 
-async function main() {
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+;(async () => {
   const child = cp.spawn('yarn', ['tsserver'])
 
   const files = await getFiles('.')
@@ -99,6 +100,4 @@ async function main() {
     })
   })
   child.stdin.end()
-}
-
-main()
+})()

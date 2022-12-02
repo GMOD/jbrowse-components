@@ -61,6 +61,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
     const controller = new AbortController()
     const { signal } = controller
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const response = await fetch(

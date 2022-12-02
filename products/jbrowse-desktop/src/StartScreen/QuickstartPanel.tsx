@@ -61,7 +61,11 @@ function QuickstartPanel({
 
   useEffect(() => {
     let cancelled = false
-    async function updateQuickstarts() {
+
+    let timeout: ReturnType<typeof setTimeout>
+    async function fun() {
+      // probably ok for this to not
+
       try {
         const quick = await ipcRenderer.invoke('listQuickstarts')
         if (!cancelled) {
@@ -71,15 +75,14 @@ function QuickstartPanel({
         console.error(e)
         setError(e)
       }
+      timeout = setTimeout(fun, 500)
     }
-
-    const interval = setInterval(() => {
-      updateQuickstarts()
-    }, 500)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fun()
 
     return () => {
       cancelled = true
-      clearInterval(interval)
+      clearTimeout(timeout)
     }
   }, [])
 
