@@ -22,7 +22,7 @@ import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { transaction, autorun } from 'mobx'
+import { when, transaction, autorun } from 'mobx'
 import {
   addDisposer,
   cast,
@@ -1267,6 +1267,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
         const { isValidRefName } = assemblyManager
+        await when(() => self.volatileWidth !== undefined)
         const assemblyName = optAssemblyName || assemblyNames[0]
         let parsedLocStrings
         const inputs = locString
@@ -1281,8 +1282,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // first try interpreting as a whitespace-separated sequence of
         // multiple locstrings
         try {
-          parsedLocStrings = inputs.map(l =>
-            parseLocString(l, ref => isValidRefName(ref, assemblyName)),
+          parsedLocStrings = inputs.map(loc =>
+            parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
           )
         } catch (e) {
           // if this fails, try interpreting as a whitespace-separated refname,

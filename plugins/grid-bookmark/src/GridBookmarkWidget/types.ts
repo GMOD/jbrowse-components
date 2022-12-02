@@ -1,8 +1,4 @@
-import { AbstractViewModel, Region } from '@jbrowse/core/util/types'
-
-export interface NavigableViewModel extends AbstractViewModel {
-  navToLocString: Function
-}
+import { Region } from '@jbrowse/core/util/types'
 
 export interface LabeledRegion extends Region {
   label: string

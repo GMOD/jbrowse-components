@@ -5,9 +5,11 @@ import { AbstractViewModel } from '@jbrowse/core/util/types'
 
 // locals
 import { GridBookmarkModel } from './model'
-import { NavigableViewModel, LabeledRegion } from './types'
+import { LabeledRegion } from './types'
 
 type LGV = LinearGenomeViewModel
+
+type MaybeLGV = LGV | undefined
 
 export async function navToBookmark(
   locString: string,
@@ -16,29 +18,26 @@ export async function navToBookmark(
 ) {
   const session = getSession(model)
   try {
+    // search for exact match to an lgv that this bookmark widget launched, or
+    // any lgv that looks like it is relevant to what we are browsing
     const { selectedAssembly } = model
-    const lgv = views.find(
-      view =>
-        view.type === 'LinearGenomeView' &&
-        // @ts-ignore
-        view.assemblyNames[0] === selectedAssembly,
-    ) as NavigableViewModel
+    const newViewId = `${model.id}_${selectedAssembly}`
+    let view = (views.find(
+      v => v.type === 'LinearGenomeView' && v.id === newViewId,
+    ) ||
+      views.find(
+        v =>
+          v.type === 'LinearGenomeView' &&
+          // @ts-ignore
+          v.assemblyNames[0] === selectedAssembly,
+      )) as MaybeLGV
 
-    if (lgv) {
-      await lgv.navToLocString(locString)
-    } else {
-      const { assemblyManager } = session
-      const assembly = await assemblyManager.waitForAssembly(selectedAssembly)
-      if (assembly) {
-        const view = session.addView('LinearGenomeView', {
-          displayName: selectedAssembly,
-        }) as LGV
-
-        await view.navToLocString(locString)
-      } else {
-        throw new Error('assembly not found')
-      }
+    if (!view) {
+      view = session.addView('LinearGenomeView', {
+        id: newViewId,
+      }) as LGV
     }
+    await view.navToLocString(locString, selectedAssembly)
   } catch (e) {
     console.error(e)
     session.notify(`${e}`, 'error')
