@@ -1,5 +1,9 @@
 import { addDisposer, types, cast, getEnv, getSnapshot } from 'mobx-state-tree'
-import { observable, autorun } from 'mobx'
+import clone from 'clone'
+import { autorun } from 'mobx'
+
+// jbrowse
+import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConf,
   readConfObject,
@@ -8,7 +12,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { getContainingView } from '@jbrowse/core/util'
 
 // locals
@@ -75,7 +78,7 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      modificationTagMap: observable.map({}),
+      modificationTagMap: undefined as Record<string, string> | undefined,
     }))
     .actions(self => ({
       /**
@@ -109,12 +112,14 @@ function stateModelFactory(
         const colorPalette = ['red', 'blue', 'green', 'orange', 'purple']
         let i = 0
 
+        const newMap = clone(self.modificationTagMap) || {}
         uniqueModifications.forEach(value => {
-          if (!self.modificationTagMap.has(value)) {
+          if (!newMap[value]) {
             const newColor = colorPalette[i++]
-            self.modificationTagMap.set(value, newColor)
+            newMap[value] = newColor
           }
         })
+        self.modificationTagMap = newMap
       },
     }))
     .views(self => {
@@ -170,8 +175,7 @@ function stateModelFactory(
          */
         get modificationsReady() {
           return self.colorBy?.type === 'modifications'
-            ? Object.keys(JSON.parse(JSON.stringify(self.modificationTagMap)))
-                .length > 0
+            ? self.modificationTagMap !== undefined
             : true
         },
 
@@ -184,7 +188,7 @@ function stateModelFactory(
           return {
             ...superProps,
             notReady: superProps.notReady || !this.modificationsReady,
-            modificationTagMap: Object.fromEntries(modificationTagMap.toJSON()),
+            modificationTagMap: modificationTagMap,
 
             // must use getSnapshot because otherwise changes to e.g. just the
             // colorBy.type are not read
