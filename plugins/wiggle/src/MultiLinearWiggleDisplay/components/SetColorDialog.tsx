@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Button, DialogContent, DialogActions } from '@mui/material'
-import { DraggableDialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 import {
   getStr,
@@ -12,6 +11,7 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import clone from 'clone'
 
 // locals
+import DraggableDialog from './DraggableDialog'
 import ColorPicker, { ColorPopover } from '@jbrowse/core/ui/ColorPicker'
 import { UriLink } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { moveUp, moveDown } from './util'

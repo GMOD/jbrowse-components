@@ -3,15 +3,9 @@ import { observer } from 'mobx-react'
 import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
 import { FileSelector } from '@jbrowse/core/ui'
 import { FileLocation } from '@jbrowse/core/util/types'
-import { makeStyles } from 'tss-react/mui'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
-
-const useStyles = makeStyles()(theme => ({
-  paper: {},
-  createButton: {},
-}))
 
 const AdapterSelector = observer(function ({
   adapterSelection,
@@ -134,8 +128,6 @@ const AssemblyAddForm = observer(function ({
   rootModel: any
   setFormOpen: Function
 }) {
-  const { classes } = useStyles()
-
   const adapterTypes = [
     'IndexedFastaAdapter',
     'BgzipFastaAdapter',
@@ -205,7 +197,7 @@ const AssemblyAddForm = observer(function ({
 
   return (
     <div>
-      <Paper className={classes.paper}>
+      <Paper>
         <TextField
           id="assembly-name"
           inputProps={{ 'data-testid': 'assembly-name' }}
