@@ -51,6 +51,7 @@
     "load-script2": "^2.0.5",
     "material-ui-popup-state": "^3.0.0",
     "rbush": "^3.0.1",
+    "react-draggable": "^4.4.5",
     "react-error-boundary": "^3.0.0",
     "react-use-measure": "^2.1.1",
     "serialize-error": "^8.0.0",

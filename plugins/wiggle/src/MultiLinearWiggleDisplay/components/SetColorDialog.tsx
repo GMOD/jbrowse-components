@@ -1,14 +1,6 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogActions,
-  DialogTitle,
-  IconButton,
-  Paper,
-  PaperProps,
-} from '@mui/material'
+import { Button, DialogContent, DialogActions } from '@mui/material'
+import { DraggableDialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 import {
   getStr,
@@ -17,7 +9,6 @@ import {
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
-import Draggable from 'react-draggable'
 import clone from 'clone'
 
 // locals
@@ -27,35 +18,17 @@ import { moveUp, moveDown } from './util'
 import { Source } from '../../util'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
-}))
+})
 
-// draggable dialog demo https://mui.com/material-ui/react-dialog/#draggable-dialog
-function PaperComponent(props: PaperProps) {
-  return (
-    <Draggable
-      handle="#draggable-dialog-title"
-      cancel={'[class*="MuiDialogContent-root"]'}
-    >
-      <Paper {...props} />
-    </Draggable>
-  )
-}
 export default function SetColorDialog({
   model,
   handleClose,
@@ -72,19 +45,12 @@ export default function SetColorDialog({
   const [currLayout, setCurrLayout] = useState(clone(sources || []))
   const [showTips, setShowTips] = useLocalStorage('multiwiggle-showTips', true)
   return (
-    <Dialog
-      PaperComponent={PaperComponent}
+    <DraggableDialog
       open
       onClose={handleClose}
       maxWidth="xl"
-      aria-labelledby="draggable-dialog-title" // this area is important for the draggable functionality
+      title={'Multi-wiggle color/arrangement editor'}
     >
-      <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-        Multi-wiggle color/arrangement editor{' '}
-        <IconButton className={classes.closeButton} onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
       <DialogContent className={classes.content}>
         <Button
           variant="contained"
@@ -159,7 +125,7 @@ export default function SetColorDialog({
           Submit
         </Button>
       </DialogActions>
-    </Dialog>
+    </DraggableDialog>
   )
 }
 

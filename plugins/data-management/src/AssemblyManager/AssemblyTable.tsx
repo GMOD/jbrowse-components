@@ -11,16 +11,16 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-import CreateIcon from '@mui/icons-material/Create'
-import DeleteIcon from '@mui/icons-material/Delete'
 import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
+import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(() => ({
+import CreateIcon from '@mui/icons-material/Create'
+import DeleteIcon from '@mui/icons-material/Delete'
+
+const useStyles = makeStyles()({
   table: {
     minWidth: 500,
     minHeight: 150,
@@ -34,7 +34,7 @@ const useStyles = makeStyles()(() => ({
     minHeight: 0,
     minWidth: 0,
   },
-}))
+})
 
 const AssemblyTable = observer(
   ({
