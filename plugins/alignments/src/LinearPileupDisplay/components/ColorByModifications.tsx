@@ -49,7 +49,7 @@ function ModificationTable({
 
 function ColorByTagDlg(props: {
   model: {
-    setColorScheme: Function
+    setColorScheme: (arg: { type: string }) => void
     modificationTagMap: ObservableMap<string, string>
     colorBy?: { type: string }
   }
@@ -61,7 +61,7 @@ function ColorByTagDlg(props: {
   const modifications = [...modificationTagMap.entries()]
 
   return (
-    <Dialog open onClose={handleClose} title={'Color by modifications'}>
+    <Dialog open onClose={handleClose} title="Color by modifications">
       <DialogContent>
         <Typography>
           You can choose to color the modifications in the BAM/CRAM MM/ML
@@ -106,12 +106,8 @@ function ColorByTagDlg(props: {
         <DialogActions>
           <Button
             variant="contained"
-            color="primary"
-            style={{ margin: 5 }}
             onClick={() => {
-              model.setColorScheme({
-                type: 'modifications',
-              })
+              model.setColorScheme({ type: 'modifications' })
               handleClose()
             }}
           >
@@ -119,12 +115,8 @@ function ColorByTagDlg(props: {
           </Button>
           <Button
             variant="contained"
-            color="primary"
-            style={{ margin: 5 }}
             onClick={() => {
-              model.setColorScheme({
-                type: 'methylation',
-              })
+              model.setColorScheme({ type: 'methylation' })
               handleClose()
             }}
           >
@@ -133,7 +125,6 @@ function ColorByTagDlg(props: {
           <Button
             variant="contained"
             color="secondary"
-            style={{ margin: 5 }}
             onClick={() => handleClose()}
           >
             Cancel
