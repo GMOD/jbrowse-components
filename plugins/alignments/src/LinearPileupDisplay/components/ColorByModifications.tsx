@@ -4,23 +4,14 @@ import { ObservableMap } from 'mobx'
 import {
   Button,
   CircularProgress,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  IconButton,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
   table: {
     border: '1px solid #888',
     margin: theme.spacing(4),
@@ -64,24 +55,13 @@ function ColorByTagDlg(props: {
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const { model, handleClose } = props
   const { colorBy, modificationTagMap } = model
 
   const modifications = [...modificationTagMap.entries()]
 
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Color by modifications
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title={'Color by modifications'}>
       <DialogContent>
         <Typography>
           You can choose to color the modifications in the BAM/CRAM MM/ML

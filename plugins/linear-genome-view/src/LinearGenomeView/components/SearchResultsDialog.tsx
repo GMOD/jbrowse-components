@@ -1,7 +1,7 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { resolveIdentifier, getRoot } from 'mobx-state-tree'
 import { getSession, getEnv } from '@jbrowse/core/util'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
   DialogActions,
@@ -19,12 +19,6 @@ import {
 
 import { LinearGenomeViewModel } from '../..'
 
-const useStyles = makeStyles()(theme => ({
-  dialogContent: {
-    width: '80em',
-  },
-}))
-
 export default function SearchResultsDialog({
   model,
   optAssemblyName,
@@ -34,7 +28,6 @@ export default function SearchResultsDialog({
   optAssemblyName?: string
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session

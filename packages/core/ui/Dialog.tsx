@@ -1,18 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { observer } from 'mobx-react'
-import ScopedCssBaseline from '@material-ui/core/ScopedCssBaseline'
 import {
   Dialog,
   DialogTitle,
   IconButton,
   Divider,
   DialogProps,
-  makeStyles,
-} from '@material-ui/core'
-import CloseIcon from '@material-ui/icons/Close'
+  ScopedCssBaseline,
+} from '@mui/material'
+import { observer } from 'mobx-react'
+import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles(theme => ({
+// icons
+import CloseIcon from '@mui/icons-material/Close'
+
+const useStyles = makeStyles()(theme => ({
   closeButton: {
     position: 'absolute',
     right: theme.spacing(1),
@@ -22,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function JBrowseDialog(props: DialogProps & { title: string }) {
-  const classes = useStyles()
+  const { classes } = useStyles()
   const { title, children, onClose } = props
 
   return (
@@ -34,7 +35,7 @@ function JBrowseDialog(props: DialogProps & { title: string }) {
             <IconButton
               className={classes.closeButton}
               onClick={() => {
-                //@ts-ignore
+                // @ts-ignore
                 onClose()
               }}
             >

@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 import copy from 'copy-to-clipboard'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
-  Divider,
   IconButton,
   FormControl,
   FormControlLabel,
@@ -27,7 +25,6 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 import ShareIcon from '@mui/icons-material/Share'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import SettingsIcon from '@mui/icons-material/Settings'
-import CloseIcon from '@mui/icons-material/Close'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -53,12 +50,6 @@ const useStyles = makeStyles()(theme => ({
   loadingMessage: {
     padding: theme.spacing(5),
   },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
 }))
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
@@ -68,7 +59,6 @@ function SettingsDialog(props: {
   onClose: Function
   currentSetting: string
 }) {
-  const { classes } = useStyles()
   const { onClose, open, currentSetting } = props
   const [setting, setSetting] = useState(currentSetting)
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
@@ -80,15 +70,11 @@ function SettingsDialog(props: {
 
   return (
     <>
-      <Dialog onClose={handleClose} open={open}>
-        <DialogTitle>
-          Configure session sharing
-          {handleClose ? (
-            <IconButton className={classes.closeButton} onClick={handleClose}>
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
+      <Dialog
+        onClose={handleClose}
+        open={open}
+        title="Configure session sharing"
+      >
         <DialogContent>
           <DialogContentText>
             Select between generating long or short URLs for the session sharing
@@ -128,23 +114,14 @@ function SettingsDialog(props: {
   )
 }
 function InfoDialog(props: { open: boolean; onClose: Function }) {
-  const { classes } = useStyles()
   const { onClose, open } = props
 
-  const handleClose = () => {
-    onClose()
-  }
-
   return (
-    <Dialog onClose={handleClose} open={open}>
-      <DialogTitle id="simple-dialog-title">
-        Info about session URLs
-        {onClose ? (
-          <IconButton className={classes.closeButton} onClick={handleClose}>
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
+    <Dialog
+      onClose={() => onClose()}
+      open={open}
+      title="Info about session URLs"
+    >
       <DialogContent>
         <DialogContentText>
           Because everything about the JBrowse session is encoded in the URL
@@ -248,21 +225,13 @@ const ShareDialog = observer(
 
     return (
       <>
-        <Dialog
-          maxWidth="xl"
-          open
-          onClose={handleClose}
-          data-testid="share-dialog"
-        >
-          <DialogTitle>
-            JBrowse Shareable Link
-            {handleClose ? (
-              <IconButton className={classes.closeButton} onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            ) : null}
-          </DialogTitle>
-          <Divider />
+      <Dialog
+        maxWidth="xl"
+        open
+        onClose={handleClose}
+        title="JBrowse Shareable Link"
+        data-testid="share-dialog"
+      >
 
           <DialogContent>
             <DialogContentText>
@@ -284,14 +253,12 @@ const ShareDialog = observer(
                   InputProps={{
                     readOnly: true,
                   }}
-                  inputProps={{ 'data-testid': 'share-url-text' }}
                   variant="filled"
                   style={{ width: '100%' }}
                   onClick={event => {
                     const target = event.target as HTMLTextAreaElement
                     target.select()
                   }}
-                  data-testid="share-url-field"
                 />
               )
             ) : (
@@ -348,10 +315,6 @@ const ShareButton = observer(
     const { session } = props
     const { classes } = useStyles()
 
-    const handleClose = () => {
-      setOpen(false)
-    }
-
     return (
       <div className={classes.shareDiv}>
         <Button
@@ -365,7 +328,7 @@ const ShareButton = observer(
           Share
         </Button>
         {open ? (
-          <ShareDialog handleClose={handleClose} session={session} />
+          <ShareDialog handleClose={() => setOpen(false)} session={session} />
         ) : null}
       </div>
     )

@@ -12,7 +12,6 @@ import {
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ExportSvgOptions } from '..'
 
-
 function LoadingMessage() {
   return (
     <div>

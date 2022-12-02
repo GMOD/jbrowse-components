@@ -10,10 +10,13 @@ import {
   DialogTitle,
   IconButton,
 } from '@mui/material'
+
+// icons
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
 
+// locals
 import AssemblyTable from './AssemblyTable'
 import AssemblyAddForm from './AssemblyAddForm'
 import AssemblyEditor from './AssemblyEditor'

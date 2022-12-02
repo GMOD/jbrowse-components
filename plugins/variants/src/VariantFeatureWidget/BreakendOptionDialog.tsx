@@ -6,7 +6,6 @@ import {
   Checkbox,
   DialogActions,
   DialogContent,
-  Divider,
   FormControlLabel,
 } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
@@ -36,7 +35,7 @@ function BreakendOptionDialog({
   const [mirrorTracks, setMirrorTracks] = useState(true)
 
   return (
-    <Dialog open onClose={handleClose}  title="Breakpoint split view options">
+    <Dialog open onClose={handleClose} title="Breakpoint split view options">
       <DialogContent>
         <FormControlLabel
           className={classes.block}

@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import copy from 'copy-to-clipboard'
-import {
-  Button,
-  DialogContent,
-  IconButton,
-  Typography,
-} from '@mui/material'
+import { Button, DialogContent, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
   getConf,
@@ -20,11 +15,11 @@ import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
-}))
+})
 
 export function FileInfoPanel({ config }: { config: AnyConfigurationModel }) {
   const [error, setError] = useState<unknown>()

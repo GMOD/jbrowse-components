@@ -2,16 +2,13 @@ import React from 'react'
 import {
   Button,
   Checkbox,
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   FormControlLabel,
-  IconButton,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import {
   AnyConfigurationModel,
@@ -24,13 +21,6 @@ export function ellipses(slug: string) {
 }
 
 const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-
   connectionContainer: {
     width: 500,
     margin: theme.spacing(4),
@@ -49,16 +39,12 @@ function ToggleConnectionDialog({
   const { classes } = useStyles()
   const { connections, connectionInstances: instances = [] } = session
   return (
-    <Dialog open onClose={handleClose} maxWidth="lg">
-      <DialogTitle>
-        Turn on/off connections
-        <IconButton
-          className={classes.closeButton}
-          onClick={() => handleClose()}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog
+      open
+      onClose={handleClose}
+      maxWidth="lg"
+      title="Turn on/off connections"
+    >
       <DialogContent>
         <Typography>Use the checkbox to turn on/off connections</Typography>
         <div className={classes.connectionContainer}>

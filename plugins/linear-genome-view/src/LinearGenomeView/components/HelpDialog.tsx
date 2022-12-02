@@ -1,11 +1,6 @@
 import React from 'react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Divider,
-  IconButton,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, Divider } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 
 export default function HelpDialog({
   handleClose,
@@ -13,8 +8,12 @@ export default function HelpDialog({
   handleClose: () => void
 }) {
   return (
-    <Dialog open maxWidth="xl" onClose={handleClose}       title="Using the search box">
-      
+    <Dialog
+      open
+      maxWidth="xl"
+      onClose={handleClose}
+      title="Using the search box"
+    >
       <DialogContent>
         <h3>Searching</h3>
         <ul>

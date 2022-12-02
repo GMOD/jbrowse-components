@@ -6,8 +6,6 @@ import {
   Container,
   DialogActions,
   DialogContent,
-  Divider,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
@@ -21,20 +19,19 @@ import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import CloseIcon from '@mui/icons-material/Close'
 import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   dialogContent: {
     width: '80em',
   },
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-}))
+})
 
 type LGV = LinearGenomeViewModel
 
@@ -151,11 +148,15 @@ function SequenceDialog({
   const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
 
   return (
-    <Dialog maxWidth="xl" open onClose={() => {
-              handleClose()
-              model.setOffsets(undefined, undefined)
-            }}       title="Reference sequence">
-
+    <Dialog
+      maxWidth="xl"
+      open
+      onClose={() => {
+        handleClose()
+        model.setOffsets(undefined, undefined)
+      }}
+      title="Reference sequence"
+    >
       <DialogContent>
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {loading && !error ? (

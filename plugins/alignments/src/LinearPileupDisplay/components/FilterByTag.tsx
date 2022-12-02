@@ -2,30 +2,20 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  IconButton,
   Link,
   Paper,
   TextField,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-
-import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
     padding: theme.spacing(2),
     margin: theme.spacing(2),
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
   },
   field: {
     margin: theme.spacing(2),
@@ -105,17 +95,7 @@ function FilterByTagDlg(props: {
   const site = 'https://broadinstitute.github.io/picard/explain-flags.html'
 
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Filter options
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Filter options">
       <DialogContent>
         <Typography>
           Set filter bitmask options. Refer to <Link href={site}>{site}</Link>{' '}

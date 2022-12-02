@@ -2,29 +2,17 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   root: {
     width: 500,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-  field: {
-    margin: theme.spacing(2),
   },
 }))
 
@@ -41,17 +29,7 @@ function SetMaxHeightDlg(props: {
   const [max, setMax] = useState(`${maxHeight}`)
 
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Filter options
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Filter options">
       <DialogContent className={classes.root}>
         <Typography>
           Set max height for the track. For example, you can increase this if
