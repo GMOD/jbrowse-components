@@ -4,7 +4,12 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { AbstractSessionModel, getSession, getEnv } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  dedupe,
+  getSession,
+  getEnv,
+} from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -135,7 +140,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       addToSelection(elt: AnyConfigurationModel[]) {
-        self.selection = [...self.selection, ...elt]
+        self.selection = dedupe([...self.selection, ...elt], e => e.trackId)
       },
       removeFromSelection(elt: AnyConfigurationModel[]) {
         self.selection = self.selection.filter(f => !elt.includes(f))

@@ -1190,3 +1190,9 @@ export function measureGridWidth(elements: string[]) {
 export function getEnv(obj: any) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }
+
+export function dedupe<T, U>(results: T[] = [], cb: (result: T) => U) {
+  return results.filter(
+    (elt, idx, self) => idx === self.findIndex(t => cb(t) === cb(elt)),
+  )
+}

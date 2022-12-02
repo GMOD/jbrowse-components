@@ -1,17 +1,8 @@
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
-import { TextSearchManager } from '@jbrowse/core/util'
+import { dedupe, TextSearchManager } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-
-export function dedupe(
-  results: BaseResult[] = [],
-  cb: (result: BaseResult) => string,
-) {
-  return results.filter(
-    (elt, idx, self) => idx === self.findIndex(t => cb(t) === cb(elt)),
-  )
-}
 
 export async function fetchResults({
   queryString,
