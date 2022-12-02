@@ -33,11 +33,11 @@ function SearchBox({
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
 
-  function navToOption(option: BaseResult) {
+  async function navToOption(option: BaseResult) {
     const location = option.getLocation()
     const trackId = option.getTrackId()
     if (location) {
-      model.navToLocString(location, assemblyName)
+      await model.navToLocString(location, assemblyName)
       if (trackId) {
         model.showTrack(trackId)
       }
@@ -52,7 +52,7 @@ function SearchBox({
   async function handleSelectedRegion(option: BaseResult) {
     try {
       if (option.hasLocation()) {
-        navToOption(option)
+        await navToOption(option)
       } else {
         const input = option.getLabel()
         const [ref, rest] = splitLast(input, ':')
@@ -61,7 +61,7 @@ function SearchBox({
           allRefs.includes(input) ||
           (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
         ) {
-          model.navToLocString(input, assemblyName)
+          await model.navToLocString(input, assemblyName)
         } else {
           const results = await fetchResults({
             queryString: input,
@@ -75,9 +75,9 @@ function SearchBox({
           if (results.length > 1) {
             model.setSearchResults(results, input.toLowerCase())
           } else if (results.length === 1) {
-            navToOption(results[0])
+            await navToOption(results[0])
           } else {
-            model.navToLocString(input, assemblyName)
+            await model.navToLocString(input, assemblyName)
           }
         }
       }

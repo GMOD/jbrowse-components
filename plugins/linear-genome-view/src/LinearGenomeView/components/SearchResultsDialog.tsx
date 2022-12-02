@@ -63,7 +63,7 @@ export default function SearchResultsDialog({
   }
   const assemblyRegions = assembly.regions
 
-  function handleClick(location: string) {
+  async function handleClick(location: string) {
     try {
       const newRegion = assemblyRegions.find(
         region => location === region.refName,
@@ -74,7 +74,7 @@ export default function SearchResultsDialog({
         // region visible, xref #1703
         model.showAllRegions()
       } else {
-        model.navToLocString(location, assemblyName)
+        await model.navToLocString(location, assemblyName)
       }
     } catch (e) {
       console.warn(e)
