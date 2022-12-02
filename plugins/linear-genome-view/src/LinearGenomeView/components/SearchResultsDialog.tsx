@@ -1,15 +1,12 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { resolveIdentifier, getRoot } from 'mobx-state-tree'
 import { getSession, getEnv } from '@jbrowse/core/util'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Divider,
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -19,20 +16,8 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
-import { LinearGenomeViewModel } from '../..'
 
-const useStyles = makeStyles()(theme => ({
-  dialogContent: {
-    width: '80em',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
+import { LinearGenomeViewModel } from '../..'
 
 export default function SearchResultsDialog({
   model,
@@ -43,7 +28,6 @@ export default function SearchResultsDialog({
   optAssemblyName?: string
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const session = getSession(model)
   const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
@@ -92,23 +76,7 @@ export default function SearchResultsDialog({
   }
 
   return (
-    <Dialog open maxWidth="xl" onClose={handleClose}>
-      <DialogTitle>
-        Search results
-        {handleClose ? (
-          <IconButton
-            data-testid="close-resultsDialog"
-            className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-            }}
-            size="large"
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
+    <Dialog open maxWidth="xl" onClose={handleClose} title="Search results">
       <DialogContent>
         {!model.searchResults?.length ? (
           <Typography>

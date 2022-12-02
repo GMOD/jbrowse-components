@@ -1,31 +1,19 @@
 import React from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  IconButton,
-} from '@mui/material'
+import { DialogContent, DialogContentText } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid } from '@mui/x-data-grid'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
 import { measureGridWidth } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   content: {
     minWidth: 600,
   },
-}))
+})
 
 function WarningDialog({
   tracksWithWarnings,
@@ -58,17 +46,12 @@ function WarningDialog({
     { field: 'effect', width: measureGridWidth(rows.map(r => r.effect)) },
   ]
   return (
-    <Dialog open onClose={handleClose} maxWidth="xl">
-      <DialogTitle>
-        Dotplot rendered with warnings
-        <IconButton
-          className={classes.closeButton}
-          onClick={() => handleClose()}
-          size="large"
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog
+      open
+      onClose={handleClose}
+      maxWidth="xl"
+      title="Dotplot rendered with warnings"
+    >
       <DialogContent className={classes.content}>
         <DialogContentText>
           Found warnings while rendering the dotplot. This is often due to

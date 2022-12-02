@@ -7,7 +7,6 @@ import {
   Collapse,
   Dialog,
   DialogActions,
-  DialogTitle,
   DialogContent,
   DialogContentText,
   TextField,
@@ -16,18 +15,12 @@ import { makeStyles } from 'tss-react/mui'
 
 // icons
 import IconButton from '@mui/material/IconButton'
-import CloseIcon from '@mui/icons-material/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // locals
 import { PluginStoreModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-  },
   dialogContent: {
     display: 'flex',
     flexDirection: 'column',
@@ -114,17 +107,7 @@ function CustomPluginForm({
   }
 
   return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>
-        Add custom plugin
-        <IconButton
-          size="medium"
-          className={classes.closeButton}
-          onClick={() => onClose()}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open={open} onClose={handleClose} title="Add custom plugin">
       <form onSubmit={handleSubmit}>
         <DialogContent className={classes.dialogContent}>
           <DialogContentText>

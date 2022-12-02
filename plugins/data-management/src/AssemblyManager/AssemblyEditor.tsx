@@ -9,7 +9,11 @@ const AssemblyEditor = observer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assembly: any
   }) => {
-    return <ConfigurationEditor model={{ target: assembly }} />
+    return (
+      <div style={{ maxHeight: 600, overflow: 'auto' }}>
+        <ConfigurationEditor model={{ target: assembly }} />
+      </div>
+    )
   },
 )
 

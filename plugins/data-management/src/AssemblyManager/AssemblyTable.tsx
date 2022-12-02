@@ -9,112 +9,80 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-import CreateIcon from '@mui/icons-material/Create'
-import DeleteIcon from '@mui/icons-material/Delete'
 import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 
-const useStyles = makeStyles()(() => ({
-  table: {
-    minWidth: 500,
-    minHeight: 150,
-  },
-  buttonCell: {
-    padding: 3,
-  },
-  button: {
-    display: 'inline-block',
-    padding: 3,
-    minHeight: 0,
-    minWidth: 0,
-  },
-}))
+import CreateIcon from '@mui/icons-material/Create'
+import DeleteIcon from '@mui/icons-material/Delete'
 
-const AssemblyTable = observer(
-  ({
-    rootModel,
-    setIsAssemblyBeingEdited,
-    setAssemblyBeingEdited,
-  }: {
-    rootModel: {
-      jbrowse: {
-        removeAssemblyConf: (arg: string) => void
-        assemblies: AnyConfigurationModel[]
-      }
+const AssemblyTable = observer(function ({
+  rootModel,
+  setIsAssemblyBeingEdited,
+  setAssemblyBeingEdited,
+}: {
+  rootModel: {
+    jbrowse: {
+      removeAssemblyConf: (arg: string) => void
+      assemblies: AnyConfigurationModel[]
     }
-    setIsAssemblyBeingEdited(arg: boolean): void
-    setAssemblyBeingEdited(arg: AnyConfigurationModel): void
-  }) => {
-    const { classes } = useStyles()
+  }
+  setIsAssemblyBeingEdited(arg: boolean): void
+  setAssemblyBeingEdited(arg: AnyConfigurationModel): void
+}) {
+  function removeAssembly(name: string) {
+    rootModel.jbrowse.removeAssemblyConf(name)
+  }
 
-    function removeAssembly(name: string) {
-      rootModel.jbrowse.removeAssemblyConf(name)
-    }
+  const { assemblies } = rootModel.jbrowse
 
-    const rows = rootModel.jbrowse.assemblies.map(assembly => {
-      const name = readConfObject(assembly, 'name')
-      const displayName = readConfObject(assembly, 'displayName')
-      const aliases = readConfObject(assembly, 'aliases')
-      return (
-        <TableRow key={name}>
-          <TableCell>{name}</TableCell>
-          <TableCell>{displayName}</TableCell>
-          <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
-          <TableCell className={classes.buttonCell}>
-            <IconButton
-              data-testid={`${name}-edit`}
-              className={classes.button}
-              onClick={() => {
-                setIsAssemblyBeingEdited(true)
-                setAssemblyBeingEdited(assembly)
-              }}
-            >
-              <CreateIcon color="primary" />
-            </IconButton>
-            <IconButton
-              data-testid={`${name}-delete`}
-              className={classes.button}
-              onClick={() => {
-                removeAssembly(name)
-              }}
-            >
-              <DeleteIcon color="error" />
-            </IconButton>
-          </TableCell>
-        </TableRow>
-      )
-    })
-
-    return (
-      <TableContainer component={Paper}>
-        <Table className={classes.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography variant="h5">Name</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="h5">Display name</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="h5">Aliases</Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="h5">Actions</Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>{rows}</TableBody>
-        </Table>
-      </TableContainer>
-    )
-  },
-)
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Name</TableCell>
+            <TableCell>Display name</TableCell>
+            <TableCell>Aliases</TableCell>
+            <TableCell>Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {assemblies.map(assembly => {
+            const name = readConfObject(assembly, 'name')
+            const displayName = readConfObject(assembly, 'displayName')
+            const aliases = readConfObject(assembly, 'aliases')
+            return (
+              <TableRow key={name}>
+                <TableCell>{name}</TableCell>
+                <TableCell>{displayName}</TableCell>
+                <TableCell>{aliases ? aliases.toString() : ''}</TableCell>
+                <TableCell>
+                  <IconButton
+                    data-testid={`${name}-edit`}
+                    onClick={() => {
+                      setIsAssemblyBeingEdited(true)
+                      setAssemblyBeingEdited(assembly)
+                    }}
+                  >
+                    <CreateIcon color="primary" />
+                  </IconButton>
+                  <IconButton
+                    data-testid={`${name}-delete`}
+                    onClick={() => removeAssembly(name)}
+                  >
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  )
+})
 
 export default AssemblyTable

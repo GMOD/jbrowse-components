@@ -97,14 +97,11 @@ test('test sharing', async () => {
     },
     password: '123',
   })
-  const { findByTestId, findByText } = createView()
-  await findByText('Help')
+  const { findByLabelText, findByText } = createView()
   fireEvent.click(await findByText('Share'))
-
-  // check the share dialog has the above session shared
-  await findByTestId('share-dialog')
-  const url = (await findByTestId('share-url-text')) as HTMLInputElement
-  expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
+  expect(((await findByLabelText('URL')) as HTMLInputElement).value).toBe(
+    'http://localhost/?session=share-abc&password=123',
+  )
 })
 
 test('looks at about this track dialog', async () => {

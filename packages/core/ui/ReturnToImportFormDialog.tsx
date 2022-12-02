@@ -1,26 +1,7 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
-
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import Dialog from './Dialog'
 
 function ReturnToImportFormDialog({
   model,
@@ -29,23 +10,8 @@ function ReturnToImportFormDialog({
   model: { clearView: Function }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   return (
-    <Dialog maxWidth="xl" open onClose={handleClose}>
-      <DialogTitle>
-        Reference sequence
-        {handleClose ? (
-          <IconButton
-            className={classes.closeButton}
-            onClick={() => handleClose()}
-            size="large"
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
-
+    <Dialog maxWidth="xl" open onClose={handleClose} title="Reference sequence">
       <DialogContent>
         <Typography>
           Are you sure you want to return to the import form? This will lose

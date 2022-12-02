@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react'
 import {
   Button,
   CircularProgress,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -24,9 +22,6 @@ import {
   getTag,
   mergeIntervals,
 } from './util'
-
-// icons
-import CloseIcon from '@mui/icons-material/Close'
 
 interface ReducedFeature {
   refName: string
@@ -49,12 +44,6 @@ interface ReducedFeature {
 const useStyles = makeStyles()(theme => ({
   root: {
     width: 300,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
   },
 }))
 
@@ -377,17 +366,7 @@ export default function ReadVsRefDialog({
   }
 
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Set window size
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Set window size">
       <DialogContent>
         {error ? (
           <Typography color="error">{`${error}`}</Typography>
