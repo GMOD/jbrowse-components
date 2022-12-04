@@ -1,15 +1,9 @@
 export const parameters = {
-  options: {
-    storySort: {
-      method: '',
-      order: [
-        'Getting Started',
-        'Default Sessions',
-        'Linear View',
-        'Nextstrain View',
-        'Next.js Usage',
-      ],
-      locales: '',
+  actions: { argTypesRegex: '^on[A-Z].*' },
+  controls: {
+    matchers: {
+      color: /(background|color)$/i,
+      date: /Date$/,
     },
   },
 }
