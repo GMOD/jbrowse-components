@@ -11,12 +11,12 @@ import {
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { getContainingView } from '@jbrowse/core/util'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import Tooltip from '../components/Tooltip'
-import { getUniqueModificationValues } from '../../shared'
+import { FilterModel, getUniqueModificationValues } from '../../shared'
 
 // using a map because it preserves order
 const rendererTypes = new Map([['snpcoverage', 'SNPCoverageRenderer']])
@@ -55,17 +55,7 @@ function stateModelFactory(
         /**
          * #property
          */
-        filterBy: types.optional(
-          types.model({
-            flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1540),
-            readName: types.maybe(types.string),
-            tagFilter: types.maybe(
-              types.model({ tag: types.string, value: types.string }),
-            ),
-          }),
-          {},
-        ),
+        filterBy: types.optional(FilterModel, {}),
         /**
          * #property
          */

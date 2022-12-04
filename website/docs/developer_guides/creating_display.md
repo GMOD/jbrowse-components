@@ -1,6 +1,6 @@
 ---
 id: creating_display
-title: Creating a display type
+title: Creating a custom display type
 ---
 
 Display types tell JBrowse how to "display" a given track in a particular view.
@@ -15,8 +15,7 @@ Here are some reasons you might want a custom display type:
   in the wiggle track)
 - Implementing custom track menu items (e.g. Show soft clipping in the
   alignments track)
-- Adding custom widgets (e.g. custom `VariantFeatureWidget` in
-  variant track)
+- Adding custom widgets (e.g. custom `VariantFeatureWidget` in variant track)
 - You want to bundle your renderer and adapter as a specific thing that is
   automatically initialized rather than the `BasicTrack` (which combines any
   adapter and renderer)

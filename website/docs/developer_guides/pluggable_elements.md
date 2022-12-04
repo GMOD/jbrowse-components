@@ -53,9 +53,9 @@ Examples of pluggable types include:
 - Extension points
 - Add track workflow
 
-In additional to creating plugins that create new adapters, track types,
-etc. note that you can also wrap the behavior of another track so these
-elements are composable.
+In additional to creating plugins that create new adapters, track types, etc.
+note that you can also wrap the behavior of another track so these elements are
+composable.
 
 For example, we can have adapters that perform calculations on the results of
 another adapter, views that contains other subviews, and tracks that contain
@@ -207,92 +207,20 @@ These methods can run in the webworker when available.
 
 ### Add track workflows
 
-Plugins can register their own React component to display in the "Add track"
-widget for adding tracks that require custom logic. The Multi-wiggle track is
-an example of this, it produces a textbox where you can paste a list of files.
+Add track workflows allow users to specify a custom react component for loading
+tracks into a jbrowse session.
 
-A simple addition to the add track workflow:
-
-```js
-// plugins/wiggle/MultiWiggleAddTrackWidget/index.jsx
-
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
-import { types } from 'mobx-state-tree'
-
-// locals
-import MultiWiggleWidget from './AddTrackWorkflow'
-
-export default (pm: PluginManager) => {
-  pm.addAddTrackWorkflowType(
-    () =>
-      new AddTrackWorkflowType({
-        name: 'Multi-wiggle track',
-        /* in a separate file, export the react component to render within the track widget,
-        typically a form to collect relevant data for your track */
-        ReactComponent: MultiWiggleWidget,
-        stateModel: types.model({}),
-      }),
-  )
-}
-```
-
-...and ensure you install this component into your larger plugin:
-
-```js
-// plugins/wiggle/index.jsx
-
-// ...
-
-export default class WigglePlugin extends Plugin {
-  name = 'WigglePlugin'
-
-  install(pm: PluginManager) {
-    // ...
-    MultiWiggleAddTrackWidgetF(pm)
-    // ...
-  }
-}
-```
+Checkout the [docs here](/docs/developer_guides/creating_addtrack_workflow).
 
 ### Extension points
 
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
-Checkout the [full extension point API](/docs/api_guide/#extension-points) or
+Checkout the [full extension point API](/docs/developer_guides/extension_points) or
 an [example for adding context menu
 items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
 for more detailed information.
-
-The basic API is that producers can say:
-
-```js
-const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
-  value: 1,
-})
-```
-
-And consumers can say:
-
-```js
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
-
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
-```
-
-In this case, `arg` that is passed in evaluateExtensionPoint calls all the
-callbacks that have been registered by `addToExtensionPoint`. If multiple
-extension points are registered, the return value of the first extension point
-is passed as the new argument to the second, and so on (they are chained
-together).
-
-So in the example above, ret would be `{value:3}` after evaluating the
-extension point.
 
 ## Next steps
 

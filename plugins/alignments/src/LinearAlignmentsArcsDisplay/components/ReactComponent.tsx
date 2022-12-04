@@ -1,31 +1,50 @@
 import React from 'react'
 import { isAlive } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { getContainingView } from '@jbrowse/core/util'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // local
 import { LinearAlignmentsArcsDisplayModel } from '../model'
 
+type LGV = LinearGenomeViewModel
+
 const height = 1200
 
-function LinearAlignmentsArcDisplay({
+const Arcs = observer(function ({
   model,
 }: {
   model: LinearAlignmentsArcsDisplayModel
 }) {
-  return model.loading ? (
-    <LoadingEllipses />
-  ) : (
+  const view = getContainingView(model) as LGV
+  return (
     <canvas
       ref={ref => {
         if (isAlive(model)) {
           model.setRef(ref)
         }
       }}
-      style={{ width: '100%', height }}
+      style={{
+        position: 'absolute',
+        left: -view.offsetPx + model.lastDrawnOffsetPx,
+        width: view.dynamicBlocks.totalWidthPx,
+      }}
       height={height * 2}
     />
   )
-}
+})
 
-export default observer(LinearAlignmentsArcDisplay)
+export default observer(function ({
+  model,
+}: {
+  model: LinearAlignmentsArcsDisplayModel
+}) {
+  return model.error ? (
+    <ErrorMessage error={model.error} />
+  ) : model.loading ? (
+    <LoadingEllipses />
+  ) : (
+    <Arcs model={model} />
+  )
+})

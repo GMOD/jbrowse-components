@@ -1,7 +1,7 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { types, Instance } from 'mobx-state-tree'
-import PluginManager from '@jbrowse/core/PluginManager'
+import { types } from 'mobx-state-tree'
 
 /**
  * #config LinearAlignmentsArcsDisplay
@@ -9,25 +9,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 function configSchemaF(pluginManager: PluginManager) {
-  // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearAlignmentsArcsDisplay',
     {
-      /**
-       * #slot
-       */
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['pileup']),
-        defaultValue: 'pileup',
-      },
-      /**
-       * #slot
-       */
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        PileupRenderer:
-          pluginManager.getRendererType('PileupRenderer').configSchema,
-      }),
       /**
        * #slot
        */
@@ -64,9 +48,4 @@ function configSchemaF(pluginManager: PluginManager) {
   )
 }
 
-export type LinearAlignmentsArcsDisplayConfigModel = ReturnType<
-  typeof configSchemaF
->
-export type LinearAlignmentsArcsDisplayConfig =
-  Instance<LinearAlignmentsArcsDisplayConfigModel>
 export default configSchemaF

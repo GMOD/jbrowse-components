@@ -4,7 +4,7 @@ import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 // locals
 import ReactComponent from './components/ReactComponent'
 import configSchemaF from './configSchema'
-import modelF from './model'
+import stateModelF from './model'
 
 export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
@@ -12,7 +12,7 @@ export default function register(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearAlignmentsArcsDisplay',
       configSchema,
-      stateModel: modelF(configSchema),
+      stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent,

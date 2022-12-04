@@ -34,12 +34,16 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
+import {
+  getUniqueTagValues,
+  getUniqueModificationValues,
+  FilterModel,
+} from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 // async
+const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
-const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
@@ -122,17 +126,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         /**
          * #property
          */
-        filterBy: types.optional(
-          types.model({
-            flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1540),
-            readName: types.maybe(types.string),
-            tagFilter: types.maybe(
-              types.model({ tag: types.string, value: types.string }),
-            ),
-          }),
-          {},
-        ),
+        filterBy: types.optional(FilterModel, {}),
       }),
     )
     .volatile(() => ({
