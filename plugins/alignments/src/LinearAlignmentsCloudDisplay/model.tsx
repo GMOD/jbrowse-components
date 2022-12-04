@@ -7,7 +7,6 @@ import {
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
-
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 
 // icons
@@ -16,8 +15,8 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import { FilterModel } from '../shared'
-import drawFeats from './drawFeats'
 import { fetchPairs, PairData } from '../shared/fetchPairs'
+import drawFeats from './drawFeats'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -30,19 +29,19 @@ interface Filter {
 }
 
 /**
- * #stateModel LinearAlignmentsArcsDisplay
+ * #stateModel LinearAlignmentsCloudDisplay
  * extends `BaseLinearDisplay`
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
-      'LinearAlignmentsArcsDisplay',
+      'LinearAlignmentsCloudDisplay',
       BaseLinearDisplay,
       types.model({
         /**
          * #property
          */
-        type: types.literal('LinearAlignmentsArcsDisplay'),
+        type: types.literal('LinearAlignmentsCloudDisplay'),
         /**
          * #property
          */
@@ -200,10 +199,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type LinearAlignmentsArcsDisplayStateModel = ReturnType<
+export type LinearAlignmentsCloudDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearAlignmentsArcsDisplayModel =
-  Instance<LinearAlignmentsArcsDisplayStateModel>
+export type LinearAlignmentsCloudDisplayModel =
+  Instance<LinearAlignmentsCloudDisplayStateModel>
 
 export default stateModelFactory
