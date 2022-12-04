@@ -348,8 +348,16 @@ export default class PluginManager {
     return this.getElementTypeRecord(groupName).all()
   }
 
+  getTrackElements() {
+    return this.getElementTypesInGroup('track') as TrackType[]
+  }
+
   getRpcElements() {
     return this.getElementTypesInGroup('rpc method') as RpcMethodType[]
+  }
+
+  getAdapterElements() {
+    return this.getElementTypesInGroup('adapter') as AdapterType[]
   }
 
   /** get a MST type for the union of all specified pluggable MST types */

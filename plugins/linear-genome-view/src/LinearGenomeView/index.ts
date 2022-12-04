@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new ViewType({
         name: 'LinearGenomeView',
+        displayName: 'Linear genome view',
         stateModel: stateModelFactory(pluginManager),
         ReactComponent: lazy(() => import('./components/LinearGenomeView')),
       }),
