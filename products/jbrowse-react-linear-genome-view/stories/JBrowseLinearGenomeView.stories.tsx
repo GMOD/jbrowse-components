@@ -36,9 +36,7 @@ const configPath = 'test_data/volvox/config.json'
 addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
 const supportedTrackTypes = [
   'AlignmentsTrack',
-  'PileupTrack',
   'FeatureTrack',
-  'SNPCoverageTrack',
   'VariantTrack',
   'WiggleTrack',
 ]

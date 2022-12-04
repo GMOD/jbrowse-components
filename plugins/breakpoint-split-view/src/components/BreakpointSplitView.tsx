@@ -52,10 +52,7 @@ const Overlay = observer(
   }) => {
     const { model, trackId } = props
     const tracks = model.getMatchedTracks(trackId)
-    if (
-      tracks[0]?.type === 'PileupTrack' ||
-      tracks[0]?.type === 'AlignmentsTrack'
-    ) {
+    if (tracks[0]?.type === 'AlignmentsTrack') {
       return <AlignmentConnections {...props} />
     }
     if (tracks[0]?.type === 'VariantTrack') {
