@@ -9,6 +9,7 @@ import { toArray } from 'rxjs/operators'
 // locals
 import { getTagAlt, getTag } from '../util'
 import { getModificationTypes } from '../BamAdapter/MismatchParser'
+import { ReducedFeature } from '../shared/fetchPairs'
 
 export class PileupGetGlobalValueForTag extends RpcMethodType {
   name = 'PileupGetGlobalValueForTag'
@@ -171,8 +172,6 @@ export class PileupGetFeatures extends RpcMethodType {
         pair_orientation: f.get('pair_orientation'),
       }))
     const stats = getInsertSizeStats(reduced)
-
-    type ReducedFeature = typeof reduced[0]
     const pairedFeatures = {} as { [key: string]: ReducedFeature[] }
 
     // pair features
@@ -186,19 +185,21 @@ export class PileupGetFeatures extends RpcMethodType {
   }
 }
 
-const maxSize = 50000
-const minSize = 100
-
-function getInsertSizeStats(features: { tlen: number }[]) {
-  const filtered = features
-    .map(f => Math.abs(f.tlen))
-    .filter(t => t < maxSize && t > minSize)
+function getInsertSizeStats(features: ReducedFeature[]) {
+  const filtered = features.map(f => Math.abs(f.tlen))
   const sum = filtered.reduce((a, b) => a + b, 0)
   const sum2 = filtered.map(a => a * a).reduce((a, b) => a + b, 0)
   const total = filtered.length
   const avg = sum / total
   const sd = Math.sqrt((total * sum2 - sum * sum) / (total * total))
-  const upper = avg + 3 * sd
-  const lower = avg - 3 * sd
+  const upper = avg + 4 * sd
+  const lower = avg - 2 * sd
   return { upper, lower, avg, sd }
+}
+
+function getFilteredInsertSizeStats(features: ReducedFeature[]) {
+  return getInsertSizeStats(
+    // stats gathered from 'properly paired' features (flag 2)
+    features.filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048)),
+  )
 }

@@ -11,6 +11,7 @@ export default function register(pluginManager: PluginManager) {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearAlignmentsCloudDisplay',
+      displayName: 'Read cloud display',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',

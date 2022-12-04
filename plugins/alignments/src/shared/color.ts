@@ -18,7 +18,7 @@ export function getInsertSizeColor(
   if (sameRef && tlen > (stats?.upper || 0)) {
     return 'red'
   } else if (sameRef && tlen < (stats?.lower || 0)) {
-    return 'pink'
+    return '#f0f'
   } else if (!sameRef) {
     return 'purple'
   }

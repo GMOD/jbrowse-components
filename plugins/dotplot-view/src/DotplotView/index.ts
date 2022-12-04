@@ -8,6 +8,7 @@ export default function (pluginManager: PluginManager) {
   pluginManager.addViewType(() => {
     return new ViewType({
       name: 'DotplotView',
+      displayName: 'Dotplot view',
       stateModel: stateModelFactory(pluginManager),
       ReactComponent: lazy(() => import('./components/DotplotView')),
     })

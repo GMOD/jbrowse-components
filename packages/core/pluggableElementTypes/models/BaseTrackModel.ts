@@ -1,5 +1,11 @@
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types, Instance } from 'mobx-state-tree'
+import {
+  getRoot,
+  resolveIdentifier,
+  types,
+  Instance,
+  getEnv,
+} from 'mobx-state-tree'
 import {
   getConf,
   AnyConfigurationModel,
@@ -193,30 +199,30 @@ export function createBaseTrackModel(
         const menuItems: MenuItem[] = self.displays
           .map(d => d.trackMenuItems())
           .flat()
-        const displayChoices: MenuItem[] = []
         const view = getContainingView(self)
         const viewType = pm.getViewType(view.type)
-        const compatibleDisplayTypes = viewType.displayTypes.map(d => d.name)
-        const compatibleDisplays = self.configuration.displays.filter(
-          (d: AnyConfigurationModel) => compatibleDisplayTypes.includes(d.type),
-        )
+        const compatTypes = viewType.displayTypes.map(d => d.name)
+        const displays = self.configuration.displays as AnyConfigurationModel[]
+        const compatDisp = displays.filter(d => compatTypes.includes(d.type))
         const shownId = self.displays[0].configuration.displayId
-        if (compatibleDisplays.length > 1) {
-          displayChoices.push(
-            { type: 'divider' },
-            { type: 'subHeader', label: 'Display types' },
-          )
-          compatibleDisplays.forEach((displayConf: AnyConfigurationModel) => {
-            displayChoices.push({
-              type: 'radio',
-              label: displayConf.type,
-              checked: displayConf.displayId === shownId,
-              onClick: () =>
-                self.replaceDisplay(shownId, displayConf.displayId),
-            })
-          })
-        }
-        return [...menuItems, ...displayChoices]
+
+        return [
+          ...menuItems,
+          ...(compatDisp.length > 1
+            ? [
+                {
+                  type: 'subMenu',
+                  label: 'Display types',
+                  subMenu: compatDisp.map(d => ({
+                    type: 'radio',
+                    label: pm.getDisplayType(d.type).displayName,
+                    checked: d.displayId === shownId,
+                    onClick: () => self.replaceDisplay(shownId, d.displayId),
+                  })),
+                },
+              ]
+            : []),
+        ]
       },
     }))
 }

@@ -9,6 +9,7 @@ export default function register(pluginManager: PluginManager) {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'LinearSNPCoverageDisplay',
+      displayName: 'SNPCoverage display',
       configSchema,
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',

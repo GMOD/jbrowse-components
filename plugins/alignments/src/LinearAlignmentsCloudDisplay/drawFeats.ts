@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -7,16 +8,25 @@ import {
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { PairData } from '../shared/fetchPairs'
+import { PairData, ReducedFeature } from '../shared/fetchPairs'
 
 type LGV = LinearGenomeViewModel
 
-const height = 1200
+interface PairCoord {
+  distance: number
+  r1s: number
+  r1e: number
+  r2s: number
+  r2e: number
+  v0: ReducedFeature
+  v1: ReducedFeature
+}
 
 export default async function drawFeats(self: {
   setLastDrawnOffsetPx: (n: number) => void
   setError: (e: unknown) => void
   colorBy?: { type: string }
+  height: number
   pairedData?: PairData
   ref: HTMLCanvasElement | null
 }) {
@@ -25,23 +35,26 @@ export default async function drawFeats(self: {
     if (!pairedData) {
       return
     }
+    const featureHeight = getConf(self, 'featureHeight')
+    const displayHeight = self.height
     const view = getContainingView(self) as LGV
     const canvas = ref
     if (!canvas) {
       return
     }
-    const width = canvas.getBoundingClientRect().width
+    const { width, height } = canvas.getBoundingClientRect()
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       return
     }
     self.setLastDrawnOffsetPx(view.offsetPx)
-    ctx.clearRect(0, 0, width, height)
+    ctx.resetTransform()
+    ctx.clearRect(0, 0, width * 2, height * 2)
     ctx.setTransform(2, 0, 0, 2, -view.offsetPx * 2, 0)
     const { pairedFeatures, stats } = pairedData
-    Object.values(pairedFeatures)
+    const coords = Object.values(pairedFeatures)
       .filter(val => val.length === 2)
-      .forEach(val => {
+      .map(val => {
         const [v0, v1] = val
 
         const r1s = view.bpToPx({
@@ -60,33 +73,56 @@ export default async function drawFeats(self: {
           refName: v1.refName,
           coord: v1.end,
         })?.offsetPx
-
-        if (!r1s || !r1e || !r2s || !r2e) {
-          return
-        }
-        const radius = (r2e - r1s) / 2
-        const absrad = Math.abs(radius)
-        const type = self.colorBy?.type || 'insertSizeAndOrientation'
-
-        const top = Math.log(absrad) * 10
-        ctx.fillStyle = 'black'
-        ctx.fillRect(r1e, top + 5, r2s - r1e, 1)
-
-        if (type === 'insertSizeAndOrientation') {
-          ctx.fillStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
-        } else if (type === 'orientation') {
-          ctx.fillStyle = getOrientationColor(v0)
-        } else if (type === 'insertSize') {
-          ctx.fillStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
-        } else if (type === 'gradient') {
+        let distance = 0
+        if (v0.refName === v1.refName) {
           const s = Math.min(v0.start, v1.start)
           const e = Math.max(v0.end, v1.end)
-          ctx.fillStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
+          distance = Math.abs(e - s)
         }
-
-        ctx.fillRect(r1s, top, r1e - r1s, 10)
-        ctx.fillRect(r2s, top, r2e - r2s, 10)
+        return { r1s, r1e, r2s, r2e, v0, v1, distance }
       })
+      .filter(
+        (f): f is PairCoord =>
+          f.r1s !== undefined &&
+          f.r1e !== undefined &&
+          f.r2s !== undefined &&
+          f.r2e !== undefined,
+      )
+
+    let max = 0
+    for (let i = 0; i < coords.length; i++) {
+      const { distance } = coords[i]
+      max = Math.max(max, distance)
+    }
+    max = Math.log(max)
+    const halfHeight = featureHeight / 2 - 0.5
+    const scaler = (displayHeight - 50) / max
+
+    for (let i = 0; i < coords.length; i++) {
+      const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]
+      const type = self.colorBy?.type || 'insertSizeAndOrientation'
+
+      const top = Math.log(distance) * scaler
+      ctx.fillStyle = 'black'
+      ctx.fillRect(r1e, top + halfHeight, r2s - r1e, 1)
+
+      if (type === 'insertSizeAndOrientation') {
+        ctx.fillStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
+      } else if (type === 'orientation') {
+        ctx.fillStyle = getOrientationColor(v0)
+      } else if (type === 'insertSize') {
+        ctx.fillStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
+      } else if (type === 'gradient') {
+        const s = Math.min(v0.start, v1.start)
+        const e = Math.max(v0.end, v1.end)
+        ctx.fillStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
+      }
+
+      const w1 = Math.max(r1e - r1s, 2)
+      const w2 = Math.max(r2e - r2s, 2)
+      ctx.fillRect(r1s, top, w1, featureHeight)
+      ctx.fillRect(r2s, top, w2, featureHeight)
+    }
   } catch (e) {
     console.error(e)
     self.setError(e)

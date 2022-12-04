@@ -1,9 +1,13 @@
 export default abstract class PluggableElementBase {
   name = ''
-  displayName = ''
+  maybeDisplayName?: string
 
   constructor(args: { name: string; displayName?: string }) {
     this.name = args.name
-    this.displayName = args.displayName || ''
+    this.maybeDisplayName = args.displayName
+  }
+
+  get displayName() {
+    return this.maybeDisplayName || this.name
   }
 }

@@ -20,6 +20,7 @@ export default class DisplayType extends PluggableElementBase {
     stateModel: IAnyModelType
     trackType: string
     viewType: string
+    displayName?: string
     configSchema: AnyConfigurationSchemaType
     ReactComponent: AnyReactComponentType
   }) {

@@ -46,9 +46,9 @@ const ViewLauncher = observer(({ session }: { session: AppSession }) => {
       <Typography>Select a view to launch</Typography>
       <FormControl style={{ margin: 2 }}>
         <Select value={value} onChange={event => setValue(event.target.value)}>
-          {viewTypes.map(({ name }: { name: string }) => (
+          {viewTypes.map(({ displayName, name }) => (
             <MenuItem key={name} value={name}>
-              {name}
+              {displayName}
             </MenuItem>
           ))}
         </Select>

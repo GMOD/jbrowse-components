@@ -113,6 +113,7 @@ export default (pluginManager: PluginManager) => {
 
   return new BreakpointSplitViewType({
     name: 'BreakpointSplitView',
+    displayName: 'Breakpoint split view',
     stateModel,
     ReactComponent: BreakpointSplitViewComponent,
   })

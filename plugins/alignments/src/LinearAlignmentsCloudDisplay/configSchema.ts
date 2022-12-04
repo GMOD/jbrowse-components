@@ -24,6 +24,14 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      featureHeight: {
+        type: 'number',
+        defaultValue: 7,
+      },
+
+      /**
+       * #slot
+       */
       colorScheme: {
         type: 'stringEnum',
         model: types.enumeration('colorScheme', [

@@ -36,8 +36,8 @@ export default async function drawFeats(self: {
       return
     }
     self.setLastDrawnOffsetPx(view.offsetPx)
-    ctx.resetTransform()
     ctx.clearRect(0, 0, width, height)
+    ctx.resetTransform()
     ctx.scale(2, 2)
     const { pairedFeatures, stats } = pairedData
     Object.values(pairedFeatures)

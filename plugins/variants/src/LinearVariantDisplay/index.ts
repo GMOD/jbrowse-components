@@ -9,6 +9,7 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
       name: 'LinearVariantDisplay',
+      displayName: 'Variant display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',

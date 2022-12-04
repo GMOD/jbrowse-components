@@ -10,6 +10,7 @@ export default function (pluginManager: PluginManager) {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'LinearAlignmentsDisplay',
+      displayName: 'Alignments display (Pileup + SNPCoverage)',
       configSchema,
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'AlignmentsTrack',
