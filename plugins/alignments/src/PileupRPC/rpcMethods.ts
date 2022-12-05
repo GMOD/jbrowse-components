@@ -8,8 +8,9 @@ import { toArray } from 'rxjs/operators'
 
 // locals
 import { getTagAlt, getTag } from '../util'
+import { filterForPairs, getInsertSizeStats } from './util'
 import { getModificationTypes } from '../BamAdapter/MismatchParser'
-import { ReducedFeature } from '../shared/fetchPairs'
+import { ReducedFeature } from '../shared/fetchChains'
 
 export class PileupGetGlobalValueForTag extends RpcMethodType {
   name = 'PileupGetGlobalValueForTag'
@@ -159,47 +160,27 @@ export class PileupGetFeatures extends RpcMethodType {
       .getFeaturesInMultipleRegions(regions)
       .pipe(toArray())
       .toPromise()
-    const reduced = featuresArray
-      .filter(f => f.get('flags') & 1)
-      .map(f => ({
-        id: f.id(),
-        refName: f.get('refName'),
-        name: f.get('name'),
-        start: f.get('start'),
-        end: f.get('end'),
-        flags: f.get('flags'),
-        tlen: f.get('template_length'),
-        pair_orientation: f.get('pair_orientation'),
-      }))
-    const stats = getFilteredInsertSizeStats(reduced)
-    const pairedFeatures = {} as { [key: string]: ReducedFeature[] }
+    const reduced = featuresArray.map(f => ({
+      id: f.id(),
+      refName: f.get('refName'),
+      name: f.get('name'),
+      start: f.get('start'),
+      end: f.get('end'),
+      flags: f.get('flags'),
+      tlen: f.get('template_length'),
+      pair_orientation: f.get('pair_orientation'),
+    }))
+    const filtered = filterForPairs(reduced)
+    const stats = filtered.length ? getInsertSizeStats(filtered) : undefined
+    const chains = {} as { [key: string]: ReducedFeature[] }
 
     // pair features
     reduced.forEach(f => {
-      if (!pairedFeatures[f.name]) {
-        pairedFeatures[f.name] = []
+      if (!chains[f.name]) {
+        chains[f.name] = []
       }
-      pairedFeatures[f.name].push(f)
+      chains[f.name].push(f)
     })
-    return { pairedFeatures, stats }
+    return { chains: Object.values(chains), stats, hasPaired: !!stats }
   }
-}
-
-function getInsertSizeStats(features: ReducedFeature[]) {
-  const filtered = features.map(f => Math.abs(f.tlen))
-  const sum = filtered.reduce((a, b) => a + b, 0)
-  const sum2 = filtered.map(a => a * a).reduce((a, b) => a + b, 0)
-  const total = filtered.length
-  const avg = sum / total
-  const sd = Math.sqrt((total * sum2 - sum * sum) / (total * total))
-  const upper = avg + 4 * sd
-  const lower = avg - 2 * sd
-  return { upper, lower, avg, sd }
-}
-
-function getFilteredInsertSizeStats(features: ReducedFeature[]) {
-  return getInsertSizeStats(
-    // stats gathered from 'properly paired' features (flag 2)
-    features.filter(f => f.flags & 2 && !(f.flags & 256) && !(f.flags & 2048)),
-  )
 }

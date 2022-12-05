@@ -20,7 +20,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 // locals
 import { FilterModel } from '../shared'
 import drawFeats from './drawFeats'
-import { fetchPairs, PairData } from '../shared/fetchPairs'
+import { fetchChains, ChainData } from '../shared/fetchChains'
 import { ExportSvgOptions } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 
 // async
@@ -73,7 +73,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       loading: false,
-      pairedData: undefined as PairData | undefined,
+      chainData: undefined as ChainData | undefined,
       ref: null as HTMLCanvasElement | null,
       lastDrawnOffsetPx: 0,
     }))
@@ -92,8 +92,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setPairData(args: PairData) {
-        self.pairedData = args
+      setChainData(args: ChainData) {
+        self.chainData = args
       },
 
       /**
@@ -129,7 +129,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #getter
          */
         get ready() {
-          return !!self.pairedData
+          return !!self.chainData
         },
         // we don't use a server side renderer, but we need to provide this
         // to avoid confusing the system currently
@@ -234,7 +234,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => fetchPairs(self), { delay: 1000 }),
+          autorun(() => fetchChains(self), { delay: 1000 }),
         )
 
         addDisposer(

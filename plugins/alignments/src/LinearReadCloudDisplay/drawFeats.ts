@@ -8,11 +8,11 @@ import {
   getInsertSizeColor,
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
-import { PairData, ReducedFeature } from '../shared/fetchPairs'
+import { ChainData, ReducedFeature } from '../shared/fetchChains'
 
 type LGV = LinearGenomeViewModel
 
-interface PairCoord {
+interface ChainCoord {
   distance: number
   r1s: number
   r1e: number
@@ -52,13 +52,12 @@ export default async function drawFeats(
     setError: (e: unknown) => void
     colorBy?: { type: string }
     height: number
-    pairedData?: PairData
-    ref: HTMLCanvasElement | null
+    chainData?: ChainData
   },
   ctx: CanvasRenderingContext2D,
 ) {
-  const { pairedData } = self
-  if (!pairedData) {
+  const { chainData } = self
+  if (!chainData) {
     return
   }
   const featureHeight = getConf(self, 'featureHeight')
@@ -67,52 +66,111 @@ export default async function drawFeats(
 
   self.setLastDrawnOffsetPx(view.offsetPx)
 
-  const { pairedFeatures, stats } = pairedData
-  const coords = Object.values(pairedFeatures)
-    .filter(val => val.length === 2)
-    .map(val => {
-      const [v0, v1] = val
-
+  const { chains, stats } = chainData
+  const coords: ChainCoord[] = []
+  for (let i = 0; i < chains.length; i++) {
+    const chain = chains[i]
+    // if we're looking at a paired read (flag 1) then assume it is just two
+    // reads (some small cases may defy this assumption such as secondary
+    // alignments but this may be uncommon)
+    if (chain[0].flags & 1) {
+      const v0 = chain[0]
+      const v1 = chain[1]
       const r1s = view.bpToPx({
         refName: v0.refName,
         coord: v0.start,
-      })?.offsetPx
+      })
       const r1e = view.bpToPx({
         refName: v0.refName,
         coord: v0.end,
-      })?.offsetPx
+      })
       const r2s = view.bpToPx({
         refName: v1.refName,
         coord: v1.start,
-      })?.offsetPx
+      })
       const r2e = view.bpToPx({
         refName: v1.refName,
         coord: v1.end,
-      })?.offsetPx
+      })
       let distance = 0
-      if (v0.refName === v1.refName) {
-        const s = Math.min(v0.start, v1.start)
-        const e = Math.max(v0.end, v1.end)
-        distance = Math.abs(e - s)
+
+      if (
+        r1s !== undefined &&
+        r1e !== undefined &&
+        r2s !== undefined &&
+        r2e !== undefined
+      ) {
+        if (v0.refName === v1.refName) {
+          const s = Math.min(v0.start, v1.start)
+          const e = Math.max(v0.end, v1.end)
+          distance = Math.abs(e - s)
+        }
+        coords.push({
+          r1s: r1s.offsetPx,
+          r1e: r1e.offsetPx,
+          r2s: r2s.offsetPx,
+          r2e: r2e.offsetPx,
+          v0,
+          v1,
+          distance,
+        })
       }
-      return { r1s, r1e, r2s, r2e, v0, v1, distance }
-    })
-    .filter(
-      (f): f is PairCoord =>
-        f.r1s !== undefined &&
-        f.r1e !== undefined &&
-        f.r2s !== undefined &&
-        f.r2e !== undefined,
-    )
+    } else {
+      // if we're not looking at pairs, then it could be a multiply-split-long
+      // read, so traverse chain
+      for (let i = 1; i < chain.length; i++) {
+        const v0 = chain[i - 1]
+        const v1 = chain[i]
+        const r1s = view.bpToPx({
+          refName: v0.refName,
+          coord: v0.start,
+        })
+        const r1e = view.bpToPx({
+          refName: v0.refName,
+          coord: v0.end,
+        })
+        const r2s = view.bpToPx({
+          refName: v1.refName,
+          coord: v1.start,
+        })
+        const r2e = view.bpToPx({
+          refName: v1.refName,
+          coord: v1.end,
+        })
+        let distance = 0
+
+        if (
+          r1s !== undefined &&
+          r1e !== undefined &&
+          r2s !== undefined &&
+          r2e !== undefined
+        ) {
+          if (v0.refName === v1.refName) {
+            const s = Math.min(v0.start, v1.start)
+            const e = Math.max(v0.end, v1.end)
+            distance = Math.abs(e - s)
+          }
+          coords.push({
+            r1s: r1s.offsetPx,
+            r1e: r1e.offsetPx,
+            r2s: r2s.offsetPx,
+            r2e: r2e.offsetPx,
+            v0,
+            v1,
+            distance,
+          })
+        }
+      }
+    }
+  }
 
   let max = 0
   for (let i = 0; i < coords.length; i++) {
     const { distance } = coords[i]
     max = Math.max(max, distance)
   }
-  max = Math.log(max)
   const halfHeight = featureHeight / 2 - 0.5
-  const scaler = (displayHeight - 50) / max
+  const scaler = (displayHeight - 20) / Math.log(max)
 
   for (let i = 0; i < coords.length; i++) {
     const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]

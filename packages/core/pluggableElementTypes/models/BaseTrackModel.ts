@@ -223,14 +223,7 @@ export function createBaseTrackModel(
                   })),
                 },
               ]
-            : [
-                compatDisp.map(d => ({
-                  type: 'radio',
-                  label: pm.getDisplayType(d.type).displayName,
-                  checked: d.displayId === shownId,
-                  onClick: () => self.replaceDisplay(shownId, d.displayId),
-                })),
-              ]),
+            : []),
         ]
       },
     }))

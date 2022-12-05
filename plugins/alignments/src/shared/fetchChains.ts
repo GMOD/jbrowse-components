@@ -19,21 +19,19 @@ export interface ReducedFeature {
   pair_orientation: string
 }
 
-export interface PairStats {
+export interface ChainStats {
   max: number
   min: number
   upper: number
   lower: number
 }
 
-export type PairMap = { [key: string]: ReducedFeature[] }
-
-export interface PairData {
-  pairedFeatures: PairMap
-  stats: PairStats
+export interface ChainData {
+  chains: ReducedFeature[][]
+  stats?: ChainStats
 }
 
-export async function fetchPairs(self: IAnyStateTreeNode) {
+export async function fetchChains(self: IAnyStateTreeNode) {
   try {
     const { rpcSessionId: sessionId } = getContainingTrack(self)
     const { rpcManager } = getSession(self)
@@ -48,9 +46,9 @@ export async function fetchPairs(self: IAnyStateTreeNode) {
       sessionId,
       regions: view.staticBlocks.contentBlocks,
       adapterConfig: self.adapterConfig,
-    })) as PairData
+    })) as ChainData
 
-    self.setPairData(ret)
+    self.setChainData(ret)
     self.setLoading(false)
   } catch (e) {
     console.error(e)
