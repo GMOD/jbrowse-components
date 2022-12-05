@@ -40,6 +40,7 @@
     "@gmod/bam": "^1.1.15",
     "@gmod/cram": "^1.7.1",
     "@mui/icons-material": "^5.0.1",
+    "canvas2svg": "^1.0.16",
     "clone": "^2.1.2",
     "color": "^3.1.2",
     "copy-to-clipboard": "^3.3.1",

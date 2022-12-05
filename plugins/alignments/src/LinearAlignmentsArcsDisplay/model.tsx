@@ -6,9 +6,12 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, getContainingView } from '@jbrowse/core/util'
 
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import {
+  BaseLinearDisplay,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -18,6 +21,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import { FilterModel } from '../shared'
 import drawFeats from './drawFeats'
 import { fetchPairs, PairData } from '../shared/fetchPairs'
+import { ExportSvgOptions } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -28,6 +32,8 @@ interface Filter {
   readName?: string
   tagFilter?: { tag: string; value: string }
 }
+
+type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearAlignmentsArcsDisplay
@@ -180,8 +186,41 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        renderSvg() {
-          return <></>
+        async renderSvg(opts: ExportSvgOptions) {
+          const view = getContainingView(self) as LGV
+          const width = view.dynamicBlocks.totalWidthPx
+          const height = self.height
+          let str
+          if (opts.rasterizeLayers) {
+            const canvas = document.createElement('canvas')
+            canvas.width = width * 2
+            canvas.height = height * 2
+            const ctx = canvas.getContext('2d')
+            if (!ctx) {
+              return
+            }
+            ctx.scale(2, 2)
+            await drawFeats(self, ctx)
+            str = (
+              <image
+                width={width}
+                height={height}
+                xlinkHref={canvas.toDataURL('image/png')}
+              />
+            )
+          } else {
+            const C2S = await import('canvas2svg')
+            const ctx = new C2S.default(width, height)
+            await drawFeats(self, ctx)
+            str = (
+              // eslint-disable-next-line react/no-danger
+              <g dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }} />
+            )
+          }
+
+          return (
+            <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>{str}</g>
+          )
         },
       }
     })
@@ -194,7 +233,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
         addDisposer(
           self,
-          autorun(() => drawFeats(self), { delay: 1000 }),
+          autorun(
+            async () => {
+              try {
+                const canvas = self.ref
+                if (!canvas) {
+                  return
+                }
+                const ctx = canvas.getContext('2d')
+                if (!ctx) {
+                  return
+                }
+                ctx.clearRect(0, 0, canvas.width, self.height)
+                ctx.resetTransform()
+                ctx.scale(2, 2)
+                await drawFeats(self, ctx)
+              } catch (e) {
+                console.error(e)
+                self.setError(e)
+              }
+            },
+            { delay: 1000 },
+          ),
         )
       },
     }))

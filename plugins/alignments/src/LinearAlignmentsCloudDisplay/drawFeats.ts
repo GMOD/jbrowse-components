@@ -22,109 +22,97 @@ interface PairCoord {
   v1: ReducedFeature
 }
 
-export default async function drawFeats(self: {
-  setLastDrawnOffsetPx: (n: number) => void
-  setError: (e: unknown) => void
-  colorBy?: { type: string }
-  height: number
-  pairedData?: PairData
-  ref: HTMLCanvasElement | null
-}) {
-  try {
-    const { pairedData, ref } = self
-    if (!pairedData) {
-      return
-    }
-    const featureHeight = getConf(self, 'featureHeight')
-    const displayHeight = self.height
-    const view = getContainingView(self) as LGV
-    const canvas = ref
-    if (!canvas) {
-      return
-    }
-    const { width, height } = canvas.getBoundingClientRect()
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-    self.setLastDrawnOffsetPx(view.offsetPx)
-    ctx.resetTransform()
-    ctx.clearRect(0, 0, width * 2, height * 2)
-    ctx.setTransform(2, 0, 0, 2, -view.offsetPx * 2, 0)
-    const { pairedFeatures, stats } = pairedData
-    const coords = Object.values(pairedFeatures)
-      .filter(val => val.length === 2)
-      .map(val => {
-        const [v0, v1] = val
+export default async function drawFeats(
+  self: {
+    setLastDrawnOffsetPx: (n: number) => void
+    setError: (e: unknown) => void
+    colorBy?: { type: string }
+    height: number
+    pairedData?: PairData
+    ref: HTMLCanvasElement | null
+  },
+  ctx: CanvasRenderingContext2D,
+) {
+  const { pairedData } = self
+  if (!pairedData) {
+    return
+  }
+  const featureHeight = getConf(self, 'featureHeight')
+  const displayHeight = self.height
+  const view = getContainingView(self) as LGV
 
-        const r1s = view.bpToPx({
-          refName: v0.refName,
-          coord: v0.start,
-        })?.offsetPx
-        const r1e = view.bpToPx({
-          refName: v0.refName,
-          coord: v0.end,
-        })?.offsetPx
-        const r2s = view.bpToPx({
-          refName: v1.refName,
-          coord: v1.start,
-        })?.offsetPx
-        const r2e = view.bpToPx({
-          refName: v1.refName,
-          coord: v1.end,
-        })?.offsetPx
-        let distance = 0
-        if (v0.refName === v1.refName) {
-          const s = Math.min(v0.start, v1.start)
-          const e = Math.max(v0.end, v1.end)
-          distance = Math.abs(e - s)
-        }
-        return { r1s, r1e, r2s, r2e, v0, v1, distance }
-      })
-      .filter(
-        (f): f is PairCoord =>
-          f.r1s !== undefined &&
-          f.r1e !== undefined &&
-          f.r2s !== undefined &&
-          f.r2e !== undefined,
-      )
+  self.setLastDrawnOffsetPx(view.offsetPx)
 
-    let max = 0
-    for (let i = 0; i < coords.length; i++) {
-      const { distance } = coords[i]
-      max = Math.max(max, distance)
-    }
-    max = Math.log(max)
-    const halfHeight = featureHeight / 2 - 0.5
-    const scaler = (displayHeight - 50) / max
+  const { pairedFeatures, stats } = pairedData
+  const coords = Object.values(pairedFeatures)
+    .filter(val => val.length === 2)
+    .map(val => {
+      const [v0, v1] = val
 
-    for (let i = 0; i < coords.length; i++) {
-      const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]
-      const type = self.colorBy?.type || 'insertSizeAndOrientation'
-
-      const top = Math.log(distance) * scaler
-      ctx.fillStyle = 'black'
-      ctx.fillRect(r1e, top + halfHeight, r2s - r1e, 1)
-
-      if (type === 'insertSizeAndOrientation') {
-        ctx.fillStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
-      } else if (type === 'orientation') {
-        ctx.fillStyle = getOrientationColor(v0)
-      } else if (type === 'insertSize') {
-        ctx.fillStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
-      } else if (type === 'gradient') {
+      const r1s = view.bpToPx({
+        refName: v0.refName,
+        coord: v0.start,
+      })?.offsetPx
+      const r1e = view.bpToPx({
+        refName: v0.refName,
+        coord: v0.end,
+      })?.offsetPx
+      const r2s = view.bpToPx({
+        refName: v1.refName,
+        coord: v1.start,
+      })?.offsetPx
+      const r2e = view.bpToPx({
+        refName: v1.refName,
+        coord: v1.end,
+      })?.offsetPx
+      let distance = 0
+      if (v0.refName === v1.refName) {
         const s = Math.min(v0.start, v1.start)
         const e = Math.max(v0.end, v1.end)
-        ctx.fillStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
+        distance = Math.abs(e - s)
       }
+      return { r1s, r1e, r2s, r2e, v0, v1, distance }
+    })
+    .filter(
+      (f): f is PairCoord =>
+        f.r1s !== undefined &&
+        f.r1e !== undefined &&
+        f.r2s !== undefined &&
+        f.r2e !== undefined,
+    )
 
-      const w1 = Math.max(r1e - r1s, 2)
-      const w2 = Math.max(r2e - r2s, 2)
-      ctx.fillRect(r1s, top, w1, featureHeight)
-      ctx.fillRect(r2s, top, w2, featureHeight)
+  let max = 0
+  for (let i = 0; i < coords.length; i++) {
+    const { distance } = coords[i]
+    max = Math.max(max, distance)
+  }
+  max = Math.log(max)
+  const halfHeight = featureHeight / 2 - 0.5
+  const scaler = (displayHeight - 50) / max
+
+  for (let i = 0; i < coords.length; i++) {
+    const { r1s, r1e, r2s, r2e, v0, v1, distance } = coords[i]
+    const type = self.colorBy?.type || 'insertSizeAndOrientation'
+
+    const top = Math.log(distance) * scaler
+    ctx.fillStyle = 'black'
+    ctx.fillRect(r1e - view.offsetPx, top + halfHeight, r2s - r1e, 1)
+
+    if (type === 'insertSizeAndOrientation') {
+      ctx.fillStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
+    } else if (type === 'orientation') {
+      ctx.fillStyle = getOrientationColor(v0)
+    } else if (type === 'insertSize') {
+      ctx.fillStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
+    } else if (type === 'gradient') {
+      const s = Math.min(v0.start, v1.start)
+      const e = Math.max(v0.end, v1.end)
+      ctx.fillStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
     }
-  } catch (e) {
-    console.error(e)
-    self.setError(e)
+
+    const w1 = Math.max(r1e - r1s, 2)
+    const w2 = Math.max(r2e - r2s, 2)
+    ctx.fillRect(r1s - view.offsetPx, top, w1, featureHeight)
+    ctx.fillRect(r2s - view.offsetPx, top, w2, featureHeight)
   }
 }
