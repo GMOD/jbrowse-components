@@ -331,12 +331,12 @@ function stateModelFactory(
             ...superTrackMenuItems(),
             {
               type: 'subMenu',
-              label: 'Pileup settings...',
+              label: 'Pileup settings',
               subMenu: self.PileupDisplay.trackMenuItems(),
             },
             {
               type: 'subMenu',
-              label: 'SNPCoverage settings...',
+              label: 'SNPCoverage settings',
               subMenu: self.SNPCoverageDisplay.trackMenuItems(),
             },
             {

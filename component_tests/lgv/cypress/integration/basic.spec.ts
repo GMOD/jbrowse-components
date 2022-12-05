@@ -1,5 +1,11 @@
 describe('JBrowse embedded view', () => {
   it('page loads', () => {
+    Cypress.on(
+      // from https://github.com/cypress-io/cypress/issues/8418
+      'uncaught:exception',
+      // @ts-ignore thinks we are es5 and don't have includes, may be able to update
+      err => !err.message.includes('ResizeObserver loop limit exceeded'),
+    )
     cy.visit('/')
     cy.contains('JBrowse 2 React Linear Genome View Demo')
   })
