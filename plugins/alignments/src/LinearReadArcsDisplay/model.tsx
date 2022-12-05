@@ -209,6 +209,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               />
             )
           } else {
+            // @ts-ignore
             const C2S = await import('canvas2svg')
             const ctx = new C2S.default(width, height)
             await drawFeats(self, ctx)
