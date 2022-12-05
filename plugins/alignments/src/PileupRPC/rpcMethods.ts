@@ -171,7 +171,7 @@ export class PileupGetFeatures extends RpcMethodType {
         tlen: f.get('template_length'),
         pair_orientation: f.get('pair_orientation'),
       }))
-    const stats = getInsertSizeStats(reduced)
+    const stats = getFilteredInsertSizeStats(reduced)
     const pairedFeatures = {} as { [key: string]: ReducedFeature[] }
 
     // pair features

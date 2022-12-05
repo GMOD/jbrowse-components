@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
-
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 // locals
 import {
   getOrientationColor,
@@ -17,6 +17,7 @@ export default async function drawFeats(self: {
   setLastDrawnOffsetPx: (n: number) => void
   setError: (e: unknown) => void
   colorBy?: { type: string }
+  height: number
   pairedData?: PairData
   ref: HTMLCanvasElement | null
 }) {
@@ -25,6 +26,7 @@ export default async function drawFeats(self: {
     if (!pairedData) {
       return
     }
+    const displayHeight = self.height
     const view = getContainingView(self) as LGV
     const canvas = ref
     if (!canvas) {
@@ -55,8 +57,8 @@ export default async function drawFeats(self: {
         const radius = (r2.offsetPx - r1.offsetPx) / 2
         const absrad = Math.abs(radius)
         const p = r1.offsetPx - view.offsetPx
-        ctx.moveTo(p, 0)
         ctx.beginPath()
+        ctx.moveTo(p, 0)
         const type = self.colorBy?.type || 'insertSizeAndOrientation'
 
         if (type === 'insertSizeAndOrientation') {
@@ -69,7 +71,9 @@ export default async function drawFeats(self: {
           ctx.strokeStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
         }
 
-        ctx.arc(p + radius, 0, absrad, 0, Math.PI)
+        const destX = p + radius * 2
+        const destY = Math.min(displayHeight, absrad)
+        ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
         ctx.stroke()
       })
   } catch (e) {

@@ -1,11 +1,5 @@
 import { transaction } from 'mobx'
-import {
-  getRoot,
-  resolveIdentifier,
-  types,
-  Instance,
-  getEnv,
-} from 'mobx-state-tree'
+import { getRoot, resolveIdentifier, types, Instance } from 'mobx-state-tree'
 import {
   getConf,
   AnyConfigurationModel,
