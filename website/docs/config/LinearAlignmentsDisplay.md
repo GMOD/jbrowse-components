@@ -17,7 +17,10 @@ quantitative "snpcoverage" sub-display track showing SNP frequencies
 #### slot: pileupDisplay
 
 ```js
-pileupDisplay: pm.getDisplayType('LinearPileupDisplay').configSchema
+pileupDisplay: {
+        type: 'frozen',
+        defaultValue: null,
+      }
 ```
 
 #### slot: snpCoverageDisplay
