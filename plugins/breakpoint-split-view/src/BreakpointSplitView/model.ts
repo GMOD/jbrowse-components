@@ -16,6 +16,8 @@ import { getSession, Feature } from '@jbrowse/core/util'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 import { autorun } from 'mobx'
 
+type LGV = LinearGenomeViewModel
+
 // https://stackoverflow.com/a/49186706/2129219 the array-intersection package
 // on npm has a large kb size, and we are just intersecting open track ids so
 // simple is better
@@ -212,7 +214,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
-      removeView(view: LinearGenomeViewModel) {
+      removeView(view: LGV) {
         self.views.remove(view)
       },
 
@@ -263,11 +265,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  const stateModel = types.compose(BaseViewModel, model)
-
-  return { stateModel }
+  return types.compose(BaseViewModel, model)
 }
 
-export type BreakpointView = ReturnType<typeof stateModelFactory>
-export type BreakpointViewStateModel = BreakpointView['stateModel']
+export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>
 export type BreakpointViewModel = Instance<BreakpointViewStateModel>

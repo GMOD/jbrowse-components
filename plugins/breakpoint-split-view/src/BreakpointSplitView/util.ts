@@ -37,7 +37,6 @@ export function yPos(
         height: number
         scrollTop: number
         SNPCoverageDisplay?: { height: number }
-        showCoverage?: boolean
       },
     ]
   }[], // basic track requirements
@@ -47,8 +46,8 @@ export function yPos(
   const min = 0
   const max = display.height
   let offset = 0
-  const { showCoverage, SNPCoverageDisplay } = display
-  if (SNPCoverageDisplay && showCoverage) {
+  const { SNPCoverageDisplay } = display
+  if (SNPCoverageDisplay) {
     offset = SNPCoverageDisplay.height
   }
   return (
