@@ -32,8 +32,7 @@ export function getCompatibleDisplays(self: IAnyStateTreeNode) {
 /**
  * #stateModel BaseTrackModel
  * these MST models only exist for tracks that are *shown*. they should contain
- * only UI state for the track, and have a reference to a track configuration
- * (stored under session.configuration.assemblies.get(assemblyName).tracks).
+ * only UI state for the track, and have a reference to a track configuration.
  * note that multiple displayed tracks could use the same configuration.
  */
 export function createBaseTrackModel(
