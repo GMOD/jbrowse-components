@@ -22,6 +22,30 @@ interface PairCoord {
   v1: ReducedFeature
 }
 
+// avoid drawing negative width features for SVG exports
+function fillRectCtx(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  ctx: CanvasRenderingContext2D,
+  color?: string,
+) {
+  if (width < 0) {
+    x += width
+    width = -width
+  }
+  if (height < 0) {
+    y += height
+    height = -height
+  }
+
+  if (color) {
+    ctx.fillStyle = color
+  }
+  ctx.fillRect(x, y, width, height)
+}
+
 export default async function drawFeats(
   self: {
     setLastDrawnOffsetPx: (n: number) => void
@@ -96,7 +120,8 @@ export default async function drawFeats(
 
     const top = Math.log(distance) * scaler
     ctx.fillStyle = 'black'
-    ctx.fillRect(r1e - view.offsetPx, top + halfHeight, r2s - r1e, 1)
+    const w = r2s - r1e
+    fillRectCtx(r1e - view.offsetPx, top + halfHeight, w, 1, ctx)
 
     if (type === 'insertSizeAndOrientation') {
       ctx.fillStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
@@ -112,7 +137,7 @@ export default async function drawFeats(
 
     const w1 = Math.max(r1e - r1s, 2)
     const w2 = Math.max(r2e - r2s, 2)
-    ctx.fillRect(r1s - view.offsetPx, top, w1, featureHeight)
-    ctx.fillRect(r2s - view.offsetPx, top, w2, featureHeight)
+    fillRectCtx(r1s - view.offsetPx, top, w1, featureHeight, ctx)
+    fillRectCtx(r2s - view.offsetPx, top, w2, featureHeight, ctx)
   }
 }

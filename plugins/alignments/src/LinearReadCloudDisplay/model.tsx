@@ -122,6 +122,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
+        /**
+         * #getter
+         */
+        get ready() {
+          return !!self.pairedData
+        },
         // we don't use a server side renderer, but we need to provide this
         // to avoid confusing the system currently
         get rendererTypeName() {
@@ -132,6 +138,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         renderProps() {
           return {
             ...superRenderProps(),
+            // never ready, we don't want to use server side render
             notReady: true,
             config: ConfigurationSchema('empty', {}).create(),
           }
@@ -216,9 +223,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             )
           }
 
-          return (
-            <g transform={`translate(${Math.max(-view.offsetPx, 0)})`}>{str}</g>
-          )
+          return <g>{str}</g>
         },
       }
     })
