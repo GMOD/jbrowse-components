@@ -1003,7 +1003,6 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   >
                     <div
                       class="css-d6gpow-linearBlocks"
-                      data-testid="Blockset"
                       style="left: -800px;"
                     >
                       <div

@@ -10,8 +10,8 @@ export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
-      name: 'LinearAlignmentsArcsDisplay',
-      displayName: 'Paired arcs display',
+      name: 'LinearReadArcsDisplay',
+      displayName: 'Arc display',
       configSchema,
       stateModel: stateModelF(configSchema),
       trackType: 'AlignmentsTrack',

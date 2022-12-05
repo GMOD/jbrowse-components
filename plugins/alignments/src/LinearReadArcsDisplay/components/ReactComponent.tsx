@@ -6,16 +6,16 @@ import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // local
-import { LinearAlignmentsCloudDisplayModel } from '../model'
+import { LinearReadArcsDisplayModel } from '../model'
 
 type LGV = LinearGenomeViewModel
 
 const height = 1200
 
-const Cloud = observer(function ({
+const Arcs = observer(function ({
   model,
 }: {
-  model: LinearAlignmentsCloudDisplayModel
+  model: LinearReadArcsDisplayModel
 }) {
   const view = getContainingView(model) as LGV
   return (
@@ -39,13 +39,13 @@ const Cloud = observer(function ({
 export default observer(function ({
   model,
 }: {
-  model: LinearAlignmentsCloudDisplayModel
+  model: LinearReadArcsDisplayModel
 }) {
   return model.error ? (
     <ErrorMessage error={model.error} />
   ) : model.loading ? (
     <LoadingEllipses />
   ) : (
-    <Cloud model={model} />
+    <Arcs model={model} />
   )
 })

@@ -4,13 +4,13 @@ import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-ge
 import { types } from 'mobx-state-tree'
 
 /**
- * #config LinearAlignmentsArcsDisplay
+ * #config LinearReadCloudDisplay
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'LinearAlignmentsArcsDisplay',
+    'LinearReadCloudDisplay',
     {
       /**
        * #slot
@@ -19,6 +19,14 @@ function configSchemaF(pluginManager: PluginManager) {
         type: 'number',
         description: 'maximum features per pixel that is displayed in the view',
         defaultValue: 5,
+      },
+
+      /**
+       * #slot
+       */
+      featureHeight: {
+        type: 'number',
+        defaultValue: 7,
       },
 
       /**

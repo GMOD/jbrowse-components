@@ -10,7 +10,7 @@ export default function register(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
     const configSchema = configSchemaF(pluginManager)
     return new DisplayType({
-      name: 'LinearAlignmentsCloudDisplay',
+      name: 'LinearReadCloudDisplay',
       displayName: 'Read cloud display',
       configSchema,
       stateModel: stateModelF(configSchema),

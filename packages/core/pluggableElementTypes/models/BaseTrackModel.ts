@@ -1,5 +1,13 @@
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types, Instance } from 'mobx-state-tree'
+import {
+  getRoot,
+  resolveIdentifier,
+  types,
+  Instance,
+  IAnyStateTreeNode,
+} from 'mobx-state-tree'
+
+// locals
 import {
   getConf,
   AnyConfigurationModel,
@@ -8,18 +16,25 @@ import {
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession } from '../../util'
+import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
+export function getCompatibleDisplays(self: IAnyStateTreeNode) {
+  const { pluginManager } = getEnv(self)
+  const view = getContainingView(self)
+  const viewType = pluginManager.getViewType(view.type)
+  const compatTypes = viewType.displayTypes.map(d => d.name)
+  const displays = self.configuration.displays as AnyConfigurationModel[]
+  return displays.filter(d => compatTypes.includes(d.type))
+}
+
 /**
  * #stateModel BaseTrackModel
- * these MST models only exist for tracks that are *shown*.
- * they should contain only UI state for the track, and have
- * a reference to a track configuration (stored under
- * session.configuration.assemblies.get(assemblyName).tracks).
- * note that multiple displayed tracks could use the same
- * configuration.
+ * these MST models only exist for tracks that are *shown*. they should contain
+ * only UI state for the track, and have a reference to a track configuration
+ * (stored under session.configuration.assemblies.get(assemblyName).tracks).
+ * note that multiple displayed tracks could use the same configuration.
  */
 export function createBaseTrackModel(
   pm: PluginManager,
@@ -125,9 +140,7 @@ export function createBaseTrackModel(
           // @ts-ignore
           const trackConf = session.editTrackConfiguration(self.configuration)
           if (trackConf && trackConf !== self.configuration) {
-            // @ts-ignore
             view.hideTrack(self.configuration)
-            // @ts-ignore
             view.showTrack(trackConf)
           }
         }
@@ -193,12 +206,8 @@ export function createBaseTrackModel(
         const menuItems: MenuItem[] = self.displays
           .map(d => d.trackMenuItems())
           .flat()
-        const view = getContainingView(self)
-        const viewType = pm.getViewType(view.type)
-        const compatTypes = viewType.displayTypes.map(d => d.name)
-        const displays = self.configuration.displays as AnyConfigurationModel[]
-        const compatDisp = displays.filter(d => compatTypes.includes(d.type))
         const shownId = self.displays[0].configuration.displayId
+        const compatDisp = getCompatibleDisplays(self)
 
         return [
           ...menuItems,
@@ -215,7 +224,14 @@ export function createBaseTrackModel(
                   })),
                 },
               ]
-            : []),
+            : [
+                compatDisp.map(d => ({
+                  type: 'radio',
+                  label: pm.getDisplayType(d.type).displayName,
+                  checked: d.displayId === shownId,
+                  onClick: () => self.replaceDisplay(shownId, d.displayId),
+                })),
+              ]),
         ]
       },
     }))

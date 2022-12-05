@@ -8,7 +8,7 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addViewType(() => {
     const { stateModel } = stateModelFactory(pluginManager)
     return new ViewType({
-      name: 'SvInepectorView',
+      name: 'SvInspectorView',
       displayName: 'SV inspector',
       stateModel,
       ReactComponent,

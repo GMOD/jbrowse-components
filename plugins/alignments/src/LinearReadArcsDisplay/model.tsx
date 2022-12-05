@@ -6,8 +6,12 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
+import { getSession, getContainingView } from '@jbrowse/core/util'
+
+import {
+  BaseLinearDisplay,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // icons
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -15,12 +19,9 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import { FilterModel } from '../shared'
-import { fetchPairs, PairData } from '../shared/fetchPairs'
 import drawFeats from './drawFeats'
-import {
-  ExportSvgOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
+import { fetchPairs, PairData } from '../shared/fetchPairs'
+import { ExportSvgOptions } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -32,20 +33,22 @@ interface Filter {
   tagFilter?: { tag: string; value: string }
 }
 
+type LGV = LinearGenomeViewModel
+
 /**
- * #stateModel LinearAlignmentsCloudDisplay
+ * #stateModel LinearReadArcsDisplay
  * extends `BaseLinearDisplay`
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
-      'LinearAlignmentsCloudDisplay',
+      'LinearReadArcsDisplay',
       BaseLinearDisplay,
       types.model({
         /**
          * #property
          */
-        type: types.literal('LinearAlignmentsCloudDisplay'),
+        type: types.literal('LinearReadArcsDisplay'),
         /**
          * #property
          */
@@ -184,7 +187,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #method
          */
         async renderSvg(opts: ExportSvgOptions) {
-          const view = getContainingView(self) as LinearGenomeViewModel
+          const view = getContainingView(self) as LGV
           const width = view.dynamicBlocks.totalWidthPx
           const height = self.height
           let str
@@ -244,7 +247,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ctx.clearRect(0, 0, canvas.width, self.height)
                 ctx.resetTransform()
                 ctx.scale(2, 2)
-
                 await drawFeats(self, ctx)
               } catch (e) {
                 console.error(e)
@@ -258,10 +260,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
 }
 
-export type LinearAlignmentsCloudDisplayStateModel = ReturnType<
+export type LinearReadArcsDisplayStateModel = ReturnType<
   typeof stateModelFactory
 >
-export type LinearAlignmentsCloudDisplayModel =
-  Instance<LinearAlignmentsCloudDisplayStateModel>
+export type LinearReadArcsDisplayModel =
+  Instance<LinearReadArcsDisplayStateModel>
 
 export default stateModelFactory
