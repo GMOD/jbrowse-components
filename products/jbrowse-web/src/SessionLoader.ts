@@ -251,7 +251,14 @@ const SessionLoader = types
     },
 
     async fetchConfig() {
-      const { configPath = 'config.json' } = self
+      let { configPath = 'config.json' } = self
+
+      // @ts-ignore
+      // eslint-disable-next-line no-underscore-dangle
+      if (window.__jbrowseCacheBuster) {
+        configPath += `?rand=${Math.random()}`
+      }
+
       const text = await openLocation({
         uri: configPath,
         locationType: 'UriLocation',
