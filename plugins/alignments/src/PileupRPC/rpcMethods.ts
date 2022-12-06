@@ -181,6 +181,11 @@ export class PileupGetFeatures extends RpcMethodType {
       }
       chains[f.name].push(f)
     })
-    return { chains: Object.values(chains), stats, hasPaired: !!stats }
+    return {
+      chains: Object.values(chains),
+      stats,
+      hasPaired: !!stats,
+      containsNoTransferables: true,
+    }
   }
 }
