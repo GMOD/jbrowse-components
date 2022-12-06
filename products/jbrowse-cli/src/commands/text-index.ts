@@ -3,6 +3,8 @@ import path from 'path'
 import { Readable } from 'stream'
 import { ixIxxStream } from 'ixixx'
 import { flags } from '@oclif/command'
+
+// locals
 import { indexGff3 } from '../types/gff3Adapter'
 import { indexVcf } from '../types/vcfAdapter'
 import JBrowseCommand, {
@@ -17,15 +19,13 @@ import {
   supported,
   guessAdapterFromFileName,
 } from '../types/common'
-import fromEntries from 'object.fromentries'
 
-if (!Object.fromEntries) {
-  // @ts-ignore
-  fromEntries.shim()
+function readConf(path: string) {
+  return JSON.parse(fs.readFileSync(path, 'utf8')) as Config
 }
 
-function readConf(confFilePath: string) {
-  return JSON.parse(fs.readFileSync(confFilePath, 'utf8')) as Config
+function writeConf(obj: Config, path: string) {
+  fs.writeFileSync(path, JSON.stringify(obj, null, 2))
 }
 
 export default class TextIndex extends JBrowseCommand {
@@ -221,13 +221,9 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     if (!dryrun) {
-      fs.writeFileSync(
+      writeConf(
+        { ...config, aggregateTextSearchAdapters: aggregateAdapters },
         confPath,
-        JSON.stringify(
-          { ...config, aggregateTextSearchAdapters: aggregateAdapters },
-          null,
-          2,
-        ),
       )
     }
   }
@@ -316,10 +312,7 @@ export default class TextIndex extends JBrowseCommand {
         const index = configTracks.findIndex(track => trackId === track.trackId)
         configTracks[index] = newTrackConfig
       }
-      fs.writeFileSync(
-        confFilePath,
-        JSON.stringify({ ...config, tracks: configTracks }, null, 2),
-      )
+      writeConf({ ...config, tracks: configTracks }, confFilePath)
     }
   }
 
