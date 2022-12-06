@@ -498,9 +498,9 @@ describe('add-assembly', () => {
       '--load',
       'copy',
     ])
-    .it('can specify a custom name and and alias', async ctx => {
+    .it('can specify a custom name and alias', async ctx => {
       expect(ctx.stdoutWrite).toHaveBeenCalledWith(
-        'Added assembly "customName" to ./config.json\n',
+        'Added assembly "customName" to config.json\n',
       )
       expect(readConf(ctx)).toEqual({
         ...defaultConfig,
@@ -749,7 +749,7 @@ describe('add-assembly', () => {
 
   setup
     .do(ctx => {
-      fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.xyz'))
+      fs.copyFileSync(dataDir('simple.2bit'), ctxDir(ctx, 'simple.2bit'))
     })
     .command([
       'add-assembly',
