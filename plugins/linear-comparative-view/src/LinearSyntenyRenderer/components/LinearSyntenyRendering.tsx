@@ -254,7 +254,12 @@ function LinearSyntenyRendering({
     () =>
       features.map(level =>
         level
-          .map(f => new SimpleFeature(f))
+          .map(
+            f =>
+              (typeof f.id === 'function'
+                ? f
+                : new SimpleFeature(f)) as Feature,
+          )
           .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
       ),
     [features],
