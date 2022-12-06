@@ -4,7 +4,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-const { readFile, mkdir, mkdtemp, writeFile } = fs.promises
+const { mkdir, mkdtemp, writeFile } = fs.promises
 
 // increase test timeout for all tests
 jest.setTimeout(20000)

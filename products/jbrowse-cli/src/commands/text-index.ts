@@ -29,10 +29,7 @@ function writeConf(obj: Config, path: string) {
 }
 
 function getLoc(elt: UriLocation | LocalPathLocation) {
-  if (elt.locationType === 'LocalPathLocation') {
-    return elt.localPath
-  }
-  return elt.uri
+  return elt.locationType === 'LocalPathLocation' ? elt.localPath : elt.uri
 }
 
 export default class TextIndex extends JBrowseCommand {
@@ -144,7 +141,6 @@ export default class TextIndex extends JBrowseCommand {
       prefixSize,
     } = flags
     const outFlag = target || out || '.'
-
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confPath = isDir ? path.join(outFlag, 'config.json') : outFlag
     const outDir = path.dirname(confPath)
@@ -291,33 +287,32 @@ export default class TextIndex extends JBrowseCommand {
         prefixSize,
       })
       if (!textSearching?.textSearchAdapter) {
-        const newTrackConfig = {
-          ...trackConfig,
-          textSearching: {
-            ...textSearching,
-            textSearchAdapter: {
-              type: 'TrixTextSearchAdapter',
-              textSearchAdapterId: trackId + '-index',
-              ixFilePath: {
-                uri: `trix/${trackId}.ix`,
-                locationType: 'UriLocation' as const,
-              },
-              ixxFilePath: {
-                uri: `trix/${trackId}.ixx`,
-                locationType: 'UriLocation' as const,
-              },
-              metaFilePath: {
-                uri: `trix/${trackId}_meta.json`,
-                locationType: 'UriLocation' as const,
-              },
-              assemblyNames: assemblyNames,
-            },
-          },
-        }
         // modifies track with new text search adapter
         const index = configTracks.findIndex(track => trackId === track.trackId)
         if (index !== -1) {
-          configTracks[index] = newTrackConfig
+          configTracks[index] = {
+            ...trackConfig,
+            textSearching: {
+              ...textSearching,
+              textSearchAdapter: {
+                type: 'TrixTextSearchAdapter',
+                textSearchAdapterId: trackId + '-index',
+                ixFilePath: {
+                  uri: `trix/${trackId}.ix`,
+                  locationType: 'UriLocation' as const,
+                },
+                ixxFilePath: {
+                  uri: `trix/${trackId}.ixx`,
+                  locationType: 'UriLocation' as const,
+                },
+                metaFilePath: {
+                  uri: `trix/${trackId}_meta.json`,
+                  locationType: 'UriLocation' as const,
+                },
+                assemblyNames: assemblyNames,
+              },
+            },
+          }
         } else {
           this.log("Error: can't find trackId")
         }
@@ -421,19 +416,33 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes: attrs = attributes,
       } = textSearching || {}
 
-      const map = {
-        Gff3Adapter: 'gffLocation',
-        Gff3TabixAdapter: 'gffGzLocation',
-        VcfAdapter: 'vcfLocation',
-        VcfTabixAdapter: 'vcfGzLocation',
+      const map1 = {
+        Gff3Adapter: 'gffLocation' as const,
+        Gff3TabixAdapter: 'gffGzLocation' as const,
+      }
+      const map2 = {
+        VcfAdapter: 'vcfLocation' as const,
+        VcfTabixAdapter: 'vcfGzLocation' as const,
       }
 
+      let loc
+      if (type === 'Gff3TabixAdapter') {
+        loc = adapter.gffGzLocation
+      } else if (type === 'Gff3Adapter') {
+        loc = adapter.gffLocation
+      } else if (type === 'VcfAdapter') {
+        loc = adapter.vcfLocation
+      } else if (type === 'VcfTabixAdapter') {
+        loc = adapter.vcfGzLocation
+      }
+      if (!loc) {
+        return
+      }
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
           config,
           attributesToIndex: attrs,
-          // @ts-ignore
-          inLocation: getLoc(adapter[map[type]]),
+          inLocation: getLoc(loc),
           outLocation,
           typesToExclude: types,
           quiet,
@@ -442,8 +451,7 @@ export default class TextIndex extends JBrowseCommand {
         yield* indexVcf({
           config,
           attributesToIndex: attrs,
-          // @ts-ignore
-          inLocation: getLoc(adapter[map[type]]),
+          inLocation: getLoc(loc),
           outLocation,
           typesToExclude: types,
           quiet,
