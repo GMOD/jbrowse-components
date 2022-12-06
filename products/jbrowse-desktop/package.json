@@ -111,7 +111,7 @@
     "last 1 chrome version"
   ],
   "build": {
-    "electronVersion": "18.2.4",
+    "electronVersion": "21.2.0",
     "extraMetadata": {
       "main": "build/electron.js"
     },
