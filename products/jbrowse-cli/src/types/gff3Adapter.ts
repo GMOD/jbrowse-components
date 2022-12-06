@@ -1,17 +1,26 @@
-import { Track } from '../base'
-import { getLocalOrRemoteStream } from '../util'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
 
-export async function* indexGff3(
-  config: Track,
-  attributes: string[],
-  inLocation: string,
-  outLocation: string,
-  typesToExclude: string[],
-  quiet: boolean,
-) {
+// locals
+import { Track } from '../base'
+import { getLocalOrRemoteStream } from '../util'
+
+export async function* indexGff3({
+  config,
+  attributesToIndex,
+  inLocation,
+  outLocation,
+  typesToExclude,
+  quiet,
+}: {
+  config: Track
+  attributesToIndex: string[]
+  inLocation: string
+  outLocation: string
+  typesToExclude: string[]
+  quiet: boolean
+}) {
   const { trackId } = config
 
   // progress bar code was aided by blog post at
@@ -67,7 +76,7 @@ export async function* indexGff3(
             decodeURIComponent(val).trim().split(',').join(' '),
           ]),
       )
-      const attrs = attributes
+      const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)
 

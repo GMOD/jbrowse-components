@@ -28,6 +28,13 @@ function writeConf(obj: Config, path: string) {
   fs.writeFileSync(path, JSON.stringify(obj, null, 2))
 }
 
+function getLoc(elt: UriLocation | LocalPathLocation) {
+  if (elt.locationType === 'LocalPathLocation') {
+    return elt.localPath
+  }
+  return elt.uri
+}
+
 export default class TextIndex extends JBrowseCommand {
   static description = 'Make a text-indexing file for any given track(s).'
 
@@ -273,7 +280,6 @@ export default class TextIndex extends JBrowseCommand {
       }
       this.log('Indexing track ' + trackId + '...')
 
-      const id = trackId + '-index'
       await this.indexDriver({
         configs: [trackConfig],
         attributes: attributes.split(','),
@@ -284,14 +290,14 @@ export default class TextIndex extends JBrowseCommand {
         assemblyNames,
         prefixSize,
       })
-      if (!textSearching || !textSearching?.textSearchAdapter) {
+      if (!textSearching?.textSearchAdapter) {
         const newTrackConfig = {
           ...trackConfig,
           textSearching: {
             ...textSearching,
             textSearchAdapter: {
               type: 'TrixTextSearchAdapter',
-              textSearchAdapterId: id,
+              textSearchAdapterId: trackId + '-index',
               ixFilePath: {
                 uri: `trix/${trackId}.ix`,
                 locationType: 'UriLocation' as const,
@@ -310,7 +316,11 @@ export default class TextIndex extends JBrowseCommand {
         }
         // modifies track with new text search adapter
         const index = configTracks.findIndex(track => trackId === track.trackId)
-        configTracks[index] = newTrackConfig
+        if (index !== -1) {
+          configTracks[index] = newTrackConfig
+        } else {
+          this.log("Error: can't find trackId")
+        }
       }
       writeConf({ ...config, tracks: configTracks }, confFilePath)
     }
@@ -396,12 +406,6 @@ export default class TextIndex extends JBrowseCommand {
     return ixIxxStream
   }
 
-  getLoc(elt: UriLocation | LocalPathLocation) {
-    if (elt.locationType === 'LocalPathLocation') {
-      return elt.localPath
-    }
-    return elt.uri
-  }
   async *indexFiles(
     trackConfigs: Track[],
     attributes: string[],
@@ -417,45 +421,34 @@ export default class TextIndex extends JBrowseCommand {
         indexingAttributes: attrs = attributes,
       } = textSearching || {}
 
-      if (type === 'Gff3TabixAdapter') {
-        yield* indexGff3(
-          config,
-          attrs,
-          this.getLoc(adapter.gffGzLocation),
-          outLocation,
-          types,
-          quiet,
-        )
-      } else if (type === 'Gff3Adapter') {
-        yield* indexGff3(
-          config,
-          attrs,
-          this.getLoc(adapter.gffLocation),
-          outLocation,
-          types,
-          quiet,
-        )
-      } else if (type === 'VcfTabixAdapter') {
-        yield* indexVcf(
-          config,
-          attrs,
-          this.getLoc(adapter.vcfGzLocation),
-          outLocation,
-          types,
-          quiet,
-        )
-      } else if (type === 'VcfAdapter') {
-        yield* indexVcf(
-          config,
-          attrs,
-          this.getLoc(adapter.vcfLocation),
-          outLocation,
-          types,
-          quiet,
-        )
+      const map = {
+        Gff3Adapter: 'gffLocation',
+        Gff3TabixAdapter: 'gffGzLocation',
+        VcfAdapter: 'vcfLocation',
+        VcfTabixAdapter: 'vcfGzLocation',
       }
 
-      // gtf unused currently
+      if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
+        yield* indexGff3({
+          config,
+          attributesToIndex: attrs,
+          // @ts-ignore
+          inLocation: getLoc(adapter[map[type]]),
+          outLocation,
+          typesToExclude: types,
+          quiet,
+        })
+      } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
+        yield* indexVcf({
+          config,
+          attributesToIndex: attrs,
+          // @ts-ignore
+          inLocation: getLoc(adapter[map[type]]),
+          outLocation,
+          typesToExclude: types,
+          quiet,
+        })
+      }
     }
   }
 

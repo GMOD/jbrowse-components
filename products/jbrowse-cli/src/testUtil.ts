@@ -94,17 +94,14 @@ export const setup = test
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Conf = Record<string, any>
 
-export async function readConf(
-  ctx: {
-    dir: string
-  },
-  ...args: string[]
-): Promise<Conf> {
+export function readConf(ctx: { dir: string }, ...rest: string[]): Conf {
   return JSON.parse(
-    await readFile(path.join(ctx.dir, ...args, 'config.json'), {
-      encoding: 'utf8',
-    }),
+    fs.readFileSync(path.join(ctx.dir, ...rest, 'config.json'), 'utf8'),
   )
+}
+
+export function readConfAlt(ctx: { dir: string }, ...rest: string[]): Conf {
+  return JSON.parse(fs.readFileSync(path.join(ctx.dir, ...rest), 'utf8'))
 }
 
 export function dataDir(str: string) {
