@@ -22,7 +22,7 @@ jobs:
           apt install --yes wine wine32 wine64 libwine libwine:i386 fonts-wine
       - name: Install build deps
         run: |
-          apt install --yes python make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          apt install --yes python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Build app
         env:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
