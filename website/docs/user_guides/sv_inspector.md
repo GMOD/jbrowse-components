@@ -26,6 +26,23 @@ The following formats are supported:
 
 <Figure caption="The import form for getting started with the SV inspector." src="/img/sv_inspector_importform.png" />
 
+### Sources of data for SV inspector
+
+The SV inspector currently is designed for viewing `<TRA>` and breakend type entries.
+
+Examples of variant callers that produce a VCF that can be used with the SV inspector:
+
+Short read based:
+
+- Manta
+- Delly
+- Lumpy
+
+Long read based
+
+- pbsv
+- Sniffles
+
 ### Example SV inspector workflow
 
 We can start the SV inspector workflow by opening up this file containing
