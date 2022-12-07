@@ -919,7 +919,7 @@ export default class PileupRenderer extends BoxRendererType {
           ctx,
           leftPx,
           topPx,
-          widthPx,
+          Math.abs(leftPx - rightPx),
           heightPx,
           canvasWidth,
           colorForBase.deletion,

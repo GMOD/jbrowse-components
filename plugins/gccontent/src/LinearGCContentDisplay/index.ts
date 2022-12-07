@@ -1,3 +1,4 @@
+import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
