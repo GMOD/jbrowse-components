@@ -11,9 +11,10 @@ import LeakRemove from '@mui/icons-material/LeakRemove'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 
+// locals
 import { BreakpointViewModel } from '../model'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   headerBar: {
     gridArea: '1/1/auto/span 2',
     display: 'flex',
@@ -21,20 +22,22 @@ const useStyles = makeStyles()(theme => ({
   spacer: {
     flexGrow: 1,
   },
-}))
+})
 
-const InteractWithSquiggles = observer(
-  ({ model }: { model: BreakpointViewModel }) => {
-    return (
-      <IconButton
-        onClick={() => model.toggleInteract()}
-        title="Toggle interacting with the overlay"
-      >
-        {model.interactToggled ? <LocationSearching /> : <LocationDisabled />}
-      </IconButton>
-    )
-  },
-)
+const InteractWithSquiggles = observer(function ({
+  model,
+}: {
+  model: BreakpointViewModel
+}) {
+  return (
+    <IconButton
+      onClick={() => model.toggleInteract()}
+      title="Toggle interacting with the overlay"
+    >
+      {model.interactToggled ? <LocationSearching /> : <LocationDisabled />}
+    </IconButton>
+  )
+})
 
 const LinkViews = observer(({ model }: { model: BreakpointViewModel }) => {
   return (
