@@ -13,8 +13,8 @@ import { Dialog } from '@jbrowse/core/ui'
 
 function SetFeatureHeightDlg(props: {
   model: {
-    setFeatureHeight: Function
-    setNoSpacing: Function
+    setFeatureHeight: (arg?: number) => void
+    setNoSpacing: (arg?: boolean) => void
     featureHeightSetting: number
     noSpacing?: boolean
   }
@@ -28,7 +28,7 @@ function SetFeatureHeightDlg(props: {
   const ok = height !== '' && !Number.isNaN(+height)
 
   return (
-    <Dialog open onClose={handleClose} title={'Set feature height'}>
+    <Dialog open onClose={handleClose} title="Set feature height">
       <DialogContent>
         <Typography>
           Adjust the feature height and whether there is any spacing between
@@ -38,9 +38,7 @@ function SetFeatureHeightDlg(props: {
         <TextField
           value={height}
           helperText="Feature height"
-          onChange={event => {
-            setHeight(event.target.value)
-          }}
+          onChange={event => setHeight(event.target.value)}
         />
         <FormControlLabel
           control={
