@@ -5,6 +5,7 @@ import {
   AnyConfigurationSchemaType,
   ConfigurationReference,
   ConfigurationSchema,
+  getConf,
 } from '@jbrowse/core/configuration'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 
@@ -58,6 +59,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         filterBy: types.optional(FilterModel, {}),
+
+        /**
+         * #property
+         */
+        lineWidth: types.maybe(types.number),
 
         /**
          * #property
@@ -116,6 +122,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setLastDrawnOffsetPx(n: number) {
         self.lastDrawnOffsetPx = n
       },
+
+      /**
+       * #action
+       */
+      setLineWidth(n: number) {
+        self.lineWidth = n
+      },
     }))
 
     .views(self => {
@@ -125,6 +138,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
+        get lineWidthSetting() {
+          return self.lineWidth ?? getConf(self, 'lineWidth')
+        },
         /**
          * #getter
          */
@@ -163,6 +179,23 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ])
               },
             },
+            {
+              label: 'Line width',
+              subMenu: [
+                {
+                  label: 'Thin',
+                  onClick: () => self.setLineWidth(1),
+                },
+                {
+                  label: 'Bold',
+                  onClick: () => self.setLineWidth(2),
+                },
+                {
+                  label: 'Extra bold',
+                  onClick: () => self.setLineWidth(5),
+                },
+              ],
+            },
 
             {
               label: 'Color scheme',
@@ -189,47 +222,48 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             },
           ]
         },
-
-        /**
-         * #method
-         */
-        async renderSvg(opts: ExportSvgOptions) {
-          const view = getContainingView(self) as LGV
-          const width = view.dynamicBlocks.totalWidthPx
-          const height = self.height
-          let str
-          if (opts.rasterizeLayers) {
-            const canvas = document.createElement('canvas')
-            canvas.width = width * 2
-            canvas.height = height * 2
-            const ctx = canvas.getContext('2d')
-            if (!ctx) {
-              return
-            }
-            ctx.scale(2, 2)
-            await drawFeats(self, ctx)
-            str = (
-              <image
-                width={width}
-                height={height}
-                xlinkHref={canvas.toDataURL('image/png')}
-              />
-            )
-          } else {
-            // @ts-ignore
-            const C2S = await import('canvas2svg')
-            const ctx = new C2S.default(width, height)
-            await drawFeats(self, ctx)
-            str = (
-              // eslint-disable-next-line react/no-danger
-              <g dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }} />
-            )
-          }
-
-          return <g>{str}</g>
-        },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      async renderSvg(opts: ExportSvgOptions) {
+        const view = getContainingView(self) as LGV
+        const width = view.dynamicBlocks.totalWidthPx
+        const height = self.height
+        let str
+        if (opts.rasterizeLayers) {
+          const canvas = document.createElement('canvas')
+          canvas.width = width * 2
+          canvas.height = height * 2
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            return
+          }
+          ctx.scale(2, 2)
+          await drawFeats(self, ctx)
+          str = (
+            <image
+              width={width}
+              height={height}
+              xlinkHref={canvas.toDataURL('image/png')}
+            />
+          )
+        } else {
+          // @ts-ignore
+          const C2S = await import('canvas2svg')
+          const ctx = new C2S.default(width, height)
+          await drawFeats(self, ctx)
+          str = (
+            // eslint-disable-next-line react/no-danger
+            <g dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }} />
+          )
+        }
+
+        return <g>{str}</g>
+      },
+    }))
     .actions(self => ({
       afterAttach() {
         addDisposer(

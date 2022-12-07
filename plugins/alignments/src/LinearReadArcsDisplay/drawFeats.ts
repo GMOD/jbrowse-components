@@ -27,6 +27,7 @@ export default async function drawFeats(
     colorBy?: { type: string }
     height: number
     chainData?: ChainData
+    lineWidthSetting: number
   },
   ctx: CanvasRenderingContext2D,
 ) {
@@ -37,7 +38,7 @@ export default async function drawFeats(
   const displayHeight = self.height
   const view = getContainingView(self) as LGV
   self.setLastDrawnOffsetPx(view.offsetPx)
-
+  ctx.lineWidth = self.lineWidthSetting
   const { chains, stats } = chainData
   const hasPaired = hasPairedReads(chainData)
   for (let i = 0; i < chains.length; i++) {
@@ -49,8 +50,10 @@ export default async function drawFeats(
     for (let i = 0; i < chain.length - 1; i++) {
       const v0 = chain[i]
       const v1 = chain[i + 1]
-      const f1 = v0.strand === -1
-      const f2 = v1.strand === -1
+      const s1 = v0.strand
+      const s2 = v1.strand
+      const f1 = s1 === -1
+      const f2 = s2 === -1
       const p1 = f1 ? v0.start : v0.end
       const p2 = hasPaired ? (f2 ? v1.start : v1.end) : f2 ? v1.end : v1.start
 
@@ -67,16 +70,28 @@ export default async function drawFeats(
       ctx.moveTo(p, 0)
       const type = self.colorBy?.type || 'insertSizeAndOrientation'
 
-      if (type === 'insertSizeAndOrientation') {
-        ctx.strokeStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
-      } else if (type === 'orientation') {
-        ctx.strokeStyle = getOrientationColor(v0)
-      } else if (type === 'insertSize') {
-        ctx.strokeStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
-      } else if (type === 'gradient') {
-        const s = Math.min(v0.start, v1.start)
-        const e = Math.max(v0.end, v1.end)
-        ctx.strokeStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
+      if (hasPaired) {
+        if (type === 'insertSizeAndOrientation') {
+          ctx.strokeStyle = getInsertSizeAndOrientationColor(v0, v1, stats)
+        } else if (type === 'orientation') {
+          ctx.strokeStyle = getOrientationColor(v0)
+        } else if (type === 'insertSize') {
+          ctx.strokeStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
+        } else if (type === 'gradient') {
+          ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
+        }
+      } else {
+        if (type === 'orientation' || type === 'insertSizeAndOrientation') {
+          if (s1 === -1 && s2 === 1) {
+            ctx.strokeStyle = 'navy'
+          } else if (s1 === 1 && s2 === -1) {
+            ctx.strokeStyle = 'green'
+          } else {
+            ctx.strokeStyle = 'grey'
+          }
+        } else if (type === 'gradient') {
+          ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
+        }
       }
 
       const destX = p + radius * 2

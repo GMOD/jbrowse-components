@@ -24,6 +24,15 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      lineWidth: {
+        type: 'number',
+        description: 'set arc line width',
+        defaultValue: 1,
+      },
+
+      /**
+       * #slot
+       */
       colorScheme: {
         type: 'stringEnum',
         model: types.enumeration('colorScheme', [
