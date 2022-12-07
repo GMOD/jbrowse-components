@@ -12,6 +12,7 @@ export default (pluginManager: PluginManager) => {
       name: 'LinearReferenceSequenceDisplay',
       configSchema,
       stateModel,
+      displayName: 'Reference sequence display',
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,
