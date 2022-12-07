@@ -63,8 +63,8 @@ text below the image on the website
 ### Releasing/publishing
 
 There is a script `scripts/release.sh` that will publish the public packages in
-the monorepo to NPM and trigger the creation of a release on GitHub. To run this
-script:
+the monorepo to NPM and trigger the creation of a release on GitHub. To run
+this script:
 
 - Ensure that there is an announcement file for this release in
   `website/release_announcement_drafts/<tag>.md` containing an overview of the
@@ -90,16 +90,14 @@ script:
 
 Run the script like this:
 
-```
-scripts/release.sh myGitHubAuthToken versionIncreaseLevel
-```
+`scripts/release.sh myGitHubAuthToken versionIncreaseLevel`
 
 If you don't provide `versionIncreaseLevel`, it will default to "patch".
 
 This will trigger a GitHub workflow that will create a draft release on GitHub,
 build JBrowse Web, and upload the build to that release. It will also trigger
-workflows that will build JBrowse Desktop for Windows, Mac, and Linux and upload
-those to the release as well.
+workflows that will build JBrowse Desktop for Windows, Mac, and Linux and
+upload those to the release as well.
 
 Once the draft release has been created (you can look for it
 [here](https://github.com/GMOD/jbrowse-components/releases)), go to the release
@@ -180,7 +178,8 @@ This package provides the "alignments" related features including
 - BamAdapter - our BAM parser that wraps @gmod/bam NPM module
 - CramAdapter - our CRAM parser that wraps the @gmod/cram NPM module
 - PileupTrack type - draws alignments as boxes in a "pileup" style view
-- SNPCoverageTrack - draws calculated coverage with mismatches drawn over the coverage
+- SNPCoverageTrack - draws calculated coverage with mismatches drawn over the
+  coverage
 - AlignmentsTrack - a "supertrack" which contains a PileupTrack and
   SNPCoverageTrack "subtracks"
 - AlignmentsFeatureWidget for alignments features
@@ -250,14 +249,14 @@ Plugins may be built as separate packages that can be distributed on NPM. In
 order to streamline development and avoid having to build every plugin before
 developing on e.g. JBrowse Web, however, the `package.json`'s "main" entry for
 plugins in this monorepo by default points to the un-built code (e.g.
-`src/index.ts`). JBrowse Web then takes care of building the plugins itself (see
-`products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
+`src/index.ts`). JBrowse Web then takes care of building the plugins itself
+(see `products/jbrowse-web/rescripts/yarnWorkspacesRescript.js`).
 
 When you want to use a built plugin, you can run `yarn useDist` in the plugin's
-`package.json`, and then run `yarn useSrc` to restore it when you're done. As an
-example, the root-level `yarn build` that builds all the packages does this to
-build all the plugins and then build JBrowse Web and JBrowse Desktop using the
-built plugins.
+`package.json`, and then run `yarn useSrc` to restore it when you're done. As
+an example, the root-level `yarn build` that builds all the packages does this
+to build all the plugins and then build JBrowse Web and JBrowse Desktop using
+the built plugins.
 
 ## Preparing sample data sets
 
@@ -278,8 +277,22 @@ jbrowse text-index -a hg19 --tracks ncbi_gff_hg19 --out config_demo.json --force
 
 ## Notes about monorepo setup
 
-Our setup for the monorepo takes notes from the material-ui repository. Some particular notes include
+Our setup for the monorepo takes notes from the material-ui repository. Some
+particular notes include
 
-1. The use of the "flat" packages/core package, where you can import from nested subpaths like '@jbrowse/core/util'
+1. The use of the "flat" packages/core package, where you can import from
+   nested subpaths like '@jbrowse/core/util'
 2. The use of tsconfig.build.json to generate types in the final release
 3. The use of referring to the src directory at development time
+
+## Notes about yarn
+
+Using `yarn upgrade` or `yarn upgrade-interactive --latest` can produce errors
+with the latest version of yarn. This is commonly cited around the web, but
+using npx to one-off run an older version of yarn can fix this issues
+
+Example:
+
+```
+npx yarn@1.19.1 upgrade-interactive --latest
+```

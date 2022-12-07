@@ -67,7 +67,7 @@
     "@jbrowse/plugin-variants": "^2.2.2",
     "@jbrowse/plugin-wiggle": "^2.2.2",
     "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^5.10.17",
     "librpc-web-mod": "^1.1.5",
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",

@@ -52,7 +52,7 @@
     "@jbrowse/plugin-variants": "^2.2.2",
     "@jbrowse/plugin-wiggle": "^2.2.2",
     "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^5.10.17",
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",

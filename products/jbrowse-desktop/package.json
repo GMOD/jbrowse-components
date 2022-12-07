@@ -79,7 +79,7 @@
     "@jbrowse/plugin-wiggle": "^2.2.2",
     "@jbrowse/text-indexing": "^2.2.2",
     "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^5.10.17",
     "@mui/x-data-grid": "^5.0.1",
     "deepmerge": "^4.2.2",
     "electron-debug": "^3.0.1",
