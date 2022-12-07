@@ -9,6 +9,17 @@ import {
 } from '../shared/color'
 import { ChainData } from '../shared/fetchChains'
 
+export function hasPairedReads(features: ChainData) {
+  for (const f of features.chains.values()) {
+    if (f[0].flags & 1) {
+      return true
+    }
+  }
+  return false
+}
+
+const [LEFT, , RIGHT] = [0, 1, 2, 3]
+
 type LGV = LinearGenomeViewModel
 
 export default async function drawFeats(

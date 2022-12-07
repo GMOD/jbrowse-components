@@ -67,3 +67,17 @@ export const useNextFrame = (variable: unknown) => {
     setNextFrameState(variable)
   }, [variable])
 }
+
+// https://stackoverflow.com/a/49186706/2129219 the array-intersection package
+// on npm has a large kb size, and we are just intersecting open track ids so
+// simple is better
+export function intersect<T>(
+  cb: (l: T) => string,
+  a1: T[] = [],
+  a2: T[] = [],
+  ...rest: T[][]
+): T[] {
+  const ids = a2.map(elt => cb(elt))
+  const a12 = a1.filter(value => ids.includes(cb(value)))
+  return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
+}

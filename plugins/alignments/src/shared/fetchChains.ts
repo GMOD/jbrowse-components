@@ -10,6 +10,7 @@ type LGV = LinearGenomeViewModel
 
 export interface ReducedFeature {
   name: string
+  strand: number
   refName: string
   start: number
   end: number

@@ -165,6 +165,7 @@ export class PileupGetFeatures extends RpcMethodType {
       refName: f.get('refName'),
       name: f.get('name'),
       start: f.get('start'),
+      strand: f.get('strand'),
       end: f.get('end'),
       flags: f.get('flags'),
       tlen: f.get('template_length'),

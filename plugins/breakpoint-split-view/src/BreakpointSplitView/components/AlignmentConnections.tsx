@@ -38,10 +38,12 @@ const AlignmentConnections = observer(function ({
   )
 
   const layoutMatches = useMemo(() => {
-    const features = hasPaired
-      ? getBadlyPairedAlignments(totalFeatures)
-      : getMatchedAlignmentFeatures(totalFeatures)
-    const layoutMatches = model.getMatchedFeaturesInLayout(trackId, features)
+    const layoutMatches = model.getMatchedFeaturesInLayout(
+      trackId,
+      hasPaired
+        ? getBadlyPairedAlignments(totalFeatures)
+        : getMatchedAlignmentFeatures(totalFeatures),
+    )
     if (!hasPaired) {
       layoutMatches.forEach(m => {
         m.sort((a, b) => a.feature.get('clipPos') - b.feature.get('clipPos'))
@@ -96,9 +98,7 @@ const AlignmentConnections = observer(function ({
 
           const s1 = f1.get('strand')
           const s2 = f2.get('strand')
-          const p1 = hasPaired
-            ? c1[s1 === -1 ? LEFT : RIGHT]
-            : c1[s1 === -1 ? LEFT : RIGHT]
+          const p1 = c1[s1 === -1 ? LEFT : RIGHT]
           const p2 = hasPaired
             ? c2[s2 === -1 ? LEFT : RIGHT]
             : c2[s2 === -1 ? RIGHT : LEFT]

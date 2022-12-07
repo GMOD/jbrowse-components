@@ -83,7 +83,6 @@ const Translocations = observer(function ({
           const r = getPxFromCoordinate(views[level2], chr2, end2)
           if (r) {
             const c2: LayoutRecord = [r, 0, r + 1, 0]
-
             const x1 = getPxFromCoordinate(
               views[level1],
               f1.get('refName'),
