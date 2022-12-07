@@ -1,6 +1,6 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
+import { renameRegionsIfNeeded, Region, dedupe } from '@jbrowse/core/util'
 import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -160,17 +160,22 @@ export class PileupGetFeatures extends RpcMethodType {
       .getFeaturesInMultipleRegions(regions)
       .pipe(toArray())
       .toPromise()
-    const reduced = featuresArray.map(f => ({
-      id: f.id(),
-      refName: f.get('refName'),
-      name: f.get('name'),
-      start: f.get('start'),
-      strand: f.get('strand'),
-      end: f.get('end'),
-      flags: f.get('flags'),
-      tlen: f.get('template_length'),
-      pair_orientation: f.get('pair_orientation'),
-    }))
+    const reduced = dedupe(
+      featuresArray.map(f => ({
+        id: f.id(),
+        refName: f.get('refName'),
+        name: f.get('name'),
+        start: f.get('start'),
+        strand: f.get('strand'),
+        end: f.get('end'),
+        flags: f.get('flags'),
+        tlen: f.get('template_length'),
+        pair_orientation: f.get('pair_orientation'),
+        clipPos: f.get('clipPos'),
+      })),
+      f => f.id,
+    )
+
     const filtered = filterForPairs(reduced)
     const stats = filtered.length ? getInsertSizeStats(filtered) : undefined
     const chains = {} as { [key: string]: ReducedFeature[] }

@@ -74,7 +74,7 @@ const AlignmentConnections = observer(function ({
         const ret = []
         // we follow a path in the list of chunks, not from top to bottom, just in series
         // following x1,y1 -> x2,y2
-        for (let i = 0; i < chunk.length - 1; i += 1) {
+        for (let i = 0; i < chunk.length - 1; i++) {
           const { layout: c1, feature: f1, level: level1 } = chunk[i]
           const { layout: c2, feature: f2, level: level2 } = chunk[i + 1]
 

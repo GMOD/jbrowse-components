@@ -73,7 +73,7 @@ export default async function drawFeats(
     // if we're looking at a paired read (flag 1) then assume it is just two
     // reads (some small cases may defy this assumption such as secondary
     // alignments but this may be uncommon)
-    if (chain[0].flags & 1) {
+    if (chain[0].flags & 1 && chain.length > 1) {
       const v0 = chain[0]
       const v1 = chain[1]
       const r1s = view.bpToPx({

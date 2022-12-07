@@ -18,8 +18,6 @@ export function hasPairedReads(features: ChainData) {
   return false
 }
 
-const [LEFT, , RIGHT] = [0, 1, 2, 3]
-
 type LGV = LinearGenomeViewModel
 
 export default async function drawFeats(
@@ -41,14 +39,23 @@ export default async function drawFeats(
   self.setLastDrawnOffsetPx(view.offsetPx)
 
   const { chains, stats } = chainData
+  const hasPaired = hasPairedReads(chainData)
   for (let i = 0; i < chains.length; i++) {
     const chain = chains[i]
-    if (chain.length > 1) {
-      const [v0, v1] = chain
-      const s = Math.min(v0.start, v1.start)
-      const e = Math.max(v0.end, v1.end)
-      const r1 = view.bpToPx({ refName: v0.refName, coord: s })
-      const r2 = view.bpToPx({ refName: v0.refName, coord: e })
+    if (!hasPaired) {
+      chain.sort((a, b) => a.clipPos - b.clipPos)
+    }
+
+    for (let i = 0; i < chain.length - 1; i++) {
+      const v0 = chain[i]
+      const v1 = chain[i + 1]
+      const f1 = v0.strand === -1
+      const f2 = v1.strand === -1
+      const p1 = f1 ? v0.start : v0.end
+      const p2 = hasPaired ? (f2 ? v1.start : v1.end) : f2 ? v1.end : v1.start
+
+      const r1 = view.bpToPx({ refName: v0.refName, coord: p1 })
+      const r2 = view.bpToPx({ refName: v0.refName, coord: p2 })
 
       if (!r1 || !r2) {
         continue
@@ -67,6 +74,8 @@ export default async function drawFeats(
       } else if (type === 'insertSize') {
         ctx.strokeStyle = getInsertSizeColor(v0, v1, stats) || 'grey'
       } else if (type === 'gradient') {
+        const s = Math.min(v0.start, v1.start)
+        const e = Math.max(v0.end, v1.end)
         ctx.strokeStyle = `hsl(${Math.log10(Math.abs(e - s)) * 10},50%,50%)`
       }
 

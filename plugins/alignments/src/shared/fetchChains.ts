@@ -18,6 +18,7 @@ export interface ReducedFeature {
   flags: number
   tlen: number
   pair_orientation: string
+  clipPos: number
 }
 
 export interface ChainStats {
