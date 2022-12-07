@@ -1,5 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
+import { LinearWiggleDisplayReactComponent } from '@jbrowse/plugin-wiggle'
 
 import configSchemaFactory from './config'
 import stateModelFactory from './stateModel'
@@ -14,7 +14,7 @@ export default (pluginManager: PluginManager) => {
       stateModel,
       trackType: 'ReferenceSequenceTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: LinearWiggleDisplayReactComponent,
     }
   })
 }

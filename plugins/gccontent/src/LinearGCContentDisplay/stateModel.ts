@@ -3,16 +3,13 @@ import {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 import { types } from 'mobx-state-tree'
 
 export default function stateModelFactory(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
-  const WigglePlugin = pluginManager.getPlugin(
-    'WigglePlugin',
-  ) as import('@jbrowse/plugin-wiggle').default
-  const { linearWiggleDisplayModelFactory } = WigglePlugin.exports
   return types
     .compose(
       'LinearGCContentDisplay',
