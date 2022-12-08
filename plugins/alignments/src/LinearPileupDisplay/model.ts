@@ -164,13 +164,13 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       /**
        * #action
        */
-      setFeatureHeight(n: number) {
+      setFeatureHeight(n?: number) {
         self.featureHeight = n
       },
       /**
        * #action
        */
-      setNoSpacing(flag: boolean) {
+      setNoSpacing(flag?: boolean) {
         self.noSpacing = flag
       },
 
@@ -788,12 +788,31 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             },
             {
               label: 'Set feature height',
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  SetFeatureHeightDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
+                  },
+                },
+                {
+                  label: 'Compact',
+                  onClick: () => {
+                    self.setFeatureHeight(2)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
+                  label: 'Manually set height',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      SetFeatureHeightDlg,
+                      { model: self, handleClose: doneCallback },
+                    ])
+                  },
+                },
+              ],
             },
             {
               label: 'Set max height',
