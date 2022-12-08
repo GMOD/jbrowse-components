@@ -412,18 +412,9 @@ export default class TextIndex extends JBrowseCommand {
       const { adapter, textSearching } = config
       const { type } = adapter
       const {
-        indexingFeatureTypesToExclude: types = typesToExclude,
-        indexingAttributes: attrs = attributes,
+        indexingFeatureTypesToExclude = typesToExclude,
+        indexingAttributes = attributes,
       } = textSearching || {}
-
-      const map1 = {
-        Gff3Adapter: 'gffLocation' as const,
-        Gff3TabixAdapter: 'gffGzLocation' as const,
-      }
-      const map2 = {
-        VcfAdapter: 'vcfLocation' as const,
-        VcfTabixAdapter: 'vcfGzLocation' as const,
-      }
 
       let loc
       if (type === 'Gff3TabixAdapter') {
@@ -441,19 +432,19 @@ export default class TextIndex extends JBrowseCommand {
       if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
         yield* indexGff3({
           config,
-          attributesToIndex: attrs,
+          attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
           outLocation,
-          typesToExclude: types,
+          typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
       } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
         yield* indexVcf({
           config,
-          attributesToIndex: attrs,
+          attributesToIndex: indexingAttributes,
           inLocation: getLoc(loc),
           outLocation,
-          typesToExclude: types,
+          typesToExclude: indexingFeatureTypesToExclude,
           quiet,
         })
       }
