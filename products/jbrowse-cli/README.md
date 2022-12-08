@@ -510,8 +510,10 @@ OPTIONS
 
   --perTrack                   If set, creates an index per track
 
-  --prefixSize=prefixSize      [default: 6] Specify the prefix size for the ixx index, increase size if many of your
-                               gene IDs have same prefix e.g. Z000000001, Z000000002
+  --prefixSize=prefixSize      Specify the prefix size for the ixx index. We attempt to automatically calculate this,
+                               but you can manually specify this too. If many genes have similar gene IDs e.g.
+                               Z000000001, Z000000002 the prefix size should be larger so that they get split into
+                               different bins
 
   --target=target              Path to config file in JB2 installation directory to read from.
 

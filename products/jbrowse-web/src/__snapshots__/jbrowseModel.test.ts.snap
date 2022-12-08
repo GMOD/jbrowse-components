@@ -43,6 +43,31 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "textSearchAdapterId": "volvox-index",
       "type": "TrixTextSearchAdapter",
     },
+    {
+      "assemblyNames": [
+        "volvox-rev-del",
+      ],
+      "ixFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
+        "locationType": "UriLocation",
+        "uri": "trix/volvox-rev-del.ix",
+      },
+      "ixxFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
+        "locationType": "UriLocation",
+        "uri": "trix/volvox-rev-del.ixx",
+      },
+      "metaFilePath": {
+        "internetAccountId": undefined,
+        "internetAccountPreAuthorization": undefined,
+        "locationType": "UriLocation",
+        "uri": "trix/volvox-rev-del_meta.json",
+      },
+      "textSearchAdapterId": "volvox-rev-del-index",
+      "type": "TrixTextSearchAdapter",
+    },
   ],
   "assemblies": [
     {

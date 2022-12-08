@@ -120,7 +120,6 @@
         }
       }
     },
-
     {
       "name": "volvox-rev-del",
       "sequence": {
@@ -1875,7 +1874,6 @@
       "category": ["VCF"],
       "assemblyNames": ["volvox"]
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "volvox-rev-del",
@@ -1934,6 +1932,23 @@
         "locationType": "UriLocation"
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "volvox-rev-del-index",
+      "ixFilePath": {
+        "uri": "trix/volvox-rev-del.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "trix/volvox-rev-del.ixx",
+        "locationType": "UriLocation"
+      },
+      "metaFilePath": {
+        "uri": "trix/volvox-rev-del_meta.json",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["volvox-rev-del"]
     }
   ],
   "internetAccounts": [

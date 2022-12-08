@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
-    "ixixx": "^1.0.19",
+    "ixixx": "^2.0.1",
     "node-fetch": "^2.6.0"
   },
   "peerDependencies": {

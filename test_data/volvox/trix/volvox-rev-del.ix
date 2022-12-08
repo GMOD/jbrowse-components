@@ -1,0 +1,73 @@
+1 ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],2
+1000 ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+2 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],1
+3 ["ctgA%3A11300..19000"|"volvox-rev-del-annotations"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],1
+a ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+agt221.3 ["ctgA%3A17500..18000"|"volvox-rev-del-annotations"|"agt221.3"|"Match4"],1
+agt221.5 ["ctgA%3A11050..11500"|"volvox-rev-del-annotations"|"agt221.5"],1 ["ctgA%3A11050..17300"|"volvox-rev-del-annotations"|"agt221.5"|"Match3"],2 ["ctgA%3A15000..15500"|"volvox-rev-del-annotations"|"agt221.5"],3 ["ctgA%3A17000..17300"|"volvox-rev-del-annotations"|"agt221.5"],4
+agt767.3 ["ctgA%3A18000..19000"|"volvox-rev-del-annotations"|"agt767.3"|"Match6"],1
+agt767.5 ["ctgA%3A11150..11500"|"volvox-rev-del-annotations"|"agt767.5"],1 ["ctgA%3A11150..17200"|"volvox-rev-del-annotations"|"agt767.5"|"Match5"],2 ["ctgA%3A15000..15500"|"volvox-rev-del-annotations"|"agt767.5"],3 ["ctgA%3A17000..17200"|"volvox-rev-del-annotations"|"agt767.5"],4
+agt830.3 ["ctgA%3A15410..15500"|"volvox-rev-del-annotations"|"agt830.3"],1 ["ctgA%3A15410..17503"|"volvox-rev-del-annotations"|"agt830.3"|"Match2"],2 ["ctgA%3A17000..17503"|"volvox-rev-del-annotations"|"agt830.3"],3
+agt830.5 ["ctgA%3A11050..11500"|"volvox-rev-del-annotations"|"agt830.5"],1 ["ctgA%3A11050..13202"|"volvox-rev-del-annotations"|"agt830.5"|"Match1"],2 ["ctgA%3A13000..13202"|"volvox-rev-del-annotations"|"agt830.5"],3
+an ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],1 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],2
+another ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],1 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],2
+appear ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+at ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+b101.2 ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1
+bac ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1
+ctga ["ctgA%3A10001..60001"|"volvox-rev-del-annotations"|"ctgA"],1
+ctgb ["ctgB%3A-39999..-33921"|"volvox-rev-del-annotations"|"ctgB"],1
+eden ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],2 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],3 ["ctgA%3A11300..19000"|"volvox-rev-del-annotations"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],4
+eden.1 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1
+eden.2 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],1
+eden.3 ["ctgA%3A11300..19000"|"volvox-rev-del-annotations"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],1
+end ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1
+example ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],1 ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],2 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],4
+f01 ["ctgA%3A4705..7713"|"volvox-rev-del-annotations"|"f01"],1
+f05 ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1 ["ctgB%3A-35285..-34032"|"volvox-rev-del-annotations"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],2
+f06 ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],1 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],2
+f07 ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],1 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],2
+f11 ["ctgA%3A6990..8410"|"volvox-rev-del-annotations"|"f11"],1
+f12 ["ctgA%3A9758..10000"|"volvox-rev-del-annotations"|"f12"],1
+fake ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+fakesnp ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+fakesnp1 ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+fingerprinted ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1
+form ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],2 ["ctgA%3A11300..19000"|"volvox-rev-del-annotations"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],3
+gene:hga ["ctgA%3A11100..12000"|"volvox-rev-del-annotations"|"Gene%3Ahga"],1
+gene:hgb ["ctgA%3A11600..13000"|"volvox-rev-del-annotations"|"Gene%3Ahgb"],1
+get ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+i ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+is ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],4 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],5
+kinase ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN"|"EDEN"|"protein%20kinase"],1 ["ctgA%3A6012..8851"|"volvox-rev-del-annotations"|"m09"|"kinase"],2
+length ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+m01 ["ctgA%3A8253..8366"|"volvox-rev-del-annotations"|"m01"|"WD40"],1
+m09 ["ctgA%3A6012..8851"|"volvox-rev-del-annotations"|"m09"|"kinase"],1
+match1 ["ctgA%3A11050..13202"|"volvox-rev-del-annotations"|"agt830.5"|"Match1"],1
+match2 ["ctgA%3A15410..17503"|"volvox-rev-del-annotations"|"agt830.3"|"Match2"],1
+match3 ["ctgA%3A11050..17300"|"volvox-rev-del-annotations"|"agt221.5"|"Match3"],1
+match4 ["ctgA%3A17500..18000"|"volvox-rev-del-annotations"|"agt221.3"|"Match4"],1
+match5 ["ctgA%3A11150..17200"|"volvox-rev-del-annotations"|"agt767.5"|"Match5"],1
+match6 ["ctgA%3A18000..19000"|"volvox-rev-del-annotations"|"agt767.3"|"Match6"],1
+message. ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+ok! ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1 ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],2
+protein ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN"|"EDEN"|"protein%20kinase"],1
+protein:hga ["ctgA%3A11200..11900"|"volvox-rev-del-annotations"|"Protein%3AHGA"],1
+protein:hgb ["ctgA%3A11800..12900"|"volvox-rev-del-annotations"|"Protein%3AHGB"],1
+reads ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],1
+remark:hga ["ctgA%3A11000..12000"|"volvox-rev-del-annotations"|"Remark%3Ahga"],1
+seg03 ["ctgA%3A16885..17241"|"volvox-rev-del-annotations"|"seg03"],1 ["ctgA%3A17410..17737"|"volvox-rev-del-annotations"|"seg03"],2 ["ctgA%3A18055..18080"|"volvox-rev-del-annotations"|"seg03"],3 ["ctgA%3A18306..18999"|"volvox-rev-del-annotations"|"seg03"],4
+seg04 ["ctgA%3A15233..15302"|"volvox-rev-del-annotations"|"seg04"],1 ["ctgA%3A15800..16101"|"volvox-rev-del-annotations"|"seg04"],2 ["ctgA%3A16442..16854"|"volvox-rev-del-annotations"|"seg04"],3 ["ctgA%3A17106..17211"|"volvox-rev-del-annotations"|"seg04"],4 ["ctgA%3A17695..18177"|"volvox-rev-del-annotations"|"seg04"],5 ["ctgA%3A18545..18783"|"volvox-rev-del-annotations"|"seg04"],6 ["ctgA%3A18869..18935"|"volvox-rev-del-annotations"|"seg04"],7 ["ctgA%3A19404..19825"|"volvox-rev-del-annotations"|"seg04"],8
+seg07 ["ctgA%3A4191..4514"|"volvox-rev-del-annotations"|"seg07"],1 ["ctgA%3A4552..5043"|"volvox-rev-del-annotations"|"seg07"],2 ["ctgA%3A5373..5600"|"volvox-rev-del-annotations"|"seg07"],3 ["ctgA%3A5897..6315"|"volvox-rev-del-annotations"|"seg07"],4 ["ctgA%3A6491..6890"|"volvox-rev-del-annotations"|"seg07"],5 ["ctgA%3A7126..7297"|"volvox-rev-del-annotations"|"seg07"],6 ["ctgA%3A7735..7983"|"volvox-rev-del-annotations"|"seg07"],7 ["ctgA%3A8447..8709"|"volvox-rev-del-annotations"|"seg07"],8 ["ctgA%3A8931..9186"|"volvox-rev-del-annotations"|"seg07"],9 ["ctgA%3A9472..9699"|"volvox-rev-del-annotations"|"seg07"],10 ["ctgA%3A9957..10000"|"volvox-rev-del-annotations"|"seg07"],11 ["ctgA%3A9957..10000"|"volvox-rev-del-annotations"|"seg07"],12
+seg13 ["ctgA%3A9406..9476"|"volvox-rev-del-annotations"|"seg13"],1 ["ctgA%3A9762..10000"|"volvox-rev-del-annotations"|"seg13"],2
+seg14 ["ctgA%3A1137..1318"|"volvox-rev-del-annotations"|"seg14"],1 ["ctgA%3A1754..1948"|"volvox-rev-del-annotations"|"seg14"],2 ["ctgA%3A2057..2474"|"volvox-rev-del-annotations"|"seg14"],3 ["ctgA%3A2890..3270"|"volvox-rev-del-annotations"|"seg14"],4 ["ctgA%3A3395..3811"|"volvox-rev-del-annotations"|"seg14"],5 ["ctgA%3A4065..4556"|"volvox-rev-del-annotations"|"seg14"],6 ["ctgA%3A4763..5030"|"volvox-rev-del-annotations"|"seg14"],7 ["ctgA%3A5231..5488"|"volvox-rev-del-annotations"|"seg14"],8 ["ctgA%3A5790..6022"|"volvox-rev-del-annotations"|"seg14"],9 ["ctgA%3A6092..6318"|"volvox-rev-del-annotations"|"seg14"],10 ["ctgA%3A6816..6992"|"volvox-rev-del-annotations"|"seg14"],11 ["ctgA%3A7449..7829"|"volvox-rev-del-annotations"|"seg14"],12
+seg15 ["ctgA%3A1252..1365"|"volvox-rev-del-annotations"|"seg15"],1 ["ctgA%3A1492..1504"|"volvox-rev-del-annotations"|"seg15"],2 ["ctgA%3A1941..2377"|"volvox-rev-del-annotations"|"seg15"],3 ["ctgA%3A2748..2954"|"volvox-rev-del-annotations"|"seg15"],4 ["ctgA%3A3401..3897"|"volvox-rev-del-annotations"|"seg15"],5 ["ctgA%3A4043..4113"|"volvox-rev-del-annotations"|"seg15"],6 ["ctgA%3A4399..4888"|"volvox-rev-del-annotations"|"seg15"],7 ["ctgA%3A515..954"|"volvox-rev-del-annotations"|"seg15"],8 ["ctgA%3A5281..5375"|"volvox-rev-del-annotations"|"seg15"],9 ["ctgA%3A5711..6041"|"volvox-rev-del-annotations"|"seg15"],10 ["ctgA%3A6425..6564"|"volvox-rev-del-annotations"|"seg15"],11 ["ctgA%3A6738..7087"|"volvox-rev-del-annotations"|"seg15"],12 ["ctgA%3A7329..7595"|"volvox-rev-del-annotations"|"seg15"],13 ["ctgA%3A7858..7979"|"volvox-rev-del-annotations"|"seg15"],14 ["ctgA%3A8169..8453"|"volvox-rev-del-annotations"|"seg15"],15
+should ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+snp ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+splice ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.1"|"EDEN.1"|"Eden%20splice%20form%201"],1 ["ctgA%3A11050..19000"|"volvox-rev-del-annotations"|"EDEN.2"|"EDEN.2"|"Eden%20splice%20form%202"],2 ["ctgA%3A11300..19000"|"volvox-rev-del-annotations"|"EDEN.3"|"EDEN.3"|"Eden%20splice%20form%203"],3
+that ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1
+the ["ctgA%3A14715..15968"|"volvox-rev-del-annotations"|"f05"|"Ok!%20Ok!%20I%20get%20the%20message."],1
+this ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A11659..11984"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],2 ["ctgA%3A13014..16130"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],3 ["ctgB%3A-36986..-33870"|"volvox-rev-del-annotations"|"f06"|"This%20is%20another%20example"],4 ["ctgB%3A-38341..-38016"|"volvox-rev-del-annotations"|"f07"|"This%20is%20an%20example"],5
+wd40 ["ctgA%3A8253..8366"|"volvox-rev-del-annotations"|"m01"|"WD40"],1
+with ["ctgA%3A11000..11000"|"volvox-rev-del-annotations"|"FakeSNP"|"FakeSNP1"|"This%20is%20a%20fake%20SNP%20that%20should%20appear%20at%201000%20with%20length%201"],1 ["ctgA%3A11000..30000"|"volvox-rev-del-annotations"|"b101.2"|"b101.2"|"Fingerprinted%20BAC%20with%20end%20reads"],2
+ああ、この機能は、世界中を旅しています！ ["ctgB%3A-35285..-34032"|"volvox-rev-del-annotations"|"f05"|"%E3%81%82%E3%81%82%E3%80%81%E3%81%93%E3%81%AE%E6%A9%9F%E8%83%BD%E3%81%AF%E3%80%81%E4%B8%96%E7%95%8C%E4%B8%AD%E3%82%92%E6%97%85%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99%EF%BC%81"],1
