@@ -93,7 +93,7 @@ export default class TextIndex extends JBrowseCommand {
     }),
     prefixSize: flags.integer({
       description:
-        'Specify the prefix size for the ixx index, increase size if many of your gene IDs have same prefix e.g. Z000000001, Z000000002',
+        'Specify the prefix size for the ixx index. We attempt to automatically calculate this, but you can manually specify this too. If many genes have similar gene IDs e.g. Z000000001, Z000000002 the prefix size should be larger so that they get split into different bins',
     }),
     file: flags.string({
       description:

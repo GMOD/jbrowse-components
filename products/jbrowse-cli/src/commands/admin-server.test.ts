@@ -76,9 +76,7 @@ describe('admin-server', () => {
       await killExpress(ctx, 9091)
     })
     .it('creates a default config', async ctx => {
-      const contents = await readConf(ctx)
-
-      expect(contents).toEqual(defaultConfig)
+      expect(readConf(ctx)).toEqual(defaultConfig)
     })
   setupWithCreate
     .do(async ctx => {
@@ -94,8 +92,7 @@ describe('admin-server', () => {
       await killExpress(ctx, 9092)
     })
     .it('does not overwrite an existing config', async ctx => {
-      const contents = await readConf(ctx)
-      expect(contents).toEqual(testConfigContents)
+      expect(readConf(ctx)).toEqual(testConfigContents)
     })
   setupWithCreate
     .command(['admin-server'])
@@ -151,10 +148,9 @@ describe('admin-server', () => {
         },
         body: JSON.stringify(payload),
       })
-      const contents = await readConf(ctx)
 
       expect(await response.text()).toBe('Config written to disk')
-      expect(contents).toEqual(config)
+      expect(readConf(ctx)).toEqual(config)
     })
   setupWithCreate
     .command(['admin-server', '--port', '9095'])

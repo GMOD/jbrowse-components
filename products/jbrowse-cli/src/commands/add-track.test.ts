@@ -5,7 +5,7 @@
 import fs from 'fs'
 import * as path from 'path'
 
-import { setup, readConf } from '../testUtil'
+import { setup, readConf, ctxDir } from '../testUtil'
 
 const { writeFile, copyFile } = fs.promises
 
@@ -92,10 +92,9 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy'])
     .it('adds a bam track with bai', async ctx => {
-      const contents = await readConf(ctx)
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
       expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.bai'))).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'simple',
@@ -137,10 +136,9 @@ describe('add-track', () => {
       simpleBam + '.csi',
     ])
     .it('adds a bam track with csi', async ctx => {
-      const contents = await readConf(ctx)
-      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam.csi'))).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(ctxDir(ctx, 'simple.bam.csi'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'simple',
@@ -174,9 +172,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', '/testing/in/place.bam', '--load', 'inPlace'])
     .it('adds a bam track with load inPlace', async ctx => {
-      const contents = await readConf(ctx)
-
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'place',
@@ -217,9 +213,7 @@ describe('add-track', () => {
       '/something/else/random.bai',
     ])
     .it('adds a bam track with load inPlace', async ctx => {
-      const contents = await readConf(ctx)
-
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'place',
@@ -261,11 +255,9 @@ describe('add-track', () => {
       simpleBai,
     ])
     .it('adds a bam track with indexFile for bai', async ctx => {
-      const contents = await readConf(ctx)
-      expect(fs.existsSync(path.join(ctx.dir, 'simple.bam'))).toBeTruthy()
-      expect(fs.existsSync(path.join(ctx.dir, 'simple.bai'))).toBeTruthy()
-
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'simple.bam'))).toBeTruthy()
+      expect(fs.existsSync(ctxDir(ctx, 'simple.bai'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'simple',
@@ -300,8 +292,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleBam, '--load', 'copy', '--subDir', 'bam'])
     .it('adds a bam track with subDir', async ctx => {
-      const contents = await readConf(ctx)
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'simple',
@@ -345,8 +336,7 @@ describe('add-track', () => {
       'bam',
     ])
     .it('adds a bam track with subDir and localPath protocol', async ctx => {
-      const contents = await readConf(ctx)
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'simple',
@@ -400,8 +390,7 @@ describe('add-track', () => {
       '{"defaultRendering": "test"}',
     ])
     .it('adds a bam track with all the custom fields', async ctx => {
-      const contents = await readConf(ctx)
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'CustomTrackType',
           trackId: 'customTrackId',
@@ -432,8 +421,7 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', 'https://mysite.com/data/simple.bam'])
     .it('adds a bam track from a url', async ctx => {
-      const contents = await readConf(ctx)
-      expect(contents.tracks).toEqual([
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'AlignmentsTrack',
           trackId: 'simple',
@@ -489,7 +477,7 @@ describe('add-track', () => {
       'testAssembly',
     ])
     .it('adds a track to a config with multiple assemblies', async ctx => {
-      const contents = await readConf(ctx)
+      const contents = readConf(ctx)
       expect(contents.tracks).toEqual([
         {
           type: 'AlignmentsTrack',
@@ -526,9 +514,8 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleGff, '--load', 'copy'])
     .it('adds a plaintext gff', async ctx => {
-      const contents = await readConf(ctx)
-      expect(fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3'))).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
           trackId: 'volvox.sort',
@@ -549,11 +536,8 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleVcf, '--load', 'copy'])
     .it('adds a plaintext vcf', async ctx => {
-      const contents = await readConf(ctx)
-      expect(
-        fs.existsSync(path.join(ctx.dir, 'volvox.filtered.vcf')),
-      ).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.filtered.vcf'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'VariantTrack',
           trackId: 'volvox.filtered',
@@ -574,11 +558,8 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleGtf, '--load', 'copy'])
     .it('adds a plaintext gtf', async ctx => {
-      const contents = await readConf(ctx)
-      expect(
-        fs.existsSync(path.join(ctx.dir, 'volvox.sorted.gtf')),
-      ).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.sorted.gtf'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
           trackId: 'volvox.sorted',
@@ -606,14 +587,9 @@ describe('add-track', () => {
       simpleGffGz + '.csi',
     ])
     .it('adds a tabix gff with csi', async ctx => {
-      const contents = await readConf(ctx)
-      expect(
-        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz')),
-      ).toBeTruthy()
-      expect(
-        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz.csi')),
-      ).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz.csi'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
           trackId: 'volvox.sort.gff3',
@@ -641,14 +617,9 @@ describe('add-track', () => {
     .do(initctx)
     .command(['add-track', simpleGffGz, '--load', 'copy'])
     .it('adds a tabix gff', async ctx => {
-      const contents = await readConf(ctx)
-      expect(
-        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz')),
-      ).toBeTruthy()
-      expect(
-        fs.existsSync(path.join(ctx.dir, 'volvox.sort.gff3.gz.tbi')),
-      ).toBeTruthy()
-      expect(contents.tracks).toEqual([
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz'))).toBeTruthy()
+      expect(fs.existsSync(ctxDir(ctx, 'volvox.sort.gff3.gz.tbi'))).toBeTruthy()
+      expect(readConf(ctx).tracks).toEqual([
         {
           type: 'FeatureTrack',
           trackId: 'volvox.sort.gff3',

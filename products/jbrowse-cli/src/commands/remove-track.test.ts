@@ -18,7 +18,7 @@ describe('add-assembly', () => {
     .command(['add-track', 'simple.bam', '--load', 'inPlace'])
     .command(['remove-track', 'simple'])
     .it('can use --out to make a new directory', async ctx => {
-      const contents = await readConf(ctx)
+      const contents = readConf(ctx)
       expect(contents.assemblies.length).toBe(1)
       expect(contents.tracks.length).toBe(0)
     })

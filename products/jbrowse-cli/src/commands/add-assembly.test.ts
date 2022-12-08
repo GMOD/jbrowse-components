@@ -111,22 +111,11 @@ describe('add-assembly', () => {
     .it('fails if load flag is passed with a URL')
 
   setup
-    .do(async ctx => {
-      const simpleFasta = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.fasta',
-      )
-      await copyFile(
-        simpleFasta,
-        path.join(ctx.dir, path.basename(simpleFasta)),
-      )
-      await copyFile(
-        `${simpleFasta}.fai`,
-        path.join(ctx.dir, path.basename(`${simpleFasta}.fai`)),
+    .do(ctx => {
+      fs.copyFileSync(dataDir('simple.fasta'), ctxDir(ctx, 'simple.fasta'))
+      fs.copyFileSync(
+        dataDir('simple.fasta.fai'),
+        ctxDir(ctx, 'simple.fasta.fai'),
       )
     })
     .command(['add-assembly', 'simple.fasta', '--load', 'copy'])
@@ -157,26 +146,8 @@ describe('add-assembly', () => {
 
   setup
     .do(async ctx => {
-      const simpleFasta = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.fasta',
-      )
-      const simpleFastaFaExtensionBasename = `${path.basename(
-        simpleFasta,
-        '.fasta',
-      )}.fa`
-      await copyFile(
-        simpleFasta,
-        path.join(ctx.dir, simpleFastaFaExtensionBasename),
-      )
-      await copyFile(
-        `${simpleFasta}.fai`,
-        path.join(ctx.dir, `${simpleFastaFaExtensionBasename}.fai`),
-      )
+      fs.copyFileSync(dataDir('simple.fasta'), ctxDir(ctx, 'simple.fa'))
+      fs.copyFileSync(dataDir('simple.fasta.fai'), ctxDir(ctx, 'simple.fa.fai'))
     })
     .command(['add-assembly', 'simple.fa', '--load', 'copy'])
     .it('adds an assembly from a FASTA (.fa extension)', async ctx => {
@@ -206,25 +177,17 @@ describe('add-assembly', () => {
 
   setup
     .do(async ctx => {
-      const simpleCompressedFasta = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.fasta.gz',
+      fs.copyFileSync(
+        dataDir('simple.fasta.gz'),
+        ctxDir(ctx, 'simple.fasta.gz'),
       )
-      await copyFile(
-        simpleCompressedFasta,
-        path.join(ctx.dir, path.basename(simpleCompressedFasta)),
+      fs.copyFileSync(
+        dataDir('simple.fasta.gz.fai'),
+        ctxDir(ctx, 'simple.fasta.gz.fai'),
       )
-      await copyFile(
-        `${simpleCompressedFasta}.fai`,
-        path.join(ctx.dir, path.basename(`${simpleCompressedFasta}.fai`)),
-      )
-      await copyFile(
-        `${simpleCompressedFasta}.gzi`,
-        path.join(ctx.dir, path.basename(`${simpleCompressedFasta}.gzi`)),
+      fs.copyFileSync(
+        dataDir('simple.fasta.gz.gzi'),
+        ctxDir(ctx, 'simple.fasta.gz.gzi'),
       )
     })
     .command(['add-assembly', 'simple.fasta.gz', '--load', 'copy'])
@@ -285,17 +248,9 @@ describe('add-assembly', () => {
 
   setup
     .do(async ctx => {
-      const simpleChromSizes = path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'data',
-        'simple.chrom.sizes',
-      )
       await copyFile(
-        simpleChromSizes,
-        path.join(ctx.dir, path.basename(simpleChromSizes)),
+        dataDir('simple.chrom.sizes'),
+        ctxDir(ctx, 'simple.chrom.sizes'),
       )
     })
     .command(['add-assembly', 'simple.chrom.sizes', '--load', 'copy'])
