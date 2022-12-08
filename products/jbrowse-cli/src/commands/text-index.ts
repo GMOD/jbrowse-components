@@ -94,7 +94,6 @@ export default class TextIndex extends JBrowseCommand {
     prefixSize: flags.integer({
       description:
         'Specify the prefix size for the ixx index, increase size if many of your gene IDs have same prefix e.g. Z000000001, Z000000002',
-      default: 6,
     }),
     file: flags.string({
       description:
@@ -143,15 +142,15 @@ export default class TextIndex extends JBrowseCommand {
     const outFlag = target || out || '.'
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confPath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outDir = path.dirname(confPath)
+    const outLocation = path.dirname(confPath)
     const config = readConf(confPath)
 
-    const trixDir = path.join(outDir, 'trix')
+    const trixDir = path.join(outLocation, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
 
-    const aggregateAdapters = config.aggregateTextSearchAdapters || []
+    const aggregateTextSearchAdapters = config.aggregateTextSearchAdapters || []
     const asms =
       assemblies?.split(',') ||
       config.assemblies?.map(a => a.name) ||
@@ -162,24 +161,27 @@ export default class TextIndex extends JBrowseCommand {
     }
 
     for (const asm of asms) {
-      const configs = await this.getTrackConfigs(
+      const trackConfigs = await this.getTrackConfigs(
         confPath,
         tracks?.split(','),
         asm,
       )
-      this.log('Indexing assembly ' + asm + '...')
-      if (!configs.length) {
+      if (!trackConfigs.length) {
+        this.log('Indexing assembly ' + asm + '...(no tracks found)...')
         continue
       }
+      this.log('Indexing assembly ' + asm + '...')
 
       if (dryrun) {
-        this.log(configs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'))
+        this.log(
+          trackConfigs.map(e => `${e.trackId}\t${e.adapter.type}`).join('\n'),
+        )
       } else {
         const id = asm + '-index'
-        const foundIdx = aggregateAdapters.findIndex(
+        const idx = aggregateTextSearchAdapters.findIndex(
           x => x.textSearchAdapterId === id,
         )
-        if (foundIdx !== -1 && !force) {
+        if (idx !== -1 && !force) {
           this.log(
             `Note: ${asm} has already been indexed with this configuration, use --force to overwrite this assembly. Skipping for now`,
           )
@@ -187,12 +189,12 @@ export default class TextIndex extends JBrowseCommand {
         }
 
         await this.indexDriver({
-          configs,
-          outDir,
+          trackConfigs,
+          outLocation,
           quiet,
           name: asm,
           attributes: attributes.split(','),
-          exclude: exclude.split(','),
+          typesToExclude: exclude.split(','),
           assemblyNames: [asm],
           prefixSize,
         })
@@ -215,17 +217,20 @@ export default class TextIndex extends JBrowseCommand {
           assemblyNames: [asm],
         } as TrixTextSearchAdapter
 
-        if (foundIdx === -1) {
-          aggregateAdapters.push(trixConf)
+        if (idx === -1) {
+          aggregateTextSearchAdapters.push(trixConf)
         } else {
-          aggregateAdapters[foundIdx] = trixConf
+          aggregateTextSearchAdapters[idx] = trixConf
         }
       }
     }
 
     if (!dryrun) {
       writeConf(
-        { ...config, aggregateTextSearchAdapters: aggregateAdapters },
+        {
+          ...config,
+          aggregateTextSearchAdapters,
+        },
         confPath,
       )
     }
@@ -248,10 +253,10 @@ export default class TextIndex extends JBrowseCommand {
 
     const isDir = fs.lstatSync(outFlag).isDirectory()
     const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
-    const outDir = path.dirname(confFilePath)
+    const outLocation = path.dirname(confFilePath)
     const config = readConf(confFilePath)
     const configTracks = config.tracks || []
-    const trixDir = path.join(outDir, 'trix')
+    const trixDir = path.join(outLocation, 'trix')
     if (!fs.existsSync(trixDir)) {
       fs.mkdirSync(trixDir)
     }
@@ -277,12 +282,12 @@ export default class TextIndex extends JBrowseCommand {
       this.log('Indexing track ' + trackId + '...')
 
       await this.indexDriver({
-        configs: [trackConfig],
+        trackConfigs: [trackConfig],
         attributes: attributes.split(','),
-        outDir,
+        outLocation,
         quiet,
         name: trackId,
-        exclude: exclude.split(','),
+        typesToExclude: exclude.split(','),
         assemblyNames,
         prefixSize,
       })
@@ -339,23 +344,23 @@ export default class TextIndex extends JBrowseCommand {
       fs.mkdirSync(trixDir)
     }
 
-    const configs = file
+    const trackConfigs = file
       .map(file => guessAdapterFromFileName(file))
       .filter(fileConfig => supported(fileConfig.adapter.type))
 
     if (fileId?.length) {
       for (let i = 0; i < fileId.length; i++) {
-        configs[i].trackId = fileId[i]
+        trackConfigs[i].trackId = fileId[i]
       }
     }
 
     await this.indexDriver({
-      configs,
-      outDir: outFlag,
-      name: configs.length > 1 ? 'aggregate' : path.basename(file[0]),
+      trackConfigs,
+      outLocation: outFlag,
+      name: trackConfigs.length > 1 ? 'aggregate' : path.basename(file[0]),
       quiet,
       attributes: attributes.split(','),
-      exclude: exclude.split(','),
+      typesToExclude: exclude.split(','),
       assemblyNames: [],
       prefixSize,
     })
@@ -366,48 +371,65 @@ export default class TextIndex extends JBrowseCommand {
   }
 
   async indexDriver({
-    configs,
+    trackConfigs,
     attributes,
-    outDir,
+    outLocation,
     name,
     quiet,
-    exclude,
+    typesToExclude,
     assemblyNames,
     prefixSize,
   }: {
-    configs: Track[]
+    trackConfigs: Track[]
     attributes: string[]
-    outDir: string
+    outLocation: string
     name: string
     quiet: boolean
-    exclude: string[]
+    typesToExclude: string[]
     assemblyNames: string[]
-    prefixSize: number
+    prefixSize?: number
   }) {
-    const readable = Readable.from(
-      this.indexFiles(configs, attributes, outDir, quiet, exclude),
+    const readStream = Readable.from(
+      this.indexFiles({
+        trackConfigs,
+        attributes,
+        outLocation,
+        quiet,
+        typesToExclude,
+      }),
     )
 
-    const ixIxxStream = await this.runIxIxx(readable, outDir, name, prefixSize)
+    const ixIxxStream = await this.runIxIxx({
+      readStream,
+      outLocation,
+      name,
+      prefixSize,
+    })
 
     await generateMeta({
-      configs,
+      trackConfigs,
       attributes,
-      outDir,
+      outLocation,
       name,
-      exclude,
+      typesToExclude,
       assemblyNames,
     })
     return ixIxxStream
   }
 
-  async *indexFiles(
-    trackConfigs: Track[],
-    attributes: string[],
-    outLocation: string,
-    quiet: boolean,
-    typesToExclude: string[],
-  ) {
+  async *indexFiles({
+    trackConfigs,
+    attributes,
+    outLocation,
+    quiet,
+    typesToExclude,
+  }: {
+    trackConfigs: Track[]
+    attributes: string[]
+    outLocation: string
+    quiet: boolean
+    typesToExclude: string[]
+  }) {
     for (const config of trackConfigs) {
       const { adapter, textSearching } = config
       const { type } = adapter
@@ -451,16 +473,23 @@ export default class TextIndex extends JBrowseCommand {
     }
   }
 
-  runIxIxx(
-    readStream: Readable,
-    outLocation: string,
-    name: string,
-    prefixSize: number,
-  ) {
-    const ixFilename = path.join(outLocation, 'trix', `${name}.ix`)
-    const ixxFilename = path.join(outLocation, 'trix', `${name}.ixx`)
-
-    return ixIxxStream(readStream, ixFilename, ixxFilename, prefixSize)
+  runIxIxx({
+    readStream,
+    outLocation,
+    name,
+    prefixSize,
+  }: {
+    readStream: Readable
+    outLocation: string
+    name: string
+    prefixSize?: number
+  }) {
+    return ixIxxStream(
+      readStream,
+      path.join(outLocation, 'trix', `${name}.ix`),
+      path.join(outLocation, 'trix', `${name}.ixx`),
+      prefixSize,
+    )
   }
 
   async getTrackConfigs(
