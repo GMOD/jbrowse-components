@@ -187,12 +187,8 @@ function stateModelFactory(
       /**
        * #action
        */
-      setHeight(displayHeight: number) {
-        if (displayHeight > minDisplayHeight) {
-          self.height = displayHeight
-        } else {
-          self.height = minDisplayHeight
-        }
+      setHeight(n: number) {
+        self.height = Math.max(n, minDisplayHeight)
         return self.height
       },
       /**
