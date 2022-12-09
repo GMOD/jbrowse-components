@@ -20,11 +20,15 @@ refers to LinearPileupDisplay sub-display model
 
 ```js
 // type signature
-IMaybe<IAnyModelType>
+IMaybe<ITypeUnion<any, any, any>>
 // code
 PileupDisplay: types.maybe(
-          pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
-        )
+      types.union(
+        pluginManager.getDisplayType('LinearReadCloudDisplay').stateModel,
+        pluginManager.getDisplayType('LinearReadArcsDisplay').stateModel,
+        pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
+      ),
+    )
 ```
 
 #### property: SNPCoverageDisplay
@@ -36,8 +40,8 @@ refers to LinearSNPCoverageDisplay sub-display model
 IMaybe<IAnyModelType>
 // code
 SNPCoverageDisplay: types.maybe(
-          pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-        )
+      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+    )
 ```
 
 #### property: snpCovHeight
@@ -76,24 +80,6 @@ number
 height: 250
 ```
 
-#### property: showCoverage
-
-```js
-// type signature
-true
-// code
-showCoverage: true
-```
-
-#### property: showPileup
-
-```js
-// type signature
-true
-// code
-showPileup: true
-```
-
 #### property: userFeatureScreenDensity
 
 ```js
@@ -103,9 +89,18 @@ IMaybe<ISimpleType<number>>
 userFeatureScreenDensity: types.maybe(types.number)
 ```
 
+#### property: lowerPanelType
+
+```js
+// type signature
+string
+// code
+lowerPanelType: 'LinearPileupDisplay'
+```
+
 ### LinearAlignmentsDisplay - Getters
 
-#### getter: pileupDisplayConfig
+#### getter: pileupConf
 
 ```js
 // type
@@ -133,21 +128,7 @@ any
 any
 ```
 
-#### getter: sortedByPosition
-
-```js
-// type
-any
-```
-
-#### getter: sortedByRefName
-
-```js
-// type
-any
-```
-
-#### getter: snpCoverageDisplayConfig
+#### getter: coverageConf
 
 ```js
 // type
@@ -178,20 +159,6 @@ trackMenuItems: () => MenuItem[]
 ```
 
 ### LinearAlignmentsDisplay - Actions
-
-#### action: toggleCoverage
-
-```js
-// type signature
-toggleCoverage: () => void
-```
-
-#### action: togglePileup
-
-```js
-// type signature
-togglePileup: () => void
-```
 
 #### action: setScrollTop
 
@@ -233,6 +200,13 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 ```js
 // type signature
 setHeight: (displayHeight: number) => number
+```
+
+#### action: setLowerPanelType
+
+```js
+// type signature
+setLowerPanelType: (type: string) => void
 ```
 
 #### action: resizeHeight

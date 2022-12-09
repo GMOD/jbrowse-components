@@ -44,30 +44,25 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Overlay = observer(
-  (props: {
-    parentRef: React.RefObject<SVGSVGElement>
-    model: BreakpointViewModel
-    trackId: string
-  }) => {
-    const { model, trackId } = props
-    const tracks = model.getMatchedTracks(trackId)
-    if (
-      tracks[0]?.type === 'PileupTrack' ||
-      tracks[0]?.type === 'AlignmentsTrack'
-    ) {
-      return <AlignmentConnections {...props} />
-    }
-    if (tracks[0]?.type === 'VariantTrack') {
-      return model.hasTranslocations(trackId) ? (
-        <Translocations {...props} />
-      ) : (
-        <Breakends {...props} />
-      )
-    }
-    return null
-  },
-)
+const Overlay = observer(function (props: {
+  parentRef: React.RefObject<SVGSVGElement>
+  model: BreakpointViewModel
+  trackId: string
+}) {
+  const { model, trackId } = props
+  const tracks = model.getMatchedTracks(trackId)
+  if (tracks[0]?.type === 'AlignmentsTrack') {
+    return <AlignmentConnections {...props} />
+  }
+  if (tracks[0]?.type === 'VariantTrack') {
+    return model.hasTranslocations(trackId) ? (
+      <Translocations {...props} />
+    ) : (
+      <Breakends {...props} />
+    )
+  }
+  return null
+})
 
 const BreakpointSplitView = observer(
   ({ model }: { model: BreakpointViewModel }) => {

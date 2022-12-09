@@ -1,16 +1,13 @@
 import { getSession, Feature } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { parseBreakend } from '@gmod/vcf'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// locals
-import BreakpointSplitViewComponent from './components/BreakpointSplitView'
-import BreakpointSplitViewModel from './model'
+type LGV = LinearGenomeViewModel
 
-class BreakpointSplitViewType extends ViewType {
-  snapshotFromBreakendFeature(feature: Feature, view: LinearGenomeViewModel) {
+export default class BreakpointSplitViewType extends ViewType {
+  snapshotFromBreakendFeature(feature: Feature, view: LGV) {
     const alt = feature.get('ALT')?.[0]
     const bnd = alt ? parseBreakend(alt) : undefined
     const startPos = feature.get('start')
@@ -104,16 +101,4 @@ class BreakpointSplitViewType extends ViewType {
     }
     return snapshot
   }
-}
-
-export default (pluginManager: PluginManager) => {
-  const { load } = pluginManager
-
-  const { stateModel } = load(BreakpointSplitViewModel)
-
-  return new BreakpointSplitViewType({
-    name: 'BreakpointSplitView',
-    stateModel,
-    ReactComponent: BreakpointSplitViewComponent,
-  })
 }

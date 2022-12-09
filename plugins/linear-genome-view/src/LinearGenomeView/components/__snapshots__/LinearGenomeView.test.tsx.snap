@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<LinearGenomeView /> renders one track, one region 1`] = `
+exports[`renders one track, one region 1`] = `
 <div
   style="position: relative;"
 >
@@ -511,7 +511,6 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
           >
             <div
               class="css-d6gpow-linearBlocks"
-              data-testid="Blockset"
               style="left: -800px;"
             >
               <div
@@ -544,7 +543,7 @@ exports[`<LinearGenomeView /> renders one track, one region 1`] = `
 </div>
 `;
 
-exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
+exports[`renders two tracks, two regions 1`] = `
 <div
   style="position: relative;"
 >
@@ -1308,7 +1307,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <div
               class="css-d6gpow-linearBlocks"
-              data-testid="Blockset"
               style="left: -800px;"
             >
               <div
@@ -1440,7 +1438,6 @@ exports[`<LinearGenomeView /> renders two tracks, two regions 1`] = `
           >
             <div
               class="css-d6gpow-linearBlocks"
-              data-testid="Blockset"
               style="left: -800px;"
             >
               <div

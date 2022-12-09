@@ -16,6 +16,8 @@ import {
 } from './Block'
 import { LinearGenomeViewModel } from '../../LinearGenomeView'
 
+type LGV = LinearGenomeViewModel
+
 const useStyles = makeStyles()({
   linearBlocks: {
     whiteSpace: 'nowrap',
@@ -37,70 +39,72 @@ const useStyles = makeStyles()({
     boxSizing: 'border-box',
   },
 })
-const RenderedBlocks = observer(
-  ({ model }: { model: BaseLinearDisplayModel }) => {
-    const { classes } = useStyles()
-    const { blockDefinitions, blockState } = model
-    return (
-      <>
-        {blockDefinitions.map(block => {
-          if (block instanceof ContentBlock) {
-            const state = blockState.get(block.key)
 
-            return (
-              <ContentBlockComponent
-                block={block}
-                key={`${model.id}-${block.key}`}
-              >
-                {state && state.ReactComponent ? (
-                  <state.ReactComponent model={state} />
-                ) : null}
-                {state && state.maxHeightReached ? (
-                  <div
-                    className={classes.heightOverflowed}
-                    style={{
-                      top: state.layout.getTotalHeight() - 16,
-                      pointerEvents: 'none',
-                      height: 16,
-                    }}
-                  >
-                    Max height reached
-                  </div>
-                ) : null}
-              </ContentBlockComponent>
-            )
-          }
-          if (block instanceof ElidedBlock) {
-            return (
-              <ElidedBlockComponent
-                key={`${model.id}-${block.key}`}
-                width={block.widthPx}
-              />
-            )
-          }
-          if (block instanceof InterRegionPaddingBlock) {
-            return (
-              <InterRegionPaddingBlockComponent
-                key={block.key}
-                width={block.widthPx}
-                style={{ background: 'none' }}
-                boundary={block.variant === 'boundary'}
-              />
-            )
-          }
-          throw new Error(`invalid block type ${typeof block}`)
-        })}
-      </>
-    )
-  },
-)
+const RenderedBlocks = observer(function ({
+  model,
+}: {
+  model: BaseLinearDisplayModel
+}) {
+  const { classes } = useStyles()
+  const { blockDefinitions, blockState } = model
+  return (
+    <>
+      {blockDefinitions.map(block => {
+        if (block instanceof ContentBlock) {
+          const state = blockState.get(block.key)
+
+          return (
+            <ContentBlockComponent
+              block={block}
+              key={`${model.id}-${block.key}`}
+            >
+              {state && state.ReactComponent ? (
+                <state.ReactComponent model={state} />
+              ) : null}
+              {state && state.maxHeightReached ? (
+                <div
+                  className={classes.heightOverflowed}
+                  style={{
+                    top: state.layout.getTotalHeight() - 16,
+                    pointerEvents: 'none',
+                    height: 16,
+                  }}
+                >
+                  Max height reached
+                </div>
+              ) : null}
+            </ContentBlockComponent>
+          )
+        }
+        if (block instanceof ElidedBlock) {
+          return (
+            <ElidedBlockComponent
+              key={`${model.id}-${block.key}`}
+              width={block.widthPx}
+            />
+          )
+        }
+        if (block instanceof InterRegionPaddingBlock) {
+          return (
+            <InterRegionPaddingBlockComponent
+              key={block.key}
+              width={block.widthPx}
+              style={{ background: 'none' }}
+              boundary={block.variant === 'boundary'}
+            />
+          )
+        }
+        throw new Error(`invalid block type ${typeof block}`)
+      })}
+    </>
+  )
+})
 function LinearBlocks({ model }: { model: BaseLinearDisplayModel }) {
   const { classes } = useStyles()
   const { blockDefinitions } = model
-  const viewModel = getContainingView(model) as LinearGenomeViewModel
+  const viewModel = getContainingView(model) as LGV
   return (
     <div
-      data-testid="Blockset"
       className={classes.linearBlocks}
       style={{
         left: blockDefinitions.offsetPx - viewModel.offsetPx,

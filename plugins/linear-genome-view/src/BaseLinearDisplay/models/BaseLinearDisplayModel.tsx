@@ -11,12 +11,13 @@ import {
   getViewParams,
   isSelectionContainer,
   isSessionModelWithWidgets,
+  isFeature,
+  Feature,
 } from '@jbrowse/core/util'
 import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import { Region } from '@jbrowse/core/util/types'
 import CompositeMap from '@jbrowse/core/util/compositeMap'
-import { Feature, isFeature } from '@jbrowse/core/util/simpleFeature'
 import {
   getParentRenderProps,
   getRpcSessionId,
@@ -28,9 +29,9 @@ import { addDisposer, isAlive, types, Instance } from 'mobx-state-tree'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 // locals
-import TooLargeMessage from './TooLargeMessage'
 import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
+import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
 
 type LGV = LinearGenomeViewModel
@@ -104,10 +105,10 @@ function stateModelFactory() {
     )
     .volatile(() => ({
       currBpPerPx: 0,
+      scrollTop: 0,
       message: '',
       featureIdUnderMouse: undefined as undefined | string,
       contextMenuFeature: undefined as undefined | Feature,
-      scrollTop: 0,
       estimatedRegionStatsP: undefined as undefined | Promise<Stats>,
       estimatedRegionStats: undefined as undefined | Stats,
     }))

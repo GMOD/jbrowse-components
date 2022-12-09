@@ -4,6 +4,35 @@ title: Extension points
 toplevel: true
 ---
 
+The basic API is that producers can say:
+
+```js
+const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
+  value: 1,
+})
+```
+
+And consumers can say:
+
+```js
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+```
+
+In this case, `arg` that is passed in evaluateExtensionPoint calls all the
+callbacks that have been registered by `addToExtensionPoint`. If multiple
+extension points are registered, the return value of the first extension point
+is passed as the new argument to the second, and so on (they are chained
+together).
+
+So in the example above, ret would be `{value:3}` after evaluating the
+extension point.
+
 In the core codebase, we have the concept of extension points that users can
 call or add to.
 

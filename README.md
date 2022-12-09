@@ -61,11 +61,16 @@ cd products/jbrowse-web
 yarn start
 ```
 
-For jbrowse-desktop
+For jbrowse-desktop, launch two tabs
 
 ```sh
+# starts webpack dev server
 cd products/jbrowse-desktop
 yarn start
+
+# starts electron window
+cd products/jbrowse-desktop
+yarn electron
 ```
 
 For running e.g. jbrowse-react-linear-genome-view you can use storybook

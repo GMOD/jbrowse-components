@@ -53,9 +53,9 @@ Examples of pluggable types include:
 - Extension points
 - Add track workflow
 
-In additional to creating plugins that create new adapters, track types,
-etc. note that you can also wrap the behavior of another track so these
-elements are composable.
+In additional to creating plugins that create new adapters, track types, etc.
+note that you can also wrap the behavior of another track so these elements are
+composable.
 
 For example, we can have adapters that perform calculations on the results of
 another adapter, views that contains other subviews, and tracks that contain
@@ -83,25 +83,24 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 
 ### Adapters
 
-Adapters are parsers for a given data format. We will review
-what adapters the alignments plugin has (to write your own adapter,
-see [creating adapters](../pluggable_elements/#creating-adapters)).
+Adapters are parsers for a given data format. We will review what adapters the
+alignments plugin has (to write your own adapter, see [creating
+adapters](../pluggable_elements/#creating-adapters)).
 
-Example adapters: the `@jbrowse/plugin-alignments` plugin creates
-multiple adapter types:
+Example adapters: the `@jbrowse/plugin-alignments` plugin creates multiple
+adapter types:
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
   for use by the browser.
 - `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
   CramAdapter also takes a sequenceAdapter as a subadapter configuration, and
   uses getSubAdapter to instantiate it
-- `SNPCoverageAdapter` - this adapter takes a `BamAdapter` or `CramAdapter` as a
-  subadapter, and calculates feature coverage from it
 
 ### Track types
 
 Track types are a high level type that controls how features are drawn. In most
-cases, a track combines a renderer and an adapter, and can do additional things like:
+cases, a track combines a renderer and an adapter, and can do additional things
+like:
 
 - Control what widget pops up on feature click
 - Add extra menu items to the track menu
@@ -109,12 +108,12 @@ cases, a track combines a renderer and an adapter, and can do additional things 
 - Choose "static-blocks" rendering styles, which keeps contents stable while
   the user scrolls, or "dynamic-blocks" that update on each scroll
 
-Example tracks: the `@jbrowse/plugin-alignments` exports multiple track
-types:
+Example tracks: the `@jbrowse/plugin-alignments` exports multiple track types:
 
-- `SNPCoverageTrack` - this track type actually derives from the WiggleTrack type
-- `PileupTrack` - a track type that draws alignment pileup results
-- `AlignmentsTrack` - combines `SNPCoverageTrack` and `PileupTrack` as "subtracks"
+- `VariantTrack` - displays variant features
+- `FeatureTrack` - displays generic features including gene glyphs
+- `AlignmentsTrack` - shows both a pileup or reads and the coverage as a
+  quantiative track
 
 ### Displays
 
@@ -135,7 +134,8 @@ Another example of a track type with multiple display types is `VariantTrack`,
 which has two display methods
 
 - `LinearVariantDisplay` - used in linear genome view
-- `ChordVariantDisplay` - used in the circular view to draw breakends and structural variants
+- `ChordVariantDisplay` - used in the circular view to draw breakends and
+  structural variants
 
 ### Renderers
 
@@ -145,8 +145,7 @@ contexts like the web worker (e.g. the webworker can draw the features to an
 OffscreenCanvas). For more info see [creating
 renderers](../pluggable_elements/#creating-renderers).
 
-For example, the `@jbrowse/plugin-alignments` exports several
-renderer types:
+For example, the `@jbrowse/plugin-alignments` exports several renderer types:
 
 - `PileupRenderer` - a renderer type that renders Pileup type display of
   alignments fetched from the `BamAdapter`/`CramAdapter`
@@ -175,8 +174,8 @@ these four pluggable elements is as follows:
 
 ### Widgets
 
-Widgets are custom info panels that can show up in side panels, modals, or other
-places in an app.
+Widgets are custom info panels that can show up in side panels, modals, or
+other places in an app.
 
 Widgets can do multiple types of things, including:
 
@@ -187,12 +186,12 @@ Widgets can do multiple types of things, including:
 - etc.
 
 These widgets can be extended via plugins, so for example, the
-`@jbrowse/plugin-alignments` extends the `BaseFeatureDetailWidget` to
-have custom display of the alignments.
+`@jbrowse/plugin-alignments` extends the `BaseFeatureDetailWidget` to have
+custom display of the alignments.
 
-- `AlignmentsFeatureDetailWidget` - this provides a custom widget
-  for viewing the feature details of alignments features that customizes the
-  basic feature detail widget
+- `AlignmentsFeatureDetailWidget` - this provides a custom widget for viewing
+  the feature details of alignments features that customizes the basic feature
+  detail widget
 
 ### RPC methods
 
@@ -208,92 +207,20 @@ These methods can run in the webworker when available.
 
 ### Add track workflows
 
-Plugins can register their own React component to display in the "Add track"
-widget for adding tracks that require custom logic. The Multi-wiggle track is
-an example of this, it produces a textbox where you can paste a list of files.
+Add track workflows allow users to specify a custom react component for loading
+tracks into a jbrowse session.
 
-A simple addition to the add track workflow:
-
-```js
-// plugins/wiggle/MultiWiggleAddTrackWidget/index.jsx
-
-import PluginManager from '@jbrowse/core/PluginManager'
-import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
-import { types } from 'mobx-state-tree'
-
-// locals
-import MultiWiggleWidget from './AddTrackWorkflow'
-
-export default (pm: PluginManager) => {
-  pm.addAddTrackWorkflowType(
-    () =>
-      new AddTrackWorkflowType({
-        name: 'Multi-wiggle track',
-        /* in a separate file, export the react component to render within the track widget,
-        typically a form to collect relevant data for your track */
-        ReactComponent: MultiWiggleWidget,
-        stateModel: types.model({}),
-      }),
-  )
-}
-```
-
-...and ensure you install this component into your larger plugin:
-
-```js
-// plugins/wiggle/index.jsx
-
-// ...
-
-export default class WigglePlugin extends Plugin {
-  name = 'WigglePlugin'
-
-  install(pm: PluginManager) {
-    // ...
-    MultiWiggleAddTrackWidgetF(pm)
-    // ...
-  }
-}
-```
+Checkout the [docs here](/docs/developer_guides/creating_addtrack_workflow).
 
 ### Extension points
 
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
-Checkout the [full extension point API](/docs/api_guide/#extension-points) or
+Checkout the [full extension point API](/docs/developer_guides/extension_points) or
 an [example for adding context menu
 items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
 for more detailed information.
-
-The basic API is that producers can say:
-
-```js
-const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
-  value: 1,
-})
-```
-
-And consumers can say:
-
-```js
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
-
-pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
-  return arg.value + 1
-})
-```
-
-In this case, `arg` that is passed in evaluateExtensionPoint calls all the
-callbacks that have been registered by `addToExtensionPoint`. If multiple
-extension points are registered, the return value of the first extension point
-is passed as the new argument to the second, and so on (they are chained
-together).
-
-So in the example above, ret would be `{value:3}` after evaluating the
-extension point.
 
 ## Next steps
 

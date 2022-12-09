@@ -1,4 +1,9 @@
 import React from 'react'
+import { autorun, when } from 'mobx'
+import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
+import deepEqual from 'fast-deep-equal'
+
+// jbrowse
 import {
   ConfigurationReference,
   AnyConfigurationModel,
@@ -8,12 +13,68 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
-import { getContainingTrack } from '@jbrowse/core/util'
-import deepEqual from 'fast-deep-equal'
 
 const minDisplayHeight = 20
+
+function getLowerPanelDisplays(pluginManager: PluginManager) {
+  return (
+    pluginManager
+      .getDisplayElements()
+      // @ts-ignore
+      .filter(f => f.subDisplay?.type === 'LinearAlignmentsDisplay')
+      // @ts-ignore
+      .filter(f => f.subDisplay?.lowerPanel)
+  )
+}
+
+function AlignmentsModel(
+  pluginManager: PluginManager,
+  configSchema: AnyConfigurationSchemaType,
+) {
+  const lowerPanelDisplays = getLowerPanelDisplays(pluginManager).map(
+    f => f.stateModel,
+  )
+
+  return types.model({
+    /**
+     * #property
+     * refers to LinearPileupDisplay sub-display model
+     */
+    // @ts-ignore
+    PileupDisplay: types.maybe(types.union(...lowerPanelDisplays)),
+    /**
+     * #property
+     * refers to LinearSNPCoverageDisplay sub-display model
+     */
+    SNPCoverageDisplay: types.maybe(
+      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+    ),
+    /**
+     * #property
+     */
+    snpCovHeight: 45,
+    /**
+     * #property
+     */
+    type: types.literal('LinearAlignmentsDisplay'),
+    /**
+     * #property
+     */
+    configuration: ConfigurationReference(configSchema),
+    /**
+     * #property
+     */
+    height: 250,
+    /**
+     * #property
+     */
+    userFeatureScreenDensity: types.maybe(types.number),
+    /**
+     * #property
+     */
+    lowerPanelType: 'LinearPileupDisplay',
+  })
+}
 
 /**
  * #stateModel LinearAlignmentsDisplay
@@ -27,67 +88,12 @@ function stateModelFactory(
     .compose(
       'LinearAlignmentsDisplay',
       BaseDisplay,
-      types.model({
-        /**
-         * #property
-         * refers to LinearPileupDisplay sub-display model
-         */
-        PileupDisplay: types.maybe(
-          pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
-        ),
-        /**
-         * #property
-         * refers to LinearSNPCoverageDisplay sub-display model
-         */
-        SNPCoverageDisplay: types.maybe(
-          pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-        ),
-        /**
-         * #property
-         */
-        snpCovHeight: 45,
-        /**
-         * #property
-         */
-        type: types.literal('LinearAlignmentsDisplay'),
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        height: 250,
-        /**
-         * #property
-         */
-        showCoverage: true,
-        /**
-         * #property
-         */
-        showPileup: true,
-        /**
-         * #property
-         */
-        userFeatureScreenDensity: types.maybe(types.number),
-      }),
+      AlignmentsModel(pluginManager, configSchema),
     )
     .volatile(() => ({
       scrollTop: 0,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      toggleCoverage() {
-        self.showCoverage = !self.showCoverage
-      },
-      /**
-       * #action
-       */
-      togglePileup() {
-        self.showPileup = !self.showPileup
-      },
       /**
        * #action
        */
@@ -102,103 +108,64 @@ function stateModelFactory(
         self.snpCovHeight = n
       },
     }))
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      return {
-        /**
-         * #getter
-         */
-        get pileupDisplayConfig() {
-          const conf = getConf(self, 'pileupDisplay')
-          const track = getContainingTrack(self)
-          return {
-            ...conf,
-            type: 'LinearPileupDisplay',
-            name: `${getConf(track, 'name')} pileup`,
-            displayId: `${self.configuration.displayId}_pileup_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
-          }
-        },
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get pileupConf() {
+        const conf = getConf(self, 'pileupDisplay')
+        return {
+          ...conf,
+          type: self.lowerPanelType,
+          displayId: `${self.configuration.displayId}_${self.lowerPanelType}_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
+        }
+      },
 
-        /**
-         * #method
-         */
-        getFeatureByID(blockKey: string, id: string) {
-          return self.PileupDisplay.getFeatureByID(blockKey, id)
-        },
-        /**
-         * #method
-         */
-        searchFeatureByID(id: string) {
-          return self.PileupDisplay.searchFeatureByID(id)
-        },
+      /**
+       * #method
+       */
+      getFeatureByID(blockKey: string, id: string) {
+        return self.PileupDisplay.getFeatureByID(blockKey, id)
+      },
+      /**
+       * #method
+       */
+      searchFeatureByID(id: string) {
+        return self.PileupDisplay.searchFeatureByID(id)
+      },
 
-        /**
-         * #getter
-         */
-        get features() {
-          return self.PileupDisplay.features
-        },
+      /**
+       * #getter
+       */
+      get features() {
+        return self.PileupDisplay.features
+      },
 
-        /**
-         * #getter
-         */
-        get DisplayBlurb() {
-          return self.PileupDisplay?.DisplayBlurb
-        },
+      /**
+       * #getter
+       */
+      get DisplayBlurb() {
+        return self.PileupDisplay?.DisplayBlurb
+      },
 
-        /**
-         * #getter
-         */
-        get sortedBy() {
-          return self.PileupDisplay.sortedBy
-        },
-        /**
-         * #getter
-         */
-        get sortedByPosition() {
-          return self.PileupDisplay.sortedByPosition
-        },
-        /**
-         * #getter
-         */
-        get sortedByRefName() {
-          return self.PileupDisplay.sortedByRefName
-        },
+      /**
+       * #getter
+       */
+      get sortedBy() {
+        return self.PileupDisplay.sortedBy
+      },
 
-        /**
-         * #getter
-         */
-        get snpCoverageDisplayConfig() {
-          const conf = getConf(self, 'snpCoverageDisplay')
-          const track = getContainingTrack(self)
-          return {
-            ...conf,
-            type: 'LinearSNPCoverageDisplay',
-            name: `${getConf(track, 'name')} snp coverage`,
-            displayId: `${self.configuration.displayId}_snpcoverage_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
-          }
-        },
-
-        /**
-         * #method
-         */
-        trackMenuItems(): MenuItem[] {
-          return [
-            ...superTrackMenuItems(),
-            {
-              type: 'subMenu',
-              label: 'Pileup settings',
-              subMenu: self.PileupDisplay.trackMenuItems(),
-            },
-            {
-              type: 'subMenu',
-              label: 'SNPCoverage settings',
-              subMenu: self.SNPCoverageDisplay.trackMenuItems(),
-            },
-          ]
-        },
-      }
-    })
+      /**
+       * #getter
+       */
+      get coverageConf() {
+        const conf = getConf(self, 'snpCoverageDisplay')
+        return {
+          ...conf,
+          displayId: `${self.configuration.displayId}_snpcoverage_xyz`, // xyz to avoid someone accidentally naming the displayId similar to this
+        }
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -223,20 +190,22 @@ function stateModelFactory(
        */
       setPileupDisplay(configuration: AnyConfigurationModel) {
         self.PileupDisplay = {
-          type: 'LinearPileupDisplay',
+          type: configuration.type || 'LinearPileupDisplay',
           configuration,
         }
       },
       /**
        * #action
        */
-      setHeight(displayHeight: number) {
-        if (displayHeight > minDisplayHeight) {
-          self.height = displayHeight
-        } else {
-          self.height = minDisplayHeight
-        }
+      setHeight(n: number) {
+        self.height = Math.max(n, minDisplayHeight)
         return self.height
+      },
+      /**
+       * #action
+       */
+      setLowerPanelType(type: string) {
+        self.lowerPanelType = type
       },
       /**
        * #action
@@ -252,55 +221,60 @@ function stateModelFactory(
         addDisposer(
           self,
           autorun(() => {
-            if (!self.SNPCoverageDisplay) {
-              self.setSNPCoverageDisplay(self.snpCoverageDisplayConfig)
+            const {
+              SNPCoverageDisplay,
+              PileupDisplay,
+              coverageConf,
+              pileupConf,
+            } = self
+            if (!SNPCoverageDisplay) {
+              self.setSNPCoverageDisplay(coverageConf)
             } else if (
               !deepEqual(
-                self.snpCoverageDisplayConfig,
-                getSnapshot(self.SNPCoverageDisplay.configuration),
+                coverageConf,
+                getSnapshot(SNPCoverageDisplay.configuration),
               )
             ) {
-              self.SNPCoverageDisplay.setHeight(self.snpCovHeight)
-              self.SNPCoverageDisplay.setConfig(self.snpCoverageDisplayConfig)
+              SNPCoverageDisplay.setHeight(self.snpCovHeight)
+              SNPCoverageDisplay.setConfig(self.coverageConf)
             }
 
-            if (!self.PileupDisplay) {
-              self.setPileupDisplay(self.pileupDisplayConfig)
+            if (!PileupDisplay || self.lowerPanelType !== PileupDisplay.type) {
+              self.setPileupDisplay(pileupConf)
             } else if (
-              !deepEqual(
-                self.pileupDisplayConfig,
-                getSnapshot(self.PileupDisplay.configuration),
-              )
+              !deepEqual(pileupConf, getSnapshot(PileupDisplay.configuration))
             ) {
-              self.PileupDisplay.setConfig(self.pileupDisplayConfig)
+              PileupDisplay.setConfig(self.pileupConf)
             }
 
             // propagate the filterBy setting from pileupdisplay to snpcoverage
             // note: the snpcoverage display is not able to control filterBy
             // itself
             if (
-              self.PileupDisplay.filterBy &&
+              PileupDisplay?.filterBy &&
               !deepEqual(
-                getSnapshot(self.PileupDisplay.filterBy),
-                getSnapshot(self.SNPCoverageDisplay.filterBy),
+                getSnapshot(PileupDisplay.filterBy),
+                getSnapshot(SNPCoverageDisplay.filterBy),
               )
             ) {
-              self.SNPCoverageDisplay.setFilterBy(
-                getSnapshot(self.PileupDisplay.filterBy),
+              SNPCoverageDisplay.setFilterBy(
+                getSnapshot(PileupDisplay.filterBy),
               )
             }
+
+            // propagate the colorBy setting from pileupdisplay to snpcoverage
+            // note: the snpcoverage display is not able to control colorBy
+            // itself
             if (
-              self.PileupDisplay.colorBy &&
+              PileupDisplay?.colorBy &&
               !deepEqual(
-                getSnapshot(self.PileupDisplay.colorBy),
-                self.SNPCoverageDisplay.colorBy
-                  ? getSnapshot(self.SNPCoverageDisplay.colorBy)
+                getSnapshot(PileupDisplay.colorBy),
+                SNPCoverageDisplay.colorBy
+                  ? getSnapshot(SNPCoverageDisplay.colorBy)
                   : {},
               )
             ) {
-              self.SNPCoverageDisplay.setColorBy(
-                getSnapshot(self.PileupDisplay.colorBy),
-              )
+              SNPCoverageDisplay.setColorBy(getSnapshot(PileupDisplay.colorBy))
             }
           }),
         )
@@ -308,6 +282,15 @@ function stateModelFactory(
           self,
           autorun(() => {
             self.setSNPCoverageHeight(self.SNPCoverageDisplay.height)
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            self.PileupDisplay.setHeight(
+              self.height - self.SNPCoverageDisplay.height,
+            )
           }),
         )
       },
@@ -330,6 +313,40 @@ function stateModelFactory(
         )
       },
     }))
+    .views(self => {
+      const { trackMenuItems: superTrackMenuItems } = self
+      return {
+        /**
+         * #method
+         */
+        trackMenuItems(): MenuItem[] {
+          const extra = getLowerPanelDisplays(pluginManager).map(d => ({
+            type: 'radio',
+            label: d.displayName,
+            checked: d.name === self.PileupDisplay.type,
+            onClick: () => self.setLowerPanelType(d.name),
+          }))
+          return [
+            ...superTrackMenuItems(),
+            {
+              type: 'subMenu',
+              label: 'Pileup settings',
+              subMenu: self.PileupDisplay.trackMenuItems(),
+            },
+            {
+              type: 'subMenu',
+              label: 'SNPCoverage settings',
+              subMenu: self.SNPCoverageDisplay.trackMenuItems(),
+            },
+            {
+              type: 'subMenu',
+              label: `Replace lower panel with...`,
+              subMenu: extra,
+            },
+          ]
+        },
+      }
+    })
 }
 
 export default stateModelFactory

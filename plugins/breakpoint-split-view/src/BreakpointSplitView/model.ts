@@ -1,9 +1,4 @@
 import {
-  LinearGenomeViewModel,
-  LinearGenomeViewStateModel,
-} from '@jbrowse/plugin-linear-genome-view'
-import PluginManager from '@jbrowse/core/PluginManager'
-import {
   types,
   getParent,
   onAction,
@@ -11,24 +6,27 @@ import {
   getPath,
   Instance,
 } from 'mobx-state-tree'
+import { autorun } from 'mobx'
+
+// jbrowse
+import {
+  LinearGenomeViewModel,
+  LinearGenomeViewStateModel,
+} from '@jbrowse/plugin-linear-genome-view'
+import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession, Feature } from '@jbrowse/core/util'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-import { autorun } from 'mobx'
 
-// https://stackoverflow.com/a/49186706/2129219 the array-intersection package
-// on npm has a large kb size, and we are just intersecting open track ids so
-// simple is better
-function intersect<T>(
-  cb: (l: T) => string,
-  a1: T[] = [],
-  a2: T[] = [],
-  ...rest: T[][]
-): T[] {
-  const ids = a2.map(elt => cb(elt))
-  const a12 = a1.filter(value => ids.includes(cb(value)))
-  return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
+// locals
+import { intersect } from './util'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function calc(track: any, feat: Feature): LayoutRecord {
+  return track.displays[0].searchFeatureByID(feat.id())
 }
+
+type LGV = LinearGenomeViewModel
 
 export interface Breakend {
   MateDirection: string
@@ -136,28 +134,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // use reverse to search the second track first
         const tracks = this.getMatchedTracks(trackConfigId)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const calc = (track: any, feat: Feature) => {
-          return track.displays[0].searchFeatureByID(feat.id())
-        }
-
         return features.map(c =>
           c
             .map(feature => {
               const level = tracks.findIndex(track => calc(track, feature))
-              if (level !== -1) {
-                const layout = calc(tracks[level], feature)
-                return {
-                  feature,
-                  layout,
-                  level,
-                }
-              }
-              return undefined
+              return level !== -1
+                ? {
+                    feature,
+                    layout: calc(tracks[level], feature),
+                    level,
+                  }
+                : undefined
             })
             .filter(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (f): f is { feature: Feature; layout: any; level: number } => !!f,
+              (
+                f,
+              ): f is {
+                feature: Feature
+                layout: LayoutRecord
+                level: number
+              } => !!f,
             ),
         )
       },
@@ -212,7 +208,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         self.views.forEach(v => v.setWidth(newWidth))
       },
 
-      removeView(view: LinearGenomeViewModel) {
+      removeView(view: LGV) {
         self.views.remove(view)
       },
 
@@ -263,11 +259,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
 
-  const stateModel = types.compose(BaseViewModel, model)
-
-  return { stateModel }
+  return types.compose(BaseViewModel, model)
 }
 
-export type BreakpointView = ReturnType<typeof stateModelFactory>
-export type BreakpointViewStateModel = BreakpointView['stateModel']
+export type BreakpointViewStateModel = ReturnType<typeof stateModelFactory>
 export type BreakpointViewModel = Instance<BreakpointViewStateModel>

@@ -276,8 +276,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     tracks.map(async track => {
       const display = track.displays[0]
       await when(() => (display.ready !== undefined ? display.ready : true))
-      const result = await display.renderSvg(opts)
-      return { track, result }
+      return { track, result: await display.renderSvg(opts) }
     }),
   )
 

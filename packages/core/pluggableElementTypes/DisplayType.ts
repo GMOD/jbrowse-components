@@ -11,8 +11,20 @@ export default class DisplayType extends PluggableElementBase {
 
   ReactComponent: AnyReactComponentType
 
+  /**
+   * The track type the display is associated with
+   */
   trackType: string
 
+  /*
+   * Indicates that this display type can be a "sub-display" of another type of
+   * display, e.g. in AlignmentsDisplay, has Pileup and SNPCoverage subDisplays
+   */
+  subDisplay?: unknown
+
+  /**
+   * The view type the display is associated with
+   */
   viewType: string
 
   constructor(stuff: {
@@ -20,11 +32,14 @@ export default class DisplayType extends PluggableElementBase {
     stateModel: IAnyModelType
     trackType: string
     viewType: string
+    displayName?: string
+    subDisplay?: unknown
     configSchema: AnyConfigurationSchemaType
     ReactComponent: AnyReactComponentType
   }) {
     super(stuff)
     this.stateModel = stuff.stateModel
+    this.subDisplay = stuff.subDisplay
     this.configSchema = stuff.configSchema
     this.ReactComponent = stuff.ReactComponent
     this.trackType = stuff.trackType

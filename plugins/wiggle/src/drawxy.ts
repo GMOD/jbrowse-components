@@ -5,6 +5,7 @@ import {
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { getOrigin, getScale, ScaleOpts } from './util'
 
+// avoid drawing negative width features for SVG exports
 function fillRectCtx(
   x: number,
   y: number,

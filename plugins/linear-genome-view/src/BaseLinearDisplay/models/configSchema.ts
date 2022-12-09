@@ -2,13 +2,13 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config BaseLinearDisplay
- * BaseLinearDisplay is a "base" config that is extended by classes like
- * "LinearBasicDisplay" (used for feature tracks, etc) and "LinearBareDisplay"
+ * `BaseLinearDisplay` is a "base" config that is extended by classes like
+ * `LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
  * (more stripped down than even the basic display, not commonly used)
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export const baseLinearDisplayConfigSchema = ConfigurationSchema(
+const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
   {
     /**
@@ -37,3 +37,5 @@ export const baseLinearDisplayConfigSchema = ConfigurationSchema(
     explicitIdentifier: 'displayId',
   },
 )
+
+export default baseLinearDisplayConfigSchema

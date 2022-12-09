@@ -4,8 +4,10 @@ import {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { CramRecord } from '@gmod/cram'
+
+// locals
 import CramAdapter from './CramAdapter'
-import { Mismatch, readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
+import { readFeaturesToCIGAR, readFeaturesToMismatches } from './util'
 
 export default class CramSlightlyLazyFeature implements Feature {
   // uses parameter properties to automatically create fields on the class
@@ -84,7 +86,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   _get_next_pos() {
-    return this.record.mate ? this.record.mate.alignmentStart : undefined
+    return this.record.mate?.alignmentStart
   }
 
   _get_next_segment_position() {
@@ -141,15 +143,15 @@ export default class CramSlightlyLazyFeature implements Feature {
     return undefined
   }
 
-  parent(): undefined | Feature {
+  parent() {
     return undefined
   }
 
-  children(): undefined | Feature[] {
+  children() {
     return undefined
   }
 
-  set(): void {}
+  set() {}
 
   pairedFeature() {
     return false
@@ -181,7 +183,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     }
   }
 
-  _get_mismatches(): Mismatch[] {
+  _get_mismatches() {
     const readFeatures = this.record.readFeatures
     const qual = this.qualRaw()
     const start = this.get('start')

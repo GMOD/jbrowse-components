@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { types, Instance } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
@@ -64,6 +64,4 @@ function configSchemaF(pluginManager: PluginManager) {
   )
 }
 
-export type LinearPileupDisplayConfigModel = ReturnType<typeof configSchemaF>
-export type LinearPileupDisplayConfig = Instance<LinearPileupDisplayConfigModel>
 export default configSchemaF

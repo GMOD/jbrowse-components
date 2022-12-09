@@ -53,7 +53,7 @@ export async function renderToAbstractCanvas(
                       type: 'image/png',
                     }),
                   )
-                : canvas.toDataURL()
+                : canvas.toDataURL('image/png')
             }
           />
         ),

@@ -1,9 +1,8 @@
+import { types, IAnyStateTreeNode } from 'mobx-state-tree'
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
-
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export async function getUniqueTagValues(
   self: IAnyStateTreeNode & { adapterConfig: AnyConfigurationModel },
@@ -32,9 +31,11 @@ export async function getUniqueTagValues(
   return values as string[]
 }
 
+type Track = IAnyStateTreeNode & { configuration: AnyConfigurationModel }
+
 export async function getUniqueModificationValues(
   self: IAnyStateTreeNode & {
-    parentTrack: IAnyStateTreeNode & { configuration: AnyConfigurationModel }
+    parentTrack: Track
   },
   adapterConfig: AnyConfigurationModel,
   colorScheme: { type: string; tag?: string },
@@ -60,3 +61,15 @@ export async function getUniqueModificationValues(
   )
   return values as string[]
 }
+
+export const FilterModel = types.model({
+  flagInclude: types.optional(types.number, 0),
+  flagExclude: types.optional(types.number, 1540),
+  readName: types.maybe(types.string),
+  tagFilter: types.maybe(
+    types.model({
+      tag: types.string,
+      value: types.string,
+    }),
+  ),
+})

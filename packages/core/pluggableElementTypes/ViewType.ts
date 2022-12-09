@@ -28,6 +28,7 @@ export default class ViewType extends PluggableElementBase {
 
   constructor(stuff: {
     name: string
+    displayName?: string
     ReactComponent: ViewReactComponent
     stateModel: IAnyModelType
     extendedName?: string

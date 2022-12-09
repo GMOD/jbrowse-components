@@ -177,11 +177,8 @@ This package provides the "alignments" related features including
 
 - BamAdapter - our BAM parser that wraps @gmod/bam NPM module
 - CramAdapter - our CRAM parser that wraps the @gmod/cram NPM module
-- PileupTrack type - draws alignments as boxes in a "pileup" style view
-- SNPCoverageTrack - draws calculated coverage with mismatches drawn over the
-  coverage
-- AlignmentsTrack - a "supertrack" which contains a PileupTrack and
-  SNPCoverageTrack "subtracks"
+- AlignmentsTrack - a "supertrack" which contains a PileupDisplay and
+  SNPCoverageDisplay "subtracks"
 - AlignmentsFeatureWidget for alignments features
 
 #### plugins/variants/

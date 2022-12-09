@@ -37,7 +37,6 @@ export function yPos(
         height: number
         scrollTop: number
         SNPCoverageDisplay?: { height: number }
-        showCoverage?: boolean
       },
     ]
   }[], // basic track requirements
@@ -47,8 +46,8 @@ export function yPos(
   const min = 0
   const max = display.height
   let offset = 0
-  const { showCoverage, SNPCoverageDisplay } = display
-  if (SNPCoverageDisplay && showCoverage) {
+  const { SNPCoverageDisplay } = display
+  if (SNPCoverageDisplay) {
     offset = SNPCoverageDisplay.height
   }
   return (
@@ -67,4 +66,18 @@ export const useNextFrame = (variable: unknown) => {
   useEffect(() => {
     setNextFrameState(variable)
   }, [variable])
+}
+
+// https://stackoverflow.com/a/49186706/2129219 the array-intersection package
+// on npm has a large kb size, and we are just intersecting open track ids so
+// simple is better
+export function intersect<T>(
+  cb: (l: T) => string,
+  a1: T[] = [],
+  a2: T[] = [],
+  ...rest: T[][]
+): T[] {
+  const ids = a2.map(elt => cb(elt))
+  const a12 = a1.filter(value => ids.includes(cb(value)))
+  return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }

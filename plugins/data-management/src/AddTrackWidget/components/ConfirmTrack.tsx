@@ -25,14 +25,14 @@ import {
   getEnv,
   isElectron,
 } from '@jbrowse/core/util'
-import PluginManager from '@jbrowse/core/PluginManager'
 import { observer } from 'mobx-react'
 import { UNKNOWN } from '@jbrowse/core/util/tracks'
-import { AdapterMetadata } from '@jbrowse/core/pluggableElementTypes/AdapterType'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material//Add'
+import AddIcon from '@mui/icons-material/Add'
+
 // locals
 import { AddTrackModel } from '../model'
 
@@ -61,16 +61,16 @@ function StatusMessage({
   trackType: string
 }) {
   const { classes } = useStyles()
-  return trackAdapter.type === 'SNPCoverageAdapter' ? (
+  const { type, subadapter } = trackAdapter
+  return type === 'SNPCoverageAdapter' ? (
     <Typography className={classes.spacing}>
-      Selected <code>{trackType}</code>. Using adapter{' '}
-      <code>{trackAdapter.type}</code> with subadapter{' '}
-      <code>{trackAdapter.subadapter?.type}</code>. Please enter a track name
-      and, if necessary, update the track type.
+      Selected <code>{trackType}</code>. Using adapter <code>{type}</code> with
+      subadapter <code>{subadapter?.type}</code>. Please enter a track name and,
+      if necessary, update the track type.
     </Typography>
   ) : (
     <Typography className={classes.spacing}>
-      Using adapter <code>{trackAdapter.type}</code> and guessing track type{' '}
+      Using adapter <code>{type}</code> and guessing track type{' '}
       <code>{trackType}</code>. Please enter a track name and, if necessary,
       update the track type.
     </Typography>
@@ -85,9 +85,7 @@ function StatusMessage({
  * @returns a series of JSX elements that are ListSubheaders followed by the adapters
  *   found under that subheader
  */
-function categorizeAdapters(
-  adaptersList: { name: string; adapterMetadata: AdapterMetadata }[],
-) {
+function categorizeAdapters(adaptersList: AdapterType[]) {
   let currentCategory = ''
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any = []
@@ -115,18 +113,6 @@ function categorizeAdapters(
   })
   return items
 }
-
-function getAdapterTypes(pluginManager: PluginManager) {
-  return pluginManager.getElementTypesInGroup('adapter') as {
-    name: string
-    adapterMetadata: AdapterMetadata
-  }[]
-}
-
-function getTrackTypes(pluginManager: PluginManager) {
-  return pluginManager.getElementTypesInGroup('track') as { name: string }[]
-}
-
 const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
   const { classes } = useStyles()
   const [value1, setValue1] = useState('')
@@ -230,7 +216,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const { classes } = useStyles()
   const { trackAdapter } = model
   const { pluginManager } = getEnv(model)
-  const adapters = getAdapterTypes(pluginManager)
+  const adapters = pluginManager.getAdapterElements()
   return (
     <TextField
       className={classes.spacing}
@@ -301,9 +287,9 @@ function UnknownAdapterPrompt({ model }: { model: AddTrackModel }) {
 
 const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
   const { classes } = useStyles()
-  const session = getSession(model)
+  const { pluginManager } = getEnv(model)
   const { trackType } = model
-  const trackTypes = getTrackTypes(getEnv(session).pluginManager)
+  const trackTypes = pluginManager.getTrackElements()
 
   return (
     <TextField
@@ -330,34 +316,36 @@ const TrackTypeSelector = observer(({ model }: { model: AddTrackModel }) => {
   )
 })
 
-const TrackAssemblySelector = observer(
-  ({ model }: { model: AddTrackModel }) => {
-    const session = getSession(model)
-    const { assembly } = model
-    return (
-      <TextField
-        value={assembly}
-        label="assemblyName"
-        helperText="Assembly to which the track will be added"
-        select
-        fullWidth
-        onChange={event => model.setAssembly(event.target.value)}
-        SelectProps={{
-          // @ts-ignore
-          SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
-        }}
-      >
-        {session.assemblies
-          .map(conf => readConfObject(conf, 'name'))
-          .map(name => (
-            <MenuItem key={name} value={name}>
-              {name}
-            </MenuItem>
-          ))}
-      </TextField>
-    )
-  },
-)
+const TrackAssemblySelector = observer(function ({
+  model,
+}: {
+  model: AddTrackModel
+}) {
+  const session = getSession(model)
+  const { assembly } = model
+  return (
+    <TextField
+      value={assembly}
+      label="assemblyName"
+      helperText="Assembly to which the track will be added"
+      select
+      fullWidth
+      onChange={event => model.setAssembly(event.target.value)}
+      SelectProps={{
+        // @ts-ignore
+        SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
+      }}
+    >
+      {session.assemblies
+        .map(conf => readConfObject(conf, 'name'))
+        .map(name => (
+          <MenuItem key={name} value={name}>
+            {name}
+          </MenuItem>
+        ))}
+    </TextField>
+  )
+})
 
 function ConfirmTrack({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()

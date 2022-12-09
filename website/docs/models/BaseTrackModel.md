@@ -10,12 +10,9 @@ elements](/docs/developer_guide/) for more info
 
 ## Docs
 
-these MST models only exist for tracks that are _shown_.
-they should contain only UI state for the track, and have
-a reference to a track configuration (stored under
-session.configuration.assemblies.get(assemblyName).tracks).
-note that multiple displayed tracks could use the same
-configuration.
+these MST models only exist for tracks that are _shown_. they should contain
+only UI state for the track, and have a reference to a track configuration.
+note that multiple displayed tracks could use the same configuration.
 
 ### BaseTrackModel - Properties
 
@@ -116,7 +113,7 @@ any
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; }[] | { ...; })[]
 ```
 
 ### BaseTrackModel - Actions
