@@ -5,7 +5,9 @@ export type RemoteAbortSignal = { abortSignalId: number }
 const abortSignalIds: WeakMap<AbortSignal, number> = new WeakMap() // map of abortsignal => numerical ID
 
 /**
- * assign an ID to the given abort signal and return a plain object representation
+ * assign an ID to the given abort signal and return a plain object
+ * representation
+ *
  * @param signal - the signal to serialize
  * @param callfunc - function used to call
  *  a remote method, will be called like callfunc('signalAbort', signalId)

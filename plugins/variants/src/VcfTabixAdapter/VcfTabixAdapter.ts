@@ -131,9 +131,9 @@ export default class extends BaseFeatureDataAdapter {
         pct = 100
       }
       if (pct > 60) {
-        console.warn(
-          `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
-        )
+        // console.warn(
+        //   `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
+        // )
       }
       super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
     })

@@ -24,6 +24,7 @@ export default class RendererType extends PluggableElementBase {
   constructor(stuff: {
     name: string
     ReactComponent: AnyReactComponentType
+    displayName?: string
     configSchema: AnyConfigurationSchemaType
     pluginManager: PluginManager
   }) {
