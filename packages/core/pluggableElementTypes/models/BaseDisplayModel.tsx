@@ -6,7 +6,7 @@ import { getParent, Instance, types, isRoot } from 'mobx-state-tree'
 import { getConf } from '../../configuration'
 import { MenuItem } from '../../ui'
 import { getParentRenderProps } from '../../util/tracks'
-import { getEnv } from '../../util'
+import { getContainingView, getEnv } from '../../util'
 import { ElementId } from '../../util/types/mst'
 
 /**
@@ -86,6 +86,7 @@ function stateModelFactory() {
       renderProps() {
         return {
           ...getParentRenderProps(self),
+          notReady: getContainingView(self).minimized,
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
         }

@@ -4,10 +4,10 @@ import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
+  AnyConfigurationSchemaType,
   ConfigurationReference,
   readConfObject,
   getConf,
-  AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {

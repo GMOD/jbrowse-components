@@ -356,6 +356,10 @@ export default class PluginManager {
     return this.getElementTypesInGroup('rpc method') as RpcMethodType[]
   }
 
+  getDisplayElements() {
+    return this.getElementTypesInGroup('display') as DisplayType[]
+  }
+
   getAdapterElements() {
     return this.getElementTypesInGroup('adapter') as AdapterType[]
   }

@@ -13,27 +13,35 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import { getContainingTrack } from '@jbrowse/core/util'
-import { getCompatibleDisplays } from '@jbrowse/core/pluggableElementTypes/models/BaseTrackModel'
 
 const minDisplayHeight = 20
+
+function getLowerPanelDisplays(pluginManager: PluginManager) {
+  return (
+    pluginManager
+      .getDisplayElements()
+      // @ts-ignore
+      .filter(f => f.subDisplay?.type === 'LinearAlignmentsDisplay')
+      // @ts-ignore
+      .filter(f => f.subDisplay?.lowerPanel)
+  )
+}
 
 function AlignmentsModel(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
+  const lowerPanelDisplays = getLowerPanelDisplays(pluginManager).map(
+    f => f.stateModel,
+  )
+
   return types.model({
     /**
      * #property
      * refers to LinearPileupDisplay sub-display model
      */
-    PileupDisplay: types.maybe(
-      types.union(
-        pluginManager.getDisplayType('LinearReadCloudDisplay').stateModel,
-        pluginManager.getDisplayType('LinearReadArcsDisplay').stateModel,
-        pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
-      ),
-    ),
+    // @ts-ignore
+    PileupDisplay: types.maybe(types.union(...lowerPanelDisplays)),
     /**
      * #property
      * refers to LinearSNPCoverageDisplay sub-display model
@@ -312,19 +320,12 @@ function stateModelFactory(
          * #method
          */
         trackMenuItems(): MenuItem[] {
-          const track = getContainingTrack(self)
-          const extra = getCompatibleDisplays(track)
-            .filter(
-              f =>
-                f.type !== 'LinearAlignmentsDisplay' &&
-                f.type !== 'LinearSNPCoverageDisplay',
-            )
-            .map(d => ({
-              type: 'radio',
-              label: pluginManager.getDisplayType(d.type).displayName,
-              checked: d.type === self.PileupDisplay.type,
-              onClick: () => self.setLowerPanelType(d.type),
-            }))
+          const extra = getLowerPanelDisplays(pluginManager).map(d => ({
+            type: 'radio',
+            label: d.displayName,
+            checked: d.name === self.PileupDisplay.type,
+            onClick: () => self.setLowerPanelType(d.name),
+          }))
           return [
             ...superTrackMenuItems(),
             {

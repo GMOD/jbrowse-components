@@ -1922,6 +1922,7 @@
     },
     {
       "type": "AlignmentsTrack",
+      "category": ["Alignments"],
       "trackId": "volvox-simple-inv.bam",
       "name": "volvox-simple-inv.bam",
       "adapter": {
@@ -1949,6 +1950,7 @@
     },
     {
       "type": "AlignmentsTrack",
+      "category": ["Alignments"],
       "trackId": "volvox-simple-inv.cram",
       "name": "volvox-simple-inv.cram",
       "adapter": {
@@ -1973,6 +1975,7 @@
     },
     {
       "type": "AlignmentsTrack",
+      "category": ["Alignments"],
       "trackId": "volvox-simple-inv-paired.cram",
       "name": "volvox-simple-inv-paired.cram",
       "adapter": {
@@ -1997,6 +2000,7 @@
     },
     {
       "type": "AlignmentsTrack",
+      "category": ["Alignments"],
       "trackId": "volvox-simple-inv-paired.bam",
       "name": "volvox-simple-inv-paired.bam",
       "adapter": {

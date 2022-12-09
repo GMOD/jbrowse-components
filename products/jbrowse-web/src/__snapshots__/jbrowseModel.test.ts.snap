@@ -3760,6 +3760,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "Alignments",
+      ],
       "displays": [
         {
           "displayId": "volvox-simple-inv.bam-LinearAlignmentsDisplay",
@@ -3812,6 +3815,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox",
       ],
+      "category": [
+        "Alignments",
+      ],
       "displays": [
         {
           "displayId": "volvox-simple-inv.cram-LinearAlignmentsDisplay",
@@ -3863,6 +3869,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "Alignments",
       ],
       "displays": [
         {
@@ -3917,6 +3926,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
       "assemblyNames": [
         "volvox",
+      ],
+      "category": [
+        "Alignments",
       ],
       "displays": [
         {
