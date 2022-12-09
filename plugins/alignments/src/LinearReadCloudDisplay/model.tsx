@@ -247,7 +247,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 if (!ctx) {
                   return
                 }
-                ctx.clearRect(0, 0, canvas.width, self.height)
+                ctx.clearRect(0, 0, canvas.width, self.height * 2)
                 ctx.resetTransform()
                 ctx.scale(2, 2)
 

@@ -6,8 +6,6 @@ import { types } from 'mobx-state-tree'
 /**
  * #config LinearReadCloudDisplay
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearReadCloudDisplay',
