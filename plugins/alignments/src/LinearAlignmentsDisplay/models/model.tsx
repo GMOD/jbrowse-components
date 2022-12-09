@@ -1,4 +1,9 @@
 import React from 'react'
+import { autorun, when } from 'mobx'
+import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
+import deepEqual from 'fast-deep-equal'
+
+// jbrowse
 import {
   ConfigurationReference,
   AnyConfigurationModel,
@@ -8,10 +13,7 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MenuItem } from '@jbrowse/core/ui'
-import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
 import { getContainingTrack } from '@jbrowse/core/util'
-import deepEqual from 'fast-deep-equal'
 import { getCompatibleDisplays } from '@jbrowse/core/pluggableElementTypes/models/BaseTrackModel'
 
 const minDisplayHeight = 20

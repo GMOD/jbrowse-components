@@ -7,6 +7,7 @@ import {
   ConfigurationReference,
   readConfObject,
   getConf,
+  AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
@@ -32,7 +33,6 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
 import {
   getUniqueTagValues,
@@ -61,7 +61,7 @@ type LGV = LinearGenomeViewModel
  * #stateModel LinearPileupDisplay
  * extends `BaseLinearDisplay`
  */
-function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
+function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearPileupDisplay',
