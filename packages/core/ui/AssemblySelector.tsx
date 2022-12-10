@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
+import {
+  TextField,
+  MenuItem,
+  InputProps as IIP,
+  TextFieldProps as TFP,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -19,12 +24,14 @@ const AssemblySelector = observer(
     onChange,
     selected,
     InputProps,
+    TextFieldProps,
     extra = 0,
   }: {
     session: AbstractSessionModel
     onChange: (arg: string) => void
     selected?: string
     InputProps?: IIP
+    TextFieldProps?: TFP
     extra?: unknown
   }) => {
     const { classes } = useStyles()
@@ -69,6 +76,7 @@ const AssemblySelector = observer(
         InputProps={InputProps}
         disabled={!!error}
         className={classes.importFormEntry}
+        {...TextFieldProps}
       >
         {assemblyNames.map(name => {
           const assembly = assemblyManager.get(name)

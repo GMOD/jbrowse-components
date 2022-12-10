@@ -22,7 +22,6 @@ import { observer } from 'mobx-react'
 // locals
 import ConfirmTrack from './ConfirmTrack'
 import TrackSourceSelect from './TrackSourceSelect'
-
 import { AddTrackModel } from '../model'
 
 const useStyles = makeStyles()(theme => ({
