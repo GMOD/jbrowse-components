@@ -7,6 +7,7 @@ import {
 import { bpToPx, measureText, Region, Feature } from '@jbrowse/core/util'
 import { BaseLayout, SceneGraph } from '@jbrowse/core/util/layouts'
 
+// locals
 import FeatureGlyph from './FeatureGlyph'
 import SvgOverlay from './SvgOverlay'
 import {

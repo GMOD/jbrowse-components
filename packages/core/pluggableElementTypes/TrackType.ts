@@ -1,7 +1,7 @@
 import { IAnyModelType } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
 import { getDefaultValue } from '../util/mst-reflection'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
 import DisplayType from './DisplayType'
 
 export default class TrackType extends PluggableElementBase {
@@ -14,6 +14,7 @@ export default class TrackType extends PluggableElementBase {
   constructor(stuff: {
     name: string
     stateModel: IAnyModelType
+    displayName?: string
     configSchema: AnyConfigurationSchemaType
   }) {
     super(stuff)

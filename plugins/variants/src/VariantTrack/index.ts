@@ -8,6 +8,7 @@ export default (pm: PluginManager) => {
     const configSchema = configSchemaF(pm)
     return new TrackType({
       name: 'VariantTrack',
+      displayName: 'Variant track',
       configSchema,
       stateModel: createBaseTrackModel(pm, 'VariantTrack', configSchema),
     })

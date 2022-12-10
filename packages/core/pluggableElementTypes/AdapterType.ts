@@ -25,6 +25,7 @@ export default class AdapterType extends PluggableElementBase {
     stuff: {
       name: string
       configSchema: AnyConfigurationSchemaType
+      displayName?: string
       adapterCapabilities?: string[]
       adapterMetadata?: AdapterMetadata
     } & (
@@ -45,7 +46,6 @@ export default class AdapterType extends PluggableElementBase {
     }
     this.configSchema = stuff.configSchema
     this.adapterCapabilities = stuff.adapterCapabilities || []
-
     this.adapterMetadata = stuff.adapterMetadata
   }
 }

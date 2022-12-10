@@ -1,9 +1,8 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import { IconButton } from '@mui/material'
 import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
-import { CircularViewModel } from '../models/CircularView'
-import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { grey } from '@mui/material/colors'
 
@@ -19,6 +18,7 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 // locals
 import Ruler from './Ruler'
 import ImportForm from './ImportForm'
+import { CircularViewModel } from '../models/CircularView'
 
 const dragHandleHeight = 3
 
@@ -85,87 +85,85 @@ const Slices = observer(({ model }: { model: CircularViewModel }) => {
   )
 })
 
-const Controls = observer(
-  ({
-    model,
-    showingFigure,
-  }: {
-    model: CircularViewModel
-    showingFigure: boolean
-  }) => {
-    const { classes } = useStyles()
-    return (
-      <div className={classes.controls}>
+const Controls = observer(function ({
+  model,
+  showingFigure,
+}: {
+  model: CircularViewModel
+  showingFigure: boolean
+}) {
+  const { classes } = useStyles()
+  return (
+    <div className={classes.controls}>
+      <IconButton
+        onClick={model.zoomOutButton}
+        className={classes.iconButton}
+        title={model.lockedFitToWindow ? 'unlock to zoom out' : 'zoom out'}
+        disabled={
+          !showingFigure || model.atMaxBpPerPx || model.lockedFitToWindow
+        }
+        color="secondary"
+      >
+        <ZoomOutIcon />
+      </IconButton>
+
+      <IconButton
+        onClick={model.zoomInButton}
+        className={classes.iconButton}
+        title="zoom in"
+        disabled={!showingFigure || model.atMinBpPerPx}
+        color="secondary"
+      >
+        <ZoomInIcon />
+      </IconButton>
+
+      <IconButton
+        onClick={model.rotateCounterClockwiseButton}
+        className={classes.iconButton}
+        title="rotate counter-clockwise"
+        disabled={!showingFigure}
+        color="secondary"
+      >
+        <RotateLeftIcon />
+      </IconButton>
+
+      <IconButton
+        onClick={model.rotateClockwiseButton}
+        className={classes.iconButton}
+        title="rotate clockwise"
+        disabled={!showingFigure}
+        color="secondary"
+      >
+        <RotateRightIcon />
+      </IconButton>
+
+      <IconButton
+        onClick={model.toggleFitToWindowLock}
+        className={classes.iconButton}
+        title={
+          model.lockedFitToWindow
+            ? 'locked model to window size'
+            : 'unlocked model to zoom further'
+        }
+        disabled={model.tooSmallToLock}
+        color="secondary"
+      >
+        {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
+      </IconButton>
+
+      {model.hideTrackSelectorButton ? null : (
         <IconButton
-          onClick={model.zoomOutButton}
-          className={classes.iconButton}
-          title={model.lockedFitToWindow ? 'unlock to zoom out' : 'zoom out'}
-          disabled={
-            !showingFigure || model.atMaxBpPerPx || model.lockedFitToWindow
-          }
+          onClick={model.activateTrackSelector}
+          title="Open track selector"
+          data-testid="circular_track_select"
           color="secondary"
         >
-          <ZoomOutIcon />
+          <TrackSelectorIcon />
         </IconButton>
-
-        <IconButton
-          onClick={model.zoomInButton}
-          className={classes.iconButton}
-          title="zoom in"
-          disabled={!showingFigure || model.atMinBpPerPx}
-          color="secondary"
-        >
-          <ZoomInIcon />
-        </IconButton>
-
-        <IconButton
-          onClick={model.rotateCounterClockwiseButton}
-          className={classes.iconButton}
-          title="rotate counter-clockwise"
-          disabled={!showingFigure}
-          color="secondary"
-        >
-          <RotateLeftIcon />
-        </IconButton>
-
-        <IconButton
-          onClick={model.rotateClockwiseButton}
-          className={classes.iconButton}
-          title="rotate clockwise"
-          disabled={!showingFigure}
-          color="secondary"
-        >
-          <RotateRightIcon />
-        </IconButton>
-
-        <IconButton
-          onClick={model.toggleFitToWindowLock}
-          className={classes.iconButton}
-          title={
-            model.lockedFitToWindow
-              ? 'locked model to window size'
-              : 'unlocked model to zoom further'
-          }
-          disabled={model.tooSmallToLock}
-          color="secondary"
-        >
-          {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
-        </IconButton>
-
-        {model.hideTrackSelectorButton ? null : (
-          <IconButton
-            onClick={model.activateTrackSelector}
-            title="Open track selector"
-            data-testid="circular_track_select"
-            color="secondary"
-          >
-            <TrackSelectorIcon />
-          </IconButton>
-        )}
-      </div>
-    )
-  },
-)
+      )}
+    </div>
+  )
+})
 
 const CircularView = observer(({ model }: { model: CircularViewModel }) => {
   const { classes } = useStyles()

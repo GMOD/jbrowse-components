@@ -1,23 +1,25 @@
 import React from 'react'
-import { DeprecatedThemeOptions } from '@mui/material'
+import { ThemeOptions } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
-
 import {
   SnapshotOrInstance,
   SnapshotIn,
   getSnapshot,
   isStateTreeNode,
 } from 'mobx-state-tree'
+
+// locals
 import { checkAbortSignal, updateStatus } from '../../util'
-import RendererType, { RenderProps, RenderResults } from './RendererType'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
 import { AnyConfigurationModel } from '../../configuration/configurationSchema'
 import RpcManager from '../../rpc/RpcManager'
 import { createJBrowseTheme } from '../../ui'
+
+import RendererType, { RenderProps, RenderResults } from './RendererType'
 import ServerSideRenderedContent from './ServerSideRenderedContent'
 
 interface BaseRenderArgs extends RenderProps {
@@ -25,7 +27,7 @@ interface BaseRenderArgs extends RenderProps {
   // Note that signal serialization happens after serializeArgsInClient and
   // deserialization happens before deserializeArgsInWorker
   signal?: AbortSignal
-  theme: DeprecatedThemeOptions
+  theme: ThemeOptions
   exportSVG: { rasterizeLayers?: boolean }
 }
 
@@ -57,13 +59,11 @@ export interface ResultsSerializedSvgExport extends ResultsSerialized {
   reactElement: unknown
 }
 
-function isSvgExport(
-  elt: ResultsSerialized,
-): elt is ResultsSerializedSvgExport {
-  return 'canvasRecordedData' in elt
-}
-
 export type ResultsDeserialized = RenderResults
+
+function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in e
+}
 
 export default class ServerSideRenderer extends RendererType {
   /**
@@ -92,31 +92,29 @@ export default class ServerSideRenderer extends RendererType {
    * @param args - the arguments passed to render
    */
   deserializeResultsInClient(
-    results: ResultsSerialized,
+    res: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    const { html, ...rest } = results
-
     // if we are rendering svg, we skip hydration
     if (args.exportSVG) {
-      // only return the results if the renderer explicitly has
+      // only return the res if the renderer explicitly has
       // this.supportsSVG support to avoid garbage being rendered in SVG
       // document
       return {
-        ...results,
+        ...res,
         html: this.supportsSVG
-          ? results.html
+          ? res.html
           : '<text y="12" fill="black">SVG export not supported for this track</text>',
       }
     }
 
-    // hydrate results using ServerSideRenderedContent
+    // hydrate res using ServerSideRenderedContent
     return {
-      ...rest,
+      ...res,
       reactElement: (
         <ServerSideRenderedContent
           {...args}
-          {...results}
+          {...res}
           RenderingComponent={this.ReactComponent}
         />
       ),

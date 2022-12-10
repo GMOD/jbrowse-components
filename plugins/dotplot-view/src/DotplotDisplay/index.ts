@@ -13,6 +13,7 @@ export default (pm: PluginManager) => {
     const configSchema = configSchemaFactory(pm)
     return new DisplayType({
       name: 'DotplotDisplay',
+      displayName: 'Dotplot display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',

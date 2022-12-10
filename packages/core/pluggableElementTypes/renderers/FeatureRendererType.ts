@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import clone from 'clone'
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
@@ -52,10 +53,10 @@ export interface ResultsDeserialized extends ServerSideResultsDeserialized {
 
 export default class FeatureRendererType extends ServerSideRendererType {
   /**
-   * replaces the `displayModel` param (which on the client is a MST model) with
-   * a stub that only contains the `selectedFeature`, since this is the only
-   * part of the track model that most renderers read. also serializes the
-   * config and regions to JSON from MST objects.
+   * replaces the `displayModel` param (which on the client is a MST model)
+   * with a stub that only contains the `selectedFeature`, since this is the only
+   * part of the track model that most renderers read. also serializes the config
+   * and regions to JSON from MST objects.
    *
    * @param args - the arguments passed to render
    */
@@ -67,7 +68,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
         id: displayModel.id,
         selectedFeatureId: displayModel.selectedFeatureId,
       },
-      regions: JSON.parse(JSON.stringify(regions)),
+      regions: clone(regions),
     }
     return super.serializeArgsInClient(serializedArgs)
   }
@@ -82,11 +83,10 @@ export default class FeatureRendererType extends ServerSideRendererType {
     result: ResultsSerialized,
     args: RenderArgs,
   ): ResultsDeserialized {
-    const deserializedFeatures = new Map<string, SimpleFeature>()
-    result.features.forEach(j => {
-      const f = SimpleFeature.fromJSON(j)
-      deserializedFeatures.set(String(f.id()), f)
-    })
+    const deserializedFeatures = new Map<string, SimpleFeature>(
+      result.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
+    )
+
     const deserialized = super.deserializeResultsInClient(
       {
         ...result,
@@ -139,12 +139,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
   async getFeatures(
     renderArgs: RenderArgsDeserialized,
   ): Promise<Map<string, Feature>> {
+    const pm = this.pluginManager
     const { signal, regions, sessionId, adapterConfig } = renderArgs
-    const { dataAdapter } = await getAdapter(
-      this.pluginManager,
-      sessionId,
-      adapterConfig,
-    )
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
     if (!isFeatureAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving features')
     }
@@ -153,10 +150,9 @@ export default class FeatureRendererType extends ServerSideRendererType {
     if (!regions || regions.length === 0) {
       return features
     }
-
+    // make sure the requested region's start and end are integers, if
+    // there is a region specification.
     const requestRegions = regions.map((r: Region) => {
-      // make sure the requested region's start and end are integers, if
-      // there is a region specification.
       const requestRegion = { ...r }
       if (requestRegion.start) {
         requestRegion.start = Math.floor(requestRegion.start)
@@ -207,6 +203,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
     const features =
       (props.features as undefined | Map<string, Feature>) ||
       (await this.getFeatures(props))
+
     const result = await super.render({ ...props, features })
     return { ...result, features }
   }
