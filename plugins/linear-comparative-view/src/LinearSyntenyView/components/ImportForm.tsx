@@ -119,7 +119,6 @@ const LinearSyntenyImportForm = observer(
               >
                 <Grid item>
                   <AssemblySelector
-                    extra={0}
                     selected={assembly1}
                     onChange={val => setAssembly1(val)}
                     session={session}
@@ -127,7 +126,6 @@ const LinearSyntenyImportForm = observer(
                 </Grid>
                 <Grid item>
                   <AssemblySelector
-                    extra={1}
                     selected={assembly2}
                     onChange={val => setAssembly2(val)}
                     session={session}

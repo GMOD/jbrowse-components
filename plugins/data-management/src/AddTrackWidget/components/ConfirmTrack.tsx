@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Checkbox,
   FormControl,
@@ -93,6 +93,12 @@ export default observer(function ConfirmTrack({
   const { trackName, trackAdapter, trackType, warningMessage, adapterHint } =
     model
 
+  useEffect(() => {
+    if (adapterHint === '' && trackAdapter) {
+      model.setAdapterHint(trackAdapter.type)
+    }
+  }, [adapterHint, trackAdapter, trackAdapter?.type, model])
+
   if (model.unsupported) {
     return (
       <Typography className={classes.spacing}>
@@ -122,10 +128,6 @@ export default observer(function ConfirmTrack({
     return <UnknownAdapterPrompt model={model} />
   }
 
-  if (adapterHint === '' && trackAdapter) {
-    model.setAdapterHint(trackAdapter.type)
-  }
-
   if (!trackAdapter?.type) {
     return <Typography>Could not recognize this data type.</Typography>
   }
@@ -152,9 +154,16 @@ export default observer(function ConfirmTrack({
       <TrackTypeSelector model={model} />
       <AssemblySelector
         session={session}
+        helperText="Select assembly to add track to"
         selected={model.assembly}
         onChange={asm => model.setAssembly(asm)}
-        TextFieldProps={{ fullWidth: true }}
+        TextFieldProps={{
+          fullWidth: true,
+          SelectProps: {
+            // @ts-ignore
+            SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
+          },
+        }}
       />
       {isElectron && supportedForIndexing && (
         <FormControl>

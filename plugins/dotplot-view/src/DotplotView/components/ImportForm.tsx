@@ -100,7 +100,6 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
             >
               <Grid item>
                 <AssemblySelector
-                  extra={0}
                   selected={assembly1}
                   onChange={val => setAssembly1(val)}
                   session={session}
@@ -108,7 +107,6 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               </Grid>
               <Grid item>
                 <AssemblySelector
-                  extra={1}
                   selected={assembly2}
                   onChange={val => setAssembly2(val)}
                   session={session}

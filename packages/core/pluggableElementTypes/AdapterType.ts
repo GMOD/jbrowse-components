@@ -1,13 +1,11 @@
-/* eslint curly:error */
 import PluggableElementBase from './PluggableElementBase'
 import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
 import { AnyAdapter } from '../data_adapters/BaseAdapter'
 
 export type AdapterMetadata = {
-  category: string | null
-  hiddenFromGUI: boolean | null
-  displayName: string | null
-  description: string | null
+  category?: string
+  hiddenFromGUI?: boolean
+  description?: string
 }
 
 export default class AdapterType extends PluggableElementBase {

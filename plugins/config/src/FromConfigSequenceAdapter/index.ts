@@ -1,20 +1,19 @@
+import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
 import PluginManager from '@jbrowse/core/PluginManager'
-import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
+
 import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'MCScanAnchorsAdapter',
-        displayName: 'MCScan anchors adapter',
+        name: 'FromConfigSequenceAdapter',
         configSchema,
+        getAdapterClass: () =>
+          import('./FromConfigSequenceAdapter').then(r => r.default),
         adapterMetadata: {
           hiddenFromGUI: true,
         },
-
-        getAdapterClass: () =>
-          import('./MCScanAnchorsAdapter').then(r => r.default),
       }),
   )
 }

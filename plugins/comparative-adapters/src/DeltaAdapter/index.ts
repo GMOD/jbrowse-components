@@ -10,12 +10,8 @@ export default (pluginManager: PluginManager) => {
         displayName: 'MUMmer delta adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
-
         getAdapterClass: () => import('./DeltaAdapter').then(r => r.default),
       }),
   )

@@ -25,14 +25,16 @@ const AssemblySelector = observer(
     selected,
     InputProps,
     TextFieldProps,
-    extra = 0,
+    localStorageKey,
+    helperText = 'Select assembly to view',
   }: {
     session: AbstractSessionModel
+    helperText?: string
     onChange: (arg: string) => void
     selected?: string
+    localStorageKey?: string
     InputProps?: IIP
     TextFieldProps?: TFP
-    extra?: unknown
   }) => {
     const { classes } = useStyles()
     const { assemblyNames, assemblyManager } = session
@@ -41,12 +43,12 @@ const AssemblySelector = observer(
     // remember. non-config assists usage with e.g. embedded apps
     const config = new URLSearchParams(window.location.search).get('config')
     const [lastSelected, setLastSelected] =
-      typeof jest === 'undefined'
+      typeof jest === 'undefined' && localStorageKey
         ? useLocalStorage(
             `lastAssembly-${[
               window.location.host + window.location.pathname,
               config,
-              extra,
+              localStorageKey,
             ].join('-')}`,
             selected,
           )
@@ -68,7 +70,7 @@ const AssemblySelector = observer(
         select
         label="Assembly"
         variant="outlined"
-        helperText={error || 'Select assembly to view'}
+        helperText={error || helperText}
         value={selection || ''}
         inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => setLastSelected(event.target.value)}

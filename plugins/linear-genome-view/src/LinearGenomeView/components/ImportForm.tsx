@@ -144,6 +144,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                     setSelectedAsm(val)
                     setValue('')
                   }}
+                  localStorageKey="lgv"
                   session={session}
                   selected={selectedAsm}
                 />

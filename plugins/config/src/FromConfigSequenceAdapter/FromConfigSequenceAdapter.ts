@@ -2,8 +2,10 @@ import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { toArray } from 'rxjs/operators'
-import FromConfigAdapter from './FromConfigAdapter'
 import { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+// locals
+import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
 
 export default class FromConfigSequenceAdapter
   extends FromConfigAdapter

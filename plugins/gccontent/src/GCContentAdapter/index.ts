@@ -10,10 +10,7 @@ export default (pluginManager: PluginManager) => {
         name: 'GCContentAdapter',
         displayName: 'GC content adapter',
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         configSchema: configSchemaF(pluginManager),
         getAdapterClass: () =>

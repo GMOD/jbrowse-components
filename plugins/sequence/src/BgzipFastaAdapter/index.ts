@@ -11,10 +11,7 @@ export default (pluginManager: PluginManager) => {
         displayName: 'Bgzip-indexed FASTA adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () =>
           import('./BgzipFastaAdapter').then(r => r.default),

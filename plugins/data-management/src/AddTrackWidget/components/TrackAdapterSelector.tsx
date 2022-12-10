@@ -14,50 +14,25 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-/**
- * categorizeAdapters
- *
- * takes a list of adapters and sorts their menu item elements
- * under an appropriate ListSubheader element. In this way, adapters that are from
- * external plugins can have headers that differentiate them from the  out-of-the-box
- * plugins.
- *
- * @param adaptersList - a list of adapters found in the PluginManager
- * @returns a series of JSX elements that are ListSubheaders followed by the adapters
- *   found under that subheader
- */
+// collate adapters into a map with
+// key: category
+// value: array of adapters with that category
 function categorizeAdapters(adaptersList: AdapterType[]) {
-  let currentCategory = ''
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const items: any = []
+  const map = {} as { [key: string]: AdapterType[] }
   adaptersList.forEach(adapter => {
-    if (adapter.adapterMetadata?.category) {
-      if (currentCategory !== adapter.adapterMetadata?.category) {
-        currentCategory = adapter.adapterMetadata?.category
-        items.push(
-          <ListSubheader
-            key={adapter.adapterMetadata?.category}
-            value={adapter.adapterMetadata?.category}
-          >
-            {adapter.adapterMetadata?.category}
-          </ListSubheader>,
-        )
-      }
-      items.push(
-        <MenuItem key={adapter.name} value={adapter.name}>
-          {adapter.displayName}
-        </MenuItem>,
-      )
+    const key = adapter.adapterMetadata?.category || 'Default'
+    if (!map[key]) {
+      map[key] = []
     }
+    map[key].push(adapter)
   })
-  return items
+  return map
 }
 
 const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
   const { classes } = useStyles()
   const { trackAdapter } = model
   const { pluginManager } = getEnv(model)
-  const adapters = pluginManager.getAdapterElements()
   return (
     <TextField
       className={classes.spacing}
@@ -73,26 +48,24 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
         SelectDisplayProps: { 'data-testid': 'adapterTypeSelect' },
       }}
     >
-      {adapters
-        // Excludes any adapter with the 'adapterMetadata.hiddenFromGUI' property,
-        // and anything with the 'adapterMetadata.category' property
-        .filter(
-          elt =>
-            !elt.adapterMetadata?.hiddenFromGUI &&
-            !elt.adapterMetadata?.category,
-        )
-        .map(elt => (
-          <MenuItem key={elt.name} value={elt.name}>
-            {elt.displayName}
-          </MenuItem>
-        ))}
-      {
-        // adapters with the 'adapterMetadata.category' property are categorized
-        // by the value of the property here
+      {Object.entries(
         categorizeAdapters(
-          adapters.filter(elt => !elt.adapterMetadata?.hiddenFromGUI),
-        )
-      }
+          pluginManager
+            .getAdapterElements()
+            .filter(e => !e.adapterMetadata?.hiddenFromGUI),
+        ),
+      ).map(([key, val]) => {
+        // returning array avoids needing to use a react fragment which
+        // Select/TextField sub-elements disagree with
+        return [
+          <ListSubheader>{key}</ListSubheader>,
+          val.map(elt => (
+            <MenuItem key={elt.name} value={elt.name}>
+              {elt.displayName}
+            </MenuItem>
+          )),
+        ]
+      })}
     </TextField>
   )
 })

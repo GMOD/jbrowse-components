@@ -10,9 +10,10 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import FromConfigAdapter from './FromConfigAdapter'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+
+import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
 
 /**
  * Adapter that just returns the features defined in its `features` configuration
