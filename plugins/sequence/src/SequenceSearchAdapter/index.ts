@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'SequenceSearchAdapter',
+        displayName: 'Sequence search adapter',
         adapterMetadata: {
           category: null,
           hiddenFromGUI: true,

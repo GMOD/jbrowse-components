@@ -11,6 +11,7 @@ export default class TextSearchAdapterType extends PluggableElementBase {
 
   constructor(stuff: {
     name: string
+    displayName?: string
     description?: string
     configSchema: AnyConfigurationSchemaType
     AdapterClass: AnyAdapter

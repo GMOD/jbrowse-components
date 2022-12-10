@@ -14,6 +14,7 @@ export default class extends Plugin {
       () =>
         new TextSearchAdapterType({
           name: 'TrixTextSearchAdapter',
+          displayName: 'Trix text search adapter',
           configSchema: trixAdapterConfigSchema,
           AdapterClass: TrixTextSearchAdapterClass,
           description: 'Trix adapter',

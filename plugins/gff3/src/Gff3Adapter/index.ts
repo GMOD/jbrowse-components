@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'Gff3Adapter',
+        displayName: 'GFF3 adapter',
         configSchema,
         getAdapterClass: () => import('./Gff3Adapter').then(r => r.default),
       }),

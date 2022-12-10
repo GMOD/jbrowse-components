@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'MashMapAdapter',
+        displayName: 'MashMap adapter',
         configSchema,
         adapterMetadata: {
           category: null,

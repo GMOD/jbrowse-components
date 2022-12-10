@@ -9,6 +9,8 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
 import VCF from '@gmod/vcf'
+
+// local
 import VcfFeature from '../VcfTabixAdapter/VcfFeature'
 
 const readVcf = (f: string) => {

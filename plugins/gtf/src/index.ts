@@ -13,6 +13,7 @@ export default class GtfPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'GtfAdapter',
+          displayName: 'GTF adapter',
           configSchema: gtfAdapterConfigSchema,
           getAdapterClass: () =>
             import('./GtfAdapter/GtfAdapter').then(r => r.default),

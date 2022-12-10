@@ -7,8 +7,8 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'VcfAdapter',
-        configSchema,
         displayName: 'VCF adapter',
+        configSchema,
         getAdapterClass: () => import('./VcfAdapter').then(r => r.default),
       }),
   )

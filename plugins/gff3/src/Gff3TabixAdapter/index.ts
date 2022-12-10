@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'Gff3TabixAdapter',
+        displayName: 'GFF3 tabix adapter',
         configSchema,
         getAdapterClass: () =>
           import('./Gff3TabixAdapter').then(r => r.default),

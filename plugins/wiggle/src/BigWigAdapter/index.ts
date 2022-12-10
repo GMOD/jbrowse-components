@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'BigWigAdapter',
+        displayName: 'BigWig adapter',
         configSchema,
         adapterCapabilities: [
           'hasResolution',

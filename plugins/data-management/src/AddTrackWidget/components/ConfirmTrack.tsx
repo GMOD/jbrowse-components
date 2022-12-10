@@ -240,9 +240,7 @@ const TrackAdapterSelector = observer(({ model }: { model: AddTrackModel }) => {
         )
         .map(elt => (
           <MenuItem key={elt.name} value={elt.name}>
-            {elt.adapterMetadata?.displayName
-              ? elt.adapterMetadata?.displayName
-              : elt.name}
+            {elt.displayName || elt.name}
           </MenuItem>
         ))}
       {

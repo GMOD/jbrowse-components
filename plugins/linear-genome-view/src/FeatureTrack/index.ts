@@ -10,6 +10,7 @@ export default (pm: PluginManager) => {
     const configSchema = configSchemaF(pm)
     return new TrackType({
       name: 'FeatureTrack',
+      displayName: 'Feature track',
       configSchema,
       stateModel: createBaseTrackModel(pm, 'FeatureTrack', configSchema),
     })

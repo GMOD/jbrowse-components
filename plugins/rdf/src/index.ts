@@ -16,6 +16,7 @@ export default class RdfPlugin extends Plugin {
       () =>
         new AdapterType({
           name: 'SPARQLAdapter',
+          displayName: 'SPARQL adapter',
           configSchema: sparqlAdapterConfigSchema,
           AdapterClass: SPARQLAdapterClass,
         }),

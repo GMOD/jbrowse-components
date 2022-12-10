@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'DeltaAdapter',
+        displayName: 'MUMmer delta adapter',
         configSchema,
         adapterMetadata: {
           category: null,

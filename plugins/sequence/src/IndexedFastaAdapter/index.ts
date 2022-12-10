@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'IndexedFastaAdapter',
+        displayName: 'Indexed FASTA adapter',
         configSchema,
         adapterMetadata: {
           category: null,

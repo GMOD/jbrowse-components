@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'BedTabixAdapter',
+        displayName: 'BED tabix adapter',
         configSchema,
         getAdapterClass: () => import('./BedTabixAdapter').then(r => r.default),
       }),

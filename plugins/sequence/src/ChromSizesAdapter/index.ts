@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'ChromSizesAdapter',
+        displayName: 'Chrom sizes adapter',
         configSchema,
         adapterMetadata: {
           category: null,

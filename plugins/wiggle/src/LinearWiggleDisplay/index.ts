@@ -12,6 +12,7 @@ export default (pluginManager: PluginManager) => {
     const stateModel = modelFactory(pluginManager, configSchema)
     return new DisplayType({
       name: 'LinearWiggleDisplay',
+      displayName: 'Wiggle display',
       configSchema,
       stateModel,
       trackType: 'QuantitativeTrack',

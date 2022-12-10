@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'CramAdapter',
+      displayName: 'CRAM adapter',
       configSchema,
       getAdapterClass: () => import('./CramAdapter').then(r => r.default),
     })

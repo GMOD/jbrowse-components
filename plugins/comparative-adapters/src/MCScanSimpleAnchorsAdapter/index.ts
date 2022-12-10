@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'MCScanSimpleAnchorsAdapter',
+        displayName: 'MCScan anchors.simple adapter',
         configSchema,
         adapterMetadata: {
           category: null,

@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'BedAdapter',
+        displayName: 'BED adapter',
         configSchema,
         getAdapterClass: () => import('./BedAdapter').then(r => r.default),
       }),

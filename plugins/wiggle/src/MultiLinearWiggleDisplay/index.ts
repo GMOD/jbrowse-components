@@ -10,6 +10,7 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'MultiLinearWiggleDisplay',
+      displayName: 'Multi-wiggle display',
       configSchema,
       stateModel: modelFactory(pluginManager, configSchema),
       trackType: 'MultiQuantitativeTrack',

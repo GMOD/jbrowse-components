@@ -10,6 +10,7 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'LinearHicDisplay',
+      displayName: 'Hi-C contact matrix display',
       configSchema,
       stateModel: stateModelFactory(configSchema),
       trackType: 'HicTrack',

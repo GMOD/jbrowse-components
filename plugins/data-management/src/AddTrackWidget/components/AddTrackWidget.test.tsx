@@ -103,7 +103,7 @@ describe('<AddTrackWidget />', () => {
     })
     fireEvent.click(getAllByTestId('addTrackNextButton')[0])
     fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
-    const bamAdapter = await findByText('BamAdapter')
+    const bamAdapter = await findByText('BAM adapter')
     fireEvent.click(bamAdapter)
     fireEvent.change(getByTestId('trackNameInput'), {
       target: { value: 'Test track name' },

@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'BgzipFastaAdapter',
+        displayName: 'Bgzip-indexed FASTA adapter',
         configSchema,
         adapterMetadata: {
           category: null,

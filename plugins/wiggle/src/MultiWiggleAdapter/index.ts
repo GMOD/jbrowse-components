@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'MultiWiggleAdapter',
+        displayName: 'Multi-wiggle adapter',
         configSchema,
         adapterCapabilities: [
           'hasResolution',

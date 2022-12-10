@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'GCContentAdapter',
+        displayName: 'GC content adapter',
         adapterMetadata: {
           category: null,
           hiddenFromGUI: true,

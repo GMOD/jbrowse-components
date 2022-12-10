@@ -8,6 +8,7 @@ export default (pluginManager: PluginManager) => {
     const configSchema = configSchemaF(pluginManager)
     return new TrackType({
       name: 'QuantitativeTrack',
+      displayName: 'Quantitative track',
       configSchema,
       stateModel: createBaseTrackModel(
         pluginManager,

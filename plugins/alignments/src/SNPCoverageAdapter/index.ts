@@ -7,6 +7,7 @@ export default function (pluginManager: PluginManager) {
   pluginManager.addAdapterType(() => {
     return new AdapterType({
       name: 'SNPCoverageAdapter',
+      displayName: 'SNPCoverage adapter',
       adapterMetadata: {
         category: null,
         displayName: null,

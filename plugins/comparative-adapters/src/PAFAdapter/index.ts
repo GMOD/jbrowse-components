@@ -7,6 +7,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'PAFAdapter',
+        displayName: 'PAF adapter',
         configSchema,
         adapterMetadata: {
           category: null,
