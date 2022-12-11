@@ -70,6 +70,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       loading: false,
+      drawn: false,
       chainData: undefined as ChainData | undefined,
       ref: null as HTMLCanvasElement | null,
       lastDrawnOffsetPx: 0,
@@ -98,6 +99,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setLoading(f: boolean) {
         self.loading = f
+      },
+
+      /**
+       * #action
+       */
+      setDrawn(f: boolean) {
+        self.drawn = f
       },
 
       /**
@@ -252,6 +260,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ctx.scale(2, 2)
 
                 await drawFeats(self, ctx)
+                self.setDrawn(true)
               } catch (e) {
                 console.error(e)
                 self.setError(e)

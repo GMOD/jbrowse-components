@@ -19,7 +19,6 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('opens the track menu and enables soft clipping', async () => {
-  console.error = jest.fn()
   const { view, findByTestId, findByText } = createView()
   await findByText('Help')
   view.setNewView(0.02, 142956)
@@ -28,12 +27,6 @@ test('opens the track menu and enables soft clipping', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox-long-reads-sv-bam'), {}, delay),
   )
-  await findByTestId(
-    'display-volvox-long-reads-sv-bam-LinearAlignmentsDisplay',
-    {},
-    delay,
-  )
-  expect(view.tracks[0]).toBeTruthy()
 
   // opens the track menu
   fireEvent.click(await findByTestId('track_menu_icon'))
@@ -48,7 +41,6 @@ test('opens the track menu and enables soft clipping', async () => {
 }, 30000)
 
 test('selects a sort, sort by base pair', async () => {
-  console.error = jest.fn()
   const { view, findByTestId, findByText, findAllByTestId } = createView()
   await findByText('Help')
   view.setNewView(0.043688891869634636, 301762)
@@ -56,8 +48,6 @@ test('selects a sort, sort by base pair', async () => {
 
   // load track
   fireEvent.click(await findByTestId(hts(track), {}, delay))
-  await findByTestId(`display-${track}-LinearAlignmentsDisplay`, {}, delay)
-  expect(view.tracks[0]).toBeTruthy()
 
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Sort by'))
@@ -75,15 +65,12 @@ test('selects a sort, sort by base pair', async () => {
 }, 35000)
 
 test('color by tag', async () => {
-  console.error = jest.fn()
   const { view, findByTestId, findByText, findAllByTestId } = createView()
   await findByText('Help')
   view.setNewView(0.465, 85055)
 
   // load track
   fireEvent.click(await findByTestId(hts('volvox_cram'), {}, delay))
-  await findByTestId('display-volvox_cram-LinearAlignmentsDisplay', {}, delay)
-  expect(view.tracks[0]).toBeTruthy()
 
   // colors by HP tag
   fireEvent.click(await findByTestId('track_menu_icon'))
@@ -97,4 +84,52 @@ test('color by tag', async () => {
   await findAllByTestId('pileup-tagHP', {}, delay)
   const { findByTestId: find1 } = within(await findByTestId('Blockset-pileup'))
   expectCanvasMatch(await find1(pc('{volvox}ctgA:39805..40176-0'), {}, delay))
+}, 30000)
+
+test('toggle short-read arc display', async () => {
+  console.warn = jest.fn()
+  const { view, findByTestId, findAllByText, findByText } = createView()
+  await findByText('Help')
+  await view.navToLocString('ctgA:1-50000')
+  fireEvent.click(await findByTestId(hts('volvox_sv_cram'), {}, delay))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Replace lower panel with...'))
+  fireEvent.click((await findAllByText('Arc display'))[0])
+  expectCanvasMatch(await findByTestId('Arc-display-true', {}, delay))
+}, 30000)
+
+test('toggle short-read cloud display', async () => {
+  console.warn = jest.fn()
+  const { view, findByTestId, findAllByText, findByText } = createView()
+  await findByText('Help')
+  await view.navToLocString('ctgA:1-50000')
+  fireEvent.click(await findByTestId(hts('volvox_sv_cram'), {}, delay))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Replace lower panel with...'))
+  fireEvent.click((await findAllByText('Read cloud display'))[0])
+  expectCanvasMatch(await findByTestId('ReadCloud-display-true', {}, delay))
+}, 30000)
+
+test('toggle long-read cloud display', async () => {
+  console.warn = jest.fn()
+  const { view, findByTestId, findAllByText, findByText } = createView()
+  await findByText('Help')
+  await view.navToLocString('ctgA:19,101..32,027')
+  fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), {}, delay))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Replace lower panel with...'))
+  fireEvent.click((await findAllByText('Read cloud display'))[0])
+  expectCanvasMatch(await findByTestId('ReadCloud-display-true', {}, delay))
+}, 30000)
+
+test('toggle long-read arc display', async () => {
+  console.warn = jest.fn()
+  const { view, findByTestId, findAllByText, findByText } = createView()
+  await findByText('Help')
+  await view.navToLocString('ctgA:19,101..32,027')
+  fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), {}, delay))
+  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByText('Replace lower panel with...'))
+  fireEvent.click((await findAllByText('Arc display'))[0])
+  expectCanvasMatch(await findByTestId('Arc-display-true', {}, delay))
 }, 30000)

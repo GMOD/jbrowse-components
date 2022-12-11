@@ -11,8 +11,6 @@ import { LinearReadArcsDisplayModel } from '../model'
 
 type LGV = LinearGenomeViewModel
 
-const height = 1200
-
 const useStyles = makeStyles()(theme => ({
   loading: {
     paddingLeft: '0.6em',
@@ -34,6 +32,7 @@ const Arcs = observer(function ({
   const view = getContainingView(model) as LGV
   return (
     <canvas
+      data-testid={`Arc-display-${model.drawn}`}
       ref={ref => {
         if (isAlive(model)) {
           model.setRef(ref)
@@ -43,9 +42,10 @@ const Arcs = observer(function ({
         position: 'absolute',
         left: -view.offsetPx + model.lastDrawnOffsetPx,
         width: view.dynamicBlocks.totalWidthPx,
+        height: model.height,
       }}
       width={view.dynamicBlocks.totalWidthPx * 2}
-      height={height * 2}
+      height={model.height * 2}
     />
   )
 })
