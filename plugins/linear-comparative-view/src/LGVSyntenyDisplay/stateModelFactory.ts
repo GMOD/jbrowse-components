@@ -20,12 +20,13 @@ import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 type LSV = LinearSyntenyViewModel
 
-const { parseCigar } = MismatchParser
+const { parseCigar, getOrientedCigar } = MismatchParser
 
-function findPosInCigar(cigar: string[], x: number) {
+function findPosInCigar(inCigar: string[], flip: boolean, x: number) {
   let featX = 0
   let mateX = 0
-  for (let i = 0; i < cigar.length; i += 2) {
+  const cigar = getOrientedCigar(flip, inCigar)
+  for (let i = 0; i < cigar.length; i++) {
     const len = +cigar[i]
     const op = cigar[i + 1]
     const min = Math.min(len, x - featX)
@@ -57,6 +58,7 @@ async function navToSynteny(feature: Feature, self: any) {
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
   const mate = feature.get('mate')
+  const flip = feature.get('flipInsDel')
   const mateStart = mate.start
   const mateEnd = mate.end
   const mateAsm = mate.assemblyName
@@ -69,16 +71,16 @@ async function navToSynteny(feature: Feature, self: any) {
   let rFeatStart = featStart
   let rFeatEnd = featStart
 
-  if (cigar.length) {
-    const [featStartX, mateStartX] = findPosInCigar(cigar, regStart - featStart)
-    const [featEndX, mateEndX] = findPosInCigar(cigar, regEnd - featStart)
+  if (cigar) {
+    const [fStartX, mStartX] = findPosInCigar(cigar, flip, regStart - featStart)
+    const [fEndX, mEndX] = findPosInCigar(cigar, flip, regEnd - featStart)
 
     // avoid multiply by 0 with strand undefined
     const flipper = strand === -1 ? -1 : 1
-    rFeatStart = featStart + featStartX
-    rFeatEnd = featStart + featEndX
-    rMateStart = mateStart + mateStartX * flipper
-    rMateEnd = mateStart + mateEndX * flipper
+    rFeatStart = featStart + fStartX
+    rFeatEnd = featStart + fEndX
+    rMateStart = mateStart + mStartX * flipper
+    rMateEnd = mateStart + mEndX * flipper
   } else {
     rFeatEnd = featEnd
     rMateEnd = mateEnd

@@ -1,4 +1,5 @@
 import { revcom } from '@jbrowse/core/util'
+
 export interface Mismatch {
   qual?: number
   start: number
@@ -11,9 +12,12 @@ export interface Mismatch {
 }
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
+const cigarRegex = new RegExp(/([MIDNSHPX=])/)
+
 export function parseCigar(cigar = '') {
-  return cigar.split(/([MIDNSHPX=])/).slice(0, -1)
+  return cigar.split(cigarRegex).slice(0, -1)
 }
+
 export function cigarToMismatches(
   ops: string[],
   seq?: string,
@@ -338,4 +342,29 @@ export function getModificationTypes(mm: string) {
       return typestr.split(/(\d+|.)/).filter(f => !!f)
     })
     .flat()
+}
+
+export function getOrientedCigar(flip: boolean, cigar: string[]) {
+  if (flip) {
+    const ret = []
+    for (let i = 0; i < cigar.length; i += 2) {
+      const len = cigar[i]
+      let op = cigar[i + 1]
+      if (op === 'D') {
+        op = 'I'
+      } else if (op === 'I') {
+        op = 'D'
+      }
+      ret.push(len)
+      ret.push(op)
+    }
+    return ret
+  } else {
+    return cigar
+  }
+}
+
+export function getOrientedMismatches(flip: boolean, cigar: string) {
+  const p = parseCigar(cigar)
+  return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p)
 }

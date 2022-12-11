@@ -16,7 +16,7 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
 import { zip, isGzip } from '../util'
-const { getMismatches } = MismatchParser
+const { getOrientedMismatches } = MismatchParser
 
 export interface PAFRecord {
   qname: string
@@ -129,30 +129,6 @@ function weightedMean(tuples: [number, number][]) {
     [0, 0],
   )
   return valueSum / weightSum
-}
-
-function getOrientedMismatches(flip: boolean, cigar: string) {
-  const mismatches = getMismatches(cigar)
-  if (flip) {
-    let startReadjuster = 0
-    return mismatches.map(m => {
-      if (m.type === 'insertion') {
-        m.type = 'deletion'
-        m.length = +m.base
-        m.start += startReadjuster
-        startReadjuster += m.length
-      } else if (m.type === 'deletion') {
-        const len = m.length
-        m.type = 'insertion'
-        m.base = `${len}`
-        m.length = 0
-        m.start += startReadjuster
-        startReadjuster -= len
-      }
-      return m
-    })
-  }
-  return mismatches
 }
 
 class SyntenyFeature extends SimpleFeature {
@@ -332,13 +308,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               end,
               type: 'match',
               refName,
-              strand, // : !flip ? strand * -1 : strand,
+              strand,
 
               // this is a special property of how to interpret CIGAR on PAF,
-              // intrinsic to the data format. the CIGAR is read backwards
-              // for features aligning to the negative strand of the target,
-              // which is actually different than how it works in e.g.
-              // BAM/SAM (which is visible during alignments track read vs ref)
+              // intrinsic to the data format. the CIGAR is read backwards for
+              // features aligning to the negative strand of the target, which
+              // is actually different than how it works in e.g. BAM/SAM (which
+              // is visible during alignments track read vs ref)
               revCigar: true,
 
               // depending on whether the query or target is queried, the
