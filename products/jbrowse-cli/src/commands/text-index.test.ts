@@ -280,12 +280,9 @@ describe('run with a single assembly similar to embedded config', () => {
     // to update (e.g. if volvox config is updated) run:
     // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     .it('Indexes single assembly volvox config', ctx => {
-      const postVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
-      const postVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
-      const postVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
-      expect(postVolvoxIx).toEqual(preVolvoxIx)
-      expect(postVolvoxIxx).toEqual(preVolvoxIxx)
-      expect(postVolvoxMeta).toEqual(preVolvoxMeta)
+      expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
+      expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
+      expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
     })
 })
 
@@ -312,11 +309,8 @@ describe('run with a volvox config', () => {
     // to update (e.g. if volvox config is updated) run:
     // bin/run text-index --out ../../test_data/volvox/ --attributes Name,ID,Note --force
     .it('Indexes entire volvox config', ctx => {
-      const postVolvoxIx = readTrix(ctx.dir, 'volvox.ix')
-      const postVolvoxIxx = readTrix(ctx.dir, 'volvox.ixx')
-      const postVolvoxMeta = readTrixJSON(ctx.dir, 'volvox_meta.json')
-      expect(postVolvoxIx).toEqual(preVolvoxIx)
-      expect(postVolvoxIxx).toEqual(preVolvoxIxx)
-      expect(postVolvoxMeta).toEqual(preVolvoxMeta)
+      expect(readTrix(ctx.dir, 'volvox.ix')).toEqual(preVolvoxIx)
+      expect(readTrix(ctx.dir, 'volvox.ixx')).toEqual(preVolvoxIxx)
+      expect(readTrixJSON(ctx.dir, 'volvox_meta.json')).toEqual(preVolvoxMeta)
     })
 })

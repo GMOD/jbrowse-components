@@ -46,8 +46,7 @@ test('lollipop track test', async () => {
 test('toplevel configuration', () => {
   const pm = new PluginManager([...corePlugins, TestPlugin].map(P => new P()))
   pm.createPluggableElements()
-  const JBrowseRootModel = JBrowseRootModelFactory(pm, true)
-  const rootModel = JBrowseRootModel.create({
+  const rootModel = JBrowseRootModelFactory(pm, true).create({
     jbrowse: volvoxConfigSnapshot,
     assemblyManager: {},
   })
@@ -102,7 +101,7 @@ test('test sharing', async () => {
   expect(((await findByLabelText('URL')) as HTMLInputElement).value).toBe(
     'http://localhost/?session=share-abc&password=123',
   )
-})
+}, 15000)
 
 test('looks at about this track dialog', async () => {
   const { findByTestId, findAllByText, findByText } = createView()

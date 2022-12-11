@@ -1,12 +1,8 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Alert, Button, IconButton, Snackbar } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
-
-// icons
-import CloseIcon from '@mui/icons-material/Close'
-
-// locals
 import { AbstractSessionModel, NotificationLevel, SnackAction } from '../util'
 
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
@@ -21,23 +17,49 @@ function MessageSnackbar({
 }: {
   session: SnackbarSession & IAnyStateTreeNode
 }) {
+  const [open, setOpen] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState<SnackbarMessage>()
+
   const { popSnackbarMessage, snackbarMessages } = session
 
   const latestMessage = snackbarMessages.length
     ? snackbarMessages[snackbarMessages.length - 1]
     : null
 
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>
+
+    if (snackbarMessage) {
+      if (!latestMessage) {
+        setSnackbarMessage(undefined)
+      } else if (snackbarMessage[0] !== latestMessage[0]) {
+        setOpen(false)
+        timeoutId = setTimeout(() => {
+          setSnackbarMessage(latestMessage)
+          setOpen(true)
+        }, 100)
+      }
+    } else if (latestMessage) {
+      setSnackbarMessage(latestMessage)
+      setOpen(true)
+    }
+
+    return () => {
+      clearTimeout(timeoutId)
+    }
+  }, [latestMessage, snackbarMessage])
+
   const handleClose = (_event: unknown, reason?: string) => {
     if (reason === 'clickaway') {
       return
     }
     popSnackbarMessage()
+    setOpen(false)
   }
-  const open = !!latestMessage
-  const [message, level, action] = latestMessage || []
+  const [message, level, action] = snackbarMessage || []
   return (
     <Snackbar
-      open={open}
+      open={open && !!message}
       onClose={handleClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
     >
@@ -55,7 +77,11 @@ function MessageSnackbar({
               >
                 {action.name}
               </Button>
-              <IconButton color="inherit" onClick={handleClose}>
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                onClick={handleClose}
+              >
                 <CloseIcon />
               </IconButton>
             </>
