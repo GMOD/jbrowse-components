@@ -53,6 +53,8 @@ function SearchBox({
     try {
       if (option.hasLocation()) {
         await navToOption(option)
+      } else if (option.results?.length) {
+        model.setSearchResults(option.results, option.getLabel())
       } else {
         const input = option.getLabel()
         const [ref, rest] = splitLast(input, ':')

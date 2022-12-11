@@ -82,6 +82,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     try {
       if (option?.getDisplayString() === input && option.hasLocation()) {
         await navToOption(option)
+      } else if (option?.results?.length) {
+        model.setSearchResults(option.results, option.getLabel())
       } else {
         const [ref, rest] = splitLast(input, ':')
         const allRefs = assembly?.allRefNamesWithLowerCase || []
