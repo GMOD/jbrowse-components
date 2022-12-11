@@ -95,3 +95,13 @@ test('description of gene, searching: kinase', async () => {
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)
+
+test('search matches description for feature in two places', async () => {
+  const { view, input, findByText, autocomplete } = await doSetup()
+
+  fireEvent.change(input, { target: { value: 'fingerprint' } })
+  fireEvent.click(await findByText(/b101.2/, {}, delay))
+  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  await findByText('Search results', {}, delay)
+  await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
+}, 30000)
