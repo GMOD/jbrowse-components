@@ -9,8 +9,8 @@ our source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-BaseLinearDisplay is a "base" config that is extended by classes like
-"LinearBasicDisplay" (used for feature tracks, etc) and "LinearBareDisplay"
+`BaseLinearDisplay` is a "base" config that is extended by classes like
+`LinearBasicDisplay` (used for feature tracks, etc) and `LinearBareDisplay`
 (more stripped down than even the basic display, not commonly used)
 
 ### BaseLinearDisplay - Identifier

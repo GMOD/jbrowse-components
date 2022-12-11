@@ -97,7 +97,7 @@ renderStarted: () => void
 
 ```js
 // type signature
-renderSuccess: ({ message, data, reactElement, renderingComponent, }: { message: string; data: any; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
+renderSuccess: ({ message, data, reactElement, html, renderingComponent, }: { message: string; data: any; html: string; reactElement: React.ReactElement; renderingComponent: React.ComponentType<any>; }) => void
 ```
 
 #### action: renderError

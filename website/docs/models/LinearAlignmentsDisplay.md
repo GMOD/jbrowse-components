@@ -20,15 +20,9 @@ refers to LinearPileupDisplay sub-display model
 
 ```js
 // type signature
-IMaybe<ITypeUnion<any, any, any>>
+IMaybe<IAnyType>
 // code
-PileupDisplay: types.maybe(
-      types.union(
-        pluginManager.getDisplayType('LinearReadCloudDisplay').stateModel,
-        pluginManager.getDisplayType('LinearReadArcsDisplay').stateModel,
-        pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
-      ),
-    )
+PileupDisplay: types.maybe(types.union(...lowerPanelDisplays))
 ```
 
 #### property: SNPCoverageDisplay
@@ -199,7 +193,7 @@ setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { set
 
 ```js
 // type signature
-setHeight: (displayHeight: number) => number
+setHeight: (n: number) => number
 ```
 
 #### action: setLowerPanelType

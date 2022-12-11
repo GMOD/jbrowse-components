@@ -41,6 +41,15 @@ IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [un
 filterBy: types.optional(FilterModel, {})
 ```
 
+#### property: lineWidth
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+lineWidth: types.maybe(types.number)
+```
+
 #### property: colorBy
 
 ```js
@@ -54,6 +63,15 @@ colorBy: types.maybe(
             extra: types.frozen(),
           }),
         )
+```
+
+### LinearReadArcsDisplay - Getters
+
+#### getter: ready
+
+```js
+// type
+boolean
 ```
 
 ### LinearReadArcsDisplay - Methods
@@ -81,11 +99,11 @@ renderSvg: (opts: ExportSvgOptions) => Promise<Element>
 setRef: (ref: HTMLCanvasElement) => void
 ```
 
-#### action: setPairData
+#### action: setChainData
 
 ```js
 // type signature
-setPairData: (args: PairData) => void
+setChainData: (args: ChainData) => void
 ```
 
 #### action: setLoading
@@ -93,6 +111,13 @@ setPairData: (args: PairData) => void
 ```js
 // type signature
 setLoading: (f: boolean) => void
+```
+
+#### action: setDrawn
+
+```js
+// type signature
+setDrawn: (f: boolean) => void
 ```
 
 #### action: setFilterBy
@@ -107,4 +132,11 @@ setFilterBy: (filter: Filter) => void
 ```js
 // type signature
 setLastDrawnOffsetPx: (n: number) => void
+```
+
+#### action: setLineWidth
+
+```js
+// type signature
+setLineWidth: (n: number) => void
 ```

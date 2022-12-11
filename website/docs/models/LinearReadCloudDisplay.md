@@ -56,6 +56,15 @@ colorBy: types.maybe(
         )
 ```
 
+### LinearReadCloudDisplay - Getters
+
+#### getter: ready
+
+```js
+// type
+boolean
+```
+
 ### LinearReadCloudDisplay - Methods
 
 #### method: trackMenuItems
@@ -81,11 +90,11 @@ renderSvg: (opts: ExportSvgOptions) => Promise<Element>
 setRef: (ref: HTMLCanvasElement) => void
 ```
 
-#### action: setPairData
+#### action: setChainData
 
 ```js
 // type signature
-setPairData: (args: PairData) => void
+setChainData: (args: ChainData) => void
 ```
 
 #### action: setLoading
@@ -93,6 +102,13 @@ setPairData: (args: PairData) => void
 ```js
 // type signature
 setLoading: (f: boolean) => void
+```
+
+#### action: setDrawn
+
+```js
+// type signature
+setDrawn: (f: boolean) => void
 ```
 
 #### action: setFilterBy

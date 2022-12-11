@@ -21,6 +21,16 @@ maxFeatureScreenDensity: {
       }
 ```
 
+#### slot: lineWidth
+
+```js
+lineWidth: {
+        type: 'number',
+        description: 'set arc line width',
+        defaultValue: 1,
+      }
+```
+
 #### slot: colorScheme
 
 ```js

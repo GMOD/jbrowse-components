@@ -228,14 +228,14 @@ setMaxHeight: (n: number) => void
 
 ```js
 // type signature
-setFeatureHeight: (n: number) => void
+setFeatureHeight: (n?: number) => void
 ```
 
 #### action: setNoSpacing
 
 ```js
 // type signature
-setNoSpacing: (flag: boolean) => void
+setNoSpacing: (flag?: boolean) => void
 ```
 
 #### action: setColorScheme
