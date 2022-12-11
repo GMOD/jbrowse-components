@@ -41,7 +41,7 @@ test('lollipop track test', async () => {
 
   await findByTestId('display-lollipop_track_linear', {}, delay)
   await findByTestId('three', {}, delay)
-}, 10000)
+}, 30000)
 
 test('toplevel configuration', () => {
   const pm = new PluginManager([...corePlugins, TestPlugin].map(P => new P()))
