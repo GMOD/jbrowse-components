@@ -109,10 +109,9 @@ describe('<AddTrackWidget />', () => {
       target: { value: 'Test track name' },
     })
     fireEvent.mouseDown(getByTestId('trackTypeSelect'))
-    fireEvent.click(await findByText('FeatureTrack'))
+    fireEvent.click(await findByText('Feature track'))
     fireEvent.mouseDown(getByTestId('assemblyNameSelect'))
-    const volMyt1 = await findAllByText('volMyt1')
-    fireEvent.click(volMyt1[1])
+    fireEvent.click((await findAllByText('volMyt1'))[1])
     fireEvent.click(getAllByTestId('addTrackNextButton')[0])
     expect(session.sessionTracks.length).toBe(2)
   })

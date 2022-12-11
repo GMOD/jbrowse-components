@@ -9,10 +9,7 @@ export default function (pluginManager: PluginManager) {
       name: 'SNPCoverageAdapter',
       displayName: 'SNPCoverage adapter',
       adapterMetadata: {
-        category: null,
-        displayName: null,
         hiddenFromGUI: true,
-        description: null,
       },
       getAdapterClass: () =>
         import('./SNPCoverageAdapter').then(r => r.default),

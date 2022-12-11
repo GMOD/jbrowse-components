@@ -11,10 +11,7 @@ export default (pluginManager: PluginManager) => {
         displayName: 'Indexed FASTA adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () =>
           import('./IndexedFastaAdapter').then(r => r.default),

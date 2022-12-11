@@ -10,10 +10,7 @@ export default (pluginManager: PluginManager) => {
         name: 'SequenceSearchAdapter',
         displayName: 'Sequence search adapter',
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         configSchema,
         getAdapterClass: () =>

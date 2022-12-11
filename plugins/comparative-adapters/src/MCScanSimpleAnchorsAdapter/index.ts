@@ -10,10 +10,7 @@ export default (pluginManager: PluginManager) => {
         displayName: 'MCScan anchors.simple adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () =>
           import('./MCScanSimpleAnchorsAdapter').then(r => r.default),

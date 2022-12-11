@@ -8,10 +8,7 @@ export default (pluginManager: PluginManager) => {
       name: 'HtsgetBamAdapter',
       displayName: 'Htsget BAM adapter',
       adapterMetadata: {
-        category: null,
         hiddenFromGUI: true,
-        displayName: null,
-        description: null,
       },
       configSchema,
       getAdapterClass: () => import('./HtsgetBamAdapter').then(r => r.default),

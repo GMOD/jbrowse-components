@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { TextField, MenuItem, InputProps as IIP } from '@mui/material'
+import {
+  TextField,
+  MenuItem,
+  InputProps as IIP,
+  TextFieldProps as TFP,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 
@@ -19,13 +24,17 @@ const AssemblySelector = observer(
     onChange,
     selected,
     InputProps,
-    extra = 0,
+    TextFieldProps,
+    localStorageKey,
+    helperText = 'Select assembly to view',
   }: {
     session: AbstractSessionModel
+    helperText?: string
     onChange: (arg: string) => void
     selected?: string
+    localStorageKey?: string
     InputProps?: IIP
-    extra?: unknown
+    TextFieldProps?: TFP
   }) => {
     const { classes } = useStyles()
     const { assemblyNames, assemblyManager } = session
@@ -34,12 +43,12 @@ const AssemblySelector = observer(
     // remember. non-config assists usage with e.g. embedded apps
     const config = new URLSearchParams(window.location.search).get('config')
     const [lastSelected, setLastSelected] =
-      typeof jest === 'undefined'
+      typeof jest === 'undefined' && localStorageKey
         ? useLocalStorage(
             `lastAssembly-${[
               window.location.host + window.location.pathname,
               config,
-              extra,
+              localStorageKey,
             ].join('-')}`,
             selected,
           )
@@ -61,7 +70,7 @@ const AssemblySelector = observer(
         select
         label="Assembly"
         variant="outlined"
-        helperText={error || 'Select assembly to view'}
+        helperText={error || helperText}
         value={selection || ''}
         inputProps={{ 'data-testid': 'assembly-selector' }}
         onChange={event => setLastSelected(event.target.value)}
@@ -69,6 +78,7 @@ const AssemblySelector = observer(
         InputProps={InputProps}
         disabled={!!error}
         className={classes.importFormEntry}
+        {...TextFieldProps}
       >
         {assemblyNames.map(name => {
           const assembly = assemblyManager.get(name)
