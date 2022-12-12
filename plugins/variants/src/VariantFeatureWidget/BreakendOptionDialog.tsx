@@ -8,16 +8,17 @@ import {
   DialogContent,
   FormControlLabel,
 } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 import { getSnapshot } from 'mobx-state-tree'
+// jbrowse
+import { Dialog } from '@jbrowse/core/ui'
 import { getSession, Feature } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   block: {
     display: 'block',
   },
-}))
+})
 
 function BreakendOptionDialog({
   model,
@@ -78,7 +79,7 @@ function BreakendOptionDialog({
               viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
               viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
               viewSnapshot.featureData = feature
-              const viewTracks: any = getSnapshot(view.tracks)
+              const viewTracks = getSnapshot(view.tracks) as any
               viewSnapshot.views[0].tracks = remapIds(viewTracks)
               viewSnapshot.views[1].tracks = remapIds(
                 mirrorTracks ? viewTracks.slice().reverse() : viewTracks,

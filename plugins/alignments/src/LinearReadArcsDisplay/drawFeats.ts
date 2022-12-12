@@ -110,38 +110,34 @@ export default async function drawFeats(
 
   for (let i = 0; i < chains.length; i++) {
     let chain = chains[i]
-    if (!hasPaired) {
-      chain.sort((a, b) => a.clipPos - b.clipPos)
-    } else {
-      // ignore split/supplementary reads for hasPaired=true for now
-      chain = chain.filter(f => !(f.flags & 2048))
-    }
-    if (chain.length === 1 && asm) {
-      const v0 = chain[0]
+
+    if (chain.length === 1) {
+      // singleton feature
+      const f = chain[0]
 
       // special case where we look at RPOS/RNEXT
       if (hasPaired) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const refName = asm.getCanonicalRefName(v0.next_ref!)
+        const refName = asm?.getCanonicalRefName(f.next_ref!) || f.next_ref!
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const coord = v0.next_pos!
-        draw(v0, {
+        const coord = f.next_pos!
+        draw(f, {
           refName,
           start: coord,
           end: coord,
-          strand: v0.strand,
+          strand: f.strand,
         })
       }
 
       // special case where we look at SA
       else {
-        const suppAlns = featurizeSA(v0.SA, v0.id, v0.strand, v0.name)
-        const features = [v0, ...suppAlns]
+        const suppAlns = featurizeSA(f.SA, f.id, f.strand, f.name)
+        const features = [f, ...suppAlns].sort((a, b) => a.clipPos - b.clipPos)
         for (let i = 0; i < features.length - 1; i++) {
-          const v0 = features[i]
+          const f = features[i]
           const v1 = features[i + 1]
-          draw(v0, {
-            refName: asm.getCanonicalRefName(v1.refName),
+          draw(f, {
+            refName: asm?.getCanonicalRefName(v1.refName) || v1.refName,
             start: v1.start,
             end: v1.end,
             strand: v1.strand,
@@ -149,6 +145,12 @@ export default async function drawFeats(
         }
       }
     } else {
+      if (!hasPaired) {
+        chain.sort((a, b) => a.clipPos - b.clipPos)
+      } else {
+        // ignore split/supplementary reads for hasPaired=true for now
+        chain = chain.filter(f => !(f.flags & 2048))
+      }
       for (let i = 0; i < chain.length - 1; i++) {
         draw(chain[i], chain[i + 1])
       }

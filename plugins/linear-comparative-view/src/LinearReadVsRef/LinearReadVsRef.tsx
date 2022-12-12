@@ -166,7 +166,7 @@ export default function ReadVsRefDialog({
       const { assemblyManager } = session
       const assembly = assemblyManager.get(trackAssembly)
 
-      const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName)
+      const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
 
       const feat = feature.toJSON()
       feat.clipPos = clipPos

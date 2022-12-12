@@ -419,11 +419,18 @@ export function getTag(f: Feature, tag: string) {
   return tags ? tags[tag] : f.get(tag)
 }
 
+// produces a list of "feature-like" object from parsing supplementary
+// alignments in the SA tag
+//
+// @param normalize - used specifically in the linear-read-vs-ref context, it
+// flips features around relative to the original feature. other contexts of
+// usage can keep this false
 export function featurizeSA(
   SA: string | undefined,
   id: string,
   strand: number,
   readName: string,
+  normalize?: boolean,
 ) {
   return (
     SA?.split(';')
@@ -434,7 +441,10 @@ export function featurizeSA(
         const saLength = getLength(saCigar)
         const saLengthSansClipping = getLengthSansClipping(saCigar)
         const saStrandNormalized = saStrand === '-' ? -1 : 1
-        const saClipPos = getClip(saCigar, saStrandNormalized * strand)
+        const saClipPos = getClip(
+          saCigar,
+          (normalize ? strand : 1) * saStrandNormalized,
+        )
         const saRealStart = +saStart - 1
         return {
           refName: saRef,
@@ -443,7 +453,7 @@ export function featurizeSA(
           seqLength: saLength,
           clipPos: saClipPos,
           CIGAR: saCigar,
-          strand: strand * saStrandNormalized,
+          strand: (normalize ? strand : 1) * saStrandNormalized,
           uniqueId: `${id}_SA${index}`,
           mate: {
             start: saClipPos,
