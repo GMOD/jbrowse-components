@@ -2025,59 +2025,6 @@
         }
       },
       "assemblyNames": ["volvox"]
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "multi-chrom-long.cram",
-      "name": "multi-chrom-long.cram",
-      "category": ["Alignments"],
-      "adapter": {
-        "type": "CramAdapter",
-        "cramLocation": {
-          "uri": "multi-chrom-long.cram",
-          "locationType": "UriLocation"
-        },
-        "craiLocation": {
-          "uri": "multi-chrom-long.cram.crai",
-          "locationType": "UriLocation"
-        },
-        "sequenceAdapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "assemblyNames": ["volvox"]
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "multi-chrom-long.bam",
-      "category": ["Alignments"],
-      "name": "multi-chrom-long.bam",
-      "adapter": {
-        "type": "BamAdapter",
-        "bamLocation": {
-          "uri": "multi-chrom-long.bam",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "multi-chrom-long.bam.bai",
-            "locationType": "UriLocation"
-          },
-          "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "TwoBitAdapter",
-          "twoBitLocation": {
-            "uri": "volvox.2bit",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "assemblyNames": ["volvox"]
     }
   ],
   "plugins": [

@@ -69,43 +69,50 @@ export default async function drawFeats(
     const r1 = view.bpToPx({ refName: k1.refName, coord: p1 })
     const r2 = view.bpToPx({ refName: k2.refName, coord: p2 })
 
-    if (!r1 || !r2) {
-      return
-    }
-    const radius = (r2.offsetPx - r1.offsetPx) / 2
-    const absrad = Math.abs(radius)
-    const p = r1.offsetPx - view.offsetPx
-    ctx.beginPath()
-    ctx.moveTo(p, 0)
+    if (r1 && r2) {
+      const radius = (r2.offsetPx - r1.offsetPx) / 2
+      const absrad = Math.abs(radius)
+      const p = r1.offsetPx - view.offsetPx
+      ctx.beginPath()
+      ctx.moveTo(p, 0)
 
-    if (hasPaired) {
-      if (type === 'insertSizeAndOrientation') {
-        ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
-      } else if (type === 'orientation') {
-        ctx.strokeStyle = getOrientationColor(k1)
-      } else if (type === 'insertSize') {
-        ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
-      } else if (type === 'gradient') {
-        ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
-      }
-    } else {
-      if (type === 'orientation' || type === 'insertSizeAndOrientation') {
-        if (s1 === -1 && s2 === 1) {
-          ctx.strokeStyle = 'navy'
-        } else if (s1 === 1 && s2 === -1) {
-          ctx.strokeStyle = 'green'
-        } else {
-          ctx.strokeStyle = 'grey'
+      if (hasPaired) {
+        if (type === 'insertSizeAndOrientation') {
+          ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
+        } else if (type === 'orientation') {
+          ctx.strokeStyle = getOrientationColor(k1)
+        } else if (type === 'insertSize') {
+          ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
+        } else if (type === 'gradient') {
+          ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
         }
-      } else if (type === 'gradient') {
-        ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
+      } else {
+        if (type === 'orientation' || type === 'insertSizeAndOrientation') {
+          if (s1 === -1 && s2 === 1) {
+            ctx.strokeStyle = 'navy'
+          } else if (s1 === 1 && s2 === -1) {
+            ctx.strokeStyle = 'green'
+          } else {
+            ctx.strokeStyle = 'grey'
+          }
+        } else if (type === 'gradient') {
+          ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
+        }
       }
-    }
 
-    const destX = p + radius * 2
-    const destY = Math.min(displayHeight, absrad)
-    ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
-    ctx.stroke()
+      const destX = p + radius * 2
+      const destY = Math.min(displayHeight, absrad)
+      ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
+      ctx.stroke()
+    } else if (r1) {
+      // draws a vertical line off to middle of nowhere if the second end not found
+      const p = r1.offsetPx - view.offsetPx
+      ctx.strokeStyle = 'purple'
+      ctx.beginPath()
+      ctx.moveTo(p, 0)
+      ctx.lineTo(p, displayHeight)
+      ctx.stroke()
+    }
   }
 
   for (let i = 0; i < chains.length; i++) {
@@ -147,6 +154,7 @@ export default async function drawFeats(
     } else {
       if (!hasPaired) {
         chain.sort((a, b) => a.clipPos - b.clipPos)
+        chain = chain.filter(f => !(f.flags & 256))
       } else {
         // ignore split/supplementary reads for hasPaired=true for now
         chain = chain.filter(f => !(f.flags & 2048))
