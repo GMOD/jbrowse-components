@@ -18,8 +18,8 @@ export interface ReducedFeature {
   flags: number
   tlen: number
   pair_orientation: string
-  next_refName?: string
-  next_segment_position?: number
+  next_ref?: string
+  next_pos?: number
   clipPos: number
 }
 

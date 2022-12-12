@@ -1,5 +1,5 @@
 import { orientationTypes } from '../util'
-import { ReducedFeature, ChainStats } from './fetchChains'
+import { ChainStats } from './fetchChains'
 
 const alignmentColoring: { [key: string]: string } = {
   color_pair_lr: '#c8c8c8',
@@ -9,8 +9,8 @@ const alignmentColoring: { [key: string]: string } = {
 }
 
 export function getInsertSizeColor(
-  f1: ReducedFeature,
-  f2: ReducedFeature,
+  f1: { refName: string; tlen: number },
+  f2: { refName: string },
   stats?: ChainStats,
 ) {
   const sameRef = f1.refName === f2.refName
@@ -26,14 +26,14 @@ export function getInsertSizeColor(
 }
 
 export function getInsertSizeAndOrientationColor(
-  f1: ReducedFeature,
-  f2: ReducedFeature,
+  f1: { refName: string; pair_orientation: string; tlen: number },
+  f2: { refName: string },
   stats?: ChainStats,
 ) {
   return getInsertSizeColor(f1, f2, stats) || getOrientationColor(f1)
 }
 
-export function getOrientationColor(f: ReducedFeature) {
+export function getOrientationColor(f: { pair_orientation: string }) {
   const type = orientationTypes['fr']
   const orientation = type[f.pair_orientation]
   const map = {

@@ -42,17 +42,7 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.isPaired() ? this.record.getPairOrientation() : undefined
   }
 
-  _get_next_seq_id() {
-    return this.record._next_refid()
-  }
-
-  _get_seq_id() {
-    // @ts-ignore
-    return this.record._refID
-  }
-
   _get_next_ref() {
-    console.log('t1', this.adapter.refIdToName(this.record._next_refid()))
     return this.adapter.refIdToName(this.record._next_refid())
   }
 
@@ -90,9 +80,7 @@ export default class BamSlightlyLazyFeature implements Feature {
             prop =>
               prop.startsWith('_get_') &&
               prop !== '_get_mismatches' &&
-              prop !== '_get_tags' &&
-              prop !== '_get_next_seq_id' &&
-              prop !== '_get_seq_id',
+              prop !== '_get_tags',
           )
           .map(methodName => methodName.replace('_get_', ''))
           .concat(this.record._tags()),
