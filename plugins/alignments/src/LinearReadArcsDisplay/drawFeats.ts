@@ -1,10 +1,6 @@
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-
-const { parseCigar } = MismatchParser
-
 // locals
 import {
   getOrientationColor,
@@ -12,6 +8,12 @@ import {
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
 import { ChainData } from '../shared/fetchChains'
+import {
+  getLength,
+  getLengthSansClipping,
+  getLengthOnRef,
+  getClip,
+} from '../MismatchParser'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
@@ -20,19 +22,6 @@ export function hasPairedReads(features: ChainData) {
     }
   }
   return false
-}
-
-function getLengthOnRef(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let lengthOnRef = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'I') {
-      lengthOnRef += len
-    }
-  }
-  return lengthOnRef
 }
 
 type LGV = LinearGenomeViewModel
@@ -69,8 +58,8 @@ export default async function drawFeats(
       refName: string
       start: number
       end: number
-      tlen: number
-      pair_orientation: string
+      tlen?: number
+      pair_orientation?: string
     },
     k2: { strand: number; refName: string; start: number; end: number },
   ) {
@@ -126,44 +115,79 @@ export default async function drawFeats(
 
   for (let i = 0; i < chains.length; i++) {
     let chain = chains[i]
+    console.log(chain.length)
     if (!hasPaired) {
       chain.sort((a, b) => a.clipPos - b.clipPos)
     } else {
-      // ignore split reads for now, just draw pairs
+      // ignore split/supplementary reads for hasPaired=true for now
       chain = chain.filter(f => !(f.flags & 2048))
     }
     if (chain.length === 1 && asm) {
       const v0 = chain[0]
 
-      // special case where we look at TLEN
+      // special case where we look at RPOS/RNEXT
       if (hasPaired) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const refName = asm.getCanonicalRefName(v0.next_ref!)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const coord = v0.next_pos!
         draw(v0, {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          refName: asm.getCanonicalRefName(v0.next_ref!),
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          start: v0.next_pos!,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          end: v0.next_pos!,
-          strand: v0.strand,
-        })
-      } else {
-        const aln = v0.SA?.split(';')[0]
-        if (!aln) {
-          return
-        }
-        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
-        const saLengthOnRef = getLengthOnRef(saCigar)
-        console.log({ elt })
-        draw(v0, {
-          refName: asm.getCanonicalRefName(elt[0]),
-          start: +elt[1],
-          end: +elt[1],
+          refName,
+          start: coord,
+          end: coord,
           strand: v0.strand,
         })
       }
+
+      // special case where we look at SA
+      else {
+        const origStrand = v0.strand
+        const readName = v0.name
+        const supplementaryAlignments =
+          v0.SA?.split(';')
+            .filter(aln => !!aln)
+            .map((aln, index) => {
+              const [saRef, saStart, saStrand, saCigar] = aln.split(',')
+              const saLengthOnRef = getLengthOnRef(saCigar)
+              const saLength = getLength(saCigar)
+              const saLengthSansClipping = getLengthSansClipping(saCigar)
+              const saStrandNormalized = saStrand === '-' ? -1 : 1
+              const saClipPos = getClip(
+                saCigar,
+                saStrandNormalized * origStrand,
+              )
+              const saRealStart = +saStart - 1
+              return {
+                refName: saRef,
+                start: saRealStart,
+                end: saRealStart + saLengthOnRef,
+                seqLength: saLength,
+                clipPos: saClipPos,
+                CIGAR: saCigar,
+                strand: origStrand * saStrandNormalized,
+                uniqueId: `${v0.id}_SA${index}`,
+                mate: {
+                  start: saClipPos,
+                  end: saClipPos + saLengthSansClipping,
+                  refName: readName,
+                },
+              }
+            }) || []
+        const features = [v0, ...supplementaryAlignments]
+        for (let i = 0; i < features.length - 1; i++) {
+          const v0 = features[i]
+          const v1 = features[i + 1]
+          draw(v0, {
+            refName: asm.getCanonicalRefName(v1.refName),
+            start: v1.start,
+            end: v1.end,
+            strand: v1.strand,
+          })
+        }
+      }
     } else {
       for (let i = 0; i < chain.length - 1; i++) {
-        draw(chain[1], chain[i + 1])
+        draw(chain[i], chain[i + 1])
       }
     }
   }
