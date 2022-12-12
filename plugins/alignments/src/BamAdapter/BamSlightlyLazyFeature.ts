@@ -6,7 +6,7 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getMismatches } from '../MismatchParser'
+import { getClip, getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
@@ -142,8 +142,6 @@ export default class BamSlightlyLazyFeature implements Feature {
 
   _get_clipPos() {
     const cigar = this.get('CIGAR') || ''
-    return this.get('strand') === -1
-      ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-      : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+    return getClip(cigar, this.get('strand'))
   }
 }

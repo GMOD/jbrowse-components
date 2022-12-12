@@ -13,6 +13,8 @@ export interface Mismatch {
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
+const startClip = new RegExp(/(\d+)[SH]$/)
+const endClip = new RegExp(/^(\d+)([SH])/)
 
 export function parseCigar(cigar = '') {
   return cigar.split(cigarRegex).slice(0, -1)
@@ -410,8 +412,8 @@ export function getLengthSansClipping(cigar: string) {
 
 export function getClip(cigar: string, strand: number) {
   return strand === -1
-    ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+    ? +(cigar.match(startClip) || [])[1] || 0
+    : +(cigar.match(endClip) || [])[1] || 0
 }
 
 export function getTag(f: Feature, tag: string) {

@@ -38,12 +38,25 @@ function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
   x1: T,
   x2: U,
 ) {
-  return deepEqual(getSnapshot(x1), getSnapshot(x2))
+  return deepEqual(
+    x1 ? getSnapshot(x1) : undefined,
+    x2 ? getSnapshot(x2) : undefined,
+  )
+}
+
+function preCheck(self: AlignmentsDisplayModel) {
+  const { PileupDisplay, SNPCoverageDisplay } = self
+  return (
+    PileupDisplay ||
+    isAlive(PileupDisplay) ||
+    SNPCoverageDisplay ||
+    isAlive(SNPCoverageDisplay)
+  )
 }
 
 function propagateColorBy(self: AlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
-  if (!PileupDisplay || !isAlive(PileupDisplay) || !PileupDisplay.colorBy) {
+  if (!preCheck(self) || !PileupDisplay.colorBy) {
     return
   }
   if (!deepSnap(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
@@ -53,7 +66,7 @@ function propagateColorBy(self: AlignmentsDisplayModel) {
 
 function propagateFilterBy(self: AlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
-  if (!PileupDisplay || !isAlive(PileupDisplay) || !PileupDisplay.filterBy) {
+  if (!preCheck(self) || !PileupDisplay.filterBy) {
     return
   }
   if (!deepSnap(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
