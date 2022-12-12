@@ -21,6 +21,7 @@ export interface ReducedFeature {
   next_ref?: string
   next_pos?: number
   clipPos: number
+  SA?: string
 }
 
 export interface ChainStats {

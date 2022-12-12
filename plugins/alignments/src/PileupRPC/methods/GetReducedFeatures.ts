@@ -8,6 +8,7 @@ import { toArray } from 'rxjs/operators'
 import { filterForPairs, getInsertSizeStats } from '../util'
 import { ReducedFeature } from '../../shared/fetchChains'
 import PileupBaseRPC from '../base'
+import { getTag } from '../../util'
 
 // specialized get features to return limited data about alignments
 export default class PileupGetReducedFeatures extends PileupBaseRPC {
@@ -49,6 +50,7 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
         next_ref: f.get('next_ref'),
         next_pos: f.get('next_pos'),
         clipPos: f.get('clipPos'),
+        SA: getTag(f, 'SA'),
       })),
       f => f.id,
     )

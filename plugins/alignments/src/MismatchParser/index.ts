@@ -1,4 +1,4 @@
-import { revcom } from '@jbrowse/core/util'
+import { revcom, Feature } from '@jbrowse/core/util'
 
 export interface Mismatch {
   qual?: number
@@ -367,4 +367,54 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
 export function getOrientedMismatches(flip: boolean, cigar: string) {
   const p = parseCigar(cigar)
   return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p)
+}
+
+export function getLengthOnRef(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let lengthOnRef = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'I') {
+      lengthOnRef += len
+    }
+  }
+  return lengthOnRef
+}
+
+export function getLength(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'D' && op !== 'N') {
+      length += len
+    }
+  }
+  return length
+}
+
+export function getLengthSansClipping(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
+      length += len
+    }
+  }
+  return length
+}
+
+export function getClip(cigar: string, strand: number) {
+  return strand === -1
+    ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
+    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+}
+
+export function getTag(f: Feature, tag: string) {
+  const tags = f.get('tags')
+  return tags ? tags[tag] : f.get(tag)
 }

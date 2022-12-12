@@ -14,14 +14,10 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView, Feature } from '@jbrowse/core/util'
 
 // locals
-import {
-  getClip,
-  getLength,
-  getLengthOnRef,
-  getLengthSansClipping,
-  getTag,
-  mergeIntervals,
-} from './util'
+import { mergeIntervals } from './util'
+import { MismatchParser } from '@jbrowse/plugin-alignments'
+const { getClip, getLength, getLengthOnRef, getLengthSansClipping, getTag } =
+  MismatchParser
 
 interface ReducedFeature {
   refName: string
@@ -41,11 +37,11 @@ interface ReducedFeature {
   }
 }
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     width: 300,
   },
-}))
+})
 
 interface BasicFeature {
   end: number

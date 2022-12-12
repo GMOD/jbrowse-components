@@ -1,6 +1,9 @@
-// eslint-disable @typescript-eslint/no-non-null-assertion
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+import { MismatchParser } from '@jbrowse/plugin-alignments'
+
+const { parseCigar } = MismatchParser
 
 // locals
 import {
@@ -17,6 +20,19 @@ export function hasPairedReads(features: ChainData) {
     }
   }
   return false
+}
+
+function getLengthOnRef(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let lengthOnRef = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'I') {
+      lengthOnRef += len
+    }
+  }
+  return lengthOnRef
 }
 
 type LGV = LinearGenomeViewModel
@@ -38,7 +54,6 @@ export default async function drawFeats(
   }
   const displayHeight = self.height
   const view = getContainingView(self) as LGV
-  const offset = view.offsetPx
   const { assemblyManager } = getSession(self)
   self.setLastDrawnOffsetPx(view.offsetPx)
   ctx.lineWidth = self.lineWidthSetting
@@ -49,7 +64,14 @@ export default async function drawFeats(
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
 
   function draw(
-    k1: { strand: number; refName: string; start: number; end: number },
+    k1: {
+      strand: number
+      refName: string
+      start: number
+      end: number
+      tlen: number
+      pair_orientation: string
+    },
     k2: { strand: number; refName: string; start: number; end: number },
   ) {
     const s1 = k1.strand
@@ -112,14 +134,32 @@ export default async function drawFeats(
     }
     if (chain.length === 1 && asm) {
       const v0 = chain[0]
+
+      // special case where we look at TLEN
       if (hasPaired) {
         draw(v0, {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           refName: asm.getCanonicalRefName(v0.next_ref!),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           start: v0.next_pos!,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           end: v0.next_pos!,
           strand: v0.strand,
         })
       } else {
+        const aln = v0.SA?.split(';')[0]
+        if (!aln) {
+          return
+        }
+        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
+        const saLengthOnRef = getLengthOnRef(saCigar)
+        console.log({ elt })
+        draw(v0, {
+          refName: asm.getCanonicalRefName(elt[0]),
+          start: +elt[1],
+          end: +elt[1],
+          strand: v0.strand,
+        })
       }
     } else {
       for (let i = 0; i < chain.length - 1; i++) {

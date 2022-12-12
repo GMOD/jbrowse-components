@@ -6,7 +6,7 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getMismatches } from './MismatchParser'
+import { getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {

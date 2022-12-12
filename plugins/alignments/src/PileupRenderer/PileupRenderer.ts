@@ -29,7 +29,7 @@ import {
   parseCigar,
   getModificationPositions,
   getNextRefPos,
-} from '../BamAdapter/MismatchParser'
+} from '../MismatchParser'
 import { sortFeature } from './sortUtil'
 import {
   getTagAlt,

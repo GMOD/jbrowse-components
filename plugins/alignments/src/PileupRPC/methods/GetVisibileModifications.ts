@@ -1,12 +1,11 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
-import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
 
 // locals
-import { getModificationTypes } from '../../BamAdapter/MismatchParser'
+import { getModificationTypes } from '../../MismatchParser'
 import PileupBaseRPC from '../base'
 import { getTagAlt } from '../../util'
 
