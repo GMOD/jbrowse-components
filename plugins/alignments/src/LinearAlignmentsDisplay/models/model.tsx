@@ -1,6 +1,13 @@
 import React from 'react'
 import { autorun, when } from 'mobx'
-import { addDisposer, getSnapshot, Instance, types } from 'mobx-state-tree'
+import {
+  addDisposer,
+  getSnapshot,
+  isAlive,
+  types,
+  Instance,
+  IStateTreeNode,
+} from 'mobx-state-tree'
 import deepEqual from 'fast-deep-equal'
 
 // jbrowse
@@ -25,6 +32,23 @@ function getLowerPanelDisplays(pluginManager: PluginManager) {
       // @ts-ignore
       .filter(f => f.subDisplay?.lowerPanel)
   )
+}
+
+function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
+  x1: T,
+  x2: U,
+) {
+  return deepEqual(getSnapshot(x1), getSnapshot(x2))
+}
+
+function propagateKey(self: AlignmentsDisplayModel, key: string) {
+  const { PileupDisplay, SNPCoverageDisplay } = self
+  if (!PileupDisplay || !isAlive(PileupDisplay) || !PileupDisplay[key]) {
+    return
+  }
+  if (!deepSnap(PileupDisplay[key], SNPCoverageDisplay.colorBy)) {
+    SNPCoverageDisplay.setFilterBy(getSnapshot(PileupDisplay[key]))
+  }
 }
 
 function AlignmentsModel(
@@ -227,6 +251,7 @@ function stateModelFactory(
               coverageConf,
               pileupConf,
             } = self
+
             if (!SNPCoverageDisplay) {
               self.setSNPCoverageDisplay(coverageConf)
             } else if (
@@ -247,37 +272,11 @@ function stateModelFactory(
               PileupDisplay.setConfig(self.pileupConf)
             }
 
-            // propagate the filterBy setting from pileupdisplay to snpcoverage
-            // note: the snpcoverage display is not able to control filterBy
-            // itself
-            if (
-              PileupDisplay?.filterBy &&
-              !deepEqual(
-                getSnapshot(PileupDisplay.filterBy),
-                getSnapshot(SNPCoverageDisplay.filterBy),
-              )
-            ) {
-              SNPCoverageDisplay.setFilterBy(
-                getSnapshot(PileupDisplay.filterBy),
-              )
-            }
-
-            // propagate the colorBy setting from pileupdisplay to snpcoverage
-            // note: the snpcoverage display is not able to control colorBy
-            // itself
-            if (
-              PileupDisplay?.colorBy &&
-              !deepEqual(
-                getSnapshot(PileupDisplay.colorBy),
-                SNPCoverageDisplay.colorBy
-                  ? getSnapshot(SNPCoverageDisplay.colorBy)
-                  : {},
-              )
-            ) {
-              SNPCoverageDisplay.setColorBy(getSnapshot(PileupDisplay.colorBy))
-            }
+            propagateKey(self as AlignmentsDisplayModel, 'colorBy')
+            propagateKey(self as AlignmentsDisplayModel, 'filterBy')
           }),
         )
+
         addDisposer(
           self,
           autorun(() => {

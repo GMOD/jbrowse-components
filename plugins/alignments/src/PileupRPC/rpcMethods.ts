@@ -171,6 +171,8 @@ export class PileupGetFeatures extends RpcMethodType {
         flags: f.get('flags'),
         tlen: f.get('template_length'),
         pair_orientation: f.get('pair_orientation'),
+        next_refName: f.get('next_refName'),
+        next_segment_position: f.get('next_segment_position'),
         clipPos: f.get('clipPos'),
       })),
       f => f.id,
