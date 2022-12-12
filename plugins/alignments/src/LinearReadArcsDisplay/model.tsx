@@ -76,7 +76,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           }),
         ),
 
+        /**
+         * #property
+         */
         drawInter: true,
+
+        /**
+         * #property
+         */
+        drawLongRange: true,
       }),
     )
     .volatile(() => ({
@@ -114,6 +122,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setDrawInter(f: boolean) {
         self.drawInter = f
+      },
+
+      /**
+       * #action
+       */
+      setDrawLongRange(f: boolean) {
+        self.drawLongRange = f
       },
 
       /**
@@ -228,6 +243,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               type: 'checkbox',
               checked: self.drawInter,
               onClick: () => self.setDrawInter(!self.drawInter),
+            },
+            {
+              label: 'Draw long range connections',
+              type: 'checkbox',
+              checked: self.drawLongRange,
+              onClick: () => self.setDrawLongRange(!self.drawLongRange),
             },
             {
               label: 'Color scheme',

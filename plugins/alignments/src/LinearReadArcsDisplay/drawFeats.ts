@@ -25,6 +25,7 @@ export default async function drawFeats(
   self: {
     setLastDrawnOffsetPx: (n: number) => void
     drawInter?: boolean
+    drawLongRange?: boolean
     setError: (e: unknown) => void
     colorBy?: { type: string }
     height: number
@@ -119,7 +120,7 @@ export default async function drawFeats(
   for (let i = 0; i < chains.length; i++) {
     let chain = chains[i]
 
-    if (chain.length === 1) {
+    if (chain.length === 1 && self.drawLongRange) {
       // singleton feature
       const f = chain[0]
 
