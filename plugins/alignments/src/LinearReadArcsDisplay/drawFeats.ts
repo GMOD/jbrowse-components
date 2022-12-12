@@ -24,6 +24,7 @@ type LGV = LinearGenomeViewModel
 export default async function drawFeats(
   self: {
     setLastDrawnOffsetPx: (n: number) => void
+    drawInter?: boolean
     setError: (e: unknown) => void
     colorBy?: { type: string }
     height: number
@@ -104,7 +105,7 @@ export default async function drawFeats(
       const destY = Math.min(displayHeight, absrad)
       ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
       ctx.stroke()
-    } else if (r1) {
+    } else if (r1 && self.drawInter) {
       // draws a vertical line off to middle of nowhere if the second end not found
       const p = r1.offsetPx - view.offsetPx
       ctx.strokeStyle = 'purple'
