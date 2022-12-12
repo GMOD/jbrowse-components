@@ -3,8 +3,11 @@ import { isAlive } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getContainingView } from '@jbrowse/core/util'
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  BlockMsg,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // local
 import { LinearReadArcsDisplayModel } from '../model'
@@ -57,8 +60,14 @@ export default observer(function ({
 }) {
   const view = getContainingView(model)
   const { classes } = useStyles()
-  return model.error ? (
-    <ErrorMessage error={model.error} />
+  const err = model.error
+  return err ? (
+    <BlockMsg
+      message={`${err}`}
+      severity="error"
+      buttonText={'Reload'}
+      action={model.reload}
+    />
   ) : model.loading ? (
     <div
       className={classes.loading}

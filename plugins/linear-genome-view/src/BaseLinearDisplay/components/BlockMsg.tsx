@@ -29,14 +29,14 @@ export default function BlockMsg({
     </Button>
   ) : null
   return (
-    <Tooltip title={message}>
-      <Alert
-        severity={severity}
-        action={button}
-        classes={{ message: classes.ellipses }}
-      >
-        {message}
-      </Alert>
-    </Tooltip>
+    <Alert
+      severity={severity}
+      action={button}
+      classes={{ message: classes.ellipses }}
+    >
+      <Tooltip title={message}>
+        <div>{message}</div>
+      </Tooltip>
+    </Alert>
   )
 }

@@ -42,7 +42,7 @@ export async function fetchChains(self: IAnyStateTreeNode) {
     const { rpcManager } = getSession(self)
     const view = getContainingView(self) as LGV
 
-    if (!view.initialized) {
+    if (!view.initialized || self.error) {
       return
     }
     self.setLoading(true)

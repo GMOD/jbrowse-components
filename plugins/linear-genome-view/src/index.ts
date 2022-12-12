@@ -5,10 +5,12 @@ import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 // icons
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
+// locals
 import {
   BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockModel,
+  BlockMsg,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay'
 import LinearBareDisplayF, {
@@ -76,6 +78,7 @@ export {
   BaseLinearDisplay,
   RefNameAutocomplete,
   SearchBox,
+  BlockMsg,
 }
 
 export type { LinearGenomeViewModel, LinearGenomeViewStateModel, BlockModel }

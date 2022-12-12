@@ -8,4 +8,5 @@ export type {
 export {
   default as BaseLinearDisplayComponent,
   Tooltip,
+  BlockMsg,
 } from './components/BaseLinearDisplay'

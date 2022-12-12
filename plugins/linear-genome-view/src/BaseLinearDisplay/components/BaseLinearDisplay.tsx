@@ -7,6 +7,7 @@ import { Menu } from '@jbrowse/core/ui'
 
 // locals
 import Tooltip from './Tooltip'
+import BlockMsg from './BlockMsg'
 import LinearBlocks from './LinearBlocks'
 import { BaseLinearDisplayModel } from '../models/BaseLinearDisplayModel'
 
@@ -112,4 +113,4 @@ const BaseLinearDisplay = observer(function (props: {
 })
 
 export default BaseLinearDisplay
-export { Tooltip }
+export { Tooltip, BlockMsg }

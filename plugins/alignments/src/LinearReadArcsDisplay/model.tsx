@@ -99,6 +99,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
        */
+      reload() {
+        self.error = undefined
+      },
+      /**
+       * #action
+       * internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
+       */
       setRef(ref: HTMLCanvasElement | null) {
         self.ref = ref
       },
