@@ -1,7 +1,5 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { renameRegionsIfNeeded, Region, dedupe } from '@jbrowse/core/util'
-import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
+import { Region, dedupe } from '@jbrowse/core/util'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
@@ -9,28 +7,11 @@ import { toArray } from 'rxjs/operators'
 // locals
 import { filterForPairs, getInsertSizeStats } from '../util'
 import { ReducedFeature } from '../../shared/fetchChains'
+import PileupBaseRPC from '../base'
 
 // specialized get features to return limited data about alignments
-export default class PileupGetReducedFeatures extends RpcMethodType {
+export default class PileupGetReducedFeatures extends PileupBaseRPC {
   name = 'PileupGetReducedFeatures'
-
-  async serializeArguments(
-    args: RenderArgs & {
-      signal?: AbortSignal
-      statusCallback?: (arg: string) => void
-    },
-    rpcDriver: string,
-  ) {
-    const { rootModel } = this.pluginManager
-    const assemblyManager = rootModel?.session?.assemblyManager
-    if (!assemblyManager) {
-      throw new Error('no assembly manager available')
-    }
-
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
-
-    return super.serializeArguments(renamedArgs, rpcDriver)
-  }
 
   async execute(
     args: {

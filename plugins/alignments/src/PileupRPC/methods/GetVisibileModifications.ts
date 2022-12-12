@@ -1,4 +1,3 @@
-import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
 import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
@@ -8,27 +7,11 @@ import { toArray } from 'rxjs/operators'
 
 // locals
 import { getModificationTypes } from '../../BamAdapter/MismatchParser'
+import PileupBaseRPC from '../base'
+import { getTagAlt } from '../../util'
 
-export default class PileupGetVisibleModifications extends RpcMethodType {
+export default class PileupGetVisibleModifications extends PileupBaseRPC {
   name = 'PileupGetVisibleModifications'
-
-  async serializeArguments(
-    args: RenderArgs & {
-      signal?: AbortSignal
-      statusCallback?: (arg: string) => void
-    },
-    rpcDriver: string,
-  ) {
-    const { rootModel } = this.pluginManager
-    const assemblyManager = rootModel?.session?.assemblyManager
-    if (!assemblyManager) {
-      throw new Error('no assembly manager available')
-    }
-
-    const renamedArgs = await renameRegionsIfNeeded(assemblyManager, args)
-
-    return super.serializeArguments(renamedArgs, rpcDriver)
-  }
 
   async execute(
     args: {
