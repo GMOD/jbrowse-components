@@ -59,6 +59,7 @@ export default async function drawFeats(
       pair_orientation?: string
     },
     k2: { strand: number; refName: string; start: number; end: number },
+    longRange?: boolean,
   ) {
     const s1 = k1.strand
     const s2 = k2.strand
@@ -75,36 +76,57 @@ export default async function drawFeats(
       const radius = (r2.offsetPx - r1.offsetPx) / 2
       const absrad = Math.abs(radius)
       const p = r1.offsetPx - view.offsetPx
-      ctx.beginPath()
-      ctx.moveTo(p, 0)
 
-      if (hasPaired) {
-        if (type === 'insertSizeAndOrientation') {
-          ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
-        } else if (type === 'orientation') {
-          ctx.strokeStyle = getOrientationColor(k1)
-        } else if (type === 'insertSize') {
-          ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
-        } else if (type === 'gradient') {
-          ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
-        }
+      // bezier (used for non-long-range arcs) requires moveTo before beginPath
+      // arc (used for long-range) requires moveTo after beginPath (or else a
+      // unwanted line at y=0 is rendered along with the arc)
+      if (longRange) {
+        ctx.moveTo(p, 0)
+        ctx.beginPath()
       } else {
-        if (type === 'orientation' || type === 'insertSizeAndOrientation') {
-          if (s1 === -1 && s2 === 1) {
-            ctx.strokeStyle = 'navy'
-          } else if (s1 === 1 && s2 === -1) {
-            ctx.strokeStyle = 'green'
-          } else {
-            ctx.strokeStyle = 'grey'
+        ctx.beginPath()
+        ctx.moveTo(p, 0)
+      }
+
+      if (longRange) {
+        ctx.strokeStyle = 'red'
+      } else {
+        if (hasPaired) {
+          if (type === 'insertSizeAndOrientation') {
+            ctx.strokeStyle = getInsertSizeAndOrientationColor(k1, k2, stats)
+          } else if (type === 'orientation') {
+            ctx.strokeStyle = getOrientationColor(k1)
+          } else if (type === 'insertSize') {
+            ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
+          } else if (type === 'gradient') {
+            ctx.strokeStyle = `hsl(${
+              Math.log10(Math.abs(p1 - p2)) * 10
+            },50%,50%)`
           }
-        } else if (type === 'gradient') {
-          ctx.strokeStyle = `hsl(${Math.log10(Math.abs(p1 - p2)) * 10},50%,50%)`
+        } else {
+          if (type === 'orientation' || type === 'insertSizeAndOrientation') {
+            if (s1 === -1 && s2 === 1) {
+              ctx.strokeStyle = 'navy'
+            } else if (s1 === 1 && s2 === -1) {
+              ctx.strokeStyle = 'green'
+            } else {
+              ctx.strokeStyle = 'grey'
+            }
+          } else if (type === 'gradient') {
+            ctx.strokeStyle = `hsl(${
+              Math.log10(Math.abs(p1 - p2)) * 10
+            },50%,50%)`
+          }
         }
       }
 
       const destX = p + radius * 2
       const destY = Math.min(displayHeight, absrad)
-      ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
+      if (longRange) {
+        ctx.arc(p + radius, 0, absrad, 0, Math.PI)
+      } else {
+        ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
+      }
       ctx.stroke()
     } else if (r1 && self.drawInter) {
       // draws a vertical line off to middle of nowhere if the second end not found
@@ -130,12 +152,16 @@ export default async function drawFeats(
         const refName = asm?.getCanonicalRefName(f.next_ref!) || f.next_ref!
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const coord = f.next_pos!
-        draw(f, {
-          refName,
-          start: coord,
-          end: coord,
-          strand: f.strand,
-        })
+        draw(
+          f,
+          {
+            refName,
+            start: coord,
+            end: coord,
+            strand: f.strand,
+          },
+          true,
+        )
       }
 
       // special case where we look at SA
@@ -145,12 +171,16 @@ export default async function drawFeats(
         for (let i = 0; i < features.length - 1; i++) {
           const f = features[i]
           const v1 = features[i + 1]
-          draw(f, {
-            refName: asm?.getCanonicalRefName(v1.refName) || v1.refName,
-            start: v1.start,
-            end: v1.end,
-            strand: v1.strand,
-          })
+          draw(
+            f,
+            {
+              refName: asm?.getCanonicalRefName(v1.refName) || v1.refName,
+              start: v1.start,
+              end: v1.end,
+              strand: v1.strand,
+            },
+            true,
+          )
         }
       }
     } else {
@@ -162,7 +192,7 @@ export default async function drawFeats(
         chain = chain.filter(f => !(f.flags & 2048))
       }
       for (let i = 0; i < chain.length - 1; i++) {
-        draw(chain[i], chain[i + 1])
+        draw(chain[i], chain[i + 1], false)
       }
     }
   }
