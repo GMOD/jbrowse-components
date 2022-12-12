@@ -155,7 +155,7 @@ export function pxToBp(
     }
   }
 
-  if (bp >= bpSoFar) {
+  if (bp >= bpSoFar && displayedRegions.length) {
     const region = displayedRegions[displayedRegions.length - 1]
     const len = region.end - region.start
     const offset = bp - bpSoFar + len
