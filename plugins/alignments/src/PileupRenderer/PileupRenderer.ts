@@ -271,7 +271,7 @@ export default class PileupRenderer extends BoxRendererType {
 
   colorByInsertSize(feature: Feature, _config: AnyConfigurationModel) {
     return feature.get('is_paired') &&
-      feature.get('seq_id') !== feature.get('next_seq_id')
+      feature.get('refName') !== feature.get('next_ref')
       ? '#555'
       : `hsl(${Math.abs(feature.get('template_length')) / 10},50%,50%)`
   }
@@ -292,7 +292,7 @@ export default class PileupRenderer extends BoxRendererType {
           ? 'color_rev_missing_mate'
           : 'color_fwd_missing_mate'
       }
-      if (feature.get('seq_id') === feature.get('next_seq_id')) {
+      if (feature.get('refName') === feature.get('next_refName')) {
         return strand * flipper === 1
           ? 'color_rev_strand_not_proper'
           : 'color_fwd_strand_not_proper'

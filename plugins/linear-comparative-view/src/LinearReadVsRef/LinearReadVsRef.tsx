@@ -88,7 +88,6 @@ export default function ReadVsRefDialog({
   // we need to fetch the primary alignment if the selected feature is 2048.
   // this should be the first in the list of the SA tag
   useEffect(() => {
-    let done = false
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       setError(undefined)
@@ -116,12 +115,11 @@ export default function ReadVsRefDialog({
           const result = feats.find(
             f =>
               f.get('name') === preFeature.get('name') &&
-              !(f.get('flags') & 2048),
+              !(f.get('flags') & 2048) &&
+              !(f.get('flags') & 256),
           )
           if (result) {
-            if (!done) {
-              setPrimaryFeature(result)
-            }
+            setPrimaryFeature(result)
           } else {
             throw new Error('primary feature not found')
           }
@@ -133,10 +131,6 @@ export default function ReadVsRefDialog({
         setError(e)
       }
     })()
-
-    return () => {
-      done = true
-    }
   }, [preFeature, track])
 
   function onSubmit() {
@@ -231,7 +225,7 @@ export default function ReadVsRefDialog({
               {
                 start: 0,
                 end: totalLength,
-                seq: featSeq,
+                seq: featSeq || '', // can be empty if user clicks secondary read
                 refName: readName,
                 uniqueId: `${Math.random()}`,
               },
@@ -348,6 +342,13 @@ export default function ReadVsRefDialog({
           </div>
         ) : (
           <div className={classes.root}>
+            {primaryFeature.get('flags') & 256 ? (
+              <Typography style={{ color: 'orange' }}>
+                Note: You selected a secondary alignment (which generally does
+                not have SA tags or SEQ fields) so do a full reconstruction of
+                the alignment
+              </Typography>
+            ) : null}
             <Typography>
               Show an extra window size around each part of the split alignment.
               Using a larger value can allow you to see more genomic context.
