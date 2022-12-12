@@ -16,7 +16,7 @@ import { getSession, getContainingView, Feature } from '@jbrowse/core/util'
 // locals
 import { mergeIntervals } from './util'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
-const { getClip, getLength, getLengthOnRef, getLengthSansClipping, getTag } =
+const { featurizeSA, getClip, getLength, getLengthSansClipping, getTag } =
   MismatchParser
 
 interface ReducedFeature {
@@ -166,33 +166,7 @@ export default function ReadVsRefDialog({
       const { assemblyManager } = session
       const assembly = assemblyManager.get(trackAssembly)
 
-      const supplementaryAlignments = SA.split(';')
-        .filter(aln => !!aln)
-        .map((aln, index) => {
-          const [saRef, saStart, saStrand, saCigar] = aln.split(',')
-          const saLengthOnRef = getLengthOnRef(saCigar)
-          const saLength = getLength(saCigar)
-          const saLengthSansClipping = getLengthSansClipping(saCigar)
-          const saStrandNormalized = saStrand === '-' ? -1 : 1
-          const saClipPos = getClip(saCigar, saStrandNormalized * origStrand)
-          const saRealStart = +saStart - 1
-          return {
-            refName: saRef,
-            start: saRealStart,
-            end: saRealStart + saLengthOnRef,
-            seqLength: saLength,
-            clipPos: saClipPos,
-            CIGAR: saCigar,
-            assemblyName: trackAssembly,
-            strand: origStrand * saStrandNormalized,
-            uniqueId: `${feature.id()}_SA${index}`,
-            mate: {
-              start: saClipPos,
-              end: saClipPos + saLengthSansClipping,
-              refName: readName,
-            },
-          }
-        })
+      const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName)
 
       const feat = feature.toJSON()
       feat.clipPos = clipPos
@@ -208,16 +182,14 @@ export default function ReadVsRefDialog({
       // CIGAR which is the primary alignments. otherwise it is the primary
       // alignment just use seq.length if primary alignment
       const totalLength =
-        flags & 2048
-          ? getLength(supplementaryAlignments[0].CIGAR)
-          : getLength(cigar)
+        flags & 2048 ? getLength(suppAlns[0].CIGAR) : getLength(cigar)
 
-      const features = [feat, ...supplementaryAlignments] as ReducedFeature[]
+      const features = [feat, ...suppAlns] as ReducedFeature[]
 
-      features.forEach((f, index) => {
+      features.forEach((f, idx) => {
         f.refName = assembly?.getCanonicalRefName(f.refName) || f.refName
-        f.syntenyId = index
-        f.mate.syntenyId = index
+        f.syntenyId = idx
+        f.mate.syntenyId = idx
         f.mate.uniqueId = `${f.uniqueId}_mate`
       })
       features.sort((a, b) => a.clipPos - b.clipPos)

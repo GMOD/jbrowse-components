@@ -418,3 +418,39 @@ export function getTag(f: Feature, tag: string) {
   const tags = f.get('tags')
   return tags ? tags[tag] : f.get(tag)
 }
+
+export function featurizeSA(
+  SA: string | undefined,
+  id: string,
+  strand: number,
+  readName: string,
+) {
+  return (
+    SA?.split(';')
+      .filter(aln => !!aln)
+      .map((aln, index) => {
+        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
+        const saLengthOnRef = getLengthOnRef(saCigar)
+        const saLength = getLength(saCigar)
+        const saLengthSansClipping = getLengthSansClipping(saCigar)
+        const saStrandNormalized = saStrand === '-' ? -1 : 1
+        const saClipPos = getClip(saCigar, saStrandNormalized * strand)
+        const saRealStart = +saStart - 1
+        return {
+          refName: saRef,
+          start: saRealStart,
+          end: saRealStart + saLengthOnRef,
+          seqLength: saLength,
+          clipPos: saClipPos,
+          CIGAR: saCigar,
+          strand: strand * saStrandNormalized,
+          uniqueId: `${id}_SA${index}`,
+          mate: {
+            start: saClipPos,
+            end: saClipPos + saLengthSansClipping,
+            refName: readName,
+          },
+        }
+      }) || []
+  )
+}

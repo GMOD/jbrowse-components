@@ -8,12 +8,7 @@ import {
   getInsertSizeAndOrientationColor,
 } from '../shared/color'
 import { ChainData } from '../shared/fetchChains'
-import {
-  getLength,
-  getLengthSansClipping,
-  getLengthOnRef,
-  getClip,
-} from '../MismatchParser'
+import { featurizeSA } from '../MismatchParser'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
@@ -115,7 +110,6 @@ export default async function drawFeats(
 
   for (let i = 0; i < chains.length; i++) {
     let chain = chains[i]
-    console.log(chain.length)
     if (!hasPaired) {
       chain.sort((a, b) => a.clipPos - b.clipPos)
     } else {
@@ -141,39 +135,8 @@ export default async function drawFeats(
 
       // special case where we look at SA
       else {
-        const origStrand = v0.strand
-        const readName = v0.name
-        const supplementaryAlignments =
-          v0.SA?.split(';')
-            .filter(aln => !!aln)
-            .map((aln, index) => {
-              const [saRef, saStart, saStrand, saCigar] = aln.split(',')
-              const saLengthOnRef = getLengthOnRef(saCigar)
-              const saLength = getLength(saCigar)
-              const saLengthSansClipping = getLengthSansClipping(saCigar)
-              const saStrandNormalized = saStrand === '-' ? -1 : 1
-              const saClipPos = getClip(
-                saCigar,
-                saStrandNormalized * origStrand,
-              )
-              const saRealStart = +saStart - 1
-              return {
-                refName: saRef,
-                start: saRealStart,
-                end: saRealStart + saLengthOnRef,
-                seqLength: saLength,
-                clipPos: saClipPos,
-                CIGAR: saCigar,
-                strand: origStrand * saStrandNormalized,
-                uniqueId: `${v0.id}_SA${index}`,
-                mate: {
-                  start: saClipPos,
-                  end: saClipPos + saLengthSansClipping,
-                  refName: readName,
-                },
-              }
-            }) || []
-        const features = [v0, ...supplementaryAlignments]
+        const suppAlns = featurizeSA(v0.SA, v0.id, v0.strand, v0.name)
+        const features = [v0, ...suppAlns]
         for (let i = 0; i < features.length - 1; i++) {
           const v0 = features[i]
           const v1 = features[i + 1]
