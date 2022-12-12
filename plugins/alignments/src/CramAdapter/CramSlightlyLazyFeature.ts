@@ -85,8 +85,10 @@ export default class CramSlightlyLazyFeature implements Feature {
       : undefined
   }
 
-  _get_next_pos() {
-    return this.record.mate?.alignmentStart
+  _get_next_ref() {
+    return this.record.mate
+      ? this._store.refIdToName(this.record.mate.sequenceId)
+      : undefined
   }
 
   _get_next_segment_position() {
@@ -95,6 +97,10 @@ export default class CramSlightlyLazyFeature implements Feature {
           this.record.mate.alignmentStart
         }`
       : undefined
+  }
+
+  _get_next_pos() {
+    return this.record.mate?.alignmentStart
   }
 
   _get_tags() {

@@ -46,22 +46,29 @@ export default async function drawFeats(
   const asm = assemblyManager.get(assemblyName)
 
   for (let i = 0; i < chains.length; i++) {
-    const chain = chains[i]
+    let chain = chains[i]
     if (!hasPaired) {
       chain.sort((a, b) => a.clipPos - b.clipPos)
+    } else {
+      // ignore split reads for now, just draw pairs
+      chain = chain.filter(f => !(f.flags & 2048))
     }
-    console.log(chain.length, chain)
+    //console.log(chain.length, chain)
     if (chain.length === 1 && asm) {
+      const v0 = chain[0]
       if (hasPaired) {
-        // const v0 = chain[0]
-        // const r1 = view.bpToPx({
-        //   refName: v0.refName,
-        //   coord: v0.start,
-        // })
-        // const r2 = view.bpToPx({
-        //   refName: asm.getCanonicalRefName(v0.next_refName),
-        //   coord: v0.next_segment_position,
-        // })
+        const r1 = view.bpToPx({
+          refName: v0.refName,
+          coord: v0.start,
+        })
+        const nextRef = asm.getCanonicalRefName(v0.next_refName!)
+        const r2 = view.bpToPx({
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          refName: nextRef,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          coord: v0.next_segment_position!,
+        })
+        //console.log({ r1, r2, nextRef, v0 })
       } else {
       }
     } else {

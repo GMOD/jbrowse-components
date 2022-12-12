@@ -41,13 +41,23 @@ function deepSnap<T extends IStateTreeNode, U extends IStateTreeNode>(
   return deepEqual(getSnapshot(x1), getSnapshot(x2))
 }
 
-function propagateKey(self: AlignmentsDisplayModel, key: string) {
+function propagateColorBy(self: AlignmentsDisplayModel) {
   const { PileupDisplay, SNPCoverageDisplay } = self
-  if (!PileupDisplay || !isAlive(PileupDisplay) || !PileupDisplay[key]) {
+  if (!PileupDisplay || !isAlive(PileupDisplay) || !PileupDisplay.colorBy) {
     return
   }
-  if (!deepSnap(PileupDisplay[key], SNPCoverageDisplay.colorBy)) {
-    SNPCoverageDisplay.setFilterBy(getSnapshot(PileupDisplay[key]))
+  if (!deepSnap(PileupDisplay.colorBy, SNPCoverageDisplay.colorBy)) {
+    SNPCoverageDisplay.setColorBy(getSnapshot(PileupDisplay.colorBy))
+  }
+}
+
+function propagateFilterBy(self: AlignmentsDisplayModel) {
+  const { PileupDisplay, SNPCoverageDisplay } = self
+  if (!PileupDisplay || !isAlive(PileupDisplay) || !PileupDisplay.filterBy) {
+    return
+  }
+  if (!deepSnap(PileupDisplay.filterBy, SNPCoverageDisplay.filterBy)) {
+    SNPCoverageDisplay.setFilterBy(getSnapshot(PileupDisplay.filterBy))
   }
 }
 
@@ -272,8 +282,8 @@ function stateModelFactory(
               PileupDisplay.setConfig(self.pileupConf)
             }
 
-            propagateKey(self as AlignmentsDisplayModel, 'colorBy')
-            propagateKey(self as AlignmentsDisplayModel, 'filterBy')
+            propagateColorBy(self as AlignmentsDisplayModel)
+            propagateFilterBy(self as AlignmentsDisplayModel)
           }),
         )
 

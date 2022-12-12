@@ -51,14 +51,20 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record._refID
   }
 
-  _get_next_refName() {
+  _get_next_ref() {
+    console.log('t1', this.adapter.refIdToName(this.record._next_refid()))
     return this.adapter.refIdToName(this.record._next_refid())
   }
 
+  _get_next_pos() {
+    return this.record._next_pos()
+  }
+
   _get_next_segment_position() {
-    const { record, adapter } = this
-    return record.isPaired()
-      ? `${adapter.refIdToName(record._next_refid())}:${record._next_pos() + 1}`
+    return this.record.isPaired()
+      ? `${this.adapter.refIdToName(this.record._next_refid())}:${
+          this.record._next_pos() + 1
+        }`
       : undefined
   }
 
