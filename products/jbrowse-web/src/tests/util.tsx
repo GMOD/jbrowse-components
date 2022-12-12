@@ -124,7 +124,7 @@ export function canvasToBuffer(canvas: HTMLCanvasElement) {
 
 export function expectCanvasMatch(
   canvas: HTMLElement,
-  failureThreshold = 0.05,
+  failureThreshold = 0.01,
 ) {
   expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
     failureThreshold,

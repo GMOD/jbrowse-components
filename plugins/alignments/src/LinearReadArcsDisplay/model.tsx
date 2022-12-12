@@ -75,6 +75,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             extra: types.frozen(),
           }),
         ),
+
+        drawInter: true,
       }),
     )
     .volatile(() => ({
@@ -87,11 +89,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => ({
       /**
        * #action
+       * internal, a reference to a HTMLCanvas because we use a autorun to draw the canvas
        */
       setRef(ref: HTMLCanvasElement | null) {
         self.ref = ref
       },
 
+      /**
+       * #action
+       */
       setColorScheme(s: { type: string }) {
         self.colorBy = cast(s)
       },
@@ -106,12 +112,20 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
+      setDrawInter(f: boolean) {
+        self.drawInter = f
+      },
+
+      /**
+       * #action
+       */
       setLoading(f: boolean) {
         self.loading = f
       },
 
       /**
        * #action
+       * used during tests to detect when we can complete a snapshot test
        */
       setDrawn(f: boolean) {
         self.drawn = f
@@ -126,6 +140,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
+       * allows the drawing to slide around a little bit if it takes a long time to refresh
        */
       setLastDrawnOffsetPx(n: number) {
         self.lastDrawnOffsetPx = n
@@ -133,6 +148,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       /**
        * #action
+       * thin, bold, extrabold, etc
        */
       setLineWidth(n: number) {
         self.lineWidth = n
@@ -146,6 +162,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       } = self
 
       return {
+        /**
+         * #getter
+         */
         get lineWidthSetting() {
           return self.lineWidth ?? getConf(self, 'lineWidth')
         },
@@ -204,7 +223,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
               ],
             },
-
+            {
+              label: 'Draw inter-region vertical lines',
+              type: 'checkbox',
+              checked: self.drawInter,
+              onClick: () => self.setDrawInter(!self.drawInter),
+            },
             {
               label: 'Color scheme',
               icon: PaletteIcon,

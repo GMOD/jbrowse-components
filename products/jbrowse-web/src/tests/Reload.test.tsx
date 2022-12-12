@@ -21,6 +21,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 10000 }
+const opts = [{}, delay]
 
 // this tests reloading after an initial track error
 // it performs a full image snapshot test to ensure that the features are rendered and not
@@ -40,14 +41,14 @@ test('reloads alignments track (CRAI 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(0.5, 0)
-  fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
 
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), ...opts))
 }, 20000)
 
 test('reloads alignments track (CRAM 404)', async () => {
@@ -67,13 +68,13 @@ test('reloads alignments track (CRAM 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(0.5, 0)
-  fireEvent.click(await findByTestId(hts('volvox_cram_snpcoverage'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_cram_snpcoverage'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), ...opts))
 }, 20000)
 test('reloads alignments track (BAI 404)', async () => {
   // @ts-ignore
@@ -88,13 +89,13 @@ test('reloads alignments track (BAI 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(0.5, 0)
-  fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_bam_snpcoverage'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), ...opts))
 }, 20000)
 test('reloads alignments track (BAM 404)', async () => {
   // @ts-ignore
@@ -109,14 +110,14 @@ test('reloads alignments track (BAM 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(0.5, 0)
-  fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_bam_pileup'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
 
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), {}, delay))
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), ...opts))
 }, 20000)
 
 test('reloads bigwig (BW 404)', async () => {
@@ -134,13 +135,13 @@ test('reloads bigwig (BW 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(10, 0)
-  fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
-  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..8000-0'), {}, delay))
+  expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..8000-0'), ...opts))
 }, 20000)
 
 test('reloads vcf (VCF.GZ 404)', async () => {
@@ -158,15 +159,15 @@ test('reloads vcf (VCF.GZ 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
 
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
 
-  await findAllByTestId('box-test-vcf-604452', {}, delay)
+  await findAllByTestId('box-test-vcf-604452', ...opts)
 }, 20000)
 
 test('reloads vcf (VCF.GZ.TBI 404)', async () => {
@@ -183,12 +184,12 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
     createView()
   await findByText('Help')
   view.setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
-  await findAllByText(/HTTP 404/, {}, delay)
+  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
+  await findAllByText(/HTTP 404/, ...opts)
   // @ts-ignore
   fetch.mockResponse(readBuffer)
   const buttons = await findAllByTestId('reload_button')
   fireEvent.click(buttons[0])
 
-  await findAllByTestId('box-test-vcf-604452', {}, delay)
+  await findAllByTestId('box-test-vcf-604452', ...opts)
 }, 20000)

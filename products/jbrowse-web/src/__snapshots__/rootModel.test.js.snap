@@ -122,7 +122,6 @@ exports[`Root MST model adds menus 1`] = `
     "label": "Tools",
     "menuItems": [
       {
-        "disabled": false,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -135,7 +134,6 @@ exports[`Root MST model adds menus 1`] = `
         "onClick": [Function],
       },
       {
-        "disabled": false,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -289,7 +287,6 @@ exports[`Root MST model adds menus 2`] = `
     "label": "Tools",
     "menuItems": [
       {
-        "disabled": false,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
@@ -302,7 +299,6 @@ exports[`Root MST model adds menus 2`] = `
         "onClick": [Function],
       },
       {
-        "disabled": false,
         "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,

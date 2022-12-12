@@ -75,11 +75,11 @@ export function findMatchingAlt(feat1: Feature, feat2: Feature) {
 
 // Returns paired BND features across multiple views by inspecting
 // the ALT field to get exact coordinate matches
-export function getMatchedBreakendFeatures(features: Map<string, Feature>) {
+export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {
   const candidates: Record<string, Feature[]> = {}
   const alreadySeen = new Set<string>()
 
-  for (const f of features.values()) {
+  for (const f of feats.values()) {
     if (!alreadySeen.has(f.id())) {
       if (f.get('type') === 'breakend') {
         const alts = f.get('ALT') as string[] | undefined
@@ -103,20 +103,18 @@ export function getMatchedBreakendFeatures(features: Map<string, Feature>) {
 }
 
 // Getting "matched" TRA means just return all TRA
-export function getMatchedTranslocationFeatures(
-  features: Map<string, Feature>,
-) {
-  const feats: Feature[][] = []
+export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
+  const ret: Feature[][] = []
   const alreadySeen = new Set<string>()
 
-  for (const f of features.values()) {
+  for (const f of feats.values()) {
     if (!alreadySeen.has(f.id())) {
       if (f.get('ALT')[0] === '<TRA>') {
-        feats.push([f])
+        ret.push([f])
       }
     }
     alreadySeen.add(f.id())
   }
 
-  return feats
+  return ret
 }

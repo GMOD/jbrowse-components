@@ -6,7 +6,7 @@ import {
 import { BamRecord } from '@gmod/bam'
 
 // locals
-import { getMismatches } from './MismatchParser'
+import { getClip, getMismatches } from '../MismatchParser'
 import BamAdapter from './BamAdapter'
 
 export default class BamSlightlyLazyFeature implements Feature {
@@ -42,23 +42,21 @@ export default class BamSlightlyLazyFeature implements Feature {
     return this.record.isPaired() ? this.record.getPairOrientation() : undefined
   }
 
-  _get_next_seq_id() {
-    return this.record._next_refid()
+  _get_next_ref() {
+    return this.record.isPaired()
+      ? this.adapter.refIdToName(this.record._next_refid())
+      : undefined
   }
 
-  _get_seq_id() {
-    // @ts-ignore
-    return this.record._refID
-  }
-
-  _get_next_refName() {
-    return this.adapter.refIdToName(this.record._next_refid())
+  _get_next_pos() {
+    return this.record.isPaired() ? this.record._next_pos() : undefined
   }
 
   _get_next_segment_position() {
-    const { record, adapter } = this
-    return record.isPaired()
-      ? `${adapter.refIdToName(record._next_refid())}:${record._next_pos() + 1}`
+    return this.record.isPaired()
+      ? `${this.adapter.refIdToName(this.record._next_refid())}:${
+          this.record._next_pos() + 1
+        }`
       : undefined
   }
 
@@ -84,9 +82,7 @@ export default class BamSlightlyLazyFeature implements Feature {
             prop =>
               prop.startsWith('_get_') &&
               prop !== '_get_mismatches' &&
-              prop !== '_get_tags' &&
-              prop !== '_get_next_seq_id' &&
-              prop !== '_get_seq_id',
+              prop !== '_get_tags',
           )
           .map(methodName => methodName.replace('_get_', ''))
           .concat(this.record._tags()),
@@ -148,8 +144,6 @@ export default class BamSlightlyLazyFeature implements Feature {
 
   _get_clipPos() {
     const cigar = this.get('CIGAR') || ''
-    return this.get('strand') === -1
-      ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-      : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+    return getClip(cigar, this.get('strand'))
   }
 }

@@ -87,10 +87,8 @@ const AlignmentConnections = observer(function ({
           if (!showIntraviewLinks && level1 === level2) {
             return null
           }
-          const f1origref = f1.get('refName')
-          const f2origref = f2.get('refName')
-          const f1ref = assembly.getCanonicalRefName(f1origref)
-          const f2ref = assembly.getCanonicalRefName(f2origref)
+          const f1ref = assembly.getCanonicalRefName(f1.get('refName'))
+          const f2ref = assembly.getCanonicalRefName(f2.get('refName'))
 
           if (!f1ref || !f2ref) {
             throw new Error(`unable to find ref for ${f1ref || f2ref}`)

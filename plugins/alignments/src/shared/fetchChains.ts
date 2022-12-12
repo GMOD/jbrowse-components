@@ -18,7 +18,10 @@ export interface ReducedFeature {
   flags: number
   tlen: number
   pair_orientation: string
+  next_ref?: string
+  next_pos?: number
   clipPos: number
+  SA?: string
 }
 
 export interface ChainStats {
@@ -44,7 +47,7 @@ export async function fetchChains(self: IAnyStateTreeNode) {
     }
     self.setLoading(true)
 
-    const ret = (await rpcManager.call(sessionId, 'PileupGetFeatures', {
+    const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
       sessionId,
       regions: view.staticBlocks.contentBlocks,
       adapterConfig: self.adapterConfig,

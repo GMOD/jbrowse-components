@@ -17,7 +17,7 @@ import {
   BaseCard,
   SimpleValue,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { parseCigar } from '../BamAdapter/MismatchParser'
+import { parseCigar } from '../MismatchParser'
 
 const useStyles = makeStyles()({
   compact: {

@@ -7,6 +7,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 20000 }
+const opts = [{}, delay]
 
 test('access about menu', async () => {
   const { findByText, findAllByText } = createView()
@@ -14,18 +15,18 @@ test('access about menu', async () => {
   fireEvent.click(await findByText('Help'))
   fireEvent.click(await findByText('About'))
 
-  await findByText(/The Evolutionary Software Foundation/, {}, delay)
+  await findByText(/The Evolutionary Software Foundation/, ...opts)
 
   // wait for ctgA because otherwise can give 'import a file after jest
   // environment has been torn down'
-  await findAllByText('ctgA', {}, delay)
+  await findAllByText('ctgA', ...opts)
 }, 30000)
 
 test('click and drag to move sideways', async () => {
   const { view, findByTestId, findAllByText } = createView()
-  await findAllByText('ctgA', {}, delay)
+  await findAllByText('ctgA', ...opts)
   const start = view.offsetPx
-  const track = await findByTestId('trackContainer', {}, delay)
+  const track = await findByTestId('trackContainer', ...opts)
   fireEvent.mouseDown(track, { clientX: 250, clientY: 20 })
   fireEvent.mouseMove(track, { clientX: 100, clientY: 20 })
   fireEvent.mouseUp(track, { clientX: 100, clientY: 20 })
@@ -34,7 +35,7 @@ test('click and drag to move sideways', async () => {
 
 test('click and drag to rubberband', async () => {
   const { view, findByTestId, findByText } = createView()
-  const track = await findByTestId('rubberband_controls', {}, delay)
+  const track = await findByTestId('rubberband_controls', ...opts)
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(track, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(track, { clientX: 250, clientY: 0 })
@@ -45,7 +46,7 @@ test('click and drag to rubberband', async () => {
 
 test('click and drag rubberband, click get sequence to open sequenceDialog', async () => {
   const { view, findByTestId, findByText } = createView()
-  const rubberband = await findByTestId('rubberband_controls', {}, delay)
+  const rubberband = await findByTestId('rubberband_controls', ...opts)
   expect(view.bpPerPx).toEqual(0.05)
   fireEvent.mouseDown(rubberband, { clientX: 100, clientY: 0 })
   fireEvent.mouseMove(rubberband, { clientX: 250, clientY: 0 })
@@ -57,8 +58,8 @@ test('click and drag rubberband, click get sequence to open sequenceDialog', asy
 
 test('click and drag to reorder tracks', async () => {
   const { view, findByTestId } = createView()
-  fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
+  fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
+  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), ...opts))
 
   const trackId1 = view.tracks[1].id
   const dragHandle0 = await findByTestId(
@@ -87,7 +88,7 @@ test('click and drag to reorder tracks', async () => {
 
 test('click and zoom in and back out', async () => {
   const { view, findByTestId, findAllByText } = createView()
-  await findAllByText('ctgA', {}, delay)
+  await findAllByText('ctgA', ...opts)
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
@@ -97,16 +98,16 @@ test('click and zoom in and back out', async () => {
 
 test('opens track selector', async () => {
   const { view, findByTestId, findAllByText } = createView()
-  await findAllByText('ctgA', {}, delay)
-  await findByTestId(hts('bigbed_genes'), {}, delay)
+  await findAllByText('ctgA', ...opts)
+  await findByTestId(hts('bigbed_genes'), ...opts)
   expect(view.tracks.length).toBe(0)
-  fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
+  fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
   expect(view.tracks.length).toBe(1)
 }, 30000)
 
 test('opens reference sequence track and expects zoom in message', async () => {
   const { view, findByTestId, findAllByText } = createView()
-  fireEvent.click(await findByTestId(hts('volvox_refseq'), {}, delay))
+  fireEvent.click(await findByTestId(hts('volvox_refseq'), ...opts))
   view.setNewView(20, 0)
   await findByTestId(
     'display-volvox_refseq-LinearReferenceSequenceDisplay',
@@ -118,8 +119,8 @@ test('opens reference sequence track and expects zoom in message', async () => {
 
 test('click to display center line with correct value', async () => {
   const { view, findAllByText, findByTestId, findByText } = createView()
-  await findAllByText('ctgA', {}, delay)
-  fireEvent.click(await findByTestId(hts('bigbed_genes'), {}, delay))
+  await findAllByText('ctgA', ...opts)
+  fireEvent.click(await findByTestId(hts('bigbed_genes'), ...opts))
 
   // opens the view menu and selects show center line
   fireEvent.click(await findByTestId('view_menu_icon'))
@@ -138,7 +139,7 @@ test('test choose option from dropdown refName autocomplete', async () => {
     getByPlaceholderText,
   } = createView()
 
-  await findAllByText('ctgA', {}, delay)
+  await findAllByText('ctgA', ...opts)
   fireEvent.click(await findByText('Help'))
   fireEvent.click(await findByPlaceholderText('Search for location'))
   const autocomplete = await findByTestId('autocomplete')

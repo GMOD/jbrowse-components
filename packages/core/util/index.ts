@@ -33,6 +33,7 @@ export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
+export * from './dedupe'
 export { SimpleFeature, isFeature }
 
 export * from './offscreenCanvasPonyfill'
@@ -1189,10 +1190,4 @@ export function measureGridWidth(elements: string[]) {
 
 export function getEnv(obj: any) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
-}
-
-export function dedupe<T, U>(results: T[] = [], cb: (result: T) => U) {
-  return results.filter(
-    (elt, idx, self) => idx === self.findIndex(t => cb(t) === cb(elt)),
-  )
 }

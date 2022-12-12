@@ -5,7 +5,7 @@ import {
   parseCigar,
   getNextRefPos,
   getModificationPositions,
-} from './MismatchParser'
+} from './index'
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'

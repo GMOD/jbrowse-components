@@ -59,12 +59,8 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.qualityScores
   }
 
-  _get_seq_id() {
-    return this._store.refIdToName(this.record.sequenceId)
-  }
-
   _get_refName() {
-    return this._get_seq_id()
+    return this._store.refIdToName(this.record.sequenceId)
   }
 
   _get_is_paired() {
@@ -79,14 +75,10 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.templateLength || this.record.templateSize
   }
 
-  _get_next_seq_id() {
+  _get_next_ref() {
     return this.record.mate
       ? this._store.refIdToName(this.record.mate.sequenceId)
       : undefined
-  }
-
-  _get_next_pos() {
-    return this.record.mate?.alignmentStart
   }
 
   _get_next_segment_position() {
@@ -95,6 +87,10 @@ export default class CramSlightlyLazyFeature implements Feature {
           this.record.mate.alignmentStart
         }`
       : undefined
+  }
+
+  _get_next_pos() {
+    return this.record.mate?.alignmentStart
   }
 
   _get_tags() {

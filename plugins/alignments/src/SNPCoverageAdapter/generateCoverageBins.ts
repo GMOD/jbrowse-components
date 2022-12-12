@@ -6,7 +6,7 @@ import {
   getNextRefPos,
   getModificationPositions,
   Mismatch,
-} from '../BamAdapter/MismatchParser'
+} from '../MismatchParser'
 
 function mismatchLen(mismatch: Mismatch) {
   return !isInterbase(mismatch.type) ? mismatch.length : 1

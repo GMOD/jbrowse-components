@@ -19,7 +19,7 @@ import LinearPileupDisplayF, {
   linearPileupDisplayConfigSchemaFactory,
 } from './LinearPileupDisplay'
 import { LinearPileupDisplayModel } from './LinearPileupDisplay/model'
-import * as MismatchParser from './BamAdapter/MismatchParser'
+import * as MismatchParser from './MismatchParser'
 
 export default class AlignmentsPlugin extends Plugin {
   name = 'AlignmentsPlugin'

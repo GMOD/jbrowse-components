@@ -1,4 +1,4 @@
-import { revcom } from '@jbrowse/core/util'
+import { revcom, Feature } from '@jbrowse/core/util'
 
 export interface Mismatch {
   qual?: number
@@ -13,6 +13,8 @@ export interface Mismatch {
 const mdRegex = new RegExp(/(\d+|\^[a-z]+|[a-z])/gi)
 const modificationRegex = new RegExp(/([A-Z])([-+])([^,.?]+)([.?])?/)
 const cigarRegex = new RegExp(/([MIDNSHPX=])/)
+const startClip = new RegExp(/(\d+)[SH]$/)
+const endClip = new RegExp(/^(\d+)([SH])/)
 
 export function parseCigar(cigar = '') {
   return cigar.split(cigarRegex).slice(0, -1)
@@ -367,4 +369,100 @@ export function getOrientedCigar(flip: boolean, cigar: string[]) {
 export function getOrientedMismatches(flip: boolean, cigar: string) {
   const p = parseCigar(cigar)
   return cigarToMismatches(flip ? getOrientedCigar(flip, p) : p)
+}
+
+export function getLengthOnRef(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let lengthOnRef = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'I') {
+      lengthOnRef += len
+    }
+  }
+  return lengthOnRef
+}
+
+export function getLength(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'D' && op !== 'N') {
+      length += len
+    }
+  }
+  return length
+}
+
+export function getLengthSansClipping(cigar: string) {
+  const cigarOps = parseCigar(cigar)
+  let length = 0
+  for (let i = 0; i < cigarOps.length; i += 2) {
+    const len = +cigarOps[i]
+    const op = cigarOps[i + 1]
+    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
+      length += len
+    }
+  }
+  return length
+}
+
+export function getClip(cigar: string, strand: number) {
+  return strand === -1
+    ? +(cigar.match(startClip) || [])[1] || 0
+    : +(cigar.match(endClip) || [])[1] || 0
+}
+
+export function getTag(f: Feature, tag: string) {
+  const tags = f.get('tags')
+  return tags ? tags[tag] : f.get(tag)
+}
+
+// produces a list of "feature-like" object from parsing supplementary
+// alignments in the SA tag
+//
+// @param normalize - used specifically in the linear-read-vs-ref context, it
+// flips features around relative to the original feature. other contexts of
+// usage can keep this false
+export function featurizeSA(
+  SA: string | undefined,
+  id: string,
+  strand: number,
+  readName: string,
+  normalize?: boolean,
+) {
+  return (
+    SA?.split(';')
+      .filter(aln => !!aln)
+      .map((aln, index) => {
+        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
+        const saLengthOnRef = getLengthOnRef(saCigar)
+        const saLength = getLength(saCigar)
+        const saLengthSansClipping = getLengthSansClipping(saCigar)
+        const saStrandNormalized = saStrand === '-' ? -1 : 1
+        const saClipPos = getClip(
+          saCigar,
+          (normalize ? strand : 1) * saStrandNormalized,
+        )
+        const saRealStart = +saStart - 1
+        return {
+          refName: saRef,
+          start: saRealStart,
+          end: saRealStart + saLengthOnRef,
+          seqLength: saLength,
+          clipPos: saClipPos,
+          CIGAR: saCigar,
+          strand: (normalize ? strand : 1) * saStrandNormalized,
+          uniqueId: `${id}_SA${index}`,
+          mate: {
+            start: saClipPos,
+            end: saClipPos + saLengthSansClipping,
+            refName: readName,
+          },
+        }
+      }) || []
+  )
 }

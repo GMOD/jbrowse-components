@@ -123,9 +123,7 @@ function FilterByTagDlg(props: {
           <TextField
             className={classes.field}
             value={tag}
-            onChange={event => {
-              setTag(event.target.value)
-            }}
+            onChange={event => setTag(event.target.value)}
             placeholder="Enter tag name"
             inputProps={{
               maxLength: 2,
@@ -138,9 +136,7 @@ function FilterByTagDlg(props: {
           <TextField
             className={classes.field}
             value={tagValue}
-            onChange={event => {
-              setTagValue(event.target.value)
-            }}
+            onChange={event => setTagValue(event.target.value)}
             placeholder="Enter tag value"
             inputProps={{
               'data-testid': 'color-tag-name-input',
@@ -153,9 +149,7 @@ function FilterByTagDlg(props: {
           <TextField
             className={classes.field}
             value={readName}
-            onChange={event => {
-              setReadName(event.target.value)
-            }}
+            onChange={event => setReadName(event.target.value)}
             placeholder="Enter read name"
             inputProps={{
               'data-testid': 'color-tag-readname-input',

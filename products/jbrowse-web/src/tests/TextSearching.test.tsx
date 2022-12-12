@@ -11,12 +11,13 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 10000 }
+const opts = [{}, delay]
 
 async function doSetup(val?: unknown) {
   const args = createView(val)
   const { findByTestId, findByPlaceholderText } = args
 
-  const autocomplete = await findByTestId('autocomplete', {}, delay)
+  const autocomplete = await findByTestId('autocomplete', ...opts)
   const input = (await findByPlaceholderText(
     'Search for location',
   )) as HTMLInputElement
@@ -39,7 +40,7 @@ test('dialog with multiple results, searching seg02', async () => {
 
   fireEvent.change(input, { target: { value: 'seg02' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await findByText('Search results', {}, delay)
+  await findByText('Search results', ...opts)
   await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)
 
@@ -47,7 +48,7 @@ test('dialog with multiple results with jb1 config, searching: eden.1', async ()
   const { input, view, findByText, autocomplete } = await doSetup(jb1_config)
   fireEvent.change(input, { target: { value: 'eden.1' } })
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await findByText('Search results', {}, delay)
+  await findByText('Search results', ...opts)
   expect(view.searchResults?.length).toBeGreaterThan(0)
 }, 30000)
 
@@ -91,7 +92,7 @@ test('description of gene, searching: kinase', async () => {
   const { input, findByText, autocomplete } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'kinase' } })
-  fireEvent.click(await findByText('EDEN (protein kinase)', {}, delay))
+  fireEvent.click(await findByText('EDEN (protein kinase)', ...opts))
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
   await waitFor(() => expect(input.value).toBe('ctgA:1,055..9,005'), delay)
 }, 30000)
@@ -100,8 +101,8 @@ test('search matches description for feature in two places', async () => {
   const { view, input, findByText, autocomplete } = await doSetup()
 
   fireEvent.change(input, { target: { value: 'fingerprint' } })
-  fireEvent.click(await findByText(/b101.2/, {}, delay))
+  fireEvent.click(await findByText(/b101.2/, ...opts))
   fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
-  await findByText('Search results', {}, delay)
+  await findByText('Search results', ...opts)
   await waitFor(() => expect(view.searchResults?.length).toBeGreaterThan(0))
 }, 30000)

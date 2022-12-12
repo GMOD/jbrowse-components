@@ -346,18 +346,20 @@ export default function rootModelFactory(pluginManager: PluginManager) {
           menuItems: [
             {
               label: 'Undo',
-              disabled: self.history.canUndo,
               icon: UndoIcon,
               onClick: () => {
-                self.history.undo()
+                if (self.history.canUndo) {
+                  self.history.undo()
+                }
               },
             },
             {
               label: 'Redo',
-              disabled: self.history.canRedo,
               icon: RedoIcon,
               onClick: () => {
-                self.history.redo()
+                if (self.history.canRedo) {
+                  self.history.redo()
+                }
               },
             },
             { type: 'divider' },

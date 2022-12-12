@@ -13,7 +13,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "TACACTGGTTCGGAGACGGTTCGTGACGAGCGCGCTATATGTCGGCATCTGCGCCGCATGAGCGGCCGCTGACCGGCGGCACGACTAATATAGTGCAAGA",
-    "seq_id": "ctgA",
     "start": 5440,
     "strand": -1,
     "tags": {
@@ -39,7 +38,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "ACACTGGTTCGGAGACGGTTCATGACGAGCGCGCTATATGTCGGCATCTGCGCCCCATGAGCGGCCCCTGTCCGGCGGCACGAATAATATAGTGCAAGAA",
-    "seq_id": "ctgA",
     "start": 5441,
     "strand": -1,
     "tags": {
@@ -65,7 +63,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "CTGGTTCGGAGACGGTTCATGACGACCGCGCTATATGTCGGCATCTGCGTCGCATGAGCGGCCGCTGTCCGGCGGCTCGAATAATATAGTGCAAGAAAAA",
-    "seq_id": "ctgA",
     "start": 5444,
     "strand": 1,
     "tags": {
@@ -91,7 +88,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "AGACGGTTCATGACGAGCGCGCTATATGTCGGCATCTGCGCCGCATGAGCGGCCGCTGTCCGGCGGCACGAATAATATAGTGCAAGAAAAACCGAAGACT",
-    "seq_id": "ctgA",
     "start": 5453,
     "strand": 1,
     "tags": {
@@ -117,7 +113,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "GACGGTTCATGACGAGCGCGCTATATGTCGGCATCTGCGCCCCATGAGCCGCCGCTGTCCGACGGCACGAATAATATAGTGCAAGAAAAACCGAAGACTA",
-    "seq_id": "ctgA",
     "start": 5454,
     "strand": 1,
     "tags": {
@@ -143,7 +138,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "TTCATGACGAGCGCGCTATATGACGGCATCTGCGCCGCATGAGCGGCCGCTGTCCGGCGGCACGAATAATATAGTGCAAGAAAAACCGAAGACTACGGTT",
-    "seq_id": "ctgA",
     "start": 5459,
     "strand": -1,
     "tags": {
@@ -169,7 +163,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "TCATGACGAGCGCGCTATATGTCGGCATCTGCGCCGCATCAGCGGCCGCTGTCCGGCGGCACGAATAATATAGTGCAAGAAAAACCGAAGACTACGGTTA",
-    "seq_id": "ctgA",
     "start": 5460,
     "strand": 1,
     "tags": {
@@ -195,7 +188,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "AGCGCGCTATATGTCGGCATCTGCGCCCCATGAGCGGCCGCTGTCCGGCGGCACGAATAATATAGTGCAAGAAAAACCGAAGACTACGGTTATATATGAT",
-    "seq_id": "ctgA",
     "start": 5468,
     "strand": 1,
     "tags": {
@@ -221,7 +213,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "CCCATGAGCGGCCGCTGTCCGGCGGCACGAATAATATAGTGCAAGAAAAACCTAAGACTACGGTTATATATGATGGAACGGCCCTCACAGCATTCTCACA",
-    "seq_id": "ctgA",
     "start": 5494,
     "strand": -1,
     "tags": {
@@ -247,7 +238,6 @@ exports[`adapter can fetch features from volvox-sorted.cram 1`] = `
     "refName": "ctgA",
     "score": 37,
     "seq": "CATGAGCGGCCGCTGTCCGGCGGCACGAATAATATAGTGCAAGAAAAACCGAAGACTACGGTTATATATGATGGAACGGCCCTCACAGCATTGTAACAGG",
-    "seq_id": "ctgA",
     "start": 5496,
     "strand": 1,
     "tags": {
