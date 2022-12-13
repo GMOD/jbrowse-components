@@ -6,8 +6,8 @@ toplevel: true
 
 import Figure from './figure'
 
-This guide will cover the API level documentation for methods and tools
-useful to developers looking to enhance JBrowse or write plugins.
+This guide will cover the API level documentation for methods and tools useful
+to developers looking to enhance JBrowse or write plugins.
 
 ## MenuItems objects
 

@@ -31,6 +31,7 @@ Enjoy!
 
 - [@jbrowse/web@0.0.1-beta.28](https://github.com/GMOD/jbrowse-components/releases/tag/@jbrowse/web@0.0.1-beta.28)
 
-To install, you can download the link above, or you can use the jbrowse CLI
-tool to automatically download the latest version. See the [jbrowse 2
-quick-start guide](https://jbrowse.org/jb2/docs/quickstart_web) for more info
+To install, you can download the link above, or you can use the jbrowse CLI tool
+to automatically download the latest version. See the
+[jbrowse 2 quick-start guide](https://jbrowse.org/jb2/docs/quickstart_web) for
+more info

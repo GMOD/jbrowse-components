@@ -1,12 +1,13 @@
 # SPARQL Adapter
 
-JBrowse can display genomic information stored in RDF data stores by accessing them via a SPARQL endpoint. This is done by configuring a SPARQL adapter.
+JBrowse can display genomic information stored in RDF data stores by accessing
+them via a SPARQL endpoint. This is done by configuring a SPARQL adapter.
 
 ## Query template
 
-The most basic configuration starts with a SPARQL query that returns features
-in a genomic range, i.e. on a particular chromosome/contig and between a start
-and end position. In such a query, replace the chromosome/contig name with
+The most basic configuration starts with a SPARQL query that returns features in
+a genomic range, i.e. on a particular chromosome/contig and between a start and
+end position. In such a query, replace the chromosome/contig name with
 `{refName}` and the start and end with `{start}` and `{end}`. For example
 
 ```sparql
@@ -102,13 +103,13 @@ one of two ways. The first is by entering a SPARQL query in the
 reference name in a `refName` column.
 
 The second option is to enumerate the reference names explicitly in the
-"refNames" config section. These will be ignored if a "refNamesQueryTemplate"
-is defined.
+"refNames" config section. These will be ignored if a "refNamesQueryTemplate" is
+defined.
 
 ### Other track types
 
 BasicTracks are flexible because they don't require any additional information,
-any any additional info provided in the query is just added to the feature.
-You can use other tracks as well, though, as long as you make sure the SPARQL
-query provides any info the track requires. For example, if you want to use a
+any any additional info provided in the query is just added to the feature. You
+can use other tracks as well, though, as long as you make sure the SPARQL query
+provides any info the track requires. For example, if you want to use a
 VariantTrack, the SPARQL query must provide REF, ALT, QUAL, etc.

@@ -9,8 +9,8 @@ import Figure from '../figure'
 ### Gene features
 
 If you have a track with gene or transcript level features, then the feature
-detail sidebar will automatically stitch together the sequence for that
-feature. Options include:
+detail sidebar will automatically stitch together the sequence for that feature.
+Options include:
 
 - CDS - the coding sequences, spliced together
 - Protein - performs protein translation on the CDS, currently assuming the

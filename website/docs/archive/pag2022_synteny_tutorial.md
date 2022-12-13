@@ -5,7 +5,8 @@ title: PAG2022 - Synteny visualization using JBrowse Desktop
 
 We presented a tutorial of visualizing synteny with JBrowse Desktop at PAG 2022
 
-A guide to follow along is written here: http://gmod.org/wiki/JBrowse_2_Tutorial_PAG_2022
+A guide to follow along is written here:
+http://gmod.org/wiki/JBrowse_2_Tutorial_PAG_2022
 
 The video recording of the presentation that we made is below
 

@@ -53,9 +53,11 @@ Most fields can be left blank, but **make sure to enter a descriptive name for
 your plugin** in the first field.
 
 :::note Tip
-A typical naming convention for JBrowse plugins is **"jbrowse-plugin-"**, or,
-if you are going to publish to an NPM organization, we advise
+
+A typical naming convention for JBrowse plugins is **"jbrowse-plugin-"**, or, if
+you are going to publish to an NPM organization, we advise
 **"@myscope/jbrowse-plugin-"**.
+
 :::
 
 You also need to install the dependencies:
@@ -106,18 +108,21 @@ see your running JBrowse instance!
 
 <Figure caption="Your browser should look something like the above screenshot." src="/img/plugin_template_spin_up_start.png"/>
 
-:::info Note
-At this point, you _must_ be running your plugin on port `9000` to see a
-running JBrowse instance, otherwise you will meet a screen asking you to
-configure your instance.
+:::info
 
-If you'd like to change this port, you can edit the "port" fields under
-"config" in the `package.json` file.
+At this point, you _must_ be running your plugin on port `9000` to see a running
+JBrowse instance, otherwise you will meet a screen asking you to configure your
+instance.
+
+If you'd like to change this port, you can edit the "port" fields under "config"
+in the `package.json` file.
+
 :::
 
 We can verify our plugin has been added to our JBrowse session by clicking the
-first square on the splash screen "Empty," and then navigating `Add` -> `Hello View` in the menu bar. This is the example pluggable element that is added in
-the template plugin project.
+first square on the splash screen "Empty," and then navigating `Add` ->
+`Hello View` in the menu bar. This is the example pluggable element that is
+added in the template plugin project.
 
 Next, we're going to add our own pluggable element to the plugin.
 
@@ -131,8 +136,8 @@ However, if you:
 - want to test your plugin against the most recent developer build
 
 You can develop against the latest JBrowse core build by taking a quick detour
-to our [developing with JBrowse web and desktop
-tutorial](../develop_web_and_desktop_tutorial).
+to our
+[developing with JBrowse web and desktop tutorial](../develop_web_and_desktop_tutorial).
 
 Now that our environment is set up and running, we're going to add our own
 pluggable element to the project and observe it running in JBrowse.
@@ -230,13 +235,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
 // ...
 ```
 
-Within the `.actions` method, we're defining methods for the model. These can
-be far more complex than just accessors and mutators (anything you want
-really).
+Within the `.actions` method, we're defining methods for the model. These can be
+far more complex than just accessors and mutators (anything you want really).
 
-If you have a particularly complex model, consider moving your component's
-model into a `model.ts`, and then exporting the stateModel from `index.ts`
-similar to how the ReactComponent is exported.
+If you have a particularly complex model, consider moving your component's model
+into a `model.ts`, and then exporting the stateModel from `index.ts` similar to
+how the ReactComponent is exported.
 
 ### A widget's ReactComponent
 
@@ -258,9 +262,13 @@ const CircularViewChordWidget = observer(({ model }: { model: any }) => {
 export default CircularViewChordWidget
 ```
 
-It's important to note the use of the mobx observer here: when making modifications to the model, you'll see those changes populated in your widget, thanks to the observer. We export the widget such that it can be seen by `CircularViewChordWidget/index.tsx`.
+It's important to note the use of the mobx observer here: when making
+modifications to the model, you'll see those changes populated in your widget,
+thanks to the observer. We export the widget such that it can be seen by
+`CircularViewChordWidget/index.tsx`.
 
-We'll make our widget do something basic: display the chord's information and a message we can edit.
+We'll make our widget do something basic: display the chord's information and a
+message we can edit.
 
 <!-- TODO: upgrade to @mui when the template upgrades to mui -->
 
@@ -304,15 +312,22 @@ const CircularViewChordWidget = observer(({ model }: { model: any }) => {
 export default CircularViewChordWidget
 ```
 
-As noted in the codeblock, @jbrowse/core has some reusable UI components exported. If you see something proprietary in the application you'd like to reuse, investigate whether it's exported by @jbrowse/core, and if not [make a request](https://github.com/GMOD/jbrowse-components/discussions/new) for that component to be exported for use in your plugin.
+As noted in the codeblock, @jbrowse/core has some reusable UI components
+exported. If you see something proprietary in the application you'd like to
+reuse, investigate whether it's exported by @jbrowse/core, and if not
+[make a request](https://github.com/GMOD/jbrowse-components/discussions/new) for
+that component to be exported for use in your plugin.
 
-Now that we have our component built, we can install it into our plugin and test it out.
+Now that we have our component built, we can install it into our plugin and test
+it out.
 
 ## Install the plugin to JBrowse at runtime
 
-The file `src/index.ts` exports your plugin and installs all the necessary components to JBrowse at runtime such that it runs properly.
+The file `src/index.ts` exports your plugin and installs all the necessary
+components to JBrowse at runtime such that it runs properly.
 
-Your `src/index.ts` file is going to look something like the following right now:
+Your `src/index.ts` file is going to look something like the following right
+now:
 
 ```ts
 import Plugin from '@jbrowse/core/Plugin'
@@ -352,7 +367,8 @@ export default class SomeNewPluginPlugin extends Plugin {
 }
 ```
 
-You'll notice we're already adding a new view type and configuring the rootModel in the template's project. We can use these patterns to add our widget.
+You'll notice we're already adding a new view type and configuring the rootModel
+in the template's project. We can use these patterns to add our widget.
 
 `src/index.ts`
 
@@ -520,15 +536,15 @@ specific track_.
 
 Take some time to dissect what's being added here:
 
-- this is a track that will appear in our track list when we run JBrowse
-  against this assembly
+- this is a track that will appear in our track list when we run JBrowse against
+  this assembly
 - it's a VariantTrack called "demo_vcf"
 - it derives its data from a given UriLocation, the file is a `.vcf` file using
   the VcfAdapter
 - it declares its display, the `ChordVariantDisplay`, and specifies its
   `onChordClick` callback function
-- the specified `onChordClick` callback function is that which we defined in
-  our plugin class, the jexl function
+- the specified `onChordClick` callback function is that which we defined in our
+  plugin class, the jexl function
 
 <Figure src="../img/plugin-dev-tutorial-track-added.png" caption="A screenshot of what it will look like when you add a track to your configuration; that is, it will be available in the add track menu when you open a view." />
 
@@ -564,12 +580,14 @@ widget byline, and one with our feature data.
 <Figure src="../img/plugin-dev-tutorial-final.png" caption="A screenshot of the widget displayed after clicking on the chord." />
 
 :::info Troubleshooting
-If you get to this point and note that nothing happens, open the developer
-tools in your browser and investigate the console errors. Also check your
-running process in your terminal for any errors. Review the code you added to
-ensure you didn't miss any imports or statements. Check over your config file
+
+Troubleshooting If you get to this point and note that nothing happens, open the
+developer tools in your browser and investigate the console errors. Also check
+your running process in your terminal for any errors. Review the code you added
+to ensure you didn't miss any imports or statements. Check over your config file
 to ensure that "plugins", "assemblies", and "tracks" are all present for the
 configuration to work properly.
+
 :::
 
 ## Writing a simple integration test with cypress
@@ -578,13 +596,13 @@ For completeness, we might want to write a few tests for our plugin to ensure
 that future changes we make do not break the application.
 
 The `jbrowse-plugin-template` uses cypress to write its integration tests. For
-plugins, integration tests are a particularly good way to test functionality,
-as a failing test might indicate the plugin needs to be updated for a new
-version of JBrowse, or, if interfacing with a third-party API or toolset, that
-the plugin might have to be tweaked to suit these changes.
+plugins, integration tests are a particularly good way to test functionality, as
+a failing test might indicate the plugin needs to be updated for a new version
+of JBrowse, or, if interfacing with a third-party API or toolset, that the
+plugin might have to be tweaked to suit these changes.
 
-We're going to write a simple integration test suite that executes the action
-we tested [above](#run-jbrowse-with-your-new-plugin-and-manually-test).
+We're going to write a simple integration test suite that executes the action we
+tested [above](#run-jbrowse-with-your-new-plugin-and-manually-test).
 
 ### Add a cypress test
 
@@ -595,8 +613,8 @@ brief overview to get you started.
 Within the directory `cypress`, you'll see a number of folders; you'll likely
 only need to make use of `fixtures` and `integration`.
 
-- `fixtures`: This directory is where you might place testing files or a
-  testing config.json file.
+- `fixtures`: This directory is where you might place testing files or a testing
+  config.json file.
 - `integration`: This directory is where all your integration tests go. You can
   organize them however you want. Using the template project, there will be two
   in there already you can use as an example, but we'll write one of our own.
@@ -732,12 +750,12 @@ The following will guide you through publishing with
 [NPM](https://www.npmjs.com/). You'll need an NPM account and token to do this,
 so please set that up first through the NPM site.
 
-If you'd prefer not to publish to NPM, you can host your plugin files
-elsewhere, just ensure the link is accessible publicly.
+If you'd prefer not to publish to NPM, you can host your plugin files elsewhere,
+just ensure the link is accessible publicly.
 
-When your plugin is in a publishable state and you have NPM credentials, you
-can run the following within your plugin's root directory (where `package.json`
-is found):
+When your plugin is in a publishable state and you have NPM credentials, you can
+run the following within your plugin's root directory (where `package.json` is
+found):
 
 ```bash
 yarn publish
@@ -749,19 +767,20 @@ to the next step.
 
 ## Request your plugin be added to the plugin store
 
-To populate your plugin to the plugin store, it must be added to the [plugin
-list](https://github.com/GMOD/jbrowse-plugin-list), a whitelist of JBrowse
-plugins.
+To populate your plugin to the plugin store, it must be added to the
+[plugin list](https://github.com/GMOD/jbrowse-plugin-list), a whitelist of
+JBrowse plugins.
 
-Navigate to the [plugin list
-repository](https://github.com/GMOD/jbrowse-plugin-list) and use the github UI
-to **Fork** the repository.
+Navigate to the
+[plugin list repository](https://github.com/GMOD/jbrowse-plugin-list) and use
+the github UI to **Fork** the repository.
 
 <Figure src="/img/publish_fork_repo_guide.png" caption="Click the 'Fork' option at the top of the repository to create an editable clone of the repo." />
 
 :::info Tip
 
-It's easy enough to edit the files required using the github UI, but feel free to clone and push to the forked repo using your local environment as well.
+It's easy enough to edit the files required using the github UI, but feel free
+to clone and push to the forked repo using your local environment as well.
 
 :::
 
@@ -811,21 +830,21 @@ Push your changes to the `main` branch of your forked repo when you're done.
 
 ### Make a pull request
 
-Now that your plugin's information is accurate, navigate again to the [plugin
-list repository](https://github.com/GMOD/jbrowse-plugin-list), and create a new
-pull request.
+Now that your plugin's information is accurate, navigate again to the
+[plugin list repository](https://github.com/GMOD/jbrowse-plugin-list), and
+create a new pull request.
 
-In the pull request UI, click "compare across forks" and select your fork as
-the head repository to merge into the main of `jbrowse-plugin-list`. Your
-changes should show in the editor, and you can create your PR.
+In the pull request UI, click "compare across forks" and select your fork as the
+head repository to merge into the main of `jbrowse-plugin-list`. Your changes
+should show in the editor, and you can create your PR.
 
 <Figure src="/img/publish_compare_repo_guide.png" caption="Use the compare across forks option in the pull request UI to merge your forked repo's main branch into the jbrowse-plugin-list main branch."/>
 
 ## Next steps
 
 The JBrowse development team will review your plugin to ensure that it is
-functional, then when it is merged in the plugin will be available on the
-plugin store.
+functional, then when it is merged in the plugin will be available on the plugin
+store.
 
 In this tutorial, we set up a development environment for JBrowse 2 and added a
 custom pluggable element to a plugin.
@@ -834,11 +853,10 @@ We also published the plugin to NPM and requested that it be added to the
 JBrowse plugin store so others can access our plugin.
 
 To learn more about the various pluggable elements available in JBrowse (and
-thus more that you can do with plugins!) checkout our [developer guide
-documentation](/docs/developer_guide/).
+thus more that you can do with plugins!) checkout our
+[developer guide documentation](/docs/developer_guide/).
 
 If you have further questions about plugin development, or development with
-JBrowse in general, stop by the JBrowse team [gitter
-channel](https://gitter.im/GMOD/jbrowse2), or start a discssion on the
-[jbrowse-components discussions
-forum](https://github.com/GMOD/jbrowse-components/discussions).
+JBrowse in general, stop by the JBrowse team
+[gitter channel](https://gitter.im/GMOD/jbrowse2), or start a discssion on the
+[jbrowse-components discussions forum](https://github.com/GMOD/jbrowse-components/discussions).

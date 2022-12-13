@@ -3,17 +3,19 @@ id: bcc2020_embedding_jbrowse_05_tracks
 title: About tracks
 ---
 
-:::danger Out of date
-Please see the
+:::danger
+
+Out of date Please see the
 [updated version of this tutorial](/docs/tutorials/embed_linear_genome_view/01_introduction)
+
 :::
 
 ## What is a track?
 
-A track is the place to display your data files in JBrowse Linear View. For
-this tutorial we're going to add a gene track, an [alignments
-track](/docs/user_guides/alignments_track), and a [variants
-track](/docs/user_guides/variant_track). We're just going to use basic
+A track is the place to display your data files in JBrowse Linear View. For this
+tutorial we're going to add a gene track, an
+[alignments track](/docs/user_guides/alignments_track), and a
+[variants track](/docs/user_guides/variant_track). We're just going to use basic
 configuration, but check the links for the track types to see what kinds of
 things you can configure in them.
 
@@ -23,13 +25,13 @@ things you can configure in them.
 
 For genes, we'll use a
 [GFF3](https://github.com/The-Sequence-Ontology/Specifications/blob/5c119af6316ccfbc6975af86d0e34157226d208d/gff3.md)
-file of the [NCBI RefSeq](https://www.ncbi.nlm.nih.gov/refseq/) human genes.
-The link is
+file of the [NCBI RefSeq](https://www.ncbi.nlm.nih.gov/refseq/) human genes. The
+link is
 https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz
 
 For alignments, we're going to use on the 1000 Genomes sample
-[NA12878](https://www.internationalgenome.org/data-portal/sample/NA12878).
-We'll use a [CRAM](https://samtools.github.io/hts-specs/CRAMv3.pdf) file
+[NA12878](https://www.internationalgenome.org/data-portal/sample/NA12878). We'll
+use a [CRAM](https://samtools.github.io/hts-specs/CRAMv3.pdf) file
 ([BAM](https://samtools.github.io/hts-specs/SAMv1.pdf) is also supported), and
 the link is
 https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram

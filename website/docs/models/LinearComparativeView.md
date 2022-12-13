@@ -5,8 +5,9 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Docs
 
@@ -111,9 +112,8 @@ views: types.array(
 
 #### property: viewTrackConfigs
 
-this represents tracks specific to this view specifically used
-for read vs ref dotplots where this track would not really apply
-elsewhere
+this represents tracks specific to this view specifically used for read vs ref
+dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
@@ -202,7 +202,8 @@ removeView: (view: { id: string; displayName: string; minimized: boolean; type: 
 
 #### action: closeView
 
-removes the view itself from the state tree entirely by calling the parent removeView
+removes the view itself from the state tree entirely by calling the parent
+removeView
 
 ```js
 // type signature

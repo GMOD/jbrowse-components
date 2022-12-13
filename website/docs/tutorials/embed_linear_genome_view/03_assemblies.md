@@ -6,11 +6,11 @@ title: About assemblies
 ## What is an assembly?
 
 An assembly in JBrowse 2 is a collection of information that describes the
-organism you are working with, such as its name and its reference sequence.
-This is what JBrowse 2 uses to set up the coordinate system for the genome
-browser and keep tracks organized. In JBrowse Web, you are able to have
-multiple assemblies on screen at the same time. JBrowse Linear Genome View,
-however, is more focused and allows just one assembly.
+organism you are working with, such as its name and its reference sequence. This
+is what JBrowse 2 uses to set up the coordinate system for the genome browser
+and keep tracks organized. In JBrowse Web, you are able to have multiple
+assemblies on screen at the same time. JBrowse Linear Genome View, however, is
+more focused and allows just one assembly.
 
 These are the options you can specify for an assembly:
 
@@ -40,8 +40,8 @@ assembly.
 ### Installing JBrowse CLI
 
 The JBrowse 2 CLI is designed to set up a configuration file for JBrowse Web,
-but since JBrowse Linear Genome View is based on the same code, we can use it
-to generate what we need as well.
+but since JBrowse Linear Genome View is based on the same code, we can use it to
+generate what we need as well.
 
 The instructions for installing JBrowse CLI are on the
 "[Introduction](../01_introduction)" page. After installing, if you run the
@@ -65,17 +65,17 @@ get installed.
 
 ### Gathering files
 
-Let's use a human GRCh38 assembly as our example. First we need a sequence
-file. We'll use this url:
+Let's use a human GRCh38 assembly as our example. First we need a sequence file.
+We'll use this url:
 https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.
 
-We also need to define some reference sequence name aliases so that any files
-we want to use that use "chr1" instead of "1" will display correctly. There is
-an alias file that we can use at
+We also need to define some reference sequence name aliases so that any files we
+want to use that use "chr1" instead of "1" will display correctly. There is an
+alias file that we can use at
 http://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/GRCh38.aliases.txt.
 
-This aliases file has on each line a name from the reference sequence and then
-a tab-separated list of aliases for that name.
+This aliases file has on each line a name from the reference sequence and then a
+tab-separated list of aliases for that name.
 
 ### Running the `jbrowse` command
 

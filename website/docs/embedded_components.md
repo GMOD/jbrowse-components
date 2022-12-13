@@ -33,10 +33,11 @@ This component consists of a single JBrowse 2 circular view.
 
 - [@jbrowse/react-circular-genome-view](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view)
   circular genome view React component on NPM
-- [Storybook](https://jbrowse.org/storybook/cgv/main/) - docs for the circular genome view React component
+- [Storybook](https://jbrowse.org/storybook/cgv/main/) - docs for the circular
+  genome view React component
 
-Here is a table of different usages of the
-`@jbrowse/react-circular-genome-view` using different bundlers
+Here is a table of different usages of the `@jbrowse/react-circular-genome-view`
+using different bundlers
 
 | Syntax              | Demo                                            | Source code                                                                                                                                                                                                                                                                                              | Note                                                                                                                                                                 |
 | ------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

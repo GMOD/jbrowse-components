@@ -4,8 +4,8 @@ title: Creating custom add-track workflows
 ---
 
 Plugins can register their own React component to display in the "Add track"
-widget for adding tracks that require custom logic. The Multi-wiggle track is
-an example of this, it produces a textbox where you can paste a list of files.
+widget for adding tracks that require custom logic. The Multi-wiggle track is an
+example of this, it produces a textbox where you can paste a list of files.
 
 A simple addition to the add track workflow:
 

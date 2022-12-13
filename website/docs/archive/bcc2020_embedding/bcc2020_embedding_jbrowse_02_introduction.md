@@ -3,9 +3,11 @@ id: bcc2020_embedding_jbrowse_02_introduction
 title: Introduction
 ---
 
-:::danger Out of date
-Please see the
+:::danger
+
+Out of date Please see the
 [updated version of this tutorial](/docs/tutorials/embed_linear_genome_view/01_introduction)
+
 :::
 
 ## What is JBrowse 2
@@ -35,6 +37,6 @@ simultaneously.
 Today we'll be using JBrowse Linear View, which has a subset of features of the
 full app. It can display a single linear view, which is the most common mode of
 genome visualization. Where JBrowse Web is a full-page web app, though, JBrowse
-Linear View is designed to work within an existing web page. You can easily
-add one or several of them to a page without the use of iframes, and control and
+Linear View is designed to work within an existing web page. You can easily add
+one or several of them to a page without the use of iframes, and control and
 react to each instance.

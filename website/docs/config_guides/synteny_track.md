@@ -31,9 +31,9 @@ jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
 
 The first assembly is the "target" and the second assembly is the "query."
 
-See how to [configure JBrowse using the
-CLI](/docs/tutorials/config_cli/#adding-a-synteny-track) for more ways to load
-synteny tracks with the CLI.
+See how to
+[configure JBrowse using the CLI](/docs/tutorials/config_cli/#adding-a-synteny-track)
+for more ways to load synteny tracks with the CLI.
 
 ### PAFAdapter config
 
@@ -64,8 +64,8 @@ Slots
 
 ### DeltaAdapter config
 
-The DeltaAdapter is used to load .delta files from MUMmer/nucmer. It can be
-used for SyntenyTracks:
+The DeltaAdapter is used to load .delta files from MUMmer/nucmer. It can be used
+for SyntenyTracks:
 
 ```json
 {
@@ -79,9 +79,9 @@ used for SyntenyTracks:
 
 Slots
 
-- `deltaLocation` - the location of the delta file. The deltaLocation can refer to a
-  gzipped or unzipped delta file. It will be read into memory entirely as it is
-  not an indexed file format.
+- `deltaLocation` - the location of the delta file. The deltaLocation can refer
+  to a gzipped or unzipped delta file. It will be read into memory entirely as
+  it is not an indexed file format.
 - `assemblyNames` - list of assembly names, typically two (first in list is
   target, second is query)
 - `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
@@ -91,8 +91,8 @@ Slots
 
 ### ChainAdapter config
 
-The ChainAdapter is used to load .chain files from MUMmer/nucmer. It can be
-used for SyntenyTracks:
+The ChainAdapter is used to load .chain files from MUMmer/nucmer. It can be used
+for SyntenyTracks:
 
 ```json
 {
@@ -118,7 +118,8 @@ Slots
 
 ### MCScanAnchorsAdapter
 
-The .anchors file from MCScan refers to pairs of homologous genes and can be loaded into synteny tracks in JBrowse 2:
+The .anchors file from MCScan refers to pairs of homologous genes and can be
+loaded into synteny tracks in JBrowse 2:
 
 ```json
 {
@@ -137,18 +138,19 @@ The .anchors file from MCScan refers to pairs of homologous genes and can be loa
 ```
 
 [This guide](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
-shows a demonstration of how to create the anchors and bed files (the .bed
-files are intermediate steps in creating the anchors files and are required by
-the MCScanAnchorsAdapter).
+shows a demonstration of how to create the anchors and bed files (the .bed files
+are intermediate steps in creating the anchors files and are required by the
+MCScanAnchorsAdapter).
 
 Slots:
 
 - `mcscanAnchorsLocation` - the location of the .anchors file from the MCScan
-  workflow. The .anchors file has three columns. It can be gzipped or
-  ungzipped, and is read into memory whole
-- `bed1Location` - the location of the first assemblies .bed file from the MCScan
-  workflow. It can be gzipped or ungzipped, and is read into memory whole. This
-  would refer to the gene names on the "left" side of the .anchors file.
+  workflow. The .anchors file has three columns. It can be gzipped or ungzipped,
+  and is read into memory whole
+- `bed1Location` - the location of the first assemblies .bed file from the
+  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
+  whole. This would refer to the gene names on the "left" side of the .anchors
+  file.
 - `bed2Location` - the location of the second assemblies .bed file from the
   MCScan workflow. It can be gzipped or ungzipped, and is read into memory
   whole. This would refer to the gene names on the "right" side of the .anchors
@@ -176,19 +178,20 @@ genes and can be loaded into synteny tracks in JBrowse 2:
 ```
 
 [This guide](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
-shows a demonstration of how to create the anchors and bed files (the .bed
-files are intermediate steps in creating the anchors.simple files and are
-required by the MCScanSimpleAnchorsAdapter)
+shows a demonstration of how to create the anchors and bed files (the .bed files
+are intermediate steps in creating the anchors.simple files and are required by
+the MCScanSimpleAnchorsAdapter)
 
 Slots:
 
 - `mcscanSimpleAnchorsLocation` - the location of the .anchors.simple file from
   the MCScan workflow (this file has 5 columns, start and end gene from bed1,
-  start and end genes from bed2, and score). It can be gzipped or ungzipped,
-  and is read into memory whole
-- `bed1Location` - the location of the first assemblies .bed file from the MCScan
-  workflow. It can be gzipped or ungzipped, and is read into memory whole. This
-  would refer to the gene names on the "left" side of the .anchors file.
+  start and end genes from bed2, and score). It can be gzipped or ungzipped, and
+  is read into memory whole
+- `bed1Location` - the location of the first assemblies .bed file from the
+  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
+  whole. This would refer to the gene names on the "left" side of the .anchors
+  file.
 - `bed2Location` - the location of the second assemblies .bed file from the
   MCScan workflow. It can be gzipped or ungzipped, and is read into memory
   whole. This would refer to the gene names on the "right" side of the .anchors

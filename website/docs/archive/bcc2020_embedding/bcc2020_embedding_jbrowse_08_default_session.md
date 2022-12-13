@@ -13,12 +13,14 @@ Please see the
 ## What is a session?
 
 A session is a way to define what the state of the view is. By providing a
-default session, you can have tracks already open when the view loads, have
-the overview hidden, or set any other aspect of the state.
+default session, you can have tracks already open when the view loads, have the
+overview hidden, or set any other aspect of the state.
 
 :::tip
+
 If you provide "location" when constructing the view, it will override the
 location defined in the defaultSession.
+
 :::
 
 ## What does a session look like?
@@ -94,8 +96,8 @@ with the view and see what in the view state changes when you do certain things.
 Some of the view state entries are:
 
 - `bpPerPx` - This is a zoom level. A smaller number is more zoomed in.
-- `displayedRegions` - The extent of the areas currently in view. By default
-  it will be the full extent of a single chromosome, but you can add multiple
-  regions, have the regions cover only part of a chromosome, reverse the regions,
-  etc.
+- `displayedRegions` - The extent of the areas currently in view. By default it
+  will be the full extent of a single chromosome, but you can add multiple
+  regions, have the regions cover only part of a chromosome, reverse the
+  regions, etc.
 - `hideHeader` - Whether or not the header is hidden.

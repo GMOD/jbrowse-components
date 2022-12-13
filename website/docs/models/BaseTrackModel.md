@@ -5,14 +5,15 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Docs
 
 these MST models only exist for tracks that are _shown_. they should contain
-only UI state for the track, and have a reference to a track configuration.
-note that multiple displayed tracks could use the same configuration.
+only UI state for the track, and have a reference to a track configuration. note
+that multiple displayed tracks could use the same configuration.
 
 ### BaseTrackModel - Properties
 

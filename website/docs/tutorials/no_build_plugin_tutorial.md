@@ -6,13 +6,13 @@ toplevel: true
 
 import Figure from '../figure'
 
-The following guide will provide a short tutorial on how to create a single
-page no-build plugin for JBrowse 2.
+The following guide will provide a short tutorial on how to create a single page
+no-build plugin for JBrowse 2.
 
 ## Prerequisites
 
-- you can run an instance of JBrowse 2 on the web, see [any of our quickstart
-  guides](/docs/quickstart_web) for details
+- you can run an instance of JBrowse 2 on the web, see
+  [any of our quickstart guides](/docs/quickstart_web) for details
 - a stable and recent version of [node](https://nodejs.org/en/)
 - basic familiarity with the command line and navigating the file system
 
@@ -21,18 +21,17 @@ page no-build plugin for JBrowse 2.
 A "regular" JBrowse plugin often uses our plugin template
 https://github.com/GMOD/jbrowse-plugin-template which uses `rollup` to compile
 extra dependencies that your plugin might use. In contrast, "no-build" plugins
-have no build step and can be hand edited. This can be useful for adding [extra
-jexl config callbacks for making extra config callbacks or similar
-modifications](/docs/config_guides/customizing_feature_colors/).
+have no build step and can be hand edited. This can be useful for adding
+[extra jexl config callbacks for making extra config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
 
 ## Writing a no-build plugin
 
 ### Adding a callback function which you can use in your config
 
-A common method for a no-build plugin might be making a custom function that
-you can use to simplify `jexl` callbacks in your config. We will create a file
-`myplugin.js`, which will contain a ["UMD"](https://github.com/umdjs/umd)
-module providing a single "Plugin" class [1].
+A common method for a no-build plugin might be making a custom function that you
+can use to simplify `jexl` callbacks in your config. We will create a file
+`myplugin.js`, which will contain a ["UMD"](https://github.com/umdjs/umd) module
+providing a single "Plugin" class [1].
 
 `myplugin.js`
 
@@ -104,16 +103,17 @@ you can refer to this plugin and the custom function you added in your config.
 }
 ```
 
-[1] Note that you can also provide an ESM module that has just `export default class` but this is not supported by all browsers, notably firefox, which cannot
-import ESM files in webworkers, so for maximum compatibility, we show are using
-the UMD format still. Once firefox gains support for ESM modules, we will
-update this!
+[1] Note that you can also provide an ESM module that has just
+`export default class` but this is not supported by all browsers, notably
+firefox, which cannot import ESM files in webworkers, so for maximum
+compatibility, we show are using the UMD format still. Once firefox gains
+support for ESM modules, we will update this!
 
 ### Adding a global menu item
 
 Another example of a no-build plugin is to add menu items or minor extension
-points. Here, we're going to add a menu item using the `configure` method in
-the plugin class.
+points. Here, we're going to add a menu item using the `configure` method in the
+plugin class.
 
 `myplugin.js`
 
@@ -137,9 +137,8 @@ the plugin class.
 Because our plugin is not going to be built with any dependencies, the process
 for referencing external libraries is a little different.
 
-If a package you need to use is found within the JBrowse core project, a
-special function `jbrequire` can provide your plugin access to these packages.
-Click
+If a package you need to use is found within the JBrowse core project, a special
+function `jbrequire` can provide your plugin access to these packages. Click
 [here](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ReExports/list.ts)
 for a full list of packages accessible through `jbrequire`. Using `jbrequire`
 might look like this:

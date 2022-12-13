@@ -5,6 +5,7 @@ toplevel: true
 ---
 
 import Figure from './figure'
+
 import config from '../docusaurus.config.json'
 
 ## Prerequisites
@@ -16,10 +17,12 @@ import config from '../docusaurus.config.json'
 - [Samtools](http://www.htslib.org/) installed e.g. `sudo apt install samtools`
   or `brew install samtools`, used for creating FASTA index and BAM/CRAM
   processing for creating tabix GFF
-- [tabix](http://www.htslib.org/doc/tabix.html) installed e.g. `sudo apt install tabix` and `brew install htslib`, used for creating tabix indexes for
-  BED/VCF/GFF files
-- (optional) [`genometools`](http://genometools.org/) installed e.g. `sudo apt install genometools` or `brew install brewsci/bio/genometools` used for
-  sorting GFF3. can use awk instead of `genometools` instead
+- [tabix](http://www.htslib.org/doc/tabix.html) installed e.g.
+  `sudo apt install tabix` and `brew install htslib`, used for creating tabix
+  indexes for BED/VCF/GFF files
+- (optional) [`genometools`](http://genometools.org/) installed e.g.
+  `sudo apt install genometools` or `brew install brewsci/bio/genometools` used
+  for sorting GFF3. can use awk instead of `genometools` instead
 
 ## Installing the JBrowse CLI
 
@@ -91,7 +94,8 @@ JBrowse 2 requires a web server to run. It won't work if you try to directly
 open the `index.html` in your web browser.
 
 Oftentimes, you may put the folder on a web server in the static html folder
-e.g. /var/www/html/jbrowse2/ once in place, you can then visit http://yourserver/jbrowse2
+e.g. /var/www/html/jbrowse2/ once in place, you can then visit
+http://yourserver/jbrowse2
 
 You could also use a simple server to check that JBrowse 2 has been downloaded
 properly. Run
@@ -112,8 +116,8 @@ Your page should look something like this:
 
 <Figure caption="JBrowse 2 screen showing no configuration found" src="/img/config_not_found.png"/>
 
-Click on the sample config to see JBrowse 2 running with a demo
-configuration. It should look like this:
+Click on the sample config to see JBrowse 2 running with a demo configuration.
+It should look like this:
 
 <Figure caption="JBrowse 2 screen with a sample configuration" src="/img/sample_config.png"/>
 
@@ -164,9 +168,9 @@ and copy the files into the folder as well. If you use --load symlink, it can
 symlink the files instead. To see more options adding the track, such as
 specifying a name, run `jbrowse add-track --help`.
 
-If you have JBrowse 2 [running as
-described](/docs/quickstart_web/#running-jbrowse-2) in the JBrowse web
-quickstart, you can refresh the page and an add a linear genome view of the
+If you have JBrowse 2
+[running as described](/docs/quickstart_web/#running-jbrowse-2) in the JBrowse
+web quickstart, you can refresh the page and an add a linear genome view of the
 volvox assembly. Then open track selector, and you will see the alignments
 track.
 
@@ -224,7 +228,8 @@ jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse
 ### Adding a GFF3 file with GFF3Tabix
 
 To load a GFF3 file, we can sort and index it with tabix, make sure you have
-[GenomeTools](http://genometools.org/) (to install can use `sudo apt install genometools`).
+[GenomeTools](http://genometools.org/) (to install can use
+`sudo apt install genometools`).
 
 ```bash
 gt gff3 -sortlines -tidy -retainids yourfile.gff > yourfile.sorted.gff
@@ -233,8 +238,7 @@ tabix yourfile.sorted.gff.gz
 jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
-As an alternative to `gt gff3 -sortlines`, use `awk` and GNU `sort`, as
-follows:
+As an alternative to `gt gff3 -sortlines`, use `awk` and GNU `sort`, as follows:
 
 ```bash
 awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -t\"\t\" -k1,1 -k4,4n"}' file.gff > file.sorted.gff
@@ -242,10 +246,10 @@ bgzip file.sorted.gff
 tabix file.sorted.gff.gz
 ```
 
-The `awk` command is inspired by the method in the [tabix
-documentation](http://www.htslib.org/doc/tabix.html), but avoids subshells and
-properly sets the tab delimiter for GNU sort in case there are spaces in the
-GFF.
+The `awk` command is inspired by the method in the
+[tabix documentation](http://www.htslib.org/doc/tabix.html), but avoids
+subshells and properly sets the tab delimiter for GNU sort in case there are
+spaces in the GFF.
 
 ### Adding a synteny track from a PAF file
 
@@ -296,8 +300,8 @@ jbrowse text-index --out /var/www/html/jbrowse
 ```
 
 This will index relevant track types e.g. any track with Gff3TabixAdapter (gene
-names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print
-out a progress bar for each track that it is indexing.
+names and IDs) or VcfTabixAdapter (e.g. variant IDs). The command will print out
+a progress bar for each track that it is indexing.
 
 This will also update your `config.json` so that after it completes, you can
 type a gene name into the "search box" in the linear genome view or other views
@@ -352,4 +356,5 @@ your jbrowse 2 installation too
 jbrowse add-assembly mygenome.fa --out /path/to/my/jbrowse2/subfolder/alt_config.json --load copy
 ```
 
-This would then be accessible at e.g. http://localhost/jbrowse2/?config=subfolder/alt_config.json
+This would then be accessible at e.g.
+http://localhost/jbrowse2/?config=subfolder/alt_config.json

@@ -14,7 +14,8 @@ The SVG Feature renderer has two steps:
   subfeatures.
 
 - **Render**: Each glyph is a React component that returns a valid SVG element.
-  It positions itself using the `featureLayout` prop. Each rendered feature has its own glyph.
+  It positions itself using the `featureLayout` prop. Each rendered feature has
+  its own glyph.
 
 ## Glyphs
 

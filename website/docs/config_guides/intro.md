@@ -30,12 +30,11 @@ config.json) and is structured as follows
 
 The most important thing to configure are your assemblies and your tracks.
 
-:::info Note
-On jbrowse desktop, a "session" refers to a config.json with a .jbrowse file extension
-:::
+:::info Note On jbrowse desktop, a "session" refers to a config.json with a
+.jbrowse file extension :::
 
-:::info Note
-On embedded e.g. with @jbrowse/react-linaer-genome-view, it does not accept a config file but rather an object at runtime with the config loaded.
+:::info Note On embedded e.g. with @jbrowse/react-linaer-genome-view, it does
+not accept a config file but rather an object at runtime with the config loaded.
 
 To fetch a config.json object on the fly in @jbrowse/react-linear-genome-view,
 you might use something like this:

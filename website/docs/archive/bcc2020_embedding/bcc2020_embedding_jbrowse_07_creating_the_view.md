@@ -48,10 +48,10 @@ has other display options.
 
 ## Controlling the view
 
-Any action taken in the UI can also be performed programmatically. An
-instance of JBrowseLinearView has an attribute called "view" that can be used
-to control the state of the view. As an example, we will add some buttons on the
-page that navigate to the locations of a couple of genes.
+Any action taken in the UI can also be performed programmatically. An instance
+of JBrowseLinearView has an attribute called "view" that can be used to control
+the state of the view. As an example, we will add some buttons on the page that
+navigate to the locations of a couple of genes.
 
 Modify "index.html" so that it looks like the following:
 

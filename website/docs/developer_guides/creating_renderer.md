@@ -8,14 +8,18 @@ import Figure from '../figure'
 ### What is a renderer
 
 In JBrowse 1, a track type typically would directly call the data parser and do
-it's own rendering. In JBrowse 2, the data parsing and rendering is offloaded
-to a web-worker or other RPC. This allows things to be faster in many cases.
-This is conceptually related to "server side rendering" or SSR in React terms.
+it's own rendering. In JBrowse 2, the data parsing and rendering is offloaded to
+a web-worker or other RPC. This allows things to be faster in many cases. This
+is conceptually related to "server side rendering" or SSR in React terms.
 
 <Figure src="/img/renderer.png" caption="Conceptual diagram of how a track calls a renderer using the RPC"/>
 
-:::warning Note
-You can make custom track types that do not use this workflow, but it is a built-in workflow that functions well for the core track types in JBrowse 2, and is recommended.
+:::warning
+
+You can make custom track types that do not use this workflow, but it is a
+built-in workflow that functions well for the core track types in JBrowse 2, and
+is recommended.
+
 :::
 
 ### How to create a new renderer
@@ -49,9 +53,11 @@ height that are supplied via arguments, and draw a rectangle. We then return a
 `React.createElement` call which creates a "rendering" component that will
 contain the output.
 
-:::info Note
-The above canvas operations use an `OffscreenCanvas` for Chrome, or in
-other browsers serialize the drawing commands to be drawn in the main thread.
+:::info
+
+The above canvas operations use an `OffscreenCanvas` for Chrome, or in other
+browsers serialize the drawing commands to be drawn in the main thread.
+
 :::
 
 ### What are the props passed to the renderer
@@ -72,8 +78,8 @@ export interface PileupRenderProps {
 ```
 
 The layout is available on BoxRendererType renderers so that it can layout
-things in pileup format, and has an addRect function to get the y-coordinate at which to
-render your data.
+things in pileup format, and has an addRect function to get the y-coordinate at
+which to render your data.
 
 The features argument is a map of feature ID to the feature itself. To iterate
 over the features Map, we can use an iterator or convert to an array:
@@ -150,8 +156,8 @@ export default class SVGPlugin extends Plugin {
 }
 ```
 
-Then, we have our Rendering component just be plain React code. This is a
-highly simplified SVG renderer just to illustrate:
+Then, we have our Rendering component just be plain React code. This is a highly
+simplified SVG renderer just to illustrate:
 
 ```jsx
 export default function SvgFeatureRendering(props) {
@@ -186,14 +192,14 @@ export default function SvgFeatureRendering(props) {
 
 :::info Note
 
-1.The above SVG renderer is highly simplified, but it
-shows that you can have a simple React component that leverages the existing
-`BoxRendererType`, so that you do not have to necessarily create your own
-renderer class
+1.The above SVG renderer is highly simplified, but it shows that you can have a
+simple React component that leverages the existing `BoxRendererType`, so that
+you do not have to necessarily create your own renderer class
 
 2.The renderers receive an array of regions to render, but if they are only
-equipped to handle one region at a time then they can select only rendering
-to `regions[0]`
+equipped to handle one region at a time then they can select only rendering to
+`regions[0]`
+
 :::
 
 ### Overriding the renderer's getFeatures method
@@ -204,14 +210,14 @@ dataAdapter.
 If you want to drastically modify the feature fetching behavior, you can modify
 the renderer's `getFeatures` call.
 
-The base `ServerSideRendererType` class has a built-in `getFeatures` function that,
-in turn, calls your adapter's `getFeatures` function, but if you need
+The base `ServerSideRendererType` class has a built-in `getFeatures` function
+that, in turn, calls your adapter's `getFeatures` function, but if you need
 tighter control over how your adapter's `getFeatures` method is called, then
 your renderer.
 
-The Hi-C renderer type does not operate on conventional
-features and instead works with contact matrices, so the Hi-C renderer has a
-custom `getFeatures` function:
+The Hi-C renderer type does not operate on conventional features and instead
+works with contact matrices, so the Hi-C renderer has a custom `getFeatures`
+function:
 
 ```js
 import { toArray } from 'rxjs/operators'

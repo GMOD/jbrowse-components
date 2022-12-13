@@ -8,7 +8,8 @@ import Figure from '../figure'
 
 ### Linear genome view
 
-To open a linear genome view (LGV), use the menu bar: `Add` -> `Linear genome view`
+To open a linear genome view (LGV), use the menu bar: `Add` ->
+`Linear genome view`
 
 #### Scrolling
 
@@ -47,9 +48,9 @@ You can search a location in several ways when typing in the search box:
 5. If configured, searching by gene name or feature keywords, e.g. `BRCA1`
 
 To configure name searching, you or the admin of the instance will need to
-create a "text index". See the [configuration
-guide](/docs/tutorials/config_cli#indexing-feature-names-for-searching) for more
-information.
+create a "text index". See the
+[configuration guide](/docs/tutorials/config_cli#indexing-feature-names-for-searching)
+for more information.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
@@ -60,8 +61,10 @@ To open a new track or connection, use the menu bar: `File` -> `Open track..`
 <Figure caption="After opening the menu item for 'Open track..' a drawer widget for the 'Add a track' form will appear" src="/img/add_track_form.png" />
 
 :::info Tip
+
 There is a circular plus (+) icon button inside the "Available tracks" widget
 that can also be used to access the "Add a track" form.
+
 :::
 
 <Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The orange plus (+) icon button in the bottom right the 'Available Tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
@@ -91,8 +94,8 @@ The following file formats are supported in core JBrowse 2:
 - 2bit
 - .hic (Hi-C contact matrix visualization)
 
-Additional data formats can be supported via plugins; checkout the [plugin
-store](/plugin_store).
+Additional data formats can be supported via plugins; checkout the
+[plugin store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
@@ -100,9 +103,11 @@ as filename+'.bai' for example, but if it is different than this, make sure to
 specify the index file explicitly.
 
 :::info Note
-If you are an administrator, you can add tracks with the [command
-line](/docs/tutorials/config_cli/#adding-a-track) or with the [admin
-server](/docs/tutorials/config_gui).
+
+If you are an administrator, you can add tracks with the
+[command line](/docs/tutorials/config_cli/#adding-a-track) or with the
+[admin server](/docs/tutorials/config_gui).
+
 :::
 
 ### Undo and redo
@@ -121,7 +126,9 @@ You **cannot** copy the URL in your address bar and send it to other users, you
 **must** use the "Share" button to share your session.
 
 :::info Note
+
 Sharing sessions is not available for JBrowse Desktop.
+
 :::
 
 <Figure caption="The session share dialog, which gives you a short URL to share your session with other users. It is important to use the URLs generated here, rather than copying and pasting your browser's URL to other users." src="/img/share_button.png" />
@@ -136,8 +143,8 @@ The session URL will contain the following:
   pileup
 - ...and more!
 
-This means you can share links with your custom tracks with other users,
-without being a JBrowse admin!
+This means you can share links with your custom tracks with other users, without
+being a JBrowse admin!
 
 ### Track menu
 
@@ -158,15 +165,17 @@ dialog.
 
 ### Editing track configs
 
-As a non-admin user, in order to edit a track config, you have to make a copy
-of the track. This will copy it to your "session tracks", which you can edit
+As a non-admin user, in order to edit a track config, you have to make a copy of
+the track. This will copy it to your "session tracks", which you can edit
 freely.
 
 <Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
 
 #### Rubberband selection
 
-The scale bars accept a click-and-drag action to select a region. Rubberband selection can be performed on both the main (lower) and overview (upper) scale bars.
+The scale bars accept a click-and-drag action to select a region. Rubberband
+selection can be performed on both the main (lower) and overview (upper) scale
+bars.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc.." src="/img/rubberband.png" />
 

@@ -4,15 +4,15 @@ title: FromConfig adapters
 toplevel: true
 ---
 
-There are two useful adapter types that can be used for more advanced use
-cases, such as generating configuration for data returned by an API. These are
-the `FromConfigAdapter` and `FromConfigSequenceAdapter`. They can be used as
-the `adapter` value for any track type.
+There are two useful adapter types that can be used for more advanced use cases,
+such as generating configuration for data returned by an API. These are the
+`FromConfigAdapter` and `FromConfigSequenceAdapter`. They can be used as the
+`adapter` value for any track type.
 
 #### FromConfigAdapter
 
-This adapter can be used to generate features directly from values stored in
-the configuration.
+This adapter can be used to generate features directly from values stored in the
+configuration.
 
 Example `FromConfigAdapter`:
 

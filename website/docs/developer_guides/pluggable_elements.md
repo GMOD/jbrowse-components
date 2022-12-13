@@ -18,20 +18,22 @@ the browser's `window` object specifically for JBrowse plugins. **This means it
 is only possible to have one version of a particular plugin loaded on any given
 webpage, even if multiple products are loaded and using it on the same page.**
 
-It's common for a plugin to use its `configure` method to set up [mobx autoruns
-or reactions](https://mobx.js.org/refguide/autorun.html) that react to changes
-in the application's state to modify its behavior.
+It's common for a plugin to use its `configure` method to set up
+[mobx autoruns or reactions](https://mobx.js.org/refguide/autorun.html) that
+react to changes in the application's state to modify its behavior.
 
-Plugins often also have their `install` method add "pluggable elements" into
-the host JBrowse application. This is how plugins can add new kinds of views,
+Plugins often also have their `install` method add "pluggable elements" into the
+host JBrowse application. This is how plugins can add new kinds of views,
 tracks, renderers, and so forth.
 
-:::info Note
-Many of the plugins referenced in the following section are found in [the
-JBrowse Github repo](https://github.com/gmod/jbrowse-components).
+:::info
+
+Many of the plugins referenced in the following section are found in
+[the JBrowse Github repo](https://github.com/gmod/jbrowse-components).
 
 We encourage you to reference and review the concepts presented here using the
 functional and up-to-date plugin code found there.
+
 :::
 
 ## Pluggable elements
@@ -66,8 +68,8 @@ Let's dive further into these details, and look at some examples.
 ### View types
 
 Creating view types is one of the most powerful features of JBrowse 2, because
-it allows us to put entirely different visualizations in the same context as
-the standard linear-genome-view.
+it allows us to put entirely different visualizations in the same context as the
+standard linear-genome-view.
 
 We have demonstrated a couple new view types in JBrowse 2 already, including:
 
@@ -84,14 +86,14 @@ be interplay between view types e.g. popup dotplot from a linear view, etc.
 ### Adapters
 
 Adapters are parsers for a given data format. We will review what adapters the
-alignments plugin has (to write your own adapter, see [creating
-adapters](../pluggable_elements/#creating-adapters)).
+alignments plugin has (to write your own adapter, see
+[creating adapters](../pluggable_elements/#creating-adapters)).
 
 Example adapters: the `@jbrowse/plugin-alignments` plugin creates multiple
 adapter types:
 
-- `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it
-  for use by the browser.
+- `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it for
+  use by the browser.
 - `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
   CramAdapter also takes a sequenceAdapter as a subadapter configuration, and
   uses getSubAdapter to instantiate it
@@ -105,8 +107,8 @@ like:
 - Control what widget pops up on feature click
 - Add extra menu items to the track menu
 - Create subtracks (See `AlignmentsTrack`)
-- Choose "static-blocks" rendering styles, which keeps contents stable while
-  the user scrolls, or "dynamic-blocks" that update on each scroll
+- Choose "static-blocks" rendering styles, which keeps contents stable while the
+  user scrolls, or "dynamic-blocks" that update on each scroll
 
 Example tracks: the `@jbrowse/plugin-alignments` exports multiple track types:
 
@@ -142,8 +144,8 @@ which has two display methods
 Renderers are a new concept in JBrowse 2, and are related to the concept of
 server side rendering (SSR), but can be used not just on the server but also in
 contexts like the web worker (e.g. the webworker can draw the features to an
-OffscreenCanvas). For more info see [creating
-renderers](../pluggable_elements/#creating-renderers).
+OffscreenCanvas). For more info see
+[creating renderers](../pluggable_elements/#creating-renderers).
 
 For example, the `@jbrowse/plugin-alignments` exports several renderer types:
 
@@ -153,13 +155,14 @@ For example, the `@jbrowse/plugin-alignments` exports several renderer types:
   renderer derives from the wiggle renderer, but does the additional step of
   drawing the mismatches over the coverage track
 
-:::info Views, tracks, displays, renderers?
-If you're confused about what kind of pluggable element you might need to
-accomplish your development goals, a way to remember the relationship between
-these four pluggable elements is as follows:
+:::info
 
-1. A view is a container for anything, views typically _have tracks_ (the
-   linear genome view especially)
+Views, tracks, displays, renderers? If you're confused about what kind of
+pluggable element you might need to accomplish your development goals, a way to
+remember the relationship between these four pluggable elements is as follows:
+
+1. A view is a container for anything, views typically _have tracks_ (the linear
+   genome view especially)
 2. A track controls the _what_ (kind of data, data adapters used) and _how_
    (displays, renderers) of the data you'd like to display, typically within a
    view
@@ -174,8 +177,8 @@ these four pluggable elements is as follows:
 
 ### Widgets
 
-Widgets are custom info panels that can show up in side panels, modals, or
-other places in an app.
+Widgets are custom info panels that can show up in side panels, modals, or other
+places in an app.
 
 Widgets can do multiple types of things, including:
 
@@ -217,18 +220,19 @@ Checkout the [docs here](/docs/developer_guides/creating_addtrack_workflow).
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
-Checkout the [full extension point API](/docs/developer_guides/extension_points) or
-an [example for adding context menu
-items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
+Checkout the [full extension point API](/docs/developer_guides/extension_points)
+or an
+[example for adding context menu items](/docs/developer_guides/pluggable_elements/#adding-track-context-menu-items)
 for more detailed information.
 
 ## Next steps
 
 Now that you have an overview of the different pluggable element types that are
-available to you, review your [understanding of the configuration
-model](../config_model).
+available to you, review your
+[understanding of the configuration model](../config_model).
 
-Also checkout the [guided
-tutorial](/docs/tutorials/simple_plugin_tutorial/01_introduction) for writing a
-plugin, which will take you through everything from installation, creating a
-new pluggable element, and general development tips for working with JBrowse 2.
+Also checkout the
+[guided tutorial](/docs/tutorials/simple_plugin_tutorial/01_introduction) for
+writing a plugin, which will take you through everything from installation,
+creating a new pluggable element, and general development tips for working with
+JBrowse 2.
