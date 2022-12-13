@@ -4,7 +4,9 @@ Static exports of JBrowse 2 rendering.
 
 ## Prerequisites
 
-You don't need to have JBrowse 2 installed to use this tool. The tool can generate images using files on your hard drive or from remote files. So, all you need to run this tool is
+You don't need to have JBrowse 2 installed to use this tool. The tool can
+generate images using files on your hard drive or from remote files. So, all you
+need to run this tool is
 
 - NodeJS v12+
 
@@ -16,24 +18,27 @@ More examples [EXAMPLES.md](EXAMPLES.md)
 
 ## Setup
 
-You can install the `@jbrowse/img` package from npm, which, if your node is configured in a typical configuration, will then have a command `jb2export` in your path
+You can install the `@jbrowse/img` package from npm, which, if your node is
+configured in a typical configuration, will then have a command `jb2export` in
+your path
 
 ```bash
 npm install -g @jbrowse/img
 ```
 
-If you are using npm version 7+ (released 2021) you may also need to add `--legacy-peer-deps`
+If you are using npm version 7+ (released 2021) you may also need to add
+`--legacy-peer-deps`
 
-If you are a developer and want to modify the code, see [developer
-guide](DEVELOPER.md) for details
+If you are a developer and want to modify the code, see
+[developer guide](DEVELOPER.md) for details
 
 ## Example usages
 
 ### Use with local files
 
 We can call this script on local files, and it doesn't require a web browser,
-not even a headless webbrowser, it just runs a node script and React SSR is
-used to create the SVG
+not even a headless webbrowser, it just runs a node script and React SSR is used
+to create the SVG
 
 ```bash
 ## generate an indexed fasta e.g. fai file
@@ -52,7 +57,8 @@ If `--out` is not specified it writes to out.svg
 ### Generate PNG instead of SVG
 
 Supply a file with the png extension to `--out`, uses rsvg-convert so you will
-need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
+need to install rsvg-convert to your system e.g. with
+`sudo apt install librsvg2-bin`
 
 ```bash
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.png
@@ -61,7 +67,8 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 ### Generate PDF instead of SVG
 
 Supply a file with the pdf extension to `--out`, uses rsvg-convert so you will
-need to install rsvg-convert to your system e.g. with `sudo apt install librsvg2-bin`
+need to install rsvg-convert to your system e.g. with
+`sudo apt install librsvg2-bin`
 
 ```bash
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
@@ -122,9 +129,9 @@ jb2export --fasta data/volvox/volvox.fa --configtracks refseq --loc ctgA:1-100
 
 ### Use with a jbrowse config.json (remote files in the config.json)
 
-A config.json can be specified, and then we just refer to trackIds in this
-file, and extra tracks can also be supplied that are outside of the config e.g.
-with --bam
+A config.json can be specified, and then we just refer to trackIds in this file,
+and extra tracks can also be supplied that are outside of the config e.g. with
+--bam
 
 ```bash
 jb2export --config data/config.json \
@@ -184,8 +191,8 @@ jb2export --loc all \
 
 ### Use with a jbrowse config.json (local files in the config.json)
 
-The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths
-by default, but you replace them with localPath like this
+The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths by
+default, but you replace them with localPath like this
 
 ```js
 
@@ -209,8 +216,8 @@ jb2export --config data/volvox/config.json \
   --loc ctgA:1-50,000
 ```
 
-The localPaths will be resolved relative to the file that is supplied so in
-this example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
+The localPaths will be resolved relative to the file that is supplied so in this
+example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
 "volvox.dup.vcf.gz" is used, and `--config data/volvox/config.json` is passed
 
 See data/volvox/config.json for a config that contains localPaths, or
@@ -337,13 +344,13 @@ convert -size 2048x out.svg out.png
 ### I don't get any outputted svg and no message
 
 The error reporting from the app is not very good at the moment so often has
-silent failures. Confirm that your fasta file to your pass to --fasta is
-indexed in this case e.g. `samtools faidx yourfile.fa` so that your have a
+silent failures. Confirm that your fasta file to your pass to --fasta is indexed
+in this case e.g. `samtools faidx yourfile.fa` so that your have a
 yourfile.fa.fai alongside yourfile.fa
 
 ### I get a lot of warnings during npm install -g @jbrowse/img
 
 There are some new features in the latest NPM (2021, v7) related to
 peerDependencies that may produce some warnings. It should work even despite
-making warnings, but you can use yarn to install or use legacy peer
-dependencies if you want to avoid install time warningsvg
+making warnings, but you can use yarn to install or use legacy peer dependencies
+if you want to avoid install time warningsvg

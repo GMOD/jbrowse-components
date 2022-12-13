@@ -34,7 +34,8 @@ and
  */
 ```
 
-it is not able to document a single variable, so in some places, a dummy function is put below the `#config/#stateModel` comments
+it is not able to document a single variable, so in some places, a dummy
+function is put below the `#config/#stateModel` comments
 
 ```
 function x(){}

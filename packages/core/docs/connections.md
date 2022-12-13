@@ -57,7 +57,8 @@ connection they are adding.
   editor to configure the connection when adding it via the GUI. However, a
   custom editor can be provided. It should be a react component that accepts a
   prop `model`. This can be used to set config items. For example, if you have a
-  config slot "name", you can set its value using `model.target.name.set('someNewName')`
+  config slot "name", you can set its value using
+  `model.target.name.set('someNewName')`
 
 ## State Model
 
