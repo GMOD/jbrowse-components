@@ -16,12 +16,17 @@ We build docusaurus and also create a PDF version with pandoc
 
 - We use markdown and not mdx for pandoc compatibility
 
-- We link to images with ../img/file.png in the markdown, which works on both the website and pdf
+- We link to images with ../img/file.png in the markdown, which works on both
+  the website and pdf
 
-- `docs/read_sidebar.js` parses sidebar.json and outputs markdown in order for the pandoc
+- `docs/read_sidebar.js` parses sidebar.json and outputs markdown in order for
+  the pandoc
 
-- `docs/parser.js` parses markdown files and checks their header e.g. the `---\ntitle: My title\ntoplevel: true\n---`. If it does have, as noted there, `toplevel: true` if they are going to be a top level of the table of contents, and if so
-  outputs a single hash `# ${title}`, otherwise it outputs a double hash `## ${title}`
+- `docs/parser.js` parses markdown files and checks their header e.g. the
+  `---\ntitle: My title\ntoplevel: true\n---`. If it does have, as noted there,
+  `toplevel: true` if they are going to be a top level of the table of contents,
+  and if so outputs a single hash `# ${title}`, otherwise it outputs a double
+  hash `## ${title}`
 
 ### Installation
 
@@ -53,4 +58,5 @@ Currently deploys to the jbrowse.org amazon s3 bucket
 
 ## Screenshots
 
-See [SCREENSHOTS.md](SCREENSHOTS.md) for info on how various screenshots are generated
+See [SCREENSHOTS.md](SCREENSHOTS.md) for info on how various screenshots are
+generated

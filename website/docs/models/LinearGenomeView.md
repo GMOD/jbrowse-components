@@ -5,8 +5,9 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Docs
 
@@ -348,8 +349,8 @@ boolean
 
 #### getter: cytobandOffset
 
-the cytoband is displayed to the right of the chromosome name,
-and that offset is calculated manually with this method
+the cytoband is displayed to the right of the chromosome name, and that offset
+is calculated manually with this method
 
 ```js
 // type
@@ -358,12 +359,11 @@ number
 
 #### getter: staticBlocks
 
-static blocks are an important concept jbrowse uses to avoid
-re-rendering when you scroll to the side. when you horizontally
-scroll to the right, old blocks to the left may be removed, and
-new blocks may be instantiated on the right. tracks may use the
-static blocks to render their data for the region represented by
-the block
+static blocks are an important concept jbrowse uses to avoid re-rendering when
+you scroll to the side. when you horizontally scroll to the right, old blocks to
+the left may be removed, and new blocks may be instantiated on the right. tracks
+may use the static blocks to render their data for the region represented by the
+block
 
 ```js
 // type
@@ -372,10 +372,9 @@ BlockSet
 
 #### getter: dynamicBlocks
 
-dynamic blocks represent the exact coordinates of the currently
-visible genome regions on the screen. they are similar to static
-blocks, but statcic blocks can go offscreen while dynamic blocks
-represent exactly what is on screen
+dynamic blocks represent the exact coordinates of the currently visible genome
+regions on the screen. they are similar to static blocks, but statcic blocks can
+go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
 // type
@@ -393,8 +392,7 @@ any
 
 #### getter: visibleLocStrings
 
-a single "combo-locstring" representing all the regions visible
-on the screen
+a single "combo-locstring" representing all the regions visible on the screen
 
 ```js
 // type
@@ -472,8 +470,8 @@ rewriteOnClicks: (trackType: string, viewMenuActions: MenuItem[]) => void
 
 #### method: getSelectedRegions
 
-Helper method for the fetchSequence.
-Retrieves the corresponding regions that were selected by the rubberband
+Helper method for the fetchSequence. Retrieves the corresponding regions that
+were selected by the rubberband
 
 ```js
 // type signature
@@ -516,8 +514,8 @@ bpToPx: ({
 
 #### method: centerAt
 
-scrolls the view to center on the given bp. if that is not in any
-of the displayed regions, does nothing
+scrolls the view to center on the given bp. if that is not in any of the
+displayed regions, does nothing
 
 ```js
 // type signature
@@ -806,8 +804,8 @@ setCoarseDynamicBlocks: (blocks: BlockSet) => void
 
 #### action: moveTo
 
-offset is the base-pair-offset in the displayed region, index is the index of the
-displayed region in the linear genome view
+offset is the base-pair-offset in the displayed region, index is the index of
+the displayed region in the linear genome view
 
 ```js
 // type signature
@@ -825,11 +823,10 @@ navToLocString: (locString: string, optAssemblyName?: string) => Promise<void>
 
 #### action: navTo
 
-Navigate to a location based on its refName and optionally start, end,
-and assemblyName. Can handle if there are multiple displayedRegions
-from same refName. Only navigates to a location if it is entirely
-within a displayedRegion. Navigates to the first matching location
-encountered.
+Navigate to a location based on its refName and optionally start, end, and
+assemblyName. Can handle if there are multiple displayedRegions from same
+refName. Only navigates to a location if it is entirely within a
+displayedRegion. Navigates to the first matching location encountered.
 
 Throws an error if navigation was unsuccessful
 

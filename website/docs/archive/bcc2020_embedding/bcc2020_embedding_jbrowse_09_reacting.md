@@ -4,8 +4,10 @@ title: Reacting to the view
 ---
 
 :::danger Out of date
+
 Please see the
 [updated version of this tutorial](/docs/tutorials/embed_linear_genome_view/01_introduction).
+
 :::
 
 You can not only control the view, you can react to it as well. By providing an

@@ -5,13 +5,15 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Docs
 
-note that many properties of the root model are available through the session, which
-may be preferable since using getSession() is better relied on than getRoot()
+note that many properties of the root model are available through the session,
+which may be preferable since using getSession() is better relied on than
+getRoot()
 
 ### JBrowseWebRootModel - Properties
 
@@ -37,8 +39,8 @@ configPath: types.maybe(types.string)
 
 #### property: session
 
-`session` encompasses the currently active state of the app, including
-views open, tracks open in those views, etc.
+`session` encompasses the currently active state of the app, including views
+open, tracks open in those views, etc.
 
 ```js
 // type signature

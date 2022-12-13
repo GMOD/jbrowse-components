@@ -5,8 +5,9 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
 ## Docs
 
@@ -255,8 +256,8 @@ any
 
 #### getter: elidedRegions
 
-this is displayedRegions, post-processed to
-elide regions that are too small to see reasonably
+this is displayedRegions, post-processed to elide regions that are too small to
+see reasonably
 
 ```js
 // type

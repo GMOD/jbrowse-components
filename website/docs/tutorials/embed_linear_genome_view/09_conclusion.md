@@ -14,8 +14,7 @@ experiment and explore. Some things to try might be:
   things like customize the colors of features in your tracks
 
 Let us know how things go. We'd love to hear your feedback or help you in any
-way we can. Our contact information can be found
-[here](/contact).
+way we can. Our contact information can be found [here](/contact).
 
 Happy hacking!
 

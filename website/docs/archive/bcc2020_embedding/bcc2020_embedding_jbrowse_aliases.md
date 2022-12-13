@@ -4,8 +4,10 @@ title: GRCh38 Reference Name Aliases
 ---
 
 :::danger Out of date
+
 Please see the
 [updated version of this tutorial](/docs/tutorials/embed_linear_genome_view/01_introduction).
+
 :::
 
 This should be the content of your "GRCh38.aliases.txt" file.

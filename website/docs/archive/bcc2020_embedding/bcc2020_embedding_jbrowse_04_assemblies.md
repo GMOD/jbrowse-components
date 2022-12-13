@@ -3,9 +3,11 @@ id: bcc2020_embedding_jbrowse_04_assemblies
 title: About assemblies
 ---
 
-:::danger Out of date
-Please see the
+:::danger
+
+Out of date Please see the
 [updated version of this tutorial](/docs/tutorials/embed_linear_genome_view/01_introduction)
+
 :::
 
 ## What is an assembly?
@@ -24,16 +26,16 @@ These are the options you can specify for an assembly:
 - **Aliases** - Potential aliases for your assembly, such as "hg38" being an
   alias for "GRCh38".
 - **Reference Sequence** - The file that has the genome sequence for your
-  organism. JBrowse natively supports indexed FASTA (compressed or not), 2BIT, and
-  chrom.sizes sequence files.
+  organism. JBrowse natively supports indexed FASTA (compressed or not), 2BIT,
+  and chrom.sizes sequence files.
 - **Reference Sequence Name Aliases** - You can define aliases for the names in
   your reference sequence file, so if for example your reference sequence uses
-  "chr1", you can add an alias for it so that data file that use "1" instead will
-  still display correctly.
+  "chr1", you can add an alias for it so that data file that use "1" instead
+  will still display correctly.
 - **Colors** - You can define a list of colors that will be used to color the
   reference sequences. If you supply fewer colors than reference sequences,
-  JBrowse will cycle through them. By default JBrowse will use its built-in color
-  scheme of 26 colors based on the UCSC Genome Browser color scheme.
+  JBrowse will cycle through them. By default JBrowse will use its built-in
+  color scheme of 26 colors based on the UCSC Genome Browser color scheme.
 
 ## Adding an assembly
 
@@ -63,15 +65,16 @@ something like this:
 
 ![The output of `jbrowse --help` in a terminal](../../../img/bcc2020_jbrowse_help.png)
 
-:::note If you're not using the VM
-You may already have `yarn` or `npm` set up to do global installations, so you
-might be able to skip the part about adding the `yarn global bin` location to
-your `PATH`.
+:::note
+
+If you're not using the VM You may already have `yarn` or `npm` set up to do
+global installations, so you might be able to skip the part about adding the
+`yarn global bin` location to your `PATH`.
 
 If you don't want to install the CLI and you have NPM installed, you can also do
 all of the things we will do in this tutorial by replacing `jbrowse` in any
-commands with `npx @jbrowse/cli`. For example, to get the help output you
-would run
+commands with `npx @jbrowse/cli`. For example, to get the help output you would
+run
 
 ```sh
 npx @jbrowse/cli --help

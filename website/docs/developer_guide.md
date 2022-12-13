@@ -43,8 +43,8 @@ https://github.com/GMOD/jbrowse-plugin-template.
 Here are some examples of working plugins:
 
 - [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api)
-  probably the simplest plugin example, it demonstrates accessing data from
-  UCSC REST API
+  probably the simplest plugin example, it demonstrates accessing data from UCSC
+  REST API
 - [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) a
   custom plugin to display manhattan plot GWAS data
 - [jbrowse-plugin-biothings-api](https://github.com/cmdcolin/jbrowse-plugin-biothings-api)
@@ -54,8 +54,8 @@ Here are some examples of working plugins:
   demonstrates creating a custom view type that doesn't use any conventional
   tracks
 - [jbrowse-plugin-gdc](https://github.com/GMOD/jbrowse-plugin-gdc) demonstrates
-  accessing GDC cancer data GraphQL API, plus a custom drawer and track type
-  for coloring variants by impact score
+  accessing GDC cancer data GraphQL API, plus a custom drawer and track type for
+  coloring variants by impact score
 - [jbrowse-plugin-systeminformation](https://github.com/garrettjstevens/jbrowse-plugin-systeminformation)
   demonstrates using desktop specific functionality, accessing system node
   libraries. This desktop specific functionality should use the CJS bundle type

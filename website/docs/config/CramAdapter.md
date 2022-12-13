@@ -4,8 +4,8 @@ title: CramAdapter
 toplevel: true
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
@@ -50,8 +50,8 @@ craiLocation: {
 
 #### slot: sequenceAdapter
 
-generally refers to the reference genome assembly's sequence adapter
-currently needs to be manually added
+generally refers to the reference genome assembly's sequence adapter currently
+needs to be manually added
 
 ```js
 sequenceAdapter: {

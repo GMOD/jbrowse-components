@@ -11,9 +11,9 @@ The view types available by default with JBrowse 2 web include
   translocations. The VCF breakend `<BND>` and `<TRA>` type features can be
   rendered as arcs across the view
 
-- Breakpoint split view - Our breakpoint split view shows the connection
-  between long split alignments or paired end reads across multiple chromosomes
-  using stacked linear genome views
+- Breakpoint split view - Our breakpoint split view shows the connection between
+  long split alignments or paired end reads across multiple chromosomes using
+  stacked linear genome views
 
 - Dotplot view - Zoomable comparison of whole genome alignments or synteny
   datasets
@@ -21,8 +21,8 @@ The view types available by default with JBrowse 2 web include
 - Linear synteny view - Another option for exploration of syntenic alignments
   using stacked linear genome views
 
-- Tabular view - Open formats like BED, VCF, CSV, TSV, or even bespoke
-  formats like STAR-fusion in the tabular view
+- Tabular view - Open formats like BED, VCF, CSV, TSV, or even bespoke formats
+  like STAR-fusion in the tabular view
 
 ## Feature comparison
 
@@ -46,9 +46,11 @@ The view types available by default with JBrowse 2 web include
 | Ability to search by gene name/ID (added in 1.4.0)                        | :heavy_check_mark:      | :heavy_check_mark: |
 | URL query API e.g. specifying ?loc=chr1:1-100 in URL bar (added in 1.6.4) | :heavy_check_mark:      | :heavy_check_mark: |
 
-[^1] If using with JBrowse 2 web, requires that trackhub server be configured to allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+[^1] If using with JBrowse 2 web, requires that trackhub server be configured to
+allow [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 
-[^2] See [`@jbrowse/react-linear-genome-view` on npm](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
+[^2] See
+[`@jbrowse/react-linear-genome-view` on npm](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 
 ## Supported data formats
 
@@ -72,18 +74,23 @@ available for additional data formats.
 
 ## Integration and embedding
 
-The JBrowse 2 platform and plugins are designed from the ground up to be
-modular and reusable. For example, individual JBrowse 2 views (e.g. linear,
-circular, tabular, etc) can be packaged to be embeddable in other web
-applications (as demonstrated by the
+The JBrowse 2 platform and plugins are designed from the ground up to be modular
+and reusable. For example, individual JBrowse 2 views (e.g. linear, circular,
+tabular, etc) can be packaged to be embeddable in other web applications (as
+demonstrated by the
 [@jbrowse/react-linear-genome-view](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
 package).
 
-See the full list of our embedded components [here](https://jbrowse.org/jb2/docs/embedded_components/).
+See the full list of our embedded components
+[here](https://jbrowse.org/jb2/docs/embedded_components/).
 
 ### Embedded views versus full JBrowse app
 
-Embedded views are intended to facilitate genome browsing within the context of an existing webpage, however if it makes sense for a given use case, one might decide to run an instance of JBrowse on one's hosting website instead. Detailed below are the core differences between embedded components and the full JBrowse app:
+Embedded views are intended to facilitate genome browsing within the context of
+an existing webpage, however if it makes sense for a given use case, one might
+decide to run an instance of JBrowse on one's hosting website instead. Detailed
+below are the core differences between embedded components and the full JBrowse
+app:
 
 | Embedded components [^3]                                | JBrowse Web                                                                            |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -97,8 +104,13 @@ Embedded views are intended to facilitate genome browsing within the context of 
 
 - enable/disable tracks through the Track interface
 - change the track's assembly based on what is available in the configuration
-- manipulate the views with zoom, horizontal flip, view all regions, track label positioning, etc.
+- manipulate the views with zoom, horizontal flip, view all regions, track label
+  positioning, etc.
 - change track display options
 - export the view as an SVG
 
-[^3] Note that though the embedded components lack certain functionality, they are designed for web developers to build a custom system around, so though some of these options are not available by default, the ability to design mechanics such as sessions and custom track manipulation is present for a developer seeking to do these things.
+[^3] Note that though the embedded components lack certain functionality, they
+are designed for web developers to build a custom system around, so though some
+of these options are not available by default, the ability to design mechanics
+such as sessions and custom track manipulation is present for a developer
+seeking to do these things.

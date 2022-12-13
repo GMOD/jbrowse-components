@@ -24,8 +24,7 @@ This tutorial requires having the following software installed
 
 - [JBrowse CLI](/docs/quickstart_web/#installing-the-cli-tools)
 
-- [JBrowse 2 web
-  application](/docs/quickstart_web/#using-jbrowse-create-to-download-jbrowse-2)
+- [JBrowse 2 web application](/docs/quickstart_web/#using-jbrowse-create-to-download-jbrowse-2)
 
 ## Starting JBrowse 2 admin server
 
@@ -33,13 +32,15 @@ The JBrowse CLI contains a tool called `admin-server`. This will act as a web
 server for JBrowse 2 and will write any changes made in JBrowse 2 to a config
 file.
 
-:::warning Note
-The `admin-server` is meant to be used temporarily for configuration, **not in
-production.**
+:::warning
+
+Note The `admin-server` is meant to be used temporarily for configuration, **not
+in production.**
+
 :::
 
-The `admin-server` launches an instance of JBrowse 2 in "admin mode", which
-then lets you:
+The `admin-server` launches an instance of JBrowse 2 in "admin mode", which then
+lets you:
 
 - Add and edit assemblies with the "Assembly manager"
 - Add tracks and edit tracks
@@ -86,8 +87,8 @@ form:
 
 <Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
 
-Click on "Create New Assembly". Great, we've added an assembly!
-We can see that we have successfully added the hg38 assembly:
+Click on "Create New Assembly". Great, we've added an assembly! We can see that
+we have successfully added the hg38 assembly:
 
 <Figure caption="The assembly manager dialog box with human assemblies available" src="/img/add_hg38_assembly.png"/>
 
@@ -131,8 +132,8 @@ The following file formats are supported in core JBrowse 2:
 - 2bit
 - .hic (Hi-C contact matrix visualization)
 
-Additional data formats can be supported via plugins; checkout the [plugin
-store](/plugin_store).
+Additional data formats can be supported via plugins; checkout the
+[plugin store](/plugin_store).
 
 For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
 Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
@@ -141,28 +142,29 @@ index file explicitly.
 
 ### Editing a track
 
-First, open a Linear Genome View using the navigation bar (`File > Add > Linear Genome View`), and click on the "Select Tracks" button.
+First, open a Linear Genome View using the navigation bar
+(`File > Add > Linear Genome View`), and click on the "Select Tracks" button.
 
 The configuration settings are accessible by clicking on the ellipses by each
 track.
 
 <Figure caption="The configuration editor, which will persist settings to the config file if editing using the admin-server." src="/img/admin_settings_access.png"/>
 
-Open the configuration editor for the track by clicking on the "Settings"
-button shown above. You can use the configuration editor to live-edit any
-configurable value for a given track.
+Open the configuration editor for the track by clicking on the "Settings" button
+shown above. You can use the configuration editor to live-edit any configurable
+value for a given track.
 
 ## Setting a default session
 
-It is also possible to use the graphical admin server to set the default
-session of your JBrowse 2 instance. This is the session that will appear when
-JBrowse 2 is first visited. To do so, open the form to set the default session
+It is also possible to use the graphical admin server to set the default session
+of your JBrowse 2 instance. This is the session that will appear when JBrowse 2
+is first visited. To do so, open the form to set the default session
 (`Admin > Set default session`):
 
 <Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
 
-You can use the form to clear your default session,
-select the currently open session, or any of your previously saved sessions.
+You can use the form to clear your default session, select the currently open
+session, or any of your previously saved sessions.
 
 ## Additional resources
 
@@ -171,11 +173,11 @@ to refer to the [config guide](/docs/config_guide) for more topics.
 
 ## Conclusion
 
-This guide showed how to launch the `admin-server` in the JBrowse CLI to
-perform graphical configuration of your application. Specifically, we looked at
-how to access and use the assembly manager, as well as how to access the
-configuration editor for tracks. Importantly, all tracks have different
-configuration options available in the configuration editor.
+This guide showed how to launch the `admin-server` in the JBrowse CLI to perform
+graphical configuration of your application. Specifically, we looked at how to
+access and use the assembly manager, as well as how to access the configuration
+editor for tracks. Importantly, all tracks have different configuration options
+available in the configuration editor.
 
 Make sure to take a look at any tracks you add to JBrowse 2 that you might want
 to further configure!

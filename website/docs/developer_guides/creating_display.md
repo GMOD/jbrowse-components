@@ -5,9 +5,9 @@ title: Creating a custom display type
 
 Display types tell JBrowse how to "display" a given track in a particular view.
 A track might "display" itself completely different depending on whether it is
-in a dotplot or in a linear genome view. The "display" types may not actually
-do the drawing of the track data: that is often done by the renderer. The
-display will call the renderer though.
+in a dotplot or in a linear genome view. The "display" types may not actually do
+the drawing of the track data: that is often done by the renderer. The display
+will call the renderer though.
 
 Here are some reasons you might want a custom display type:
 

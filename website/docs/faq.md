@@ -37,7 +37,8 @@ on desktop.
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
 use `yarn storybook` instead of `yarn start`.
 
-For a more extensive tutorial, see [Developing with JBrowse web and desktop](../tutorials/develop_web_and_desktop_tutorial).
+For a more extensive tutorial, see
+[Developing with JBrowse web and desktop](../tutorials/develop_web_and_desktop_tutorial).
 
 ## General
 
@@ -68,21 +69,20 @@ If you use a different platform such as Django, you may want to put it in the
 static resources folder.
 
 Note that the server that you use should support byte-range requests (e.g. the
-[Range HTTP
-header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range) so
-that JBrowse can get small slices of large binary data files.
+[Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range)
+so that JBrowse can get small slices of large binary data files.
 
 ### BAM files do not work on my server
 
 If you are using Apache then you will probably want to disable mime_magic. If
 mime_magic is enabled, you may see that your server responds with the HTTP
 header Content-Encoding: gzip which JBrowse does NOT want, because this
-instructs the browser to unzip the data but JBrowse should be in charge of
-this.
+instructs the browser to unzip the data but JBrowse should be in charge of this.
 
 ### How can I setup JBrowse 2 on my web server
 
-We recommend following the steps in the [quickstart web via CLI](../quickstart_web/) guide.
+We recommend following the steps in the
+[quickstart web via CLI](../quickstart_web/) guide.
 
 The general procedure is using the `jbrowse create /var/www/html/jb2` and this
 will download the latest version of jbrowse to your web folder e.g. in
@@ -105,12 +105,11 @@ config.json, it is **not used to run any server-side code**.
 
 ### How can I make a header on a jbrowse-web instance
 
-You can edit the index.html that comes with jbrowse-web to have custom
-contents. The jbrowse-web app just looks at the div that it renders into, but
-any contents outside of that you can edit for custom purposes. If you need more
-advanced embedding, you can consider @jbrowse/react-linear-genome-view or
-similar, but the jbrowse-web app is not available as an npm installable package
-yet.
+You can edit the index.html that comes with jbrowse-web to have custom contents.
+The jbrowse-web app just looks at the div that it renders into, but any contents
+outside of that you can edit for custom purposes. If you need more advanced
+embedding, you can consider @jbrowse/react-linear-genome-view or similar, but
+the jbrowse-web app is not available as an npm installable package yet.
 
 ### How do I update my instance of jbrowse-web
 
@@ -123,7 +122,8 @@ jbrowse upgrade /path/to/your/jbrowse2
 This will download the latest release from github and overwrite it onto your
 jbrowse-web instance.
 
-If you've manually downloaded jbrowse-web, the newest releases can be found [here](https://github.com/GMOD/jbrowse-components/releases).
+If you've manually downloaded jbrowse-web, the newest releases can be found
+[here](https://github.com/GMOD/jbrowse-components/releases).
 
 ### How can I setup JBrowse 2 without the CLI tools
 
@@ -132,9 +132,10 @@ required.
 
 Simple tasks can be done without it.
 
-For example, for jbrowse create, you can visit the [releases
-page](https://github.com/GMOD/jbrowse-components/releases) and download the
-latest jbrowse-web release tag, and unzip it into your web directory.
+For example, for jbrowse create, you can visit the
+[releases page](https://github.com/GMOD/jbrowse-components/releases) and
+download the latest jbrowse-web release tag, and unzip it into your web
+directory.
 
 Checkout our [quickstart web](../quickstart_web/) guide for a speedy start to
 using a manually downloaded JBrowse instance.
@@ -230,8 +231,8 @@ jbrowse add-track somevariants.vcf --load copy --config '{"displays": [{"display
 
 While adding the track to the `config.json`, you're adding additional
 configurations using the --config option. This additional configuration is a
-"renderer" on the display that your track will be using. In this case, this
-.vcf will be using the `LinearBasicDisplay`.
+"renderer" on the display that your track will be using. In this case, this .vcf
+will be using the `LinearBasicDisplay`.
 
 ## Curiosities
 
@@ -246,8 +247,8 @@ where it knows which genome assembly you are working with at any given time.
 
 In JBrowse 1, the app level menu operated on the single linear genome view, but
 with JBrowse 2, the top level menu only performs global operations and the
-linear genome view has its own hamburger menu. Note that each track also has
-its own track level menu.
+linear genome view has its own hamburger menu. Note that each track also has its
+own track level menu.
 
 ### Why do some of my reads not display soft clipping
 
@@ -258,7 +259,8 @@ The soft clipping indicators on these reads will appear black.
 
 ### Do you have any tips for learning React and mobx-state-tree
 
-Here is a short guide to React and mobx-state-tree that could help get you oriented:
+Here is a short guide to React and mobx-state-tree that could help get you
+oriented:
 
 https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f
 
@@ -276,31 +278,33 @@ We build on a lot of great open source technology, some main ones include:
 
 Yes! JBrowse 2 may load ~5MB of JS resources (2.5MB for main thread bundle,
 2.5MB for worker bundle). If you have gzip enabled, the amount of data the user
-has to download though is only 1.4MB. We have worked on making bundle size
-small with lazy loading and other methods but adding gzip will help your users.
+has to download though is only 1.4MB. We have worked on making bundle size small
+with lazy loading and other methods but adding gzip will help your users.
 
 It will depend on your particular server setup e.g. apache, nginx, cloudfront,
 etc. how this may be done, but it is recommended to look into this.
 
 ### How does JBrowse know when to display the "Zoom in to see more features" message
 
-The rules that JBrowse uses to determine when to display the "Zoom in to see more features" message are called stats estimation rules
+The rules that JBrowse uses to determine when to display the "Zoom in to see
+more features" message are called stats estimation rules
 
 The general outline is:
 
 - It doesn't display a zoom in message if zoomed in closer than 20kb
 - It performs byte size estimation for BAM and CRAM type files (you will see a
-  byte size estimation displayed alongside the "Zoom in to see features"
-  message
-- Other data types that don't use byte size estimation use feature density
-  based calculation
-- Hi-C, BigWig, and sequence adapters are hardcoded to return `{ featureDensity:0 }` to always render
+  byte size estimation displayed alongside the "Zoom in to see features" message
+- Other data types that don't use byte size estimation use feature density based
+  calculation
+- Hi-C, BigWig, and sequence adapters are hardcoded to return
+  `{ featureDensity:0 }` to always render
 
 If you need to customize your particular track, you can set config variables on
 the "display" section of your config
 
 - `maxFeatureScreenDensity` - number of features times bpPerPx
-- `fetchSizeLimit` - this config variable exists on the adapters (can increase size limit)
+- `fetchSizeLimit` - this config variable exists on the adapters (can increase
+  size limit)
 
 Example config with a small feature screen density:
 
@@ -371,9 +375,9 @@ alternative temporary directory using the environment variable
 
 The `jbrowse text-index` command creates text searching indexes using trix. The
 trix indexes are based on the format described by UCSC here
-https://genome.ucsc.edu/goldenPath/help/trix.html, but we re-implemented the code
-the create these index formats in the JBrowse CLI so you do not have to install
-the UCSC tools.
+https://genome.ucsc.edu/goldenPath/help/trix.html, but we re-implemented the
+code the create these index formats in the JBrowse CLI so you do not have to
+install the UCSC tools.
 
 The main idea is that you give trix:
 
@@ -391,31 +395,31 @@ Pax6  GENE002
 Wnt  GENE001
 ```
 
-Then a second file, the .ixx file, tells us at what byte offset certain lines
-in the file are e.g.:
+Then a second file, the .ixx file, tells us at what byte offset certain lines in
+the file are e.g.:
 
 ```
 signa000000435
 ```
 
 Note that JBrowse creates a specialized trix index also. Instead of creating a
-ix file with just the gene names, it also provides their name and location in
-an encoded format.
+ix file with just the gene names, it also provides their name and location in an
+encoded format.
 
 ## URL params
 
 ### Why can't I copy and paste my URL bar to share it with another user
 
-In JBrowse Web, the current session can become too long to store in the URL
-bar, so instead, we store it in localStorage and only keep the key to the
+In JBrowse Web, the current session can become too long to store in the URL bar,
+so instead, we store it in localStorage and only keep the key to the
 localStorage entry in the URL var. This is because otherwise URLs can get
-prohibitively long, and break server side navigations, intermediate caches,
-etc. Therefore, we make "sharing a session" a manual step that generates a
-shortened URL by default.
+prohibitively long, and break server side navigations, intermediate caches, etc.
+Therefore, we make "sharing a session" a manual step that generates a shortened
+URL by default.
 
-Note 1: users of @jbrowse/react-linear-genome-view have to re-implement any
-URL query param logic themselves, as this component makes no attempt to access
-URL query params.
+Note 1: users of @jbrowse/react-linear-genome-view have to re-implement any URL
+query param logic themselves, as this component makes no attempt to access URL
+query params.
 
 Note 2: You can copy and paste your URL bar and put it in another tab on your
 own computer, and JBrowse will restore the session using BroadcastChannel
@@ -433,9 +437,9 @@ This process, generates a URL with the format:
 
 &session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
 
-The DECODEKEY is never transmitted to the server, but you can copy and paste
-the share URL, the person you shared automatically downloads the DynamoDB
-entry, and decodes it with the DECODEKEY from the URL that you provide
+The DECODEKEY is never transmitted to the server, but you can copy and paste the
+share URL, the person you shared automatically downloads the DynamoDB entry, and
+decodes it with the DECODEKEY from the URL that you provide
 
 With this system, the contents of the dynamoDB are safe and unable to be read,
 even by JBrowse administrators.

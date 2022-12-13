@@ -6,8 +6,8 @@ toplevel: true
 
 import Figure from '../figure'
 
-The following tutorial will demonstrate making a desktop-specific JBrowse
-plugin to run external tools such as bcftools and tabix on a VCF file.
+The following tutorial will demonstrate making a desktop-specific JBrowse plugin
+to run external tools such as bcftools and tabix on a VCF file.
 
 ## Prerequisites
 
@@ -38,20 +38,22 @@ run CLI operations, or otherwise run machine-specific tools through JBrowse.
 
 In this tutorial, we are going to write a plugin that performs some of the file
 preparation steps outlined in the [CLI tutorial](../config_cli). Specifically,
-our plugin will provide users with an interface to submit their file, the
-simple script will accept the file, then the script will run the appropriate
-operations against it, and then it will provide JBrowse with the files in an
-acceptable format. This kind of workflow can only be done on JBrowse desktop.
+our plugin will provide users with an interface to submit their file, the simple
+script will accept the file, then the script will run the appropriate operations
+against it, and then it will provide JBrowse with the files in an acceptable
+format. This kind of workflow can only be done on JBrowse desktop.
 
 A completed version of this plugin can be found
 [here](https://github.com/carolinebridge-oicr/jbrowse-plugin-desktop-tools) if
 you get stuck following along.
 
-:::info Note
-Presently there is no formal procedure to differentiate desktop-specific
-plugins from universal plugins. Please include this information in the README
-of your repository if making a public-facing plugin, and follow the outlined
-steps for restricting plugin behaviour to desktop only.
+:::info
+
+Presently there is no formal procedure to differentiate desktop-specific plugins
+from universal plugins. Please include this information in the README of your
+repository if making a public-facing plugin, and follow the outlined steps for
+restricting plugin behaviour to desktop only.
+
 :::
 
 ### Setup
@@ -84,8 +86,8 @@ your plugin** in the first field.
 
 :::note Tip
 
-A typical naming convention for JBrowse plugins is **"jbrowse-plugin-"**, or,
-if you are going to publish to an NPM organization, we advise
+A typical naming convention for JBrowse plugins is **"jbrowse-plugin-"**, or, if
+you are going to publish to an NPM organization, we advise
 **"@myscope/jbrowse-plugin-"**.
 
 :::
@@ -168,21 +170,21 @@ It should look something like this:
 ```
 
 Ensure you change the assembly to one that coordinates with your own files, or
-use our [testing
-file](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz) (unzip
-it to get the raw vcf) with the configuration as shown above. You can download
-the [volvox sample
-assembly](https://github.com/carolinebridge-oicr/jbrowse-plugin-desktop-tools/blob/main/volvox.2bit)
+use our
+[testing file](https://jbrowse.org.s3.amazonaws.com/genomes/volvox/volvox.vcf.gz)
+(unzip it to get the raw vcf) with the configuration as shown above. You can
+download the
+[volvox sample assembly](https://github.com/carolinebridge-oicr/jbrowse-plugin-desktop-tools/blob/main/volvox.2bit)
 and place it in your root directory of your plugin running at localhost:9000.
 
 Place your myconfig.jbrowse file somewhere convenient; we'll open it later.
 
 #### Run JBrowse Desktop
 
-Follow the [developing with JBrowse web and desktop
-tutorial](../develop_web_and_desktop_tutorial) to create a running instance of
-JBrowse 2 desktop. The tutorial will also have you run your template plugin on
-the app to test.
+Follow the
+[developing with JBrowse web and desktop tutorial](../develop_web_and_desktop_tutorial)
+to create a running instance of JBrowse 2 desktop. The tutorial will also have
+you run your template plugin on the app to test.
 
 ### Running CLI operations through JBrowse desktop
 
@@ -190,8 +192,9 @@ the app to test.
 
 We'll need some way to accept the file from the user through the JBrowse UI.
 Adding a new widget here is the same as doing it for a typical JBrowse plugin
-(see the [simple JBrowse 2 plugin
-guide](../simple_plugin_tutorial/01_introduction) if you haven't already).
+(see the
+[simple JBrowse 2 plugin guide](../simple_plugin_tutorial/01_introduction) if
+you haven't already).
 
 1. Create a basic component and add it through the plugin manager
 
@@ -267,19 +270,21 @@ export default class DesktopToolsPlugin extends Plugin {
 ```
 
 It is critical to include the `isElectron` check before installing your plugin.
-This method verifies that the process running the application is an electron
-app (i.e. desktop), and our plugin will (eventually) crash JBrowse if it is
-attempted to be run on web. By using this method where necessary, we ensure
-that if an individual runs JBrowse with a config file that includes this plugin
-on JBrowse web, the application will simply not install the plugin.
+This method verifies that the process running the application is an electron app
+(i.e. desktop), and our plugin will (eventually) crash JBrowse if it is
+attempted to be run on web. By using this method where necessary, we ensure that
+if an individual runs JBrowse with a config file that includes this plugin on
+JBrowse web, the application will simply not install the plugin.
 
 Try running your plugin as-is now:
 
 `yarn start` your plugin, then, in your running instance of JBrowse desktop,
 navigate: `Open > select your myconfig.jbrowse file`.
 
-If you navigate `Add > Linear genome view > Open > Open track selector > + icon button > Add track` you should see your simple message display after selecting
-the "Raw variant track" option in the dropdown.
+If you navigate
+`Add > Linear genome view > Open > Open track selector > + icon button > Add track`
+you should see your simple message display after selecting the "Raw variant
+track" option in the dropdown.
 
 We'll add some more UI elements that allow us to do something more interesting:
 
@@ -431,7 +436,8 @@ operations.
 
 #### Setting up the script
 
-To run a simple script, we're going to import the 'child_process' module from node:
+To run a simple script, we're going to import the 'child_process' module from
+node:
 
 **./src/MyToolWidget/MyToolWidget.tsx**
 
@@ -481,15 +487,15 @@ onClick={() => {
 // ...
 ```
 
-You can see how easy the execute function is to use now. Where we currently
-have "echo ${localPath}" is where we're going to write our CLI commands.
+You can see how easy the execute function is to use now. Where we currently have
+"echo ${localPath}" is where we're going to write our CLI commands.
 
 If relevant when writing your own plugin, you can put any string of valid CLI
 commands here and your child process will execute them to the best of its
 ability.
 
-Try refreshing your desktop instance and get the script to echo the localpath
-of your selected file.
+Try refreshing your desktop instance and get the script to echo the localpath of
+your selected file.
 
 #### Adding functionality to the script
 
@@ -572,8 +578,8 @@ yarn develop # in another terminal tab in the same `~/jbrowse-components/product
 yarn start # in another terminal tab in your plugin `~/jbrowse-plugin-my-plugin/` directory, or similar
 ```
 
-Then open your `.jbrowse` configuration file containing your plugin details,
-and navigate to the Add track workflow.
+Then open your `.jbrowse` configuration file containing your plugin details, and
+navigate to the Add track workflow.
 
 Try using our volvox raw vcf file and volvox assembly for testing if you do not
 have your own data.
@@ -584,12 +590,12 @@ Your final product should look something like the following:
 
 ## Distributing the plugin
 
-Distributing a desktop plugin is very similar to the [publishing steps outlined
-in the simple plugin tutorial](../simple_plugin_tutorial/04_publishing).
+Distributing a desktop plugin is very similar to the
+[publishing steps outlined in the simple plugin tutorial](../simple_plugin_tutorial/04_publishing).
 
-As stated before, we encourage you to clearly indicate when a plugin is
-intended for desktop use only, as desktop-only operations are likely to crash
-when used on a web application.
+As stated before, we encourage you to clearly indicate when a plugin is intended
+for desktop use only, as desktop-only operations are likely to crash when used
+on a web application.
 
 ## Next steps
 
@@ -600,9 +606,9 @@ JBrowse 2.
 It should be reiterated that the functionality outlined in this tutorial is a
 simple example to get you started with working on more complicated workflows
 with more tools -- virtually anything you might do with a script or on the
-command line can be integrated into the JBrowse UI to streamline a workflow,
-for example, creating BigWig files from BAM/CRAM files with mosdepth, gunzip,
-and bedGraphToBigWig tools.
+command line can be integrated into the JBrowse UI to streamline a workflow, for
+example, creating BigWig files from BAM/CRAM files with mosdepth, gunzip, and
+bedGraphToBigWig tools.
 
 If you'd like some general development information, checkout the series of
 [developer guides](/docs/developer_guide) available.

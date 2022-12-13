@@ -167,15 +167,15 @@ The feature in the callback is a "SimpleFeature" type object, and you can call
 `feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
 `feature.get('other_attribute')` for e.g. maybe a field in a GFF3 column 9
 
-Footnote 0. See [our no-build plugin
-tutorial](/docs/tutorials/no_build_plugin_tutorial/) for more info on setting
-up a simple plugin for doing these customizations.
+Footnote 0. See
+[our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/) for
+more info on setting up a simple plugin for doing these customizations.
 
-Footnote 1. `myplugin.js` does not have to use the jbrowse-plugin-template if
-it is small and self contained like this, and does not import other modules. if
-you import other modules from your plugin, then it can be worth it to use the
+Footnote 1. `myplugin.js` does not have to use the jbrowse-plugin-template if it
+is small and self contained like this, and does not import other modules. if you
+import other modules from your plugin, then it can be worth it to use the
 jbrowse-plugin-template.
 
-Footnote 2. if you are using embedded, there are also other methods of
-including plugins, see
+Footnote 2. if you are using embedded, there are also other methods of including
+plugins, see
 https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page
