@@ -1,39 +1,37 @@
+import React from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import ReactPropTypes from 'prop-types'
-import React from 'react'
-import { makeTicks } from '../util'
 import { getTickDisplayStr } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()((/* theme */) => ({
+// locals
+import { makeTicks } from '../util'
+
+const useStyles = makeStyles()({
   majorTickLabel: {
     fontSize: '11px',
-    // fill: theme.palette.text.primary,
   },
   majorTick: {
     stroke: '#555',
-    // stroke: theme.palette.text.secondary,
   },
   minorTick: {
     stroke: '#999',
-    // stroke: theme.palette.text.hint,
   },
-}))
+})
 
 function Ruler({
   start,
   end,
   bpPerPx,
-  reversed,
-  major,
-  minor,
+  reversed = false,
+  major = true,
+  minor = true,
 }: {
   start: number
   end: number
   bpPerPx: number
   reversed?: boolean
-  major: boolean
-  minor: boolean
+  major?: boolean
+  minor?: boolean
 }) {
   const { classes } = useStyles()
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
@@ -75,21 +73,6 @@ function Ruler({
         })}
     </>
   )
-}
-
-Ruler.propTypes = {
-  start: ReactPropTypes.number.isRequired,
-  end: ReactPropTypes.number.isRequired,
-  bpPerPx: ReactPropTypes.number.isRequired,
-  reversed: ReactPropTypes.bool,
-  major: ReactPropTypes.bool,
-  minor: ReactPropTypes.bool,
-}
-
-Ruler.defaultProps = {
-  reversed: false,
-  major: true,
-  minor: true,
 }
 
 export default observer(Ruler)

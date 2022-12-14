@@ -37,18 +37,16 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
+    "generic-filehandle": "^3.0.0",
     "jwt-decode": "^3.1.2"
   },
   "peerDependencies": {
     "@jbrowse/core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "crypto-js": "^3.0.0",
-    "electron": ">=22.0.0",
-    "generic-filehandle": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
-    "prop-types": "^15.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "rxjs": "^6.0.0"
