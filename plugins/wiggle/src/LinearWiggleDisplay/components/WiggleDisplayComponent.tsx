@@ -1,4 +1,5 @@
 import React from 'react'
+import { observer } from 'mobx-react'
 import {
   measureText,
   getContainingView,
@@ -9,7 +10,8 @@ import {
   BaseLinearDisplayComponent,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import { observer } from 'mobx-react'
+
+// locals
 import { WiggleDisplayModel } from '../models/model'
 import YScaleBar from './YScaleBar'
 
