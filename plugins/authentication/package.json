@@ -43,7 +43,7 @@
     "@jbrowse/core": "^2.0.0",
     "@mui/material": "^5.0.0",
     "crypto-js": "^3.0.0",
-    "electron": "^15.0.0",
+    "electron": ">=22.0.0",
     "generic-filehandle": "^3.0.0",
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
