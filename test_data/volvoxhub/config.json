@@ -1,0 +1,119 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
+        "formatAbout": {
+          "hideUris": true,
+          "config": "jexl:{extraField:'important data'}"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "volvox2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq2",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [
+    {
+      "type": "UCSCTrackHubConnection",
+      "connectionId": "UCSCTrackHubConnection-volvox-hub1",
+      "name": "UCSCTrackHubConnection-volvox-hub1",
+      "hubTxtLocation": {
+        "uri": "hub1/hub.txt",
+        "locationType": "UriLocation"
+      }
+    },
+    {
+      "type": "UCSCTrackHubConnection",
+      "connectionId": "UCSCTrackHubConnection-volvox-hub2",
+      "name": "UCSCTrackHubConnection-volvox-hub2",
+      "hubTxtLocation": {
+        "uri": "hub2/hub.txt",
+        "locationType": "UriLocation"
+      }
+    },
+    {
+      "type": "UCSCTrackHubConnection",
+      "connectionId": "UCSCTrackHubConnection-volvox-remote",
+      "name": "UCSCTrackHubConnection-volvox-remote",
+      "hubTxtLocation": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/volvoxhub/hub.txt",
+        "locationType": "UriLocation"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Integration test example",
+    "views": [
+      {
+        "id": "integration_test",
+        "type": "LinearGenomeView",
+        "offsetPx": 2000,
+        "bpPerPx": 0.05,
+        "displayedRegions": [
+          {
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001,
+            "assemblyName": "volvox"
+          }
+        ]
+      }
+    ],
+    "widgets": {
+      "hierarchicalTrackSelector": {
+        "id": "hierarchicalTrackSelector",
+        "type": "HierarchicalTrackSelectorWidget",
+        "filterText": "",
+        "view": "integration_test"
+      }
+    },
+    "activeWidgets": {
+      "hierarchicalTrackSelector": "hierarchicalTrackSelector"
+    }
+  },
+  "tracks": []
+}

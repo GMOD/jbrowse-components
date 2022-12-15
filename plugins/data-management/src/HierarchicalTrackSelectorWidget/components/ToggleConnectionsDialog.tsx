@@ -68,7 +68,11 @@ function ToggleConnectionDialog({
                     color="primary"
                   />
                 }
-                label={`${name} (${ellipses(assemblyNames.join(','))})`}
+                label={`${name} ${
+                  assemblyNames.length
+                    ? '(' + ellipses(assemblyNames.join(',')) + ')'
+                    : ''
+                }`}
               />
             )
           })}

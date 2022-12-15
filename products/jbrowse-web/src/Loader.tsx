@@ -36,6 +36,7 @@ const StartScreen = lazy(() => import('./StartScreen'))
 function NoConfigMessage() {
   const links = [
     ['test_data/volvox/config.json', 'Volvox sample data'],
+    ['test_data/volvoxhub/config.json', 'Volvox hub sample data'],
     ['test_data/config.json', 'Human basic'],
     ['test_data/config_demo.json', 'Human sample data'],
     ['test_data/tomato/config.json', 'Tomato SVs'],

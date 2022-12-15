@@ -54,7 +54,7 @@ for more information.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
-## Opening tracks
+### Opening tracks
 
 To open a new track or connection, use the menu bar: `File` -> `Open track..`
 
@@ -77,22 +77,40 @@ e.g. if you provide a URL for a BAM and the index filename is bamfilename
 +'.bai' but you may need to manually supply it in some cases (index inference
 can't be done with files from your local machine)
 
+### File format support
+
 The following file formats are supported in core JBrowse 2:
+
+#### General
 
 - CRAM
 - BAM
-- htsget
+- htsget (requires hand-edited config)
 - VCF (Tabix-indexed)
 - GFF3 (Tabix-indexed)
 - BED (Tabix-indexed)
 - BigBed
 - BigWig
-- JBrowse 1 nested containment lists (NCLists)
-- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
-- PAF (synteny/dotplot)
-- Indexed FASTA/BGZip indexed FASTA
-- 2bit
+- BEDPE
+- JBrowse 1 nested containment lists (NCList)
 - .hic (Hi-C contact matrix visualization)
+
+#### SV inspector
+
+- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
+
+#### Synteny and dotplot
+
+- PAF (e.g. minimap2)
+- .delta (MUMmer)
+- .anchors (MCScan python version)
+- .out (MashMap)
+
+#### Sequence adapters
+
+- Indexed FASTA
+- BGZip indexed FASTA
+- 2bit
 
 Additional data formats can be supported via plugins; checkout the
 [plugin store](/plugin_store).
@@ -171,7 +189,7 @@ freely.
 
 <Figure caption="Screenshot showing the procedure to copy the track before being able to edit the settings" src="/img/edit_track_settings.png" />
 
-#### Rubberband selection
+### Rubberband selection
 
 The scale bars accept a click-and-drag action to select a region. Rubberband
 selection can be performed on both the main (lower) and overview (upper) scale
@@ -179,7 +197,7 @@ bars.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc.." src="/img/rubberband.png" />
 
-#### Track label positioning
+### Track label positioning
 
 Track labels can be positioned on their own row or overlapping the data to save
 vertical screen space. They can also be hidden. This is done by clicking on the
@@ -187,7 +205,7 @@ hamburger menu for a specific view.
 
 <Figure caption="Example of using the overlap and offset track label positioning options." src="/img/tracklabels.png" />
 
-#### Horizontally flip
+### Horizontally flip
 
 The view can be horizontally flipped, or reverse complemented, to make the
 coordinates go from right to left instead of left to right.
@@ -198,3 +216,10 @@ bar to help indicate whether the app is horizontally flipped or not.
 Here is an example of before and after horizontally flipping the view:
 
 <Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" />
+
+### Toggle drawer widget on left or right side of screen
+
+Using a drop-down menu in the header bar, you can toggle the drawer widget to
+the left or right side of the screen. It is on the right side by default
+
+<Figure caption="Toggling drawer widget to the left side of the screen" src="/img/drawer_widget_toggle.png" />

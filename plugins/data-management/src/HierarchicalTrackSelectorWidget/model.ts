@@ -67,6 +67,7 @@ export function generateHierarchy(
   model: HierarchicalTrackSelectorModel,
   trackConfigurations: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },
+  extra?: string,
 ) {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
@@ -91,7 +92,7 @@ export function generateHierarchy(
       for (let i = 0; i < categories.length; i++) {
         const category = categories[i]
         const ret = currLevel.children.find(c => c.name === category)
-        const id = categories.slice(0, i + 1).join(',')
+        const id = extra + '-' + categories.slice(0, i + 1).join(',')
         if (!ret) {
           const n = {
             children: [],
@@ -228,10 +229,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const conns =
           (assembly &&
             connectionInstances
-              ?.filter(c =>
-                hasAnyOverlap(assembly.allAliases, getConf(c, 'assemblyNames')),
-              )
-              .map(c => ({
+              ?.map(c => ({
                 // @ts-ignore
                 id: getSnapshot(c).configuration,
                 name: getConf(c, 'name'),
@@ -239,7 +237,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 state: {
                   expanded: true,
                 },
-              }))) ||
+              }))
+              .filter(f => f.children.length)) ||
           []
 
         return {
@@ -254,13 +253,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       connectionHierarchy(
         assemblyName: string,
-        connection: { tracks: AnyConfigurationModel[] },
+        connection: { name: string; tracks: AnyConfigurationModel[] },
       ) {
         return generateHierarchy(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
           self.connectionTrackConfigurations(assemblyName, connection),
           self.collapsed,
+          connection.name,
         )
       },
     }))
