@@ -1,6 +1,35 @@
 {
   "assemblies": [
     {
+      "name": "c_brenneri_PRJNA20035",
+      "sequence": {
+        "displays": [
+          {
+            "displayId": "c_brenneri_PRJNA20035-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay"
+          }
+        ],
+        "trackId": "c_brenneri_PRJNA20035-1646426635733",
+        "type": "ReferenceSequenceTrack",
+        "adapter": {
+          "fastaLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_brenneri.PRJNA20035.WS284.genomic.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "locationType": "UriLocation",
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_brenneri.PRJNA20035.WS284.genomic.fa.gz.fai"
+          },
+          "type": "BgzipFastaAdapter",
+          "gziLocation": {
+            "uri": "https://s3.amazonaws.com/wormbase-modencode/fasta/current/c_brenneri.PRJNA20035.WS284.genomic.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displayName": "c_brenneri_PRJNA20035"
+    },
+    {
       "name": "C. elegans (N2)",
       "sequence": {
         "type": "ReferenceSequenceTrack",

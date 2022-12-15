@@ -1,15 +1,15 @@
-import {
-  getClip,
-  getTag,
-  getLengthOnRef,
-  getLength,
-  getLengthSansClipping,
-  gatherOverlaps,
-  ReducedFeature,
-} from '../util'
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession, Feature } from '@jbrowse/core/util'
-import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
+import {
+  LinearPileupDisplayModel,
+  MismatchParser,
+} from '@jbrowse/plugin-alignments'
+
+// locals
+import { gatherOverlaps, ReducedFeature } from '../util'
+
+const { featurizeSA, getClip, getTag, getLength, getLengthSansClipping } =
+  MismatchParser
 
 export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
   const session = getSession(self)
@@ -17,7 +17,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const cigar = feature.get('CIGAR')
     const clipPos = getClip(cigar, 1)
     const flags = feature.get('flags')
-    const origStrand = feature.get('strand')
+    const strand = feature.get('strand')
     const readName = feature.get('name')
     const readAssembly = `${readName}_assembly_${Date.now()}`
     const { parentTrack } = self
@@ -25,34 +25,8 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     const assemblyNames = [trackAssembly, readAssembly]
     const trackId = `track-${Date.now()}`
     const trackName = `${readName}_vs_${trackAssembly}`
-    const SA: string = getTag(feature, 'SA') || ''
-    const SAs = SA.split(';')
-      .filter(aln => !!aln)
-      .map((aln, index) => {
-        const [saRef, saStart, saStrand, saCigar] = aln.split(',')
-        const saLengthOnRef = getLengthOnRef(saCigar)
-        const saLength = getLength(saCigar)
-        const saLengthSansClipping = getLengthSansClipping(saCigar)
-        const saStrandNormalized = saStrand === '-' ? -1 : 1
-        const saClipPos = getClip(saCigar, saStrandNormalized * origStrand)
-        const saRealStart = +saStart - 1
-        return {
-          refName: saRef,
-          start: saRealStart,
-          end: saRealStart + saLengthOnRef,
-          seqLength: saLength,
-          clipPos: saClipPos,
-          CIGAR: saCigar,
-          assemblyName: trackAssembly,
-          strand: origStrand * saStrandNormalized,
-          uniqueId: `${feature.id()}_SA${index}`,
-          mate: {
-            start: saClipPos,
-            end: saClipPos + saLengthSansClipping,
-            refName: readName,
-          },
-        }
-      })
+    const SA = (getTag(feature, 'SA') as string) || ''
+    const SA2 = featurizeSA(SA, feature.id(), strand, readName, true)
 
     const feat = feature.toJSON()
     feat.strand = 1
@@ -65,9 +39,9 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
     // if secondary alignment or supplementary, calculate length from SA[0]'s
     // CIGAR which is the primary alignments. otherwise it is the primary
     // alignment just use seq.length if primary alignment
-    const totalLength = getLength(flags & 2048 ? SAs[0].CIGAR : cigar)
+    const totalLength = getLength(flags & 2048 ? SA2[0].CIGAR : cigar)
 
-    const features = [feat, ...SAs] as ReducedFeature[]
+    const features = [feat, ...SA2] as ReducedFeature[]
 
     features.sort((a, b) => a.clipPos - b.clipPos)
 

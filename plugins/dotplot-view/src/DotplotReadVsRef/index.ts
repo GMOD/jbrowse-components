@@ -1,7 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+import {
+  PluggableElementType,
+  ViewType,
+} from '@jbrowse/core/pluggableElementTypes'
 import { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'
@@ -22,19 +24,18 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
               views: {
                 contextMenuItems() {
                   const feature = self.contextMenuFeature
-                  if (!feature) {
-                    return superContextMenuItems()
-                  }
-                  const newMenuItems = [
+                  return [
                     ...superContextMenuItems(),
-                    {
-                      label: 'Dotplot of read vs ref',
-                      icon: AddIcon,
-                      onClick: () => onClick(feature, self),
-                    },
+                    ...(feature
+                      ? [
+                          {
+                            label: 'Dotplot of read vs ref',
+                            icon: AddIcon,
+                            onClick: () => onClick(feature, self),
+                          },
+                        ]
+                      : []),
                   ]
-
-                  return newMenuItems
                 },
               },
             }
