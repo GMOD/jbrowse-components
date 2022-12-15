@@ -1,5 +1,3 @@
-import '@testing-library/jest-dom/extend-expect'
-
 import { fireEvent } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle'
 
@@ -15,7 +13,8 @@ const readBuffer = generateReadBuffer(
 )
 
 const readBuffer2 = generateReadBuffer(
-  url => new LocalFile(require.resolve(`../../test_data/volvoxhub/${url}`)),
+  url =>
+    new LocalFile(require.resolve(`../../test_data/volvoxhub/hub1/${url}`)),
 )
 
 const root = 'https://s3.amazonaws.com/jbrowse.org/volvoxhub/'
@@ -39,5 +38,5 @@ test('Open up a UCSC trackhub connection', async () => {
     target: { value: 'https://s3.amazonaws.com/jbrowse.org/volvoxhub/hub.txt' },
   })
   fireEvent.click(await findByText('Connect'))
-  await findByText('CRAM - Volvox Long Reads')
+  await findByText('CRAM - Volvox Sorted')
 }, 20000)
