@@ -13,7 +13,10 @@ const GCContentAdapterF = (pluginManager: PluginManager) => {
       /**
        * #slot
        */
-      sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter'),
+      sequenceAdapter: {
+        type: 'frozen',
+        defaultValue: null,
+      },
     },
     { explicitlyTyped: true },
   )
