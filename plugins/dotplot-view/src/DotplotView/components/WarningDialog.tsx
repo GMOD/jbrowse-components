@@ -5,8 +5,6 @@ import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid } from '@mui/x-data-grid'
 import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
-
-// icons
 import { measureGridWidth } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
