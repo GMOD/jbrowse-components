@@ -39,7 +39,7 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
             throw new Error('genomesFile not found on hub')
           }
 
-          const hubUri = hubFileLocation.uri
+          const hubUri = new URL(hubFileLocation.uri, hubFileLocation.baseUri)
           const genomesFileLocation = hubUri
             ? {
                 uri: new URL(genomeFile, hubUri).href,

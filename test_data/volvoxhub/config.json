@@ -65,6 +65,15 @@
         "uri": "hub1/hub.txt",
         "locationType": "UriLocation"
       }
+    },
+    {
+      "type": "UCSCTrackHubConnection",
+      "connectionId": "UCSCTrackHubConnection-volvox-remote",
+      "name": "UCSCTrackHubConnection-volvox-remote",
+      "hubTxtLocation": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/volvoxhub/hub.txt",
+        "locationType": "UriLocation"
+      }
     }
   ],
   "defaultSession": {
