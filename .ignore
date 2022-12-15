@@ -2,7 +2,7 @@
 test_data/large.chrom.sizes
 packages/core/ui/react-colorful.js
 plugins/legacy-jbrowse/test_data
-plugins/data-management/src/ucsc-trackhub/ucscAssemblies.js
+plugins/data-management/src/ucsc-trackhub/ucscAssemblies.ts
 plugins/circular-view/test_data/circos_example_content.txt
 plugins/circular-view/test_data/circos_example.svg
 products/jbrowse-web/src/tests/Loader.test.tsx
