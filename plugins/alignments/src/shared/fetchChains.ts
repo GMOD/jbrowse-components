@@ -3,7 +3,7 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
-import { IAnyStateTreeNode } from 'mobx-state-tree'
+import { getSnapshot, IAnyStateTreeNode } from 'mobx-state-tree'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
@@ -50,6 +50,7 @@ export async function fetchChains(self: IAnyStateTreeNode) {
     const ret = (await rpcManager.call(sessionId, 'PileupGetReducedFeatures', {
       sessionId,
       regions: view.staticBlocks.contentBlocks,
+      filterBy: getSnapshot(self.filterBy),
       adapterConfig: self.adapterConfig,
     })) as ChainData
 

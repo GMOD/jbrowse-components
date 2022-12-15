@@ -151,7 +151,44 @@ insertion/clipping indicators" and "Draw insertion/clipping counts").
 
 :::
 
-### Opening a synteny view from a dotplot view
+### Using the "Arc display"
 
-You can open a synteny view from a dotplot view by selecting a region on the
-dotplot and clicking "Open linear synteny view", shown below:
+In JBrowse 2.3.0, we introduced the ability to render "Arcs" to show long range
+connections between reads. This information is very valuable for revealing
+structural variation, misassemblies, etc.
+
+To enable, use the track menu to launch "Display types"->"Arc display" or
+"Replace lower panel with..."->"Arc display"
+
+<Figure caption="Menu item for selecting the 'Arc display' using the track menu. In this case we are just replacing the 'lower panel' allowing the arcs to be displayed alongside the coverage" src="/img/alignments/select_arc_display.png" />
+
+The "Arc display" bezier curves will automatically try to fit into the window
+when you click and drag the track height, so you can create a dense display of
+arcs using multiple data tracks
+
+Long range interactions are indicated using vertical lines (connecting to other
+chromosomes for example) or larger semi-circular arcs for off-screen
+interactions). You can turn off rendering these events using the track menu if
+they are not relevant to your interest.
+
+<!-- http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL -->
+
+<Figure caption="The arc display showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
+
+### Using the "Read cloud display"
+
+Similar to the "Arc display" we also offer what we call the "Read cloud"
+display. It is similar in some ways to the "Arc display" but renders paired-end
+or split read features as connected and stratified by the distance between their
+connections logarithmically on the "y-position" of the track. Similar to the
+"Arc display", clicking and dragging the track height of the "Read cloud
+display" will re-pack features into that area.
+
+<Figure caption="The 'Arc display' and 'Read cloud' being shown for the same dataset, showing some synthetic SVs on our sample volvox data. The read cloud display uniquely shows insertion (pink pairs) better than the arc display." src="/img/alignments/read_cloud.png" />
+
+### Compacting the view of alignments tracks
+
+Users can create a more compact display of alignments using Track menu->Pileup
+settings->Set feature height->Compact
+
+![](/img/alignments/compact.png)

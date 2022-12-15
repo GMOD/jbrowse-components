@@ -25,14 +25,14 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
     },
     rpcDriver: string,
   ) {
-    const { adapterConfig, sessionId, regions } =
-      await this.deserializeArguments(args, rpcDriver)
+    const des = await this.deserializeArguments(args, rpcDriver)
+    const { adapterConfig, sessionId, regions } = des
     const dataAdapter = (
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
     const featuresArray = await dataAdapter
-      .getFeaturesInMultipleRegions(regions)
+      .getFeaturesInMultipleRegions(regions, des)
       .pipe(toArray())
       .toPromise()
 

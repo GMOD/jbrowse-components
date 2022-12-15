@@ -22,8 +22,14 @@ in their respective directions.
 The zoom buttons and the slider bar found in the header of the linear genome
 view can be used to zoom in and out on the view
 
-You can also hold the `Ctrl` key and use your mousewheel or trackpad to scroll
-to zoom in and out.
+You can also
+
+- hold the `Ctrl` key and use your mousewheel or trackpad to scroll to zoom in
+  and out of the linear genome view
+- hold the `Shift` key and click and drag the linear genome view to create a
+  "rubberband" selection
+- hold the `Shift` key without click and drag to just reveal a red vertical
+  guide bar on the linear genome view
 
 #### Re-ordering tracks
 
@@ -31,6 +37,12 @@ Click and drag up or down on the drag handle on the track labels (indicated by
 six vertical dots) to reorder tracks.
 
 <Figure caption="(1) Use Add, Linear genome view to add a new LGV. (2) The pan buttons can be used to scroll left or right. (3) The zoom buttons or the slider can be used to zoom on the view. (4) Tracks can be reordered by clicking and dragging the drag handle indicated by six vertical dots." src="/img/lgv_usage_guide.png" />
+
+#### Re-ordering views
+
+Re-ordering views doesn't use a drag and drop like re-ordering tracks does, but
+instead, you can click the view menu (the "hamburger" menu that is available for
+each view) and select "Move up"/"Move down"
 
 #### Using the location search box
 
