@@ -22,15 +22,6 @@ const useStyles = makeStyles()(() => ({
     pointerEvents: 'none',
     userSelect: 'none',
   },
-  majorTickLabel: {
-    fontSize: '11px',
-  },
-  majorTick: {
-    stroke: '#555',
-  },
-  minorTick: {
-    stroke: '#999',
-  },
 }))
 
 export const HorizontalAxis = observer(function ({
@@ -64,13 +55,15 @@ export const HorizontalAxis = observer(function ({
               key={JSON.stringify(region)}
               x={xoff}
               y={y + 1}
-              fill="#000000"
+              fill="black"
               dominantBaseline="hanging"
               textAnchor="end"
             >
               {[
                 region.refName,
-                region.start !== 0 ? Math.floor(region.start) : '',
+                region.start !== 0
+                  ? Math.floor(region.start).toLocaleString('en-US')
+                  : '',
               ]
                 .filter(f => !!f)
                 .join(':')}
@@ -93,9 +86,6 @@ export const HorizontalAxis = observer(function ({
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
             stroke={tick.type === 'major' ? '#555' : '#999'}
-            className={
-              tick.type === 'major' ? classes.majorTick : classes.minorTick
-            }
             data-bp={tick.base}
           />
         )
@@ -110,20 +100,20 @@ export const HorizontalAxis = observer(function ({
               self: hviewSnap,
             })?.offsetPx || 0) - offsetPx
           const y = 0
-          return (
+          return x > 10 ? (
             <text
               x={x - 7}
               y={y}
               transform={`rotate(${htextRotation},${x},${y})`}
               key={`text-${JSON.stringify(tick)}`}
-              style={{ fontSize: '11px' }}
-              className={classes.majorTickLabel}
+              fill="black"
+              fontSize={11}
               dominantBaseline="middle"
               textAnchor="end"
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          )
+          ) : null
         })}
       <text
         y={borderY - 12}
@@ -167,12 +157,14 @@ export const VerticalAxis = observer(function ({
               key={JSON.stringify(region)}
               x={x}
               y={yoff}
-              fill="#000000"
+              fill="black"
               textAnchor="end"
             >
               {[
                 region.refName,
-                region.start !== 0 ? Math.floor(region.start) : '',
+                region.start !== 0
+                  ? Math.floor(region.start).toLocaleString('en-US')
+                  : '',
               ]
                 .filter(f => !!f)
                 .join(':')}
@@ -195,9 +187,6 @@ export const VerticalAxis = observer(function ({
             x2={borderX - (tick.type === 'major' ? 6 : 4)}
             strokeWidth={1}
             stroke={tick.type === 'major' ? '#555' : '#999'}
-            className={
-              tick.type === 'major' ? classes.majorTick : classes.minorTick
-            }
             data-bp={tick.base}
           />
         )
@@ -211,23 +200,24 @@ export const VerticalAxis = observer(function ({
               coord: tick.base,
               self: vviewSnap,
             })?.offsetPx || 0) - offsetPx
-          return (
+          return y > 10 ? (
             <text
               y={viewHeight - y - 3}
               x={borderX - 7}
               key={`text-${JSON.stringify(tick)}`}
               textAnchor="end"
+              fill="black"
               dominantBaseline="hanging"
-              style={{ fontSize: '11px' }}
-              className={classes.majorTickLabel}
+              fontSize={11}
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
-          )
+          ) : null
         })}
       <text
         y={(viewHeight - borderY) / 2}
         x={12}
+        fill="black"
         transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
         textAnchor="middle"
       >
