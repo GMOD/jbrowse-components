@@ -296,12 +296,14 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        */
       setBorderX(n: number) {
+        console.log('x', n)
         self.borderX = n
       },
       /**
        * #action
        */
       setBorderY(n: number) {
+        console.log('y', n)
         self.borderY = n
       },
       /**
@@ -587,7 +589,7 @@ export default function stateModelFactory(pm: PluginManager) {
             if (self.volatileWidth === undefined) {
               return
             }
-            const padding = 10
+            const padding = 40
             const vblocks = vview.dynamicBlocks.contentBlocks
             const hblocks = hview.dynamicBlocks.contentBlocks
             const len = (a: string) => measureText(a.slice(0, 30))

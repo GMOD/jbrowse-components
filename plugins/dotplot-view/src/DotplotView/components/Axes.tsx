@@ -125,16 +125,14 @@ export const HorizontalAxis = observer(function ({
             </text>
           )
         })}
-      {hview.assemblyNames.length === 1 ? (
-        <text
-          y={borderY - 12}
-          x={(viewWidth - borderX) / 2}
-          fill="black"
-          textAnchor="middle"
-        >
-          {hview.assemblyNames[0]}
-        </text>
-      ) : null}
+      <text
+        y={borderY - 12}
+        x={(viewWidth - borderX) / 2}
+        fill="black"
+        textAnchor="middle"
+      >
+        {hview.assemblyNames.join(',')}
+      </text>
     </svg>
   )
 })
@@ -226,16 +224,14 @@ export const VerticalAxis = observer(function ({
             </text>
           )
         })}
-      {vview.assemblyNames.length === 1 ? (
-        <text
-          y={(viewHeight - borderY) / 2}
-          x={12}
-          transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
-          textAnchor="middle"
-        >
-          {vview.assemblyNames[0]}
-        </text>
-      ) : null}
+      <text
+        y={(viewHeight - borderY) / 2}
+        x={12}
+        transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
+        textAnchor="middle"
+      >
+        {vview.assemblyNames.join(',')}
+      </text>
     </svg>
   )
 })
