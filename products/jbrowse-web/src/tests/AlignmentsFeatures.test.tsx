@@ -34,8 +34,10 @@ test('opens the track menu and enables soft clipping', async () => {
   // wait for block to rerender
   const { findByTestId: f0 } = within(await findByTestId('Blockset-pileup'))
 
+  // slightly higher threshold for fonts
   expectCanvasMatch(
     await f0(pc('softclipped_{volvox}ctgA:2849..2864-0'), ...opts),
+    0.05,
   )
 }, 30000)
 

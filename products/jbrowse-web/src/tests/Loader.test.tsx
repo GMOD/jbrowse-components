@@ -150,19 +150,19 @@ test('can use config from a url with shared session ', async () => {
 }, 20000)
 
 // minimal session with plugin in our plugins.json
-// {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
-test('can warn of callbacks in json session', async () => {
+test('approves sessionPlugins from plugin list', async () => {
+  expect(sessionStorage.length).toBe(0)
   render(
-    <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}' />,
+    <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js","name":"MsaView"}]}}' />,
   )
   await waitFor(() => expect(sessionStorage.length).toBeGreaterThan(0), {
-    timeout: 30000,
+    timeout: 50000,
   })
-}, 30000)
+}, 50000)
 
 // minimal session,
 // {"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
-test('pops up a warning for evil plugin', async () => {
+test('pops up a warning for evil plugin in sessionPlugins', async () => {
   const { findByTestId } = render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://evil.com/evil.js"}]}}' />,
   )
