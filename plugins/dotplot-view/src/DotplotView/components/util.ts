@@ -20,7 +20,7 @@ export function getBlockLabelKeysToHide(
   length: number,
   viewOffsetPx: number,
 ) {
-  const blockLabelKeysToHide: string[] = []
+  const blockLabelKeysToHide = new Set<string>()
   const sortedBlocks = blocks.slice(0).sort((a, b) => {
     const alen = a.end - a.start
     const blen = b.end - b.start
@@ -31,7 +31,7 @@ export function getBlockLabelKeysToHide(
     const y = Math.round(length - offsetPx + viewOffsetPx)
     const labelBounds = [Math.max(y - 12, 0), y]
     if (y === 0 || positions.slice(...labelBounds).some(Boolean)) {
-      blockLabelKeysToHide.push(key)
+      blockLabelKeysToHide.add(key)
     } else {
       positions.fill(true, ...labelBounds)
     }

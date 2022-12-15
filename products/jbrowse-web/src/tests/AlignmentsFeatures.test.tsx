@@ -28,7 +28,7 @@ test('opens the track menu and enables soft clipping', async () => {
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-bam'), ...opts))
 
   // opens the track menu
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Show soft clipping'))
 
   // wait for block to rerender
@@ -48,7 +48,7 @@ test('selects a sort, sort by base pair', async () => {
   // load track
   fireEvent.click(await findByTestId(hts(track), ...opts))
 
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Sort by'))
   fireEvent.click(await findByText('Base pair'))
 
@@ -72,7 +72,7 @@ test('color by tag', async () => {
   fireEvent.click(await findByTestId(hts('volvox_cram'), ...opts))
 
   // colors by HP tag
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Color scheme'))
   fireEvent.click(await findByText('Color by tag...'))
   fireEvent.change(await findByTestId('color-tag-name-input'), {
@@ -91,7 +91,7 @@ test('toggle short-read arc display', async () => {
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   expectCanvasMatch(await findByTestId('Arc-display-true', ...opts))
@@ -103,7 +103,7 @@ test('toggle short-read cloud display', async () => {
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Read cloud display'))[0])
   expectCanvasMatch(await findByTestId('ReadCloud-display-true', ...opts))
@@ -115,7 +115,7 @@ test('toggle long-read cloud display', async () => {
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
   fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Read cloud display'))[0])
   expectCanvasMatch(await findByTestId('ReadCloud-display-true', ...opts))
@@ -127,7 +127,7 @@ test('toggle long-read arc display', async () => {
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
   fireEvent.click(await findByTestId(hts('volvox-simple-inv.bam'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   expectCanvasMatch(await findByTestId('Arc-display-true', ...opts))
@@ -139,7 +139,7 @@ test('toggle long-read arc display, use out of view pairing', async () => {
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   expectCanvasMatch(await findByTestId('Arc-display-true', ...opts))
@@ -151,7 +151,7 @@ test('toggle short-read arc display, use out of view pairing', async () => {
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
   fireEvent.click(await findByTestId(hts('volvox_sv_cram'), ...opts))
-  fireEvent.click(await findByTestId('track_menu_icon'))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Replace lower panel with...'))
   fireEvent.click((await findAllByText('Arc display'))[0])
   expectCanvasMatch(await findByTestId('Arc-display-true', ...opts))

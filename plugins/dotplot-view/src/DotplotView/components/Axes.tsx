@@ -52,7 +52,7 @@ export const HorizontalAxis = observer(function ({
   return (
     <svg width={viewWidth} height={borderY} className={classes.htext}>
       {dblocks
-        .filter(region => !hide.includes(region.key))
+        .filter(region => !hide.has(region.key))
         .map(region => {
           const x = region.offsetPx
           const y = 0
@@ -130,6 +130,7 @@ export const HorizontalAxis = observer(function ({
         x={(viewWidth - borderX) / 2}
         fill="black"
         textAnchor="middle"
+        dominantBaseline="hanging"
       >
         {hview.assemblyNames.join(',')}
       </text>
@@ -154,7 +155,7 @@ export const VerticalAxis = observer(function ({
   return (
     <svg className={classes.vtext} width={borderX} height={viewHeight}>
       {dblocks
-        .filter(region => !hide.includes(region.key))
+        .filter(region => !hide.has(region.key))
         .map(region => {
           const y = region.offsetPx
           const x = borderX
