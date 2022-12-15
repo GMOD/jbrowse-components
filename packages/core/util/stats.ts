@@ -1,5 +1,7 @@
 import { Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
+
+// locals
 import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
@@ -51,10 +53,12 @@ export function calcStdFromSums(
 }
 
 /**
- * @param stats - a summary stats object with scoreSum, featureCount, scoreSumSquares, and basesCovered
- * @returns - a summary stats object with scoreMean, scoreStdDev, and featureDensity added
+ * @param stats - a summary stats object with scoreSum, featureCount,
+ * scoreSumSquares, and basesCovered
+ * @returns - a summary stats object with
+ * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
+export function rectifyStats(s: UnrectifiedFeatureStats) {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
@@ -64,11 +68,12 @@ export function rectifyStats(s: UnrectifiedFeatureStats): FeatureStats {
       s.featureCount || s.basesCovered,
     ),
     featureDensity: (s.featureCount || 1) / s.basesCovered,
-  }
+  } as FeatureStats
 }
 
 /**
  * calculates per-base scores for variable width features over a region
+ *
  * @param region - object contains start, end
  * @param features - list of features with start, end, score
  * @returns array of numeric scores
@@ -102,64 +107,59 @@ export function calcPerBaseStats(
   return scores
 }
 
-interface Seed {
-  scoreMin: number
-  scoreMax: number
-  scoreSum: number
-  scoreSumSquares: number
-  featureCount: number
-}
-
 /**
  * transform a list of scores to summary statistics
+ *
  * @param region - object with start, end
  * @param features - array of features which are possibly summary features
  * @returns - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export async function scoresToStats(
   region: NoAssemblyRegion,
-  features: Observable<Feature>,
+  feats: Observable<Feature>,
 ) {
   const { start, end } = region
+  const seed = {
+    scoreMin: Number.MAX_VALUE,
+    scoreMax: Number.MIN_VALUE,
+    scoreSum: 0,
+    scoreSumSquares: 0,
+    featureCount: 0,
+  }
+  let found = false
 
   const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
-    await features
+    await feats
       .pipe(
-        reduce(
-          (seed: Seed, f: Feature) => {
-            const s = f.get('score')
-            const summary = f.get('summary')
-            const { scoreMax, scoreMin } = seed
-            seed.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
-            seed.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
-            seed.scoreSum += s
-            seed.scoreSumSquares += s * s
-            seed.featureCount += 1
+        reduce((acc, f) => {
+          const s = f.get('score')
+          const summary = f.get('summary')
+          const { scoreMax, scoreMin } = acc
+          acc.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
+          acc.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
+          acc.scoreSum += s
+          acc.scoreSumSquares += s * s
+          acc.featureCount += 1
+          found = true
 
-            return seed
-          },
-          {
-            scoreMin: Number.MAX_VALUE,
-            scoreMax: Number.MIN_VALUE,
-            scoreSum: 0,
-            scoreSumSquares: 0,
-            featureCount: 0,
-          },
-        ),
+          return acc
+        }, seed),
       )
       .toPromise()
 
-  return rectifyStats({
-    scoreMax,
-    scoreMin,
-    scoreSum,
-    scoreSumSquares,
-    featureCount,
-    basesCovered: end - start + 1,
-  })
+  return found
+    ? rectifyStats({
+        scoreMax,
+        scoreMin,
+        scoreSum,
+        scoreSumSquares,
+        featureCount,
+        basesCovered: end - start + 1,
+      })
+    : blankStats()
 }
 
-export function blankStats(): FeatureStats {
+export function blankStats() {
   return {
     scoreMin: 0,
     scoreMax: 0,
@@ -170,5 +170,5 @@ export function blankStats(): FeatureStats {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-  }
+  } as FeatureStats
 }
