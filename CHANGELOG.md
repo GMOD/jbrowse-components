@@ -1,3 +1,131 @@
+## 2.3.0 (2022-12-15)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/text-indexing                  |                                                                   |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-arc                     |                                                                   |
+| @jbrowse/plugin-authentication          | https://www.npmjs.com/package/@jbrowse/plugin-authentication      |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-comparative-adapters    |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gccontent               | https://www.npmjs.com/package/@jbrowse/plugin-gccontent           |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-jobs-management         |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-menus                   |                                                                   |
+| @jbrowse/plugin-protein                 |                                                                   |
+| @jbrowse/plugin-rdf                     |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-sv-inspector            |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-text-indexing           |                                                                   |
+| @jbrowse/plugin-trix                    | https://www.npmjs.com/package/@jbrowse/plugin-trix                |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3403](https://github.com/GMOD/jbrowse-components/pull/3403) Reduce
+    overplotting on dotplot grid lines and other misc improvements
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3381](https://github.com/GMOD/jbrowse-components/pull/3381) Add method for
+    cache busting requests to the config file in jbrowse-web
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3384](https://github.com/GMOD/jbrowse-components/pull/3384) Add method to
+    more easily create compact view of alignments
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3391](https://github.com/GMOD/jbrowse-components/pull/3391) Allow arc
+    display to connect to "unpaired" positions using RNEXT/PNEXT or SA tag
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3387](https://github.com/GMOD/jbrowse-components/pull/3387) Small UI
+    tweaks for add track workflow ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3358](https://github.com/GMOD/jbrowse-components/pull/3358) Create new
+    "arc" display type to show long range connections between paired-end and
+    split-reads ([@cmdcolin](https://github.com/cmdcolin))
+- `text-indexing`
+  - [#3385](https://github.com/GMOD/jbrowse-components/pull/3385) Optimize
+    prefix size for text indexing automatically
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3407](https://github.com/GMOD/jbrowse-components/pull/3407) Remove
+    trackhub registry plugin from core plugins, moved to plugin store
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3406](https://github.com/GMOD/jbrowse-components/pull/3406) Fix loading
+    connection tracks from connections that don't specify assemblyNames in
+    config ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3390](https://github.com/GMOD/jbrowse-components/pull/3390) Fix
+    positioning within large alignments for query->target LGV synteny navigation
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3388](https://github.com/GMOD/jbrowse-components/pull/3388) Fix search
+    result that matches synonyms that matches multiple locations
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3404](https://github.com/GMOD/jbrowse-components/pull/3404) Fix
+    double-render of some synteny features
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3401](https://github.com/GMOD/jbrowse-components/pull/3401) Remove
+    y-scalebar rendering placeholder values in blank and loading states
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3389](https://github.com/GMOD/jbrowse-components/pull/3389) Fix issue
+    where snackbar would not show up when same error message is triggered
+    multiple times ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- `core`
+  - [#3396](https://github.com/GMOD/jbrowse-components/pull/3396) Use prettier
+    to word wrap markdown prose ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3383](https://github.com/GMOD/jbrowse-components/pull/3383) Add note to
+    user guide about variant callers that can be used for SV inspector
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `__mocks__`, `core`, `text-indexing`
+  - [#3400](https://github.com/GMOD/jbrowse-components/pull/3400) Reduce
+    peerDependency warnings from installing dev environment
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3394](https://github.com/GMOD/jbrowse-components/pull/3394) Simplify RPC
+    watchWorker ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3386](https://github.com/GMOD/jbrowse-components/pull/3386) Fix warning
+    when rendering circular chord displays with web worker RPC
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 2.2.2 (2022-12-06)
 
 <details><summary>Packages in this release</summary>
