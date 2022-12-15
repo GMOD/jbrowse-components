@@ -227,19 +227,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const assembly = assemblyManager.get(assemblyName)
         const conns =
           (assembly &&
-            connectionInstances
-              ?.filter(c =>
-                hasAnyOverlap(assembly.allAliases, getConf(c, 'assemblyNames')),
-              )
-              .map(c => ({
-                // @ts-ignore
-                id: getSnapshot(c).configuration,
-                name: getConf(c, 'name'),
-                children: this.connectionHierarchy(assemblyName, c),
-                state: {
-                  expanded: true,
-                },
-              }))) ||
+            connectionInstances?.map(c => ({
+              // @ts-ignore
+              id: getSnapshot(c).configuration,
+              name: getConf(c, 'name'),
+              children: this.connectionHierarchy(assemblyName, c),
+              state: {
+                expanded: true,
+              },
+            }))) ||
           []
 
         return {
