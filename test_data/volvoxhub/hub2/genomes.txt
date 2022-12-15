@@ -1,0 +1,3 @@
+genome volvox2
+trackDb volvox2/trackDb.txt
+twoBitPath volvox2/volvox.2bit
