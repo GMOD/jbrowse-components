@@ -47,6 +47,7 @@
     "file-saver": "^2.0.0",
     "material-ui-popup-state": "^3.0.0",
     "normalize-wheel": "^1.0.1",
+    "react-error-boundary": "^3.0.0",
     "react-popper": "^2.0.0"
   },
   "peerDependencies": {
@@ -55,11 +56,9 @@
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
-    "prop-types": "^15.0.0",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "react-error-boundary": "^3.0.0",
-    "tss-react": "^3.0.0"
+    "tss-react": "^4.0.0"
   },
   "publishConfig": {
     "access": "public"

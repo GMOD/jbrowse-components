@@ -1,5 +1,4 @@
 import React from 'react'
-import ReactPropTypes from 'prop-types'
 import { render } from '@testing-library/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
@@ -37,7 +36,6 @@ class ErrorCatcher extends React.Component {
     return children
   }
 }
-ErrorCatcher.propTypes = { children: ReactPropTypes.node.isRequired }
 
 describe('<DivSequenceRendering />', () => {
   // This just keeps our testing logs clean by not displaying `console.error`s
