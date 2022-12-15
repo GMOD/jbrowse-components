@@ -44,7 +44,6 @@
     "@jbrowse/plugin-spreadsheet-view": "^2.2.2",
     "@jbrowse/plugin-sv-inspector": "^2.2.2",
     "@jbrowse/plugin-svg": "^2.2.2",
-    "@jbrowse/plugin-trackhub-registry": "^2.2.2",
     "@jbrowse/plugin-trix": "^2.2.2",
     "@jbrowse/plugin-variants": "^2.2.2",
     "@jbrowse/plugin-wiggle": "^2.2.2",
