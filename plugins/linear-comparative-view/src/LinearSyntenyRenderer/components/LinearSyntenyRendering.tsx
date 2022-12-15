@@ -50,6 +50,13 @@ function px(view: ViewSnap, arg: { refName: string; coord: number }) {
   return r
 }
 
+interface Match {
+  layout: RectTuple
+  feature: Feature
+  level: number
+  refName: string
+}
+
 function drawMatchSimple({
   match,
   ctx,
@@ -61,12 +68,7 @@ function drawMatchSimple({
   height,
   drawCurves,
 }: {
-  match: {
-    layout: RectTuple
-    feature: Feature
-    level: number
-    refName: string
-  }[]
+  match: Match[]
   ctx: CanvasRenderingContext2D
   offsets: number[]
   cb: (ctx: CanvasRenderingContext2D) => void
