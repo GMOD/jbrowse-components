@@ -1,0 +1,18 @@
+track testgroup
+superTrack on
+shortLabel Test group
+longLabel A grouping of alignment tracks
+
+    track volvoxBamAlignments
+    parent testgroup
+    type bam
+    shortLabel BAM - Volvox Sorted
+    longLabel BAM alignments of simulated Volvox data
+    bigDataUrl tiny.bam
+
+    track volvoxCramAlignments
+    parent testgroup
+    type bam
+    shortLabel CRAM - Volvox Sorted
+    longLabel CRAM alignments of simulated Volvox data
+    bigDataUrl tiny.cram

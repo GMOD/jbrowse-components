@@ -59,10 +59,10 @@
   "connections": [
     {
       "type": "UCSCTrackHubConnection",
-      "connectionId": "UCSCTrackHubConnection-volvox-1671126632937",
-      "name": "UCSCTrackHubConnection-volvox-1671126632937",
+      "connectionId": "UCSCTrackHubConnection-volvox-hub",
+      "name": "UCSCTrackHubConnection-volvox-hub",
       "hubTxtLocation": {
-        "uri": "https://s3.amazonaws.com/jbrowse.org/volvoxhub/hub.txt",
+        "uri": "hub1/hub.txt",
         "locationType": "UriLocation"
       }
     }
