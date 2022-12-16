@@ -1,6 +1,7 @@
 {
   "name": "jbrowse-react-circular-genome-view-demo",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "dependencies": {
     "@fontsource/roboto": "^4.5.3",

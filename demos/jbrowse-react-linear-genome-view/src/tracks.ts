@@ -1,6 +1,6 @@
 const tracks = [
   {
-    type: 'BasicTrack',
+    type: 'FeatureTrack',
     trackId:
       'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
     name: 'NCBI RefSeq Genes',
@@ -15,6 +15,20 @@ const tracks = [
         location: {
           uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
         },
+      },
+    },
+  },
+  {
+    type: 'FeatureTrack',
+    trackId: 'repeats_hg38',
+    name: 'Repeats',
+    assemblyNames: ['hg38'],
+    category: ['Annotation'],
+    adapter: {
+      type: 'BigBedAdapter',
+      bigBedLocation: {
+        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+        locationType: 'UriLocation',
       },
     },
   },
@@ -43,21 +57,6 @@ const tracks = [
         gziLocation: {
           uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
         },
-      },
-    },
-  },
-
-  {
-    type: 'FeatureTrack',
-    trackId: 'repeats_hg38',
-    name: 'Repeats',
-    assemblyNames: ['hg38'],
-    category: ['Annotation'],
-    adapter: {
-      type: 'BigBedAdapter',
-      bigBedLocation: {
-        uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
-        locationType: 'UriLocation',
       },
     },
   },
