@@ -3,7 +3,7 @@ import { Region, dedupe } from '@jbrowse/core/util'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
-
+import { firstValueFrom } from 'rxjs'
 // locals
 import { filterForPairs, getInsertSizeStats } from '../util'
 import { ReducedFeature } from '../../shared/fetchChains'
@@ -31,10 +31,9 @@ export default class PileupGetReducedFeatures extends PileupBaseRPC {
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const featuresArray = await dataAdapter
-      .getFeaturesInMultipleRegions(regions, des)
-      .pipe(toArray())
-      .toPromise()
+    const featuresArray = await firstValueFrom(
+      dataAdapter.getFeaturesInMultipleRegions(regions, des).pipe(toArray()),
+    )
 
     const reduced = dedupe(
       featuresArray.map(f => ({

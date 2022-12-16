@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import configSchema from './configSchema'
 import Gff3TabixAdapter from './Gff3TabixAdapter'
 
@@ -27,7 +28,7 @@ describe('adapter can fetch features from volvox.gff3', () => {
     })
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(true)
-    const featuresArray = await features.pipe(toArray()).toPromise()
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
     // There are only 4 features in ctgB
     expect(featuresArray.length).toBe(4)
     const featuresJsonArray = featuresArray.map(f => f.toJSON())

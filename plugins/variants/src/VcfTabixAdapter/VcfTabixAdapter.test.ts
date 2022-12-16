@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import Adapter from './VcfTabixAdapter'
 import configSchema from './configSchema'
 
@@ -52,7 +53,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     end: 20000,
   })
 
-  const featArray = await feat.pipe(toArray()).toPromise()
+  const featArray = await firstValueFrom(features.pipe(toArray()))
   const csiFeaturesArray = await csiFeatures.pipe(toArray()).toPromise()
   expect(featArray.slice(0, 5)).toMatchSnapshot()
   expect(csiFeaturesArray.slice(0, 5)).toEqual(featArray.slice(0, 5))
@@ -63,6 +64,6 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     end: 20000,
   })
 
-  const featArrayNonExist = await featNonExist.pipe(toArray()).toPromise()
+  const featArrayNonExist = await firstValueFrom(featNonExist.pipe(toArray()))
   expect(featArrayNonExist).toEqual([])
 })

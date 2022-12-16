@@ -42,7 +42,7 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
     end: 35960388,
   })
 
-  const featArr = await features.pipe(toArray()).toPromise()
+  const featArr = await firstValueFrom(features.pipe(toArray()))
   expect(featArr[0].get('refName')).toBe('21')
   expect(featArr[0].id()).toBe(`test-21,0,0,19,22,0`)
   const featJson = featArr.map(f => f.toJSON())

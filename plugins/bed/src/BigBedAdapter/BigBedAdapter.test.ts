@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import BigBedAdapter from './BigBedAdapter'
 import configSchema from './configSchema'
 
@@ -21,7 +22,7 @@ test('adapter can fetch features from volvox.bb', async () => {
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
   expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
   const featuresJsonArray = featuresArray.map(f => f.toJSON())
   expect(featuresJsonArray).toMatchSnapshot()
 })

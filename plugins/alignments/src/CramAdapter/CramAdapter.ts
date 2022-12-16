@@ -8,6 +8,7 @@ import { checkAbortSignal, Region, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import CramSlightlyLazyFeature from './CramSlightlyLazyFeature'
 
 interface Header {
@@ -103,15 +104,16 @@ export default class CramAdapter extends BaseFeatureDataAdapter {
       throw new Error('unknown')
     }
 
-    const seqChunks = await sequenceAdapter
-      .getFeatures({
-        refName,
-        start,
-        end,
-        assemblyName: '',
-      })
-      .pipe(toArray())
-      .toPromise()
+    const seqChunks = await firstValueFrom(
+      sequenceAdapter
+        .getFeatures({
+          refName,
+          start,
+          end,
+          assemblyName: '',
+        })
+        .pipe(toArray()),
+    )
 
     const sequence = seqChunks
       .sort((a, b) => a.get('start') - b.get('start'))

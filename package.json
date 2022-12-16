@@ -135,7 +135,7 @@
     "react-scripts": "^5.0.1",
     "requestidlecallback-polyfill": "^1.0.2",
     "rimraf": "^3.0.2",
-    "rxjs": "^6.0.0",
+    "rxjs": "^7.0.0",
     "semver": "^7.3.4",
     "slugify": "^1.6.5",
     "ts-loader": "^9.3.0",

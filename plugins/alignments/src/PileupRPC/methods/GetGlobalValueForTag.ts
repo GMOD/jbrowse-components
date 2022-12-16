@@ -3,6 +3,9 @@ import { Region } from '@jbrowse/core/util'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+
+// locals
 import PileupBaseRPC from '../base'
 import { getTag } from '../../util'
 
@@ -28,7 +31,7 @@ export default class PileupGetGlobalValueForTag extends PileupBaseRPC {
     ).dataAdapter as BaseFeatureDataAdapter
 
     const features = dataAdapter.getFeaturesInMultipleRegions(regions)
-    const featuresArray = await features.pipe(toArray()).toPromise()
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
     return [
       ...new Set(
         featuresArray

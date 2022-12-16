@@ -1,4 +1,4 @@
-import { Observable, merge } from 'rxjs'
+import { Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 
@@ -259,9 +259,9 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
         end: Math.min(Math.round(sampleCenter + length / 2), end),
       }
 
-      const features = await this.getFeatures(query, opts)
-        .pipe(toArray())
-        .toPromise()
+      const features = await firstValueFrom(
+        this.getFeatures(query, opts).pipe(toArray()),
+      )
 
       return maybeRecordStats(
         length,
