@@ -17,7 +17,7 @@ including the Buffer polyfill
 See this app running at https://jbrowse.org/demos/lgv-vite/.
 
 Download this directory from the monorepo using
-https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fdemos%2Fjbrowse-react-linear-genome-view-vite
+https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2FGMOD%2Fjbrowse-components%2Ftree%2Fmain%2Fembedded_demos%2Fjbrowse-react-linear-genome-view-vite
 
 ## Usage
 
