@@ -1,34 +1,12 @@
 /* global JBrowseReactCircularGenomeView React, ReactDOM */
 import assembly from './assembly.js'
 import tracks from './tracks.js'
+import defaultSession from './defaultSession.js'
 
 const { createViewState, JBrowseCircularGenomeView } =
   JBrowseReactCircularGenomeView
 const { createElement } = React
 const { render } = ReactDOM
-
-const defaultSession = {
-  name: 'My session',
-  view: {
-    id: 'circularView',
-    type: 'CircularView',
-    bpPerPx: 5000000,
-    tracks: [
-      {
-        id: 'uPdLKHik1',
-        type: 'VariantTrack',
-        configuration: 'pacbio_sv_vcf',
-        displays: [
-          {
-            id: 'v9QVAR3oaB',
-            type: 'ChordVariantDisplay',
-            configuration: 'pacbio_sv_vcf-ChordVariantDisplay',
-          },
-        ],
-      },
-    ],
-  },
-}
 
 const updates = document.getElementById('update')
 const state = new createViewState({

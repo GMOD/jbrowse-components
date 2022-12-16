@@ -7,10 +7,12 @@ import {
 
 import assembly from './assembly'
 import tracks from './tracks'
+import defaultSession from './defaultSession'
+
+type ViewModel = ReturnType<typeof createViewState>
 
 function View() {
-  const [viewState, setViewState] =
-    useState<ReturnType<typeof createViewState>>()
+  const [viewState, setViewState] = useState<ViewModel>()
   const [patches, setPatches] = useState('')
   const [stateSnapshot, setStateSnapshot] = useState('')
 
@@ -18,16 +20,11 @@ function View() {
     const state = createViewState({
       assembly,
       tracks,
-      location: '10:29,838,655..29,838,737',
+      defaultSession,
       onChange: patch => {
         setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
     })
-    state.session.view.showTrack('GRCh38-ReferenceSequenceTrack')
-    state.session.view.showTrack('genes')
-    state.session.view.showTrack(
-      'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-    )
     setViewState(state)
   }, [])
 
@@ -43,11 +40,11 @@ function View() {
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vite"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/embedded_demos/jbrowse-react-linear-genome-view-vite"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-vite
+          https://github.com/GMOD/jbrowse-components/tree/main/embedded_demos/jbrowse-react-linear-genome-view-vite
         </a>
         .
       </p>

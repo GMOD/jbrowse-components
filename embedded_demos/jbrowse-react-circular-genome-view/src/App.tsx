@@ -7,33 +7,12 @@ import {
 
 import assembly from './assembly'
 import tracks from './tracks'
+import defaultSession from './defaultSession'
 
-const defaultSession = {
-  name: 'My session',
-  view: {
-    id: 'circularView',
-    type: 'CircularView',
-    bpPerPx: 5000000,
-    tracks: [
-      {
-        id: 'uPdLKHik1',
-        type: 'VariantTrack',
-        configuration: 'pacbio_sv_vcf',
-        displays: [
-          {
-            id: 'v9QVAR3oaB',
-            type: 'ChordVariantDisplay',
-            configuration: 'pacbio_sv_vcf-ChordVariantDisplay',
-          },
-        ],
-      },
-    ],
-  },
-}
+type ViewModel = ReturnType<typeof createViewState>
 
 function View() {
-  const [viewState, setViewState] =
-    useState<ReturnType<typeof createViewState>>()
+  const [viewState, setViewState] = useState<ViewModel>()
   const [patches, setPatches] = useState('')
   const [stateSnapshot, setStateSnapshot] = useState('')
 
@@ -63,11 +42,11 @@ function View() {
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/embedded_demos/jbrowse-react-circular-genome-view"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-circular-genome-view
+          https://github.com/GMOD/jbrowse-components/tree/main/embedded_demos/jbrowse-react-circular-genome-view
         </a>
         .
       </p>

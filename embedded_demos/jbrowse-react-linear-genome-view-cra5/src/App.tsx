@@ -8,64 +8,7 @@ import makeWorkerInstance from '@jbrowse/react-linear-genome-view/esm/makeWorker
 
 import assembly from './assembly'
 import tracks from './tracks'
-
-const defaultSession = {
-  name: 'this session',
-  view: {
-    id: 'linearGenomeView',
-    type: 'LinearGenomeView',
-    tracks: [
-      {
-        id: '7PWx6ki1_',
-        type: 'ReferenceSequenceTrack',
-        configuration: 'GRCh38-ReferenceSequenceTrack',
-        displays: [
-          {
-            id: 'pa_7lx6FDh',
-            type: 'LinearReferenceSequenceDisplay',
-            height: 210,
-            configuration:
-              'GRCh38-ReferenceSequenceTrack-LinearReferenceSequenceDisplay',
-          },
-        ],
-      },
-      {
-        id: 'KHwe41KXk',
-        type: 'AlignmentsTrack',
-        configuration: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
-        displays: [
-          {
-            id: '_-kwYVczT8',
-            type: 'LinearAlignmentsDisplay',
-            PileupDisplay: {
-              id: '1HTk32IDZJ',
-              type: 'LinearPileupDisplay',
-              height: 100,
-              configuration: {
-                type: 'LinearPileupDisplay',
-                displayId:
-                  'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome-LinearAlignmentsDisplay_pileup_xyz',
-              },
-            },
-            SNPCoverageDisplay: {
-              id: 'ZBXRXmuDrc',
-              type: 'LinearSNPCoverageDisplay',
-              height: 45,
-              configuration: {
-                type: 'LinearSNPCoverageDisplay',
-                displayId:
-                  'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome-LinearAlignmentsDisplay_snpcoverage_xyz',
-              },
-            },
-            configuration:
-              'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome-LinearAlignmentsDisplay',
-            height: 250,
-          },
-        ],
-      },
-    ],
-  },
-}
+import defaultSession from './defaultSession'
 
 type ViewModel = ReturnType<typeof createViewState>
 
@@ -78,7 +21,6 @@ function View() {
     const state = createViewState({
       assembly,
       tracks,
-      location: '10:29,838,655..29,838,737',
       onChange: (patch: any) => {
         setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
@@ -107,11 +49,11 @@ function View() {
       <p>
         The code for this app is available at{' '}
         <a
-          href="https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-cra5"
+          href="https://github.com/GMOD/jbrowse-components/tree/main/embedded_demos/jbrowse-react-linear-genome-view-cra5"
           target="_blank"
           rel="noreferrer"
         >
-          https://github.com/GMOD/jbrowse-components/tree/main/demos/jbrowse-react-linear-genome-view-cra5
+          https://github.com/GMOD/jbrowse-components/tree/main/embedded_demos/jbrowse-react-linear-genome-view-cra5
         </a>
         .
       </p>
