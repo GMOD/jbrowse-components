@@ -13,7 +13,7 @@ products/jbrowse-web/scripts/**
 /products/jbrowse-web/config/
 products/jbrowse-desktop/public/electron.js
 products/jbrowse-desktop/public/generateFastaIndex.js
-/demos/
+/embedded_demos/
 webpack.config.js
 craco.config.js
 packages/core/util/QuickLRU.js
