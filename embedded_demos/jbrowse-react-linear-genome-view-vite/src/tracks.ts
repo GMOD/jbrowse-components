@@ -1,8 +1,7 @@
 const tracks = [
   {
     type: 'FeatureTrack',
-    trackId:
-      'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
+    trackId: 'genes',
     name: 'NCBI RefSeq Genes',
     assemblyNames: ['GRCh38'],
     category: ['Genes'],
@@ -15,6 +14,22 @@ const tracks = [
         location: {
           uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
         },
+      },
+    },
+    textSearching: {
+      textSearchAdapter: {
+        type: 'TrixTextSearchAdapter',
+        textSearchAdapterId: 'gff3tabix_genes-index',
+        ixFilePath: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ix',
+        },
+        ixxFilePath: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.ixx',
+        },
+        metaFilePath: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/trix/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz_meta.json',
+        },
+        assemblyNames: ['GRCh38'],
       },
     },
   },

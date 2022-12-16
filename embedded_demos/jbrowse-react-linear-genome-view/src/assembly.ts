@@ -16,16 +16,6 @@ const assembly = {
         uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
       },
     },
-    displays: [
-      {
-        type: 'LinearReferenceSequenceDisplay',
-        displayId:
-          'GRCh38-ReferenceSequenceTrack-LinearReferenceSequenceDisplay',
-        renderer: {
-          type: 'DivSequenceRenderer',
-        },
-      },
-    ],
   },
   refNameAliases: {
     adapter: {
