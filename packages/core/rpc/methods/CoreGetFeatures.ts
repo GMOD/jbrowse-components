@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
+
+// locals
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType'
 import { RenderArgs } from './util'
@@ -58,7 +61,7 @@ export default class CoreGetFeatures extends RpcMethodType {
       ...opts,
       signal,
     })
-    const r = await ret.pipe(toArray()).toPromise()
+    const r = await firstValueFrom(ret.pipe(toArray()))
     return r.map(f => f.toJSON())
   }
 }

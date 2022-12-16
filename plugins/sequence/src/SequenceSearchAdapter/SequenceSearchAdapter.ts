@@ -11,6 +11,7 @@ import {
   doesIntersect2,
 } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 
 export default class extends BaseFeatureDataAdapter {
   public async configure() {
@@ -47,7 +48,7 @@ export default class extends BaseFeatureDataAdapter {
         },
         opts,
       )
-      const feats = await ret.pipe(toArray()).toPromise()
+      const feats = await firstValueFrom(ret.pipe(toArray()))
       const residues: string = feats[0]?.get('seq') || ''
       const search = this.getConf('search')
       const searchForward = this.getConf('searchForward')

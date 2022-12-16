@@ -1,6 +1,7 @@
 import { toArray } from 'rxjs/operators'
 import path from 'path'
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
+import { firstValueFrom } from 'rxjs'
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
 

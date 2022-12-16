@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs'
+import { firstValueFrom, Observable } from 'rxjs'
 import { reduce } from 'rxjs/operators'
 
 // locals
@@ -129,8 +129,8 @@ export async function scoresToStats(
   let found = false
 
   const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
-    await feats
-      .pipe(
+    await firstValueFrom(
+      feats.pipe(
         reduce((acc, f) => {
           const s = f.get('score')
           const summary = f.get('summary')
@@ -144,8 +144,8 @@ export async function scoresToStats(
 
           return acc
         }, seed),
-      )
-      .toPromise()
+      ),
+    )
 
   return found
     ? rectifyStats({

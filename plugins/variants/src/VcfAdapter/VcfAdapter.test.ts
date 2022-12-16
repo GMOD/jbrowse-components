@@ -23,6 +23,6 @@ test('adapter can fetch variants from volvox.vcf', async () => {
   const names = await adapter.getRefNames()
   expect(names).toMatchSnapshot()
 
-  const featArray = await firstValueFrom(features.pipe(toArray()))
+  const featArray = await firstValueFrom(feat.pipe(toArray()))
   expect(featArray.slice(0, 5)).toMatchSnapshot()
 })

@@ -53,8 +53,8 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
     end: 20000,
   })
 
-  const featArray = await firstValueFrom(features.pipe(toArray()))
-  const csiFeaturesArray = await csiFeatures.pipe(toArray()).toPromise()
+  const featArray = await firstValueFrom(feat.pipe(toArray()))
+  const csiFeaturesArray = await firstValueFrom(csiFeatures.pipe(toArray()))
   expect(featArray.slice(0, 5)).toMatchSnapshot()
   expect(csiFeaturesArray.slice(0, 5)).toEqual(featArray.slice(0, 5))
 
