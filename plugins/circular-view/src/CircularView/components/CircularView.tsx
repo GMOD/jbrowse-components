@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { assembleLocString } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 
@@ -69,10 +69,8 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
 
   return (
     <>
-      {showImportForm ? (
+      {showImportForm || model.error ? (
         <ImportForm model={model} />
-      ) : model.error ? (
-        <ErrorMessage error={model.error} />
       ) : showFigure ? (
         <CircularViewLoaded model={model} />
       ) : null}
@@ -80,63 +78,66 @@ const CircularView = observer(({ model }: { model: CircularViewModel }) => {
   )
 })
 
-const CircularViewLoaded = observer(
-  ({ model }: { model: CircularViewModel }) => {
-    const {
-      width,
-      height,
-      id,
-      offsetRadians,
-      centerXY,
-      figureWidth,
-      figureHeight,
-    } = model
-    const { classes } = useStyles()
-    return (
-      <div className={classes.root} style={{ width, height }} data-testid={id}>
-        <div className={classes.scroller} style={{ width, height }}>
-          <div
+const CircularViewLoaded = observer(function ({
+  model,
+}: {
+  model: CircularViewModel
+}) {
+  const {
+    width,
+    height,
+    id,
+    offsetRadians,
+    centerXY,
+    figureWidth,
+    figureHeight,
+    hideVerticalResizeHandle,
+  } = model
+  const { classes } = useStyles()
+  return (
+    <div className={classes.root} style={{ width, height }} data-testid={id}>
+      <div className={classes.scroller} style={{ width, height }}>
+        <div
+          style={{
+            transform: [`rotate(${offsetRadians}rad)`].join(' '),
+            transition: 'transform 0.5s',
+            transformOrigin: centerXY.map(x => `${x}px`).join(' '),
+          }}
+        >
+          <svg
             style={{
-              transform: [`rotate(${offsetRadians}rad)`].join(' '),
-              transition: 'transform 0.5s',
-              transformOrigin: centerXY.map(x => `${x}px`).join(' '),
-            }}
-          >
-            <svg
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-              }}
-              className={classes.sliceRoot}
-              width={figureWidth}
-              height={figureHeight}
-              version="1.1"
-            >
-              <g transform={`translate(${centerXY})`}>
-                <Slices model={model} />
-              </g>
-            </svg>
-          </div>
-        </div>
-        <Controls model={model} />
-        {model.hideVerticalResizeHandle ? null : (
-          <ResizeHandle
-            onDrag={model.resizeHeight}
-            style={{
-              height: dragHandleHeight,
               position: 'absolute',
-              bottom: 0,
               left: 0,
-              background: '#ccc',
-              boxSizing: 'border-box',
-              borderTop: '1px solid #fafafa',
+              top: 0,
             }}
-          />
-        )}
+            className={classes.sliceRoot}
+            width={figureWidth + 'px'}
+            height={figureHeight + 'px'}
+            version="1.1"
+          >
+            <g transform={`translate(${centerXY})`}>
+              <Slices model={model} />
+            </g>
+          </svg>
+        </div>
       </div>
-    )
-  },
-)
+      <Controls model={model} />
+      {hideVerticalResizeHandle ? null : (
+        <ResizeHandle
+          onDrag={model.resizeHeight}
+          style={{
+            height: dragHandleHeight,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            background: '#ccc',
+            boxSizing: 'border-box',
+            borderTop: '1px solid #fafafa',
+          }}
+        />
+      )}
+    </div>
+  )
+})
 
 export default CircularView

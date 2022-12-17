@@ -49,11 +49,15 @@ const ImportForm = observer(({ model }: { model: any }) => {
         <Grid item>
           <Button
             disabled={!regions?.length}
-            onClick={() => model.setDisplayedRegions(regions)}
+            onClick={() => {
+              model.setError(undefined)
+              model.setDisplayedRegions(regions)
+            }}
             variant="contained"
             color="primary"
           >
-            {regions.length ? 'Open' : 'Loading&hellip;'}
+            {/* if there's an error, it's not actively loading  so just display open */}
+            {regions.length || err ? 'Open' : 'Loading...'}
           </Button>
         </Grid>
       </Grid>
