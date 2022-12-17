@@ -14,5 +14,8 @@ source code. See [Config guide](/docs/config_guide) for more info
 #### slot: sequenceAdapter
 
 ```js
-sequenceAdapter: pluginManager.pluggableConfigSchemaType('adapter')
+sequenceAdapter: {
+        type: 'frozen',
+        defaultValue: null,
+      }
 ```

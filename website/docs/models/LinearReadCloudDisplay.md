@@ -84,6 +84,16 @@ renderSvg: (opts: ExportSvgOptions) => Promise<Element>
 
 ### LinearReadCloudDisplay - Actions
 
+#### action: reload
+
+internal, a reference to a HTMLCanvas because we use a autorun to draw the
+canvas
+
+```js
+// type signature
+reload: () => void
+```
+
 #### action: setRef
 
 ```js

@@ -66,7 +66,32 @@ colorBy: types.maybe(
         )
 ```
 
+#### property: drawInter
+
+```js
+// type signature
+true
+// code
+drawInter: true
+```
+
+#### property: drawLongRange
+
+```js
+// type signature
+true
+// code
+drawLongRange: true
+```
+
 ### LinearReadArcsDisplay - Getters
+
+#### getter: lineWidthSetting
+
+```js
+// type
+any
+```
 
 #### getter: ready
 
@@ -81,7 +106,7 @@ boolean
 
 ```js
 // type signature
-trackMenuItems: () => MenuItem[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 #### method: renderSvg
@@ -93,11 +118,31 @@ renderSvg: (opts: ExportSvgOptions) => Promise<Element>
 
 ### LinearReadArcsDisplay - Actions
 
+#### action: reload
+
+internal, a reference to a HTMLCanvas because we use a autorun to draw the
+canvas
+
+```js
+// type signature
+reload: () => void
+```
+
 #### action: setRef
+
+internal, a reference to a HTMLCanvas because we use a autorun to draw the
+canvas
 
 ```js
 // type signature
 setRef: (ref: HTMLCanvasElement) => void
+```
+
+#### action: setColorScheme
+
+```js
+// type signature
+setColorScheme: (s: { type: string; }) => void
 ```
 
 #### action: setChainData
@@ -105,6 +150,20 @@ setRef: (ref: HTMLCanvasElement) => void
 ```js
 // type signature
 setChainData: (args: ChainData) => void
+```
+
+#### action: setDrawInter
+
+```js
+// type signature
+setDrawInter: (f: boolean) => void
+```
+
+#### action: setDrawLongRange
+
+```js
+// type signature
+setDrawLongRange: (f: boolean) => void
 ```
 
 #### action: setLoading
@@ -115,6 +174,8 @@ setLoading: (f: boolean) => void
 ```
 
 #### action: setDrawn
+
+used during tests to detect when we can complete a snapshot test
 
 ```js
 // type signature
@@ -130,12 +191,17 @@ setFilterBy: (filter: Filter) => void
 
 #### action: setLastDrawnOffsetPx
 
+allows the drawing to slide around a little bit if it takes a long time to
+refresh
+
 ```js
 // type signature
 setLastDrawnOffsetPx: (n: number) => void
 ```
 
 #### action: setLineWidth
+
+thin, bold, extrabold, etc
 
 ```js
 // type signature

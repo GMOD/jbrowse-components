@@ -19,6 +19,7 @@ import {
   getSession,
   clamp,
   isSessionModelWithWidgets,
+  Region as IRegion,
 } from '@jbrowse/core/util'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { calculateStaticSlices, sliceIsVisible } from './slices'
@@ -250,15 +251,27 @@ function stateModelFactory(pluginManager: PluginManager) {
          * elide regions that are too small to see reasonably
          */
         get elidedRegions() {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const visible: any[] = []
+          const visible: (
+            | {
+                elided: true
+                widthBp: number
+                regions: IRegion[]
+              }
+            | {
+                elided: false
+                widthBp: number
+                start: number
+                end: number
+                refName: string
+              }
+          )[] = []
           self.displayedRegions.forEach(region => {
             const widthBp = region.end - region.start
             const widthPx = widthBp / self.bpPerPx
             if (widthPx < self.minVisibleWidth) {
               // too small to see, collapse into a single elision region
               const lastVisible = visible[visible.length - 1]
-              if (lastVisible && lastVisible.elided) {
+              if (lastVisible?.elided) {
                 lastVisible.regions.push({ ...region })
                 lastVisible.widthBp += widthBp
               } else {
@@ -270,7 +283,7 @@ function stateModelFactory(pluginManager: PluginManager) {
               }
             } else {
               // big enough to see, display it
-              visible.push({ ...region, widthBp })
+              visible.push({ ...region, widthBp, elided: false })
             }
           })
 
@@ -278,8 +291,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           for (let i = 0; i < visible.length; i += 1) {
             const v = visible[i]
             if (v.elided && v.regions.length === 1) {
-              delete v.elided
-              visible[i] = { ...v, ...v.regions[0] }
+              visible[i] = { ...v, ...v.regions[0], elided: false }
             }
           }
           return visible
