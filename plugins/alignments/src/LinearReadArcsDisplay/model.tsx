@@ -328,7 +328,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       afterAttach() {
         addDisposer(
           self,
-          autorun(() => fetchChains(self), { delay: 1000 }),
+          autorun(
+            () => {
+              fetchChains(self)
+              console.log('here')
+            },
+            { delay: 1000 },
+          ),
         )
 
         addDisposer(
@@ -347,6 +353,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ctx.clearRect(0, 0, canvas.width, self.height * 2)
                 ctx.resetTransform()
                 ctx.scale(2, 2)
+                console.log('here2')
                 await drawFeats(self, ctx)
                 self.setDrawn(true)
               } catch (e) {

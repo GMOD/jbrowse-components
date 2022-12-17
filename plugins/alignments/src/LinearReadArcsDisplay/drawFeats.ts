@@ -9,6 +9,7 @@ import {
 } from '../shared/color'
 import { ChainData } from '../shared/fetchChains'
 import { featurizeSA } from '../MismatchParser'
+import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 export function hasPairedReads(features: ChainData) {
   for (const f of features.chains.values()) {
@@ -20,6 +21,13 @@ export function hasPairedReads(features: ChainData) {
 }
 
 type LGV = LinearGenomeViewModel
+
+interface CoreFeat {
+  strand: number
+  refName: string
+  start: number
+  end: number
+}
 
 export default async function drawFeats(
   self: {
@@ -48,17 +56,14 @@ export default async function drawFeats(
   const assemblyName = view.assemblyNames[0]
   const asm = assemblyManager.get(assemblyName)
   const type = self.colorBy?.type || 'insertSizeAndOrientation'
+  if (!asm) {
+    return
+  }
 
   function draw(
-    k1: {
-      strand: number
-      refName: string
-      start: number
-      end: number
-      tlen?: number
-      pair_orientation?: string
-    },
-    k2: { strand: number; refName: string; start: number; end: number },
+    k1: CoreFeat & { tlen?: number; pair_orientation?: string },
+    k2: CoreFeat,
+    assembly: Assembly,
     longRange?: boolean,
   ) {
     const s1 = k1.strand
@@ -69,8 +74,14 @@ export default async function drawFeats(
     const p1 = f1 ? k1.start : k1.end
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
 
-    const r1 = view.bpToPx({ refName: k1.refName, coord: p1 })
-    const r2 = view.bpToPx({ refName: k2.refName, coord: p2 })
+    const r1 = view.bpToPx({
+      refName: assembly.getCanonicalRefName(k1.refName),
+      coord: p1,
+    })
+    const r2 = view.bpToPx({
+      refName: assembly.getCanonicalRefName(k2.refName),
+      coord: p2,
+    })
 
     if (r1 && r2) {
       const radius = (r2.offsetPx - r1.offsetPx) / 2
@@ -149,7 +160,7 @@ export default async function drawFeats(
       // special case where we look at RPOS/RNEXT
       if (hasPaired) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const refName = asm?.getCanonicalRefName(f.next_ref!) || f.next_ref!
+        const refName = f.next_ref!
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const coord = f.next_pos!
         draw(
@@ -160,6 +171,7 @@ export default async function drawFeats(
             end: coord,
             strand: f.strand,
           },
+          asm,
           true,
         )
       }
@@ -171,16 +183,7 @@ export default async function drawFeats(
         for (let i = 0; i < features.length - 1; i++) {
           const f = features[i]
           const v1 = features[i + 1]
-          draw(
-            f,
-            {
-              refName: asm?.getCanonicalRefName(v1.refName) || v1.refName,
-              start: v1.start,
-              end: v1.end,
-              strand: v1.strand,
-            },
-            true,
-          )
+          draw(f, v1, asm, true)
         }
       }
     } else {
@@ -192,7 +195,7 @@ export default async function drawFeats(
         chain = chain.filter(f => !(f.flags & 2048))
       }
       for (let i = 0; i < chain.length - 1; i++) {
-        draw(chain[i], chain[i + 1], false)
+        draw(chain[i], chain[i + 1], asm, false)
       }
     }
   }
