@@ -31,6 +31,16 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
+      jitter: {
+        type: 'number',
+        description:
+          'jitters the x position so e.g. if 100 long reads map to same x position, arcs slightly spread out from there',
+        defaultValue: 2,
+      },
+
+      /**
+       * #slot
+       */
       colorScheme: {
         type: 'stringEnum',
         model: types.enumeration('colorScheme', [

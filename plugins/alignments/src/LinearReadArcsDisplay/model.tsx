@@ -68,6 +68,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
+        jitter: types.maybe(types.number),
+
+        /**
+         * #property
+         */
         colorBy: types.maybe(
           types.model({
             type: types.string,
@@ -175,6 +180,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setLineWidth(n: number) {
         self.lineWidth = n
       },
+
+      /**
+       * #action
+       * jitter val, helpful to jitter the x direction so you see better evidence when e.g. 100
+       * long reads map to same x position
+       */
+      setJitter(n: number) {
+        self.jitter = n
+      },
     }))
 
     .views(self => {
@@ -189,6 +203,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         get lineWidthSetting() {
           return self.lineWidth ?? getConf(self, 'lineWidth')
+        },
+
+        /**
+         * #getter
+         */
+        get jitterVal(): number {
+          return self.jitter ?? getConf(self, 'jitter')
         },
         /**
          * #getter
@@ -245,6 +266,30 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 },
               ],
             },
+            {
+              label: 'Jitter x-positions',
+              subMenu: [
+                {
+                  type: 'checkbox',
+                  checked: this.jitterVal === 0,
+                  label: 'None',
+                  onClick: () => self.setJitter(0),
+                },
+                {
+                  type: 'checkbox',
+                  checked: this.jitterVal === 2,
+                  label: 'Small',
+                  onClick: () => self.setJitter(2),
+                },
+                {
+                  type: 'checkbox',
+                  checked: this.jitterVal === 10,
+                  label: 'Large',
+                  onClick: () => self.setJitter(10),
+                },
+              ],
+            },
+
             {
               label: 'Draw inter-region vertical lines',
               type: 'checkbox',
