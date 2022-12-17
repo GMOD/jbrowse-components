@@ -60,6 +60,15 @@ export default async function drawFeats(
     return
   }
 
+  function drawLineAtOffset(p: number, c: string) {
+    // draws a vertical line off to middle of nowhere if the second end not found
+    ctx.strokeStyle = c
+    ctx.beginPath()
+    ctx.moveTo(p, 0)
+    ctx.lineTo(p, displayHeight)
+    ctx.stroke()
+  }
+
   function draw(
     k1: CoreFeat & { tlen?: number; pair_orientation?: string },
     k2: CoreFeat,
@@ -87,6 +96,7 @@ export default async function drawFeats(
       const radius = (r2.offsetPx - r1.offsetPx) / 2
       const absrad = Math.abs(radius)
       const p = r1.offsetPx - view.offsetPx
+      const p2 = r2.offsetPx - view.offsetPx
 
       // bezier (used for non-long-range arcs) requires moveTo before beginPath
       // arc (used for long-range) requires moveTo after beginPath (or else a
@@ -134,25 +144,26 @@ export default async function drawFeats(
       const destX = p + radius * 2
       const destY = Math.min(displayHeight, absrad)
       if (longRange) {
-        ctx.arc(p + radius, 0, absrad, 0, Math.PI)
+        // avoid drawing gigantic circles that glitch out the rendering,
+        // instead draw vertical lines
+        if (absrad > 10000) {
+          drawLineAtOffset(p, 'red')
+          drawLineAtOffset(p2, 'red')
+        } else {
+          ctx.arc(p + radius, 0, absrad, 0, Math.PI)
+          ctx.stroke()
+        }
       } else {
         ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
+        ctx.stroke()
       }
-      ctx.stroke()
     } else if (r1 && self.drawInter) {
-      // draws a vertical line off to middle of nowhere if the second end not found
-      const p = r1.offsetPx - view.offsetPx
-      ctx.strokeStyle = 'purple'
-      ctx.beginPath()
-      ctx.moveTo(p, 0)
-      ctx.lineTo(p, displayHeight)
-      ctx.stroke()
+      drawLineAtOffset(r1.offsetPx - view.offsetPx, 'purple')
     }
   }
 
   for (let i = 0; i < chains.length; i++) {
     let chain = chains[i]
-
     if (chain.length === 1 && self.drawLongRange) {
       // singleton feature
       const f = chain[0]
