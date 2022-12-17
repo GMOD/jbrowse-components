@@ -22,6 +22,10 @@ export function hasPairedReads(features: ChainData) {
 
 type LGV = LinearGenomeViewModel
 
+function jitter(n: number) {
+  return Math.random() * 2 * n - n
+}
+
 interface CoreFeat {
   strand: number
   refName: string
@@ -39,23 +43,31 @@ export default async function drawFeats(
     height: number
     chainData?: ChainData
     lineWidthSetting: number
+    jitterVal: number
   },
   ctx: CanvasRenderingContext2D,
 ) {
-  const { chainData } = self
+  const {
+    chainData,
+    height,
+    colorBy,
+    drawInter,
+    drawLongRange,
+    lineWidthSetting,
+    jitterVal,
+  } = self
   if (!chainData) {
     return
   }
-  const displayHeight = self.height
   const view = getContainingView(self) as LGV
   const { assemblyManager } = getSession(self)
   self.setLastDrawnOffsetPx(view.offsetPx)
-  ctx.lineWidth = self.lineWidthSetting
+  ctx.lineWidth = lineWidthSetting
   const { chains, stats } = chainData
   const hasPaired = hasPairedReads(chainData)
   const assemblyName = view.assemblyNames[0]
   const asm = assemblyManager.get(assemblyName)
-  const type = self.colorBy?.type || 'insertSizeAndOrientation'
+  const type = colorBy?.type || 'insertSizeAndOrientation'
   if (!asm) {
     return
   }
@@ -65,7 +77,7 @@ export default async function drawFeats(
     ctx.strokeStyle = c
     ctx.beginPath()
     ctx.moveTo(p, 0)
-    ctx.lineTo(p, displayHeight)
+    ctx.lineTo(p, height)
     ctx.stroke()
   }
 
@@ -82,15 +94,10 @@ export default async function drawFeats(
 
     const p1 = f1 ? k1.start : k1.end
     const p2 = hasPaired ? (f2 ? k2.start : k2.end) : f2 ? k2.end : k2.start
-
-    const r1 = view.bpToPx({
-      refName: assembly.getCanonicalRefName(k1.refName),
-      coord: p1,
-    })
-    const r2 = view.bpToPx({
-      refName: assembly.getCanonicalRefName(k2.refName),
-      coord: p2,
-    })
+    const ra1 = assembly.getCanonicalRefName(k1.refName)
+    const ra2 = assembly.getCanonicalRefName(k2.refName)
+    const r1 = view.bpToPx({ refName: ra1, coord: p1 })
+    const r2 = view.bpToPx({ refName: ra2, coord: p2 })
 
     if (r1 && r2) {
       const radius = (r2.offsetPx - r1.offsetPx) / 2
@@ -120,9 +127,7 @@ export default async function drawFeats(
           } else if (type === 'insertSize') {
             ctx.strokeStyle = getInsertSizeColor(k1, k2, stats) || 'grey'
           } else if (type === 'gradient') {
-            ctx.strokeStyle = `hsl(${
-              Math.log10(Math.abs(p1 - p2)) * 10
-            },50%,50%)`
+            ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
         } else {
           if (type === 'orientation' || type === 'insertSizeAndOrientation') {
@@ -134,37 +139,42 @@ export default async function drawFeats(
               ctx.strokeStyle = 'grey'
             }
           } else if (type === 'gradient') {
-            ctx.strokeStyle = `hsl(${
-              Math.log10(Math.abs(p1 - p2)) * 10
-            },50%,50%)`
+            ctx.strokeStyle = `hsl(${Math.log10(absrad) * 10},50%,50%)`
           }
         }
       }
 
       const destX = p + radius * 2
-      const destY = Math.min(displayHeight, absrad)
+      const destY = Math.min(height + jitter(jitterVal), absrad)
       if (longRange) {
         // avoid drawing gigantic circles that glitch out the rendering,
         // instead draw vertical lines
-        if (absrad > 10000) {
-          drawLineAtOffset(p, 'red')
-          drawLineAtOffset(p2, 'red')
+        if (absrad > 100_000) {
+          drawLineAtOffset(p + jitter(jitterVal), 'red')
+          drawLineAtOffset(p2 + jitter(jitterVal), 'red')
         } else {
-          ctx.arc(p + radius, 0, absrad, 0, Math.PI)
+          ctx.arc(p + radius + jitter(jitterVal), 0, absrad, 0, Math.PI)
           ctx.stroke()
         }
       } else {
-        ctx.bezierCurveTo(p, destY, destX, destY, destX, 0)
+        ctx.bezierCurveTo(
+          p + jitter(jitterVal),
+          destY,
+          destX,
+          destY,
+          destX + jitter(jitterVal),
+          0,
+        )
         ctx.stroke()
       }
-    } else if (r1 && self.drawInter) {
+    } else if (r1 && drawInter) {
       drawLineAtOffset(r1.offsetPx - view.offsetPx, 'purple')
     }
   }
 
   for (let i = 0; i < chains.length; i++) {
     let chain = chains[i]
-    if (chain.length === 1 && self.drawLongRange) {
+    if (chain.length === 1 && drawLongRange) {
       // singleton feature
       const f = chain[0]
 
@@ -176,12 +186,7 @@ export default async function drawFeats(
         const coord = f.next_pos!
         draw(
           f,
-          {
-            refName,
-            start: coord,
-            end: coord,
-            strand: f.strand,
-          },
+          { refName, start: coord, end: coord, strand: f.strand },
           asm,
           true,
         )
