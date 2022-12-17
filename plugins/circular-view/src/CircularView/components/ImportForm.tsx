@@ -7,7 +7,7 @@ import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {
-    marginBottom: theme.spacing(4),
+    padding: theme.spacing(6),
   },
 }))
 
@@ -15,10 +15,9 @@ const useStyles = makeStyles()(theme => ({
 const ImportForm = observer(({ model }: { model: any }) => {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { error: modelError } = model
+  const { error } = model
   const { assemblyNames, assemblyManager } = session
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
-  const [error, setError] = useState<Error | undefined>(modelError)
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
     ? assembly?.error
@@ -39,7 +38,7 @@ const ImportForm = observer(({ model }: { model: any }) => {
         <Grid item>
           <AssemblySelector
             onChange={val => {
-              setError(undefined)
+              model.setError(undefined)
               setSelectedAsm(val)
             }}
             session={session}
@@ -50,11 +49,15 @@ const ImportForm = observer(({ model }: { model: any }) => {
         <Grid item>
           <Button
             disabled={!regions?.length}
-            onClick={() => model.setDisplayedRegions(regions)}
+            onClick={() => {
+              model.setError(undefined)
+              model.setDisplayedRegions(regions)
+            }}
             variant="contained"
             color="primary"
           >
-            {regions.length ? 'Open' : 'Loading&hellip;'}
+            {/* if there's an error, it's not actively loading  so just display open */}
+            {regions.length || err ? 'Open' : 'Loading...'}
           </Button>
         </Grid>
       </Grid>
