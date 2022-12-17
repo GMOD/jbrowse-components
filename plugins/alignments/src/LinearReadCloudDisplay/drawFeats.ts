@@ -1,5 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // locals
@@ -60,9 +60,15 @@ export default async function drawFeats(
   if (!chainData) {
     return
   }
+  const { assemblyManager } = getSession(self)
   const featureHeight = getConf(self, 'featureHeight')
   const displayHeight = self.height
   const view = getContainingView(self) as LGV
+  const assemblyName = view.assemblyNames[0]
+  const asm = assemblyManager.get(assemblyName)
+  if (!asm) {
+    return
+  }
 
   self.setLastDrawnOffsetPx(view.offsetPx)
 
@@ -76,22 +82,13 @@ export default async function drawFeats(
     if (chain[0].flags & 1 && chain.length > 1) {
       const v0 = chain[0]
       const v1 = chain[1]
-      const r1s = view.bpToPx({
-        refName: v0.refName,
-        coord: v0.start,
-      })
-      const r1e = view.bpToPx({
-        refName: v0.refName,
-        coord: v0.end,
-      })
-      const r2s = view.bpToPx({
-        refName: v1.refName,
-        coord: v1.start,
-      })
-      const r2e = view.bpToPx({
-        refName: v1.refName,
-        coord: v1.end,
-      })
+      const ra1 = asm.getCanonicalRefName(v0.refName)
+      const ra2 = asm.getCanonicalRefName(v1.refName)
+      const r1s = view.bpToPx({ refName: ra1, coord: v0.start })
+      const r1e = view.bpToPx({ refName: ra1, coord: v0.end })
+      const r2s = view.bpToPx({ refName: ra2, coord: v1.start })
+      const r2e = view.bpToPx({ refName: ra2, coord: v1.end })
+
       let distance = 0
 
       if (
@@ -121,22 +118,13 @@ export default async function drawFeats(
       for (let i = 1; i < chain.length; i++) {
         const v0 = chain[i - 1]
         const v1 = chain[i]
-        const r1s = view.bpToPx({
-          refName: v0.refName,
-          coord: v0.start,
-        })
-        const r1e = view.bpToPx({
-          refName: v0.refName,
-          coord: v0.end,
-        })
-        const r2s = view.bpToPx({
-          refName: v1.refName,
-          coord: v1.start,
-        })
-        const r2e = view.bpToPx({
-          refName: v1.refName,
-          coord: v1.end,
-        })
+        const ra1 = asm.getCanonicalRefName(v0.refName)
+        const ra2 = asm.getCanonicalRefName(v1.refName)
+        const r1s = view.bpToPx({ refName: ra1, coord: v0.start })
+        const r1e = view.bpToPx({ refName: ra1, coord: v0.end })
+        const r2s = view.bpToPx({ refName: ra2, coord: v1.start })
+        const r2e = view.bpToPx({ refName: ra2, coord: v1.end })
+
         let distance = 0
 
         if (
