@@ -22,8 +22,7 @@ module.exports = {
   },
   devServer: {
     port: 9000,
-    open: true,
-    openPage: 'umd_example/',
+    open: 'umd_example/',
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': '*',

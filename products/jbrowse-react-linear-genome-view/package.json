@@ -28,7 +28,6 @@
     "docs"
   ],
   "scripts": {
-    "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "build": "npm-run-all build:*",
     "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "build:esm": "tsc --build tsconfig.build.esm.json",
