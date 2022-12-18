@@ -1,11 +1,8 @@
 import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { parseBreakend } from '@gmod/vcf'
+import VCF, { parseBreakend } from '@gmod/vcf'
 
 /* eslint-disable no-underscore-dangle */
 
-/**
- * VCF Feature creation with lazy genotype evaluation.
- */
 interface Samples {
   [key: string]: {
     [key: string]: { values: string[] | number[] | null }
@@ -28,15 +25,14 @@ export default class VCFFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private variant: any
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private parser: any
+  private parser: VCF
 
   private data: FeatureData
 
   private _id: string
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  constructor(args: { variant: any; parser: any; id: string }) {
+  constructor(args: { variant: any; parser: VCF; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
     this.data = this.dataFromVariant(this.variant)
@@ -50,26 +46,21 @@ export default class VCFFeature implements Feature {
       : this.data[field] || this.variant[field]
   }
 
-  set(): void {}
+  set() {}
 
-  parent(): undefined {
+  parent() {
     return undefined
   }
 
-  children(): undefined {
+  children() {
     return undefined
   }
 
-  tags(): string[] {
-    const t = [
-      ...Object.keys(this.data),
-      ...Object.keys(this.variant),
-      'samples',
-    ]
-    return t
+  tags() {
+    return [...Object.keys(this.data), ...Object.keys(this.variant), 'samples']
   }
 
-  id(): string {
+  id() {
     return this._id
   }
 
@@ -126,27 +117,26 @@ export default class VCFFeature implements Feature {
 
     // Combine descriptions like ["SNV G -> A", "SNV G -> T"] to ["SNV G -> A,T"]
     if (descriptions.size > 1) {
+      const descs = [...descriptions]
       const prefixes = new Set(
-        [...descriptions].map(desc => {
+        descs.map(desc => {
           const prefix = desc.split('->')
           return prefix[1] ? prefix[0] : desc
         }),
       )
 
-      const new_descs = [...prefixes].map(prefix => {
-        const suffixes = [...descriptions]
-          .map(desc => {
-            const pref = desc.split('-> ')
-            return pref[1] && pref[0] === prefix ? pref[1] : ''
-          })
-          .filter(f => !!f)
+      descriptions = new Set(
+        [...prefixes].map(prefix => {
+          const suffixes = descs
+            .map(desc => {
+              const pref = desc.split('-> ')
+              return pref[1] && pref[0] === prefix ? pref[1] : ''
+            })
+            .filter(f => !!f)
 
-        return suffixes.length
-          ? prefix + '-> ' + suffixes.join(',')
-          : [...descriptions].join(',')
-      })
-
-      descriptions = new Set(new_descs)
+          return suffixes.length ? prefix + '-> ' + suffixes.join(',') : prefix
+        }),
+      )
     }
     if (soTerms.size) {
       return [[...soTerms].join(','), [...descriptions].join(',')]
