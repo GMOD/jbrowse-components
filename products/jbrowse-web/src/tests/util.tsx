@@ -24,6 +24,7 @@ import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
+import RangeParser from 'range-parser'
 
 type LGV = LinearGenomeViewModel
 
@@ -67,34 +68,34 @@ export function getPluginManager(initialState?: any, adminMode = true) {
   return pluginManager
 }
 
-export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
-  return async (request: Request) => {
-    try {
-      const file = getFile(request.url)
-      const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
-      const r = request.headers.get('range')
-      if (r) {
-        const range = rangeParser(maxRangeRequest, r)
-        if (range === -2 || range === -1) {
-          throw new Error(`Error parsing range "${r}"`)
-        }
-        const { start, end } = range[0]
-        const len = end - start + 1
-        const buf = Buffer.alloc(len)
-        const { bytesRead } = await file.read(buf, 0, len, start)
-        const stat = await file.stat()
-        return new Response(buf.slice(0, bytesRead), {
-          status: 206,
-          headers: [['content-range', `${start}-${end}/${stat.size}`]],
-        })
+export async function fetchFile(file: GenericFilehandle, args: RequestInit) {
+  try {
+    const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
+
+    if (args.headers && 'range' in args.headers) {
+      const range = RangeParser(maxRangeRequest, args.headers.range)
+      if (range === -2 || range === -1) {
+        throw new Error(`Error parsing range "${range}"`)
       }
-      const body = await file.readFile()
-      return new Response(body, { status: 200 })
-    } catch (e) {
-      console.error(e)
-      return new Response(undefined, { status: 404 })
+      const { start, end } = range[0]
+      const len = end - start + 1
+      const buf = Buffer.alloc(len)
+      const { bytesRead } = await file.read(buf, 0, len, start)
+      const stat = await file.stat()
+      return new Response(buf.slice(0, bytesRead), {
+        status: 206,
+        headers: [['content-range', `${start}-${end}/${stat.size}`]],
+      })
     }
+    const body = await file.readFile()
+    return new Response(body, { status: 200 })
+  } catch (e) {
+    console.error(e)
+    return new Response(undefined, { status: 404 })
   }
+}
+export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
+  return (request: Request) => fetchFile(getFile(request.url), request)
 }
 
 export function setup() {

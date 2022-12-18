@@ -3,7 +3,10 @@ import React from 'react'
 import { QueryParamProvider } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { LocalFile } from 'generic-filehandle'
 import { Loader } from '../Loader'
+import { fetchFile } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -58,30 +61,7 @@ export const readBuffer = async (url: string, args: RequestInit) => {
       },
     }
   }
-  try {
-    const file = getFile(url)
-    const maxRangeRequest = 2000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers && 'range' in args.headers) {
-      const range = rangeParser(maxRangeRequest, args.headers.range)
-      if (range === -2 || range === -1) {
-        throw new Error(`Error parsing range "${args.headers.range}"`)
-      }
-      const { start, end } = range[0]
-      const len = end - start + 1
-      const buf = Buffer.alloc(len)
-      const { bytesRead } = await file.read(buf, 0, len, start)
-      const stat = await file.stat()
-      return new Response(buf.slice(0, bytesRead), {
-        status: 206,
-        headers: [['content-range', `${start}-${end}/${stat.size}`]],
-      })
-    }
-    const body = await file.readFile()
-    return new Response(body, { status: 200 })
-  } catch (e) {
-    console.error(e)
-    return new Response(undefined, { status: 404 })
-  }
+  return fetchFile(getFile(url), args)
 }
 
 export function App({ search }: { search: string }) {

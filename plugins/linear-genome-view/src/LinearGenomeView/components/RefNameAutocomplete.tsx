@@ -75,19 +75,21 @@ function RefNameAutocomplete({
   const debouncedSearch = useDebounce(currentSearch, 300)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
   const { coarseVisibleLocStrings, hasDisplayedRegions } = model
-  const regions = assembly?.regions
-  const options =
-    useMemo(
-      () =>
-        regions?.map(option => ({
-          result: new RefSequenceResult({
-            refName: option.refName,
-            label: option.refName,
-            matchedAttribute: 'refName',
-          }),
-        })),
-      [regions],
-    ) || []
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const regions = assembly?.regions || []
+
+  const options = useMemo(
+    () =>
+      regions.map(option => ({
+        result: new RefSequenceResult({
+          refName: option.refName,
+          label: option.refName,
+          matchedAttribute: 'refName',
+        }),
+      })),
+    [regions],
+  )
 
   useEffect(() => {
     let active = true
@@ -144,6 +146,13 @@ function RefNameAutocomplete({
 
   const inputBoxVal = coarseVisibleLocStrings || value || ''
 
+  // heuristic, text width + icon width
+  // + 45 accommodates help icon and search icon
+  const width = Math.min(
+    Math.max(measureText(inputBoxVal, 16) + 45, minWidth),
+    550,
+  )
+
   // notes on implementation:
   // The selectOnFocus setting helps highlight the field when clicked
   return (
@@ -157,16 +166,7 @@ function RefNameAutocomplete({
         freeSolo
         includeInputInList
         selectOnFocus
-        style={{
-          ...style,
-
-          // heuristic, text width + icon width
-          // + 45 accommodates help icon and search icon
-          width: Math.min(
-            Math.max(measureText(inputBoxVal, 16) + 45, minWidth),
-            550,
-          ),
-        }}
+        style={{ ...style, width }}
         value={inputBoxVal}
         loading={!loaded}
         inputValue={inputValue}
