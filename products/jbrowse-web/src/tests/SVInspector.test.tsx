@@ -1,11 +1,6 @@
 import '@testing-library/jest-dom/extend-expect'
 import { fireEvent, waitFor } from '@testing-library/react'
-import { TextEncoder, TextDecoder } from 'web-encoding'
-
 import { doBeforeEach, createView, setup } from './util'
-
-window.TextEncoder = TextEncoder
-window.TextDecoder = TextDecoder
 
 setup()
 

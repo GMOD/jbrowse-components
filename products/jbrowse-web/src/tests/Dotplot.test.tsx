@@ -1,6 +1,4 @@
 import { fireEvent } from '@testing-library/react'
-import { toMatchImageSnapshot } from 'jest-image-snapshot'
-import { TextEncoder, TextDecoder } from 'web-encoding'
 import path from 'path'
 
 // locals
@@ -9,17 +7,9 @@ import dotplotSession from './dotplot_inverted_test.json'
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json'
 import { setup, doBeforeEach, expectCanvasMatch, createView } from './util'
 
-if (!window.TextEncoder) {
-  window.TextEncoder = TextEncoder
-}
-if (!window.TextDecoder) {
-  window.TextDecoder = TextDecoder
-}
-
 const delay = { timeout: 25000 }
 const opts = [{}, delay]
 
-expect.extend({ toMatchImageSnapshot })
 setup()
 
 beforeEach(() => {

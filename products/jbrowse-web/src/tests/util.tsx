@@ -1,30 +1,29 @@
 import React from 'react'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Image, createCanvas } from 'canvas'
+// eslint-disable-next-line import/no-extraneous-dependencies
+import rangeParser from 'range-parser'
+import { QueryParamProvider } from 'use-query-params'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
-
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
-
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-import rangeParser from 'range-parser'
+// jbrowse core
 import PluginManager from '@jbrowse/core/PluginManager'
-import { QueryParamProvider } from 'use-query-params'
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
+// locals
 import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Image, createCanvas } from 'canvas'
-
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 type LGV = LinearGenomeViewModel
 

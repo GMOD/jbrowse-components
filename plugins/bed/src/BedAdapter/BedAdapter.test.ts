@@ -2,11 +2,6 @@ import { toArray } from 'rxjs/operators'
 import BedAdapter from './BedAdapter'
 import MyConfigSchema from './configSchema'
 
-import { TextDecoder } from 'web-encoding'
-if (!window.TextDecoder) {
-  window.TextDecoder = TextDecoder
-}
-
 test('adapter can fetch features from volvox-bed12.bed', async () => {
   const adapter = new BedAdapter(
     MyConfigSchema.create({

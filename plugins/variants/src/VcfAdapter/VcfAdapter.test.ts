@@ -1,8 +1,6 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './VcfAdapter'
 import configSchema from './configSchema'
-import { TextDecoder } from 'web-encoding'
-window.TextDecoder = TextDecoder
 
 test('adapter can fetch variants from volvox.vcf', async () => {
   const adapter = new Adapter(
