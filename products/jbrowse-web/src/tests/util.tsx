@@ -93,8 +93,35 @@ export async function fetchFile(file: GenericFilehandle, args: RequestInit) {
     return new Response(undefined, { status: 404 })
   }
 }
+
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
-  return (request: Request) => fetchFile(getFile(request.url), request)
+  return async (request: Request) => {
+    try {
+      const file = getFile(request.url)
+      const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
+      const r = request.headers.get('range')
+      if (r) {
+        const range = rangeParser(maxRangeRequest, r)
+        if (range === -2 || range === -1) {
+          throw new Error(`Error parsing range "${r}"`)
+        }
+        const { start, end } = range[0]
+        const len = end - start + 1
+        const buf = Buffer.alloc(len)
+        const { bytesRead } = await file.read(buf, 0, len, start)
+        const stat = await file.stat()
+        return new Response(buf.slice(0, bytesRead), {
+          status: 206,
+          headers: [['content-range', `${start}-${end}/${stat.size}`]],
+        })
+      }
+      const body = await file.readFile()
+      return new Response(body, { status: 200 })
+    } catch (e) {
+      console.error(e)
+      return new Response(undefined, { status: 404 })
+    }
+  }
 }
 
 export function setup() {
@@ -125,9 +152,7 @@ export function expectCanvasMatch(
   canvas: HTMLElement,
   failureThreshold = 0.01,
 ) {
-  const buf = canvasToBuffer(canvas as HTMLCanvasElement)
-  console.log({ buf })
-  expect(buf).toMatchImageSnapshot({
+  expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
     failureThreshold,
     failureThresholdType: 'percent',
   })
@@ -160,7 +185,7 @@ export function createView(args?: any, adminMode?: boolean) {
 }
 
 export function doBeforeEach(
-  cb = (str: string) => `../../test_data/volvox/${str}`,
+  cb = (s: string) => `../../test_data/volvox/${s}`,
 ) {
   clearCache()
   clearAdapterCache()
