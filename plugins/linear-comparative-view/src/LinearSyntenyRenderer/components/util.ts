@@ -129,10 +129,14 @@ export function layoutMatches(
         for (const [f1, f2] of generateMatches(feats[i], feats[j], f =>
           f.get('syntenyId'),
         )) {
-          const f1s = f1.get('start')
-          const f1e = f1.get('end')
+          let f1s = f1.get('start')
+          let f1e = f1.get('end')
           const f2s = f2.get('start')
           const f2e = f2.get('end')
+
+          if (f1.get('strand') === -1) {
+            ;[f1e, f1s] = [f1s, f1e]
+          }
           const a1 = assemblyManager?.get(f1.get('assemblyName'))
           const a2 = assemblyManager?.get(f2.get('assemblyName'))
           const r1 = f1.get('refName')
