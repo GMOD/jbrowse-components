@@ -2,16 +2,15 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { Region } from '@jbrowse/core/util/types'
+import { Region, Feature } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import IntervalTree from '@flatten-js/interval-tree'
 import { unzip } from '@gmod/bgzf-filehandle'
 import VCF from '@gmod/vcf'
 
 // local
-import VcfFeature from '../VcfTabixAdapter/VcfFeature'
+import VcfFeature from '../VcfFeature'
 
 const readVcf = (f: string) => {
   const header: string[] = []
@@ -106,7 +105,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       try {
         const { start, end, refName } = region
         const { header, intervalTree } = await this.setup()
-        const parser = new VCF({ header: header })
+        const parser = new VCF({ header })
         intervalTree[refName]?.search([start, end]).forEach(f =>
           observer.next(
             new VcfFeature({

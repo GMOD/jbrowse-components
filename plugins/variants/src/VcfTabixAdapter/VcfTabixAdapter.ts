@@ -17,7 +17,7 @@ import { Observer } from 'rxjs'
 import { GenericFilehandle } from 'generic-filehandle'
 
 // local
-import VcfFeature from './VcfFeature'
+import VcfFeature from '../VcfFeature'
 
 export default class extends BaseFeatureDataAdapter {
   private configured?: Promise<{
