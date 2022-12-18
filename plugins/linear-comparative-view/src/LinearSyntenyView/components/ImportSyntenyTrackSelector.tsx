@@ -13,6 +13,7 @@ import { LinearSyntenyViewModel } from '../model'
 
 function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
   const assemblyNames = readConfObject(track, 'assemblyNames')
+  console.log({ assemblyNames })
   return (
     assemblyNames.includes(assembly1) &&
     assemblyNames.includes(assembly2) &&

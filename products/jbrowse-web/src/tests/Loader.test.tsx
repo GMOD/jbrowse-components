@@ -293,6 +293,7 @@ test('switch rows regular orientation both horizontally flipped', async () => {
       ],
     },
   )}`
+  console.log({ str })
   const { findByTestId } = render(<App search={str} />)
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
 }, 40000)

@@ -2025,6 +2025,20 @@
         }
       },
       "assemblyNames": ["volvox"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox-simple-inv.paf",
+      "name": "volvox-simple-inv.paf",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox-simple-inv.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox-simple-inv", "volvox"]
+      },
+      "assemblyNames": ["volvox-simple-inv", "volvox"]
     }
   ],
   "plugins": [

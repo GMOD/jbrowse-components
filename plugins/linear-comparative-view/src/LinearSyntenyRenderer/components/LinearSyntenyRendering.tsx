@@ -247,11 +247,10 @@ function LinearSyntenyRendering({
             let cx1 = x11
             let cx2 = x21
 
+            console.log(f1.get('start'), f1.get('end'))
+
             // we have to read the CIGAR backwards when looking at negative strand features
-            const f1flipped =
-              f1.get('revCigar') &&
-              f1.get('strand') === -1 &&
-              f1.get('start') > f1.get('end')
+            const f1flipped = f1.get('revCigar') && f1.get('strand') === -1
             const flipInsDel = f1.get('flipInsDel')
 
             // flip the direction of the CIGAR drawing in horizontally flipped
