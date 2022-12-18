@@ -10,10 +10,11 @@ import { fetchFile } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-const getFile = (url: string) =>
-  new LocalFile(
+function getFile(url: string) {
+  return new LocalFile(
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
+}
 
 export const readBuffer = async (url: string, args: RequestInit) => {
   if (url.match('plugin-store')) {
@@ -28,6 +29,11 @@ export const readBuffer = async (url: string, args: RequestInit) => {
           ],
         }
       },
+    }
+  }
+  if (url.match('doesNotExist')) {
+    return {
+      status: 404,
     }
   }
   if (url.match(/testid/)) {

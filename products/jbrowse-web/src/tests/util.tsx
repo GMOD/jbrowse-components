@@ -71,7 +71,6 @@ export function getPluginManager(initialState?: any, adminMode = true) {
 export async function fetchFile(file: GenericFilehandle, args: RequestInit) {
   try {
     const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
-
     if (args.headers && 'range' in args.headers) {
       const range = RangeParser(maxRangeRequest, args.headers.range)
       if (range === -2 || range === -1) {
@@ -126,7 +125,9 @@ export function expectCanvasMatch(
   canvas: HTMLElement,
   failureThreshold = 0.01,
 ) {
-  expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
+  const buf = canvasToBuffer(canvas as HTMLCanvasElement)
+  console.log({ buf })
+  expect(buf).toMatchImageSnapshot({
     failureThreshold,
     failureThresholdType: 'percent',
   })
@@ -159,7 +160,7 @@ export function createView(args?: any, adminMode?: boolean) {
 }
 
 export function doBeforeEach(
-  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
+  cb = (str: string) => `../../test_data/volvox/${str}`,
 ) {
   clearCache()
   clearAdapterCache()

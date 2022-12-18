@@ -2,11 +2,15 @@
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
+
 // local
 import { readBuffer, App } from './loaderUtil'
 import { expectCanvasMatch } from './util'
 
 jest.mock('../makeWorkerInstance', () => () => {})
+
+expect.extend({ toMatchImageSnapshot })
 
 const delay = { timeout: 20000 }
 
@@ -114,27 +118,26 @@ test('can use a spec url for dotplot view', async () => {
   await findByTestId('prerendered_canvas_done', {}, delay)
 }, 40000)
 
-const r = {
-  views: [
+test('test horizontally flipped inverted alignment', async () => {
+  console.warn = jest.fn()
+  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
-      type: 'LinearSyntenyView',
-      tracks: ['subset'],
       views: [
-        { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-        { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+        {
+          type: 'LinearSyntenyView',
+          tracks: ['subset'],
+          views: [
+            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
+            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+          ],
+        },
       ],
     },
-  ],
-}
+  )}`
+  console.log({ str })
+  const { findByTestId } = render(<App search={str} />)
+  const r = await findByTestId('synteny_canvas', {}, delay)
+  console.log({ r })
 
-// test('test horizontally flipped inverted alignment', async () => {
-//   console.warn = jest.fn()
-//   const q = JSON.stringify(r)
-//   const { findByTestId } = render(
-//     <App
-//       search={`?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${q}`}
-//     />,
-//   )
-//
-//   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-// }, 40000)
+  expectCanvasMatch(r)
+}, 40000)

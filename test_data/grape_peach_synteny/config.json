@@ -1,4 +1,9 @@
 {
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
   "assemblies": [
     {
       "name": "grape",
@@ -29,7 +34,6 @@
       }
     }
   ],
-  "configuration": {},
   "connections": [],
   "defaultSession": {
     "name": "New Session"
