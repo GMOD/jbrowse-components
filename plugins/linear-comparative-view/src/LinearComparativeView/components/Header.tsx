@@ -8,7 +8,6 @@ import { observer } from 'mobx-react'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 import CropFreeIcon from '@mui/icons-material/CropFree'
-import SearchIcon from '@mui/icons-material/Search'
 
 import { LinearComparativeViewModel } from '../model'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -28,7 +27,9 @@ const useStyles = makeStyles()(() => ({
     alignItems: 'center',
     marginLeft: 10,
   },
-
+  searchContainer: {
+    marginLeft: 5,
+  },
   searchBox: {
     display: 'flex',
   },
@@ -37,7 +38,7 @@ const useStyles = makeStyles()(() => ({
 const TrackSelector = observer(({ model }: { model: LCV }) => {
   return (
     <IconButton
-      onClick={() => model.activateTrackSelector()}
+      onClick={model.activateTrackSelector}
       title="Open track selector"
     >
       <TrackSelectorIcon color="primary" />
@@ -71,45 +72,39 @@ const SquareView = observer(({ model }: { model: LCV }) => {
   )
 })
 
-const LocStrings = observer(function ({ model }: { model: LCV }) {
-  const { classes } = useStyles()
-  const anyShowHeaders = model.views.some(view => !view.hideHeader)
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {!anyShowHeaders
-        ? model.views.map(view => (
-            <div key={view.id} className={classes.searchBox}>
-              <Typography
-                variant="body2"
-                color="textSecondary"
-                className={classes.bp}
-              >
-                {view.coarseVisibleLocStrings} (
-                {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp)
-              </Typography>
-            </div>
-          ))
-        : null}
-    </div>
-  )
-})
-const Header = observer(function ({
-  model,
-  ExtraButtons,
-}: {
-  ExtraButtons?: React.ReactNode
-  model: LCV
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.headerBar}>
-      <TrackSelector model={model} />
-      <LinkViews model={model} />
-      <SquareView model={model} />
-      {ExtraButtons}
-      <LocStrings model={model} />
-    </div>
-  )
-})
+const Header = observer(
+  ({ model, ExtraButtons }: { ExtraButtons?: React.ReactNode; model: LCV }) => {
+    const { classes } = useStyles()
+    const anyShowHeaders = model.views.some(view => !view.hideHeader)
+    return (
+      <div className={classes.headerBar}>
+        <TrackSelector model={model} />
+        <LinkViews model={model} />
+        <SquareView model={model} />
+        {ExtraButtons}
+        {!anyShowHeaders
+          ? model.views.map(view => (
+              <div key={view.id} className={classes.searchBox}>
+                <div className={classes.searchContainer}>
+                  <SearchBox model={view} showHelp={false} />
+                </div>
+                <div className={classes.bp}>
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    className={classes.bp}
+                  >
+                    {Math.round(view.coarseTotalBp).toLocaleString('en-US')} bp
+                  </Typography>
+                </div>
+              </div>
+            ))
+          : null}
+
+        <div className={classes.spacer} />
+      </div>
+    )
+  },
+)
 
 export default Header
