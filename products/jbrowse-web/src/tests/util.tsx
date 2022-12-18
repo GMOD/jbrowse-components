@@ -1,30 +1,30 @@
 import React from 'react'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { Image, createCanvas } from 'canvas'
-// eslint-disable-next-line import/no-extraneous-dependencies
-import rangeParser from 'range-parser'
-import { QueryParamProvider } from 'use-query-params'
-import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-
+import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
+import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { render } from '@testing-library/react'
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 
-// jbrowse core
+// eslint-disable-next-line import/no-extraneous-dependencies
+import rangeParser from 'range-parser'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { QueryParamProvider } from 'use-query-params'
 
-// locals
 import JBrowseWithoutQueryParamProvider from '../JBrowse'
 import JBrowseRootModelFactory from '../rootModel'
 import configSnapshot from '../../test_data/volvox/config.json'
 import corePlugins from '../corePlugins'
-import RangeParser from 'range-parser'
+
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Image, createCanvas } from 'canvas'
+
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
 type LGV = LinearGenomeViewModel
 
@@ -66,32 +66,6 @@ export function getPluginManager(initialState?: any, adminMode = true) {
 
   pluginManager.configure()
   return pluginManager
-}
-
-export async function fetchFile(file: GenericFilehandle, args: RequestInit) {
-  try {
-    const maxRangeRequest = 10000000 // kind of arbitrary, part of the rangeParser
-    if (args.headers && 'range' in args.headers) {
-      const range = RangeParser(maxRangeRequest, args.headers.range)
-      if (range === -2 || range === -1) {
-        throw new Error(`Error parsing range "${range}"`)
-      }
-      const { start, end } = range[0]
-      const len = end - start + 1
-      const buf = Buffer.alloc(len)
-      const { bytesRead } = await file.read(buf, 0, len, start)
-      const stat = await file.stat()
-      return new Response(buf.slice(0, bytesRead), {
-        status: 206,
-        headers: [['content-range', `${start}-${end}/${stat.size}`]],
-      })
-    }
-    const body = await file.readFile()
-    return new Response(body, { status: 200 })
-  } catch (e) {
-    console.error(e)
-    return new Response(undefined, { status: 404 })
-  }
 }
 
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
@@ -185,7 +159,7 @@ export function createView(args?: any, adminMode?: boolean) {
 }
 
 export function doBeforeEach(
-  cb = (s: string) => `../../test_data/volvox/${s}`,
+  cb = (str: string) => require.resolve(`../../test_data/volvox/${str}`),
 ) {
   clearCache()
   clearAdapterCache()
