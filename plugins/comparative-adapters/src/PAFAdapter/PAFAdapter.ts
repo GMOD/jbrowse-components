@@ -310,13 +310,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               refName,
               strand,
 
-              // this is a special property of how to interpret CIGAR on PAF,
-              // intrinsic to the data format. the CIGAR is read backwards for
-              // features aligning to the negative strand of the target, which
-              // is actually different than how it works in e.g. BAM/SAM (which
-              // is visible during alignments track read vs ref)
-              revCigar: true,
-
               // depending on whether the query or target is queried, the
               // "rev" flag
               flipInsDel: flip,

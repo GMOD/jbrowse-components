@@ -390,6 +390,44 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "type": "ReferenceSequenceTrack",
       },
     },
+    {
+      "name": "volvox_random_inv",
+      "sequence": {
+        "adapter": {
+          "faiLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "output_prefix3.simseq.genome.fa.fai",
+          },
+          "fastaLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "output_prefix3.simseq.genome.fa",
+          },
+          "metadataLocation": {
+            "internetAccountId": undefined,
+            "internetAccountPreAuthorization": undefined,
+            "locationType": "UriLocation",
+            "uri": "/path/to/fa.metadata.yaml",
+          },
+          "type": "IndexedFastaAdapter",
+        },
+        "displays": [
+          {
+            "displayId": "volvox_random_inv-ReferenceSequenceTrack-LinearReferenceSequenceDisplay",
+            "type": "LinearReferenceSequenceDisplay",
+          },
+          {
+            "displayId": "volvox_random_inv-ReferenceSequenceTrack-LinearGCContentDisplay",
+            "type": "LinearGCContentDisplay",
+          },
+        ],
+        "trackId": "volvox_random_inv-ReferenceSequenceTrack",
+        "type": "ReferenceSequenceTrack",
+      },
+    },
   ],
   "configuration": {},
   "connections": [],
@@ -3955,6 +3993,86 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "name": "volvox-simple-inv-paired.bam",
       "trackId": "volvox-simple-inv-paired.bam",
       "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox-simple-inv",
+          "volvox",
+        ],
+        "pafLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox-simple-inv.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox-simple-inv",
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox-simple-inv.paf-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox-simple-inv.paf-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox-simple-inv.paf-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox-simple-inv.paf-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox-simple-inv.paf",
+      "trackId": "volvox-simple-inv.paf",
+      "type": "SyntenyTrack",
+    },
+    {
+      "adapter": {
+        "assemblyNames": [
+          "volvox_random_inv",
+          "volvox",
+        ],
+        "pafLocation": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "volvox_inv_indels.paf",
+        },
+        "type": "PAFAdapter",
+      },
+      "assemblyNames": [
+        "volvox_random_inv",
+        "volvox",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_inv_indels-DotplotDisplay",
+          "type": "DotplotDisplay",
+        },
+        {
+          "displayId": "volvox_inv_indels-LinearComparativeDisplay",
+          "type": "LinearComparativeDisplay",
+        },
+        {
+          "displayId": "volvox_inv_indels-LinearSyntenyDisplay",
+          "type": "LinearSyntenyDisplay",
+        },
+        {
+          "displayId": "volvox_inv_indels-LGVSyntenyDisplay",
+          "type": "LGVSyntenyDisplay",
+        },
+      ],
+      "name": "volvox_inv_indels",
+      "trackId": "volvox_inv_indels",
+      "type": "SyntenyTrack",
     },
   ],
 }

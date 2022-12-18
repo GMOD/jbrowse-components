@@ -42,4 +42,4 @@ test('Open up a UCSC trackhub connection', async () => {
   })
   fireEvent.click(await findByText('Connect'))
   await findByText('CRAM - Volvox Sorted', ...opts)
-}, 20000)
+}, 40000)
