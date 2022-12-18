@@ -155,6 +155,24 @@
           }
         }
       }
+    },
+    {
+      "name": "volvox_random_inv",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_random_inv-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "output_prefix3.simseq.genome.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "output_prefix3.simseq.genome.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
     }
   ],
   "configuration": {},
@@ -2039,6 +2057,20 @@
         "assemblyNames": ["volvox-simple-inv", "volvox"]
       },
       "assemblyNames": ["volvox-simple-inv", "volvox"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_inv_indels",
+      "name": "volvox_inv_indels",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_inv_indels.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox_random_inv", "volvox"]
+      },
+      "assemblyNames": ["volvox_random_inv", "volvox"]
     }
   ],
   "plugins": [

@@ -65,6 +65,7 @@ function LinearSyntenyRendering({
   features: SimpleFeatureSerialized[][]
   trackIds: string[]
 }) {
+  console.log({ features })
   // canvas used for drawing visible screen
   const drawRef = useRef<HTMLCanvasElement>(null)
 
@@ -247,7 +248,7 @@ function LinearSyntenyRendering({
             let cx1 = x11
             let cx2 = x21
 
-            console.log(f1.get('start'), f1.get('end'))
+            //console.log(f1.get('start'), f1.get('end'))
 
             // we have to read the CIGAR backwards when looking at negative strand features
             const f1flipped = f1.get('revCigar') && f1.get('strand') === -1
