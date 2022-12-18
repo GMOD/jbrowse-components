@@ -17,6 +17,7 @@ if (!window.TextDecoder) {
 }
 
 const delay = { timeout: 25000 }
+const opts = [{}, delay]
 
 expect.extend({ toMatchImageSnapshot })
 setup()
@@ -27,8 +28,8 @@ beforeEach(() => {
 
 test('open a dotplot view', async () => {
   const { findByTestId } = createView(config)
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
-}, 20000)
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts))
+}, 30000)
 
 test('open a dotplot view with import form', async () => {
   const { findByTestId, findAllByTestId, findByText } = createView(config)
@@ -43,15 +44,15 @@ test('open a dotplot view with import form', async () => {
       value: 'peach',
     },
   })
-  fireEvent.click(await findByText('New track', {}, delay))
-  fireEvent.change(await findByTestId('urlInput', {}, delay), {
+  fireEvent.click(await findByText('New track', ...opts))
+  fireEvent.change(await findByTestId('urlInput', ...opts), {
     target: {
       value: 'peach_grape_small.paf.gz',
     },
   })
   fireEvent.click(await findByText('Launch'))
 
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts))
 }, 30000)
 
 test('inverted dotplot', async () => {
@@ -59,7 +60,7 @@ test('inverted dotplot', async () => {
     ...config,
     defaultSession: dotplotSession.session,
   })
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts), 0)
 }, 30000)
 
 test('inverted dotplot flip axes', async () => {
@@ -67,7 +68,7 @@ test('inverted dotplot flip axes', async () => {
     ...config,
     defaultSession: dotplotSessionFlipAxes.session,
   })
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay), 0)
+  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts), 0)
 }, 30000)
 
 // session with dotplots and linear synteny views with both orientations tested

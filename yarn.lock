@@ -1656,9 +1656,9 @@
     long "^4.0.0"
 
 "@gmod/ucsc-hub@^0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.6.tgz#62c3ef806c542f255381d7fe59faa16ab2f95bf5"
-  integrity sha512-7WggfnPpNsELg0GGszEpXJhlGK3jnKcJsyGY6oPIfKwf7M+1a9gLbeqperuLlINPXuM4oQ0H4hlad9YUNYEGeg==
+  version "0.1.7"
+  resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.1.7.tgz#ea8d0c1978fc8bbd1ab63061e8105beb3d1509f1"
+  integrity sha512-FHCgRLOYn5wjCGVDkGnW0wda7UAIFqVrKE5+0lh1EpUOu/UM1kfaidsJnha4Jc9V0+KCevSl4haVv0ZaMWqw2w==
 
 "@gmod/vcf@^5.0.9":
   version "5.0.10"
@@ -5121,9 +5121,9 @@
     form-data "^3.0.0"
 
 "@types/node@*":
-  version "18.11.16"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.16.tgz#966cae211e970199559cfbd295888fca189e49af"
-  integrity sha512-6T7P5bDkRhqRxrQtwj7vru+bWTpelgtcETAZEUSdq0YISKz8WKdoBukQLYQQ6DFHvU9JRsbFq0JH5C51X2ZdnA==
+  version "18.11.17"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.11.17.tgz#5c009e1d9c38f4a2a9d45c0b0c493fe6cdb4bcb5"
+  integrity sha512-HJSUJmni4BeDHhfzn6nF0sVmd1SMezP7/4F0Lq+aXzmp2xm9O7WXrUtHW/CHlYVtZUbByEvWidHqRtcJXGF2Ng==
 
 "@types/node@^14.0.10 || ^16.0.0", "@types/node@^14.14.20 || ^16.0.0", "@types/node@^16.11.26":
   version "16.18.10"
@@ -6030,9 +6030,9 @@ add-stream@^1.0.0:
   integrity sha512-qQLMr+8o0WC4FZGQTcJiKBVC59JylcPSrTtk6usvmIDFUOCKegapy1VHQwRbFMOFyb/inzUVqHs+eMYKDM1YeQ==
 
 address@^1.0.1, address@^1.1.2:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/address/-/address-1.2.1.tgz#25bb61095b7522d65b357baa11bc05492d4c8acd"
-  integrity sha512-B+6bi5D34+fDYENiH5qOlA0cV2rAGKuWZ9LeyUUehbXy8e0VS9e498yO0Jeeh+iM+6KbfudHTFjXw2MmJD4QRA==
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/address/-/address-1.2.2.tgz#2b5248dac5485a6390532c6a517fda2e3faac89e"
+  integrity sha512-4B/qKCfeE/ODUaAUpSwfzazo5x29WD4r3vXiWsB7I2mSDAihwEqKO+g8GELZUQSSAo5e1XTYh3ZVfLyxBc12nA==
 
 adjust-sourcemap-loader@^4.0.0:
   version "4.0.0"
@@ -14009,14 +14009,14 @@ junk@^3.1.0:
   integrity sha512-pBxcB3LFc8QVgdggvZWyeys+hnrNWg4OcZIU/1X59k5jQdLBlCsYGRQaz234SqoRLTCgMH00fY0xRJH+F9METQ==
 
 just-diff-apply@^5.2.0:
-  version "5.4.1"
-  resolved "https://registry.yarnpkg.com/just-diff-apply/-/just-diff-apply-5.4.1.tgz#1debed059ad009863b4db0e8d8f333d743cdd83b"
-  integrity sha512-AAV5Jw7tsniWwih8Ly3fXxEZ06y+6p5TwQMsw0dzZ/wPKilzyDgdAnL0Ug4NNIquPUOh1vfFWEHbmXUqM5+o8g==
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/just-diff-apply/-/just-diff-apply-5.5.0.tgz#771c2ca9fa69f3d2b54e7c3f5c1dfcbcc47f9f0f"
+  integrity sha512-OYTthRfSh55WOItVqwpefPtNt2VdKsq5AnAK6apdtR6yCH8pr0CmSr710J0Mf+WdQy7K/OzMy7K2MgAfdQURDw==
 
 just-diff@^5.0.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/just-diff/-/just-diff-5.1.1.tgz#8da6414342a5ed6d02ccd64f5586cbbed3146202"
-  integrity sha512-u8HXJ3HlNrTzY7zrYYKjNEfBlyjqhdBkoyTVdjtn7p02RJD5NvR8rIClzeGA7t+UYP1/7eAkWNLU0+P3QrEqKQ==
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/just-diff/-/just-diff-5.2.0.tgz#60dca55891cf24cd4a094e33504660692348a241"
+  integrity sha512-6ufhP9SHjb7jibNFrNxyFZ6od3g+An6Ai9mhGRvcYe8UJlH0prseN64M+6ZBBUoKYHZsitDP42gAJ8+eVWr3lw==
 
 jwt-decode@^3.1.2:
   version "3.1.2"

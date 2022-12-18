@@ -385,7 +385,12 @@ export interface LocalPathLocation
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
-  return typeof location === 'object' && location !== null && 'uri' in location
+  return (
+    typeof location === 'object' &&
+    location !== null &&
+    'uri' in location &&
+    !!location.uri
+  )
 }
 export class AuthNeededError extends Error {
   constructor(public message: string, public url: string) {

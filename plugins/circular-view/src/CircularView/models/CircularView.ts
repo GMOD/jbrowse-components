@@ -487,7 +487,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setError(error: unknown) {
-        console.error(error)
         self.error = error
       },
 

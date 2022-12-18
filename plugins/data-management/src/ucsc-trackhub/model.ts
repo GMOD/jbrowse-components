@@ -43,11 +43,11 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
           const genomesFileLocation = hubUri
             ? {
                 uri: new URL(genomeFile, hubUri).href,
-                locationType: 'UriLocation',
+                locationType: 'UriLocation' as const,
               }
             : {
                 localPath: genomeFile,
-                locationType: 'LocalPathLocation',
+                locationType: 'LocalPathLocation' as const,
               }
           const genomesFile = await fetchGenomesFile(genomesFileLocation)
           const trackDbData = []
@@ -67,43 +67,32 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
                 `Cannot find assembly for "${genomeName}" from the genomes file for connection "${connectionName}"`,
               )
             }
-            const trackDb = genome.get('trackDb')
-            if (!trackDb) {
+            const db = genome.get('trackDb')
+            if (!db) {
               throw new Error('genomesFile not found on hub')
             }
-            const trackDbFileLocation = hubUri
+            const base = new URL(genomeFile, hubUri)
+            const trackDbLoc = hubUri
               ? {
-                  uri: new URL(trackDb, new URL(genomeFile, hubUri)).href,
-                  locationType: 'UriLocation',
+                  uri: new URL(db, base).href,
+                  locationType: 'UriLocation' as const,
                 }
               : {
-                  localPath: trackDb,
-                  locationType: 'LocalPathLocation',
+                  localPath: db,
+                  locationType: 'LocalPathLocation' as const,
                 }
-            trackDbData.push([
-              trackDbFileLocation,
-              await fetchTrackDbFile(trackDbFileLocation),
-              genomeName,
-              conf,
-            ] as const)
+            const trackDb = await fetchTrackDbFile(trackDbLoc)
+            trackDbData.push([trackDbLoc, trackDb, genomeName, conf] as const)
           }
           for (const [
-            trackDbFileLocation,
+            trackDbLoc,
             trackDbFile,
             genomeName,
             conf,
           ] of trackDbData) {
-            const sequenceAdapter = readConfObject(conf, [
-              'sequence',
-              'adapter',
-            ])
+            const seqAdapter = readConfObject(conf, ['sequence', 'adapter'])
             self.addTrackConfs(
-              generateTracks(
-                trackDbFile,
-                trackDbFileLocation,
-                genomeName,
-                sequenceAdapter,
-              ),
+              generateTracks(trackDbFile, trackDbLoc, genomeName, seqAdapter),
             )
           }
         } catch (e) {

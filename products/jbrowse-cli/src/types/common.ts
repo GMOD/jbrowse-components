@@ -31,7 +31,10 @@ export function isURL(FileName: string) {
 
 function makeLocation(location: string, protocol: string) {
   if (protocol === 'uri') {
-    return { uri: location, locationType: 'UriLocation' } as UriLocation
+    return {
+      uri: location,
+      locationType: 'UriLocation',
+    } as UriLocation
   }
   if (protocol === 'localPath') {
     return {

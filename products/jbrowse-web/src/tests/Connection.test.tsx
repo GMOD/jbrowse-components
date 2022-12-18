@@ -17,7 +17,10 @@ const readBuffer2 = generateReadBuffer(
     new LocalFile(require.resolve(`../../test_data/volvoxhub/hub1/${url}`)),
 )
 
-const root = 'https://s3.amazonaws.com/jbrowse.org/volvoxhub/'
+const delay = 20000
+const opts = [{}, delay]
+const root = 'https://jbrowse.org/volvoxhub/'
+
 test('Open up a UCSC trackhub connection', async () => {
   // @ts-ignore
   fetch.mockResponse(async request => {
@@ -35,8 +38,8 @@ test('Open up a UCSC trackhub connection', async () => {
   fireEvent.click(await findByText(/Open connection/))
   fireEvent.click(await findByText('Next'))
   fireEvent.change(await findByTestId('urlInput'), {
-    target: { value: 'https://s3.amazonaws.com/jbrowse.org/volvoxhub/hub.txt' },
+    target: { value: 'https://jbrowse.org/volvoxhub/hub.txt' },
   })
   fireEvent.click(await findByText('Connect'))
-  await findByText('CRAM - Volvox Sorted')
+  await findByText('CRAM - Volvox Sorted', ...opts)
 }, 20000)
