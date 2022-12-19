@@ -116,9 +116,9 @@ async function navToSynteny(feature: Feature, self: any) {
   }) as LSV
   const f = (n: number) => Math.floor(n)
   const l1 = `${featRef}:${f(rFeatStart)}-${f(rFeatEnd)}`
-  const l2 = `${mateRef}:${f(rMateStart)}-${f(rMateEnd)}${
-    strand === -1 ? '[rev]' : ''
-  }`
+  const m1 = Math.min(rMateStart, rMateEnd)
+  const m2 = Math.max(rMateStart, rMateEnd)
+  const l2 = `${mateRef}:${f(m1)}-${f(m2)}${strand === -1 ? '[rev]' : ''}`
   await when(() => view2.width !== undefined)
   await Promise.all([
     view2.views[0].navToLocString(l1, featAsm),
@@ -166,6 +166,12 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         },
       }
     })
+    .actions(self => ({
+      afterCreate() {
+        // use color by strand to help indicate inversions better
+        self.setColorScheme({ type: 'strand' })
+      },
+    }))
 }
 
 export default stateModelFactory
