@@ -176,8 +176,5 @@ export function flipCigar(cigar: string[]) {
 }
 
 export function swapIndelCigar(cigar: string) {
-  console.log('pre', cigar.slice(0, 15))
-  const r = cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
-  console.log('post', r.slice(0, 15))
-  return r
+  return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }

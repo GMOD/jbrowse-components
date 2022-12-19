@@ -3997,46 +3997,6 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     {
       "adapter": {
         "assemblyNames": [
-          "volvox-simple-inv",
-          "volvox",
-        ],
-        "pafLocation": {
-          "internetAccountId": undefined,
-          "internetAccountPreAuthorization": undefined,
-          "locationType": "UriLocation",
-          "uri": "volvox-simple-inv.paf",
-        },
-        "type": "PAFAdapter",
-      },
-      "assemblyNames": [
-        "volvox-simple-inv",
-        "volvox",
-      ],
-      "displays": [
-        {
-          "displayId": "volvox-simple-inv.paf-DotplotDisplay",
-          "type": "DotplotDisplay",
-        },
-        {
-          "displayId": "volvox-simple-inv.paf-LinearComparativeDisplay",
-          "type": "LinearComparativeDisplay",
-        },
-        {
-          "displayId": "volvox-simple-inv.paf-LinearSyntenyDisplay",
-          "type": "LinearSyntenyDisplay",
-        },
-        {
-          "displayId": "volvox-simple-inv.paf-LGVSyntenyDisplay",
-          "type": "LGVSyntenyDisplay",
-        },
-      ],
-      "name": "volvox-simple-inv.paf",
-      "trackId": "volvox-simple-inv.paf",
-      "type": "SyntenyTrack",
-    },
-    {
-      "adapter": {
-        "assemblyNames": [
           "volvox_random_inv",
           "volvox",
         ],
@@ -4051,6 +4011,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "assemblyNames": [
         "volvox_random_inv",
         "volvox",
+      ],
+      "category": [
+        "Synteny",
       ],
       "displays": [
         {

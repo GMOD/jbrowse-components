@@ -99,7 +99,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const { config } = opts
 
       // note: this is not the adapter config, it is responding to a display
-      // setting passed in via the opts paramter
+      // setting passed in via the opts parameter
       if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
         pafRecords = getWeightedMeans(pafRecords)
       }
@@ -143,17 +143,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
-          // console.log(
-          //   extra.cg,
-          //   flip,
-          //   strand,
-          //   'flipping? ' + extra.cg && flip && strand === -1,
-          //   extra.cg && flip && strand === -1
-          //     ? flipCigar(parseCigar(extra.cg)).join('')
-          //     : extra.cg,
-          // )
-          //
-          //
           let CIGAR = extra.cg
           if (extra.cg) {
             if (flip && strand === -1) {
