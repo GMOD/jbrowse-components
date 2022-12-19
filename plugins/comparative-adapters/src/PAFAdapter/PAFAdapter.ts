@@ -116,6 +116,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         let mateName = ''
         let mateStart = 0
         let mateEnd = 0
+        const flip = index === 0
+        const assemblyName = assemblyNames[+!flip]
+        console.log({ flip, assemblyName })
         if (index === 0) {
           start = r.qstart
           end = r.qend
@@ -134,11 +137,21 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         const { extra, strand } = r
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1 } = extra
-          const flip = index === 0
+
+          console.log(
+            extra.cg,
+            flip,
+            strand,
+            'flipping? ' + extra.cg && flip && strand === -1,
+            extra.cg && flip && strand === -1
+              ? flipCigar(parseCigar(extra.cg)).join('')
+              : extra.cg,
+          )
+
           observer.next(
             new SyntenyFeature({
-              uniqueId: `${i}`,
-              assemblyName: assemblyNames[+!flip],
+              uniqueId: i + assemblyName,
+              assemblyName,
               start,
               end,
               type: 'match',
