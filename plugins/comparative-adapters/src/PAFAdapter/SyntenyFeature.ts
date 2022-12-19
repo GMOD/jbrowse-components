@@ -8,9 +8,7 @@ export default class SyntenyFeature extends SimpleFeature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(arg: string): any {
     if (arg === 'mismatches') {
-      const r = getMismatches(this.get('CIGAR'))
-      console.log({ r })
-      return r
+      return getMismatches(this.get('CIGAR'))
     }
     return super.get(arg)
   }

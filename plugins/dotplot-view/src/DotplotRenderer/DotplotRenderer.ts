@@ -225,7 +225,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
           let currX = b1
           let currY = e1
           const cigar = feature.get('cg') || feature.get('CIGAR')
-          const flipInsDel = feature.get('flipInsDel')
+          const flipInsDel = false
 
           if (drawCigar && cigar) {
             const cigarOps = parseCigar(cigar)

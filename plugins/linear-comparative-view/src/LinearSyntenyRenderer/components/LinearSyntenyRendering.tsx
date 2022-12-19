@@ -205,10 +205,10 @@ function LinearSyntenyRendering({
             continue
           }
 
-          const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
-          const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
-          const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
-          const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+          const px11 = px(v1, { refName: ref1, coord: f1.get('start') })
+          const px12 = px(v1, { refName: ref1, coord: f1.get('end') })
+          const px21 = px(v2, { refName: ref2, coord: f2.get('start') })
+          const px22 = px(v2, { refName: ref2, coord: f2.get('end') })
           if (
             px11 === undefined ||
             px12 === undefined ||
@@ -240,19 +240,24 @@ function LinearSyntenyRendering({
             }
             ctx1.stroke()
           } else {
-            let cx1 = x11
-            let cx2 = x21
-
-            // we have to read the CIGAR backwards when looking at negative strand features
-            const flipInsDel = f1.get('flipInsDel')
-
             // flip the direction of the CIGAR drawing in horizontally flipped
             // modes
             const rev1 = x11 < x12 ? 1 : -1
-            const rev2 = x21 < x22 ? 1 : -1
+            const rev2 = (x21 < x22 ? 1 : -1) * f2.get('strand')
+            let cx1 = rev1 === -1 ? x12 : x11
+            let cx2 = rev2 === -1 ? x22 : x21
 
             const cigar = parsedCIGARs.get(f1.id())
-            console.log(f1, cigar)
+            const start = f1.get('start')
+            const end = f1.get('end')
+            // console.log({
+            //   rev1,
+            //   rev2,
+            //   f1,
+            //   start,
+            //   end,
+            //   cigar,
+            // })
             if (cigar) {
               // continuingFlag helps speed up zoomed out by skipping draw
               // commands on very small CIGAR features
@@ -281,17 +286,9 @@ function LinearSyntenyRendering({
                   cx1 += d1 * rev1
                   cx2 += d2 * rev2
                 } else if (op === 'D' || op === 'N') {
-                  if (flipInsDel) {
-                    cx2 += d2 * rev2
-                  } else {
-                    cx1 += d1 * rev1
-                  }
+                  cx1 += d1 * rev1
                 } else if (op === 'I') {
-                  if (flipInsDel) {
-                    cx1 += d1 * rev1
-                  } else {
-                    cx2 += d2 * rev2
-                  }
+                  cx2 += d2 * rev2
                 }
 
                 // check that we are even drawing in view here, e.g. that all

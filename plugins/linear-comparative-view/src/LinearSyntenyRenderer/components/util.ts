@@ -60,10 +60,10 @@ export function drawMatchSimple({
       continue
     }
 
-    const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
-    const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
-    const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
-    const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+    const px11 = px(v1, { refName: ref1, coord: f1.get('start') })
+    const px12 = px(v1, { refName: ref1, coord: f1.get('end') })
+    const px21 = px(v2, { refName: ref2, coord: f2.get('start)') })
+    const px22 = px(v2, { refName: ref2, coord: f2.get('end') })
     if (
       px11 === undefined ||
       px12 === undefined ||

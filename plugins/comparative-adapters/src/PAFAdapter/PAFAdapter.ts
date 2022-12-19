@@ -118,7 +118,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         let mateEnd = 0
         const flip = index === 0
         const assemblyName = assemblyNames[+!flip]
-        console.log({ flip, assemblyName })
         if (index === 0) {
           start = r.qstart
           end = r.qend
@@ -138,15 +137,15 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1 } = extra
 
-          console.log(
-            extra.cg,
-            flip,
-            strand,
-            'flipping? ' + extra.cg && flip && strand === -1,
-            extra.cg && flip && strand === -1
-              ? flipCigar(parseCigar(extra.cg)).join('')
-              : extra.cg,
-          )
+          // console.log(
+          //   extra.cg,
+          //   flip,
+          //   strand,
+          //   'flipping? ' + extra.cg && flip && strand === -1,
+          //   extra.cg && flip && strand === -1
+          //     ? flipCigar(parseCigar(extra.cg)).join('')
+          //     : extra.cg,
+          // )
 
           observer.next(
             new SyntenyFeature({
@@ -156,15 +155,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               end,
               type: 'match',
               refName,
-              strand: flip && strand === -1 ? 1 : strand,
+              strand,
+              ...extra,
               CIGAR:
                 extra.cg && flip && strand === -1
                   ? flipCigar(parseCigar(extra.cg)).join('')
                   : extra.cg,
 
-              // depending on whether the query or target is queried, the
-              // "rev" flag
-              flipInsDel: flip,
               syntenyId: i,
               identity: numMatches / blockLen,
               mate: {
@@ -173,7 +170,6 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
                 refName: mateName,
                 assemblyName: assemblyNames[+flip],
               },
-              ...extra,
             }),
           )
         }
