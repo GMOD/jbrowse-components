@@ -243,21 +243,19 @@ function LinearSyntenyRendering({
             // flip the direction of the CIGAR drawing in horizontally flipped
             // modes
             const rev1 = x11 < x12 ? 1 : -1
-            const rev2 = (x21 < x22 ? 1 : -1) * f2.get('strand')
-            let cx1 = rev1 === -1 ? x12 : x11
-            let cx2 = rev2 === -1 ? x22 : x21
+            const rev2 = (x21 < x22 ? 1 : -1) * f1.get('strand')
+            console.log({ rev1, rev2 })
+            let cx1 = x1 //rev1 === -1 ? x12 : x11 //
+            let cx2 = rev2 === -1 ? x22 : x21 //rev2 === -1 ? x22 : x21
 
             const cigar = parsedCIGARs.get(f1.id())
-            const start = f1.get('start')
-            const end = f1.get('end')
-            // console.log({
-            //   rev1,
-            //   rev2,
-            //   f1,
-            //   start,
-            //   end,
-            //   cigar,
-            // })
+            console.log({
+              rev1,
+              rev2,
+              f1: f1.get('strand'),
+              f2: f2.get('strand'),
+              cigar,
+            })
             if (cigar) {
               // continuingFlag helps speed up zoomed out by skipping draw
               // commands on very small CIGAR features
