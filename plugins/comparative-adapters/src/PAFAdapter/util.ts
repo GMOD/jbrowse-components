@@ -16,10 +16,8 @@ export interface PAFRecord {
     meanScore?: number
   }
 }
-
-// based on "weighted mean" method from dotPlotly
-// https://github.com/tpoorten/dotPlotly
-// License for dotPlotly reproduced here
+// based on "weighted mean" method from https://github.com/tpoorten/dotPlotly
+// License reproduced here
 //
 // MIT License
 
@@ -42,22 +40,22 @@ export interface PAFRecord {
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
+// Notes: in the weighted mean longer alignments factor in more heavily of all
+// the fragments of a query vs the reference that it mapped to
+//
+// this uses a combined key query+'-'+ref to iteratively map all the alignments
+// that match a particular ref from a particular query (so 1d array of what
+// could be a 2d map)
+//
+// the result is a single number that says e.g. chr5 from human mapped to chr5
+// on mouse with 0.8 quality, and that0.8 is then attached to all the pieces of
+// chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
+// weakly mapped to chr6 on mouse, then it would have another value e.g. 0.6.
+// this can show strong and weak levels of synteny, especially in polyploidy
+// situations
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  // in the weighted mean longer alignments factor in more
-  // heavily of all the fragments of a query vs the reference that it mapped
-  // to
-  //
-  // this uses a combined key query+'-'+ref to iteratively map all the
-  // alignments that match a particular ref from a particular query (so 1d
-  // array of what could be a 2d map)
-  //
-  // the result is a single number that says e.g. chr5 from human mapped to
-  // chr5 on mouse with 0.8 quality, and that0.8 is then attached to all the
-  // pieces of chr5 on human that mapped to chr5 on mouse. if chr5 on human
-  // also more weakly mapped to chr6 on mouse, then it would have another
-  // value e.g. 0.6. this can show strong and weak levels of synteny,
-  // especially in polyploidy situations
   const scoreMap: { [key: string]: { quals: number[]; len: number[] } } = {}
   for (let i = 0; i < ret.length; i++) {
     const entry = ret[i]
@@ -111,4 +109,61 @@ function weightedMean(tuples: [number, number][]) {
     [0, 0],
   )
   return valueSum / weightSum
+}
+
+export function parsePAF(text: string) {
+  return text
+    .split(/\n|\r\n|\r/)
+    .filter(line => !!line)
+    .map(line => {
+      const [
+        qname,
+        ,
+        qstart,
+        qend,
+        strand,
+        tname,
+        ,
+        tstart,
+        tend,
+        numMatches,
+        blockLen,
+        mappingQual,
+        ...fields
+      ] = line.split('\t')
+
+      const rest = Object.fromEntries(
+        fields.map(field => {
+          const r = field.indexOf(':')
+          const fieldName = field.slice(0, r)
+          const fieldValue = field.slice(r + 3)
+          return [fieldName, fieldValue]
+        }),
+      )
+
+      return {
+        tname,
+        tstart: +tstart,
+        tend: +tend,
+        qname,
+        qstart: +qstart,
+        qend: +qend,
+        strand: strand === '-' ? -1 : 1,
+        extra: {
+          numMatches: +numMatches,
+          blockLen: +blockLen,
+          mappingQual: +mappingQual,
+          ...rest,
+        },
+      } as PAFRecord
+    })
+}
+
+export function flipCigar(cigar: string[]) {
+  const arr = []
+  for (let i = cigar.length - 2; i >= 0; i -= 2) {
+    arr.push(cigar[i])
+    arr.push(cigar[i + 1])
+  }
+  return arr
 }

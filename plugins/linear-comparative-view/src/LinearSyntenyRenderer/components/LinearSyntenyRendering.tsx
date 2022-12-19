@@ -262,6 +262,7 @@ function LinearSyntenyRendering({
             const rev2 = x21 < x22 ? 1 : -1
 
             const cigar = parsedCIGARs.get(f1.id())
+            console.log(f1, cigar)
             if (cigar) {
               // continuingFlag helps speed up zoomed out by skipping draw
               // commands on very small CIGAR features

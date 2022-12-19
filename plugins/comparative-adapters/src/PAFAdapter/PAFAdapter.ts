@@ -6,7 +6,7 @@ import { Region } from '@jbrowse/core/util/types'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { SimpleFeature, Feature } from '@jbrowse/core/util'
+import { Feature } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -15,21 +15,11 @@ import { unzip } from '@gmod/bgzf-filehandle'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
+import SyntenyFeature from './SyntenyFeature'
 import { isGzip } from '../util'
-import { getWeightedMeans, PAFRecord } from './util'
-const { getOrientedMismatches } = MismatchParser
+import { getWeightedMeans, parsePAF, flipCigar, PAFRecord } from './util'
 
-class SyntenyFeature extends SimpleFeature {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get(arg: string): any {
-    if (arg === 'mismatches') {
-      const cg = this.get('cg')
-      const flip = this.get('flipInsDel')
-      return cg ? getOrientedMismatches(flip, cg) : []
-    }
-    return super.get(arg)
-  }
-}
+const { parseCigar } = MismatchParser
 
 interface PAFOptions extends BaseOptions {
   config?: AnyConfigurationModel
@@ -60,52 +50,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       throw new Error('Data exceeds maximum string length (512MB)')
     }
     const text = new TextDecoder('utf8', { fatal: true }).decode(buf)
-
-    return text
-      .split(/\n|\r\n|\r/)
-      .filter(line => !!line)
-      .map(line => {
-        const [
-          qname,
-          ,
-          qstart,
-          qend,
-          strand,
-          tname,
-          ,
-          tstart,
-          tend,
-          numMatches,
-          blockLen,
-          mappingQual,
-          ...fields
-        ] = line.split('\t')
-
-        const rest = Object.fromEntries(
-          fields.map(field => {
-            const r = field.indexOf(':')
-            const fieldName = field.slice(0, r)
-            const fieldValue = field.slice(r + 3)
-            return [fieldName, fieldValue]
-          }),
-        )
-
-        return {
-          tname,
-          tstart: +tstart,
-          tend: +tend,
-          qname,
-          qstart: +qstart,
-          qend: +qend,
-          strand: strand === '-' ? -1 : 1,
-          extra: {
-            numMatches: +numMatches,
-            blockLen: +blockLen,
-            mappingQual: +mappingQual,
-            ...rest,
-          },
-        } as PAFRecord
-      })
+    return parsePAF(text)
   }
 
   async hasDataForRefName() {
@@ -146,6 +91,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return ObservableCreate<Feature>(async observer => {
       let pafRecords = await this.setup(opts)
       const { config } = opts
+
+      // note: this is not the adapter config, it is responding to a display
+      // setting passed in via the opts paramter
       if (config && readConfObject(config, 'colorBy') === 'meanQueryIdentity') {
         pafRecords = getWeightedMeans(pafRecords)
       }
@@ -195,7 +143,11 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               end,
               type: 'match',
               refName,
-              strand,
+              strand: flip && strand === -1 ? 1 : strand,
+              CIGAR:
+                extra.cg && flip && strand === -1
+                  ? flipCigar(parseCigar(extra.cg)).join('')
+                  : extra.cg,
 
               // depending on whether the query or target is queried, the
               // "rev" flag
