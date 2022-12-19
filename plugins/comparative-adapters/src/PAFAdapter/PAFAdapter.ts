@@ -17,7 +17,13 @@ import { MismatchParser } from '@jbrowse/plugin-alignments'
 // locals
 import SyntenyFeature from './SyntenyFeature'
 import { isGzip } from '../util'
-import { getWeightedMeans, parsePAF, flipCigar, PAFRecord } from './util'
+import {
+  getWeightedMeans,
+  flipCigar,
+  parsePAF,
+  swapIndelCigar,
+  PAFRecord,
+} from './util'
 
 const { parseCigar } = MismatchParser
 
@@ -135,7 +141,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         }
         const { extra, strand } = r
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
-          const { numMatches = 0, blockLen = 1 } = extra
+          const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
 
           // console.log(
           //   extra.cg,
@@ -146,6 +152,16 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
           //     ? flipCigar(parseCigar(extra.cg)).join('')
           //     : extra.cg,
           // )
+          //
+          //
+          let CIGAR = extra.cg
+          if (extra.cg) {
+            if (flip && strand === -1) {
+              CIGAR = flipCigar(parseCigar(extra.cg)).join('')
+            } else if (flip) {
+              CIGAR = swapIndelCigar(extra.cg)
+            }
+          }
 
           observer.next(
             new SyntenyFeature({
@@ -156,14 +172,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               type: 'match',
               refName,
               strand,
-              ...extra,
-              CIGAR:
-                extra.cg && flip && strand === -1
-                  ? flipCigar(parseCigar(extra.cg)).join('')
-                  : extra.cg,
-
+              ...rest,
+              CIGAR,
               syntenyId: i,
               identity: numMatches / blockLen,
+              numMatches,
+              blockLen,
               mate: {
                 start: mateStart,
                 end: mateEnd,
