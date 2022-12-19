@@ -21,9 +21,7 @@ import { LinearComparativeDisplay } from '../../LinearComparativeDisplay/stateMo
 import SyntenyTooltip from './SyntenyTooltip'
 import { drawMatchSimple, layoutMatches, px } from './util'
 
-const { getOrientedCigar, parseCigar } = MismatchParser
-
-const [LEFT, , RIGHT] = [0, 1, 2, 3]
+const { parseCigar } = MismatchParser
 
 const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 

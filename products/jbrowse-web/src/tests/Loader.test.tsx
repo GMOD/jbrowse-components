@@ -1,4 +1,3 @@
-// we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
 
@@ -8,7 +7,15 @@ import rangeParser from 'range-parser'
 
 // local
 import { App } from './loaderUtil'
-import { expectCanvasMatch } from './util'
+
+import { Image, createCanvas } from 'canvas'
+
+jest.mock('../makeWorkerInstance', () => () => {})
+
+// @ts-ignore
+global.nodeImage = Image
+// @ts-ignore
+global.nodeCreateCanvas = createCanvas
 
 const getFile = (url: string) =>
   new LocalFile(
@@ -195,164 +202,4 @@ test('can use a spec url for dotplot view', async () => {
   )
 
   await findByTestId('prerendered_canvas_done', {}, delay)
-}, 40000)
-
-test('horizontally flipped inverted alignment', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('regular orientation inverted alignment', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('regular orientation inverted alignment bottom', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('regular orientation both horizontally flipped', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('switch rows regular orientation both horizontally flipped', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('switch rows regular orientation both horizontally flipped rev 1', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('switch rows regular orientation both horizontally flipped rev2', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'chr1:316,306..316,364', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
-}, 40000)
-
-test('switch rows regular orientation both horizontally flipped both rev', async () => {
-  console.warn = jest.fn()
-  const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
-    {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          tracks: ['subset'],
-          views: [
-            { loc: 'chr1:316,306..316,364[rev]', assembly: 'grape' },
-            { loc: 'Pp01:28,845,211..28,845,272[rev]', assembly: 'peach' },
-          ],
-        },
-      ],
-    },
-  )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
 }, 40000)

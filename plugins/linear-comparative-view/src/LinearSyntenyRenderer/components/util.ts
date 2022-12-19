@@ -6,14 +6,14 @@ import { generateMatches, interstitialYPos } from '../../util'
 
 type RectTuple = [number, number, number, number]
 
+const [LEFT, , RIGHT] = [0, 1, 2, 3]
+
 interface Match {
   layout: RectTuple
   feature: Feature
   level: number
   refName: string
 }
-
-const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 export function drawMatchSimple({
   match,
@@ -60,10 +60,10 @@ export function drawMatchSimple({
       continue
     }
 
-    const px11 = px(v1, { refName: ref1, coord: f1.get('start') })
-    const px12 = px(v1, { refName: ref1, coord: f1.get('end') })
-    const px21 = px(v2, { refName: ref2, coord: f2.get('start)') })
-    const px22 = px(v2, { refName: ref2, coord: f2.get('end') })
+    const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
+    const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
+    const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
+    const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
     if (
       px11 === undefined ||
       px12 === undefined ||
