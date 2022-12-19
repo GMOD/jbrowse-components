@@ -245,8 +245,8 @@ function LinearSyntenyRendering({
             const rev1 = x11 < x12 ? 1 : -1
             const rev2 = (x21 < x22 ? 1 : -1) * f1.get('strand')
             console.log({ rev1, rev2 })
-            let cx1 = x1 //rev1 === -1 ? x12 : x11 //
-            let cx2 = rev2 === -1 ? x22 : x21 //rev2 === -1 ? x22 : x21
+            let cx1 = x11 //rev1 === -1 ? x12 : x11 //
+            let cx2 = f1.get('strand') === -1 ? x22 : x21 //rev2 === -1 ? x22 : x21
 
             const cigar = parsedCIGARs.get(f1.id())
             console.log({
