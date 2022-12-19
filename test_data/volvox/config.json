@@ -2044,24 +2044,12 @@
       },
       "assemblyNames": ["volvox"]
     },
-    {
-      "type": "SyntenyTrack",
-      "trackId": "volvox-simple-inv.paf",
-      "name": "volvox-simple-inv.paf",
-      "adapter": {
-        "type": "PAFAdapter",
-        "pafLocation": {
-          "uri": "volvox-simple-inv.paf",
-          "locationType": "UriLocation"
-        },
-        "assemblyNames": ["volvox-simple-inv", "volvox"]
-      },
-      "assemblyNames": ["volvox-simple-inv", "volvox"]
-    },
+
     {
       "type": "SyntenyTrack",
       "trackId": "volvox_inv_indels",
       "name": "volvox_inv_indels",
+      "category": ["Synteny"],
       "adapter": {
         "type": "PAFAdapter",
         "pafLocation": {

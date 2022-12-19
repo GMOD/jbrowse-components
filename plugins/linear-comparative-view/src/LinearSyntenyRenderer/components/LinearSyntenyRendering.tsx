@@ -21,6 +21,8 @@ import { LinearComparativeDisplay } from '../../LinearComparativeDisplay/stateMo
 import SyntenyTooltip from './SyntenyTooltip'
 import { drawMatchSimple, layoutMatches, px } from './util'
 
+const { getOrientedCigar, parseCigar } = MismatchParser
+
 const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
@@ -114,7 +116,11 @@ function LinearSyntenyRendering({
       new Map(
         es.flat().map(f => {
           const cigar = f.get('cg') || f.get('CIGAR')
-          return [f.id(), cigar ? MismatchParser.parseCigar(cigar) : undefined]
+          const flip = f.get('flipInsDel')
+          const c = cigar
+            ? getOrientedCigar(false, parseCigar(cigar))
+            : undefined
+          return [f.id(), c]
         }),
       ),
     [es],
@@ -246,7 +252,6 @@ function LinearSyntenyRendering({
           } else {
             let cx1 = x11
             let cx2 = x21
-
 
             // we have to read the CIGAR backwards when looking at negative strand features
             const flipInsDel = f1.get('flipInsDel')
