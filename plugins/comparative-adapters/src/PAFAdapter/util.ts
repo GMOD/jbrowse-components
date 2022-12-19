@@ -163,7 +163,14 @@ export function flipCigar(cigar: string[]) {
   const arr = []
   for (let i = cigar.length - 2; i >= 0; i -= 2) {
     arr.push(cigar[i])
-    arr.push(cigar[i + 1])
+    const op = cigar[i + 1]
+    if (op === 'D') {
+      arr.push('I')
+    } else if (op === 'I') {
+      arr.push('D')
+    } else {
+      arr.push(op)
+    }
   }
   return arr
 }

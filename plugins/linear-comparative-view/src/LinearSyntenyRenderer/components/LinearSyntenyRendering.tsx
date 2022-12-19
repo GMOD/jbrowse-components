@@ -112,17 +112,7 @@ function LinearSyntenyRendering({
   )
 
   const parsedCIGARs = useMemo(
-    () =>
-      new Map(
-        es.flat().map(f => {
-          const cigar = f.get('cg') || f.get('CIGAR')
-          const flip = f.get('flipInsDel')
-          const c = cigar
-            ? getOrientedCigar(false, parseCigar(cigar))
-            : undefined
-          return [f.id(), c]
-        }),
-      ),
+    () => new Map(es.flat().map(f => [f.id(), parseCigar(f.get('CIGAR'))])),
     [es],
   )
   const drawCurves = parentView?.drawCurves
