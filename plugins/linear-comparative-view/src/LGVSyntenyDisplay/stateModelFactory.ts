@@ -62,7 +62,6 @@ async function navToSynteny(feature: Feature, self: IAnyStateTreeNode) {
   const mateRef = mate.refName
   const featAsm = reg.assemblyName
   const featRef = reg.refName
-  console.log({ strand })
 
   let rMateStart: number
   let rMateEnd: number
