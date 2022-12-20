@@ -19,9 +19,17 @@ import { interstitialYPos } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay/stateModelFactory'
 import SyntenyTooltip from './SyntenyTooltip'
-import { drawMatchSimple, layoutMatches, px } from './util'
+import {
+  drawBezierBox,
+  drawBox,
+  drawMatchSimple,
+  layoutMatches,
+  px,
+} from './util'
 
 const { parseCigar } = MismatchParser
+
+const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
@@ -203,23 +211,23 @@ function LinearSyntenyRendering({
             continue
           }
 
-          const px11 = px(v1, { refName: ref1, coord: f1.get('start') })
-          const px12 = px(v1, { refName: ref1, coord: f1.get('end') })
-          const px21 = px(v2, { refName: ref2, coord: f2.get('start') })
-          const px22 = px(v2, { refName: ref2, coord: f2.get('end') })
+          const gpx11 = px(v1, { refName: ref1, coord: c1[LEFT] })
+          const gpx12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
+          const gpx21 = px(v2, { refName: ref2, coord: c2[LEFT] })
+          const gpx22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
           if (
-            px11 === undefined ||
-            px12 === undefined ||
-            px21 === undefined ||
-            px22 === undefined
+            gpx11 === undefined ||
+            gpx12 === undefined ||
+            gpx21 === undefined ||
+            gpx22 === undefined
           ) {
             continue
           }
 
-          const x11 = px11 - offsets[l1]
-          const x12 = px12 - offsets[l1]
-          const x21 = px21 - offsets[l2]
-          const x22 = px22 - offsets[l2]
+          const gx11 = gpx11 - offsets[l1]
+          const gx12 = gpx12 - offsets[l1]
+          const gx21 = gpx21 - offsets[l2]
+          const gx22 = gpx22 - offsets[l2]
 
           const y1 = interstitialYPos(l1 < l2, height)
           const y2 = interstitialYPos(l2 < l1, height)
@@ -230,14 +238,32 @@ function LinearSyntenyRendering({
           // pixellation than filling in a thin polygon
           if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
             ctx1.beginPath()
-            ctx1.moveTo(x11, y1)
+            ctx1.moveTo(gx11, y1)
             if (drawCurves) {
-              ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+              ctx1.bezierCurveTo(gx11, mid, gx21, mid, gx21, y2)
             } else {
-              ctx1.lineTo(x21, y2)
+              ctx1.lineTo(gx21, y2)
             }
             ctx1.stroke()
           } else {
+            const px11 = px(v1, { refName: ref1, coord: f1.get('start') })
+            const px12 = px(v1, { refName: ref1, coord: f1.get('end') })
+            const px21 = px(v2, { refName: ref2, coord: f2.get('start') })
+            const px22 = px(v2, { refName: ref2, coord: f2.get('end') })
+            if (
+              px11 === undefined ||
+              px12 === undefined ||
+              px21 === undefined ||
+              px22 === undefined
+            ) {
+              continue
+            }
+
+            const x11 = px11 - offsets[l1]
+            const x12 = px12 - offsets[l1]
+            const x21 = px21 - offsets[l2]
+            const x22 = px22 - offsets[l2]
+
             // flip the direction of the CIGAR drawing in horizontally flipped
             // modes
             const rev1 = x11 < x12 ? 1 : -1
@@ -247,7 +273,7 @@ function LinearSyntenyRendering({
 
             const cigar = parsedCIGARs.get(f1.id())
 
-            if (cigar) {
+            if (cigar?.length) {
               // continuingFlag helps speed up zoomed out by skipping draw
               // commands on very small CIGAR features
               let continuingFlag = false
@@ -307,52 +333,22 @@ function LinearSyntenyRendering({
                     ctx1.fillStyle =
                       colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
 
-                    ctx1.beginPath()
-                    ctx3.beginPath()
-                    ctx1.moveTo(px1, y1)
-                    ctx3.moveTo(px1, y1)
-                    ctx1.lineTo(cx1, y1)
-                    ctx3.lineTo(cx1, y1)
                     if (drawCurves) {
-                      ctx1.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
-                      ctx3.bezierCurveTo(cx1, mid, cx2, mid, cx2, y2)
+                      drawBezierBox(ctx1, px1, cx1, y1, cx2, px2, y2, mid)
+                      drawBezierBox(ctx3, px1, cx1, y1, cx2, px2, y2, mid)
                     } else {
-                      ctx1.lineTo(cx2, y2)
-                      ctx3.lineTo(cx2, y2)
+                      drawBox(ctx1, px1, cx1, y1, cx2, px2, y2)
+                      drawBox(ctx3, px1, cx1, y1, cx2, px2, y2)
                     }
-                    ctx1.lineTo(px2, y2)
-                    ctx3.lineTo(px2, y2)
-                    if (drawCurves) {
-                      ctx1.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                      ctx3.bezierCurveTo(px2, mid, px1, mid, px1, y1)
-                    } else {
-                      ctx1.lineTo(px1, y1)
-                      ctx3.lineTo(px1, y1)
-                    }
-                    ctx1.closePath()
-                    ctx3.closePath()
-                    ctx1.fill()
-                    ctx3.fill()
                   }
                 }
               }
             } else {
-              ctx1.beginPath()
-              ctx1.moveTo(x11, y1)
-              ctx1.lineTo(x12, y1)
               if (drawCurves) {
-                ctx1.bezierCurveTo(x12, mid, x22, mid, x22, y2)
+                drawBezierBox(ctx1, gx11, gx12, y1, gx22, gx21, y2, mid)
               } else {
-                ctx1.lineTo(x22, y2)
+                drawBox(ctx1, gx11, gx12, y1, gx22, gx21, y2)
               }
-              ctx1.lineTo(x21, y2)
-              if (drawCurves) {
-                ctx1.bezierCurveTo(x21, mid, x11, mid, x11, y1)
-              } else {
-                ctx1.lineTo(x11, y1)
-              }
-              ctx1.closePath()
-              ctx1.fill()
             }
           }
         }

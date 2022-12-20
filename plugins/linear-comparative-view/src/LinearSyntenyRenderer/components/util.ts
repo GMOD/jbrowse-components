@@ -162,3 +162,43 @@ export function layoutMatches(
   }
   return matches
 }
+
+export function drawBox(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y1: number,
+  x3: number,
+  x4: number,
+  y2: number,
+) {
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y1)
+
+  ctx.lineTo(x3, y2)
+  ctx.lineTo(x4, y2)
+  ctx.lineTo(x1, y1)
+  ctx.closePath()
+  ctx.fill()
+}
+
+export function drawBezierBox(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y1: number,
+  x3: number,
+  x4: number,
+  y2: number,
+  mid: number,
+) {
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y1)
+  ctx.bezierCurveTo(x2, mid, x3, mid, x3, y2)
+  ctx.lineTo(x4, y2)
+  ctx.bezierCurveTo(x4, mid, x1, mid, x1, y1)
+  ctx.closePath()
+  ctx.fill()
+}
