@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-rdf",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "JBrowse 2 RDF resources",
   "keywords": [
     "jbrowse",
