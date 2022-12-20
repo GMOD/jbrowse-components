@@ -149,7 +149,7 @@ function RefNameAutocomplete({
   // heuristic, text width + icon width
   // + 45 accommodates help icon and search icon
   const width = Math.min(
-    Math.max(measureText(inputBoxVal, 16) + 45, minWidth),
+    Math.max(measureText(inputBoxVal, 16) + 50, minWidth),
     550,
   )
 

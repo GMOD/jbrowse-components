@@ -31,6 +31,17 @@ lineWidth: {
       }
 ```
 
+#### slot: jitter
+
+```js
+jitter: {
+        type: 'number',
+        description:
+          'jitters the x position so e.g. if many reads map to exact same x position, jittering makes it easy to see that there are many of them',
+        defaultValue: 0,
+      }
+```
+
 #### slot: colorScheme
 
 ```js

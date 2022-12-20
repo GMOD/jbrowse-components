@@ -41,7 +41,7 @@ offsetRadians: -Math.PI / 2
 // type signature
 number
 // code
-bpPerPx: 2000000
+bpPerPx: 200
 ```
 
 #### property: tracks
@@ -131,6 +131,13 @@ scrollY: 0
 ```
 
 ### CircularView - Getters
+
+#### getter: width
+
+```js
+// type
+number
+```
 
 #### getter: staticSlices
 
@@ -261,7 +268,7 @@ see reasonably
 
 ```js
 // type
-any[]
+({ elided: true; widthBp: number; regions: Region[]; } | { elided: false; widthBp: number; start: number; end: number; refName: string; })[]
 ```
 
 #### getter: assemblyNames

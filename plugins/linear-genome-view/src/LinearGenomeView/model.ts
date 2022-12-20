@@ -12,10 +12,11 @@ import {
   getSession,
   isViewContainer,
   isSessionModelWithWidgets,
+  isSessionWithAddTracks,
+  localStorageGetItem,
   measureText,
   parseLocString,
   springAnimate,
-  isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -116,12 +117,6 @@ export const INTER_REGION_PADDING_WIDTH = 2
 export const SPACING = 7
 export const WIDGET_HEIGHT = 32
 
-function localStorageGetItem(item: string) {
-  return typeof localStorage !== 'undefined'
-    ? localStorage.getItem(item)
-    : undefined
-}
-
 /**
  * #stateModel LinearGenomeView
  */
@@ -137,9 +132,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * this is a string instead of the const literal 'LinearGenomeView' to reduce some
-         * typescripting strictness, but you should pass the string 'LinearGenomeView' to
-         * the model explicitly
+         * this is a string instead of the const literal 'LinearGenomeView' to
+         * reduce some typescripting strictness, but you should pass the string
+         * 'LinearGenomeView' to the model explicitly
          */
         type: types.literal('LinearGenomeView') as unknown as string,
 
@@ -157,9 +152,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * currently displayed regions, can be a single chromosome, arbitrary subsections,
-         * or the entire  set of chromosomes in the genome, but it not advised to use the
-         * entire set of chromosomes if your assembly is very fragmented
+         * currently displayed regions, can be a single chromosome, arbitrary
+         * subsections, or the entire  set of chromosomes in the genome, but it not
+         * advised to use the entire set of chromosomes if your assembly is very
+         * fragmented
          */
         displayedRegions: types.array(MUIRegion),
 
@@ -208,19 +204,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #property
          * show the "center line"
          */
-        showCenterLine: types.optional(types.boolean, () => {
-          const setting = localStorageGetItem('lgv-showCenterLine')
-          return setting !== undefined && setting !== null ? !!+setting : false
-        }),
+        showCenterLine: types.optional(types.boolean, () =>
+          JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+        ),
 
         /**
          * #property
          * show the "cytobands" in the overview scale bar
          */
-        showCytobandsSetting: types.optional(types.boolean, () => {
-          const setting = localStorageGetItem('lgv-showCytobands')
-          return setting !== undefined && setting !== null ? !!+setting : true
-        }),
+        showCytobandsSetting: types.optional(types.boolean, () =>
+          JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+        ),
 
         /**
          * #property
@@ -529,7 +523,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setShowCytobands(flag: boolean) {
         self.showCytobandsSetting = flag
-        localStorage.setItem('lgv-showCytobands', `${+flag}`)
       },
       /**
        * #action
@@ -757,7 +750,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setTrackLabels(setting: 'overlapping' | 'offset' | 'hidden') {
         self.trackLabels = setting
-        localStorage.setItem('lgv-trackLabels', setting)
       },
 
       /**
@@ -765,7 +757,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       toggleCenterLine() {
         self.showCenterLine = !self.showCenterLine
-        localStorage.setItem('lgv-showCenterLine', `${+self.showCenterLine}`)
       },
 
       /**
@@ -1240,6 +1231,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
             { delay: 150 },
           ),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { trackLabels, showCytobandsSetting, showCenterLine } = self
+            localStorage.setItem('lgv-trackLabels', trackLabels)
+            localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
+            localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
+          }),
         )
       },
     }))

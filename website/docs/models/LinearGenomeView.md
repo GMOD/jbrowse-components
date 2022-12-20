@@ -146,10 +146,9 @@ show the "center line"
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCenterLine: types.optional(types.boolean, () => {
-          const setting = localStorageGetItem('lgv-showCenterLine')
-          return setting !== undefined && setting !== null ? !!+setting : false
-        })
+showCenterLine: types.optional(types.boolean, () =>
+          JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+        )
 ```
 
 #### property: showCytobandsSetting
@@ -160,10 +159,9 @@ show the "cytobands" in the overview scale bar
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCytobandsSetting: types.optional(types.boolean, () => {
-          const setting = localStorageGetItem('lgv-showCytobands')
-          return setting !== undefined && setting !== null ? !!+setting : true
-        })
+showCytobandsSetting: types.optional(types.boolean, () =>
+          JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+        )
 ```
 
 #### property: showGridlines

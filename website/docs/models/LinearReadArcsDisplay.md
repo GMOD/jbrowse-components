@@ -51,6 +51,15 @@ IMaybe<ISimpleType<number>>
 lineWidth: types.maybe(types.number)
 ```
 
+#### property: jitter
+
+```js
+// type signature
+IMaybe<ISimpleType<number>>
+// code
+jitter: types.maybe(types.number)
+```
+
 #### property: colorBy
 
 ```js
@@ -93,6 +102,13 @@ drawLongRange: true
 any
 ```
 
+#### getter: jitterVal
+
+```js
+// type
+number
+```
+
 #### getter: ready
 
 ```js
@@ -106,7 +122,7 @@ boolean
 
 ```js
 // type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
@@ -206,4 +222,14 @@ thin, bold, extrabold, etc
 ```js
 // type signature
 setLineWidth: (n: number) => void
+```
+
+#### action: setJitter
+
+jitter val, helpful to jitter the x direction so you see better evidence when
+e.g. 100 long reads map to same x position
+
+```js
+// type signature
+setJitter: (n: number) => void
 ```

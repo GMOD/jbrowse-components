@@ -1,4 +1,4 @@
-import { types } from 'mobx-state-tree'
+import { addDisposer, types } from 'mobx-state-tree'
 import {
   BaseLinearDisplay,
   LinearGenomeViewModel,
@@ -8,24 +8,46 @@ import {
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
+import { autorun } from 'mobx'
 
+/**
+ * #stateModel LinearReferenceSequenceDisplay
+ * base model `BaseLinearDisplay`
+ */
 export function modelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearReferenceSequenceDisplay',
       BaseLinearDisplay,
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearReferenceSequenceDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
-        showForward: types.optional(types.boolean, true),
-        showReverse: types.optional(types.boolean, true),
-        showTranslation: types.optional(types.boolean, true),
-        height: 180,
+        /**
+         * #property
+         */
+        showForward: true,
+        /**
+         * #property
+         */
+        showReverse: true,
+        /**
+         * #property
+         */
+        showTranslation: true,
       }),
     )
     .views(self => {
       const { renderProps: superRenderProps } = self
       return {
+        /**
+         * #method
+         */
         renderProps() {
           const { showForward, showReverse, showTranslation } = self
           return {
@@ -37,56 +59,78 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             showTranslation,
           }
         },
-        regionCannotBeRendered(/* region */) {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          if (view && view.bpPerPx >= 1) {
-            return 'Zoom in to see sequence'
-          }
-          return undefined
-        },
-
-        get rendererTypeName() {
-          return self.configuration.renderer.type
-        },
       }
     })
+    .views(self => ({
+      /**
+       * #method
+       */
+      regionCannotBeRendered(/* region */) {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view?.bpPerPx >= 1 ? 'Zoom in to see sequence' : undefined
+      },
+      /**
+       * #getter
+       */
+      get rendererTypeName() {
+        return self.configuration.renderer.type
+      },
+    }))
     .actions(self => ({
+      /**
+       * #action
+       */
       toggleShowForward() {
         self.showForward = !self.showForward
       },
+      /**
+       * #action
+       */
       toggleShowReverse() {
         self.showReverse = !self.showReverse
       },
+      /**
+       * #action
+       */
       toggleShowTranslation() {
         self.showTranslation = !self.showTranslation
       },
+      afterAttach() {
+        // auto-adjust height depending on settings
+        addDisposer(
+          self,
+          autorun(() => {
+            const t = self.showTranslation ? 100 : 0
+            const r = self.showReverse ? 20 : 0
+            const s = self.showForward ? 20 : 0
+            self.setHeight(t + r + s)
+          }),
+        )
+      },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       trackMenuItems() {
         return [
           {
             label: 'Show forward',
             type: 'checkbox',
             checked: self.showForward,
-            onClick: () => {
-              self.toggleShowForward()
-            },
+            onClick: () => self.toggleShowForward(),
           },
           {
             label: 'Show reverse',
             type: 'checkbox',
             checked: self.showReverse,
-            onClick: () => {
-              self.toggleShowReverse()
-            },
+            onClick: () => self.toggleShowReverse(),
           },
           {
             label: 'Show translation',
             type: 'checkbox',
             checked: self.showTranslation,
-            onClick: () => {
-              self.toggleShowTranslation()
-            },
+            onClick: () => self.toggleShowTranslation(),
           },
         ]
       },

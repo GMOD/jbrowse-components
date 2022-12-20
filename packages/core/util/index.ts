@@ -1191,3 +1191,9 @@ export function measureGridWidth(elements: string[]) {
 export function getEnv(obj: any) {
   return getEnvMST<{ pluginManager: PluginManager }>(obj)
 }
+
+export function localStorageGetItem(item: string) {
+  return typeof localStorage !== 'undefined'
+    ? localStorage.getItem(item)
+    : undefined
+}
