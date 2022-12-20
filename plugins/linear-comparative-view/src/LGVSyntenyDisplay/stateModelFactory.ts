@@ -12,7 +12,7 @@ import {
   MismatchParser,
   linearPileupDisplayStateModelFactory,
 } from '@jbrowse/plugin-alignments'
-import { types } from 'mobx-state-tree'
+import { IAnyStateTreeNode, types } from 'mobx-state-tree'
 import { when } from 'mobx'
 
 // locals
@@ -20,18 +20,17 @@ import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 type LSV = LinearSyntenyViewModel
 
-const { parseCigar, getOrientedCigar } = MismatchParser
+const { parseCigar } = MismatchParser
 
-function findPosInCigar(inCigar: string[], flip: boolean, x: number) {
+function findPosInCigar(cigar: string[], startX: number) {
   let featX = 0
   let mateX = 0
-  const cigar = getOrientedCigar(flip, inCigar)
   for (let i = 0; i < cigar.length; i++) {
     const len = +cigar[i]
     const op = cigar[i + 1]
-    const min = Math.min(len, x - featX)
+    const min = Math.min(len, startX - featX)
 
-    if (featX >= x) {
+    if (featX >= startX) {
       break
     } else if (op === 'I') {
       mateX += len
@@ -45,44 +44,46 @@ function findPosInCigar(inCigar: string[], flip: boolean, x: number) {
   return [featX, mateX]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function navToSynteny(feature: Feature, self: any) {
+async function navToSynteny(feature: Feature, self: IAnyStateTreeNode) {
   const session = getSession(self)
   const track = getContainingTrack(self)
   const view = getContainingView(self)
   const reg = view.dynamicBlocks.contentBlocks[0]
-  const cigar = parseCigar(feature.get('cg'))
+  const cigar = feature.get('CIGAR')
   const strand = feature.get('strand')
   const regStart = reg.start
   const regEnd = reg.end
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
   const mate = feature.get('mate')
-  const flip = feature.get('flipInsDel')
   const mateStart = mate.start
   const mateEnd = mate.end
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
   const featAsm = reg.assemblyName
   const featRef = reg.refName
+  console.log({ strand })
 
-  let rMateStart = mateStart
-  let rMateEnd = mateStart
-  let rFeatStart = featStart
-  let rFeatEnd = featStart
+  let rMateStart: number
+  let rMateEnd: number
+  let rFeatStart: number
+  let rFeatEnd: number
 
   if (cigar) {
-    const [fStartX, mStartX] = findPosInCigar(cigar, flip, regStart - featStart)
-    const [fEndX, mEndX] = findPosInCigar(cigar, flip, regEnd - featStart)
+    const p = parseCigar(cigar)
+    const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
+    const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
 
     // avoid multiply by 0 with strand undefined
     const flipper = strand === -1 ? -1 : 1
     rFeatStart = featStart + fStartX
     rFeatEnd = featStart + fEndX
-    rMateStart = mateStart + mStartX * flipper
-    rMateEnd = mateStart + mEndX * flipper
+    rMateStart = (strand === -1 ? mateEnd : mateStart) + mStartX * flipper
+    rMateEnd = (strand === -1 ? mateEnd : mateStart) + mEndX * flipper
   } else {
+    rFeatStart = featStart
     rFeatEnd = featEnd
+    rMateStart = mateStart
     rMateEnd = mateEnd
   }
   const trackId = track.configuration.trackId
