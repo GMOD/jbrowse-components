@@ -60,10 +60,10 @@ export function drawMatchSimple({
       continue
     }
 
-    const px11 = px(v1, { refName: ref1, coord: c1[LEFT] })
-    const px12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
-    const px21 = px(v2, { refName: ref2, coord: c2[LEFT] })
-    const px22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+    const px11 = bpToPx({ self: v1, refName: ref1, coord: c1[LEFT] })
+    const px12 = bpToPx({ self: v1, refName: ref1, coord: c1[RIGHT] })
+    const px21 = bpToPx({ self: v2, refName: ref2, coord: c2[LEFT] })
+    const px22 = bpToPx({ self: v2, refName: ref2, coord: c2[RIGHT] })
     if (
       px11 === undefined ||
       px12 === undefined ||
@@ -73,10 +73,10 @@ export function drawMatchSimple({
       continue
     }
 
-    const x11 = px11 - offsets[l1]
-    const x12 = px12 - offsets[l1]
-    const x21 = px21 - offsets[l2]
-    const x22 = px22 - offsets[l2]
+    const x11 = px11.offsetPx - offsets[l1]
+    const x12 = px12.offsetPx - offsets[l1]
+    const x21 = px21.offsetPx - offsets[l2]
+    const x22 = px22.offsetPx - offsets[l2]
 
     const y1 = interstitialYPos(l1 < l2, height)
     const y2 = interstitialYPos(l2 < l1, height)
@@ -94,28 +94,10 @@ export function drawMatchSimple({
       }
       ctx.stroke()
     } else {
-      ctx.beginPath()
-      ctx.moveTo(x11, y1)
-      ctx.lineTo(x12, y1)
-      if (drawCurves) {
-        ctx.bezierCurveTo(x12, mid, x22, mid, x22, y2)
-      } else {
-        ctx.lineTo(x22, y2)
-      }
-      ctx.lineTo(x21, y2)
-      if (drawCurves) {
-        ctx.bezierCurveTo(x21, mid, x11, mid, x11, y1)
-      } else {
-        ctx.lineTo(x11, y1)
-      }
-      ctx.closePath()
+      draw(ctx, x11, x12, y1, x22, x21, y2, mid, drawCurves)
       cb(ctx)
     }
   }
-}
-
-export function px(view: ViewSnap, arg: { refName: string; coord: number }) {
-  return bpToPx({ ...arg, self: view })?.offsetPx
 }
 
 export function layoutMatches(
@@ -161,6 +143,24 @@ export function layoutMatches(
     }
   }
   return matches
+}
+
+export function draw(
+  ctx: CanvasRenderingContext2D,
+  x1: number,
+  x2: number,
+  y1: number,
+  x3: number,
+  x4: number,
+  y2: number,
+  mid: number,
+  drawCurves?: boolean,
+) {
+  if (drawCurves) {
+    drawBezierBox(ctx, x1, x2, y1, x3, x4, y2, mid)
+  } else {
+    drawBox(ctx, x1, x2, y1, x3, x4, y2)
+  }
 }
 
 export function drawBox(

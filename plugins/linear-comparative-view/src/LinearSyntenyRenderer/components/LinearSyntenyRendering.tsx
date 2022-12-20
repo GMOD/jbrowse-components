@@ -13,19 +13,14 @@ import {
   getSession,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
+import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 
 // locals
 import { interstitialYPos } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay/stateModelFactory'
 import SyntenyTooltip from './SyntenyTooltip'
-import {
-  drawBezierBox,
-  drawBox,
-  drawMatchSimple,
-  layoutMatches,
-  px,
-} from './util'
+import { draw, drawMatchSimple, layoutMatches } from './util'
 
 const { parseCigar } = MismatchParser
 
@@ -40,6 +35,13 @@ const colorMap = {
   X: 'brown',
   M: '#f003',
   '=': '#f003',
+}
+
+function makeColor(idx: number) {
+  const r = Math.floor(idx / (255 * 255)) % 255
+  const g = Math.floor(idx / 255) % 255
+  const b = idx % 255
+  return `rgb(${r},${g},${b})`
 }
 
 function getId(r: number, g: number, b: number, unitMultiplier: number) {
@@ -165,13 +167,9 @@ function LinearSyntenyRendering({
       for (let j = 0; j < matches.length; j++) {
         const m = matches[j]
         const idx = j * unitMultiplier + 1
-
-        const r = Math.floor(idx / (255 * 255)) % 255
-        const g = Math.floor(idx / 255) % 255
-        const b = idx % 255
         ctx1.fillStyle = colorMap.M
         ctx1.strokeStyle = colorMap.M
-        ctx2.fillStyle = `rgb(${r},${g},${b})`
+        ctx2.fillStyle = makeColor(idx)
 
         // too many click map false positives with colored stroked lines
         // ctx2.strokeStyle = `rgb(${r},${g},${b})`
@@ -211,23 +209,23 @@ function LinearSyntenyRendering({
             continue
           }
 
-          const gpx11 = px(v1, { refName: ref1, coord: c1[LEFT] })
-          const gpx12 = px(v1, { refName: ref1, coord: c1[RIGHT] })
-          const gpx21 = px(v2, { refName: ref2, coord: c2[LEFT] })
-          const gpx22 = px(v2, { refName: ref2, coord: c2[RIGHT] })
+          const p11 = bpToPx({ self: v1, refName: ref1, coord: c1[LEFT] })
+          const p12 = bpToPx({ self: v1, refName: ref1, coord: c1[RIGHT] })
+          const p21 = bpToPx({ self: v2, refName: ref2, coord: c2[LEFT] })
+          const p22 = bpToPx({ self: v2, refName: ref2, coord: c2[RIGHT] })
           if (
-            gpx11 === undefined ||
-            gpx12 === undefined ||
-            gpx21 === undefined ||
-            gpx22 === undefined
+            p11 === undefined ||
+            p12 === undefined ||
+            p21 === undefined ||
+            p22 === undefined
           ) {
             continue
           }
 
-          const gx11 = gpx11 - offsets[l1]
-          const gx12 = gpx12 - offsets[l1]
-          const gx21 = gpx21 - offsets[l2]
-          const gx22 = gpx22 - offsets[l2]
+          const x11 = p11.offsetPx - offsets[l1]
+          const x12 = p12.offsetPx - offsets[l1]
+          const x21 = p21.offsetPx - offsets[l2]
+          const x22 = p22.offsetPx - offsets[l2]
 
           const y1 = interstitialYPos(l1 < l2, height)
           const y2 = interstitialYPos(l2 < l1, height)
@@ -238,54 +236,40 @@ function LinearSyntenyRendering({
           // pixellation than filling in a thin polygon
           if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
             ctx1.beginPath()
-            ctx1.moveTo(gx11, y1)
+            ctx1.moveTo(x11, y1)
             if (drawCurves) {
-              ctx1.bezierCurveTo(gx11, mid, gx21, mid, gx21, y2)
+              ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
             } else {
-              ctx1.lineTo(gx21, y2)
+              ctx1.lineTo(x21, y2)
             }
             ctx1.stroke()
           } else {
-            const px11 = px(v1, { refName: ref1, coord: f1.get('start') })
-            const px12 = px(v1, { refName: ref1, coord: f1.get('end') })
-            const px21 = px(v2, { refName: ref2, coord: f2.get('start') })
-            const px22 = px(v2, { refName: ref2, coord: f2.get('end') })
-            if (
-              px11 === undefined ||
-              px12 === undefined ||
-              px21 === undefined ||
-              px22 === undefined
-            ) {
-              continue
-            }
+            const s1 = f1.get('strand')
+            const k1 = s1 === -1 ? x12 : x11
+            const k2 = s1 === -1 ? x11 : x12
 
-            const x11 = px11 - offsets[l1]
-            const x12 = px12 - offsets[l1]
-            const x21 = px21 - offsets[l2]
-            const x22 = px22 - offsets[l2]
+            // rev1/rev2 flip the direction of the CIGAR drawing in horizontally flipped
+            // modes. somewhat heuristically determined, but tested for
+            const rev1 = k1 < k2 ? 1 : -1
+            const rev2 = (x21 < x22 ? 1 : -1) * s1
 
-            // flip the direction of the CIGAR drawing in horizontally flipped
-            // modes
-            const rev1 = x11 < x12 ? 1 : -1
-            const rev2 = (x21 < x22 ? 1 : -1) * f1.get('strand')
-            let cx1 = x11
-            let cx2 = f1.get('strand') === -1 ? x22 : x21
+            // cx1/cx2 are the current x positions on top and bottom rows
+            let cx1 = k1
+            let cx2 = s1 === -1 ? x22 : x21
 
             const cigar = parsedCIGARs.get(f1.id())
-
             if (cigar?.length) {
-              // continuingFlag helps speed up zoomed out by skipping draw
-              // commands on very small CIGAR features
+              // continuingFlag skips drawing commands on very small CIGAR features
               let continuingFlag = false
+
+              // px1/px2 are the previous x positions on the top and bottom rows
               let px1 = 0
               let px2 = 0
               const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
               for (let j = 0; j < cigar.length; j += 2) {
                 const idx = j * unitMultiplier2 + 1
-                const r = Math.floor(idx / (255 * 255)) % 255
-                const g = Math.floor(idx / 255) % 255
-                const b = idx % 255
-                ctx3.fillStyle = `rgb(${r},${g},${b})`
+                ctx3.fillStyle = makeColor(idx)
+
                 const len = +cigar[j]
                 const op = cigar[j + 1] as keyof typeof colorMap
 
@@ -333,22 +317,13 @@ function LinearSyntenyRendering({
                     ctx1.fillStyle =
                       colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
 
-                    if (drawCurves) {
-                      drawBezierBox(ctx1, px1, cx1, y1, cx2, px2, y2, mid)
-                      drawBezierBox(ctx3, px1, cx1, y1, cx2, px2, y2, mid)
-                    } else {
-                      drawBox(ctx1, px1, cx1, y1, cx2, px2, y2)
-                      drawBox(ctx3, px1, cx1, y1, cx2, px2, y2)
-                    }
+                    draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+                    draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
                   }
                 }
               }
             } else {
-              if (drawCurves) {
-                drawBezierBox(ctx1, gx11, gx12, y1, gx22, gx21, y2, mid)
-              } else {
-                drawBox(ctx1, gx11, gx12, y1, gx22, gx21, y2)
-              }
+              draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
             }
           }
         }
