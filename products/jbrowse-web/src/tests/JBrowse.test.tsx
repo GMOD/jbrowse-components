@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom/extend-expect'
 
 import { fireEvent } from '@testing-library/react'
-import { TextEncoder } from 'web-encoding'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +14,6 @@ import TestPlugin from './TestPlugin'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-window.TextEncoder = TextEncoder
 setup()
 
 const delay = { timeout: 15000 }

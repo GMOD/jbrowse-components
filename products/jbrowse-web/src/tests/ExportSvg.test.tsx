@@ -1,13 +1,10 @@
 import { fireEvent, waitFor } from '@testing-library/react'
-import { TextEncoder } from 'web-encoding'
 import fs from 'fs'
 import path from 'path'
 import FileSaver from 'file-saver'
 
 // locals
 import { hts, createView, setup, doBeforeEach } from './util'
-
-window.TextEncoder = TextEncoder
 
 // mock from https://stackoverflow.com/questions/44686077
 jest.mock('file-saver', () => ({ saveAs: jest.fn() }))

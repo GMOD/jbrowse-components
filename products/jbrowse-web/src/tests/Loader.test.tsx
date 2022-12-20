@@ -1,30 +1,21 @@
-// we use mainthread rpc so we mock the makeWorkerInstance to an empty file
 import React from 'react'
 import { render, waitFor } from '@testing-library/react'
-import { TextEncoder, TextDecoder } from 'web-encoding'
+
+import { toMatchImageSnapshot } from 'jest-image-snapshot'
 import { LocalFile } from 'generic-filehandle'
 import rangeParser from 'range-parser'
-import { Image, createCanvas } from 'canvas'
-import { QueryParamProvider } from 'use-query-params'
-import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 
-import { Loader } from '../Loader'
+// local
+import { App } from './loaderUtil'
+
+import { Image, createCanvas } from 'canvas'
+
+jest.mock('../makeWorkerInstance', () => () => {})
 
 // @ts-ignore
 global.nodeImage = Image
 // @ts-ignore
 global.nodeCreateCanvas = createCanvas
-
-jest.mock('../makeWorkerInstance', () => () => {})
-
-const delay = { timeout: 20000 }
-
-if (!window.TextEncoder) {
-  window.TextEncoder = TextEncoder
-}
-if (!window.TextDecoder) {
-  window.TextDecoder = TextDecoder
-}
 
 const getFile = (url: string) =>
   new LocalFile(
@@ -103,29 +94,20 @@ const readBuffer = async (url: string, args: RequestInit) => {
   }
 }
 
+jest.mock('../makeWorkerInstance', () => () => {})
+
+expect.extend({ toMatchImageSnapshot })
+
+const delay = { timeout: 20000 }
+
 // @ts-ignore
 jest.spyOn(global, 'fetch').mockImplementation(readBuffer)
-
-function App({ search }: { search: string }) {
-  const location = {
-    ...window.location,
-    search,
-  }
-  Object.defineProperty(window, 'location', {
-    writable: true,
-    value: location,
-  })
-  return (
-    <QueryParamProvider adapter={WindowHistoryAdapter}>
-      <Loader />
-    </QueryParamProvider>
-  )
-}
 
 afterEach(() => {
   localStorage.clear()
   sessionStorage.clear()
 })
+
 test('errors with config in URL that does not exist', async () => {
   console.error = jest.fn()
   const { findByText } = render(<App search="?config=doesNotExist.json" />)
@@ -196,23 +178,6 @@ test('can use a spec url for lgv', async () => {
   )
 }, 40000)
 
-test('can use a spec url for dotplot view', async () => {
-  const { findByTestId } = render(
-    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}' />,
-  )
-
-  await findByTestId('prerendered_canvas_done', {}, delay)
-}, 40000)
-
-test('can use a spec url for synteny view', async () => {
-  console.warn = jest.fn()
-  const { findByTestId } = render(
-    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-100","assembly":"volvox"},{"loc":"ctgA:300-400","assembly":"volvox"}]}]}' />,
-  )
-
-  await findByTestId('synteny_canvas', {}, delay)
-}, 40000)
-
 test('can use a spec url for spreadsheet view', async () => {
   console.warn = jest.fn()
   const { findByText } = render(
@@ -229,4 +194,12 @@ test('can use a spec url for sv inspector view', async () => {
   )
 
   await findByText('ctgB:1982..1983', {}, delay)
+}, 40000)
+
+test('can use a spec url for dotplot view', async () => {
+  const { findByTestId } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}' />,
+  )
+
+  await findByTestId('prerendered_canvas_done', {}, delay)
 }, 40000)

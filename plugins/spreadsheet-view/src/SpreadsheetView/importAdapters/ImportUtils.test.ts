@@ -1,10 +1,9 @@
 import { promises as fsPromises } from 'fs'
 import path from 'path'
-import { parseCsvBuffer } from './ImportUtils'
 
-import { TextDecoder } from 'web-encoding'
+// locals
+import { parseCsvBuffer } from './ImportUtils'
 import SpreadsheetModel from '../models/Spreadsheet'
-window.TextDecoder = TextDecoder
 
 test('csv to spreadsheet snapshot', async () => {
   const filepath = path.join(

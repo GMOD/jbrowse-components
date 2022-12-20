@@ -2,9 +2,6 @@ import { toArray } from 'rxjs/operators'
 import configSchema from './configSchema'
 import GtfAdapter from './GtfAdapter'
 
-import { TextDecoder } from 'web-encoding'
-window.TextDecoder = TextDecoder
-
 describe('adapter can fetch features from volvox.sorted.gtf', () => {
   let adapter: GtfAdapter
   beforeEach(() => {

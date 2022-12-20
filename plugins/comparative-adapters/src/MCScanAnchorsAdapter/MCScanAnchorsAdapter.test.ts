@@ -1,14 +1,7 @@
 import { toArray } from 'rxjs/operators'
 import Adapter from './MCScanAnchorsAdapter'
-import { TextEncoder, TextDecoder } from 'web-encoding'
-import configSchema from './configSchema'
 
-if (!window.TextEncoder) {
-  window.TextEncoder = TextEncoder
-}
-if (!window.TextDecoder) {
-  window.TextDecoder = TextDecoder
-}
+import configSchema from './configSchema'
 
 test('adapter can fetch features from mcscan anchors file', async () => {
   const adapter = new Adapter(

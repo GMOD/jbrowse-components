@@ -1,4 +1,3 @@
-import { TextDecoder, TextEncoder } from 'web-encoding'
 import { promises as fsPromises } from 'fs'
 import path from 'path'
 import { parseVcfBuffer, splitVcfFileHeaderAndBody } from './VcfImport'
@@ -25,9 +24,6 @@ describe('vcf file splitter', () => {
     })
   })
 })
-
-window.TextEncoder = TextEncoder
-window.TextDecoder = TextDecoder
 
 test('vcf file import', async () => {
   const filepath = path.join(

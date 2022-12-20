@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Select, MenuItem, Paper, Typography } from '@mui/material'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
-
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { ErrorMessage } from '@jbrowse/core/ui'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-
 import { observer } from 'mobx-react'
+
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+
+// locals
 import { DotplotViewModel } from '../model'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 
 function f(track: AnyConfigurationModel, assembly1: string, assembly2: string) {
   const assemblyNames = readConfObject(track, 'assemblyNames')
@@ -51,6 +53,7 @@ const Selector = observer(
       // onChange's to the select box
       setShowTrackId(value)
     }, [value, setShowTrackId])
+
     return (
       <Paper style={{ padding: 12 }}>
         <Typography paragraph>

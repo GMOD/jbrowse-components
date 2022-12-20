@@ -18,26 +18,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
       baseModel(pluginManager),
-      types
-        .model('LinearSyntenyView', {
-          /**
-           * #property
-           */
-          type: types.literal('LinearSyntenyView'),
-          /**
-           * #property
-           */
-          drawCurves: false,
-        })
-        .actions(self => ({
-          /**
-           * #action
-           */
-          toggleCurves() {
-            self.drawCurves = !self.drawCurves
-          },
-        })),
+      types.model('LinearSyntenyView', {
+        /**
+         * #property
+         */
+        type: types.literal('LinearSyntenyView'),
+        /**
+         * #property
+         */
+        drawCurves: false,
+      }),
     )
+    .actions(self => ({
+      /**
+       * #action
+       */
+      toggleCurves() {
+        self.drawCurves = !self.drawCurves
+      },
+    }))
     .views(self => {
       const superMenuItems = self.menuItems
       return {
