@@ -1,3 +1,66 @@
+## 2.3.2 (2022-12-20)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-comparative-adapters    |                                                                   |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gccontent               | https://www.npmjs.com/package/@jbrowse/plugin-gccontent           |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#3422](https://github.com/GMOD/jbrowse-components/pull/3422) Auto-adjust
+    height of reference sequence track to current settings
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3421](https://github.com/GMOD/jbrowse-components/pull/3421) Add ability to
+    revcomp sequence in the "Get sequence" dialog
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3413](https://github.com/GMOD/jbrowse-components/pull/3413) Add a "base"
+    set of tracks and assemblies for the embedded demos
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#3419](https://github.com/GMOD/jbrowse-components/pull/3419) Fix rendering
+  base-level alignments on synteny visualizations, especially in inverted
+  regions ([@cmdcolin](https://github.com/cmdcolin))
+- [#3416](https://github.com/GMOD/jbrowse-components/pull/3416) Fix rendering
+  alignment arcs on files that need refname renaming and add jitter setting
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3415](https://github.com/GMOD/jbrowse-components/pull/3415) Fix circular
+  view being rendered as a blank area if tab is opened in the background
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 <details><summary>Packages in this release</summary>
 <p>
 
