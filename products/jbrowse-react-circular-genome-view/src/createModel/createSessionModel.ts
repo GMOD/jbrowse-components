@@ -358,7 +358,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * does nothing
        */
       addWidget(
         typeName: string,
@@ -382,7 +381,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * does nothing
        */
       showWidget(widget: any) {
         if (self.activeWidgets.has(widget.id)) {
