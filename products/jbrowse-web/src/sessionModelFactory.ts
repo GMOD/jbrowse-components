@@ -64,6 +64,7 @@ type AnyConfiguration =
 
 /**
  * #stateModel JBrowseWebSessionModel
+ * inherits SnackbarModel
  */
 export default function sessionModelFactory(
   pluginManager: PluginManager,

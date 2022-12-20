@@ -37,33 +37,27 @@ configuration: ConfigurationReference(configSchema)
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+true
 // code
-showForward: types.optional(types.boolean, () =>
-          getBool('seq-showForward', true),
-        )
+showForward: true
 ```
 
 #### property: showReverse
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+true
 // code
-showReverse: types.optional(types.boolean, () =>
-          getBool('seq-showReverse', true),
-        )
+showReverse: true
 ```
 
 #### property: showTranslation
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+true
 // code
-showTranslation: types.optional(types.boolean, () =>
-          getBool('seq-showTranslation', true),
-        )
+showTranslation: true
 ```
 
 ### LinearReferenceSequenceDisplay - Getters

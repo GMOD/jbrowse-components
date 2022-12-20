@@ -1,6 +1,6 @@
 ---
-id: jbrowsewebsessionmodel
-title: JBrowseWebSessionModel
+id: jbrowsedesktopsessionmodel
+title: JBrowseDesktopSessionModel
 toplevel: true
 ---
 
@@ -13,16 +13,7 @@ info
 
 inherits SnackbarModel
 
-### JBrowseWebSessionModel - Properties
-
-#### property: id
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: types.optional(types.identifier, shortid())
-```
+### JBrowseDesktopSessionModel - Properties
 
 #### property: name
 
@@ -30,7 +21,7 @@ id: types.optional(types.identifier, shortid())
 // type signature
 ISimpleType<string>
 // code
-name: types.string
+name: types.identifier
 ```
 
 #### property: margin
@@ -98,28 +89,6 @@ connectionInstances: types.array(
       )
 ```
 
-#### property: sessionTracks
-
-```js
-// type signature
-IArrayType<IAnyModelType>
-// code
-sessionTracks: types.array(
-        pluginManager.pluggableConfigSchemaType('track'),
-      )
-```
-
-#### property: sessionConnections
-
-```js
-// type signature
-IArrayType<IAnyModelType>
-// code
-sessionConnections: types.array(
-        pluginManager.pluggableConfigSchemaType('connection'),
-      )
-```
-
 #### property: sessionAssemblies
 
 ```js
@@ -136,15 +105,6 @@ sessionAssemblies: types.array(assemblyConfigSchemasType)
 IArrayType<IType<any, any, any>>
 // code
 temporaryAssemblies: types.array(assemblyConfigSchemasType)
-```
-
-#### property: sessionPlugins
-
-```js
-// type signature
-IArrayType<IType<any, any, any>>
-// code
-sessionPlugins: types.array(types.frozen())
 ```
 
 #### property: minimized
@@ -168,7 +128,7 @@ drawerPosition: types.optional(
       )
 ```
 
-### JBrowseWebSessionModel - Getters
+### JBrowseDesktopSessionModel - Getters
 
 #### getter: DialogComponent
 
@@ -181,13 +141,6 @@ any
 
 ```js
 // type
-ReactProps
-```
-
-#### getter: shareURL
-
-```js
-// type
 any
 ```
 
@@ -195,35 +148,35 @@ any
 
 ```js
 // type
-RpcManager
+any
 ```
 
 #### getter: configuration
 
 ```js
 // type
-{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
+any
 ```
 
 #### getter: assemblies
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+any
 ```
 
 #### getter: assemblyNames
 
 ```js
 // type
-string[]
+any
 ```
 
 #### getter: tracks
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+any
 ```
 
 #### getter: textSearchManager
@@ -237,24 +190,10 @@ TextSearchManager
 
 ```js
 // type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
-```
-
-#### getter: adminMode
-
-```js
-// type
-boolean
-```
-
-#### getter: savedSessions
-
-```js
-// type
 any
 ```
 
-#### getter: previousAutosaveId
+#### getter: savedSessions
 
 ```js
 // type
@@ -303,7 +242,14 @@ any
 any
 ```
 
-### JBrowseWebSessionModel - Methods
+#### getter: adminMode
+
+```js
+// type
+boolean
+```
+
+### JBrowseDesktopSessionModel - Methods
 
 #### method: renderProps
 
@@ -327,10 +273,10 @@ getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
 
 ```js
 // type signature
-getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => ({ ...; } | { ...; })[]
+getTrackActionMenuItems: (config: any) => ({ label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; disabled?: undefined; } | { ...; })[]
 ```
 
-### JBrowseWebSessionModel - Actions
+### JBrowseDesktopSessionModel - Actions
 
 #### action: moveViewUp
 
@@ -357,58 +303,7 @@ setDrawerPosition: (arg: string) => void
 
 ```js
 // type signature
-queueDialog: (callback: (doneCallback: () => void) => [any, ReactProps]) => void
-```
-
-#### action: setName
-
-```js
-// type signature
-setName: (str: string) => void
-```
-
-#### action: addAssembly
-
-```js
-// type signature
-addAssembly: (conf: AnyConfiguration) => any
-```
-
-#### action: addTemporaryAssembly
-
-used for read vs ref type assemblies.
-
-```js
-// type signature
-addTemporaryAssembly: (conf: AnyConfiguration) => any
-```
-
-#### action: addSessionPlugin
-
-```js
-// type signature
-addSessionPlugin: (plugin: JBrowsePlugin) => void
-```
-
-#### action: removeAssembly
-
-```js
-// type signature
-removeAssembly: (assemblyName: string) => void
-```
-
-#### action: removeTemporaryAssembly
-
-```js
-// type signature
-removeTemporaryAssembly: (assemblyName: string) => void
-```
-
-#### action: removeSessionPlugin
-
-```js
-// type signature
-removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
+queueDialog: (callback: (doneCallback: () => void) => [any, any]) => void
 ```
 
 #### action: makeConnection
@@ -421,13 +316,6 @@ makeConnection: (
     } & IStateTreeNode<AnyConfigurationSchemaType>,
   initialSnapshot?: {},
 ) => any
-```
-
-#### action: removeReferring
-
-```js
-// type signature
-removeReferring: (referring: any, track: any, callbacks: Function[], dereferenceTypeCount: Record<string, number>) => void
 ```
 
 #### action: prepareToBreakConnection
@@ -483,18 +371,66 @@ addView: (typeName: string, initialState?: {}) => any
 removeView: (view: any) => void
 ```
 
+#### action: addAssembly
+
+```js
+// type signature
+addAssembly: (assemblyConfig: any) => void
+```
+
+#### action: removeAssembly
+
+```js
+// type signature
+removeAssembly: (assemblyName: string) => void
+```
+
+#### action: removeTemporaryAssembly
+
+```js
+// type signature
+removeTemporaryAssembly: (assemblyName: string) => void
+```
+
+#### action: addTemporaryAssembly
+
+used for read vs ref type assemblies
+
+```js
+// type signature
+addTemporaryAssembly: (
+  assemblyConfig: { [x: string]: any } & NonEmptyObject & {
+      setSubschema(slotName: string, data: unknown): any,
+    } & IStateTreeNode<AnyConfigurationSchemaType>,
+) => any
+```
+
 #### action: addAssemblyConf
 
 ```js
 // type signature
-addAssemblyConf: (assemblyConf: AnyConfiguration) => any
+addAssemblyConf: (assemblyConf: any) => any
 ```
 
 #### action: addTrackConf
 
 ```js
 // type signature
-addTrackConf: (trackConf: AnyConfiguration) => any
+addTrackConf: (trackConf: any) => any
+```
+
+#### action: hasWidget
+
+```js
+// type signature
+hasWidget: (widget: any) => boolean
+```
+
+#### action: removeReferring
+
+```js
+// type signature
+removeReferring: (referring: any, track: any, callbacks: Function[], dereferenceTypeCount: Record<string, number>) => void
 ```
 
 #### action: deleteTrackConf
@@ -560,13 +496,6 @@ addWidget: (
 showWidget: (widget: any) => void
 ```
 
-#### action: hasWidget
-
-```js
-// type signature
-hasWidget: (widget: any) => boolean
-```
-
 #### action: hideWidget
 
 ```js
@@ -614,6 +543,23 @@ clears the global selection
 clearSelection: () => void
 ```
 
+#### action: editConfiguration
+
+opens a configuration editor to configure the given thing, and sets the current
+task to be configuring it
+
+```js
+// type signature
+editConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
+#### action: editTrackConfiguration
+
+```js
+// type signature
+editTrackConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+```
+
 #### action: clearConnections
 
 ```js
@@ -625,7 +571,7 @@ clearConnections: () => void
 
 ```js
 // type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 7 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: removeSavedSession
@@ -663,40 +609,9 @@ activateSession: (sessionName: any) => any
 setDefaultSession: () => any
 ```
 
-#### action: saveSessionToLocalStorage
-
-```js
-// type signature
-saveSessionToLocalStorage: () => any
-```
-
-#### action: loadAutosaveSession
-
-```js
-// type signature
-loadAutosaveSession: () => any
-```
-
 #### action: setSession
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
-```
-
-#### action: editConfiguration
-
-opens a configuration editor to configure the given thing, and sets the current
-task to be configuring it
-
-```js
-// type signature
-editConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
-```
-
-#### action: editTrackConfiguration
-
-```js
-// type signature
-editTrackConfiguration: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 7 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
 ```

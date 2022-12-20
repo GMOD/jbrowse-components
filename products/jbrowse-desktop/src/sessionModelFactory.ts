@@ -44,6 +44,10 @@ export declare interface ReferringNode {
   key: string
 }
 
+/**
+ * #stateModel JBrowseDesktopSessionModel
+ * inherits SnackbarModel
+ */
 export default function sessionModelFactory(
   pluginManager: PluginManager,
   assemblyConfigSchemasType = types.frozen(),
@@ -51,29 +55,62 @@ export default function sessionModelFactory(
   const minDrawerWidth = 128
   const sessionModel = types
     .model('JBrowseDesktopSessionModel', {
+      /**
+       * #property
+       */
       name: types.identifier,
+      /**
+       * #property
+       */
       margin: 0,
+      /**
+       * #property
+       */
       drawerWidth: types.optional(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
+      /**
+       * #property
+       */
       views: types.array(pluginManager.pluggableMstType('view', 'stateModel')),
+      /**
+       * #property
+       */
       widgets: types.map(
         pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
+      /**
+       * #property
+       */
       activeWidgets: types.map(
         types.safeReference(
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
+      /**
+       * #property
+       */
       connectionInstances: types.array(
         pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
+      /**
+       * #property
+       */
       sessionAssemblies: types.array(assemblyConfigSchemasType),
+      /**
+       * #property
+       */
       temporaryAssemblies: types.array(assemblyConfigSchemasType),
 
+      /**
+       * #property
+       */
       minimized: types.optional(types.boolean, false),
 
+      /**
+       * #property
+       */
       drawerPosition: types.optional(
         types.string,
         localStorage.getItem('drawerPosition') || 'right',
@@ -95,6 +132,9 @@ export default function sessionModelFactory(
       queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get DialogComponent() {
         if (self.queueOfDialogs.length) {
           const firstInQueue = self.queueOfDialogs[0]
@@ -102,6 +142,9 @@ export default function sessionModelFactory(
         }
         return undefined
       },
+      /**
+       * #getter
+       */
       get DialogProps() {
         if (self.queueOfDialogs.length) {
           const firstInQueue = self.queueOfDialogs[0]
@@ -109,49 +152,94 @@ export default function sessionModelFactory(
         }
         return undefined
       },
+      /**
+       * #getter
+       */
       get rpcManager() {
         return getParent<any>(self).jbrowse.rpcManager
       },
+      /**
+       * #getter
+       */
       get configuration() {
         return getParent<any>(self).jbrowse.configuration
       },
+      /**
+       * #getter
+       */
       get assemblies() {
         return getParent<any>(self).jbrowse.assemblies
       },
+      /**
+       * #getter
+       */
       get assemblyNames() {
         return getParent<any>(self).jbrowse.assemblyNames
       },
+      /**
+       * #getter
+       */
       get tracks() {
         return getParent<any>(self).jbrowse.tracks
       },
+      /**
+       * #getter
+       */
       get textSearchManager(): TextSearchManager {
         return getParent<any>(self).textSearchManager
       },
+      /**
+       * #getter
+       */
       get connections() {
         return getParent<any>(self).jbrowse.connections
       },
+      /**
+       * #getter
+       */
       get savedSessions() {
         return getParent<any>(self).jbrowse.savedSessions
       },
+      /**
+       * #getter
+       */
       get savedSessionNames() {
         return getParent<any>(self).jbrowse.savedSessionNames
       },
+      /**
+       * #getter
+       */
       get history() {
         return getParent<any>(self).history
       },
+      /**
+       * #getter
+       */
       get menus() {
         return getParent<any>(self).menus
       },
 
+      /**
+       * #getter
+       */
       get assemblyManager() {
         return getParent<any>(self).assemblyManager
       },
+      /**
+       * #getter
+       */
       get version() {
         return getParent<any>(self).version
       },
+      /**
+       * #method
+       */
       renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
+      /**
+       * #getter
+       */
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
@@ -162,10 +250,14 @@ export default function sessionModelFactory(
         return undefined
       },
 
+      /**
+       * #getter
+       */
       get adminMode() {
         return true
       },
       /**
+       * #method
        * See if any MST nodes currently have a types.reference to this object.
        * @param object - object
        * @returns An array where the first element is the node referring
@@ -216,10 +308,18 @@ export default function sessionModelFactory(
           self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
         }
       },
+
+      /**
+       * #action
+       */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
         localStorage.setItem('drawerPosition', arg)
       },
+
+      /**
+       * #action
+       */
       queueDialog(
         callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
@@ -228,6 +328,10 @@ export default function sessionModelFactory(
         })
         self.queueOfDialogs.push([component, props])
       },
+
+      /**
+       * #action
+       */
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -251,6 +355,9 @@ export default function sessionModelFactory(
         return self.connectionInstances[length - 1]
       },
 
+      /**
+       * #action
+       */
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
@@ -275,16 +382,25 @@ export default function sessionModelFactory(
         return undefined
       },
 
+      /**
+       * #action
+       */
       breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const connection = self.connectionInstances.find(c => c.name === name)
         self.connectionInstances.remove(connection)
       },
 
+      /**
+       * #action
+       */
       deleteConnection(configuration: AnyConfigurationModel) {
         return getParent<any>(self).jbrowse.deleteConnectionConf(configuration)
       },
 
+      /**
+       * #action
+       */
       updateDrawerWidth(drawerWidth: number) {
         if (drawerWidth === self.drawerWidth) {
           return self.drawerWidth
@@ -297,6 +413,9 @@ export default function sessionModelFactory(
         return newDrawerWidth
       },
 
+      /**
+       * #action
+       */
       resizeDrawer(distance: number) {
         const oldDrawerWidth = self.drawerWidth
         const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
@@ -304,6 +423,9 @@ export default function sessionModelFactory(
         return actualDistance
       },
 
+      /**
+       * #action
+       */
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) {
@@ -317,6 +439,9 @@ export default function sessionModelFactory(
         return self.views[length - 1]
       },
 
+      /**
+       * #action
+       */
       removeView(view: any) {
         for (const [, widget] of self.activeWidgets) {
           if (widget.view && widget.view.id === view.id) {
@@ -326,9 +451,16 @@ export default function sessionModelFactory(
         self.views.remove(view)
       },
 
+      /**
+       * #action
+       */
       addAssembly(assemblyConfig: any) {
         self.sessionAssemblies.push(assemblyConfig)
       },
+
+      /**
+       * #action
+       */
       removeAssembly(assemblyName: string) {
         const index = self.sessionAssemblies.findIndex(
           asm => asm.name === assemblyName,
@@ -338,6 +470,9 @@ export default function sessionModelFactory(
         }
       },
 
+      /**
+       * #action
+       */
       removeTemporaryAssembly(assemblyName: string) {
         const index = self.temporaryAssemblies.findIndex(
           asm => asm.name === assemblyName,
@@ -347,7 +482,10 @@ export default function sessionModelFactory(
         }
       },
 
-      // used for read vs ref type assemblies.
+      /**
+       * #action
+       * used for read vs ref type assemblies
+       */
       addTemporaryAssembly(assemblyConfig: AnyConfigurationModel) {
         const asm = self.sessionAssemblies.find(
           f => f.name === assemblyConfig.name,
@@ -360,18 +498,30 @@ export default function sessionModelFactory(
         return self.temporaryAssemblies[length - 1]
       },
 
+      /**
+       * #action
+       */
       addAssemblyConf(assemblyConf: any) {
         return getParent<any>(self).jbrowse.addAssemblyConf(assemblyConf)
       },
 
+      /**
+       * #action
+       */
       addTrackConf(trackConf: any) {
         return getParent<any>(self).jbrowse.addTrackConf(trackConf)
       },
 
+      /**
+       * #action
+       */
       hasWidget(widget: any) {
         return self.activeWidgets.has(widget.id)
       },
 
+      /**
+       * #action
+       */
       removeReferring(
         referring: any,
         track: any,
@@ -395,7 +545,6 @@ export default function sessionModelFactory(
             // ignore
           }
 
-          // @ts-ignore
           if (self.widgets.has(node.id)) {
             // If a configuration editor widget has the track config
             // open, close the widget
@@ -418,27 +567,8 @@ export default function sessionModelFactory(
       },
 
       /**
-       * See if any MST nodes currently have a types.reference to this object.
-       * @param object - object
-       * @returns An array where the first element is the node referring
-       * to the object and the second element is they property name the node is
-       * using to refer to the object
+       * #action
        */
-      getReferring(object: IAnyStateTreeNode) {
-        const refs: ReferringNode[] = []
-        walk(getParent<any>(self), node => {
-          if (isModelType(getType(node))) {
-            const members = getMembers(node)
-            Object.entries(members.properties).forEach(([key, value]) => {
-              // @ts-ignore
-              if (isReferenceType(value) && node[key] === object) {
-                refs.push({ node, key })
-              }
-            })
-          }
-        })
-        return refs
-      },
       deleteTrackConf(trackConf: AnyConfigurationModel) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
@@ -453,10 +583,16 @@ export default function sessionModelFactory(
         return getParent<any>(self).jbrowse.deleteTrackConf(trackConf)
       },
 
+      /**
+       * #action
+       */
       addConnectionConf(connectionConf: any) {
         return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
       },
 
+      /**
+       * #action
+       */
       addLinearGenomeViewOfAssembly(assemblyName: string, initialState = {}) {
         return this.addViewOfAssembly(
           'LinearGenomeView',
@@ -465,6 +601,9 @@ export default function sessionModelFactory(
         )
       },
 
+      /**
+       * #action
+       */
       addViewOfAssembly(
         viewType: any,
         assemblyName: string,
@@ -486,6 +625,9 @@ export default function sessionModelFactory(
         return this.addView(viewType, initialState)
       },
 
+      /**
+       * #action
+       */
       addViewFromAnotherView(
         viewType: string,
         otherView: any,
@@ -496,6 +638,9 @@ export default function sessionModelFactory(
         return this.addView(viewType, state)
       },
 
+      /**
+       * #action
+       */
       addWidget(
         typeName: string,
         id: string,
@@ -516,6 +661,9 @@ export default function sessionModelFactory(
         return self.widgets.get(id)
       },
 
+      /**
+       * #action
+       */
       showWidget(widget: any) {
         if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
@@ -523,21 +671,36 @@ export default function sessionModelFactory(
         self.activeWidgets.set(widget.id, widget)
       },
 
+      /**
+       * #action
+       */
       hideWidget(widget: any) {
         self.activeWidgets.delete(widget.id)
       },
+
+      /**
+       * #action
+       */
       minimizeWidgetDrawer() {
         self.minimized = true
       },
+
+      /**
+       * #action
+       */
       showWidgetDrawer() {
         self.minimized = false
       },
 
+      /**
+       * #action
+       */
       hideAllWidgets() {
         self.activeWidgets.clear()
       },
 
       /**
+       * #action
        * set the global selection, i.e. the globally-selected object.
        * can be a feature, a view, just about anything
        * @param thing -
@@ -547,6 +710,7 @@ export default function sessionModelFactory(
       },
 
       /**
+       * #action
        * clears the global selection
        */
       clearSelection() {
@@ -554,6 +718,7 @@ export default function sessionModelFactory(
       },
 
       /**
+       * #action
        * opens a configuration editor to configure the given thing,
        * and sets the current task to be configuring it
        * @param configuration -
@@ -571,43 +736,75 @@ export default function sessionModelFactory(
         )
         this.showWidget(editor)
       },
+
+      /**
+       * #action
+       */
       editTrackConfiguration(configuration: AnyConfigurationModel) {
         this.editConfiguration(configuration)
       },
 
+      /**
+       * #action
+       */
       clearConnections() {
         self.connectionInstances.length = 0
       },
 
+      /**
+       * #action
+       */
       addSavedSession(sessionSnapshot: SnapshotIn<typeof self>) {
         return getParent<any>(self).jbrowse.addSavedSession(sessionSnapshot)
       },
 
+      /**
+       * #action
+       */
       removeSavedSession(sessionSnapshot: any) {
         return getParent<any>(self).jbrowse.removeSavedSession(sessionSnapshot)
       },
 
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         return getParent<any>(self).renameCurrentSession(sessionName)
       },
 
+      /**
+       * #action
+       */
       duplicateCurrentSession() {
         return getParent<any>(self).duplicateCurrentSession()
       },
 
+      /**
+       * #action
+       */
       activateSession(sessionName: any) {
         return getParent<any>(self).activateSession(sessionName)
       },
 
+      /**
+       * #action
+       */
       setDefaultSession() {
         return getParent<any>(self).setDefaultSession()
       },
+
+      /**
+       * #action
+       */
       setSession(sessionSnapshot: SnapshotIn<typeof self>) {
         return getParent<any>(self).setSession(sessionSnapshot)
       },
     }))
 
     .views(self => ({
+      /**
+       * #method
+       */
       getTrackActionMenuItems(config: any) {
         const session = self
         const trackSnapshot = JSON.parse(JSON.stringify(getSnapshot(config)))
