@@ -1238,9 +1238,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
           autorun(() => {
             const s = (s: unknown) => JSON.stringify(s)
             const { trackLabels, showCytobandsSetting, showCenterLine } = self
-            localStorage.setItem('lgv-trackLabels', trackLabels)
-            localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
-            localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('lgv-trackLabels', trackLabels)
+              localStorage.setItem('lgv-showCytobands', s(showCytobandsSetting))
+              localStorage.setItem('lgv-showCenterLine', s(showCenterLine))
+            }
           }),
         )
       },
