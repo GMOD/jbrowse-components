@@ -37,6 +37,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
+    "@types/file-saver": "^2.0.1",
     "@mui/icons-material": "^5.0.1",
     "file-saver": "^2.0.0"
   },
