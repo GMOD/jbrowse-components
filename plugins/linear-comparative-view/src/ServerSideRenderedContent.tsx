@@ -1,5 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ServerSideRenderedContent({ model }: { model: any }) {
@@ -8,7 +9,7 @@ function ServerSideRenderedContent({ model }: { model: any }) {
   return model.filled ? (
     <RenderingComponent {...data} {...renderProps} />
   ) : (
-    <p>Loading</p>
+    <LoadingEllipses />
   )
 }
 

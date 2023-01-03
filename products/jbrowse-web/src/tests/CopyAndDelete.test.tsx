@@ -51,7 +51,7 @@ test('copy and delete reference sequence track disabled', async () => {
   // @ts-ignore
   const trackMenuItems = session.getTrackActionMenuItems(trackConf)
 
-  // copy ref seq track disbaled
+  // copy ref seq track disabled
   fireEvent.click(
     await findByTestId('htsTrackEntryMenu-volvox_refseq', {}, delay),
   )

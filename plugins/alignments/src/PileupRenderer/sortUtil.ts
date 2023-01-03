@@ -1,6 +1,5 @@
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-import { doesIntersect2 } from '@jbrowse/core/util/range'
-import { Mismatch } from '../BamAdapter/MismatchParser'
+import { doesIntersect2, Feature } from '@jbrowse/core/util'
+import { Mismatch } from '../MismatchParser'
 
 interface SortObject {
   pos: number

@@ -9,11 +9,18 @@ export default function register(pluginManager: PluginManager) {
     const configSchema = configSchemaFactory(pluginManager)
     return new DisplayType({
       name: 'LinearPileupDisplay',
+      displayName: 'Pileup display',
       configSchema,
       stateModel: modelFactory(configSchema),
+      subDisplay: { type: 'LinearAlignmentsDisplay', lowerPanel: true },
       trackType: 'AlignmentsTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,
     })
   })
+}
+
+export {
+  modelFactory as linearPileupDisplayStateModelFactory,
+  configSchemaFactory as linearPileupDisplayConfigSchemaFactory,
 }

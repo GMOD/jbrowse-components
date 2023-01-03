@@ -5,17 +5,14 @@ import {
 import PluginManager from '@jbrowse/core/PluginManager'
 import configSchemaF from './configSchema'
 
-export default (pluginManager: PluginManager) => {
-  pluginManager.addTrackType(() => {
-    const configSchema = configSchemaF(pluginManager)
+export default (pm: PluginManager) => {
+  pm.addTrackType(() => {
+    const configSchema = configSchemaF(pm)
     return new TrackType({
       name: 'FeatureTrack',
+      displayName: 'Feature track',
       configSchema,
-      stateModel: createBaseTrackModel(
-        pluginManager,
-        'FeatureTrack',
-        configSchema,
-      ),
+      stateModel: createBaseTrackModel(pm, 'FeatureTrack', configSchema),
     })
   })
 }

@@ -45,13 +45,14 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         await Promise.all(model.views.map(view => when(() => view.initialized)))
 
         const idsNotFound = [] as string[]
-        for (let i = 0; i < views.length; i++) {
-          const view = model.views[i]
-          const { loc, tracks = [] } = views[i]
-
-          view.navToLocString(loc)
-          tracks.forEach(track => tryTrack(view, track, idsNotFound))
-        }
+        await Promise.all(
+          views.map(async (data, idx) => {
+            const view = model.views[idx]
+            const { loc, tracks = [] } = data
+            await view.navToLocString(loc)
+            tracks.forEach(track => tryTrack(view, track, idsNotFound))
+          }),
+        )
 
         tracks.forEach(track => tryTrack(model, track, idsNotFound))
 

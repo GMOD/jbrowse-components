@@ -7,7 +7,7 @@ export interface SeqChunk {
  * ref https://stackoverflow.com/a/51506718/2129219
  *
  * @param seqString -  string
- * @returns formated sequence string
+ * @returns formatted sequence string
  */
 export function formatFastaLines(seqString: string) {
   return seqString.replace(/(.{1,80})/g, '$1\n').trimEnd()

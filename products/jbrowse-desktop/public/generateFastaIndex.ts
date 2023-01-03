@@ -17,7 +17,6 @@ export async function createRemoteStream(urlIn: string) {
 export async function getFileStream(
   location: { uri: string } | { localPath: string },
 ) {
-  // marked as unsed, could be used for progress bar though
   let filename: string
 
   if ('localPath' in location) {

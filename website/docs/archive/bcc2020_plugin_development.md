@@ -28,12 +28,14 @@ Here is a video recording of the presentation that we made
 
 You can also follow along with the text presented below
 
-### Pre-requsites
+### Pre-requisites
 
 Please have the following
 
-- yarn, installed via https://classic.yarnpkg.com/en/docs/install/#debian-stable or `npm install -g yarn`
-- node v10 or greater, installed via https://github.com/nodesource/distributions#installation-instructions
+- yarn, installed via https://classic.yarnpkg.com/en/docs/install/#debian-stable
+  or `npm install -g yarn`
+- node v10 or greater, installed via
+  https://github.com/nodesource/distributions#installation-instructions
 
 These links above provide more reliable installation than the apt repositories
 version, but you can try to install these however you feel comfortable
@@ -46,8 +48,8 @@ To start, we will install the jbrowse-cli
 sudo npm install -g @jbrowse/cli
 ```
 
-Depending on your setup you might need to use sudo for this. We will use the
-CLI to download the latest release from github, this is a convenience tool that
+Depending on your setup you might need to use sudo for this. We will use the CLI
+to download the latest release from github, this is a convenience tool that
 saves us some steps from manually downloading it
 
 ### Create a jbrowse 2 production instance
@@ -73,14 +75,17 @@ We are going to create several plugins for this tutorial
 
 ### UCSC API data adapter
 
-Let's start with creating a plugin that accesses the UCSC REST API. See https://genome.ucsc.edu/goldenPath/help/api.html for docs
+Let's start with creating a plugin that accesses the UCSC REST API. See
+https://genome.ucsc.edu/goldenPath/help/api.html for docs
 
 We will clone a working version of this plugin for brevity and analyze it
 
 :::caution
+
 The development and build process for plugins has changed since this tutorial
 was created. See https://github.com/GMOD/jbrowse-plugin-template#readme for
 current instructions.
+
 :::
 
 ```sh
@@ -99,8 +104,7 @@ http://localhost/myfolder/?config=http://localhost:9001/config_ucsc_api.json
 
 If you had a github clone of jbrowse-components, with the products/jbrowse-web
 started, you could do this with
-http://localhost:3000/?config=http://localhost:9001/config_ucsc_api.json
-instead
+http://localhost:3000/?config=http://localhost:9001/config_ucsc_api.json instead
 
 ### Analysis of the UCSC REST API plugin
 
@@ -121,8 +125,8 @@ Interaction data is often displayed using arcs to connect enhancer to gene. We
 will create a custom renderer to illustrate this
 
 But what is a renderer? It is code that performs drawing. See the renderer docs
-here for more details [on creating
-renderers](/docs/developer_guides/pluggable_elements/#creating-custom-renderers)
+here for more details
+[on creating renderers](/docs/developer_guides/pluggable_elements/#creating-custom-renderers)
 
 Let's clone a working arc renderer plugin
 
@@ -148,8 +152,7 @@ renders the UCSC GeneHancer interactions as arcs
 
 ### Making custom view types with plugins
 
-Many new things are possible by making completely custom view types in JBrowse
-2
+Many new things are possible by making completely custom view types in JBrowse 2
 
 Plugins can basically register a new view type that is a ReactComponent without
 much else, allowing integration of diverse other view types that are not really
@@ -159,14 +162,14 @@ Here is a template we can work from
 
 https://github.com/cmdcolin/jbrowse-plugin-barchart-view
 
-Here is a silly example with a custom Hello world view type. I started this as
-a "bar chart" concept but only got as far as making it say hello world.
+Here is a silly example with a custom Hello world view type. I started this as a
+"bar chart" concept but only got as far as making it say hello world.
 
 Looking at the code, it is fairly simple and demonstrates that we can basically
-have any sort of ReactComponent rendered into our view. That means we could
-have a gene expression heatmap, barchart, get charts dynamically from an R
-server side component, make a graph genome, etc. The ideas are endless! And we
-can make it interact with other views!
+have any sort of ReactComponent rendered into our view. That means we could have
+a gene expression heatmap, barchart, get charts dynamically from an R server
+side component, make a graph genome, etc. The ideas are endless! And we can make
+it interact with other views!
 
 <Figure caption="The hello view plugin" src="/img/bcc2020_img3.png" />
 
@@ -174,8 +177,8 @@ can make it interact with other views!
 
 The examples allowed us to get us quickly setup
 
-In your daily work we encourage you to clone the jbrowse-components repo and
-run off a dev version of jbrowse 2 e.g. follow the steps below
+In your daily work we encourage you to clone the jbrowse-components repo and run
+off a dev version of jbrowse 2 e.g. follow the steps below
 
 ```
 git clone https://github.com/gmod/jbrowse-components

@@ -4,7 +4,8 @@ id: contact
 
 # Contact us
 
-We **really** love talking to our users. Please reach out with any thoughts you have on what we are building!
+We **really** love talking to our users. Please reach out with any thoughts you
+have on what we are building!
 
 - Ask a question on our discussion board at
   https://github.com/GMOD/jbrowse-components/discussions

@@ -1,62 +1,24 @@
-import { lazy } from 'react'
-import { Instance } from 'mobx-state-tree'
-import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import Plugin from '@jbrowse/core/Plugin'
-import ViewComfyIcon from '@mui/icons-material/ViewComfy'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import SpreadsheetViewModel from './SpreadsheetView/models/SpreadsheetView'
+import { AbstractSessionModel, isAbstractMenuManager } from '@jbrowse/core/util'
 
-type SpreadsheetView = Instance<typeof SpreadsheetViewModel>
+// icons
+import ViewComfyIcon from '@mui/icons-material/ViewComfy'
+
+// locals
+import SpreadsheetViewF, {
+  SpreadsheetViewModel,
+  SpreadsheetViewStateModel,
+} from './SpreadsheetView'
+
+import LaunchSpreadsheetViewF from './LaunchSpreadsheetView'
 
 export default class SpreadsheetViewPlugin extends Plugin {
   name = 'SpreadsheetViewPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addViewType(() => {
-      return new ViewType({
-        name: 'SpreadsheetView',
-        stateModel: SpreadsheetViewModel,
-        ReactComponent: lazy(
-          () => import('./SpreadsheetView/components/SpreadsheetView'),
-        ),
-      })
-    })
-
-    pluginManager.addToExtensionPoint(
-      'LaunchView-SpreadsheetView',
-      // @ts-ignore
-      async ({
-        session,
-        assembly,
-        uri,
-        fileType,
-      }: {
-        session: AbstractSessionModel
-        assembly: string
-        uri: string
-        fileType?: string
-      }) => {
-        const view = session.addView('SpreadsheetView') as SpreadsheetView
-
-        if (!view) {
-          throw new Error('Failed to initialize view')
-        }
-        const exts = uri.split('.')
-        let ext = exts?.pop()?.toUpperCase()
-        if (ext === 'GZ') {
-          ext = exts?.pop()?.toUpperCase()
-        }
-
-        view.importWizard.setFileType(fileType || ext || '')
-        view.importWizard.setSelectedAssemblyName(assembly)
-        view.importWizard.setFileSource({
-          uri,
-          locationType: 'UriLocation',
-        })
-        view.importWizard.import(assembly)
-      },
-    )
+    SpreadsheetViewF(pluginManager)
+    LaunchSpreadsheetViewF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {
@@ -73,4 +35,4 @@ export default class SpreadsheetViewPlugin extends Plugin {
   }
 }
 
-export type { SpreadsheetViewModel, SpreadsheetView }
+export type { SpreadsheetViewStateModel, SpreadsheetViewModel }

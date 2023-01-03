@@ -1,27 +1,14 @@
 import React from 'react'
 import { version } from '../version'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Link,
-  Typography,
-} from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
+import { DialogContent, Link, Typography } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
-}))
+})
 
 export default function AboutDialog({
   open,
@@ -32,17 +19,12 @@ export default function AboutDialog({
 }) {
   const { classes } = useStyles()
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xl">
-      <DialogTitle>
-        JBrowse v{version}
-        <IconButton
-          className={classes.closeButton}
-          onClick={() => onClose()}
-          size="large"
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xl"
+      title={`JBrowse v${version}`}
+    >
       <DialogContent className={classes.content}>
         <Typography>
           JBrowse is a GMOD project © 2019-2021, The Evolutionary Software

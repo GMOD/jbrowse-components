@@ -25,7 +25,7 @@
     "**/lib/",
     "**/umd/",
     "**/tmp/",
-    "**/demos/",
+    "**/embedded_demos/",
     "**/component_tests/",
     "**/plugin-development-tools/",
     "**/webpack.config.js"

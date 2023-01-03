@@ -26,7 +26,10 @@ function Grid({
   const rx = Math.max(hbottom, 0)
   const ry = Math.max(viewHeight - vtop, 0)
   const w = Math.min(htop - hbottom, viewWidth)
-  const h = Math.min(vtop - vbottom, viewHeight)
+  const h = Math.min(viewHeight - vbottom - ry, viewHeight)
+
+  let lastx = Infinity
+  let lasty = Infinity
   return (
     <svg
       style={{ background: 'rgba(0,0,0,0.12)' }}
@@ -37,7 +40,11 @@ function Grid({
       <g>
         {hblocks.map(region => {
           const x = region.offsetPx - hview.offsetPx
-          return (
+          const render = Math.floor(x) !== Math.floor(lastx)
+          if (render) {
+            lastx = x
+          }
+          return render ? (
             <line
               key={JSON.stringify(region)}
               x1={x}
@@ -46,11 +53,15 @@ function Grid({
               y2={viewHeight}
               stroke={stroke}
             />
-          )
+          ) : null
         })}
         {vblocks.map(region => {
           const y = viewHeight - (region.offsetPx - vview.offsetPx)
-          return (
+          const render = Math.floor(y) !== Math.floor(lasty)
+          if (render) {
+            lasty = y
+          }
+          return render ? (
             <line
               key={JSON.stringify(region)}
               x1={0}
@@ -59,7 +70,7 @@ function Grid({
               y2={y}
               stroke={stroke}
             />
-          )
+          ) : null
         })}
         <line x1={htop} y1={0} x2={htop} y2={viewHeight} stroke={stroke} />
         <line

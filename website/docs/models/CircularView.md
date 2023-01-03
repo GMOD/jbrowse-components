@@ -5,8 +5,11 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
 
 extends `BaseViewModel`
 
@@ -38,7 +41,7 @@ offsetRadians: -Math.PI / 2
 // type signature
 number
 // code
-bpPerPx: 2000000
+bpPerPx: 200
 ```
 
 #### property: tracks
@@ -128,6 +131,13 @@ scrollY: 0
 ```
 
 ### CircularView - Getters
+
+#### getter: width
+
+```js
+// type
+number
+```
 
 #### getter: staticSlices
 
@@ -253,12 +263,12 @@ any
 
 #### getter: elidedRegions
 
-this is displayedRegions, post-processed to
-elide regions that are too small to see reasonably
+this is displayedRegions, post-processed to elide regions that are too small to
+see reasonably
 
 ```js
 // type
-any[]
+({ elided: true; widthBp: number; regions: Region[]; } | { elided: false; widthBp: number; start: number; end: number; refName: string; })[]
 ```
 
 #### getter: assemblyNames

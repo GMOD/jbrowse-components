@@ -40,7 +40,7 @@ function WiggleRendering(props: {
     const clientBp = region.start + bpPerPx * px
     let featureUnderMouse
     for (const feature of features.values()) {
-      // bpPerPx added to the end to accomodate "reduced features" (one feature per px)
+      // bpPerPx added to the end to accommodate "reduced features" (one feature per px)
       if (
         clientBp <= feature.get('end') + bpPerPx &&
         clientBp >= feature.get('start')

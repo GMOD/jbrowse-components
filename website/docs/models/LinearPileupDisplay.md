@@ -5,8 +5,13 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
+
+extends `BaseLinearDisplay`
 
 ### LinearPileupDisplay - Properties
 
@@ -114,6 +119,15 @@ colorBy: types.maybe(
         )
 ```
 
+#### property: filterBy
+
+```js
+// type signature
+IOptionalIType<IModelType<{ flagInclude: IOptionalIType<ISimpleType<number>, [undefined]>; flagExclude: IOptionalIType<ISimpleType<number>, [undefined]>; readName: IMaybe<...>; tagFilter: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>, [...]>
+// code
+filterBy: types.optional(FilterModel, {})
+```
+
 ### LinearPileupDisplay - Getters
 
 #### getter: maxHeight
@@ -197,6 +211,13 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 setReady: (flag: boolean) => void
 ```
 
+#### action: setCurrSortBpPerPx
+
+```js
+// type signature
+setCurrSortBpPerPx: (n: number) => void
+```
+
 #### action: setMaxHeight
 
 ```js
@@ -208,14 +229,14 @@ setMaxHeight: (n: number) => void
 
 ```js
 // type signature
-setFeatureHeight: (n: number) => void
+setFeatureHeight: (n?: number) => void
 ```
 
 #### action: setNoSpacing
 
 ```js
 // type signature
-setNoSpacing: (flag: boolean) => void
+setNoSpacing: (flag?: boolean) => void
 ```
 
 #### action: setColorScheme

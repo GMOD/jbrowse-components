@@ -1,6 +1,18 @@
-export { default as AdapterClass } from './FromConfigAdapter'
-export { default as RegionsAdapterClass } from './FromConfigRegionsAdapter'
-export { default as SequenceAdapterClass } from './FromConfigSequenceAdapter'
-export { default as configSchema } from './fromConfig'
-export { default as regionsConfigSchema } from './fromConfig'
-export { default as sequenceConfigSchema } from './fromConfigSequence'
+import { AdapterType } from '@jbrowse/core/pluggableElementTypes'
+import PluginManager from '@jbrowse/core/PluginManager'
+import configSchema from './configSchema'
+
+export default (pluginManager: PluginManager) => {
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'FromConfigAdapter',
+        configSchema,
+        getAdapterClass: () =>
+          import('./FromConfigAdapter').then(r => r.default),
+        adapterMetadata: {
+          hiddenFromGUI: true,
+        },
+      }),
+  )
+}

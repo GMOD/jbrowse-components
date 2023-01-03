@@ -1,5 +1,13 @@
 import { transaction } from 'mobx'
-import { getRoot, resolveIdentifier, types, Instance } from 'mobx-state-tree'
+import {
+  getRoot,
+  resolveIdentifier,
+  types,
+  Instance,
+  IAnyStateTreeNode,
+} from 'mobx-state-tree'
+
+// locals
 import {
   getConf,
   AnyConfigurationModel,
@@ -8,49 +16,79 @@ import {
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
-import { getContainingView, getSession, getEnv } from '../../util'
+import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
 
-// these MST models only exist for tracks that are *shown*.
-// they should contain only UI state for the track, and have
-// a reference to a track configuration (stored under
-// session.configuration.assemblies.get(assemblyName).tracks).
+export function getCompatibleDisplays(self: IAnyStateTreeNode) {
+  const { pluginManager } = getEnv(self)
+  const view = getContainingView(self)
+  const viewType = pluginManager.getViewType(view.type)
+  const compatTypes = viewType.displayTypes.map(d => d.name)
+  const displays = self.configuration.displays as AnyConfigurationModel[]
+  return displays.filter(d => compatTypes.includes(d.type))
+}
 
-// note that multiple displayed tracks could use the same configuration.
+/**
+ * #stateModel BaseTrackModel
+ * these MST models only exist for tracks that are *shown*. they should contain
+ * only UI state for the track, and have a reference to a track configuration.
+ * note that multiple displayed tracks could use the same configuration.
+ */
 export function createBaseTrackModel(
-  pluginManager: PluginManager,
+  pm: PluginManager,
   trackType: string,
   baseTrackConfig: AnyConfigurationSchemaType,
 ) {
   return types
     .model(trackType, {
+      /**
+       * #property
+       */
       id: ElementId,
+      /**
+       * #property
+       */
       type: types.literal(trackType),
+      /**
+       * #property
+       */
       configuration: ConfigurationReference(baseTrackConfig),
-      displays: types.array(
-        pluginManager.pluggableMstType('display', 'stateModel'),
-      ),
+      /**
+       * #property
+       */
+      minimized: false,
+      /**
+       * #property
+       */
+      displays: types.array(pm.pluggableMstType('display', 'stateModel')),
     })
     .views(self => ({
+      /**
+       * #getter
+       * determines which webworker to send the track to, currently based on trackId
+       */
       get rpcSessionId() {
         return self.configuration.trackId
       },
-
+      /**
+       * #getter
+       */
       get name() {
         return getConf(self, 'name')
       },
-
+      /**
+       * #getter
+       */
       get textSearchAdapter() {
         return getConf(self, 'textSearchAdapter')
       },
 
       /**
-       * the PluggableElementType for the currently defined adapter
+       * #getter
        */
       get adapterType() {
         const adapterConfig = getConf(self, 'adapter')
-        const { pluginManager: pm } = getEnv(self)
         if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
         }
@@ -61,13 +99,16 @@ export function createBaseTrackModel(
         return adapterType
       },
 
+      /**
+       * #getter
+       */
       get viewMenuActions(): MenuItem[] {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.viewMenuActions)
-        })
-        return menuItems
+        return self.displays.map(d => d.viewMenuActions).flat()
       },
+
+      /**
+       * #getter
+       */
       get canConfigure() {
         const session = getSession(self)
         return (
@@ -82,6 +123,15 @@ export function createBaseTrackModel(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setMinimized(flag: boolean) {
+        self.minimized = flag
+      },
+      /**
+       * #action
+       */
       activateConfigurationUI() {
         const session = getSession(self)
         const view = getContainingView(self)
@@ -89,17 +139,19 @@ export function createBaseTrackModel(
           // @ts-ignore
           const trackConf = session.editTrackConfiguration(self.configuration)
           if (trackConf && trackConf !== self.configuration) {
-            // @ts-ignore
             view.hideTrack(self.configuration)
-            // @ts-ignore
             view.showTrack(trackConf)
           }
         }
       },
+
+      /**
+       * #action
+       */
       showDisplay(displayId: string, initialSnapshot = {}) {
-        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
-        const displayType = pluginManager.getDisplayType(conf.type)
+        const displayType = pm.getDisplayType(conf.type)
         if (!displayType) {
           throw new Error(`unknown display type ${conf.type}`)
         }
@@ -111,13 +163,20 @@ export function createBaseTrackModel(
         self.displays.push(display)
       },
 
+      /**
+       * #action
+       */
       hideDisplay(displayId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), displayId)
         const t = self.displays.filter(d => d.configuration === conf)
         transaction(() => t.forEach(d => self.displays.remove(d)))
         return t.length
       },
+
+      /**
+       * #action
+       */
       replaceDisplay(oldId: string, newId: string, initialSnapshot = {}) {
         const idx = self.displays.findIndex(
           d => d.configuration.displayId === oldId,
@@ -125,9 +184,9 @@ export function createBaseTrackModel(
         if (idx === -1) {
           throw new Error(`could not find display id ${oldId} to replace`)
         }
-        const schema = pluginManager.pluggableConfigSchemaType('display')
+        const schema = pm.pluggableConfigSchemaType('display')
         const conf = resolveIdentifier(schema, getRoot(self), newId)
-        const displayType = pluginManager.getDisplayType(conf.type)
+        const displayType = pm.getDisplayType(conf.type)
         if (!displayType) {
           throw new Error(`unknown display type ${conf.type}`)
         }
@@ -139,38 +198,33 @@ export function createBaseTrackModel(
       },
     }))
     .views(self => ({
-      trackMenuItems(): MenuItem[] {
-        const menuItems: MenuItem[] = []
-        self.displays.forEach(display => {
-          menuItems.push(...display.trackMenuItems())
-        })
-        const displayChoices: MenuItem[] = []
-        const view = getContainingView(self)
-        const viewType = pluginManager.getViewType(view.type)
-        const compatibleDisplayTypes = viewType.displayTypes.map(
-          displayType => displayType.name,
-        )
-        const compatibleDisplays = self.configuration.displays.filter(
-          (displayConf: AnyConfigurationModel) =>
-            compatibleDisplayTypes.includes(displayConf.type),
-        )
+      /**
+       * #method
+       */
+      trackMenuItems() {
+        const menuItems: MenuItem[] = self.displays
+          .map(d => d.trackMenuItems())
+          .flat()
         const shownId = self.displays[0].configuration.displayId
-        if (compatibleDisplays.length > 1) {
-          displayChoices.push(
-            { type: 'divider' },
-            { type: 'subHeader', label: 'Display types' },
-          )
-          compatibleDisplays.forEach((displayConf: AnyConfigurationModel) => {
-            displayChoices.push({
-              type: 'radio',
-              label: displayConf.type,
-              checked: displayConf.displayId === shownId,
-              onClick: () =>
-                self.replaceDisplay(shownId, displayConf.displayId),
-            })
-          })
-        }
-        return [...menuItems, ...displayChoices]
+        const compatDisp = getCompatibleDisplays(self)
+
+        return [
+          ...menuItems,
+          ...(compatDisp.length > 1
+            ? [
+                {
+                  type: 'subMenu',
+                  label: 'Display types',
+                  subMenu: compatDisp.map(d => ({
+                    type: 'radio',
+                    label: pm.getDisplayType(d.type).displayName,
+                    checked: d.displayId === shownId,
+                    onClick: () => self.replaceDisplay(shownId, d.displayId),
+                  })),
+                },
+              ]
+            : []),
+        ]
       },
     }))
 }

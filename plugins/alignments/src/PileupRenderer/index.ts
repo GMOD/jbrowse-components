@@ -4,13 +4,13 @@ import ReactComponent from './components/PileupRendering'
 import configSchema from './configSchema'
 
 export default function register(pluginManager: PluginManager) {
-  pluginManager.addRendererType(
-    () =>
-      new PileupRenderer({
-        name: 'PileupRenderer',
-        ReactComponent,
-        configSchema,
-        pluginManager,
-      }),
-  )
+  pluginManager.addRendererType(() => {
+    return new PileupRenderer({
+      name: 'PileupRenderer',
+      displayName: 'Pileup renderer',
+      ReactComponent,
+      configSchema,
+      pluginManager,
+    })
+  })
 }

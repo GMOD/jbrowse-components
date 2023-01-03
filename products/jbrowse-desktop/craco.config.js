@@ -1,9 +1,19 @@
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { getLoader, loaderByName } = require('@craco/craco')
-// eslint-disable-next-line import/no-extraneous-dependencies
-const getYarnWorkspaces = require('get-yarn-workspaces')
 const webpack = require('webpack')
+const path = require('path')
+const cp = require('child_process')
+
+function getWorkspaces(fromDir) {
+  const cwd = fromDir || process.cwd()
+  const workspacesStr = cp
+    .execSync('yarn -s workspaces info', { cwd })
+    .toString()
+  return Object.values(JSON.parse(workspacesStr)).map(e =>
+    path.resolve(path.join('..', '..', e.location)),
+  )
+}
 
 module.exports = {
   devServer: config => {
@@ -39,7 +49,7 @@ module.exports = {
         const include = Array.isArray(match.loader.include)
           ? match.loader.include
           : [match.loader.include]
-        match.loader.include = include.concat(getYarnWorkspaces())
+        match.loader.include = include.concat(getWorkspaces())
       }
 
       // similar to our webpack 4 rescript, setting target to

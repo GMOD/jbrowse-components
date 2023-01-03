@@ -2,14 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import {
   Button,
+  Checkbox,
   CircularProgress,
   Container,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
+  FormGroup,
+  FormControlLabel,
   TextField,
   Typography,
 } from '@mui/material'
@@ -17,31 +16,31 @@ import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { getConf } from '@jbrowse/core/configuration'
 import copy from 'copy-to-clipboard'
-import { getSession, Feature, Region } from '@jbrowse/core/util'
+import { Dialog } from '@jbrowse/core/ui'
+import {
+  getSession,
+  reverse,
+  complement,
+  Feature,
+  Region,
+} from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
 
 // icons
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
-import CloseIcon from '@mui/icons-material/Close'
 import GetAppIcon from '@mui/icons-material/GetApp'
 
 // locals
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   dialogContent: {
     width: '80em',
   },
   textAreaFont: {
     fontFamily: 'Courier New',
   },
-}))
+})
 
 type LGV = LinearGenomeViewModel
 
@@ -90,9 +89,12 @@ function SequenceDialog({
   const { classes } = useStyles()
   const session = getSession(model)
   const [error, setError] = useState<unknown>()
-  const [sequence, setSequence] = useState<string>()
-  const loading = Boolean(sequence === undefined)
+  const [sequenceChunks, setSequenceChunks] = useState<Feature[]>()
+  const [rev, setReverse] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [comp, setComplement] = useState(false)
   const { leftOffset, rightOffset } = model
+  const loading = Boolean(sequenceChunks === undefined)
 
   // avoid infinite looping of useEffect
   // random note: the current selected region can't be a computed because it
@@ -106,6 +108,7 @@ function SequenceDialog({
     let active = true
     const controller = new AbortController()
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         if (regionsSelected.length > 0) {
@@ -115,27 +118,7 @@ function SequenceDialog({
             controller.signal,
           )
           if (active) {
-            setSequence(
-              formatSeqFasta(
-                chunks
-                  .filter(f => !!f)
-                  .map(chunk => {
-                    const chunkSeq = chunk.get('seq')
-                    const chunkRefName = chunk.get('refName')
-                    const chunkStart = chunk.get('start') + 1
-                    const chunkEnd = chunk.get('end')
-                    const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-                    if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
-                      throw new Error(
-                        `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
-                          chunkEnd - chunkStart
-                        ).toLocaleString()}`,
-                      )
-                    }
-                    return { header: chunkLocstring, seq: chunkSeq }
-                  }),
-              ),
-            )
+            setSequenceChunks(chunks)
           }
         } else {
           throw new Error('Selected region is out of bounds')
@@ -152,38 +135,57 @@ function SequenceDialog({
       controller.abort()
       active = false
     }
-  }, [model, session, regionsSelected, setSequence])
+  }, [model, session, regionsSelected])
+
+  const sequence = sequenceChunks
+    ? formatSeqFasta(
+        sequenceChunks
+          .filter(f => !!f)
+          .map(chunk => {
+            let chunkSeq = chunk.get('seq')
+            const chunkRefName = chunk.get('refName')
+            const chunkStart = chunk.get('start') + 1
+            const chunkEnd = chunk.get('end')
+            const chunkLocstring = `${chunkRefName}:${chunkStart}-${chunkEnd}`
+            if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+              throw new Error(
+                `${chunkLocstring} returned ${chunkSeq.length.toLocaleString()} bases, but should have returned ${(
+                  chunkEnd - chunkStart
+                ).toLocaleString()}`,
+              )
+            }
+
+            if (rev) {
+              chunkSeq = reverse(chunkSeq)
+            }
+            if (comp) {
+              chunkSeq = complement(chunkSeq)
+            }
+            return { header: chunkLocstring, seq: chunkSeq }
+          }),
+      )
+    : ''
 
   const sequenceTooLarge = sequence ? sequence.length > 1_000_000 : false
 
   return (
-    <Dialog maxWidth="xl" open onClose={handleClose}>
-      <DialogTitle>
-        Reference sequence
-        {handleClose ? (
-          <IconButton
-            className={classes.closeButton}
-            onClick={() => {
-              handleClose()
-              model.setOffsets(undefined, undefined)
-            }}
-            size="large"
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
-
+    <Dialog
+      maxWidth="xl"
+      open
+      onClose={() => {
+        handleClose()
+        model.setOffsets(undefined, undefined)
+      }}
+      title="Reference sequence"
+    >
       <DialogContent>
-        {error ? <Typography color="error">{`${error}`}</Typography> : null}
-        {loading && !error ? (
+        {error ? (
+          <Typography color="error">{`${error}`}</Typography>
+        ) : loading ? (
           <Container>
             Retrieving reference sequence...
             <CircularProgress
-              style={{
-                marginLeft: 10,
-              }}
+              style={{ marginLeft: 10 }}
               size={20}
               disableShrink
             />
@@ -194,6 +196,7 @@ function SequenceDialog({
           variant="outlined"
           multiline
           minRows={5}
+          maxRows={10}
           disabled={sequenceTooLarge}
           className={classes.dialogContent}
           fullWidth
@@ -209,25 +212,51 @@ function SequenceDialog({
             },
           }}
         />
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                value={rev}
+                onChange={event => setReverse(event.target.checked)}
+              />
+            }
+            label="Reverse sequence"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                value={comp}
+                onChange={event => setComplement(event.target.checked)}
+              />
+            }
+            label="Complement sequence"
+          />
+        </FormGroup>
+        <Typography style={{ margin: 10 }}>
+          Note: Check both boxes for the "reverse complement"
+        </Typography>
       </DialogContent>
       <DialogActions>
         <Button
           onClick={() => {
-            copy(sequence || '')
-            session.notify('Copied to clipboard', 'success')
+            copy(sequence)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 500)
           }}
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
-          Copy to clipboard
+          {copied ? 'Copied' : 'Copy to clipboard'}
         </Button>
         <Button
           onClick={() => {
-            const seqFastaFile = new Blob([sequence || ''], {
-              type: 'text/x-fasta;charset=utf-8',
-            })
-            saveAs(seqFastaFile, 'jbrowse_ref_seq.fa')
+            saveAs(
+              new Blob([sequence || ''], {
+                type: 'text/x-fasta;charset=utf-8',
+              }),
+              'jbrowse_ref_seq.fa',
+            )
           }}
           disabled={loading || !!error}
           color="primary"

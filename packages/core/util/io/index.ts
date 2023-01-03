@@ -12,7 +12,7 @@ import {
   FileLocation,
   LocalPathLocation,
   BlobLocation,
-  isAppRootModel,
+  isRootModelWithInternetAccounts,
   isUriLocation,
   AuthNeededError,
   UriLocation,
@@ -109,7 +109,7 @@ function getInternetAccount(
 ): BaseInternetAccountModel | undefined {
   const { rootModel } = pluginManager
   // If there is an appRootModel, use it to find the internetAccount
-  if (rootModel && isAppRootModel(rootModel)) {
+  if (rootModel && isRootModelWithInternetAccounts(rootModel)) {
     return rootModel.findAppropriateInternetAccount(location)
   }
   // If there is no appRootModel, but there is pre-auth, create a temporary
@@ -135,14 +135,10 @@ function getInternetAccount(
 // This fetch throws a special error if the response is "401" and includes a
 // "WWW-Authenticate: Basic" header. This is so downstream code can retry if
 // needed with HTTP Basic authentication included
-async function checkAuthNeededFetch(
-  url: RequestInfo,
-  opts?: RequestInit,
-): Promise<Response> {
+async function checkAuthNeededFetch(url: RequestInfo, opts?: RequestInit) {
   const response = await fetch(url, opts)
   if (response.status === 401) {
-    const authHeaders = response.headers.get('WWW-Authenticate')
-    if (authHeaders && authHeaders.includes('Basic')) {
+    if (response.headers.get('WWW-Authenticate')?.includes('Basic')) {
       throw new AuthNeededError(
         'Accessing HTTPBasic resource without authentication',
         url.toString(),

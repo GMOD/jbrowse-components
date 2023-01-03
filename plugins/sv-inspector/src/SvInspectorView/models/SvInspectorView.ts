@@ -20,7 +20,7 @@ import {
   getSerializedFeatureForRow,
 } from './breakpointSplitViewFromTableRow'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { SpreadsheetViewModel } from '@jbrowse/plugin-spreadsheet-view'
+import { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
 import { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
 
 function defaultOnChordClick(
@@ -49,7 +49,7 @@ const SvInspectorViewF = (pluginManager: PluginManager) => {
   const CircularViewType = pluginManager.getViewType('CircularView')
 
   const SpreadsheetModel =
-    SpreadsheetViewType.stateModel as typeof SpreadsheetViewModel
+    SpreadsheetViewType.stateModel as SpreadsheetViewStateModel
   const CircularModel = CircularViewType.stateModel as CircularViewStateModel
 
   const minHeight = 400

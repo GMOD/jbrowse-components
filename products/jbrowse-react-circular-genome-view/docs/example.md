@@ -1,6 +1,6 @@
 This is an example of an assembly and tracks configuration for a simple human
-genome example using publicly hosted data files. It includes the hg19
-reference sequence and a structural variant track.
+genome example using publicly hosted data files. It includes the hg19 reference
+sequence and a structural variant track.
 
 ```tsx
 import React from 'react'

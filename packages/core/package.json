@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "2.1.7",
+  "version": "2.3.2",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -67,7 +67,7 @@
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
     "rxjs": "^6.0.0",
-    "tss-react": "^3.0.0"
+    "tss-react": "^4.0.0"
   },
   "publishConfig": {
     "access": "public",

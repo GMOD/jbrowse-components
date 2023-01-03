@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '../../configuration'
-import { Instance } from 'mobx-state-tree'
 
 /**
  * #config InternetAccount
@@ -60,6 +59,3 @@ export const BaseInternetAccountConfig = ConfigurationSchema(
     explicitlyTyped: true,
   },
 )
-
-export type BaseInternetAccountConfigModel = typeof BaseInternetAccountConfig
-export type BaseInternetAccountConfig = Instance<BaseInternetAccountConfigModel>

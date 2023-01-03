@@ -42,7 +42,7 @@ const randomColor = () =>
   '#000000'.replace(/0/g, () => (~~(Math.random() * 16)).toString(16))
 
 // lazt components
-const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
+const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
@@ -97,9 +97,8 @@ const stateModelFactory = (
       }),
     )
     .volatile(() => ({
-      statsReady: false,
       message: undefined as undefined | string,
-      stats: { scoreMin: 0, scoreMax: 50 },
+      stats: undefined as { scoreMin: number; scoreMax: number } | undefined,
       statsRegion: undefined as string | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
       featureUnderMouseVolatile: undefined as Feature | undefined,
@@ -115,12 +114,13 @@ const stateModelFactory = (
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
-        if (
+        if (!self.stats) {
+          self.stats = { scoreMin, scoreMax }
+        } else if (
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
           Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
           self.stats = { scoreMin, scoreMax }
-          self.statsReady = true
         }
       },
       setSources(sources: Source[]) {
@@ -376,6 +376,9 @@ const stateModelFactory = (
         },
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
+          if (!stats) {
+            return undefined
+          }
           const { scoreMin, scoreMax } = stats
 
           const ret = getNiceDomain({
@@ -440,6 +443,10 @@ const stateModelFactory = (
         const { scaleType, domain, isMultiRow, rowHeight, useMinimalTicks } =
           self
 
+        if (!domain) {
+          return undefined
+        }
+
         const offset = isMultiRow ? 0 : YSCALEBAR_LABEL_OFFSET
         const ticks = axisPropsFromTickScale(
           getScale({
@@ -485,14 +492,14 @@ const stateModelFactory = (
             resolution,
             rpcDriverName,
             scaleOpts,
+            stats,
             sources,
-            statsReady,
             ticks,
             rendererConfig: config,
           } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !sources || !statsReady,
+            notReady: superProps.notReady || !sources || !stats,
             displayModel: self,
             config,
             displayCrossHatches,
@@ -702,7 +709,7 @@ const stateModelFactory = (
           )
         },
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
+          await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
           const { offsetPx } = getContainingView(self) as LGV
           return (
             <>

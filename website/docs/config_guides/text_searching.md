@@ -106,8 +106,8 @@ below for details:
 
 ### JBrowse1TextSearchAdapter config
 
-This is more uncommon, but allows back compatibility with a JBrowse1 names
-index created by `generate-names.pl`:
+This is more uncommon, but allows back compatibility with a JBrowse1 names index
+created by `generate-names.pl`:
 
 ```json
 {
@@ -121,5 +121,4 @@ index created by `generate-names.pl`:
 }
 ```
 
-- `namesIndexLocation` - the location of the JBrowse1 names index data
-  directory
+- `namesIndexLocation` - the location of the JBrowse1 names index data directory

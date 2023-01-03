@@ -45,15 +45,16 @@ This can be configured by passing the "textSearching" in that track's config.
   <Story id="linear-view--with-per-track-text-searching" />
 </Canvas>
 
-Similar to the aggregate use case above, you can use `jbrowse-text-index` with the --files argument, but if it is just a single file supplied e.g.
+Similar to the aggregate use case above, you can use `jbrowse-text-index` with
+the --files argument, but if it is just a single file supplied e.g.
 
 ```
 jbrowse text-index --file myfile.gff3.gz
 ```
 
-then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and myfile.gff3.gz_meta.json. The
---file argument is helpful since you may not have an actual config. If you do
-have a config though, e.g.
+then it will create a myfile.gff3.gz.ix, myfile.gff3.gz.ixx and
+myfile.gff3.gz_meta.json. The --file argument is helpful since you may not have
+an actual config. If you do have a config though, e.g.
 
 ```json
 { "assembly": {"name":"hg19",....}, "tracks":[...] }

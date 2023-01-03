@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Root MST model adds menus 1`] = `
-Array [
-  Object {
+[
+  {
     "label": "File",
-    "menuItems": Array [
-      Object {
-        "icon": Object {
+    "menuItems": [
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -17,29 +17,29 @@ Array [
         "label": "Open",
         "onClick": [Function],
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Save",
         "onClick": [Function],
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Save as...",
         "onClick": [Function],
       },
-      Object {
+      {
         "type": "divider",
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Open assembly...",
         "onClick": [Function],
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -47,19 +47,19 @@ Array [
         "label": "Open track...",
         "onClick": [Function],
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Open connection...",
         "onClick": [Function],
       },
-      Object {
+      {
         "type": "divider",
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -67,11 +67,11 @@ Array [
         "label": "Return to start screen",
         "onClick": [Function],
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -81,19 +81,18 @@ Array [
       },
     ],
   },
-  Object {
+  {
     "label": "Add",
-    "menuItems": Array [],
+    "menuItems": [],
   },
-  Object {
+  {
     "label": "Tools",
-    "menuItems": Array [
-      Object {
-        "disabled": false,
-        "icon": Object {
+    "menuItems": [
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -101,12 +100,11 @@ Array [
         "label": "Undo",
         "onClick": [Function],
       },
-      Object {
-        "disabled": false,
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -114,14 +112,14 @@ Array [
         "label": "Redo",
         "onClick": [Function],
       },
-      Object {
+      {
         "type": "divider",
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -129,11 +127,11 @@ Array [
         "label": "Plugin store",
         "onClick": [Function],
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -147,15 +145,15 @@ Array [
 `;
 
 exports[`Root MST model adds menus 2`] = `
-Array [
-  Object {
+[
+  {
     "label": "File",
-    "menuItems": Array [
-      Object {
-        "icon": Object {
+    "menuItems": [
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -163,29 +161,29 @@ Array [
         "label": "Open",
         "onClick": [Function],
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Save",
         "onClick": [Function],
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Save as...",
         "onClick": [Function],
       },
-      Object {
+      {
         "type": "divider",
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Open assembly...",
         "onClick": [Function],
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -193,19 +191,19 @@ Array [
         "label": "Open track...",
         "onClick": [Function],
       },
-      Object {
+      {
         "icon": [Function],
         "label": "Open connection...",
         "onClick": [Function],
       },
-      Object {
+      {
         "type": "divider",
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -213,11 +211,11 @@ Array [
         "label": "Return to start screen",
         "onClick": [Function],
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -227,19 +225,18 @@ Array [
       },
     ],
   },
-  Object {
+  {
     "label": "Add",
-    "menuItems": Array [],
+    "menuItems": [],
   },
-  Object {
+  {
     "label": "Tools",
-    "menuItems": Array [
-      Object {
-        "disabled": false,
-        "icon": Object {
+    "menuItems": [
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -247,12 +244,11 @@ Array [
         "label": "Undo",
         "onClick": [Function],
       },
-      Object {
-        "disabled": false,
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -260,14 +256,14 @@ Array [
         "label": "Redo",
         "onClick": [Function],
       },
-      Object {
+      {
         "type": "divider",
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -275,11 +271,11 @@ Array [
         "label": "Plugin store",
         "onClick": [Function],
       },
-      Object {
-        "icon": Object {
+      {
+        "icon": {
           "$$typeof": Symbol(react.memo),
           "compare": null,
-          "type": Object {
+          "type": {
             "$$typeof": Symbol(react.forward_ref),
             "render": [Function],
           },
@@ -289,25 +285,25 @@ Array [
       },
     ],
   },
-  Object {
+  {
     "label": "Second Menu",
-    "menuItems": Array [
-      Object {
+    "menuItems": [
+      {
         "label": "First Menu Item",
         "onClick": [Function],
       },
-      Object {
+      {
         "label": "Second Menu Item",
         "onClick": [Function],
       },
-      Object {
+      {
         "label": "First Sub Menu",
-        "subMenu": Array [
-          Object {
+        "subMenu": [
+          {
             "label": "First Sub Menu Item",
             "onClick": [Function],
           },
-          Object {
+          {
             "label": "Second Sub Menu Item",
             "onClick": [Function],
           },
@@ -315,11 +311,11 @@ Array [
       },
     ],
   },
-  Object {
+  {
     "label": "Third Menu",
-    "menuItems": Array [],
+    "menuItems": [],
   },
 ]
 `;
 
-exports[`Root MST model creates with defaults 1`] = `Object {}`;
+exports[`Root MST model creates with defaults 1`] = `{}`;

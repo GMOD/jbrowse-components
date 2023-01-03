@@ -195,7 +195,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
                 exclude,
               )
               self.session?.notify(
-                `Succesfully indexed track with trackId: ${trackId} `,
+                `Successfully indexed track with trackId: ${trackId} `,
                 'success',
               )
             })
@@ -210,7 +210,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
                 .map(trackConf => trackConf.trackId)
               this.addAggregateTextSearchConf(indexedTrackIds, assemblyName)
               self.session?.notify(
-                `Succesfully indexed assembly: ${assemblyName} `,
+                `Successfully indexed assembly: ${assemblyName} `,
                 'success',
               )
             })

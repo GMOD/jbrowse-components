@@ -1,60 +1,27 @@
-import { MismatchParser } from '@jbrowse/plugin-alignments'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
-const { parseCigar } = MismatchParser
+import { Feature } from '@jbrowse/core/util'
 
-export function getLengthOnRef(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let lengthOnRef = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'I') {
-      lengthOnRef += len
-    }
-  }
-  return lengthOnRef
+export interface ReducedFeature {
+  refName: string
+  start: number
+  clipPos: number
+  end: number
+  seqLength: number
 }
 
-export function getLength(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let length = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'D' && op !== 'N') {
-      length += len
-    }
-  }
-  return length
+export interface Interval {
+  start: number
+  end: number
 }
 
-export function getLengthSansClipping(cigar: string) {
-  const cigarOps = parseCigar(cigar)
-  let length = 0
-  for (let i = 0; i < cigarOps.length; i += 2) {
-    const len = +cigarOps[i]
-    const op = cigarOps[i + 1]
-    if (op !== 'H' && op !== 'S' && op !== 'D' && op !== 'N') {
-      length += len
-    }
-  }
-  return length
-}
-
-export function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(cigar.match(/(\d+)[SH]$/) || [])[1] || 0
-    : +(cigar.match(/^(\d+)([SH])/) || [])[1] || 0
+export interface BasicFeature {
+  end: number
+  start: number
+  refName: string
 }
 
 export function getTag(f: Feature, tag: string) {
   const tags = f.get('tags')
   return tags ? tags[tag] : f.get(tag)
-}
-
-interface Interval {
-  start: number
-  end: number
 }
 
 // source https://gist.github.com/vrachieru/5649bce26004d8a4682b
@@ -95,12 +62,6 @@ export function mergeIntervals<T extends Interval>(intervals: T[], w = 5000) {
   return stack
 }
 
-export interface BasicFeature {
-  end: number
-  start: number
-  refName: string
-}
-
 export function gatherOverlaps(regions: BasicFeature[]) {
   const groups = regions.reduce((memo, x) => {
     if (!memo[x.refName]) {
@@ -113,12 +74,4 @@ export function gatherOverlaps(regions: BasicFeature[]) {
   return Object.values(groups)
     .map(group => mergeIntervals(group.sort((a, b) => a.start - b.start)))
     .flat()
-}
-
-export interface ReducedFeature {
-  refName: string
-  start: number
-  clipPos: number
-  end: number
-  seqLength: number
 }

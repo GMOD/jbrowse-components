@@ -8,10 +8,10 @@ All tracks can contain:
 
 - `trackId` - internal track ID, must be unique
 - `name` - displayed track name
-- `assemblyNames` - an array of assembly names a track is associated with,
-  often just a single assemblyName
-- `category` - (optional) array of categories to display in a hierarchical
-  track selector
+- `assemblyNames` - an array of assembly names a track is associated with, often
+  just a single assemblyName
+- `category` - (optional) array of categories to display in a hierarchical track
+  selector
 
 Example `config.json` containing a track config for a BigBed file:
 

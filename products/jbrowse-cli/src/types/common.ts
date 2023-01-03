@@ -1,13 +1,17 @@
 import fs from 'fs'
-import { Track, LocalPathLocation, UriLocation } from '../base'
 import path from 'path'
+
+// locals
+import { Track, LocalPathLocation, UriLocation } from '../base'
 import fetch from '../fetchWithProxy'
 
 export async function createRemoteStream(urlIn: string) {
   const response = await fetch(urlIn)
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch ${urlIn} status ${response.status} ${response.statusText}`,
+      `Failed to fetch ${urlIn} status ${
+        response.status
+      } ${await response.text()}`,
     )
   }
   return response
@@ -27,7 +31,10 @@ export function isURL(FileName: string) {
 
 function makeLocation(location: string, protocol: string) {
   if (protocol === 'uri') {
-    return { uri: location, locationType: 'UriLocation' } as UriLocation
+    return {
+      uri: location,
+      locationType: 'UriLocation',
+    } as UriLocation
   }
   if (protocol === 'localPath') {
     return {
@@ -107,37 +114,30 @@ export function supported(type: string) {
 }
 
 export async function generateMeta({
-  configs,
+  trackConfigs,
   attributes,
-  outDir,
+  outLocation,
   name,
-  exclude,
+  typesToExclude,
   assemblyNames,
 }: {
-  configs: Track[]
+  trackConfigs: Track[]
   attributes: string[]
-  outDir: string
+  outLocation: string
   name: string
-  exclude: string[]
+  typesToExclude: string[]
   assemblyNames: string[]
 }) {
-  const tracks = configs.map(config => {
-    const { trackId, textSearching, adapter } = config
+  const tracks = trackConfigs.map(({ adapter, textSearching, trackId }) => ({
+    trackId,
+    attributesIndexed: textSearching?.indexingAttributes || attributes,
+    excludedTypes:
+      textSearching?.indexingFeatureTypesToExclude || typesToExclude,
+    adapterConf: adapter,
+  }))
 
-    const includeExclude =
-      textSearching?.indexingFeatureTypesToExclude || exclude
-
-    const metaAttrs = textSearching?.indexingAttributes || attributes
-
-    return {
-      trackId: trackId,
-      attributesIndexed: metaAttrs,
-      excludedTypes: includeExclude,
-      adapterConf: adapter,
-    }
-  })
   fs.writeFileSync(
-    path.join(outDir, 'trix', `${name}_meta.json`),
+    path.join(outLocation, 'trix', `${name}_meta.json`),
     JSON.stringify(
       {
         dateCreated: new Date().toISOString(),

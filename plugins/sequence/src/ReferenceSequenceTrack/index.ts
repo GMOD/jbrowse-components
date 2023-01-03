@@ -10,6 +10,7 @@ export default (pluginManager: PluginManager) => {
 
     return new TrackType({
       name: 'ReferenceSequenceTrack',
+      displayName: 'Reference sequence track',
       configSchema,
       stateModel: createBaseTrackModel(
         pluginManager,

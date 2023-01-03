@@ -18,6 +18,8 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import DragIcon from '@mui/icons-material/DragIndicator'
 import CloseIcon from '@mui/icons-material/Close'
+import MinimizeIcon from '@mui/icons-material/Minimize'
+import AddIcon from '@mui/icons-material/Add'
 
 import { LinearGenomeViewModel } from '..'
 
@@ -64,6 +66,7 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
     const view = getContainingView(track) as LGV
     const session = getSession(track)
     const trackConf = track.configuration
+    const minimized = track.minimized
     const trackId = getConf(track, 'trackId')
     const trackName = getTrackName(trackConf, session)
 
@@ -73,6 +76,11 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
     })
 
     const items = [
+      {
+        label: minimized ? 'Restore track' : 'Minimize track',
+        icon: minimized ? AddIcon : MinimizeIcon,
+        onClick: () => track.setMinimized(!minimized),
+      },
       ...(session.getTrackActionMenuItems?.(trackConf) || []),
       ...track.trackMenuItems(),
     ].sort((a, b) => (b.priority || 0) - (a.priority || 0))
@@ -103,12 +111,13 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
         >
           <CloseIcon fontSize="small" />
         </IconButton>
+
         <Typography
           variant="body1"
           component="span"
           className={classes.trackName}
         >
-          {trackName}
+          {trackName + (minimized ? ' (minimized)' : '')}
         </Typography>
         <IconButton
           {...bindTrigger(popupState)}

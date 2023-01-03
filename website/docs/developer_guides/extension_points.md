@@ -4,6 +4,35 @@ title: Extension points
 toplevel: true
 ---
 
+The basic API is that producers can say:
+
+```js
+const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
+  value: 1,
+})
+```
+
+And consumers can say:
+
+```js
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+
+pluginManager.addToExtensionPoint('ExtensionPointName', arg => {
+  return arg.value + 1
+})
+```
+
+In this case, `arg` that is passed in evaluateExtensionPoint calls all the
+callbacks that have been registered by `addToExtensionPoint`. If multiple
+extension points are registered, the return value of the first extension point
+is passed as the new argument to the second, and so on (they are chained
+together).
+
+So in the example above, ret would be `{value:3}` after evaluating the extension
+point.
+
 In the core codebase, we have the concept of extension points that users can
 call or add to.
 
@@ -41,9 +70,9 @@ Here are the extension points in the core codebase:
 
 type: synchronous
 
-used to add extra functionality to e.g state tree models, for example,
-extra right-click context menus. your callback will receive every pluggable
-element registered to the system
+used to add extra functionality to e.g state tree models, for example, extra
+right-click context menus. your callback will receive every pluggable element
+registered to the system
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
 
@@ -61,10 +90,10 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: synchronous
 
-used to infer a track type given a location type from the "Add track
-workflow"
+used to infer a track type given a location type from the "Add track workflow"
 
-example https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/alignments/src/index.ts#L108-L118
+example
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/alignments/src/index.ts#L108-L118
 
 ### Core-extendSession
 
@@ -79,8 +108,8 @@ used to extend the session model itself with new features
 
 type: synchronous
 
-- `config: Record<string,unknown>` - a snapshot of a configuration object that is
-  displayed in the about dialog
+- `config: Record<string,unknown>` - a snapshot of a configuration object that
+  is displayed in the about dialog
 
 ### TrackSelector-multiTrackMenuItems
 
@@ -89,15 +118,16 @@ type: synchronous
 used to add new menu items to the "shopping cart" in the header of the
 hierarchical track menu when tracks are added to the selection
 
-example https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
+example
+https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
 
 ### LaunchView-LinearGenomeView
 
 type: async
 
-launches a linear genome view given parameters. it is not common to
-extend this extension point, but you can use it as an example to create a
-LaunchView type for your own view
+launches a linear genome view given parameters. it is not common to extend this
+extension point, but you can use it as an example to create a LaunchView type
+for your own view
 
 - `session: AbstractSessionModel` - instance of the session which you can call
   actions on
@@ -125,15 +155,16 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a sv inspector with given parameters. it is not common to
-extend this extension point, but you can use it as an example to create a
-LaunchView type for your own view
+launches a sv inspector with given parameters. it is not common to extend this
+extension point, but you can use it as an example to create a LaunchView type
+for your own view
 
 - `session: AbstractSessionModel` - instance of the session which you can call
   actions on
 - `assembly: string` - assembly name
 - `uri: string` - a url to load
-- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE, etc)
+- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE,
+  etc)
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/sv-inspector/src/index.ts#L21-L61
 
@@ -141,15 +172,16 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a sv inspector with given parameters. it is not common to
-extend this extension point, but you can use it as an example to create a
-LaunchView type for your own view
+launches a sv inspector with given parameters. it is not common to extend this
+extension point, but you can use it as an example to create a LaunchView type
+for your own view
 
 - `session: AbstractSessionModel` - instance of the session which you can call
   actions on
 - `assembly: string` - assembly name
 - `uri: string` - a url to load
-- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE, etc)
+- `fileType?: string` - type of file referred to by locstring (VCF|CSV|BEDPE,
+  etc)
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/spreadsheet-view/src/index.ts#L26-L59
 
@@ -157,13 +189,14 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a dotplot with given parameters. it is not common to
-extend this extension point, but you can use it as an example to create a
-LaunchView type for your own view
+launches a dotplot with given parameters. it is not common to extend this
+extension point, but you can use it as an example to create a LaunchView type
+for your own view
 
 - `session: AbstractSessionModel` - instance of the session which you can call
   actions on
-- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params for vertical and horizontal
+- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params
+  for vertical and horizontal
 - `tracks: string[]` - trackIds to turn on
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/LaunchDotplotView.ts#L7-L46
@@ -172,13 +205,14 @@ https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6
 
 type: async
 
-launches a linear synteny view with given parameters. it is not common to
-extend this extension point, but you can use it as an example to create a
-LaunchView type for your own view
+launches a linear synteny view with given parameters. it is not common to extend
+this extension point, but you can use it as an example to create a LaunchView
+type for your own view
 
 - `session: AbstractSessionModel` - instance of the session which you can call
   actions on
-- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params for vertical and horizontal
+- `views: { loc: string; assembly: string; tracks?: string[] }[]` - view params
+  for vertical and horizontal
 - `tracks: string[]` - trackIds to turn on
 
 https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
@@ -192,8 +226,7 @@ adds option to provide a different component for the "About this track" dialog
 - `session: AbstractSessionModel` - instance of the session which you can call
 - `config: AnyConfigurationModel` - a configuration object for the track
 
-Return value:
-The new React component you want to use
+Return value: The new React component you want to use
 
 example: replaces about dialog for a particular track ID
 
@@ -217,8 +250,8 @@ adds option to provide a different component for the "About this track" dialog
 - `session: AbstractSessionModel` - instance of the session which you can call
 - `config: AnyConfigurationModel` - a configuration object for the track
 
-Return value:
-An object with the name of the panel and the React component to use for the panel
+Return value: An object with the name of the panel and the React component to
+use for the panel
 
 example: adds an extra about dialog panel for a particular track ID
 
@@ -237,11 +270,10 @@ pluginManager.addToExtensionPoint(
 
 type: synchronous
 
-- `config: Record<string, unknown>` a snapshot of a configuration object for
-  the track, with `formatAbout` already applied to it
+- `config: Record<string, unknown>` a snapshot of a configuration object for the
+  track, with `formatAbout` already applied to it
 
-Return value:
-New config snapshot object
+Return value: New config snapshot object
 
 ### Core-replaceWidget
 
@@ -255,8 +287,7 @@ adds option to provide a different component for the "About this track" dialog
   details may be a common one. See `Core-extraFeaturePanel` also, matches the
   model attribute from there
 
-Return value:
-The new React component you want to use
+Return value: The new React component you want to use
 
 example: replaces about feature details widget for a particular track ID
 
@@ -288,8 +319,8 @@ type: synchronous
 - `feature: Record<string, unknown>` a snapshot of a feature object
 - `session: AbstractSessionModel` - instance of the session which you can call
 
-Return value:
-An object with the name of the panel and the React component to use for the panel
+Return value: An object with the name of the panel and the React component to
+use for the panel
 
 example
 

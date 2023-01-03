@@ -46,9 +46,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           displayModel: self,
           bezierRadius: view.radiusPx * self.bezierRadiusRatio,
           radius: view.radiusPx,
-
-          // @ts-ignore
-          blockDefinitions: this.blockDefinitions,
+          blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
           onChordClick: self.onChordClick,
         }

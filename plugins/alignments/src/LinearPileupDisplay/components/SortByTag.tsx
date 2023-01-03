@@ -2,51 +2,22 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-
-import CloseIcon from '@mui/icons-material/Close'
-
-const useStyles = makeStyles()(theme => ({
-  root: {
-    margin: 0,
-    padding: theme.spacing(2),
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
+import { Dialog } from '@jbrowse/core/ui'
 
 function SortByTagDlg(props: {
   model: { setSortedBy: Function }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const { model, handleClose } = props
   const [tag, setTag] = useState('')
   const validTag = tag.match(/^[A-Za-z][A-Za-z0-9]$/)
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Sort by tag
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Sort by tag">
       <DialogContent>
         <Typography>Set the tag to sort by</Typography>
         <Typography color="textSecondary">

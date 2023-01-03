@@ -5,8 +5,11 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
 
 ### LinearComparativeView - Properties
 
@@ -99,7 +102,7 @@ currently this is limited to an array of two
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; } & { id: IOptionalIType<ISimpleType<string>, [...]>; ... 12 more ...; showGridlines: IType<...>; }, { ...; } & ... 14 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }, { ...; } & ... 14 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -109,9 +112,8 @@ views: types.array(
 
 #### property: viewTrackConfigs
 
-this represents tracks specific to this view specifically used
-for read vs ref dotplots where this track would not really apply
-elsewhere
+this represents tracks specific to this view specifically used for read vs ref
+dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
@@ -188,19 +190,20 @@ setHeight: (newHeight: number) => void
 
 ```js
 // type signature
-setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; } & { id: IOptionalIType<ISimpleType<string>, [...]>; ... 12 more ...; showGridlines: IType<...>; }>>[]) => void
+setViews: (views: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean, boolean, boolean>; } & { ...; }>>[]) => void
 ```
 
 #### action: removeView
 
 ```js
 // type signature
-removeView: (view: { id: string; displayName: string; type: "LinearGenomeView"; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomized>> & IS...
+removeView: (view: { id: string; displayName: string; minimized: boolean; type: string; offsetPx: number; bpPerPx: number; displayedRegions: IMSTArray<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<...>; reversed: IOptionalIType<...>; } & { ...; }, { ...; }, _NotCustomized, _NotCustomize...
 ```
 
 #### action: closeView
 
-removes the view itself from the state tree entirely by calling the parent removeView
+removes the view itself from the state tree entirely by calling the parent
+removeView
 
 ```js
 // type signature

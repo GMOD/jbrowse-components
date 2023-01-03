@@ -4,8 +4,8 @@ title: BamAdapter
 toplevel: true
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
@@ -50,15 +50,15 @@ location: {
 fetchSizeLimit: {
       type: 'number',
       description:
-        'used to determine when to display a warning to the user that too much data will be fetched',
+        'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 5_000_000,
     }
 ```
 
 #### slot: sequenceAdapter
 
-generally refers to the reference genome assembly's sequence adapter
-currently needs to be manually added
+generally refers to the reference genome assembly's sequence adapter currently
+needs to be manually added
 
 ```js
 sequenceAdapter: {

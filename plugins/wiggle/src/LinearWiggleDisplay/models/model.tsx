@@ -10,6 +10,7 @@ import {
   getSession,
   getContainingView,
   isSelectionContainer,
+  Feature,
 } from '@jbrowse/core/util'
 import {
   BaseLinearDisplay,
@@ -19,7 +20,6 @@ import { when } from 'mobx'
 import { isAlive, types, Instance } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
-import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { axisPropsFromTickScale } from 'react-d3-axis-mod'
 import {
   getNiceDomain,
@@ -32,7 +32,7 @@ import {
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
 
-const SetMinMaxDlg = lazy(() => import('../components/SetMinMaxDialog'))
+const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
 
 // using a map because it preserves order
@@ -126,9 +126,8 @@ function stateModelFactory(
       }),
     )
     .volatile(() => ({
-      statsReady: false,
       message: undefined as undefined | string,
-      stats: { scoreMin: 0, scoreMax: 50 },
+      stats: undefined as { scoreMin: number; scoreMax: number } | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
@@ -138,12 +137,13 @@ function stateModelFactory(
       updateStats(stats: { scoreMin: number; scoreMax: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
-        if (
+        if (!self.stats) {
+          self.stats = { scoreMin, scoreMax }
+        } else if (
           Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
           Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
         ) {
           self.stats = { scoreMin, scoreMax }
-          self.statsReady = true
         }
       },
       /**
@@ -401,6 +401,9 @@ function stateModelFactory(
          */
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
+          if (!stats) {
+            return undefined
+          }
 
           const ret = getNiceDomain({
             domain: [stats.scoreMin, stats.scoreMax],
@@ -475,6 +478,9 @@ function stateModelFactory(
         const minimalTicks = getConf(self, 'minimalTicks')
         const inverted = getConf(self, 'inverted')
         const range = [height - YSCALEBAR_LABEL_OFFSET, YSCALEBAR_LABEL_OFFSET]
+        if (!domain) {
+          return undefined
+        }
         const scale = getScale({
           scaleType,
           domain,
@@ -491,8 +497,8 @@ function stateModelFactory(
        * #getter
        */
       get adapterCapabilities() {
-        return pluginManager.getAdapterType(self.adapterTypeName)
-          .adapterCapabilities
+        const type = self.adapterTypeName
+        return pluginManager.getAdapterType(type).adapterCapabilities
       },
     }))
     .views(self => {
@@ -506,7 +512,7 @@ function stateModelFactory(
           const { filters, ticks, height, resolution, scaleOpts } = self
           return {
             ...superProps,
-            notReady: superProps.notReady || !self.statsReady,
+            notReady: superProps.notReady || !self.stats,
             rpcDriverName: self.rpcDriverName,
             displayModel: self,
             config: self.rendererConfig,
@@ -702,7 +708,7 @@ function stateModelFactory(
          * #action
          */
         async renderSvg(opts: ExportSvgOpts) {
-          await when(() => self.statsReady && !!self.regionCannotBeRenderedText)
+          await when(() => !!self.stats && !!self.regionCannotBeRenderedText)
           const { needsScalebar, stats } = self
           const { offsetPx } = getContainingView(self) as LGV
           return (

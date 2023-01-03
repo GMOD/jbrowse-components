@@ -73,7 +73,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
       </Typography>
       <br />
       <Typography align="center">
-        © 2019-2021 The Evolutionary Software Foundation
+        © 2019-2022 The Evolutionary Software Foundation
       </Typography>
       <div className={classes.pluginList}>
         {!externalPluginsRender.length ? null : (

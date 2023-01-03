@@ -7,12 +7,10 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'ChainAdapter',
+        displayName: 'Liftover chain adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () => import('./ChainAdapter').then(r => r.default),
       }),

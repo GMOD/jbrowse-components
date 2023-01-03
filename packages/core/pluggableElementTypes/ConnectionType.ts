@@ -8,8 +8,6 @@ export default class ConnectionType extends PluggableElementBase {
 
   configSchema: AnyConfigurationSchemaType
 
-  displayName: string
-
   description: string
 
   url: string
@@ -28,7 +26,6 @@ export default class ConnectionType extends PluggableElementBase {
     super(stuff)
     this.stateModel = stuff.stateModel
     this.configSchema = stuff.configSchema
-    this.displayName = stuff.displayName
     this.description = stuff.description
     this.url = stuff.url
     this.configEditorComponent = stuff.configEditorComponent

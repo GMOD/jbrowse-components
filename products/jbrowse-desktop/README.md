@@ -5,7 +5,8 @@
 ### Developing
 
 While in the jbrowse-desktop directory, you can run `yarn start` to start a
-development build of JBrowse Desktop. This both starts the development server and opens the Electron window when the server is ready.
+development build of JBrowse Desktop. This both starts the development server
+and opens the Electron window when the server is ready.
 
 For more control over the development, you can run the server and the electron
 window separately. Just run `yarn serve` to start the server, and once the

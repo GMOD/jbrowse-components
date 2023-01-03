@@ -73,14 +73,12 @@ export async function createPluginManager(
         const pluginLocation = path.join(tmpDir, sanitize(url))
         const pluginLocationRelative = path.relative('.', pluginLocation)
 
-        await new Promise<void>((resolve, reject) => {
+        await new Promise((resolve, reject) => {
           const file = fs.createWriteStream(pluginLocation)
           http
-            .get(url, response => {
-              response.pipe(file)
-              file.on('finish', () => {
-                resolve()
-              })
+            .get(url, res => {
+              res.pipe(file)
+              file.on('finish', resolve)
             })
             .on('error', err => {
               fs.unlinkSync(pluginLocation)
@@ -91,7 +89,7 @@ export async function createPluginManager(
           | LoadedPlugin
           | undefined
       } finally {
-        fsPromises.rmdir(tmpDir, { recursive: true })
+        await fsPromises.rmdir(tmpDir, { recursive: true })
       }
 
       if (!plugin) {
@@ -157,7 +155,10 @@ export async function createPluginManager(
   pm.configure()
 
   if (rootModel && !readConfObject(config, 'disableAnalytics')) {
+    // these are ok if they are uncaught promises
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeAWSAnalytics(rootModel, initialTimestamp)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeGAAnalytics(rootModel, initialTimestamp)
   }
 

@@ -48,7 +48,7 @@ test('has a viewType attr', () => {
   )
   const config = configSchema.create({
     type: 'LinearVariantDisplay',
-    displayId: 'diplayId0',
+    displayId: 'displayId0',
     name: 'Zonker Display',
   })
   expect(config.type).toEqual('LinearVariantDisplay')

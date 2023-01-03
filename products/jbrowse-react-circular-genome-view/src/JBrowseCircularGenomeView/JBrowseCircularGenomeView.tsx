@@ -6,8 +6,6 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material/styles'
 import { ScopedCssBaseline } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { CacheProvider } from '@emotion/react'
-import createCache from '@emotion/cache'
 
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
@@ -19,13 +17,6 @@ const useStyles = makeStyles()({
   avoidParentStyle: {
     all: 'initial',
   },
-})
-
-// without this, the styles can become messed up
-// xref https://github.com/garronej/tss-react/issues/25
-export const muiCache = createCache({
-  key: 'mui',
-  prepend: true,
 })
 
 const JBrowseCircularGenomeView = observer(
@@ -44,20 +35,18 @@ const JBrowseCircularGenomeView = observer(
     )
 
     return (
-      <CacheProvider value={muiCache}>
-        <ThemeProvider theme={theme}>
-          <div className={classes.avoidParentStyle}>
-            <ScopedCssBaseline>
-              <ViewContainer key={`view-${view.id}`} view={view}>
-                <Suspense fallback={<div>Loading...</div>}>
-                  <ReactComponent model={view} session={session} />
-                </Suspense>
-              </ViewContainer>
-              <ModalWidget session={session} />
-            </ScopedCssBaseline>
-          </div>
-        </ThemeProvider>
-      </CacheProvider>
+      <ThemeProvider theme={theme}>
+        <div className={classes.avoidParentStyle}>
+          <ScopedCssBaseline>
+            <ViewContainer key={`view-${view.id}`} view={view}>
+              <Suspense fallback={<div>Loading...</div>}>
+                <ReactComponent model={view} session={session} />
+              </Suspense>
+            </ViewContainer>
+            <ModalWidget session={session} />
+          </ScopedCssBaseline>
+        </div>
+      </ThemeProvider>
     )
   },
 )

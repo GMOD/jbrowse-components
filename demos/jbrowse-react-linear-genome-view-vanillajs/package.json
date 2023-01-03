@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "deploy": "aws s3 sync --delete . s3://jbrowse.org/demos/lgv-vanillajs/",
-    "postdeploy": "aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths \"/demos/lgv-vanillajs/*\""
-  }
-}

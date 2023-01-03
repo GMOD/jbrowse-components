@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`adapter can fetch features from volvox.bb 1`] = `
-Array [
-  Object {
+[
+  {
     "end": 9000,
     "geneBioType": "-",
     "geneId": "EDEN",
@@ -14,8 +14,8 @@ Array [
     "score": 1000,
     "start": 1049,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 1200,
         "parentId": "test-bb-358912",
         "start": 1049,
@@ -23,7 +23,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-bb-358912-0",
       },
-      Object {
+      {
         "end": 1500,
         "parentId": "test-bb-358912",
         "start": 1200,
@@ -31,7 +31,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-358912-1",
       },
-      Object {
+      {
         "end": 3902,
         "parentId": "test-bb-358912",
         "start": 2999,
@@ -39,7 +39,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-358912-2",
       },
-      Object {
+      {
         "end": 5500,
         "parentId": "test-bb-358912",
         "start": 4999,
@@ -47,7 +47,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-358912-3",
       },
-      Object {
+      {
         "end": 7608,
         "parentId": "test-bb-358912",
         "start": 6999,
@@ -55,7 +55,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-358912-4",
       },
-      Object {
+      {
         "end": 9000,
         "parentId": "test-bb-358912",
         "start": 7608,
@@ -68,7 +68,7 @@ Array [
     "type": "mRNA",
     "uniqueId": "test-bb-358912",
   },
-  Object {
+  {
     "end": 9000,
     "geneBioType": "-",
     "geneId": "EDEN",
@@ -80,8 +80,8 @@ Array [
     "score": 1000,
     "start": 1049,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 1200,
         "parentId": "test-bb-359006",
         "start": 1049,
@@ -89,7 +89,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-bb-359006-0",
       },
-      Object {
+      {
         "end": 1500,
         "parentId": "test-bb-359006",
         "start": 1200,
@@ -97,7 +97,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359006-1",
       },
-      Object {
+      {
         "end": 5500,
         "parentId": "test-bb-359006",
         "start": 4999,
@@ -105,7 +105,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359006-2",
       },
-      Object {
+      {
         "end": 7608,
         "parentId": "test-bb-359006",
         "start": 6999,
@@ -113,7 +113,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359006-3",
       },
-      Object {
+      {
         "end": 9000,
         "parentId": "test-bb-359006",
         "start": 7608,
@@ -126,7 +126,7 @@ Array [
     "type": "mRNA",
     "uniqueId": "test-bb-359006",
   },
-  Object {
+  {
     "end": 9000,
     "geneBioType": "-",
     "geneId": "EDEN",
@@ -138,8 +138,8 @@ Array [
     "score": 1000,
     "start": 1299,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 1500,
         "parentId": "test-bb-359091",
         "start": 1299,
@@ -147,7 +147,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-bb-359091-0",
       },
-      Object {
+      {
         "end": 3300,
         "parentId": "test-bb-359091",
         "start": 2999,
@@ -155,7 +155,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-bb-359091-1",
       },
-      Object {
+      {
         "end": 3902,
         "parentId": "test-bb-359091",
         "start": 3300,
@@ -163,7 +163,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359091-2",
       },
-      Object {
+      {
         "end": 5500,
         "parentId": "test-bb-359091",
         "start": 4999,
@@ -171,7 +171,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359091-3",
       },
-      Object {
+      {
         "end": 7600,
         "parentId": "test-bb-359091",
         "start": 6999,
@@ -179,7 +179,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359091-4",
       },
-      Object {
+      {
         "end": 9000,
         "parentId": "test-bb-359091",
         "start": 7600,
@@ -192,7 +192,7 @@ Array [
     "type": "mRNA",
     "uniqueId": "test-bb-359091",
   },
-  Object {
+  {
     "end": 23000,
     "geneBioType": "-",
     "geneId": "rna-Apple3",
@@ -204,8 +204,8 @@ Array [
     "score": 1000,
     "start": 17399,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 17999,
         "parentId": "test-bb-359185",
         "start": 17399,
@@ -213,7 +213,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-bb-359185-0",
       },
-      Object {
+      {
         "end": 18800,
         "parentId": "test-bb-359185",
         "start": 17999,
@@ -221,7 +221,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359185-1",
       },
-      Object {
+      {
         "end": 19500,
         "parentId": "test-bb-359185",
         "start": 18999,
@@ -229,7 +229,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359185-2",
       },
-      Object {
+      {
         "end": 21200,
         "parentId": "test-bb-359185",
         "start": 20999,
@@ -237,7 +237,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-bb-359185-3",
       },
-      Object {
+      {
         "end": 23000,
         "parentId": "test-bb-359185",
         "start": 21200,

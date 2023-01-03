@@ -947,16 +947,16 @@ test('navToLocString with human assembly', async () => {
   view.setDisplayedRegions(hg38Regions.slice(0, 1))
   const w = view.width
 
-  view.navToLocString('2')
+  await view.navToLocString('2')
   await waitFor(() => expect(view.bpPerPx).toBe(hg38Regions[1].end / w))
 
-  view.navToLocString('chr3')
+  await view.navToLocString('chr3')
   await waitFor(() => expect(view.bpPerPx).toBe(hg38Regions[2].end / w))
 
-  view.navToLocString('chr3:1,000,000,000-1,100,000,000')
+  await view.navToLocString('chr3:1,000,000,000-1,100,000,000')
   await waitFor(() => expect(view.bpPerPx).toBe(0.02))
   await waitFor(() => expect(view.offsetPx).toBe(9914777550))
-  view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
+  await view.navToLocString('chr3:-1,100,000,000..-1,000,000,000')
 })
 
 test('multi region', async () => {
@@ -972,7 +972,7 @@ test('multi region', async () => {
   model.setWidth(800)
   model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
 
-  model.navToLocString('ctgA ctgB')
+  await model.navToLocString('ctgA ctgB')
   await waitFor(() => expect(model.displayedRegions[0].refName).toBe('ctgA'))
   await waitFor(() => expect(model.displayedRegions[1].refName).toBe('ctgB'))
 })
@@ -990,8 +990,7 @@ test('space separated locstring', async () => {
   model.setWidth(800)
   model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
 
-  model.navToLocString('ctgA 0 100')
-
+  await model.navToLocString('ctgA 0 100')
   await waitFor(() => expect(model.offsetPx).toBe(0))
   await waitFor(() => expect(model.bpPerPx).toBe(0.125))
 })

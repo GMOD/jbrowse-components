@@ -241,6 +241,7 @@ ctgA	example	match	49762	50000	.	+	.	Name=seg13
 ctgA	example	match	49957	50000	.	-	.	Name=seg07
 ctgA	example	match	49957	50000	.	-	.	Name=seg07
 ctgB	example	contig	1	6079	.	.	.	Name=ctgB
+ctgB	example	BAC	1000	2000	.	.	.	ID=b101.2;Name=b101.2;Note=Fingerprinted BAC with end reads
 ctgB	example	remark	1659	1984	.	+	.	Name=f07;Note=This is an example
 ctgB	example	remark	3014	6130	.	+	.	Name=f06;Note=This is another example
 ctgB	example	remark	4715	5968	.	-	.	Name=f05;Note=ああ、この機能は、世界中を旅しています！

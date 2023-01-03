@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-breakpoint-split-view",
-  "version": "2.1.7",
+  "version": "2.3.2",
   "description": "JBrowse 2 breakpoint detail split view",
   "keywords": [
     "jbrowse",
@@ -27,7 +27,7 @@
     "build": "npm-run-all build:*",
     "test": "cd ../..; jest plugins/breakpoint-split-view",
     "prepublishOnly": "yarn test",
-    "prepack": "yarn build; yarn useDist",
+    "prepack": "yarn build && yarn useDist",
     "postpack": "yarn useSrc",
     "useDist": "node ../../scripts/useDist.js",
     "useSrc": "node ../../scripts/useSrc.js",
@@ -37,7 +37,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/vcf": "^5.0.5",
+    "@gmod/vcf": "^5.0.9",
     "@mui/icons-material": "^5.0.1",
     "svg-path-generator": "^1.1.0"
   },
@@ -49,7 +49,7 @@
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.4",
-    "tss-react": "^3.0.0"
+    "tss-react": "^4.0.0"
   },
   "private": true,
   "distModule": "esm/index.js",

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
 import BlockMsg from './BlockMsg'
@@ -17,26 +17,6 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     pointerEvents: 'none',
     textAlign: 'center',
-  },
-  dots: {
-    '&::after': {
-      display: 'inline-block',
-      animation: '$ellipsis 1.5s infinite',
-      content: '"."',
-      width: '1em',
-      textAlign: 'left',
-    },
-  },
-  '@keyframes ellipsis': {
-    '0%': {
-      content: '"."',
-    },
-    '33%': {
-      content: '".."',
-    },
-    '66%': {
-      content: '"..."',
-    },
   },
 }))
 
@@ -66,9 +46,7 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
     <>
       {shown ? (
         <div className={classes.loading}>
-          <Typography className={classes.dots} variant="body2">
-            {status ? `${status}` : 'Loading'}
-          </Typography>
+          <LoadingEllipses message={status} />
         </div>
       ) : null}
     </>

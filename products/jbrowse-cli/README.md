@@ -4,12 +4,12 @@ id: cli
 toplevel: true
 ---
 
-This document covers the CLI tools. Note: for @jbrowse/img static export
-tool, see https://www.npmjs.com/package/@jbrowse/img
+This document covers the CLI tools. Note: for @jbrowse/img static export tool,
+see https://www.npmjs.com/package/@jbrowse/img
 
 Note: the @jbrowse/cli may not do all types of operations, some use cases may
-best be handled by creating your own tools to manipulate a config.json by
-hand or by using a script file.
+best be handled by creating your own tools to manipulate a config.json by hand
+or by using a script file.
 
 A simple script that does not use @jbrowse/cli at all may just look like this
 
@@ -40,7 +40,8 @@ It is also possible to do one-off executions using npx, e.g.
 npx @jbrowse/cli create myfolder
 ```
 
-It is likely preferable in most cases to install the tools globally with `npm install @jbrowse/cli -g` however
+It is likely preferable in most cases to install the tools globally with
+`npm install @jbrowse/cli -g` however
 
 ## Commands
 
@@ -53,6 +54,7 @@ It is likely preferable in most cases to install the tools globally with `npm in
 - [`jbrowse admin-server`](#jbrowse-admin-server)
 - [`jbrowse create LOCALPATH`](#jbrowse-create-localpath)
 - [`jbrowse help [COMMAND]`](#jbrowse-help-command)
+- [`jbrowse remove-track TRACK`](#jbrowse-remove-track-track)
 - [`jbrowse set-default-session`](#jbrowse-set-default-session)
 - [`jbrowse text-index`](#jbrowse-text-index)
 - [`jbrowse upgrade [LOCALPATH]`](#jbrowse-upgrade-localpath)
@@ -170,7 +172,8 @@ EXAMPLES
   $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
-_See code: [src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/add-assembly.ts)_
+_See code:
+[src/commands/add-assembly.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/add-assembly.ts)_
 
 ## `jbrowse add-connection CONNECTIONURLORPATH`
 
@@ -224,7 +227,8 @@ EXAMPLES
   /path/to/jb2/installation/config.json
 ```
 
-_See code: [src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/add-connection.ts)_
+_See code:
+[src/commands/add-connection.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/add-connection.ts)_
 
 ## `jbrowse add-track TRACK`
 
@@ -298,11 +302,13 @@ EXAMPLES
   $ jbrowse add-track /url/relative/path.bam --load inPlace
 ```
 
-_See code: [src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/add-track.ts)_
+_See code:
+[src/commands/add-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/add-track.ts)_
 
 ## `jbrowse add-track-json TRACK`
 
-Add a track configuration directly from a JSON hunk to the JBrowse 2 configuration
+Add a track configuration directly from a JSON hunk to the JBrowse 2
+configuration
 
 ```
 USAGE
@@ -323,7 +329,8 @@ EXAMPLES
   $ jbrowse add-track-json track.json --update
 ```
 
-_See code: [src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/add-track-json.ts)_
+_See code:
+[src/commands/add-track-json.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/add-track-json.ts)_
 
 ## `jbrowse admin-server`
 
@@ -353,7 +360,8 @@ EXAMPLES
   $ jbrowse admin-server -p 8888
 ```
 
-_See code: [src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/admin-server.ts)_
+_See code:
+[src/commands/admin-server.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/admin-server.ts)_
 
 ## `jbrowse create LOCALPATH`
 
@@ -397,7 +405,8 @@ EXAMPLES
   $ jbrowse create --listVersions
 ```
 
-_See code: [src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/create.ts)_
+_See code:
+[src/commands/create.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/create.ts)_
 
 ## `jbrowse help [COMMAND]`
 
@@ -414,7 +423,33 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
+_See code:
+[@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.14/src/commands/help.ts)_
+
+## `jbrowse remove-track TRACK`
+
+Remove a track configuration from a JBrowse 2 configuration. Be aware that this
+can cause crashes in saved sessions that refer to this track!
+
+```
+USAGE
+  $ jbrowse remove-track TRACK
+
+ARGUMENTS
+  TRACK  track JSON file or command line arg blob
+
+OPTIONS
+  --out=out        synonym for target
+
+  --target=target  path to config file in JB2 installation directory to write out to.
+                   Creates ./config.json if nonexistent
+
+EXAMPLE
+  $ jbrowse remove-track-json trackId
+```
+
+_See code:
+[src/commands/remove-track.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/remove-track.ts)_
 
 ## `jbrowse set-default-session`
 
@@ -451,7 +486,8 @@ EXAMPLES
   $ jbrowse set-default-session --currentSession # Prints out current default session
 ```
 
-_See code: [src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/set-default-session.ts)_
+_See code:
+[src/commands/set-default-session.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/set-default-session.ts)_
 
 ## `jbrowse text-index`
 
@@ -486,8 +522,10 @@ OPTIONS
 
   --perTrack                   If set, creates an index per track
 
-  --prefixSize=prefixSize      [default: 6] Specify the prefix size for the ixx index, increase size if many of your
-                               gene IDs have same prefix e.g. Z000000001, Z000000002
+  --prefixSize=prefixSize      Specify the prefix size for the ixx index. We attempt to automatically calculate this,
+                               but you can manually specify this too. If many genes have similar gene IDs e.g.
+                               Z000000001, Z000000002 the prefix size should be larger so that they get split into
+                               different bins
 
   --target=target              Path to config file in JB2 installation directory to read from.
 
@@ -512,7 +550,8 @@ EXAMPLES
   $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
-_See code: [src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/text-index.ts)_
+_See code:
+[src/commands/text-index.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/text-index.ts)_
 
 ## `jbrowse upgrade [LOCALPATH]`
 
@@ -560,7 +599,8 @@ EXAMPLES
   $ jbrowse upgrade --nightly
 ```
 
-_See code: [src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.1.7/products/jbrowse-cli/src/commands/upgrade.ts)_
+_See code:
+[src/commands/upgrade.ts](https://github.com/GMOD/jbrowse-components/blob/v2.3.2/products/jbrowse-cli/src/commands/upgrade.ts)_
 
 <!-- commandsstop -->
 

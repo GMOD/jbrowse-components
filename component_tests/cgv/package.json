@@ -1,5 +1,5 @@
 {
-  "name": "jbrowse-react-circular-genome-view-demo",
+  "name": "jbrowse-react-circular-genome-view-demo-integration",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -27,10 +27,12 @@
   "resolutions": {
     "@jbrowse/core": "file:./packed/jbrowse-core.tgz",
     "@jbrowse/plugin-alignments": "file:./packed/jbrowse-plugin-alignments.tgz",
+    "@jbrowse/plugin-authentication": "file:./packed/jbrowse-plugin-authentication.tgz",
     "@jbrowse/plugin-bed": "file:./packed/jbrowse-plugin-bed.tgz",
     "@jbrowse/plugin-circular-view": "file:./packed/jbrowse-plugin-circular-view.tgz",
     "@jbrowse/plugin-config": "file:./packed/jbrowse-plugin-config.tgz",
     "@jbrowse/plugin-data-management": "file:./packed/jbrowse-plugin-data-management.tgz",
+    "@jbrowse/plugin-gccontent": "file:./packed/jbrowse-plugin-gccontent.tgz",
     "@jbrowse/plugin-gff3": "file:./packed/jbrowse-plugin-gff3.tgz",
     "@jbrowse/plugin-linear-genome-view": "file:./packed/jbrowse-plugin-linear-genome-view.tgz",
     "@jbrowse/plugin-sequence": "file:./packed/jbrowse-plugin-sequence.tgz",

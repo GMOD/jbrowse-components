@@ -1,9 +1,8 @@
 import React from 'react'
 import { Button, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { ErrorBoundary } from 'react-error-boundary'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // locals
@@ -22,26 +21,6 @@ const useStyles = makeStyles()(theme => ({
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
   },
-  dots: {
-    '&::after': {
-      display: 'inline-block',
-      animation: '$ellipsis 1.5s infinite',
-      content: '"."',
-      width: '1em',
-      textAlign: 'left',
-    },
-  },
-  '@keyframes ellipsis': {
-    '0%': {
-      content: '"."',
-    },
-    '33%': {
-      content: '".."',
-    },
-    '66%': {
-      content: '"..."',
-    },
-  },
 }))
 
 const LinearGenomeView = observer(({ model }: { model: LGV }) => {
@@ -49,11 +28,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
 
   if (!initialized && !error) {
-    return (
-      <Typography className={classes.dots} variant="h5">
-        Loading
-      </Typography>
-    )
+    return <LoadingEllipses variant="h5" />
   }
   if (!hasDisplayedRegions || error) {
     return <ImportForm model={model} />
@@ -100,12 +75,7 @@ const LinearGenomeView = observer(({ model }: { model: LGV }) => {
           </Paper>
         ) : (
           tracks.map(track => (
-            <ErrorBoundary
-              key={track.id}
-              FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-            >
-              <TrackContainer model={model} track={track} />
-            </ErrorBoundary>
+            <TrackContainer key={track.id} model={model} track={track} />
           ))
         )}
       </TracksContainer>

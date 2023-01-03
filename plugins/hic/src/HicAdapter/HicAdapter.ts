@@ -5,13 +5,11 @@ import {
 import { Region, FileLocation } from '@jbrowse/core/util/types'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { openLocation } from '@jbrowse/core/util/io'
-import { Instance } from 'mobx-state-tree'
-import { readConfObject } from '@jbrowse/core/configuration'
 import type { GenericFilehandle } from 'generic-filehandle'
 import HicStraw from 'hic-straw'
-import MyConfigSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 interface ContactRecord {
   bin1: number
@@ -59,25 +57,27 @@ export function openFilehandleWrapper(location: FileLocation) {
   return new GenericFilehandleWrapper(openLocation(location))
 }
 
+interface HicParser {
+  getContactRecords: (
+    normalize: string,
+    ref: Ref,
+    ref2: Ref,
+    units: string,
+    binsize: number,
+  ) => Promise<ContactRecord[]>
+  getMetaData: () => Promise<HicMetadata>
+}
+
 export default class HicAdapter extends BaseFeatureDataAdapter {
-  private hic: {
-    getContactRecords: (
-      normalize: string,
-      ref: Ref,
-      ref2: Ref,
-      units: string,
-      binsize: number,
-    ) => Promise<ContactRecord[]>
-    getMetaData: () => Promise<HicMetadata>
-  }
+  private hic: HicParser
 
   public constructor(
-    config: Instance<typeof MyConfigSchema>,
+    config: AnyConfigurationModel,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const hicLocation = readConfObject(config, 'hicLocation')
+    const hicLocation = this.getConf('hicLocation')
     this.hic = new HicStraw({
       file: openFilehandleWrapper(hicLocation),
     })

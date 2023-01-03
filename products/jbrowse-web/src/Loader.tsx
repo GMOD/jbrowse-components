@@ -9,7 +9,7 @@ import {
   useQueryParam,
 } from 'use-query-params'
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
-import { FatalErrorDialog } from '@jbrowse/core/ui'
+import { LoadingEllipses, FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
 import 'requestidlecallback-polyfill'
 import shortid from 'shortid'
@@ -36,6 +36,7 @@ const StartScreen = lazy(() => import('./StartScreen'))
 function NoConfigMessage() {
   const links = [
     ['test_data/volvox/config.json', 'Volvox sample data'],
+    ['test_data/volvoxhub/config.json', 'Volvox hub sample data'],
     ['test_data/config.json', 'Human basic'],
     ['test_data/config_demo.json', 'Human sample data'],
     ['test_data/tomato/config.json', 'Tomato SVs'],
@@ -46,6 +47,7 @@ function NoConfigMessage() {
     ['test_data/config_many_contigs.json', 'Many contigs'],
     ['test_data/config_honeybee.json', 'Honeybee'],
     ['test_data/config_wormbase.json', 'Wormbase'],
+    ['test_data/config_human_dotplot.json', 'Human dotplot'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (
@@ -185,13 +187,13 @@ const StartScreenErrorMessage = ({ error }: { error: unknown }) => {
         >
           No config.json found. If you want to learn how to complete your setup,
           visit our{' '}
-          <a href="https://jbrowse.org/jb2/docs/quickstarts/quickstart_web/">
+          <a href="https://jbrowse.org/jb2/docs/quickstart_web/">
             quick start guide
           </a>
           .
         </div>
       ) : (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ErrorMessage error={error} />
         </Suspense>
       )}
@@ -215,8 +217,8 @@ function ConfigTriaged({
           loader.setConfigSnapshot({ ...session, id: shortid() })
           handleClose()
         }}
-        onCancel={() => {
-          factoryReset()
+        onCancel={async () => {
+          await factoryReset()
           handleClose()
         }}
         reason={loader.sessionTriaged.reason}
@@ -371,7 +373,7 @@ const Renderer = observer(
     }
     if (pm) {
       return !pm.rootModel?.session ? (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <StartScreen rootModel={pm.rootModel} onFactoryReset={factoryReset} />
         </Suspense>
       ) : (

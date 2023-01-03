@@ -14,6 +14,7 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from '../util'
+import LoadingEllipses from './LoadingEllipses'
 import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
@@ -216,7 +217,7 @@ const DrawerWidget = observer(
     return (
       <Drawer session={session}>
         <DrawerHeader session={session} setToolbarHeight={setToolbarHeight} />
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <ErrorBoundary
             FallbackComponent={({ error }) => <ErrorMessage error={error} />}
           >

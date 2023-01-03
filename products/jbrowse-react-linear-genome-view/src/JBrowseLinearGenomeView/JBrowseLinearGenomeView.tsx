@@ -5,9 +5,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { CacheProvider } from '@emotion/react'
-import createCache from '@emotion/cache'
 
+// locals
 import ModalWidget from './ModalWidget'
 import ViewContainer from './ViewContainer'
 import { ViewModel } from '../createModel/createModel'
@@ -19,13 +18,6 @@ const useStyles = makeStyles()(() => ({
     all: 'initial',
   },
 }))
-
-// without this, the styles can become messed up especially in lgv header
-// xref https://github.com/garronej/tss-react/issues/25
-export const muiCache = createCache({
-  key: 'mui',
-  prepend: true,
-})
 
 const JBrowseLinearGenomeView = observer(
   ({ viewState }: { viewState: ViewModel }) => {
@@ -43,20 +35,18 @@ const JBrowseLinearGenomeView = observer(
     )
 
     return (
-      <CacheProvider value={muiCache}>
-        <ThemeProvider theme={theme}>
-          <div className={classes.avoidParentStyle}>
-            <ScopedCssBaseline>
-              <ViewContainer key={`view-${view.id}`} view={view}>
-                <Suspense fallback={<div>Loading...</div>}>
-                  <ReactComponent model={view} session={session} />
-                </Suspense>
-              </ViewContainer>
-              <ModalWidget session={session} />
-            </ScopedCssBaseline>
-          </div>
-        </ThemeProvider>
-      </CacheProvider>
+      <ThemeProvider theme={theme}>
+        <div className={classes.avoidParentStyle}>
+          <ScopedCssBaseline>
+            <ViewContainer key={`view-${view.id}`} view={view}>
+              <Suspense fallback={<div>Loading...</div>}>
+                <ReactComponent model={view} session={session} />
+              </Suspense>
+            </ViewContainer>
+            <ModalWidget session={session} />
+          </ScopedCssBaseline>
+        </div>
+      </ThemeProvider>
     )
   },
 )

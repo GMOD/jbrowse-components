@@ -9,6 +9,7 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'VcfTabixAdapter',
+        displayName: 'VCF tabix adapter',
         configSchema,
         getAdapterClass: () => import('./VcfTabixAdapter').then(r => r.default),
       }),

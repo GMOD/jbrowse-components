@@ -8,12 +8,10 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'IndexedFastaAdapter',
+        displayName: 'Indexed FASTA adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () =>
           import('./IndexedFastaAdapter').then(r => r.default),

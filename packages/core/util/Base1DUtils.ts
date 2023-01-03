@@ -40,11 +40,25 @@ export function moveTo(
   if (!start || !end) {
     return
   }
-  const { width, interRegionPaddingWidth } = self
+  const {
+    width,
+    interRegionPaddingWidth,
+    displayedRegions,
+    bpPerPx,
+    minimumBlockWidth,
+  } = self
 
   const len = lengthBetween(self, start, end)
-  const numBlocks = end.index - start.index
-  const targetBpPerPx = len / (width - interRegionPaddingWidth * numBlocks)
+  let numBlocksWideEnough = 0
+  for (let i = start.index; i < end.index; i++) {
+    const r = displayedRegions[i]
+    if ((r.end - r.start) / bpPerPx > minimumBlockWidth) {
+      numBlocksWideEnough++
+    }
+  }
+
+  const targetBpPerPx =
+    len / (width - interRegionPaddingWidth * numBlocksWideEnough)
   const newBpPerPx = self.zoomTo(targetBpPerPx)
 
   // If our target bpPerPx was smaller than the allowed minBpPerPx, adjust
@@ -141,7 +155,7 @@ export function pxToBp(
     }
   }
 
-  if (bp >= bpSoFar) {
+  if (bp >= bpSoFar && displayedRegions.length) {
     const region = displayedRegions[displayedRegions.length - 1]
     const len = region.end - region.start
     const offset = bp - bpSoFar + len

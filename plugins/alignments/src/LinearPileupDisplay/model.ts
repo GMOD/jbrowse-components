@@ -4,6 +4,7 @@ import { cast, types, addDisposer, Instance } from 'mobx-state-tree'
 import copy from 'copy-to-clipboard'
 import {
   AnyConfigurationModel,
+  AnyConfigurationSchemaType,
   ConfigurationReference,
   readConfObject,
   getConf,
@@ -32,14 +33,17 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
-import { LinearPileupDisplayConfigModel } from './configSchema'
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
+import {
+  getUniqueTagValues,
+  getUniqueModificationValues,
+  FilterModel,
+} from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 // async
+const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
 const ColorByTagDlg = lazy(() => import('./components/ColorByTag'))
-const FilterByTagDlg = lazy(() => import('./components/FilterByTag'))
 const SortByTagDlg = lazy(() => import('./components/SortByTag'))
 const SetFeatureHeightDlg = lazy(() => import('./components/SetFeatureHeight'))
 const SetMaxHeightDlg = lazy(() => import('./components/SetMaxHeight'))
@@ -55,8 +59,9 @@ type LGV = LinearGenomeViewModel
 
 /**
  * #stateModel LinearPileupDisplay
+ * extends `BaseLinearDisplay`
  */
-function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
+function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearPileupDisplay',
@@ -117,23 +122,18 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             extra: types.frozen(),
           }),
         ),
-        filterBy: types.optional(
-          types.model({
-            flagInclude: types.optional(types.number, 0),
-            flagExclude: types.optional(types.number, 1540),
-            readName: types.maybe(types.string),
-            tagFilter: types.maybe(
-              types.model({ tag: types.string, value: types.string }),
-            ),
-          }),
-          {},
-        ),
+
+        /**
+         * #property
+         */
+        filterBy: types.optional(FilterModel, {}),
       }),
     )
     .volatile(() => ({
       colorTagMap: observable.map<string, string>({}),
       modificationTagMap: observable.map<string, string>({}),
       featureUnderMouseVolatile: undefined as undefined | Feature,
+      currSortBpPerPx: 0,
       ready: false,
     }))
     .actions(self => ({
@@ -146,19 +146,25 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
       /**
        * #action
        */
+      setCurrSortBpPerPx(n: number) {
+        self.currSortBpPerPx = n
+      },
+      /**
+       * #action
+       */
       setMaxHeight(n: number) {
         self.trackMaxHeight = n
       },
       /**
        * #action
        */
-      setFeatureHeight(n: number) {
+      setFeatureHeight(n?: number) {
         self.featureHeight = n
       },
       /**
        * #action
        */
-      setNoSpacing(flag: boolean) {
+      setNoSpacing(flag?: boolean) {
         self.noSpacing = flag
       },
 
@@ -288,7 +294,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
                     ...self.renderProps(),
                   })
                   self.setReady(true)
-                  self.setCurrBpPerPx(bpPerPx)
+                  self.setCurrSortBpPerPx(bpPerPx)
                 } else {
                   self.setReady(true)
                 }
@@ -302,6 +308,8 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
         )
 
         // autorun synchronizes featureUnderMouse with featureIdUnderMouse
+        // asynchronously. this is needed due to how we do not serialize all
+        // features from the BAM/CRAM over the rpc
         addDisposer(
           self,
           autorun(async () => {
@@ -567,7 +575,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             colorBy,
             filterBy,
             rpcDriverName,
-            currBpPerPx,
+            currSortBpPerPx,
             ready,
           } = self
 
@@ -578,7 +586,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             notReady:
               superProps.notReady ||
               !ready ||
-              (sortedBy && currBpPerPx !== view.bpPerPx),
+              (sortedBy && currSortBpPerPx !== view.bpPerPx),
             rpcDriverName,
             displayModel: self,
             sortedBy,
@@ -707,39 +715,31 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
               subMenu: [
                 {
                   label: 'Normal',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'normal' })
-                  },
+                  onClick: () => self.setColorScheme({ type: 'normal' }),
                 },
                 {
                   label: 'Mapping quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'mappingQuality' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'mappingQuality' }),
                 },
                 {
                   label: 'Strand',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'strand' })
-                  },
+                  onClick: () => self.setColorScheme({ type: 'strand' }),
                 },
                 {
                   label: 'Pair orientation',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'pairOrientation' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'pairOrientation' }),
                 },
                 {
                   label: 'Per-base quality',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'perBaseQuality' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'perBaseQuality' }),
                 },
                 {
                   label: 'Per-base lettering',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'perBaseLettering' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'perBaseLettering' }),
                 },
                 {
                   label: 'Modifications or methylation',
@@ -752,15 +752,12 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
                 },
                 {
                   label: 'Insert size',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'insertSize' })
-                  },
+                  onClick: () => self.setColorScheme({ type: 'insertSize' }),
                 },
                 {
                   label: 'Stranded paired-end',
-                  onClick: () => {
-                    self.setColorScheme({ type: 'reverseTemplate' })
-                  },
+                  onClick: () =>
+                    self.setColorScheme({ type: 'reverseTemplate' }),
                 },
                 {
                   label: 'Color by tag...',
@@ -785,12 +782,31 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
             },
             {
               label: 'Set feature height',
-              onClick: () => {
-                getSession(self).queueDialog(doneCallback => [
-                  SetFeatureHeightDlg,
-                  { model: self, handleClose: doneCallback },
-                ])
-              },
+              subMenu: [
+                {
+                  label: 'Normal',
+                  onClick: () => {
+                    self.setFeatureHeight(7)
+                    self.setNoSpacing(false)
+                  },
+                },
+                {
+                  label: 'Compact',
+                  onClick: () => {
+                    self.setFeatureHeight(2)
+                    self.setNoSpacing(true)
+                  },
+                },
+                {
+                  label: 'Manually set height',
+                  onClick: () => {
+                    getSession(self).queueDialog(doneCallback => [
+                      SetFeatureHeightDlg,
+                      { model: self, handleClose: doneCallback },
+                    ])
+                  },
+                },
+              ],
             },
             {
               label: 'Set max height',
@@ -805,9 +821,7 @@ function stateModelFactory(configSchema: LinearPileupDisplayConfigModel) {
               label: 'Fade mismatches by quality',
               type: 'checkbox',
               checked: self.mismatchAlphaSetting,
-              onClick: () => {
-                self.toggleMismatchAlpha()
-              },
+              onClick: () => self.toggleMismatchAlpha(),
             },
           ]
         },

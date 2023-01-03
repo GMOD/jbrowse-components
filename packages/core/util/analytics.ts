@@ -133,7 +133,10 @@ export function doAnalytics(
     rootModel &&
     !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
   ) {
+    // ok if these are unhandled
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeGAAnalytics(rootModel, initialTimestamp)
   }
 }

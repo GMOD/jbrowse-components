@@ -1,10 +1,6 @@
 import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react'
 import { Fab, Menu, MenuItem } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-// icons
-import AddIcon from '@mui/icons-material/Add'
-// other
-import AutoSizer from 'react-virtualized-auto-sizer'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -13,6 +9,10 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { VariableSizeTree } from 'react-vtree'
+import AutoSizer from 'react-virtualized-auto-sizer'
+
+// icons
+import AddIcon from '@mui/icons-material/Add'
 
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
@@ -256,7 +256,7 @@ const HierarchicalTrackSelector = observer(
     const [headerHeight, setHeaderHeight] = useState(0)
 
     const { assemblyNames } = model
-    const assemblyName = assemblyNames[assemblyIdx]
+    const assemblyName = assemblyNames.length ? assemblyNames[assemblyIdx] : ''
     return assemblyName ? (
       <>
         <Header

@@ -5,8 +5,11 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
 
 extends `BaseDisplay`
 
@@ -18,11 +21,9 @@ refers to LinearPileupDisplay sub-display model
 
 ```js
 // type signature
-IMaybe<IAnyModelType>
+IMaybe<IAnyType>
 // code
-PileupDisplay: types.maybe(
-          pluginManager.getDisplayType('LinearPileupDisplay').stateModel,
-        )
+PileupDisplay: types.maybe(types.union(...lowerPanelDisplays))
 ```
 
 #### property: SNPCoverageDisplay
@@ -34,8 +35,8 @@ refers to LinearSNPCoverageDisplay sub-display model
 IMaybe<IAnyModelType>
 // code
 SNPCoverageDisplay: types.maybe(
-          pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
-        )
+      pluginManager.getDisplayType('LinearSNPCoverageDisplay').stateModel,
+    )
 ```
 
 #### property: snpCovHeight
@@ -74,24 +75,6 @@ number
 height: 250
 ```
 
-#### property: showCoverage
-
-```js
-// type signature
-true
-// code
-showCoverage: true
-```
-
-#### property: showPileup
-
-```js
-// type signature
-true
-// code
-showPileup: true
-```
-
 #### property: userFeatureScreenDensity
 
 ```js
@@ -101,9 +84,18 @@ IMaybe<ISimpleType<number>>
 userFeatureScreenDensity: types.maybe(types.number)
 ```
 
+#### property: lowerPanelType
+
+```js
+// type signature
+string
+// code
+lowerPanelType: 'LinearPileupDisplay'
+```
+
 ### LinearAlignmentsDisplay - Getters
 
-#### getter: pileupDisplayConfig
+#### getter: pileupConf
 
 ```js
 // type
@@ -131,21 +123,7 @@ any
 any
 ```
 
-#### getter: sortedByPosition
-
-```js
-// type
-any
-```
-
-#### getter: sortedByRefName
-
-```js
-// type
-any
-```
-
-#### getter: snpCoverageDisplayConfig
+#### getter: coverageConf
 
 ```js
 // type
@@ -177,20 +155,6 @@ trackMenuItems: () => MenuItem[]
 
 ### LinearAlignmentsDisplay - Actions
 
-#### action: toggleCoverage
-
-```js
-// type signature
-toggleCoverage: () => void
-```
-
-#### action: togglePileup
-
-```js
-// type signature
-togglePileup: () => void
-```
-
 #### action: setScrollTop
 
 ```js
@@ -209,28 +173,35 @@ setSNPCoverageHeight: (n: number) => void
 
 ```js
 // type signature
-setSNPCoverageDisplay: (displayConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
-#### action: setUserFeatureScreenDensity
+#### action: updateStatsLimit
 
 ```js
 // type signature
-setUserFeatureScreenDensity: (limit: number) => void
+updateStatsLimit: (stats: unknown) => void
 ```
 
 #### action: setPileupDisplay
 
 ```js
 // type signature
-setPileupDisplay: (displayConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
+setPileupDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>) => void
 ```
 
 #### action: setHeight
 
 ```js
 // type signature
-setHeight: (displayHeight: number) => number
+setHeight: (n: number) => number
+```
+
+#### action: setLowerPanelType
+
+```js
+// type signature
+setLowerPanelType: (type: string) => void
 ```
 
 #### action: resizeHeight

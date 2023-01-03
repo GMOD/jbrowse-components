@@ -5,8 +5,8 @@ import { FileLocation } from '@jbrowse/core/util/types'
 import {
   guessAdapter,
   guessTrackType,
-  UNSUPPORTED,
   getFileName,
+  UNSUPPORTED,
 } from '@jbrowse/core/util/tracks'
 
 function isAbsoluteUrl(url = '') {

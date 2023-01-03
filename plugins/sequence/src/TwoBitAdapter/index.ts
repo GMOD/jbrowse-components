@@ -8,12 +8,10 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'TwoBitAdapter',
+        displayName: 'TwoBit adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () => import('./TwoBitAdapter').then(r => r.default),
       }),

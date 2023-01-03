@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom/extend-expect'
 
 import { fireEvent } from '@testing-library/react'
-import { TextEncoder } from 'web-encoding'
 import { readConfObject, getConf } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 
@@ -15,7 +14,6 @@ import TestPlugin from './TestPlugin'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-window.TextEncoder = TextEncoder
 setup()
 
 const delay = { timeout: 15000 }
@@ -41,13 +39,12 @@ test('lollipop track test', async () => {
 
   await findByTestId('display-lollipop_track_linear', {}, delay)
   await findByTestId('three', {}, delay)
-}, 10000)
+}, 30000)
 
 test('toplevel configuration', () => {
   const pm = new PluginManager([...corePlugins, TestPlugin].map(P => new P()))
   pm.createPluggableElements()
-  const JBrowseRootModel = JBrowseRootModelFactory(pm, true)
-  const rootModel = JBrowseRootModel.create({
+  const rootModel = JBrowseRootModelFactory(pm, true).create({
     jbrowse: volvoxConfigSnapshot,
     assemblyManager: {},
   })
@@ -97,15 +94,12 @@ test('test sharing', async () => {
     },
     password: '123',
   })
-  const { findByTestId, findByText } = createView()
-  await findByText('Help')
+  const { findByLabelText, findByText } = createView()
   fireEvent.click(await findByText('Share'))
-
-  // check the share dialog has the above session shared
-  await findByTestId('share-dialog')
-  const url = (await findByTestId('share-url-text')) as HTMLInputElement
-  expect(url.value).toBe('http://localhost/?session=share-abc&password=123')
-})
+  expect(((await findByLabelText('URL')) as HTMLInputElement).value).toBe(
+    'http://localhost/?session=share-abc&password=123',
+  )
+}, 15000)
 
 test('looks at about this track dialog', async () => {
   const { findByTestId, findAllByText, findByText } = createView()

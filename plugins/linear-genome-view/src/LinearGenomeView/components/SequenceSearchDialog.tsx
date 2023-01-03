@@ -2,36 +2,24 @@ import React, { useState } from 'react'
 import {
   Button,
   Checkbox,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  Divider,
   FormGroup,
   FormControlLabel,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { getSnapshot } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 
-// icons
-import CloseIcon from '@mui/icons-material/Close'
-
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   dialogContent: {
     width: '40em',
   },
-}))
+})
 
 function SequenceDialog({
   model,
@@ -55,21 +43,7 @@ function SequenceDialog({
   }
 
   return (
-    <Dialog maxWidth="xl" open onClose={handleClose}>
-      <DialogTitle>
-        Sequence search
-        {handleClose ? (
-          <IconButton
-            className={classes.closeButton}
-            onClick={() => handleClose()}
-            size="large"
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
-
+    <Dialog maxWidth="xl" open onClose={handleClose} title="Sequence search">
       <DialogContent className={classes.dialogContent}>
         <Typography>
           Supply a sequence to search for. A track will be created with the

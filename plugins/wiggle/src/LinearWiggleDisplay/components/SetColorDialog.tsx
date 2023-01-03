@@ -2,27 +2,14 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import {
   Button,
-  Dialog,
   DialogContent,
   DialogActions,
-  DialogTitle,
   FormControlLabel,
-  IconButton,
   Radio,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
+import { Dialog } from '@jbrowse/core/ui'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
-
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
 
 function SetColorDialog({
   model,
@@ -38,23 +25,16 @@ function SetColorDialog({
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const [posneg, setPosNeg] = useState(false)
 
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Select either an overall color, or the positive/negative colors. Note
-        that density renderers only work properly with positive/negative colors
-        <IconButton
-          aria-label="close"
-          className={classes.closeButton}
-          onClick={handleClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Set color">
       <DialogContent>
+        <Typography>
+          Select either an overall color, or the positive/negative colors. Note
+          that density renderers only work properly with positive/negative
+          colors
+        </Typography>
         <FormControlLabel
           checked={!posneg}
           onClick={() => setPosNeg(false)}

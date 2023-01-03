@@ -43,22 +43,13 @@ export async function watchWorker(
   rpcDriverClassName: string,
 ) {
   // after first ping succeeds, apply wait for timeout
-  return new Promise((_resolve, reject) => {
-    function delay() {
-      setTimeout(async () => {
-        try {
-          await worker.call('ping', [], {
-            timeout: pingTime * 2,
-            rpcDriverClassName,
-          })
-          delay()
-        } catch (e) {
-          reject(e)
-        }
-      }, pingTime)
-    }
-    delay()
-  })
+  while (true) {
+    await worker.call('ping', [], {
+      timeout: pingTime * 2,
+      rpcDriverClassName,
+    })
+    await new Promise(resolve => setTimeout(resolve, pingTime))
+  }
 }
 
 function detectHardwareConcurrency() {
@@ -162,7 +153,7 @@ export default abstract class BaseRpcDriver {
 
   async remoteAbort(sessionId: string, functionName: string, signalId: number) {
     const worker = await this.getWorker(sessionId)
-    worker.call(
+    await worker.call(
       functionName,
       { signalId },
       { timeout: 1000000, rpcDriverClassName: this.name },

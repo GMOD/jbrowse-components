@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export const configSchema = ConfigurationSchema(
+const configSchema = ConfigurationSchema(
   'FromConfigAdapter',
   {
     /**
@@ -15,13 +15,8 @@ export const configSchema = ConfigurationSchema(
       type: 'frozen',
       defaultValue: [],
     },
-    /**
-     * #slot
-     */
-    featureClass: {
-      type: 'string',
-      defaultValue: 'SimpleFeature',
-    },
   },
   { explicitlyTyped: true, implicitIdentifier: 'adapterId' },
 )
+
+export default configSchema

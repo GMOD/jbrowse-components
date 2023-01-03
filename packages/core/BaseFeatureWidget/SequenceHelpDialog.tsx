@@ -1,52 +1,23 @@
 import React from 'react'
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Divider,
-  IconButton,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 
 // icons
-import CloseIcon from '@mui/icons-material/Close'
 import SettingsIcon from '@mui/icons-material/Settings'
-
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-  dialogContent: {},
-}))
 
 export default function HelpDialog({
   handleClose,
 }: {
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   return (
-    <Dialog maxWidth="xl" open onClose={() => handleClose()}>
-      <DialogTitle>
-        Feature sequence panel
-        {handleClose ? (
-          <IconButton
-            className={classes.closeButton}
-            onClick={() => handleClose()}
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
-
-      <DialogContent className={classes.dialogContent}>
+    <Dialog
+      maxWidth="xl"
+      open
+      onClose={() => handleClose()}
+      title="Feature sequence panel help"
+    >
+      <DialogContent>
         <Typography paragraph>
           The "Feature sequence" panel shows the underlying genomic sequence for
           a given feature, fetched from the reference genome.

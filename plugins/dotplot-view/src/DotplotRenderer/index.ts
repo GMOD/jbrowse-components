@@ -1,7 +1,7 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import ReactComponent from './components/DotplotRendering'
-import configSchema from './configSchema'
 import DotplotRenderer from './DotplotRenderer'
+import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addRendererType(

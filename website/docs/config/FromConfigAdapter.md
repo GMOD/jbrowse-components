@@ -4,8 +4,8 @@ title: FromConfigAdapter
 toplevel: true
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
@@ -17,14 +17,5 @@ our source code. See [Config guide](/docs/config_guide) for more info
 features: {
       type: 'frozen',
       defaultValue: [],
-    }
-```
-
-#### slot: featureClass
-
-```js
-featureClass: {
-      type: 'string',
-      defaultValue: 'SimpleFeature',
     }
 ```

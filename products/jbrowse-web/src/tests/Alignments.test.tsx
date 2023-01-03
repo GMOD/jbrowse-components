@@ -17,24 +17,25 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 20000 }
+const opts = [{}, delay]
 
 test('opens an alignments track', async () => {
   const { view, findByTestId, findByText, findAllByTestId } = createView()
   await findByText('Help')
   view.setNewView(5, 100)
   fireEvent.click(
-    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
   const { findByTestId: f1 } = within(
-    await findByTestId('Blockset-pileup', {}, delay),
+    await findByTestId('Blockset-pileup', ...opts),
   )
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:1..4,000-0'), {}, delay))
+  expectCanvasMatch(await f1(pc('{volvox}ctgA:1..4000-0'), ...opts))
 
   const { findByTestId: f2 } = within(
-    await findByTestId('Blockset-snpcoverage', {}, delay),
+    await findByTestId('Blockset-snpcoverage', ...opts),
   )
-  expectCanvasMatch(await f2(pc('{volvox}ctgA:1..4,000-0'), {}, delay))
+  expectCanvasMatch(await f2(pc('{volvox}ctgA:1..4000-0'), ...opts))
 
   const track = await findAllByTestId('pileup_overlay_canvas')
   fireEvent.mouseMove(track[0], { clientX: 200, clientY: 20 })
@@ -45,29 +46,27 @@ test('opens an alignments track', async () => {
   fireEvent.mouseMove(track[0], { clientX: -100, clientY: -100 })
 
   // this is to confirm a alignment detail widget opened
-  await findByTestId('alignment-side-drawer')
+  await findByTestId('alignment-side-drawer', ...opts)
 }, 20000)
 
 test('test that bam with small max height displays message', async () => {
   const { findByTestId, findAllByText } = createView()
   fireEvent.click(
-    await findByTestId(hts('volvox_bam_small_max_height'), {}, delay),
+    await findByTestId(hts('volvox_bam_small_max_height'), ...opts),
   )
 
-  await findAllByText('Max height reached', {}, delay)
+  await findAllByText('Max height reached', ...opts)
 }, 30000)
 
 test('test snpcoverage doesnt count snpcoverage', async () => {
   const { view, findByTestId, findByText } = createView()
   await findByText('Help')
   view.setNewView(0.03932, 67884.16536402702)
-  fireEvent.click(
-    await findByTestId(hts('volvox-long-reads-sv-cram'), {}, delay),
-  )
+  fireEvent.click(await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts))
   const { findByTestId: f1 } = within(
-    await findByTestId('Blockset-snpcoverage', {}, delay),
+    await findByTestId('Blockset-snpcoverage', ...opts),
   )
 
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:2,657..2,688-0'), {}, delay))
-  expectCanvasMatch(await f1(pc('{volvox}ctgA:2,689..2,720-0'), {}, delay))
+  expectCanvasMatch(await f1(pc('{volvox}ctgA:2657..2688-0'), ...opts))
+  expectCanvasMatch(await f1(pc('{volvox}ctgA:2689..2720-0'), ...opts))
 }, 30000)

@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/react-circular-genome-view",
-  "version": "2.1.7",
+  "version": "2.3.2",
   "description": "JBrowse 2 circular genome view React component",
   "keywords": [
     "jbrowse",
@@ -24,10 +24,9 @@
     "docs"
   ],
   "scripts": {
-    "start:umd": "cross-env NODE_ENV=development webpack-dev-server",
     "prebuild": "npm run clean",
     "build": "npm-run-all build:*",
-    "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m 'Bump version.js'",
+    "prepublishOnly": "node output-version.js > src/version.js && git add -A src && git commit -m '[skip ci] Bump version.js'",
     "prepack": "npm run build",
     "build:esm": "tsc -b tsconfig.build.esm.json",
     "build:es5": "tsc -b tsconfig.build.es5.json",
@@ -43,22 +42,23 @@
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
-    "@jbrowse/core": "^2.1.7",
-    "@jbrowse/plugin-circular-view": "^2.1.7",
-    "@jbrowse/plugin-config": "^2.1.7",
-    "@jbrowse/plugin-data-management": "^2.1.7",
-    "@jbrowse/plugin-sequence": "^2.1.7",
-    "@jbrowse/plugin-variants": "^2.1.7",
-    "@jbrowse/plugin-wiggle": "^2.1.7",
+    "@jbrowse/core": "^2.3.2",
+    "@jbrowse/plugin-authentication": "^2.3.2",
+    "@jbrowse/plugin-circular-view": "^2.3.2",
+    "@jbrowse/plugin-config": "^2.3.2",
+    "@jbrowse/plugin-data-management": "^2.3.2",
+    "@jbrowse/plugin-sequence": "^2.3.2",
+    "@jbrowse/plugin-variants": "^2.3.2",
+    "@jbrowse/plugin-wiggle": "^2.3.2",
     "@mui/icons-material": "^5.0.0",
-    "@mui/material": "^5.0.0",
+    "@mui/material": "^5.10.17",
     "mobx": "^6.6.0",
     "mobx-react": "^7.5.0",
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react-use-measure": "^2.1.1",
     "rxjs": "^6.0.0",
-    "tss-react": "^3.7.0"
+    "tss-react": "^4.4.1"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

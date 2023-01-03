@@ -91,8 +91,8 @@ jobs:
           aws-region: us-east-1
       - name: Copy branch build to S3
         run: |
-          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
           cd products/jbrowse-web/build && zip -r "jbrowse-web-$(echo ${{github.ref}} | cut -d '/' -f3-).zip" . && cd -
+          cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
           aws s3 sync --delete products/jbrowse-web/build s3://jbrowse.org/code/jb2/$(echo ${{github.ref}} | cut -d "/" -f3-)
   storybook_lgv:
     name: Build and deploy static linear genome view Storybook site to AWS S3

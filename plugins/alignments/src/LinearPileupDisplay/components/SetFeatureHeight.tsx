@@ -3,37 +3,23 @@ import { observer } from 'mobx-react'
 import {
   Button,
   Checkbox,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   FormControlLabel,
-  IconButton,
   TextField,
   Typography,
 } from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
-
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
+import { Dialog } from '@jbrowse/core/ui'
 
 function SetFeatureHeightDlg(props: {
   model: {
-    setFeatureHeight: Function
-    setNoSpacing: Function
+    setFeatureHeight: (arg?: number) => void
+    setNoSpacing: (arg?: boolean) => void
     featureHeightSetting: number
     noSpacing?: boolean
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
   const { model, handleClose } = props
   const { featureHeightSetting, noSpacing: noSpacingSetting } = model
   const [height, setHeight] = useState(`${featureHeightSetting}`)
@@ -42,13 +28,7 @@ function SetFeatureHeightDlg(props: {
   const ok = height !== '' && !Number.isNaN(+height)
 
   return (
-    <Dialog open onClose={handleClose}>
-      <DialogTitle>
-        Set feature height
-        <IconButton className={classes.closeButton} onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title="Set feature height">
       <DialogContent>
         <Typography>
           Adjust the feature height and whether there is any spacing between
@@ -58,9 +38,7 @@ function SetFeatureHeightDlg(props: {
         <TextField
           value={height}
           helperText="Feature height"
-          onChange={event => {
-            setHeight(event.target.value)
-          }}
+          onChange={event => setHeight(event.target.value)}
         />
         <FormControlLabel
           control={

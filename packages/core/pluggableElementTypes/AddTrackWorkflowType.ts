@@ -7,18 +7,18 @@ type BasicComponent = React.ComponentType<{
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   model: any
 }>
-type AddTrackWorkflowComponent =
+type AddTrackWorkflowComponentType =
   | React.LazyExoticComponent<BasicComponent>
   | BasicComponent
 
 export default class AddTrackWorkflow extends PluggableElementBase {
-  ReactComponent: AddTrackWorkflowComponent
+  ReactComponent: AddTrackWorkflowComponentType
 
   stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
-    ReactComponent: AddTrackWorkflowComponent
+    ReactComponent: AddTrackWorkflowComponentType
     stateModel: IAnyModelType
   }) {
     super(stuff)

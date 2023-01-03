@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -7,7 +7,7 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 
 // locals
 import { LinearComparativeViewModel } from '../model'
-import RubberBand from './RubberBand'
+import Rubberband from './Rubberband'
 import Header from './Header'
 
 const useStyles = makeStyles()(() => ({
@@ -71,13 +71,24 @@ const MiddleComparativeView = observer(
     const { views } = model
     const { pluginManager } = getEnv(model)
     const { ReactComponent } = pluginManager.getViewType(views[0].type)
+    const [rubberbandMouseOver, setRubberbandMouseOver] = useState(false)
 
     return (
       <div className={classes.rubberbandContainer}>
         <Header ExtraButtons={ExtraButtons} model={model} />
-        <RubberBand
+        <Rubberband
           model={model}
-          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
+          ControlComponent={
+            <div
+              style={{
+                width: '100%',
+                background: rubberbandMouseOver ? '#999' : '#ccc',
+                height: 15,
+              }}
+              onMouseOver={() => setRubberbandMouseOver(true)}
+              onMouseLeave={() => setRubberbandMouseOver(false)}
+            />
+          }
         />
         <div className={classes.container}>
           <ReactComponent model={views[0]} />
@@ -106,12 +117,23 @@ const OverlayComparativeView = observer(
     const { classes } = useStyles()
     const { views } = model
     const { pluginManager } = getEnv(model)
+    const [rubberbandMouseOver, setRubberbandMouseOver] = useState(false)
     return (
       <div className={classes.rubberbandContainer}>
         <Header model={model} ExtraButtons={ExtraButtons} />
-        <RubberBand
+        <Rubberband
           model={model}
-          ControlComponent={<div style={{ width: '100%', height: 15 }} />}
+          ControlComponent={
+            <div
+              style={{
+                width: '100%',
+                background: rubberbandMouseOver ? '#aaa' : '#ccc',
+                height: 15,
+              }}
+              onMouseOver={() => setRubberbandMouseOver(true)}
+              onMouseLeave={() => setRubberbandMouseOver(false)}
+            />
+          }
         />
 
         <div className={classes.container}>
@@ -133,6 +155,7 @@ const OverlayComparativeView = observer(
 const LinearComparativeView = observer(
   (props: { ExtraButtons?: React.ReactNode; model: LCV }) => {
     const { model } = props
+
     const middle = model.tracks.some(({ displays }) =>
       displays.some((d: AnyConfigurationModel) => getConf(d, 'middle')),
     )

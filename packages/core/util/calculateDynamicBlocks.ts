@@ -1,6 +1,6 @@
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
 import { intersection2 } from './range'
-import { assembleLocString } from '.'
+import { assembleLocStringFast } from '.'
 import {
   BlockSet,
   ContentBlock,
@@ -113,7 +113,7 @@ export default function calculateDynamicBlocks(
         isRightEndOfDisplayedRegion,
         key: '',
       }
-      blockData.key = `${assembleLocString(blockData)}-${regionNumber}${
+      blockData.key = `${assembleLocStringFast(blockData)}-${regionNumber}${
         reversed ? '-reversed' : ''
       }`
 

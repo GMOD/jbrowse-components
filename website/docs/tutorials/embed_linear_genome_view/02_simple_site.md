@@ -5,11 +5,11 @@ title: Beginnings of a simple site
 
 ## Create a simple web page
 
-Let's get started! The first thing we're going to do is create a simple web
-page into which we can embed JBrowse Linear Genome View. First, create a folder
-to the files in. Inside that folder, create a new file called "index.html" and
-open it in your preferred text editor/IDE. Paste the following into the file
-and save it:
+Let's get started! The first thing we're going to do is create a simple web page
+into which we can embed JBrowse Linear Genome View. First, create a folder to
+the files in. Inside that folder, create a new file called "index.html" and open
+it in your preferred text editor/IDE. Paste the following into the file and save
+it:
 
 ```html title="index.html"
 <html>
@@ -46,10 +46,10 @@ way to adding JBrowse Linear Genome View to a web site!
 
 To add JBrowse Linear Genome View, you need to add the source to your page and
 then render the component. Since JBrowse Linear Genome View uses React for
-rendering, you'll also need to load the React source, too. We'll start by
-adding a `head` to our page and use it to load the sources and a `div` that
-will hold JBrowse. Update your "index.html" so matches what's below, then save
-it, switch over to your browser, and refresh the page.
+rendering, you'll also need to load the React source, too. We'll start by adding
+a `head` to our page and use it to load the sources and a `div` that will hold
+JBrowse. Update your "index.html" so matches what's below, then save it, switch
+over to your browser, and refresh the page.
 
 ```html {2-16,19} title="index.html"
 <html>
@@ -77,11 +77,10 @@ it, switch over to your browser, and refresh the page.
 
 Now we can check if the script loaded properly. In your browser, open the
 developer tools (You can use <kbd>F12</kbd> or
-<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> or right-click the page and
-select "Inspect") and go to the "Network" tab. If you see something like the
-below with a status of 200 for "react-linear-genome-view.umd.development.js,"
-"react-dom.development.js," and "react.development.js," then you are good to
-go!
+<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> or right-click the page and select
+"Inspect") and go to the "Network" tab. If you see something like the below with
+a status of 200 for "react-linear-genome-view.umd.development.js,"
+"react-dom.development.js," and "react.development.js," then you are good to go!
 
 ![Network tab of developer tools showing that scripts have loaded correctly](./img/network_success.png)
 

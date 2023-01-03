@@ -16,6 +16,7 @@ import SpreadsheetStateModel from '../models/Spreadsheet'
 import RowStateModel from '../models/Row'
 import ColumnMenu from './ColumnMenu'
 import RowMenu from './RowMenu'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 
 type SpreadsheetModel = Instance<typeof SpreadsheetStateModel>
 type RowModel = Instance<typeof RowStateModel>
@@ -418,7 +419,7 @@ const Spreadsheet = observer(
         {model?.rowSet?.isLoaded && model.initialized ? (
           <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
         ) : (
-          <div>Loading...</div>
+          <LoadingEllipses variant="h4" />
         )}
       </div>
     )

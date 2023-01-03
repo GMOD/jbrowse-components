@@ -3,9 +3,12 @@ import { Paper } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
+import { ErrorBoundary } from 'react-error-boundary'
+
+// jbrowse core
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getConf } from '@jbrowse/core/configuration'
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { ResizeHandle, ErrorMessage } from '@jbrowse/core/ui'
 import { useDebouncedCallback } from '@jbrowse/core/util'
 
 // locals
@@ -34,7 +37,7 @@ const useStyles = makeStyles()({
     zIndex: 3,
   },
 
-  // aligns with block bounderies. check for example the breakpoint split view
+  // aligns with block boundaries. check for example the breakpoint split view
   // demo to see if features align if wanting to change things
   renderingComponentContainer: {
     position: 'absolute',
@@ -92,6 +95,7 @@ function TrackContainer({
   const trackId = getConf(track, 'trackId')
   const ref = useRef(null)
   const dimmed = draggingTrackId !== undefined && draggingTrackId !== display.id
+  const minimized = track.minimized
   const debouncedOnDragEnter = useDebouncedCallback(() => {
     if (isAlive(display) && dimmed) {
       moveTrack(draggingTrackId, track.id)
@@ -109,36 +113,45 @@ function TrackContainer({
   return (
     <Paper className={classes.root} variant="outlined">
       <TrackContainerLabel model={track} view={model} />
-      <div
-        className={classes.trackRenderingContainer}
-        style={{ height }}
-        onScroll={event => display.setScrollTop(event.currentTarget.scrollTop)}
-        onDragEnter={debouncedOnDragEnter}
-        data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
+      <ErrorBoundary
+        key={track.id}
+        FallbackComponent={({ error }) => <ErrorMessage error={error} />}
       >
         <div
-          ref={ref}
-          className={classes.renderingComponentContainer}
-          style={{ transform: `scaleX(${model.scaleFactor})` }}
+          className={classes.trackRenderingContainer}
+          style={{ height: minimized ? 20 : height }}
+          onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
+          onDragEnter={debouncedOnDragEnter}
+          data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
         >
-          <RenderingComponent
-            model={display}
-            onHorizontalScroll={horizontalScroll}
-          />
-        </div>
+          {!minimized ? (
+            <>
+              <div
+                ref={ref}
+                className={classes.renderingComponentContainer}
+                style={{ transform: `scaleX(${model.scaleFactor})` }}
+              >
+                <RenderingComponent
+                  model={display}
+                  onHorizontalScroll={horizontalScroll}
+                />
+              </div>
 
-        {DisplayBlurb ? (
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: display.height - 20,
-            }}
-          >
-            <DisplayBlurb model={display} />
-          </div>
-        ) : null}
-      </div>
+              {DisplayBlurb ? (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: display.height - 20,
+                  }}
+                >
+                  <DisplayBlurb model={display} />
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </ErrorBoundary>
       <div
         className={classes.overlay}
         style={{

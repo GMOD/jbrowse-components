@@ -89,8 +89,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
     const palette = readConfObject(config, 'thresholdsPalette')
     const isCallback = config.color.isCallback
     const [hview, vview] = views
-    const db1 = hview.dynamicBlocks.contentBlocks[0].offsetPx
-    const db2 = vview.dynamicBlocks.contentBlocks[0].offsetPx
+    const db1 = hview.dynamicBlocks.contentBlocks[0]?.offsetPx
+    const db2 = vview.dynamicBlocks.contentBlocks[0]?.offsetPx
     const warnings = [] as { message: string; effect: string }[]
     ctx.lineWidth = lineWidth
 
@@ -224,9 +224,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
         } else {
           let currX = b1
           let currY = e1
-          const cigar = feature.get('cg') || feature.get('CIGAR')
-          const flipInsDel = feature.get('flipInsDel')
-
+          const cigar = feature.get('CIGAR')
           if (drawCigar && cigar) {
             const cigarOps = parseCigar(cigar)
 
@@ -240,17 +238,9 @@ export default class DotplotRenderer extends ComparativeRenderer {
                 currX += (val / hBpPerPx) * strand
                 currY += val / vBpPerPx
               } else if (op === 'D' || op === 'N') {
-                if (flipInsDel) {
-                  currY += val / vBpPerPx
-                } else {
-                  currX += (val / hBpPerPx) * strand
-                }
+                currX += (val / hBpPerPx) * strand
               } else if (op === 'I') {
-                if (flipInsDel) {
-                  currX += (val / hBpPerPx) * strand
-                } else {
-                  currY += val / vBpPerPx
-                }
+                currY += val / vBpPerPx
               }
               currX = clampWithWarnX(currX, b1, b2, feature)
               currY = clampWithWarnY(currY, e1, e2, feature)

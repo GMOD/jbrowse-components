@@ -27,7 +27,7 @@ LOCAL_CHANGES=$(git status --short)
 yarn
 
 # make sure the tests are passing
-yarn test --runInBand
+yarn test
 
 # Get the version before release from lerna.json
 PREVIOUS_VERSION=$(node --print "const lernaJson = require('./lerna.json'); lernaJson.version")

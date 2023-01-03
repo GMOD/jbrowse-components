@@ -5,8 +5,11 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
 
 ### DotplotView - Properties
 
@@ -140,7 +143,7 @@ cursorMode: 'crosshair'
 
 ```js
 // type signature
-IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: ITypeUnion<any, any, any>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+IArrayType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; configuration: ITypeUnion<any, any, any>; minimized: IType<...>; displays: IArrayType<...>; }, { ...; } & ... 1 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 tracks: types.array(
           pm.pluggableMstType('track', 'stateModel') as BaseTrackStateModel,
@@ -149,9 +152,8 @@ tracks: types.array(
 
 #### property: viewTrackConfigs
 
-this represents tracks specific to this view specifically used
-for read vs ref dotplots where this track would not really apply
-elsewhere
+this represents tracks specific to this view specifically used for read vs ref
+dotplots where this track would not really apply elsewhere
 
 ```js
 // type signature
@@ -317,7 +319,8 @@ setError: (e: unknown) => void
 
 #### action: closeView
 
-removes the view itself from the state tree entirely by calling the parent removeView
+removes the view itself from the state tree entirely by calling the parent
+removeView
 
 ```js
 // type signature

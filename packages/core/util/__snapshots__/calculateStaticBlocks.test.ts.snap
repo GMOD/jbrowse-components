@@ -2,7 +2,7 @@
 
 exports[`block calculation can calculate some blocks 1 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
@@ -23,7 +23,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgA:1..800-0",
       "offsetPx": 0,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -41,9 +41,9 @@ BlockSet {
       "end": 1600,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:801..1,600-0",
+      "key": "{test}ctgA:801..1600-0",
       "offsetPx": 800,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -62,7 +62,7 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 2 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
@@ -83,7 +83,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgA:1..100-0",
       "offsetPx": 0,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 100,
         "refName": "ctgA",
@@ -116,7 +116,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgB:101..200-1",
       "offsetPx": 102,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 200,
         "refName": "ctgB",
@@ -148,15 +148,15 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 5 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     ContentBlock {
       "assemblyName": "test",
       "end": 5600,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:4,801..5,600-0",
+      "key": "{test}ctgA:4801..5600-0",
       "offsetPx": 4800,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -174,9 +174,9 @@ BlockSet {
       "end": 6400,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:5,601..6,400-0",
+      "key": "{test}ctgA:5601..6400-0",
       "offsetPx": 5600,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -195,7 +195,7 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 6 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
@@ -216,7 +216,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgA:1..200-0",
       "offsetPx": 0,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 200,
         "refName": "ctgA",
@@ -249,7 +249,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:1..800-1",
       "offsetPx": 202,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 1000,
         "refName": "ctgB",
@@ -268,7 +268,7 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 7 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     ContentBlock {
       "assemblyName": "test",
       "end": 800,
@@ -276,7 +276,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": false,
       "key": "{test}ctgB:1..800-1",
       "offsetPx": 200,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 1000,
         "refName": "ctgB",
@@ -294,9 +294,9 @@ BlockSet {
       "end": 1000,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": true,
-      "key": "{test}ctgB:801..1,000-1",
+      "key": "{test}ctgB:801..1000-1",
       "offsetPx": 1000,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 1000,
         "refName": "ctgB",
@@ -313,7 +313,7 @@ BlockSet {
       "assemblyName": undefined,
       "end": undefined,
       "isLeftEndOfDisplayedRegion": undefined,
-      "key": "{test}ctgB:801..1,000-1-afterLastRegion",
+      "key": "{test}ctgB:801..1000-1-afterLastRegion",
       "offsetPx": 1200,
       "refName": undefined,
       "regionNumber": undefined,
@@ -328,15 +328,15 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 8 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     ContentBlock {
       "assemblyName": "test",
       "end": 1600,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgB:801..1,600-1",
+      "key": "{test}ctgB:801..1600-1",
       "offsetPx": 1000,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000000,
         "refName": "ctgB",
@@ -354,9 +354,9 @@ BlockSet {
       "end": 2400,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgB:1,601..2,400-1",
+      "key": "{test}ctgB:1601..2400-1",
       "offsetPx": 1800,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000000,
         "refName": "ctgB",
@@ -375,15 +375,15 @@ BlockSet {
 
 exports[`block calculation can calculate some blocks 9 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     ContentBlock {
       "assemblyName": "test",
       "end": 3200,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:1,601..3,200-0",
+      "key": "{test}ctgA:1601..3200-0",
       "offsetPx": 800,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 50000,
         "refName": "ctgA",
@@ -401,9 +401,9 @@ BlockSet {
       "end": 4800,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:3,201..4,800-0",
+      "key": "{test}ctgA:3201..4800-0",
       "offsetPx": 1600,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 50000,
         "refName": "ctgA",
@@ -421,7 +421,7 @@ BlockSet {
 `;
 
 exports[`block calculation can calculate some blocks 10 1`] = `
-Array [
+[
   InterRegionPaddingBlock {
     "assemblyName": undefined,
     "end": undefined,
@@ -442,7 +442,7 @@ Array [
     "isRightEndOfDisplayedRegion": false,
     "key": "{test}ctgA:101..140-0",
     "offsetPx": 0,
-    "parentRegion": Object {
+    "parentRegion": {
       "assemblyName": "test",
       "end": 200,
       "refName": "ctgA",
@@ -462,7 +462,7 @@ Array [
     "isRightEndOfDisplayedRegion": false,
     "key": "{test}ctgA:141..180-0",
     "offsetPx": 800,
-    "parentRegion": Object {
+    "parentRegion": {
       "assemblyName": "test",
       "end": 200,
       "refName": "ctgA",
@@ -480,12 +480,12 @@ Array [
 
 exports[`reverse block calculation 1 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
       "isLeftEndOfDisplayedRegion": undefined,
-      "key": "{test}ctgA:9,201..10,000[rev]-0-reversed-beforeFirstRegion",
+      "key": "{test}ctgA:9201..10000[rev]-0-reversed-beforeFirstRegion",
       "offsetPx": -800,
       "refName": undefined,
       "regionNumber": undefined,
@@ -499,9 +499,9 @@ BlockSet {
       "end": 10000,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:9,201..10,000[rev]-0-reversed",
+      "key": "{test}ctgA:9201..10000[rev]-0-reversed",
       "offsetPx": 0,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -520,9 +520,9 @@ BlockSet {
       "end": 9200,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:8,401..9,200[rev]-0-reversed",
+      "key": "{test}ctgA:8401..9200[rev]-0-reversed",
       "offsetPx": 800,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -542,7 +542,7 @@ BlockSet {
 
 exports[`reversed displayed regions with elided region 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
@@ -564,7 +564,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgA:1[rev]-0-reversed",
       "offsetPx": 0,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 1,
         "refName": "ctgA",
@@ -583,9 +583,9 @@ BlockSet {
       "end": 10000,
       "isLeftEndOfDisplayedRegion": true,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:9,201..10,000[rev]-1-reversed",
+      "key": "{test}ctgA:9201..10000[rev]-1-reversed",
       "offsetPx": 1,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -604,9 +604,9 @@ BlockSet {
       "end": 9200,
       "isLeftEndOfDisplayedRegion": false,
       "isRightEndOfDisplayedRegion": false,
-      "key": "{test}ctgA:8,401..9,200[rev]-1-reversed",
+      "key": "{test}ctgA:8401..9200[rev]-1-reversed",
       "offsetPx": 801,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 10000,
         "refName": "ctgA",
@@ -626,7 +626,7 @@ BlockSet {
 
 exports[`reversed displayed regions without elided region 1`] = `
 BlockSet {
-  "blocks": Array [
+  "blocks": [
     InterRegionPaddingBlock {
       "assemblyName": undefined,
       "end": undefined,
@@ -647,7 +647,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgA:101..200[rev]-0-reversed",
       "offsetPx": 0,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 200,
         "refName": "ctgA",
@@ -681,7 +681,7 @@ BlockSet {
       "isRightEndOfDisplayedRegion": true,
       "key": "{test}ctgA:501..600[rev]-1-reversed",
       "offsetPx": 102,
-      "parentRegion": Object {
+      "parentRegion": {
         "assemblyName": "test",
         "end": 600,
         "refName": "ctgA",

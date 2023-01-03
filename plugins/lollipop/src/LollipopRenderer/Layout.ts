@@ -73,13 +73,13 @@ export class FloatingLayout {
 
       // figure out how far down to put it
       for (let j = 0; j < i; j += 1) {
-        const [, previouslyLayedOutItem] = layoutEntries[j]
+        const [, previouslyLaidOutItem] = layoutEntries[j]
         const {
           x: prevStart,
           y: prevTop,
           width: prevWidth,
           height: prevHeight,
-        } = previouslyLayedOutItem
+        } = previouslyLaidOutItem
         const prevEnd = prevStart + prevWidth
         const prevBottom = prevTop + prevHeight
         if (

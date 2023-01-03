@@ -32,6 +32,7 @@ const Loader = observer(() => {
   )
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       if (config) {
         try {

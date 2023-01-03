@@ -1,0 +1,57 @@
+{
+  "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    }
+  },
+  "assemblies": [
+    {
+      "name": "grape",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grape-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "grape.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "peach",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "peach-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "peach.chrom.sizes",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "subset",
+      "name": "subset",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "subset.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["peach", "grape"]
+      },
+      "assemblyNames": ["peach", "grape"]
+    }
+  ]
+}

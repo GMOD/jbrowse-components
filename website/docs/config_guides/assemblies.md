@@ -73,8 +73,9 @@ The refNameAliases in the above config provides this functionality:
 }
 ```
 
-The hg19_aliases then is a tab delimited file that looks like the following; the first column should be the names that are in your FASTA sequence, and the
-rest of the columns are aliases:
+The hg19_aliases then is a tab delimited file that looks like the following; the
+first column should be the names that are in your FASTA sequence, and the rest
+of the columns are aliases:
 
 ```
 1	chr1
@@ -105,9 +106,11 @@ M	chrM	MT
 ```
 
 :::note
-"chromAliases" files [from
-UCSC](https://hgdownload.soe.ucsc.edu/goldenPath/canFam6/bigZips/canFam6.chromAlias.txt)
+
+"chromAliases" files
+[from UCSC](https://hgdownload.soe.ucsc.edu/goldenPath/canFam6/bigZips/canFam6.chromAlias.txt)
 match this format.
+
 :::
 
 ## Adding an assembly with the CLI
@@ -126,15 +129,19 @@ myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
 jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
-See our [configure JBrowse using the
-cli](/docs/tutorials/config_cli/#adding-a-genome-assembly) tutorial for more
-in-depth instructions, or more information on the `add-assembly` command
-through our [CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
+See our
+[configure JBrowse using the cli](/docs/tutorials/config_cli/#adding-a-genome-assembly)
+tutorial for more in-depth instructions, or more information on the
+`add-assembly` command through our
+[CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).
 
 :::note
-Assemblies can also be added graphically using the assembly manager when you
-are using the `admin-server`. See how to [configure JBrowse using the
-GUI](/docs/tutorials/config_gui/#adding-a-genome-assembly) for more details.
+
+Assemblies can also be added graphically using the assembly manager when you are
+using the `admin-server`. See how to
+[configure JBrowse using the GUI](/docs/tutorials/config_gui/#adding-a-genome-assembly)
+for more details.
+
 :::
 
 ## Assembly config
@@ -195,24 +202,24 @@ The top level config is an array of assemblies; each assembly contains:
 
 - `name` - a name to refer to the assembly by. each track that is related to
   this assembly references this name
-- `aliases` - sometimes genome assemblies have aliases like hg19, GRCh37,
-  b37p5, etc. while there may be small differences between these different
-  sequences, they often largely have the same coordinates, so you might want to
-  be able to associate tracks from these different assemblies together. The
-  assembly aliases are most helpful when loading from a UCSC trackHub which
-  specifies the genome assembly names it uses, so you can connect to a UCSC
-  trackHub if your assembly name or aliases match.
+- `aliases` - sometimes genome assemblies have aliases like hg19, GRCh37, b37p5,
+  etc. while there may be small differences between these different sequences,
+  they often largely have the same coordinates, so you might want to be able to
+  associate tracks from these different assemblies together. The assembly
+  aliases are most helpful when loading from a UCSC trackHub which specifies the
+  genome assembly names it uses, so you can connect to a UCSC trackHub if your
+  assembly name or aliases match.
 - `sequence` - this is a complete "track" definition for your genome assembly.
   we specify that it is a track of type ReferenceSequenceTrack, give it a
   trackId, and an adapter configuration. an adapter configuration can specify
   IndexedFastaAdapter (fasta.fa and fasta.fai), BgzipFastaAdapter (fasta.fa.gz,
-  fasta.fa.gz.fai, fasta.gz.gzi), ChromSizesAdapter (which fetches no
-  sequences, just chromosome names)
+  fasta.fa.gz.fai, fasta.gz.gzi), ChromSizesAdapter (which fetches no sequences,
+  just chromosome names)
 
 ### ReferenceSequenceTrack
 
-Example ReferenceSequenceTrack config, which as above, is specified as the
-child of the assembly section of the config:
+Example ReferenceSequenceTrack config, which as above, is specified as the child
+of the assembly section of the config:
 
 ```json
 {
@@ -275,7 +282,8 @@ These are loaded into a BgzipFastaAdapter as follows
 
 ### IndexedFastaAdapter
 
-An indexed FASTA file is similar to the above, but the sequence is not compressed
+An indexed FASTA file is similar to the above, but the sequence is not
+compressed
 
 ```bash
 samtools faidx sequence.fa
@@ -319,8 +327,8 @@ plaintext is displayed for this file so the format is not strict.
 
 ### TwoBitAdapter
 
-The UCSC twoBit adapter is also supported. Note however that the 2bit format
-has a longer startup time than other adapters because there is a larger upfront
+The UCSC twoBit adapter is also supported. Note however that the 2bit format has
+a longer startup time than other adapters because there is a larger upfront
 parsing time.
 
 ```json

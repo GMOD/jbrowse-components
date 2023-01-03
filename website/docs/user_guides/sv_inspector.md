@@ -26,6 +26,25 @@ The following formats are supported:
 
 <Figure caption="The import form for getting started with the SV inspector." src="/img/sv_inspector_importform.png" />
 
+### Sources of data for SV inspector
+
+The SV inspector currently is designed for viewing `<TRA>` and breakend type
+entries.
+
+Examples of variant callers that produce a VCF that can be used with the SV
+inspector:
+
+Short read based:
+
+- Manta
+- Delly
+- Lumpy
+
+Long read based
+
+- pbsv
+- Sniffles
+
 ### Example SV inspector workflow
 
 We can start the SV inspector workflow by opening up this file containing
@@ -59,7 +78,7 @@ By clicking on the features in the circular view, or clicking on the triangle
 drop-down on the leftmost column of the table, we can dynamically launch a new
 view of the data that is called the "split view" or the "breakpoint split view"
 
-This allows us to inspect the breakpoints of the structural variant, and
-compare each side to the alignments.
+This allows us to inspect the breakpoints of the structural variant, and compare
+each side to the alignments.
 
 <Figure caption="Screenshot of the 'breakpoint split view' which examines the breakpoints of a structural variant, e.g. an interchromosomal translocation, and connects supporting reads (black splines) and the variant call itself (green thicker line, with feet indicating directionality)." src="/img/breakpoint_split_view.png" />

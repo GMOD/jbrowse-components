@@ -5,6 +5,7 @@ import {
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
 import { getOrigin, getScale, ScaleOpts } from './util'
 
+// avoid drawing negative width features for SVG exports
 function fillRectCtx(
   x: number,
   y: number,
@@ -96,7 +97,7 @@ export function drawXY(
     for (const feature of features.values()) {
       const [leftPx, rightPx] = featureSpanPx(feature, region, bpPerPx)
       if (feature.get('summary')) {
-        const w = rightPx - leftPx + fudgeFactor
+        const w = Math.max(rightPx - leftPx + fudgeFactor, minSize)
         const max = feature.get('maxScore')
         const c = colorCallback(feature, max)
         const effectiveC = crossingOrigin

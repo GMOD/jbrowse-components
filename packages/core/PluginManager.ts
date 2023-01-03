@@ -348,8 +348,26 @@ export default class PluginManager {
     return this.getElementTypeRecord(groupName).all()
   }
 
+  getTrackElements() {
+    return this.getElementTypesInGroup('track') as TrackType[]
+  }
+
+  getAddTrackWorkflowElements() {
+    return this.getElementTypesInGroup(
+      'add track workflow',
+    ) as AddTrackWorkflowType[]
+  }
+
   getRpcElements() {
     return this.getElementTypesInGroup('rpc method') as RpcMethodType[]
+  }
+
+  getDisplayElements() {
+    return this.getElementTypesInGroup('display') as DisplayType[]
+  }
+
+  getAdapterElements() {
+    return this.getElementTypesInGroup('adapter') as AdapterType[]
   }
 
   /** get a MST type for the union of all specified pluggable MST types */

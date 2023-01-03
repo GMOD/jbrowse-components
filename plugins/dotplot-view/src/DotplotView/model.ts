@@ -10,7 +10,7 @@ import {
   SnapshotIn,
 } from 'mobx-state-tree'
 
-import { makeTicks } from './components/util'
+import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 import { observable, autorun, transaction } from 'mobx'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
@@ -290,6 +290,7 @@ export default function stateModelFactory(pm: PluginManager) {
         self.hview.setDisplayedRegions([])
         self.vview.setDisplayedRegions([])
         self.assemblyNames = cast([])
+        self.tracks.clear()
       },
       /**
        * #action
@@ -582,19 +583,35 @@ export default function stateModelFactory(pm: PluginManager) {
           self,
           autorun(function borderSetter() {
             // make sure we have a width on the view before trying to load
-            const { vview, hview } = self
             if (self.volatileWidth === undefined) {
               return
             }
-            const padding = 10
+            const { vview, hview, viewHeight, viewWidth } = self
+            const padding = 40
             const vblocks = vview.dynamicBlocks.contentBlocks
             const hblocks = hview.dynamicBlocks.contentBlocks
+
+            const vhide = getBlockLabelKeysToHide(
+              vblocks,
+              viewHeight,
+              vview.offsetPx,
+            )
+            const hhide = getBlockLabelKeysToHide(
+              hblocks,
+              viewWidth,
+              hview.offsetPx,
+            )
+
             const len = (a: string) => measureText(a.slice(0, 30))
-            const by = hblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
-            const bx = vblocks.reduce((a, b) => Math.max(a, len(b.refName)), 0)
+            const by = hblocks
+              .filter(b => !hhide.has(b.key))
+              .reduce((a, b) => Math.max(a, len(b.refName)), 0)
+            const bx = vblocks
+              .filter(b => !vhide.has(b.key))
+              .reduce((a, b) => Math.max(a, len(b.refName)), 0)
             // these are set via autorun to avoid dependency cycle
-            self.setBorderY(Math.max(by + padding, 100))
-            self.setBorderX(Math.max(bx + padding, 100))
+            self.setBorderY(Math.max(by + padding, 50))
+            self.setBorderX(Math.max(bx + padding, 50))
           }),
         )
       },

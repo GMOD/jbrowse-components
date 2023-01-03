@@ -2,12 +2,12 @@
  * @jest-environment node
  */
 
-import fs from 'fs'
+import fs, { mkdirSync } from 'fs'
 import path from 'path'
 import { Scope } from 'nock'
 import { setup } from '../testUtil'
 
-const { mkdir, stat, readdir } = fs.promises
+const { stat, readdir } = fs.promises
 
 const releaseArray = [
   {
@@ -78,7 +78,7 @@ function mockV2Zip(exampleSite: Scope) {
 describe('upgrade', () => {
   setup
     .do(() => {
-      mkdir('jbrowse')
+      mkdirSync('jbrowse')
     })
     .command(['upgrade', 'jbrowse'])
     .exit(10)

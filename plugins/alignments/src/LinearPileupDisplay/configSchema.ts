@@ -1,6 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { linearBasicDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
-import { types, Instance } from 'mobx-state-tree'
+import { types } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 /**
@@ -8,7 +8,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
  */
 function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-function PileupConfigFactory(pluginManager: PluginManager) {
+function configSchemaF(pluginManager: PluginManager) {
   // modify config schema to take in a sub coverage display
   return ConfigurationSchema(
     'LinearPileupDisplay',
@@ -64,8 +64,4 @@ function PileupConfigFactory(pluginManager: PluginManager) {
   )
 }
 
-export type LinearPileupDisplayConfigModel = ReturnType<
-  typeof PileupConfigFactory
->
-export type LinearPileupDisplayConfig = Instance<LinearPileupDisplayConfigModel>
-export default PileupConfigFactory
+export default configSchemaF

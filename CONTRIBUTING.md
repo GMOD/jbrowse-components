@@ -41,8 +41,8 @@ yarn
 yarn start
 ```
 
-You can edit the markdown by hand. The documentation is built into a website
-and a PDF using latex here http://jbrowse.org/jb2/jbrowse2.pdf
+You can edit the markdown by hand. The documentation is built into a website and
+a PDF using latex here http://jbrowse.org/jb2/jbrowse2.pdf
 
 ### Adding images to the docs
 
@@ -55,8 +55,8 @@ line in the markdown
 Your caption of the image here
 ```
 
-This creates a caption of the image properly in the PDF, and just shows the
-text below the image on the website
+This creates a caption of the image properly in the PDF, and just shows the text
+below the image on the website
 
 ## Developers
 
@@ -78,21 +78,19 @@ script:
   need to generate an access token.
 
 - Make sure you have a GitHub access token with public_repo scope. To generate
-  one, go to https://github.com/settings/tokens, click "Generate new token,"
-  add a note describing what you want the token to be for, select the
-  "public_repo" checkbox (under "repo"), and then click "Generate token." Make
-  sure to save this token in a safe place to use for future releases as you
-  won't be able to see it again. If you do lose your token, delete/revoke the
-  token you lost and generate a new one.
+  one, go to https://github.com/settings/tokens, click "Generate new token," add
+  a note describing what you want the token to be for, select the "public_repo"
+  checkbox (under "repo"), and then click "Generate token." Make sure to save
+  this token in a safe place to use for future releases as you won't be able to
+  see it again. If you do lose your token, delete/revoke the token you lost and
+  generate a new one.
 
 - Decide if the release should have a major, minor, or patch level version
   increase. All packages that are published will get the same version number.
 
 Run the script like this:
 
-```
-scripts/release.sh myGitHubAuthToken versionIncreaseLevel
-```
+`scripts/release.sh myGitHubAuthToken versionIncreaseLevel`
 
 If you don't provide `versionIncreaseLevel`, it will default to "patch".
 
@@ -104,9 +102,9 @@ those to the release as well.
 Once the draft release has been created (you can look for it
 [here](https://github.com/GMOD/jbrowse-components/releases)), go to the release
 and click "Edit," then add a description to the release. Usually you can copy
-the content of the blog post that was generated (it will be named something
-like `website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the
-"Downloads" section.
+the content of the blog post that was generated (it will be named something like
+`website/blog/${DATE}-${RELEASE_TAG}-release.md`), removing the "Downloads"
+section.
 
 Note that it is very helpful to run the release from a computer with a stable
 and fast internet connection. One option for this is to run it from a AWS
@@ -126,8 +124,8 @@ uploaded, the workflows will refuse to add them to the published release since
 it looks for draft releases)
 
 Finally, run the update_demos.sh script from within the demos folder of the
-monorepo after the packages have been published. This will update the `demos`
-to use the latest version, and then publish them to our S3 bucket e.g. at
+monorepo after the packages have been published. This will update the `demos` to
+use the latest version, and then publish them to our S3 bucket e.g. at
 https://jbrowse.org/demos/lgv
 
 ## Monorepo code organization
@@ -179,10 +177,8 @@ This package provides the "alignments" related features including
 
 - BamAdapter - our BAM parser that wraps @gmod/bam NPM module
 - CramAdapter - our CRAM parser that wraps the @gmod/cram NPM module
-- PileupTrack type - draws alignments as boxes in a "pileup" style view
-- SNPCoverageTrack - draws calculated coverage with mismatches drawn over the coverage
-- AlignmentsTrack - a "supertrack" which contains a PileupTrack and
-  SNPCoverageTrack "subtracks"
+- AlignmentsTrack - a "supertrack" which contains a PileupDisplay and
+  SNPCoverageDisplay "subtracks"
 - AlignmentsFeatureWidget for alignments features
 
 #### plugins/variants/
@@ -192,8 +188,8 @@ Provides variant features including
 - VCF tabix parser
 - VCF non-tabix parser
 - VariantFeatureWidget
-- VariantTrack that is basically just a normal track, but has logic to popup
-  the VariantFeatureWidget on feature click
+- VariantTrack that is basically just a normal track, but has logic to popup the
+  VariantFeatureWidget on feature click
 
 #### plugins/hic
 
@@ -231,8 +227,8 @@ General usage of this involves referencing the SvgFeatureRenderer
 
 #### plugins/spreadsheet-view
 
-This provides a spreadsheet-in-the-browser that can be used as a data backend
-to power other views
+This provides a spreadsheet-in-the-browser that can be used as a data backend to
+power other views
 
 #### plugins/circular-view
 
@@ -278,8 +274,22 @@ jbrowse text-index -a hg19 --tracks ncbi_gff_hg19 --out config_demo.json --force
 
 ## Notes about monorepo setup
 
-Our setup for the monorepo takes notes from the material-ui repository. Some particular notes include
+Our setup for the monorepo takes notes from the material-ui repository. Some
+particular notes include
 
-1. The use of the "flat" packages/core package, where you can import from nested subpaths like '@jbrowse/core/util'
+1. The use of the "flat" packages/core package, where you can import from nested
+   subpaths like '@jbrowse/core/util'
 2. The use of tsconfig.build.json to generate types in the final release
 3. The use of referring to the src directory at development time
+
+## Notes about yarn
+
+Using `yarn upgrade` or `yarn upgrade-interactive --latest` can produce errors
+with the latest version of yarn. This is commonly cited around the web, but
+using npx to one-off run an older version of yarn can fix this issues
+
+Example:
+
+```
+npx yarn@1.19.1 upgrade-interactive --latest
+```

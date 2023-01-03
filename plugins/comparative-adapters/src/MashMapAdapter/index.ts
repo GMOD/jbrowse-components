@@ -7,12 +7,10 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'MashMapAdapter',
+        displayName: 'MashMap adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () => import('./MashMapAdapter').then(r => r.default),
       }),

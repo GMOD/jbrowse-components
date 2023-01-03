@@ -59,9 +59,10 @@ const BookmarkGrid = observer(({ model }: { model: GridBookmarkModel }) => {
         return (
           <Link
             className={classes.link}
-            onClick={(event: React.MouseEvent) => {
-              navToBookmark(value as string, views, model)
+            onClick={async event => {
               event.preventDefault()
+              // has own error handling
+              await navToBookmark(value as string, views, model)
             }}
           >
             {value}

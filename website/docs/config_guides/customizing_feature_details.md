@@ -35,9 +35,9 @@ Here is an example track with a formatter:
 
 <Figure src="/img/customized_feature_details.png" caption="Example screenshot showing customized feature detail panel with links"/>
 
-This feature formatter changes the `"name"` field in the feature detail panel
-to have a link to a google search for that feature's name. This can be used to
-link to gene pages for example as well.
+This feature formatter changes the `"name"` field in the feature detail panel to
+have a link to a google search for that feature's name. This can be used to link
+to gene pages for example as well.
 
 In addition, this example also adds a custom field called `"newfield"` and
 removes e.g. `"type"` from being displayed.
@@ -49,9 +49,11 @@ The schema for `formatDetails` is:
 - `depth` - depth to customize the subfeatures to, default 1
 
 The general way this is done is by making a jexl callback either or both of
-`feature` and `subfeatures` (if you want both feature and subfeatures, you can copy the same thing to both config slots).
+`feature` and `subfeatures` (if you want both feature and subfeatures, you can
+copy the same thing to both config slots).
 
-The callback returns an object where the keys of the object are what you want to replace.
+The callback returns an object where the keys of the object are what you want to
+replace.
 
 In the example above we return an object with:
 
@@ -111,8 +113,8 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/) for
-more info on setting up a simple plugin for doing these customizations.
+See [our no-build plugin tutorial](/docs/tutorials/no_build_plugin_tutorial/)
+for more info on setting up a simple plugin for doing these customizations.
 
 #### Footnote 1
 
@@ -126,6 +128,6 @@ You might also ask why aren't all features serialized or plain JSON objects
 normally? Well, some feature types like alignments features benefit from only
 being partially serialized e.g. getting only a couple attributes via
 `feature.get('attribute')` (completely converting them to a raw JSON expression
-is expensive). It is a little confusing, but that is why in the feature
-details, you can access the plain JS object e.g. `feature.start` while in color
-callbacks you use e.g. `feature.get('start')`.
+is expensive). It is a little confusing, but that is why in the feature details,
+you can access the plain JS object e.g. `feature.start` while in color callbacks
+you use e.g. `feature.get('start')`.

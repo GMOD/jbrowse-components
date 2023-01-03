@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`adapter can fetch features from volvox.sorted.gtf test getfeatures on gtf plain text adapter 1`] = `
-Array [
-  Object {
+[
+  {
     "end": 9000,
     "gene_id": "EDEN",
     "gene_name": "EDEN",
@@ -12,8 +12,8 @@ Array [
     "source": "example",
     "start": 1049,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 1500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -28,7 +28,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-0-0",
       },
-      Object {
+      {
         "end": 1200,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -43,7 +43,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-ctgA-0-1",
       },
-      Object {
+      {
         "end": 1500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -58,7 +58,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-0-2",
       },
-      Object {
+      {
         "end": 3902,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -73,7 +73,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-0-3",
       },
-      Object {
+      {
         "end": 3902,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -88,7 +88,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-0-4",
       },
-      Object {
+      {
         "end": 5500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -103,7 +103,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-0-5",
       },
-      Object {
+      {
         "end": 5500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -118,7 +118,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-0-6",
       },
-      Object {
+      {
         "end": 7608,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -133,7 +133,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-0-7",
       },
-      Object {
+      {
         "end": 9000,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -148,7 +148,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-0-8",
       },
-      Object {
+      {
         "end": 9000,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -168,7 +168,7 @@ Array [
     "type": "transcript",
     "uniqueId": "test-ctgA-0",
   },
-  Object {
+  {
     "end": 9000,
     "gene_id": "EDEN",
     "gene_name": "EDEN",
@@ -178,8 +178,8 @@ Array [
     "source": "example",
     "start": 1049,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 1500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -194,7 +194,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-1-0",
       },
-      Object {
+      {
         "end": 1200,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -209,7 +209,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-ctgA-1-1",
       },
-      Object {
+      {
         "end": 1500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -224,7 +224,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-1-2",
       },
-      Object {
+      {
         "end": 5500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -239,7 +239,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-1-3",
       },
-      Object {
+      {
         "end": 5500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -254,7 +254,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-1-4",
       },
-      Object {
+      {
         "end": 7608,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -269,7 +269,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-1-5",
       },
-      Object {
+      {
         "end": 9000,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -284,7 +284,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-1-6",
       },
-      Object {
+      {
         "end": 9000,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -304,7 +304,7 @@ Array [
     "type": "transcript",
     "uniqueId": "test-ctgA-1",
   },
-  Object {
+  {
     "end": 9000,
     "gene_id": "EDEN",
     "gene_name": "EDEN",
@@ -314,8 +314,8 @@ Array [
     "source": "example",
     "start": 1299,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 1500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -330,7 +330,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-2-0",
       },
-      Object {
+      {
         "end": 1500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -345,7 +345,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-ctgA-2-1",
       },
-      Object {
+      {
         "end": 3902,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -360,7 +360,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-2-2",
       },
-      Object {
+      {
         "end": 3300,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -375,7 +375,7 @@ Array [
         "type": "five_prime_UTR",
         "uniqueId": "test-ctgA-2-3",
       },
-      Object {
+      {
         "end": 3902,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -390,7 +390,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-2-4",
       },
-      Object {
+      {
         "end": 5500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -405,7 +405,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-2-5",
       },
-      Object {
+      {
         "end": 5500,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -420,7 +420,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-2-6",
       },
-      Object {
+      {
         "end": 7600,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -435,7 +435,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-2-7",
       },
-      Object {
+      {
         "end": 9000,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -450,7 +450,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-2-8",
       },
-      Object {
+      {
         "end": 9000,
         "gene_id": "EDEN",
         "gene_name": "EDEN",
@@ -470,7 +470,7 @@ Array [
     "type": "transcript",
     "uniqueId": "test-ctgA-2",
   },
-  Object {
+  {
     "end": 11500,
     "name": "Apple1",
     "phase": 0,
@@ -478,8 +478,8 @@ Array [
     "source": "bare_predicted",
     "start": 9999,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 11500,
         "name": "Apple1",
         "parentId": "test-ctgA-3",
@@ -497,7 +497,7 @@ Array [
     "type": "transcript",
     "uniqueId": "test-ctgA-3",
   },
-  Object {
+  {
     "end": 17000,
     "name": "cds-Apple2",
     "phase": 0,
@@ -505,8 +505,8 @@ Array [
     "source": "predicted",
     "start": 13499,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 13800,
         "name": "cds-Apple2",
         "parentId": "test-ctgA-4",
@@ -519,7 +519,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-4-0",
       },
-      Object {
+      {
         "end": 15500,
         "name": "cds-Apple2",
         "parentId": "test-ctgA-4",
@@ -532,7 +532,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-4-1",
       },
-      Object {
+      {
         "end": 17000,
         "name": "cds-Apple2",
         "parentId": "test-ctgA-4",
@@ -550,7 +550,7 @@ Array [
     "type": "transcript",
     "uniqueId": "test-ctgA-4",
   },
-  Object {
+  {
     "end": 23000,
     "name": "rna-Apple3",
     "phase": 0,
@@ -558,8 +558,8 @@ Array [
     "source": "exonerate",
     "start": 17399,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 17999,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -572,7 +572,7 @@ Array [
         "type": "UTR",
         "uniqueId": "test-ctgA-5-0",
       },
-      Object {
+      {
         "end": 18800,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -585,7 +585,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-5-1",
       },
-      Object {
+      {
         "end": 18800,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -598,7 +598,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-5-2",
       },
-      Object {
+      {
         "end": 19500,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -611,7 +611,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-5-3",
       },
-      Object {
+      {
         "end": 19500,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -624,7 +624,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-5-4",
       },
-      Object {
+      {
         "end": 21200,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -637,7 +637,7 @@ Array [
         "type": "CDS",
         "uniqueId": "test-ctgA-5-5",
       },
-      Object {
+      {
         "end": 23000,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -650,7 +650,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-ctgA-5-6",
       },
-      Object {
+      {
         "end": 23000,
         "name": "rna-Apple3",
         "parentId": "test-ctgA-5",
@@ -672,8 +672,8 @@ Array [
 `;
 
 exports[`can instantiate new GtfAdapter and check for demo data 1`] = `
-Array [
-  Object {
+[
+  {
     "end": 107987,
     "gene_biotype": "pseudogene",
     "gene_id": "ENSVPAG00000000407",
@@ -685,8 +685,8 @@ Array [
     "source": "ensembl",
     "start": 107688,
     "strand": 1,
-    "subfeatures": Array [
-      Object {
+    "subfeatures": [
+      {
         "end": 107715,
         "exon_id": "ENSVPAE00000004844",
         "exon_number": "1",
@@ -709,7 +709,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-GeneScaffold_1-0-0",
       },
-      Object {
+      {
         "end": 107812,
         "exon_id": "ENSVPAE00000004847",
         "exon_number": "2",
@@ -732,7 +732,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-GeneScaffold_1-0-1",
       },
-      Object {
+      {
         "end": 107877,
         "exon_id": "ENSVPAE00000004849",
         "exon_number": "3",
@@ -755,7 +755,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-GeneScaffold_1-0-2",
       },
-      Object {
+      {
         "end": 107895,
         "exon_id": "ENSVPAE00000156282",
         "exon_number": "4",
@@ -778,7 +778,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-GeneScaffold_1-0-3",
       },
-      Object {
+      {
         "end": 107917,
         "exon_id": "ENSVPAE00000188321",
         "exon_number": "5",
@@ -801,7 +801,7 @@ Array [
         "type": "exon",
         "uniqueId": "test-GeneScaffold_1-0-4",
       },
-      Object {
+      {
         "end": 107987,
         "exon_id": "ENSVPAE00000004854",
         "exon_number": "6",

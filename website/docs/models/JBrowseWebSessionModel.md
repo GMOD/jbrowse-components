@@ -5,8 +5,13 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
+
+inherits SnackbarModel
 
 ### JBrowseWebSessionModel - Properties
 
@@ -327,6 +332,20 @@ getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { set
 
 ### JBrowseWebSessionModel - Actions
 
+#### action: moveViewUp
+
+```js
+// type signature
+moveViewUp: (id: string) => void
+```
+
+#### action: moveViewDown
+
+```js
+// type signature
+moveViewDown: (id: string) => void
+```
+
 #### action: setDrawerPosition
 
 ```js
@@ -578,8 +597,8 @@ hideAllWidgets: () => void
 
 #### action: setSelection
 
-set the global selection, i.e. the globally-selected object.
-can be a feature, a view, just about anything
+set the global selection, i.e. the globally-selected object. can be a feature, a
+view, just about anything
 
 ```js
 // type signature
@@ -667,8 +686,8 @@ setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptiona
 
 #### action: editConfiguration
 
-opens a configuration editor to configure the given thing,
-and sets the current task to be configuring it
+opens a configuration editor to configure the given thing, and sets the current
+task to be configuring it
 
 ```js
 // type signature

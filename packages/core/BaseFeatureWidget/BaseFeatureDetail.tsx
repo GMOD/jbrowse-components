@@ -25,6 +25,8 @@ import {
   getSession,
   getUriLink,
   isUriLocation,
+  assembleLocString,
+  ParsedLocString,
 } from '../util'
 import { ErrorMessage, SanitizedHTML } from '../ui'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
@@ -249,15 +251,31 @@ const ArrayValue = ({
 }
 const toLocale = (n: number) => n.toLocaleString('en-US')
 
+function Position(props: BaseProps) {
+  const { feature } = props
+  const strand = feature.strand as number
+  const strandMap: Record<string, string> = {
+    '-1': '-',
+    '0': '',
+    '1': '+',
+  }
+  const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
+  // @ts-ignore
+  const loc = assembleLocString(feature as ParsedLocString)
+  return <>{`${loc} ${str}`}</>
+}
+
 function CoreDetails(props: BaseProps) {
   const { feature } = props
   const obj = feature as SimpleFeatureSerializedNoId & {
     start: number
     end: number
+    assemblyName?: string
     strand: number
     refName: string
     __jbrowsefmt: {
       start?: number
+      assemblyName?: string
       end?: number
       refName?: string
       name?: string
@@ -266,33 +284,28 @@ function CoreDetails(props: BaseProps) {
 
   // eslint-disable-next-line no-underscore-dangle
   const formattedFeat = { ...obj, ...obj.__jbrowsefmt }
-  const { start, strand, end, refName } = formattedFeat
+  const { start, end } = formattedFeat
 
-  const strandMap: Record<string, string> = {
-    '-1': '-',
-    '0': '',
-    '1': '+',
-  }
-  const str = strandMap[strand as number] ? `(${strandMap[strand]})` : ''
   const displayedDetails: Record<string, any> = {
     ...formattedFeat,
     length: toLocale(end - start),
-    position: `${refName}:${toLocale(start + 1)}..${toLocale(end)} ${str}`,
   }
 
   const coreRenderedDetails = {
-    position: 'Position',
     description: 'Description',
     name: 'Name',
     length: 'Length',
     type: 'Type',
-    assemblyName: 'Assembly name',
   }
   return (
     <>
+      <SimpleValue
+        name="Position"
+        value={<Position {...props} feature={formattedFeat} />}
+      />
       {Object.entries(coreRenderedDetails)
         .map(([key, name]) => [name, displayedDetails[key]])
-        .filter(([, value]) => value !== null && value !== undefined)
+        .filter(([, value]) => value != null)
         .map(([name, value]) => (
           <SimpleValue key={name} name={name} value={value} />
         ))}
@@ -311,6 +324,7 @@ export const BaseCoreDetails = (props: BaseProps) => {
 interface AttributeProps {
   attributes: Record<string, any>
   omit?: string[]
+  omitSingleLevel?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
   descriptions?: Record<string, React.ReactNode>
   prefix?: string[]
@@ -369,8 +383,10 @@ const DataGridDetails = ({
     }))
 
     const rowHeight = 25
-    const hideFooter = rows.length < 100
-    const headerHeight = 80
+    const hideFoot = rows.length < 100
+    const headHeight = 80
+    const height =
+      Math.min(rows.length, 100) * rowHeight + headHeight + (hideFoot ? 0 : 50)
     // disableSelection on click helps avoid
     // https://github.com/mui-org/material-ui-x/issues/1197
     return (
@@ -378,10 +394,7 @@ const DataGridDetails = ({
         <FieldName prefix={prefix} name={name} />
         <div
           style={{
-            height:
-              Math.min(rows.length, 100) * rowHeight +
-              headerHeight +
-              (hideFooter ? 0 : 50),
+            height,
             width: '100%',
           }}
         >
@@ -389,10 +402,9 @@ const DataGridDetails = ({
             disableSelectionOnClick
             rowHeight={rowHeight}
             rows={rows}
-            rowsPerPageOptions={[]}
             hideFooterSelectedRowCount
             columns={columns}
-            hideFooter={hideFooter}
+            hideFooter={hideFoot}
           />
         </div>
       </>
@@ -401,7 +413,10 @@ const DataGridDetails = ({
   return null
 }
 
-// arr = ['a','b'], obj = {a:{b:'hello}}, returns hello (with special addition to grab description also)
+// pick using a path from an object, similar to _.get from lodash with special logic
+// for Descriptions from e.g. VCF headers
+// @param arr  example ['a','b'], obj = {a:{b:'hello}}
+// @returns hello (with special addition to grab description also)
 function accessNested(arr: string[], obj: Record<string, any> = {}) {
   arr.forEach(elt => {
     if (obj) {
@@ -415,15 +430,13 @@ function accessNested(arr: string[], obj: Record<string, any> = {}) {
     : undefined
 }
 
-function generateMaxWidth(array: any, prefix: any) {
-  // @ts-ignore
-  const arr = []
-  array.forEach((key: any, value: any) => {
+function generateMaxWidth(array: unknown[][], prefix: any) {
+  const arr = [] as number[]
+  array.forEach(key => {
     const val = [...prefix, key[0]].join('.')
     arr.push(measureText(val, 12))
   })
 
-  // @ts-ignore
   return Math.ceil(Math.max(...arr)) + 10
 }
 
@@ -456,12 +469,14 @@ export function Attributes(props: AttributeProps) {
   const {
     attributes,
     omit = [],
+    omitSingleLevel = [],
     descriptions,
     formatter = val => val,
     hideUris,
     prefix = [],
   } = props
-  const omits = [...omit, ...globalOmit]
+
+  const omits = [...omit, ...globalOmit, ...omitSingleLevel]
   const { __jbrowsefmt, ...rest } = attributes
   const formattedAttributes = { ...rest, ...__jbrowsefmt }
 
@@ -498,6 +513,7 @@ export function Attributes(props: AttributeProps) {
               />
             )
           } else if (isObject(value)) {
+            const { omitSingleLevel, ...rest } = props
             return isUriLocation(value) ? (
               hideUris ? null : (
                 <UriAttribute
@@ -509,8 +525,7 @@ export function Attributes(props: AttributeProps) {
               )
             ) : (
               <Attributes
-                {...props}
-                omit={omits}
+                {...rest}
                 key={key}
                 attributes={value}
                 descriptions={descriptions}
@@ -560,6 +575,11 @@ function generateTitle(name: unknown, id: unknown, type: unknown) {
     .join(' - ')
 }
 
+interface PanelDescriptor {
+  name: string
+  Component: React.FC<any>
+}
+
 export const FeatureDetails = (props: {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerializedNoId
@@ -569,18 +589,26 @@ export const FeatureDetails = (props: {
 }) => {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
-  const { pluginManager } = getEnv(model)
+  const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
-  const ExtraPanel = pluginManager?.evaluateExtensionPoint(
-    'Core-extraFeaturePanel',
-    null,
-    { session, feature, model },
-  ) as { name: string; Component: React.FC<any> } | undefined
+  const ExtraPanel = pm.evaluateExtensionPoint('Core-extraFeaturePanel', null, {
+    session,
+    feature,
+    model,
+  }) as PanelDescriptor | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
+      {feature.mate ? (
+        <>
+          <Divider />
+          <Typography>Mate details</Typography>
+          {/* @ts-ignore */}
+          <CoreDetails {...props} feature={feature.mate} />
+        </>
+      ) : null}
       <Divider />
 
       <Typography>Attributes</Typography>
@@ -588,7 +616,8 @@ export const FeatureDetails = (props: {
       <Attributes
         attributes={feature}
         {...props}
-        omit={[...omit, ...coreDetails]}
+        omit={omit}
+        omitSingleLevel={coreDetails}
       />
 
       <ErrorBoundary

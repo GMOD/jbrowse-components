@@ -5,12 +5,12 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'CramAdapter',
-        configSchema,
-        getAdapterClass: () => import('./CramAdapter').then(r => r.default),
-      }),
-  )
+  pluginManager.addAdapterType(() => {
+    return new AdapterType({
+      name: 'CramAdapter',
+      displayName: 'CRAM adapter',
+      configSchema,
+      getAdapterClass: () => import('./CramAdapter').then(r => r.default),
+    })
+  })
 }

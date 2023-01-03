@@ -177,30 +177,12 @@ export default class BoxRendererType extends FeatureRendererType {
     return new PrecomputedLayout(json)
   }
 
-  deserializeResultsInClient(
-    result: ResultsSerialized,
-    args: RenderArgs,
-  ): ResultsDeserialized {
+  deserializeResultsInClient(result: ResultsSerialized, args: RenderArgs) {
     const layout = this.deserializeLayoutInClient(result.layout)
-    const deserialized = super.deserializeResultsInClient(
+    return super.deserializeResultsInClient(
       { ...result, layout } as FeatureResultsSerialized,
       args,
     ) as ResultsDeserialized
-
-    // // debugging aid: check if there are features in `features` that are not in the layout
-    // const featureIds1 = iterMap(deserialized.features.values(), f =>
-    //   f.id(),
-    // ).sort()
-    // const featureIds2 = Object.keys(
-    //   deserialized.layout.toJSON().rectangles,
-    // ).sort()
-    // if (
-    //   featureIds1.length > featureIds2.length &&
-    //   !deserialized.layout.maxHeightReached
-    // )
-    //   debugger
-
-    return deserialized
   }
 
   createLayoutInWorker(args: RenderArgsDeserialized) {

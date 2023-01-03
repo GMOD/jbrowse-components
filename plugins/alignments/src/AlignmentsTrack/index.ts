@@ -29,6 +29,7 @@ export default function register(pm: PluginManager) {
     const configSchema = configSchemaFactory(pm)
     const track = new TrackType({
       name: 'AlignmentsTrack',
+      displayName: 'Alignments track',
       configSchema,
       stateModel: createBaseTrackModel(pm, 'AlignmentsTrack', configSchema),
     })

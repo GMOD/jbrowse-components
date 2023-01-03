@@ -1,0 +1,18 @@
+{
+  "dateCreated": "2022-12-11T03:48:26.257Z",
+  "tracks": [
+    {
+      "trackId": "volvox-rev-del-annotations",
+      "attributesIndexed": ["Name", "ID", "Note"],
+      "excludedTypes": ["CDS", "exon"],
+      "adapterConf": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "volvox-rev-del.gff",
+          "locationType": "UriLocation"
+        }
+      }
+    }
+  ],
+  "assemblyNames": ["volvox-rev-del"]
+}

@@ -5,8 +5,11 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
 
 ### LinearGenomeView - Properties
 
@@ -21,11 +24,15 @@ id: ElementId
 
 #### property: type
 
+this is a string instead of the const literal 'LinearGenomeView' to reduce some
+typescripting strictness, but you should pass the string 'LinearGenomeView' to
+the model explicitly
+
 ```js
 // type signature
-ISimpleType<"LinearGenomeView">
+string
 // code
-type: types.literal('LinearGenomeView')
+type: types.literal('LinearGenomeView') as unknown as string
 ```
 
 #### property: offsetPx
@@ -139,10 +146,9 @@ show the "center line"
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCenterLine: types.optional(types.boolean, () => {
-          const setting = localStorageGetItem('lgv-showCenterLine')
-          return setting !== undefined && setting !== null ? !!+setting : false
-        })
+showCenterLine: types.optional(types.boolean, () =>
+          JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+        )
 ```
 
 #### property: showCytobandsSetting
@@ -153,10 +159,9 @@ show the "cytobands" in the overview scale bar
 // type signature
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showCytobandsSetting: types.optional(types.boolean, () => {
-          const setting = localStorageGetItem('lgv-showCytobands')
-          return setting !== undefined && setting !== null ? !!+setting : true
-        })
+showCytobandsSetting: types.optional(types.boolean, () =>
+          JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+        )
 ```
 
 #### property: showGridlines
@@ -193,6 +198,132 @@ number
 any[]
 ```
 
+#### getter: assemblyErrors
+
+```js
+// type
+string
+```
+
+#### getter: assembliesInitialized
+
+```js
+// type
+boolean
+```
+
+#### getter: initialized
+
+```js
+// type
+any
+```
+
+#### getter: hasDisplayedRegions
+
+```js
+// type
+boolean
+```
+
+#### getter: isSearchDialogDisplayed
+
+```js
+// type
+boolean
+```
+
+#### getter: scaleBarHeight
+
+```js
+// type
+number
+```
+
+#### getter: headerHeight
+
+```js
+// type
+number
+```
+
+#### getter: trackHeights
+
+```js
+// type
+any
+```
+
+#### getter: trackHeightsWithResizeHandles
+
+```js
+// type
+any
+```
+
+#### getter: height
+
+```js
+// type
+any
+```
+
+#### getter: totalBp
+
+```js
+// type
+number
+```
+
+#### getter: maxBpPerPx
+
+```js
+// type
+number
+```
+
+#### getter: minBpPerPx
+
+```js
+// type
+number
+```
+
+#### getter: error
+
+```js
+// type
+any
+```
+
+#### getter: maxOffset
+
+```js
+// type
+number
+```
+
+#### getter: minOffset
+
+```js
+// type
+number
+```
+
+#### getter: displayedRegionsTotalPx
+
+```js
+// type
+number
+```
+
+#### getter: trackTypeActions
+
+```js
+// type
+Map<string, MenuItem[]>
+```
+
 #### getter: canShowCytobands
 
 ```js
@@ -216,8 +347,8 @@ boolean
 
 #### getter: cytobandOffset
 
-the cytoband is displayed to the right of the chromosome name,
-and that offset is calculated manually with this method
+the cytoband is displayed to the right of the chromosome name, and that offset
+is calculated manually with this method
 
 ```js
 // type
@@ -226,12 +357,11 @@ number
 
 #### getter: staticBlocks
 
-static blocks are an important concept jbrowse uses to avoid
-re-rendering when you scroll to the side. when you horizontally
-scroll to the right, old blocks to the left may be removed, and
-new blocks may be instantiated on the right. tracks may use the
-static blocks to render their data for the region represented by
-the block
+static blocks are an important concept jbrowse uses to avoid re-rendering when
+you scroll to the side. when you horizontally scroll to the right, old blocks to
+the left may be removed, and new blocks may be instantiated on the right. tracks
+may use the static blocks to render their data for the region represented by the
+block
 
 ```js
 // type
@@ -240,10 +370,9 @@ BlockSet
 
 #### getter: dynamicBlocks
 
-dynamic blocks represent the exact coordinates of the currently
-visible genome regions on the screen. they are similar to static
-blocks, but statcic blocks can go offscreen while dynamic blocks
-represent exactly what is on screen
+dynamic blocks represent the exact coordinates of the currently visible genome
+regions on the screen. they are similar to static blocks, but statcic blocks can
+go offscreen while dynamic blocks represent exactly what is on screen
 
 ```js
 // type
@@ -261,8 +390,7 @@ any
 
 #### getter: visibleLocStrings
 
-a single "combo-locstring" representing all the regions visible
-on the screen
+a single "combo-locstring" representing all the regions visible on the screen
 
 ```js
 // type
@@ -287,14 +415,65 @@ any
 
 ### LinearGenomeView - Methods
 
-#### method: getSelectedRegions
-
-Helper method for the fetchSequence.
-Retrieves the corresponding regions that were selected by the rubberband
+#### method: MiniControlsComponent
 
 ```js
 // type signature
-getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => BaseBlock[]
+MiniControlsComponent: () => React.FC<any>
+```
+
+#### method: HeaderComponent
+
+```js
+// type signature
+HeaderComponent: () => React.FC<any>
+```
+
+#### method: renderProps
+
+```js
+// type signature
+renderProps: () => any
+```
+
+#### method: searchScope
+
+```js
+// type signature
+searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }
+```
+
+#### method: getTrack
+
+```js
+// type signature
+getTrack: (id: string) => any
+```
+
+#### method: rankSearchResults
+
+```js
+// type signature
+rankSearchResults: (results: BaseResult[]) => BaseResult[]
+```
+
+#### method: rewriteOnClicks
+
+modifies view menu action onClick to apply to all tracks of same type
+
+```js
+// type signature
+rewriteOnClicks: (trackType: string, viewMenuActions: MenuItem[]) => void
+```
+
+#### method: getSelectedRegions
+
+Helper method for the fetchSequence. Retrieves the corresponding regions that
+were selected by the rubberband
+
+```js
+// type signature
+getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; key: string; offsetPx: number; widthPx: number; variant?: string; isLeftEndOfDisplayedRegion?: boolean; }[]
 ```
 
 #### method: menuItems
@@ -333,8 +512,8 @@ bpToPx: ({
 
 #### method: centerAt
 
-scrolls the view to center on the given bp. if that is not in any
-of the displayed regions, does nothing
+scrolls the view to center on the given bp. if that is not in any of the
+displayed regions, does nothing
 
 ```js
 // type signature
@@ -469,6 +648,13 @@ showTrack: (
   initialSnapshot?: {},
   displayInitialSnapshot?: {},
 ) => any
+```
+
+#### action: hideTrack
+
+```js
+// type signature
+hideTrack: (trackId: string) => number
 ```
 
 #### action: moveTrack
@@ -616,8 +802,8 @@ setCoarseDynamicBlocks: (blocks: BlockSet) => void
 
 #### action: moveTo
 
-offset is the base-pair-offset in the displayed region, index is the index of the
-displayed region in the linear genome view
+offset is the base-pair-offset in the displayed region, index is the index of
+the displayed region in the linear genome view
 
 ```js
 // type signature
@@ -630,16 +816,15 @@ navigate to the given locstring
 
 ```js
 // type signature
-navToLocString: (locString: string, optAssemblyName?: string) => void
+navToLocString: (locString: string, optAssemblyName?: string) => Promise<void>
 ```
 
 #### action: navTo
 
-Navigate to a location based on its refName and optionally start, end,
-and assemblyName. Can handle if there are multiple displayedRegions
-from same refName. Only navigates to a location if it is entirely
-within a displayedRegion. Navigates to the first matching location
-encountered.
+Navigate to a location based on its refName and optionally start, end, and
+assemblyName. Can handle if there are multiple displayedRegions from same
+refName. Only navigates to a location if it is entirely within a
+displayedRegion. Navigates to the first matching location encountered.
 
 Throws an error if navigation was unsuccessful
 

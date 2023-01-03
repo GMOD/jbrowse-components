@@ -14,9 +14,10 @@ import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { Observer } from 'rxjs'
-import { readConfObject } from '@jbrowse/core/configuration'
-import VcfFeature from './VcfFeature'
 import { GenericFilehandle } from 'generic-filehandle'
+
+// local
+import VcfFeature from '../VcfFeature'
 
 export default class extends BaseFeatureDataAdapter {
   private configured?: Promise<{
@@ -26,23 +27,17 @@ export default class extends BaseFeatureDataAdapter {
   }>
 
   private async configurePre() {
-    const vcfGzLocation = readConfObject(this.config, 'vcfGzLocation')
-    const location = readConfObject(this.config, ['index', 'location'])
-    const indexType = readConfObject(this.config, ['index', 'indexType'])
+    const pm = this.pluginManager
+    const vcfGzLocation = this.getConf('vcfGzLocation')
+    const location = this.getConf(['index', 'location'])
+    const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(
-      vcfGzLocation as FileLocation,
-      this.pluginManager,
-    )
+    const filehandle = openLocation(vcfGzLocation as FileLocation, pm)
     const isCSI = indexType === 'CSI'
     const vcf = new TabixIndexedFile({
       filehandle,
-      csiFilehandle: isCSI
-        ? openLocation(location, this.pluginManager)
-        : undefined,
-      tbiFilehandle: !isCSI
-        ? openLocation(location, this.pluginManager)
-        : undefined,
+      csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
+      tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       chunkSizeLimit: 1000000000,
     })

@@ -1818,29 +1818,15 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz",
-          "locationType": "UriLocation"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz.tbi"
+          }
         }
       },
-      "assemblyNames": ["grape"],
-
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "grape_genes_linear"
-        },
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "grape_genes-LinearLollipopDisplay"
-        }
-      ]
+      "assemblyNames": ["grape"]
     },
     {
       "type": "FeatureTrack",
@@ -1849,29 +1835,15 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
-          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz",
-          "locationType": "UriLocation"
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz"
         },
         "index": {
           "location": {
-            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz.tbi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "TBI"
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz.tbi"
+          }
         }
       },
-      "assemblyNames": ["peach"],
-
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "peach_genes_linear"
-        },
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "peach_genes-LinearLollipopDisplay"
-        }
-      ]
+      "assemblyNames": ["peach"]
     },
     {
       "type": "SyntenyTrack",

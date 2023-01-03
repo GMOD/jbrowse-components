@@ -36,9 +36,7 @@ const configPath = 'test_data/volvox/config.json'
 addRelativeUris(volvoxConfig, new URL(configPath, window.location.href).href)
 const supportedTrackTypes = [
   'AlignmentsTrack',
-  'PileupTrack',
   'FeatureTrack',
-  'SNPCoverageTrack',
   'VariantTrack',
   'WiggleTrack',
 ]
@@ -500,6 +498,103 @@ export const WithInlinePlugins = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 
+export const Hg38Exome = () => {
+  const assembly = {
+    name: 'GRCh38',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'GRCh38-ReferenceSequenceTrack',
+      adapter: {
+        type: 'BgzipFastaAdapter',
+        fastaLocation: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        },
+        faiLocation: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+        },
+        gziLocation: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+        },
+      },
+    },
+    aliases: ['hg38'],
+    refNameAliases: {
+      adapter: {
+        type: 'RefNameAliasAdapter',
+        location: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+        },
+      },
+    },
+  }
+
+  const tracks = [
+    {
+      type: 'FeatureTrack',
+      trackId:
+        'GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff',
+      name: 'NCBI RefSeq Genes',
+      category: ['Genes'],
+      assemblyNames: ['GRCh38'],
+      adapter: {
+        type: 'Gff3TabixAdapter',
+        gffGzLocation: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+        },
+        index: {
+          location: {
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz.tbi',
+          },
+        },
+      },
+      renderer: {
+        type: 'SvgFeatureRenderer',
+      },
+    },
+    {
+      type: 'AlignmentsTrack',
+      trackId: 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome',
+      name: 'NA12878 Exome',
+      category: ['1000 Genomes', 'Alignments'],
+      assemblyNames: ['GRCh38'],
+      adapter: {
+        type: 'CramAdapter',
+        cramLocation: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
+          locationType: 'UriLocation',
+        },
+        craiLocation: {
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai',
+          locationType: 'UriLocation',
+        },
+        sequenceAdapter: {
+          type: 'BgzipFastaAdapter',
+          fastaLocation: {
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+            locationType: 'UriLocation',
+          },
+          faiLocation: {
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.fai',
+            locationType: 'UriLocation',
+          },
+          gziLocation: {
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz.gzi',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+    },
+  ]
+
+  const state = createViewState({
+    assembly,
+    tracks,
+    location: '1:100,987,269..100,987,368',
+  })
+  state.session.view.showTrack('NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome')
+
+  return <JBrowseLinearGenomeView viewState={state} />
+}
 export const WithExternalPlugins = () => {
   // usage with buildtime plugins
   // this plugins array is then passed to the createViewState constructor
@@ -513,7 +608,8 @@ export const WithExternalPlugins = () => {
   // we manually call loadPlugins, and pass the result to the createViewState constructor
   const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
-    async function getPlugins() {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
       const loadedPlugins = await loadPlugins([
         {
           name: 'UCSC',
@@ -521,8 +617,7 @@ export const WithExternalPlugins = () => {
         },
       ])
       setPlugins(loadedPlugins)
-    }
-    getPlugins()
+    })()
   }, [setPlugins])
 
   if (!plugins) {
@@ -615,6 +710,41 @@ export const WithExternalPlugins = () => {
         showCenterLine: false,
       },
     },
+  })
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+
+export const WithInternetAccounts = () => {
+  const state = createViewState({
+    assembly,
+    tracks: [
+      {
+        type: 'QuantitativeTrack',
+        trackId: 'google_bigwig',
+        name: 'Google Drive BigWig',
+        category: ['Authentication'],
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            locationType: 'UriLocation',
+            uri: ' https://www.googleapis.com/drive/v3/files/1PIvZCOJioK9eBL1Vuvfa4L_Fv9zTooHk?alt=media',
+            internetAccountId: 'manualGoogleEntry',
+          },
+        },
+      },
+    ],
+    defaultSession,
+    location: 'ctgA:1105..1221',
+    internetAccounts: [
+      {
+        type: 'ExternalTokenInternetAccount',
+        internetAccountId: 'manualGoogleEntry',
+        name: 'Google Drive Manual Token Entry',
+        description: 'Manually enter a token to access Google Drive files',
+        tokenType: 'Bearer',
+      },
+    ],
   })
   return <JBrowseLinearGenomeView viewState={state} />
 }

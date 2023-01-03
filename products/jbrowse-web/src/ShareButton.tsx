@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { getSnapshot } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
-import copy from 'copy-to-clipboard'
+import { Dialog } from '@jbrowse/core/ui'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
-  Divider,
   IconButton,
   FormControl,
   FormControlLabel,
@@ -18,6 +15,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import copy from 'copy-to-clipboard'
 
 import { alpha } from '@mui/material/styles'
 import { makeStyles } from 'tss-react/mui'
@@ -27,7 +25,6 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 import ShareIcon from '@mui/icons-material/Share'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import SettingsIcon from '@mui/icons-material/Settings'
-import CloseIcon from '@mui/icons-material/Close'
 import { ContentCopy as ContentCopyIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -53,12 +50,6 @@ const useStyles = makeStyles()(theme => ({
   loadingMessage: {
     padding: theme.spacing(5),
   },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
 }))
 
 const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
@@ -68,7 +59,6 @@ function SettingsDialog(props: {
   onClose: Function
   currentSetting: string
 }) {
-  const { classes } = useStyles()
   const { onClose, open, currentSetting } = props
   const [setting, setSetting] = useState(currentSetting)
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
@@ -80,15 +70,11 @@ function SettingsDialog(props: {
 
   return (
     <>
-      <Dialog onClose={handleClose} open={open}>
-        <DialogTitle>
-          Configure session sharing
-          {handleClose ? (
-            <IconButton className={classes.closeButton} onClick={handleClose}>
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
+      <Dialog
+        onClose={handleClose}
+        open={open}
+        title="Configure session sharing"
+      >
         <DialogContent>
           <DialogContentText>
             Select between generating long or short URLs for the session sharing
@@ -128,23 +114,14 @@ function SettingsDialog(props: {
   )
 }
 function InfoDialog(props: { open: boolean; onClose: Function }) {
-  const { classes } = useStyles()
   const { onClose, open } = props
 
-  const handleClose = () => {
-    onClose()
-  }
-
   return (
-    <Dialog onClose={handleClose} open={open}>
-      <DialogTitle id="simple-dialog-title">
-        Info about session URLs
-        {onClose ? (
-          <IconButton className={classes.closeButton} onClick={handleClose}>
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
+    <Dialog
+      onClose={() => onClose()}
+      open={open}
+      title="Info about session URLs"
+    >
       <DialogContent>
         <DialogContentText>
           Because everything about the JBrowse session is encoded in the URL
@@ -171,132 +148,101 @@ function InfoDialog(props: { open: boolean; onClose: Function }) {
   )
 }
 
-const ShareDialog = observer(
-  ({
-    handleClose,
-    session,
-  }: {
-    handleClose: () => void
-    session: AbstractSessionModel & { shareURL: string }
-  }) => {
-    const { classes } = useStyles()
-    const [shortUrl, setShortUrl] = useState('')
-    const [longUrl, setLongUrl] = useState('')
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<unknown>()
-    const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+const ShareDialog = observer(function ({
+  handleClose,
+  session,
+}: {
+  handleClose: () => void
+  session: AbstractSessionModel & { shareURL: string }
+}) {
+  const [shortUrl, setShortUrl] = useState('')
+  const [longUrl, setLongUrl] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<unknown>()
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
 
-    const url = session.shareURL
-    const currentSetting =
-      localStorage.getItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
-    const snap = getSnapshot(session)
+  const url = session.shareURL
+  const currentSetting =
+    localStorage.getItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
+  const snap = getSnapshot(session)
 
-    useEffect(() => {
-      let cancelled = false
-      ;(async () => {
-        if (currentSetting === 'short') {
-          try {
-            setLoading(true)
-            const locationUrl = new URL(window.location.href)
-            const result = await shareSessionToDynamo(
-              snap,
-              url,
-              locationUrl.href,
-            )
-            if (!cancelled) {
-              const params = new URLSearchParams(locationUrl.search)
-              params.set('session', `share-${result.json.sessionId}`)
-              params.set('password', result.password)
-              locationUrl.search = params.toString()
-              setShortUrl(locationUrl.href)
-            }
-          } catch (e) {
-            setError(e)
-          } finally {
-            setLoading(false)
-          }
-        }
-      })()
-
-      return () => {
-        cancelled = true
-      }
-    }, [currentSetting, url, snap])
-
-    useEffect(() => {
-      let cancelled = false
-      ;(async () => {
+  useEffect(() => {
+    let cancelled = false
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      if (currentSetting === 'short') {
         try {
-          // generate long URL
-          const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
-          const longUrl = new URL(window.location.href)
-          const longParams = new URLSearchParams(longUrl.search)
-          longParams.set('session', `encoded-${sess}`)
-          longUrl.search = longParams.toString()
+          setLoading(true)
+          const locationUrl = new URL(window.location.href)
+          const result = await shareSessionToDynamo(snap, url, locationUrl.href)
           if (!cancelled) {
-            setLongUrl(longUrl.toString())
+            const params = new URLSearchParams(locationUrl.search)
+            params.set('session', `share-${result.json.sessionId}`)
+            params.set('password', result.password)
+            locationUrl.search = params.toString()
+            setShortUrl(locationUrl.href)
           }
         } catch (e) {
           setError(e)
+        } finally {
+          setLoading(false)
         }
-      })()
-      return () => {
-        cancelled = true
       }
-    }, [session])
+    })()
 
-    return (
-      <>
-        <Dialog
-          maxWidth="xl"
-          open
-          onClose={handleClose}
-          data-testid="share-dialog"
-        >
-          <DialogTitle>
-            JBrowse Shareable Link
-            {handleClose ? (
-              <IconButton className={classes.closeButton} onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            ) : null}
-          </DialogTitle>
-          <Divider />
+    return () => {
+      cancelled = true
+    }
+  }, [currentSetting, url, snap])
 
-          <DialogContent>
-            <DialogContentText>
-              Copy the URL below to share your current JBrowse session.
-              <IconButton onClick={() => setSettingsDialogOpen(true)}>
-                <SettingsIcon />
-              </IconButton>
-            </DialogContentText>
+  useEffect(() => {
+    let cancelled = false
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ;(async () => {
+      try {
+        const sess = await toUrlSafeB64(JSON.stringify(getSnapshot(session)))
+        const longUrl = new URL(window.location.href)
+        const longParams = new URLSearchParams(longUrl.search)
+        longParams.set('session', `encoded-${sess}`)
+        longUrl.search = longParams.toString()
+        if (!cancelled) {
+          setLongUrl(longUrl.toString())
+        }
+      } catch (e) {
+        setError(e)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [session])
 
-            {currentSetting === 'short' ? (
-              error ? (
-                <Typography color="error">{`${error}`}</Typography>
-              ) : loading ? (
-                <Typography>Generating short URL...</Typography>
-              ) : (
-                <TextField
-                  label="URL"
-                  value={shortUrl}
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  inputProps={{ 'data-testid': 'share-url-text' }}
-                  variant="filled"
-                  style={{ width: '100%' }}
-                  onClick={event => {
-                    const target = event.target as HTMLTextAreaElement
-                    target.select()
-                  }}
-                  data-testid="share-url-field"
-                />
-              )
+  return (
+    <>
+      <Dialog
+        maxWidth="xl"
+        open
+        onClose={handleClose}
+        title="JBrowse Shareable Link"
+        data-testid="share-dialog"
+      >
+        <DialogContent>
+          <DialogContentText>
+            Copy the URL below to share your current JBrowse session.
+            <IconButton onClick={() => setSettingsDialogOpen(true)}>
+              <SettingsIcon />
+            </IconButton>
+          </DialogContentText>
+
+          {currentSetting === 'short' ? (
+            error ? (
+              <Typography color="error">{`${error}`}</Typography>
+            ) : loading ? (
+              <Typography>Generating short URL...</Typography>
             ) : (
               <TextField
                 label="URL"
-                value={longUrl}
+                value={shortUrl}
                 InputProps={{
                   readOnly: true,
                 }}
@@ -307,68 +253,77 @@ const ShareDialog = observer(
                   target.select()
                 }}
               />
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => {
-                copy(shortUrl || longUrl.toString())
-                session.notify('Copied to clipboard', 'success')
+            )
+          ) : (
+            <TextField
+              label="URL"
+              value={longUrl}
+              InputProps={{
+                readOnly: true,
               }}
-              color="primary"
-              startIcon={<ContentCopyIcon />}
-              disabled={currentSetting === 'short' && loading}
-            >
-              Copy URL to Clipboard
-            </Button>
+              variant="filled"
+              style={{ width: '100%' }}
+              onClick={event => {
+                const target = event.target as HTMLTextAreaElement
+                target.select()
+              }}
+            />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              copy(shortUrl || longUrl.toString())
+              session.notify('Copied to clipboard', 'success')
+            }}
+            color="primary"
+            startIcon={<ContentCopyIcon />}
+            disabled={currentSetting === 'short' && loading}
+          >
+            Copy URL to Clipboard
+          </Button>
 
-            <Button onClick={handleClose} color="primary" autoFocus>
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
+          <Button onClick={handleClose} color="primary" autoFocus>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        <SettingsDialog
-          open={settingsDialogOpen}
-          onClose={() => {
-            setSettingsDialogOpen(false)
-          }}
-          currentSetting={currentSetting}
-        />
-      </>
-    )
-  },
-)
+      <SettingsDialog
+        open={settingsDialogOpen}
+        onClose={() => {
+          setSettingsDialogOpen(false)
+        }}
+        currentSetting={currentSetting}
+      />
+    </>
+  )
+})
 
-const ShareButton = observer(
-  (props: { session: AbstractSessionModel & { shareURL: string } }) => {
-    const [open, setOpen] = useState(false)
+const ShareButton = observer(function (props: {
+  session: AbstractSessionModel & { shareURL: string }
+}) {
+  const [open, setOpen] = useState(false)
 
-    const { session } = props
-    const { classes } = useStyles()
+  const { session } = props
+  const { classes } = useStyles()
 
-    const handleClose = () => {
-      setOpen(false)
-    }
-
-    return (
-      <div className={classes.shareDiv}>
-        <Button
-          data-testid="share_button"
-          onClick={async () => setOpen(true)}
-          size="small"
-          color="inherit"
-          startIcon={<ShareIcon />}
-          classes={{ root: classes.shareButton }}
-        >
-          Share
-        </Button>
-        {open ? (
-          <ShareDialog handleClose={handleClose} session={session} />
-        ) : null}
-      </div>
-    )
-  },
-)
+  return (
+    <div className={classes.shareDiv}>
+      <Button
+        onClick={async () => setOpen(true)}
+        size="small"
+        color="inherit"
+        startIcon={<ShareIcon />}
+        classes={{ root: classes.shareButton }}
+      >
+        Share
+      </Button>
+      {open ? (
+        <ShareDialog handleClose={() => setOpen(false)} session={session} />
+      ) : null}
+    </div>
+  )
+})
 
 export default ShareButton

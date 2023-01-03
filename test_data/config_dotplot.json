@@ -147,6 +147,41 @@
         },
         "assemblyNames": ["peach", "grape"]
       }
+    },
+
+    {
+      "type": "FeatureTrack",
+      "trackId": "grape_genes",
+      "name": "Vvinifera_457_v2.1.gene.sorted.gff",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/grape/Vvinifera_457_v2.1.gene.sorted.gff.gz.tbi"
+          }
+        }
+      },
+      "assemblyNames": ["grape"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "peach_genes",
+      "name": "Ppersica_298_v2.1.gene.sorted.gff3",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/peach/Ppersica_298_v2.1.gene.sorted.gff3.gz.tbi"
+          }
+        }
+      },
+      "assemblyNames": ["peach"]
     }
   ],
   "defaultSession": {

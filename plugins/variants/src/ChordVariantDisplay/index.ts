@@ -10,6 +10,7 @@ export default (pluginManager: PluginManager) => {
     const stateModel = stateModelF(configSchema)
     return new DisplayType({
       name: 'ChordVariantDisplay',
+      displayName: 'Chord variant display',
       configSchema,
       stateModel,
       trackType: 'VariantTrack',

@@ -5,10 +5,14 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
 
-used by `FeatureTrack`, has simple settings like "show/hide feature labels", etc.
+## Docs
+
+used by `FeatureTrack`, has simple settings like "show/hide feature labels",
+etc.
 
 ### LinearBasicDisplay - Properties
 

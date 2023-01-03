@@ -1,0 +1,111 @@
+ctgA	example	match	515	954	.	+	.	Name=seg15
+ctgA	example	match	1137	1318	.	+	.	Name=seg14
+ctgA	example	match	1252	1365	.	+	.	Name=seg15
+ctgA	example	match	1492	1504	.	+	.	Name=seg15
+ctgA	example	match	1754	1948	.	+	.	Name=seg14
+ctgA	example	match	1941	2377	.	+	.	Name=seg15
+ctgA	example	match	2057	2474	.	+	.	Name=seg14
+ctgA	example	match	2748	2954	.	+	.	Name=seg15
+ctgA	example	match	2890	3270	.	+	.	Name=seg14
+ctgA	example	match	3395	3811	.	+	.	Name=seg14
+ctgA	example	match	3401	3897	.	+	.	Name=seg15
+ctgA	example	match	4043	4113	.	+	.	Name=seg15
+ctgA	example	match	4065	4556	.	+	.	Name=seg14
+ctgA	example	match	4191	4514	.	+	.	Name=seg07
+ctgA	example	match	4399	4888	.	+	.	Name=seg15
+ctgA	example	match	4552	5043	.	+	.	Name=seg07
+ctgA	example	remark	4705	7713	.	+	.	Name=f01
+ctgA	example	match	4763	5030	.	+	.	Name=seg14
+ctgA	example	match	5231	5488	.	+	.	Name=seg14
+ctgA	example	match	5281	5375	.	+	.	Name=seg15
+ctgA	example	match	5373	5600	.	+	.	Name=seg07
+ctgA	example	match	5711	6041	.	+	.	Name=seg15
+ctgA	example	match	5790	6022	.	+	.	Name=seg14
+ctgA	example	match	5897	6315	.	+	.	Name=seg07
+ctgA	example	polypeptide_domain	6012	8851	.	-	.	Name=m09;Note=kinase
+ctgA	example	match	6092	6318	.	+	.	Name=seg14
+ctgA	example	match	6425	6564	.	+	.	Name=seg15
+ctgA	example	match	6491	6890	.	+	.	Name=seg07
+ctgA	example	match	6738	7087	.	+	.	Name=seg15
+ctgA	example	match	6816	6992	.	+	.	Name=seg14
+ctgA	example	remark	6990	8410	.	+	.	Name=f11
+ctgA	example	match	7126	7297	.	+	.	Name=seg07
+ctgA	example	match	7329	7595	.	+	.	Name=seg15
+ctgA	example	match	7449	7829	.	+	.	Name=seg14
+ctgA	example	match	7735	7983	.	+	.	Name=seg07
+ctgA	example	match	7858	7979	.	+	.	Name=seg15
+ctgA	example	match	8169	8453	.	+	.	Name=seg15
+ctgA	example	polypeptide_domain	8253	8366	.	-	.	Name=m01;Note=WD40
+ctgA	example	match	8447	8709	.	+	.	Name=seg07
+ctgA	example	match	8931	9186	.	+	.	Name=seg07
+ctgA	example	match	9406	9476	.	-	.	Name=seg13
+ctgA	example	match	9472	9699	.	+	.	Name=seg07
+ctgA	example	remark	9758	10000	.	+	.	Name=f12
+ctgA	example	match	9762	10000	.	-	.	Name=seg13
+ctgA	example	match	9957	10000	.	+	.	Name=seg07
+ctgA	example	match	9957	10000	.	+	.	Name=seg07
+ctgB	example	contig	-39999	-33921	.	.	.	Name=ctgB
+ctgB	example	remark	-38341	-38016	.	-	.	Name=f07;Note=This is an example
+ctgB	example	remark	-36986	-33870	.	-	.	Name=f06;Note=This is another example
+ctgB	example	remark	-35285	-34032	.	+	.	Name=f05;Note=ああ、この機能は、世界中を旅しています！
+ctgA	example	contig	10001	60001	.	.	.	Name=ctgA;multivalue=val1,val2,val3
+ctgA	example	BAC	11000	30000	.	.	.	ID=b101.2;Name=b101.2;Note=Fingerprinted BAC with end reads
+ctgA	example	SNP	11000	11000	0.987	.	.	ID=FakeSNP1;Name=FakeSNP;Note=This is a fake SNP that should appear at 1000 with length 1
+ctgA	example	clone_start	11000	11500	.	-	.	Parent=b101.2
+ctgA	example	remark	11000	12000	.	.	.	Name=Remark:hga;Alias=hga
+ctgA	est	EST_match	11050	13202	.	-	.	ID=Match1;Name=agt830.5;Target=agt830.5 1 654
+ctgA	est	EST_match	11050	17300	.	-	.	ID=Match3;Name=agt221.5;Target=agt221.5 1 1253
+ctgA	est	match_part	11050	11500	.	-	.	Parent=Match1;Name=agt830.5;Target=agt830.5 1 451
+ctgA	est	match_part	11050	11500	.	-	.	Parent=Match3;Name=agt221.5;Target=agt221.5 1 451
+ctgA	example	gene	11050	19000	.	-	.	ID=EDEN;Name=EDEN;Note=protein kinase
+ctgA	example	mRNA	11050	19000	.	-	.	ID=EDEN.1;Parent=EDEN;Name=EDEN.1;Note=Eden splice form 1;Index=1
+ctgA	example	mRNA	11050	19000	.	-	.	ID=EDEN.2;Parent=EDEN;Name=EDEN.2;Note=Eden splice form 2;Index=1
+ctgA	example	five_prime_UTR	11050	11200	.	-	.	Parent=EDEN.1
+ctgA	example	five_prime_UTR	11050	11200	.	-	.	Parent=EDEN.2
+ctgA	example	protein_coding_primary_transcript	11100	12000	.	-	.	Name=Gene:hga;Alias=hga
+ctgA	est	EST_match	11150	17200	.	-	.	ID=Match5;Name=agt767.5;Target=agt767.5 1 1153
+ctgA	est	match_part	11150	11500	.	-	.	Parent=Match5;Name=agt767.5;Target=agt767.5 1 351
+ctgA	example	polypeptide	11200	11900	.	-	.	Name=Protein:HGA;Alias=hga
+ctgA	example	CDS	11201	11500	.	-	0	Parent=EDEN.1
+ctgA	example	CDS	11201	11500	.	-	0	Parent=EDEN.2
+ctgA	example	mRNA	11300	19000	.	-	.	ID=EDEN.3;Parent=EDEN;Name=EDEN.3;Note=Eden splice form 3;Index=1
+ctgA	example	five_prime_UTR	11300	11500	.	-	.	Parent=EDEN.3
+ctgA	example	protein_coding_primary_transcript	11600	13000	.	+	.	Name=Gene:hgb;Alias=hgb
+ctgA	example	remark	11659	11984	.	-	.	Name=f07;Note=This is an example
+ctgA	example	polypeptide	11800	12900	.	+	.	Name=Protein:HGB;Alias=hgb
+ctgA	est	match_part	13000	13202	.	-	.	Parent=Match1;Name=agt830.5;Target=agt830.5 452 654
+ctgA	example	CDS	13000	13902	.	-	0	Parent=EDEN.1
+ctgA	example	five_prime_UTR	13000	13300	.	-	.	Parent=EDEN.3
+ctgA	example	remark	13014	16130	.	-	.	Name=f06;Note=This is another example
+ctgA	example	CDS	13301	13902	.	-	0	Parent=EDEN.3
+ctgA	example	remark	14715	15968	.	+	.	Name=f05;Note=Ok! Ok! I get the message.
+ctgA	est	match_part	15000	15500	.	-	.	Parent=Match3;Name=agt221.5;Target=agt221.5 452 952
+ctgA	est	match_part	15000	15500	.	-	.	Parent=Match5;Name=agt767.5;Target=agt767.5 352 852
+ctgA	example	CDS	15000	15500	.	-	0	Parent=EDEN.1
+ctgA	example	CDS	15000	15500	.	-	0	Parent=EDEN.2
+ctgA	example	CDS	15000	15500	.	-	1	Parent=EDEN.3
+ctgA	example	match	15233	15302	.	+	.	Name=seg04
+ctgA	est	EST_match	15410	17503	.	+	.	ID=Match2;Name=agt830.3;Target=agt830.3 1 595
+ctgA	est	match_part	15410	15500	.	+	.	Parent=Match2;Name=agt830.3;Target=agt830.3 505 595
+ctgA	example	match	15800	16101	.	+	.	Name=seg04
+ctgA	example	match	16442	16854	.	+	.	Name=seg04
+ctgA	example	match	16885	17241	.	+	.	Name=seg03
+ctgA	est	match_part	17000	17200	.	-	.	Parent=Match5;Name=agt767.5;Target=agt767.5 853 1153
+ctgA	est	match_part	17000	17300	.	-	.	Parent=Match3;Name=agt221.5;Target=agt221.5 953 1253
+ctgA	est	match_part	17000	17503	.	+	.	Parent=Match2;Name=agt830.3;Target=agt830.3 1 504
+ctgA	example	CDS	17000	17600	.	-	1	Parent=EDEN.3
+ctgA	example	CDS	17000	17608	.	-	0	Parent=EDEN.1
+ctgA	example	CDS	17000	17608	.	-	0	Parent=EDEN.2
+ctgA	example	match	17106	17211	.	+	.	Name=seg04
+ctgA	example	match	17410	17737	.	+	.	Name=seg03
+ctgA	est	EST_match	17500	18000	.	+	.	ID=Match4;Name=agt221.3;Target=agt221.3 1 501
+ctgA	example	three_prime_UTR	17601	19000	.	-	.	Parent=EDEN.3
+ctgA	example	three_prime_UTR	17609	19000	.	-	.	Parent=EDEN.1
+ctgA	example	three_prime_UTR	17609	19000	.	-	.	Parent=EDEN.2
+ctgA	example	match	17695	18177	.	+	.	Name=seg04
+ctgA	est	EST_match	18000	19000	.	+	.	ID=Match6;Name=agt767.3;Target=agt767.3 1 1001
+ctgA	example	match	18055	18080	.	+	.	Name=seg03
+ctgA	example	match	18306	18999	.	+	.	Name=seg03
+ctgA	example	match	18545	18783	.	+	.	Name=seg04
+ctgA	example	match	18869	18935	.	+	.	Name=seg04
+ctgA	example	match	19404	19825	.	+	.	Name=seg04

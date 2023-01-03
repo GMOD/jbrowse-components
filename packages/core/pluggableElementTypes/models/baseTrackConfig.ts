@@ -119,12 +119,19 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         },
       }),
       formatAbout: ConfigurationSchema('FormatAbout', {
+        /**
+         * #slot formatAbout.config
+         */
         config: {
           type: 'frozen',
           description: 'formats configuration object in about dialog',
           defaultValue: {},
           contextVariable: ['config'],
         },
+
+        /**
+         * #slot formatAbout.hideUris
+         */
         hideUris: {
           type: 'boolean',
           defaultValue: false,
@@ -153,6 +160,9 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         }
         return { ...snap, displays }
       },
+      /**
+       * #identifier
+       */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
       actions: (self: any) => ({

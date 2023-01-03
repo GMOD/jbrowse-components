@@ -4,8 +4,8 @@ title: OAuthInternetAccount
 toplevel: true
 ---
 
-Note: this document is automatically generated from configuration objects in
-our source code. See [Config guide](/docs/config_guide) for more info
+Note: this document is automatically generated from configuration objects in our
+source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
@@ -66,6 +66,16 @@ clientId: {
 ```js
 scopes: {
       description: 'optional scopes for the authorization call',
+      type: 'string',
+      defaultValue: '',
+    }
+```
+
+#### slot: state
+
+```js
+state: {
+      description: 'optional state for the authorization call',
       type: 'string',
       defaultValue: '',
     }

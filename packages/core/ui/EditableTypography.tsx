@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface EditableTypographyPropTypes {
+interface Props {
   value: string
   setValue: (value: string) => void
   variant: Variant
@@ -37,18 +37,17 @@ interface EditableTypographyPropTypes {
 }
 
 // using forwardRef so that MUI Tooltip can wrap this component
-const EditableTypography = React.forwardRef(
-  (props: EditableTypographyPropTypes, ref: React.Ref<HTMLDivElement>) => {
+const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
+  (props, ref) => {
     const { value, setValue, variant, ...other } = props
     const [editedValue, setEditedValue] = useState<string>()
-    const [width, setWidth] = useState(0)
     const [sizerNode, setSizerNode] = useState<HTMLSpanElement | null>(null)
     const [inputNode, setInputNode] = useState<HTMLInputElement | null>(null)
     const [blur, setBlur] = useState(false)
 
     useEffect(() => {
       if (blur) {
-        inputNode && inputNode.blur()
+        inputNode?.blur()
         setBlur(false)
       }
     }, [blur, inputNode])
@@ -60,9 +59,9 @@ const EditableTypography = React.forwardRef(
     const theme = useTheme()
 
     const clientWidth = sizerNode?.clientWidth
-    if (clientWidth && clientWidth !== width) {
-      setWidth(clientWidth)
-    }
+    const width = clientWidth || 0
+
+    const val = editedValue === undefined ? value : editedValue
 
     return (
       <div {...other} ref={ref}>
@@ -73,7 +72,7 @@ const EditableTypography = React.forwardRef(
             variant={variant}
             className={classes.typography}
           >
-            {editedValue === undefined ? value : editedValue}
+            {val}
           </Typography>
         </div>
         <InputBase
@@ -92,20 +91,18 @@ const EditableTypography = React.forwardRef(
             root: classes.inputRoot,
             focused: classes.inputFocused,
           }}
-          value={editedValue === undefined ? value : editedValue}
+          value={val}
           onChange={event => setEditedValue(event.target.value)}
           onKeyDown={event => {
             if (event.key === 'Enter') {
-              inputNode && inputNode.blur()
+              inputNode?.blur()
             } else if (event.key === 'Escape') {
               setEditedValue(undefined)
               setBlur(true)
             }
           }}
           onBlur={() => {
-            if (editedValue && editedValue !== value) {
-              setValue(editedValue)
-            }
+            setValue(editedValue || '')
             setEditedValue(undefined)
           }}
         />

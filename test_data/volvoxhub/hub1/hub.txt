@@ -1,0 +1,5 @@
+hub VolvoxHub
+shortLabel Volvox Hub
+longLabel Hub with Volvox test data
+genomesFile genomes.txt
+email stevens.garrett.j@gmail.com

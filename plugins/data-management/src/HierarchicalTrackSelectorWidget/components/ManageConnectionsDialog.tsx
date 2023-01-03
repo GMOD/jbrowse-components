@@ -1,16 +1,14 @@
 import React from 'react'
 import {
   Button,
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   IconButton,
   Tooltip,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
 import { observer } from 'mobx-react'
 import {
   AnyConfigurationModel,
@@ -18,14 +16,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+// icons
+import CloseIcon from '@mui/icons-material/Close'
 
+const useStyles = makeStyles()(theme => ({
   connectionContainer: {
     margin: theme.spacing(4),
     width: 500,
@@ -44,16 +38,7 @@ function ManageConnectionsDlg({
   const { classes } = useStyles()
   const { adminMode, connections, sessionConnections } = session
   return (
-    <Dialog open onClose={handleClose} maxWidth="lg">
-      <DialogTitle>
-        Delete connections
-        <IconButton
-          className={classes.closeButton}
-          onClick={() => handleClose()}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} maxWidth="lg" title="Delete connections">
       <DialogContent>
         <Typography>
           Click the X icon to delete the connection from your config completely

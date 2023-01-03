@@ -30,3 +30,12 @@ jobs:
         uses: bahmutov/npm-install@v1
       - name: Check codebase format
         run: yarn prettier --check .
+
+  spellcheck:
+    name: Spell check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check spelling
+        uses: crate-ci/typos@master

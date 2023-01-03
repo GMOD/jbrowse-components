@@ -9,9 +9,9 @@ import Figure from './figure'
 JBrowse Web features the ability to automatically provide URL parameters to
 setup a session
 
-Note that the embedded components like @jbrowse/react-linear-genome-view make
-no assumptions on how URL params are used, so would have to be implemented by
-the consumer of the library
+Note that the embedded components like @jbrowse/react-linear-genome-view make no
+assumptions on how URL params are used, so would have to be implemented by the
+consumer of the library
 
 ## Simple API for linear genome view
 
@@ -138,12 +138,13 @@ localStorage entry.
 
 #### Shared sessions
 
-If you click the "Share button" in the header bar, it will generate a
-"shareable link" that you can give to other users
+If you click the "Share button" in the header bar, it will generate a "shareable
+link" that you can give to other users
 
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
-See [this FAQ entry for more info about how shared sessions work](../faq#how-does-the-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+See
+[this FAQ entry for more info about how shared sessions work](../faq#how-does-the-session-sharing-with-shortened-urls-work-in-jbrowse-web)
 
 #### Session spec
 
@@ -179,10 +180,10 @@ Expanded
 }
 ```
 
-As you can see, you can supply an array of views (so you can open multiple
-views at once) and can specify the loc, tracks, assembly, and view type, or
-other view specific parameters (different view types may accept different
-params, e.g. dotplot has two assemblies)
+As you can see, you can supply an array of views (so you can open multiple views
+at once) and can specify the loc, tracks, assembly, and view type, or other view
+specific parameters (different view types may accept different params, e.g.
+dotplot has two assemblies)
 
 ##### Circular view
 
@@ -306,9 +307,9 @@ Expanded
 
 #### JSON sessions
 
-Similar to encoded sessions, but more readable, JSON session let you specify
-the input a JSON snapshot of a session session. This is slightly different from
-a session spec, which has extra logic that loads the session. JSON sessions are
+Similar to encoded sessions, but more readable, JSON session let you specify the
+input a JSON snapshot of a session session. This is slightly different from a
+session spec, which has extra logic that loads the session. JSON sessions are
 literal session snapshots, like those that might come from the "Export
 session..." process
 
@@ -332,5 +333,5 @@ https://jbrowse.org/code/jb2/v1.5.9/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbF
 
 Note that the "Share" button has a gear icon that let's you select "Long URL"
 that produces these URLs. The encoded share links can be used without the
-central session sharing system in place, as the entire session is encoded in
-the URL.
+central session sharing system in place, as the entire session is encoded in the
+URL.

@@ -57,6 +57,7 @@ function RecentSessionCard({
   const { name, path } = sessionData
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const data = await ipcRenderer.invoke('loadThumbnail', path)

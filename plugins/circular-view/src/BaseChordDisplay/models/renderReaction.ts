@@ -1,3 +1,4 @@
+import clone from 'clone'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 
@@ -13,9 +14,9 @@ export function renderReactionData(self: any) {
     renderProps: self.renderProps(),
     renderArgs: {
       assemblyName: view.displayedRegions[0]?.assemblyName,
-      adapterConfig: JSON.parse(JSON.stringify(self.adapterConfig)),
+      adapterConfig: clone(self.adapterConfig),
       rendererType: rendererType.name,
-      regions: JSON.parse(JSON.stringify(view.displayedRegions)),
+      regions: clone(view.displayedRegions),
       blockDefinitions: self.blockDefinitions,
       sessionId: getRpcSessionId(self),
       timeout: 1000000,
@@ -68,5 +69,10 @@ export async function renderReactionEffect(
     signal,
   })
 
-  return { html, data, renderingComponent: rendererType.ReactComponent }
+  return {
+    html,
+    data,
+    reactElement: data.reactElement,
+    renderingComponent: rendererType.ReactComponent,
+  }
 }

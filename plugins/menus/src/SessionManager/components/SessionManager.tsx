@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
   IconButton,
   List,
   ListItem,
@@ -16,13 +14,16 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import DeleteIcon from '@mui/icons-material/Delete'
-import ViewListIcon from '@mui/icons-material/ViewList'
 
 import { observer } from 'mobx-react'
 import pluralize from 'pluralize'
 import { AbstractSessionModel } from '@jbrowse/core/util'
+
+// icons
+import DeleteIcon from '@mui/icons-material/Delete'
+import ViewListIcon from '@mui/icons-material/ViewList'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -165,10 +166,8 @@ const SessionManager = observer(({ session }: { session: SessionModel }) => {
         open={open}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        title={`Delete session "${sessionNameToDelete}"?`}
       >
-        <DialogTitle id="alert-dialog-title">
-          {`Delete session "${sessionNameToDelete}"?`}
-        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             This action cannot be undone

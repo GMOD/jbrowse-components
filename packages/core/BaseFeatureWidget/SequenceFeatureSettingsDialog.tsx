@@ -1,29 +1,12 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Divider,
-  IconButton,
-  TextField,
-} from '@mui/material'
+import { Button, DialogContent, DialogActions, TextField } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-
-// icons
-import CloseIcon from '@mui/icons-material/Close'
 
 const useStyles = makeStyles()(theme => ({
   formElt: {
     margin: theme.spacing(3),
     width: 400,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
   },
   dialogContent: {
     width: '80em',
@@ -45,20 +28,12 @@ export default function SequenceFeatureSettingsDialog({
   const intronBpValid = !Number.isNaN(+intronBp)
   const upDownBpValid = !Number.isNaN(+upDownBp)
   return (
-    <Dialog maxWidth="xl" open onClose={() => handleClose()}>
-      <DialogTitle>
-        Feature sequence settings
-        {handleClose ? (
-          <IconButton
-            className={classes.closeButton}
-            onClick={() => handleClose()}
-          >
-            <CloseIcon />
-          </IconButton>
-        ) : null}
-      </DialogTitle>
-      <Divider />
-
+    <Dialog
+      maxWidth="xl"
+      open
+      onClose={() => handleClose()}
+      title={'Feature sequence settings'}
+    >
       <DialogContent className={classes.dialogContent}>
         <TextField
           label="Number of intronic bases around splice site to display"

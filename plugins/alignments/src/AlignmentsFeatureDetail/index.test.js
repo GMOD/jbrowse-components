@@ -11,14 +11,16 @@ test('open up a widget', () => {
   const pluginManager = new PluginManager([])
 
   const Session = types.model({
-    pluginManager: types.optional(types.frozen(), {}),
     rpcManager: types.optional(types.frozen(), {}),
     configuration: ConfigurationSchema('test', {}),
     widget: stateModelFactory(pluginManager),
   })
-  const session = Session.create({
-    widget: { type: 'AlignmentsFeatureWidget' },
-  })
+  const session = Session.create(
+    {
+      widget: { type: 'AlignmentsFeatureWidget' },
+    },
+    { pluginManager },
+  )
   session.widget.setFeatureData({
     seq: 'TTGTTGCGGAGTTGAACAACGGCATTAGGAACACTTCCGTCTCTCACTTTTATACGATTATGATTGGTTCTTTAGCCTTGGTTTAGATTGGTAGTAGTAG',
     start: 2,

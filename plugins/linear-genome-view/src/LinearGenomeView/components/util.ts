@@ -1,17 +1,8 @@
 import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
-import { TextSearchManager } from '@jbrowse/core/util'
-
-export function dedupe(
-  results: BaseResult[] = [],
-  cb: (result: BaseResult) => string,
-) {
-  return results.filter(
-    (elt, idx, self) => idx === self.findIndex(t => cb(t) === cb(elt)),
-  )
-}
+import { dedupe, TextSearchManager } from '@jbrowse/core/util'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 export async function fetchResults({
   queryString,
@@ -62,4 +53,10 @@ export function splitLast(str: string, split: string): [string, string] {
     const after = str.slice(lastIndex + 1)
     return [before, after]
   }
+}
+
+export function getRelativeX<
+  T extends { clientX: number; target: EventTarget | null },
+>(event: T, element: HTMLElement | null) {
+  return event.clientX - (element?.getBoundingClientRect().left || 0)
 }

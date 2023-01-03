@@ -427,13 +427,7 @@
       "displays": [
         {
           "type": "LinearBasicDisplay",
-          "displayId": "gencode_nclist_hg38_linear",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "labels": {
-              "description": "jexl:get(feature,'gene_name')"
-            }
-          }
+          "displayId": "gencode_nclist_hg38_linear"
         }
       ]
     },
@@ -603,7 +597,7 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "nanopore_targetted_alignments_0.1",
+      "trackId": "nanopore_targeted_alignments_0.1",
       "name": "Nanopore amplicon alignments 0.1x (chr7:55,000,000-56,000,000)",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": ["hg38"],
@@ -637,7 +631,7 @@
     },
     {
       "type": "AlignmentsTrack",
-      "trackId": "nanopore_targetted_alignments",
+      "trackId": "nanopore_targeted_alignments",
       "name": "Nanopore amplicon (chr7:55,000,000-56,000,000) [causes out-of-memory]",
       "description": "Source http://bioinformatics.uni-muenster.de/share/NanoPipe_test_data/?lang=en",
       "assemblyNames": ["hg38"],
@@ -1024,6 +1018,36 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome",
+      "name": "NA12878 Exome",
+      "assemblyNames": ["GRCh38"],
+      "category": ["1000 Genomes", "Alignments"],
+      "adapter": {
+        "type": "CramAdapter",
+        "cramLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram"
+        },
+        "craiLocation": {
+          "locationType": "UriLocation",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram.crai"
+        },
+        "sequenceAdapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "chm1_pacbio",
       "name": "CHM1 pacbio",
       "assemblyNames": ["hg19"],
@@ -1341,6 +1365,19 @@
             "uri": "https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz.tbi",
             "locationType": "UriLocation"
           }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "skbr3_bedpe",
+      "name": "SKBR3 BEDPE",
+      "assemblyNames": ["hg19"],
+      "category": ["SKBR3"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.bedpe"
         }
       }
     },

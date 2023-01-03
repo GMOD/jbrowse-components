@@ -1,28 +1,31 @@
 import React, { ComponentType, LazyExoticComponent } from 'react'
 import { IAnyModelType, IAnyStateTreeNode } from 'mobx-state-tree'
 import PluggableElementBase from './PluggableElementBase'
-import { AnyConfigurationSchemaType } from '../configuration/configurationSchema'
+import { AnyConfigurationSchemaType } from '../configuration'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WidgetComponentType = LazyExoticComponent<React.FC<any>> | React.FC<any>
+
+type HeadingComponentType = ComponentType<{ model: IAnyStateTreeNode }>
 
 export default class WidgetType extends PluggableElementBase {
   heading?: string
 
   configSchema: AnyConfigurationSchemaType
 
-  HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
+  HeadingComponent?: HeadingComponentType
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ReactComponent: LazyExoticComponent<React.FC<any>> | React.FC<any>
+  ReactComponent: WidgetComponentType
 
   stateModel: IAnyModelType
 
   constructor(stuff: {
     name: string
     heading?: string
-    HeadingComponent?: ComponentType<{ model: IAnyStateTreeNode }>
+    HeadingComponent?: HeadingComponentType
     configSchema: AnyConfigurationSchemaType
     stateModel: IAnyModelType
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ReactComponent: LazyExoticComponent<React.FC<any>> | React.FC<any>
+    ReactComponent: WidgetComponentType
   }) {
     super(stuff)
     this.heading = stuff.heading

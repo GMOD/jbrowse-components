@@ -7,12 +7,16 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'MultiWiggleAdapter',
+        displayName: 'Multi-wiggle adapter',
         configSchema,
         adapterCapabilities: [
           'hasResolution',
           'hasLocalStats',
           'hasGlobalStats',
         ],
+        adapterMetadata: {
+          hiddenFromGUI: true,
+        },
         getAdapterClass: () =>
           import('./MultiWiggleAdapter').then(r => r.default),
       }),

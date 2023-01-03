@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { version } from '../version'
 import {
+  cast,
   getMembers,
   getParent,
   getSnapshot,
@@ -30,27 +31,54 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import InfoIcon from '@mui/icons-material/Info'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
+import { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { ReferringNode } from '../types'
 
+/**
+ * #stateModel JBrowseReactLGVSessionModel
+ * inherits SnackbarModel
+ */
 export default function sessionModelFactory(pluginManager: PluginManager) {
   const model = types
     .model('ReactLinearGenomeViewSession', {
+      /**
+       * #property
+       */
       name: types.identifier,
+      /**
+       * #property
+       */
       margin: 0,
-      view: pluginManager.getViewType('LinearGenomeView').stateModel,
+      /**
+       * #property
+       */
+      view: pluginManager.getViewType('LinearGenomeView')
+        .stateModel as LinearGenomeViewStateModel,
+      /**
+       * #property
+       */
       widgets: types.map(
         pluginManager.pluggableMstType('widget', 'stateModel'),
       ),
+      /**
+       * #property
+       */
       activeWidgets: types.map(
         types.safeReference(
           pluginManager.pluggableMstType('widget', 'stateModel'),
         ),
       ),
+      /**
+       * #property
+       */
       connectionInstances: types.array(
         pluginManager.pluggableMstType('connection', 'stateModel'),
       ),
+      /**
+       * #property
+       */
       sessionTracks: types.array(
         pluginManager.pluggableConfigSchemaType('track'),
       ),
@@ -72,60 +100,111 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       queueOfDialogs: [] as [DialogComponentType, any][],
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
       get disableAddTracks() {
         return getParent<any>(self).disableAddTracks
       },
+      /**
+       * #getter
+       */
       get DialogComponent() {
         if (self.queueOfDialogs.length) {
           return self.queueOfDialogs[0]?.[0]
         }
         return undefined
       },
+      /**
+       * #getter
+       */
       get DialogProps() {
         if (self.queueOfDialogs.length) {
           return self.queueOfDialogs[0]?.[1]
         }
         return undefined
       },
+      /**
+       * #getter
+       */
       get textSearchManager(): TextSearchManager {
         return getParent<any>(self).textSearchManager
       },
+      /**
+       * #getter
+       */
       get rpcManager() {
         return getParent<any>(self).rpcManager
       },
+      /**
+       * #getter
+       */
       get configuration() {
         return getParent<any>(self).config.configuration
       },
+      /**
+       * #getter
+       */
       get assemblies() {
         return [getParent<any>(self).config.assembly]
       },
+      /**
+       * #getter
+       */
       get assemblyNames() {
         return [getParent<any>(self).config.assemblyName]
       },
+      /**
+       * #getter
+       */
       get tracks() {
         return getParent<any>(self).config.tracks
       },
+      /**
+       * #getter
+       */
       get aggregateTextSearchAdapters() {
         return getParent<any>(self).config.aggregateTextSearchAdapters
       },
+      /**
+       * #getter
+       */
       get connections() {
         return getParent<any>(self).config.connections
       },
+      /**
+       * #getter
+       */
       get adminMode() {
         return false
       },
+      /**
+       * #getter
+       */
       get assemblyManager() {
         return getParent<any>(self).assemblyManager
       },
+      /**
+       * #getter
+       */
       get version() {
         return version
       },
+      /**
+       * #getter
+       */
       get views() {
         return [self.view]
       },
+      /**
+       * #method
+       */
       renderProps() {
         return { theme: readConfObject(this.configuration, 'theme') }
       },
+      /**
+       * #getter
+       */
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
@@ -136,6 +215,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return undefined
       },
       /**
+       * #method
        * See if any MST nodes currently have a types.reference to this object.
        * @param object - object
        * @returns An array where the first element is the node referring
@@ -159,6 +239,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       addTrackConf(trackConf: AnyConfigurationModel) {
         const { trackId, type } = trackConf
         if (!type) {
@@ -171,6 +254,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const length = self.sessionTracks.push(trackConf)
         return self.sessionTracks[length - 1]
       },
+      /**
+       * #action
+       */
       queueDialog(
         callback: (doneCallback: () => void) => [DialogComponentType, any],
       ): void {
@@ -179,9 +265,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         })
         self.queueOfDialogs = [...self.queueOfDialogs, [component, props]]
       },
+      /**
+       * #action
+       */
       removeActiveDialog() {
         self.queueOfDialogs = self.queueOfDialogs.slice(1)
       },
+      /**
+       * #action
+       */
       makeConnection(
         configuration: AnyConfigurationModel,
         initialSnapshot = {},
@@ -204,6 +296,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         const length = self.connectionInstances.push(connectionData)
         return self.connectionInstances[length - 1]
       },
+      /**
+       * #action
+       */
 
       removeReferring(
         referring: any,
@@ -248,6 +343,9 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         })
       },
 
+      /**
+       * #action
+       */
       prepareToBreakConnection(configuration: AnyConfigurationModel) {
         const callbacksToDereferenceTrack: Function[] = []
         const dereferenceTypeCount: Record<string, number> = {}
@@ -269,27 +367,34 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         return [safelyBreakConnection, dereferenceTypeCount]
       },
 
+      /**
+       * #action
+       */
       breakConnection(configuration: AnyConfigurationModel) {
         const name = readConfObject(configuration, 'name')
         const connection = self.connectionInstances.find(c => c.name === name)
         self.connectionInstances.remove(connection)
       },
-
+      /**
+       * #action
+       */
       addView(typeName: string, initialState = {}) {
         const typeDefinition = pluginManager.getElementType('view', typeName)
         if (!typeDefinition) {
           throw new Error(`unknown view type ${typeName}`)
         }
 
-        self.view = {
+        self.view = cast({
           ...initialState,
           type: typeName,
-        }
+        })
         return self.view
       },
 
       removeView() {},
-
+      /**
+       * #action
+       */
       addWidget(
         typeName: string,
         id: string,
@@ -309,27 +414,36 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         self.widgets.set(id, data)
         return self.widgets.get(id)
       },
-
+      /**
+       * #action
+       */
       showWidget(widget: any) {
         if (self.activeWidgets.has(widget.id)) {
           self.activeWidgets.delete(widget.id)
         }
         self.activeWidgets.set(widget.id, widget)
       },
-
+      /**
+       * #action
+       */
       hasWidget(widget: any) {
         return self.activeWidgets.has(widget.id)
       },
-
+      /**
+       * #action
+       */
       hideWidget(widget: any) {
         self.activeWidgets.delete(widget.id)
       },
-
+      /**
+       * #action
+       */
       hideAllWidgets() {
         self.activeWidgets.clear()
       },
 
       /**
+       * #action
        * set the global selection, i.e. the globally-selected object.
        * can be a feature, a view, just about anything
        * @param thing -
@@ -339,21 +453,29 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #action
        * clears the global selection
        */
       clearSelection() {
         self.selection = undefined
       },
-
+      /**
+       * #action
+       */
       clearConnections() {
         self.connectionInstances.length = 0
       },
-
+      /**
+       * #action
+       */
       renameCurrentSession(sessionName: string) {
         return getParent<any>(self).renameCurrentSession(sessionName)
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
       getTrackActionMenuItems(config: any) {
         return [
           {

@@ -14,11 +14,11 @@ import {
   ExportSvgOptions,
   HEADER_OVERVIEW_HEIGHT,
 } from '..'
-import { Polygon, Cytobands } from './OverviewScaleBar'
+import { Polygon, Cytobands } from './OverviewScalebar'
 
 type LGV = LinearGenomeViewModel
 
-function ScaleBar({ model, fontSize }: { model: LGV; fontSize: number }) {
+function Scalebar({ model, fontSize }: { model: LGV; fontSize: number }) {
   const {
     offsetPx,
     dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx, totalBp },
@@ -178,7 +178,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
       ) : null}
 
       <g transform={`translate(0 ${fontSize + cytobandHeight})`}>
-        <ScaleBar model={model} fontSize={fontSize} />
+        <Scalebar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerHeight + cytobandHeight})`}>
         <SVGRuler model={model} fontSize={fontSize} width={width} />
@@ -263,6 +263,7 @@ function SVGTracks({
 // render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
+  const { Wrapper = ({ children }) => <>{children}</> } = opts
   const { width, tracks, showCytobands } = model
   const shift = 50
   const offset =
@@ -275,31 +276,32 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     tracks.map(async track => {
       const display = track.displays[0]
       await when(() => (display.ready !== undefined ? display.ready : true))
-      const result = await display.renderSvg(opts)
-      return { track, result }
+      return { track, result: await display.renderSvg(opts) }
     }),
   )
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <svg
-      width={width}
-      height={height}
-      xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink"
-      viewBox={[0, 0, width + shift * 2, height].toString()}
-    >
-      {/* background white */}
-      <rect width={width + shift * 2} height={height} fill="white" />
+    <Wrapper>
+      <svg
+        width={width}
+        height={height}
+        xmlns="http://www.w3.org/2000/svg"
+        xmlnsXlink="http://www.w3.org/1999/xlink"
+        viewBox={[0, 0, width + shift * 2, height].toString()}
+      >
+        {/* background white */}
+        <rect width={width + shift * 2} height={height} fill="white" />
 
-      <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
-        <SVGHeader model={model} />
-        <SVGTracks
-          model={model}
-          displayResults={displayResults}
-          offset={offset}
-        />
-      </g>
-    </svg>,
+        <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+          <SVGHeader model={model} />
+          <SVGTracks
+            model={model}
+            displayResults={displayResults}
+            offset={offset}
+          />
+        </g>
+      </svg>
+    </Wrapper>,
   )
 }

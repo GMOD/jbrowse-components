@@ -98,10 +98,10 @@ readConfObject(track.configuration, 'maxHeight')`
 ## Using config callbacks
 
 Config callbacks allow you to have a dynamic color based on some function logic
-you provide. All config slots can actually become config callback. The
-arguments that are given to the callback are listed by the 'contextVariable'
-but must be provided by the calling code (the code reading the config slot). To
-pass arguments to the a callback we say
+you provide. All config slots can actually become config callback. The arguments
+that are given to the callback are listed by the 'contextVariable' but must be
+provided by the calling code (the code reading the config slot). To pass
+arguments to the a callback we say
 
 ```js
 readConfObject(config, 'color', { feature })
@@ -116,8 +116,8 @@ various feature attributes.
 We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more
 details.
 
-There are also more examples and information in our [config
-guide](/docs/config_guides/jexl).
+There are also more examples and information in our
+[config guide](/docs/config_guides/jexl).
 
 If you had a variant track in your config, and wanted to make a custom config
 callback for color, it might look like this:
@@ -158,17 +158,17 @@ callback for color, it might look like this:
 This draws all SNV (single nucleotide variants) as green, and other types as
 purple (insertion, deletion, other structural variant).
 
-You can also [write your own jexl function](../pluggable_elements) and
-call it in the same way in the configuration.
+You can also [write your own jexl function](../pluggable_elements) and call it
+in the same way in the configuration.
 
 :::info Note
 
 It can be extremely useful to utilize a custom jexl function in the default
-configuration for a pluggable element type, as you can observe in [one of the
-examples above](#example-config-with-multiple-slot-types), the default value of
-the `color` slot of the renderer is a jexl function. If you configure your
-plugin with a custom jexl function, you can use that function as a default
-value in your various pluggable elements.
+configuration for a pluggable element type, as you can observe in
+[one of the examples above](#example-config-with-multiple-slot-types), the
+default value of the `color` slot of the renderer is a jexl function. If you
+configure your plugin with a custom jexl function, you can use that function as
+a default value in your various pluggable elements.
 
 :::
 

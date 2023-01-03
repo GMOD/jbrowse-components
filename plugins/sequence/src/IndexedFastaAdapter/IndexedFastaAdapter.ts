@@ -7,11 +7,8 @@ import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature } from '@jbrowse/core/util'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import AbortablePromiseCache from 'abortable-promise-cache'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
-import PluginManager from '@jbrowse/core/PluginManager'
-import { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 type T = { refName: string; start: number; end: number; fasta: IndexedFasta }
 
@@ -25,14 +22,6 @@ export default class extends BaseSequenceAdapter {
       return fasta.getSequence(refName, start, end, { ...args, signal })
     },
   })
-
-  public constructor(
-    config: AnyConfigurationModel,
-    getSubAdapter?: getSubAdapterType,
-    pluginManager?: PluginManager,
-  ) {
-    super(config, getSubAdapter, pluginManager)
-  }
 
   public async getRefNames(opts?: BaseOptions) {
     const { fasta } = await this.setup()
@@ -117,7 +106,7 @@ export default class extends BaseSequenceAdapter {
 
   /**
    * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
+   * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
   public freeResources(/* { region } */): void {}

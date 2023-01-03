@@ -1,39 +1,27 @@
 import React, { useState, useEffect } from 'react'
 import copy from 'copy-to-clipboard'
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Typography,
-} from '@mui/material'
-import CloseIcon from '@mui/icons-material/Close'
+import { Button, DialogContent, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import {
   getConf,
   readConfObject,
   AnyConfigurationModel,
 } from '../configuration'
+import Dialog from './Dialog'
+import LoadingEllipses from './LoadingEllipses'
 import { getSession, getEnv } from '../util'
 import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
 
 type FileInfo = Record<string, unknown> | string
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   content: {
     minWidth: 800,
   },
-}))
+})
 
-export function FileInfo({ config }: { config: AnyConfigurationModel }) {
+export function FileInfoPanel({ config }: { config: AnyConfigurationModel }) {
   const [error, setError] = useState<unknown>()
   const [info, setInfo] = useState<FileInfo>()
   const session = getSession(config)
@@ -43,6 +31,7 @@ export function FileInfo({ config }: { config: AnyConfigurationModel }) {
     const aborter = new AbortController()
     const { signal } = aborter
     let cancelled = false
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
       try {
         const adapterConfig = readConfObject(config, 'adapter')
@@ -81,7 +70,7 @@ export function FileInfo({ config }: { config: AnyConfigurationModel }) {
       {error ? (
         <Typography color="error">{`${error}`}</Typography>
       ) : info === undefined ? (
-        'Loading file data...'
+        <LoadingEllipses message="Loading file data" />
       ) : (
         <Attributes attributes={details} />
       )}
@@ -146,7 +135,7 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfo config={config} />
+      <FileInfoPanel config={config} />
     </>
   )
 }
@@ -171,17 +160,7 @@ export default function AboutDialog({
   ) as React.FC<any>
 
   return (
-    <Dialog open onClose={handleClose} maxWidth="xl">
-      <DialogTitle>
-        {trackName}
-        <IconButton
-          className={classes.closeButton}
-          onClick={() => handleClose()}
-          size="large"
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
       <DialogContent className={classes.content}>
         <AboutComponent config={config} />
       </DialogContent>

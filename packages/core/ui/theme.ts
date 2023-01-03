@@ -1,6 +1,9 @@
 import { blue, green, red, amber } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
-import type { PaletteOptions } from '@mui/material/styles/createPalette'
+import type {
+  PaletteAugmentColorOptions,
+  PaletteOptions,
+} from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
 declare module '@mui/material/styles/createPalette' {
@@ -211,7 +214,7 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       palette: {
         tertiary: refTheme.palette.augmentColor(
           'color' in theme.palette.tertiary
-            ? theme.palette.tertiary
+            ? (theme.palette.tertiary as PaletteAugmentColorOptions)
             : { color: theme.palette.tertiary },
         ),
       },
@@ -222,7 +225,7 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       palette: {
         quaternary: refTheme.palette.augmentColor(
           'color' in theme.palette.quaternary
-            ? theme.palette.quaternary
+            ? (theme.palette.quaternary as PaletteAugmentColorOptions)
             : { color: theme.palette.quaternary },
         ),
       },

@@ -1,17 +1,25 @@
-import { Track } from '../base'
-import { getLocalOrRemoteStream } from '../util'
 import { SingleBar, Presets } from 'cli-progress'
 import { createGunzip } from 'zlib'
 import readline from 'readline'
 
-export async function* indexVcf(
-  config: Track,
-  attributesToIndex: string[],
-  inLocation: string,
-  outLocation: string,
-  typesToExclude: string[],
-  quiet: boolean,
-) {
+// locals
+import { Track } from '../base'
+import { getLocalOrRemoteStream } from '../util'
+
+export async function* indexVcf({
+  config,
+  attributesToIndex,
+  inLocation,
+  outLocation,
+  quiet,
+}: {
+  config: Track
+  attributesToIndex: string[]
+  inLocation: string
+  outLocation: string
+  typesToExclude: string[]
+  quiet: boolean
+}) {
   const { trackId } = config
 
   // progress bar code was aided by blog post at

@@ -48,18 +48,13 @@ export async function renderBlockEffect(
   }
 
   const { rendererType, rpcManager, renderProps } = props
-  try {
-    const { reactElement, ...data } = await rendererType.renderInClient(
-      rpcManager,
-      renderProps,
-    )
-    return {
-      reactElement,
-      data,
-      renderingComponent: rendererType.ReactComponent,
-    }
-  } catch (e) {
-    console.error('hello', e)
-    throw e
+  const { reactElement, ...data } = await rendererType.renderInClient(
+    rpcManager,
+    renderProps,
+  )
+  return {
+    reactElement,
+    data,
+    renderingComponent: rendererType.ReactComponent,
   }
 }

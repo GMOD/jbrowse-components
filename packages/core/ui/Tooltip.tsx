@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { Feature } from '../util/simpleFeature'
+import { Feature } from '../util'
 import { readConfObject, AnyConfigurationModel } from '../configuration'
 
 const useStyles = makeStyles()({

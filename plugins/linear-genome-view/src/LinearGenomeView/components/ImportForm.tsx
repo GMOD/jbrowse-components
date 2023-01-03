@@ -1,16 +1,24 @@
-import React, { useState, lazy } from 'react'
+import React, { useState, useEffect, lazy } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import {
+  Button,
+  CircularProgress,
+  FormControl,
+  Container,
+  Grid,
+} from '@mui/material'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+
+// icons
 import CloseIcon from '@mui/icons-material/Close'
 
 // locals
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults, splitLast } from './util'
-import { LinearGenomeViewModel, WIDGET_HEIGHT } from '..'
+import { LinearGenomeViewModel } from '..'
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles()(theme => ({
@@ -33,7 +41,6 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { assemblyNames, assemblyManager, textSearchManager } = session
   const { rankSearchResults, isSearchDialogDisplayed, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
-  const [importError, setImportError] = useState(error)
   const [option, setOption] = useState<BaseResult>()
 
   const searchScope = model.searchScope(selectedAsm)
@@ -43,15 +50,23 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     ? assembly?.error
     : 'No configured assemblies'
   const regions = assembly?.regions || []
-  const err = assemblyError || importError
-  const [myVal, setValue] = useState('')
-  const value = myVal || regions[0]?.refName
+  const displayError = assemblyError || error
+  const [value, setValue] = useState('')
+  const r0 = regions[0]?.refName
 
-  function navToOption(option: BaseResult) {
+  // useEffect resets to an "initial state" of displaying first region from assembly
+  // after assembly change. needs to react to selectedAsm as well as r0 because changing
+  // assembly will run setValue('') and then r0 may not change if assembly names are the
+  // same across assemblies, but it still needs to be reset
+  useEffect(() => {
+    setValue(r0)
+  }, [r0, selectedAsm])
+
+  async function navToOption(option: BaseResult) {
     const location = option.getLocation()
     const trackId = option.getTrackId()
     if (location) {
-      model.navToLocString(location, selectedAsm)
+      await model.navToLocString(location, selectedAsm)
       if (trackId) {
         model.showTrack(trackId)
       }
@@ -66,7 +81,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   async function handleSelectedRegion(input: string) {
     try {
       if (option?.getDisplayString() === input && option.hasLocation()) {
-        navToOption(option)
+        await navToOption(option)
+      } else if (option?.results?.length) {
+        model.setSearchResults(option.results, option.getLabel())
       } else {
         const [ref, rest] = splitLast(input, ':')
         const allRefs = assembly?.allRefNamesWithLowerCase || []
@@ -74,7 +91,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           allRefs.includes(input) ||
           (allRefs.includes(ref) && !Number.isNaN(parseInt(rest, 10)))
         ) {
-          model.navToLocString(input, selectedAsm)
+          await model.navToLocString(input, selectedAsm)
         } else {
           const results = await fetchResults({
             queryString: input,
@@ -88,9 +105,9 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
           if (results.length > 1) {
             model.setSearchResults(results, input.toLowerCase())
           } else if (results.length === 1) {
-            navToOption(results[0])
+            await navToOption(results[0])
           } else {
-            model.navToLocString(input, selectedAsm)
+            await model.navToLocString(input, selectedAsm)
           }
         }
       }
@@ -100,20 +117,19 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     }
   }
 
-  const height = WIDGET_HEIGHT + 5
-
   // implementation notes:
   // having this wrapped in a form allows intuitive use of enter key to submit
   return (
     <div className={classes.container}>
-      {err ? <ErrorMessage error={err} /> : null}
+      {displayError ? <ErrorMessage error={displayError} /> : null}
       <Container className={classes.importFormContainer}>
         <form
-          onSubmit={event => {
+          onSubmit={async event => {
             event.preventDefault()
             model.setError(undefined)
             if (value) {
-              handleSelectedRegion(value)
+              // has it's own error handling
+              await handleSelectedRegion(value)
             }
           }}
         >
@@ -124,47 +140,49 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             alignItems="center"
           >
             <Grid item>
-              <AssemblySelector
-                onChange={val => {
-                  setImportError('')
-                  setSelectedAsm(val)
-                  setValue('')
-                }}
-                session={session}
-                selected={selectedAsm}
-                InputProps={{ style: { height } }}
-              />
+              <FormControl>
+                <AssemblySelector
+                  onChange={val => {
+                    setSelectedAsm(val)
+                    setValue('')
+                  }}
+                  localStorageKey="lgv"
+                  session={session}
+                  selected={selectedAsm}
+                />
+              </FormControl>
             </Grid>
             <Grid item>
               {selectedAsm ? (
-                err ? (
+                assemblyError ? (
                   <CloseIcon style={{ color: 'red' }} />
                 ) : value ? (
-                  <RefNameAutocomplete
-                    fetchResults={queryString =>
-                      fetchResults({
-                        queryString,
-                        assembly,
-                        textSearchManager,
-                        rankSearchResults,
-                        searchScope,
-                      })
-                    }
-                    model={model}
-                    assemblyName={assemblyError ? undefined : selectedAsm}
-                    value={value}
-                    // note: minWidth 270 accomodates full width of helperText
-                    minWidth={270}
-                    onChange={str => setValue(str)}
-                    onSelect={val => setOption(val)}
-                    TextFieldProps={{
-                      variant: 'outlined',
-                      helperText:
-                        'Enter sequence name, feature name, or location',
-                      style: { minWidth: '175px' },
-                      InputProps: { style: { height } },
-                    }}
-                  />
+                  <FormControl>
+                    <RefNameAutocomplete
+                      fetchResults={queryString =>
+                        fetchResults({
+                          queryString,
+                          assembly,
+                          textSearchManager,
+                          rankSearchResults,
+                          searchScope,
+                        })
+                      }
+                      model={model}
+                      assemblyName={assemblyError ? undefined : selectedAsm}
+                      value={value}
+                      // note: minWidth 270 accommodates full width of helperText
+                      minWidth={270}
+                      onChange={str => setValue(str)}
+                      onSelect={val => setOption(val)}
+                      TextFieldProps={{
+                        variant: 'outlined',
+                        helperText:
+                          'Enter sequence name, feature name, or location',
+                        style: { minWidth: '175px' },
+                      }}
+                    />
+                  </FormControl>
                 ) : (
                   <CircularProgress
                     role="progressbar"
@@ -175,27 +193,31 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               ) : null}
             </Grid>
             <Grid item>
-              <Button
-                type="submit"
-                disabled={!value}
-                className={classes.button}
-                variant="contained"
-                color="primary"
-              >
-                Open
-              </Button>
-              <Button
-                disabled={!value}
-                className={classes.button}
-                onClick={() => {
-                  model.setError(undefined)
-                  model.showAllRegionsInAssembly(selectedAsm)
-                }}
-                variant="contained"
-                color="secondary"
-              >
-                Show all regions in assembly
-              </Button>
+              <FormControl>
+                <Button
+                  type="submit"
+                  disabled={!value}
+                  className={classes.button}
+                  variant="contained"
+                  color="primary"
+                >
+                  Open
+                </Button>
+              </FormControl>
+              <FormControl>
+                <Button
+                  disabled={!value}
+                  className={classes.button}
+                  onClick={() => {
+                    model.setError(undefined)
+                    model.showAllRegionsInAssembly(selectedAsm)
+                  }}
+                  variant="contained"
+                  color="secondary"
+                >
+                  Show all regions in assembly
+                </Button>
+              </FormControl>
             </Grid>
           </Grid>
         </form>

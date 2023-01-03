@@ -9,10 +9,10 @@ type BasicView = React.ComponentType<{
   model: any
   session?: IAnyStateTreeNode
 }>
-type ViewReactComponent = React.LazyExoticComponent<BasicView> | BasicView
+type ViewComponentType = React.LazyExoticComponent<BasicView> | BasicView
 
 export default class ViewType extends PluggableElementBase {
-  ReactComponent: ViewReactComponent
+  ReactComponent: ViewComponentType
 
   stateModel: IAnyModelType
 
@@ -28,7 +28,8 @@ export default class ViewType extends PluggableElementBase {
 
   constructor(stuff: {
     name: string
-    ReactComponent: ViewReactComponent
+    displayName?: string
+    ReactComponent: ViewComponentType
     stateModel: IAnyModelType
     extendedName?: string
   }) {

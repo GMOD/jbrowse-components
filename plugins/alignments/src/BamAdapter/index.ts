@@ -3,12 +3,12 @@ import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import configSchema from './configSchema'
 
 export default (pluginManager: PluginManager) => {
-  pluginManager.addAdapterType(
-    () =>
-      new AdapterType({
-        name: 'BamAdapter',
-        configSchema,
-        getAdapterClass: () => import('./BamAdapter').then(r => r.default),
-      }),
-  )
+  pluginManager.addAdapterType(() => {
+    return new AdapterType({
+      name: 'BamAdapter',
+      displayName: 'BAM adapter',
+      configSchema,
+      getAdapterClass: () => import('./BamAdapter').then(r => r.default),
+    })
+  })
 }

@@ -5,8 +5,11 @@ toplevel: true
 ---
 
 Note: this document is automatically generated from mobx-state-tree objects in
-our source code. See [Core concepts and intro to pluggable
-elements](/docs/developer_guide/) for more info
+our source code. See
+[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
+info
+
+## Docs
 
 ### BaseDisplay - Properties
 
@@ -69,8 +72,7 @@ any
 
 #### getter: rendererType
 
-the pluggable element type object for this display's
-renderer
+the pluggable element type object for this display's renderer
 
 ```js
 // type
@@ -79,8 +81,8 @@ RendererType
 
 #### getter: DisplayMessageComponent
 
-if a display-level message should be displayed instead,
-make this return a react component
+if a display-level message should be displayed instead, make this return a react
+component
 
 ```js
 // type
@@ -98,8 +100,8 @@ MenuItem[]
 
 #### method: renderProps
 
-the react props that are passed to the Renderer when data
-is rendered in this display
+the react props that are passed to the Renderer when data is rendered in this
+display
 
 ```js
 // type signature

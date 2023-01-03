@@ -7,12 +7,10 @@ export default (pluginManager: PluginManager) => {
     () =>
       new AdapterType({
         name: 'PAFAdapter',
+        displayName: 'PAF adapter',
         configSchema,
         adapterMetadata: {
-          category: null,
           hiddenFromGUI: true,
-          displayName: null,
-          description: null,
         },
         getAdapterClass: () => import('./PAFAdapter').then(r => r.default),
       }),

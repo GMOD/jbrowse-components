@@ -9,6 +9,7 @@ let readingHeader = false
 let title = ''
 let topLevel = false
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
   for await (const line of rl) {
     if (line.startsWith('import Figure')) {

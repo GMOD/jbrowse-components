@@ -4,7 +4,12 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import { AbstractSessionModel, getSession, getEnv } from '@jbrowse/core/util'
+import {
+  AbstractSessionModel,
+  dedupe,
+  getSession,
+  getEnv,
+} from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -62,6 +67,7 @@ export function generateHierarchy(
   model: HierarchicalTrackSelectorModel,
   trackConfigurations: AnyConfigurationModel[],
   collapsed: { get: (arg: string) => boolean | undefined },
+  extra?: string,
 ) {
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
@@ -86,7 +92,7 @@ export function generateHierarchy(
       for (let i = 0; i < categories.length; i++) {
         const category = categories[i]
         const ret = currLevel.children.find(c => c.name === category)
-        const id = categories.slice(0, i + 1).join(',')
+        const id = extra + '-' + categories.slice(0, i + 1).join(',')
         if (!ret) {
           const n = {
             children: [],
@@ -133,7 +139,7 @@ export default function stateTreeFactory(pm: PluginManager) {
     }))
     .actions(self => ({
       addToSelection(elt: AnyConfigurationModel[]) {
-        self.selection = [...self.selection, ...elt]
+        self.selection = dedupe([...self.selection, ...elt], e => e.trackId)
       },
       removeFromSelection(elt: AnyConfigurationModel[]) {
         self.selection = self.selection.filter(f => !elt.includes(f))
@@ -221,10 +227,7 @@ export default function stateTreeFactory(pm: PluginManager) {
         const conns =
           (assembly &&
             connectionInstances
-              ?.filter(c =>
-                hasAnyOverlap(assembly.allAliases, getConf(c, 'assemblyNames')),
-              )
-              .map(c => ({
+              ?.map(c => ({
                 // @ts-ignore
                 id: getSnapshot(c).configuration,
                 name: getConf(c, 'name'),
@@ -232,7 +235,8 @@ export default function stateTreeFactory(pm: PluginManager) {
                 state: {
                   expanded: true,
                 },
-              }))) ||
+              }))
+              .filter(f => f.children.length)) ||
           []
 
         return {
@@ -247,13 +251,14 @@ export default function stateTreeFactory(pm: PluginManager) {
 
       connectionHierarchy(
         assemblyName: string,
-        connection: { tracks: AnyConfigurationModel[] },
+        connection: { name: string; tracks: AnyConfigurationModel[] },
       ) {
         return generateHierarchy(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           self as any,
           self.connectionTrackConfigurations(assemblyName, connection),
           self.collapsed,
+          connection.name,
         )
       },
     }))

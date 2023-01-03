@@ -388,11 +388,14 @@ custom         Either a JSON file location or inline JSON that defines a custom
     const output = runFlags.target || runFlags.out || '.'
 
     if (!(await exists(output))) {
-      await mkdir(output, { recursive: true })
+      const dir = output.endsWith('.json') ? path.dirname(output) : output
+      await mkdir(dir, { recursive: true })
     }
-
-    const isDir = fs.statSync(output).isDirectory()
-    this.target = isDir ? `${output}/config.json` : output
+    let isDir = false
+    try {
+      isDir = fs.statSync(output).isDirectory()
+    } catch (e) {}
+    this.target = isDir ? path.join(output, 'config.json') : output
 
     const { sequence: argsSequence } = runArgs as { sequence: string }
     this.debug(`Sequence location is: ${argsSequence}`)

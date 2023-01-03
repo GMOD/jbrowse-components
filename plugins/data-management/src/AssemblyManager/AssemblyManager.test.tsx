@@ -29,7 +29,7 @@ const mockRootModel = {
 }
 
 describe('AssemblyManager GUI', () => {
-  it('renders succesfully', () => {
+  it('renders successfully', () => {
     const { getByText } = render(
       <AssemblyManager rootModel={mockRootModel} onClose={() => {}} />,
     )
