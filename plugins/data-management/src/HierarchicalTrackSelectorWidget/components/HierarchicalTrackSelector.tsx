@@ -17,7 +17,7 @@ import AddIcon from '@mui/icons-material/Add'
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
 import Header from './Header'
-import Node from './Node'
+import Node from './TrackListNode'
 
 const useStyles = makeStyles()(theme => ({
   fab: {
