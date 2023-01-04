@@ -125,16 +125,14 @@ export function generateHierarchy(
   return hierarchy.children
 }
 
-export default function stateTreeFactory(pluginManager: PluginManager) {
+export default function stateTreeFactory(pm: PluginManager) {
   return types
     .model('HierarchicalTrackSelectorWidget', {
       id: ElementId,
       type: types.literal('HierarchicalTrackSelectorWidget'),
       collapsed: types.map(types.boolean),
       filterText: '',
-      view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      ),
+      view: types.safeReference(pm.pluggableMstType('view', 'stateModel')),
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
@@ -167,7 +165,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
-        const viewType = pluginManager.getViewType(self.view.type)
+        const viewType = pm.getViewType(self.view.type)
         if (!trackConf) {
           return undefined
         }

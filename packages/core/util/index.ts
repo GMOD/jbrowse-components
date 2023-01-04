@@ -35,6 +35,7 @@ export * from './when'
 export * from './range'
 export * from './dedupe'
 export { SimpleFeature, isFeature }
+export type { Feature }
 
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
