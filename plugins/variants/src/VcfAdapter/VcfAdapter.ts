@@ -23,9 +23,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       string,
       (sc?: StatusCallback) => IntervalTree<Feature>
     >
+    featureMap: Record<string, string[]>
   }>
 
-  public static capabilities = ['getFeatures', 'getRefNames']
+  public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
 
   public async getHeader() {
     const { header } = await this.setup()
@@ -72,6 +73,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       header,
       parser,
       intervalTreeMap,
+      featureMap,
     }
   }
 
@@ -106,6 +108,39 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
         observer.error(e)
       }
     }, opts.stopToken)
+  }
+
+  public async getExportData(
+    regions: Region[],
+    formatType: string,
+    _opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    if (formatType !== 'vcf') {
+      return undefined
+    }
+
+    const { header, featureMap } = await this.setup()
+    const exportLines: string[] = [header]
+
+    for (const region of regions) {
+      const { refName, start, end } = region
+      const lines = featureMap[refName] || []
+
+      for (const line of lines) {
+        // VCF format: CHROM POS ID REF ALT QUAL FILTER ...
+        // Extract POS (second field, 1-based)
+        const fields = line.split('\t')
+        const pos = parseInt(fields[1]!, 10)
+
+        // VCF positions are 1-based, convert to 0-based for comparison
+        // and check if overlaps with region
+        if (pos - 1 >= start && pos - 1 < end) {
+          exportLines.push(line)
+        }
+      }
+    }
+
+    return exportLines.join('\n')
   }
 
   async getSources() {
