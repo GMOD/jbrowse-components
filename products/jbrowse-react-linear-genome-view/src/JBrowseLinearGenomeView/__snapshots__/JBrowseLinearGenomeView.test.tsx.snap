@@ -943,7 +943,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </svg>
                   </button>
                   <span
-                    class="MuiTypography-root MuiTypography-body1 css-1hrnph2-MuiTypography-root-trackName"
+                    class="MuiTypography-root MuiTypography-body1 css-t8snz5-MuiTypography-root-trackName"
                   >
                     <span>
                       Reference sequence (volvox)
