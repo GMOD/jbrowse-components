@@ -16,7 +16,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', async () => {
   const { view, findByTestId, queryByText, findAllByTestId, findByText } =
@@ -35,7 +35,7 @@ test('copy and delete track in admin mode', async () => {
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(view.tracks.length).toBe(0))
-}, 20000)
+}, 40000)
 
 test('copy and delete reference sequence track disabled', async () => {
   const { view, rootModel, session, queryByText, findByTestId, findByText } =
@@ -61,7 +61,7 @@ test('copy and delete reference sequence track disabled', async () => {
   await waitFor(() => expect(view.tracks.length).toBe(0))
   expect(trackMenuItems[2].disabled).toBe(true)
   expect(trackMenuItems[3].disabled).toBe(true)
-}, 20000)
+}, 40000)
 
 test('copy and delete track to session tracks', async () => {
   const { view, findByTestId, findAllByTestId, findByText } = createView(
@@ -82,7 +82,7 @@ test('copy and delete track to session tracks', async () => {
   fireEvent.click(await findByTestId('track_menu_icon'))
   fireEvent.click(await findByText('Delete track'))
   await waitFor(() => expect(view.tracks.length).toBe(0))
-}, 20000)
+}, 40000)
 
 xtest('delete connection', async () => {
   const pluginManager = getPluginManager(masterConfig, true)

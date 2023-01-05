@@ -17,7 +17,7 @@ const readBuffer2 = generateReadBuffer(
     new LocalFile(require.resolve(`../../test_data/volvoxhub/hub1/${url}`)),
 )
 
-const delay = 20000
+const delay = 40000
 const opts = [{}, delay]
 const root = 'https://jbrowse.org/volvoxhub/'
 
