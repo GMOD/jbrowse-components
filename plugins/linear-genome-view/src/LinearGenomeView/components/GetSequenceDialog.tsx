@@ -168,7 +168,6 @@ const GetSequenceDialog = observer(function ({
           </Container>
         ) : null}
         <TextField
-          data-testid="rubberband-sequence"
           variant="outlined"
           multiline
           minRows={5}
