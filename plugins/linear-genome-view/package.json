@@ -39,6 +39,8 @@
     "useSrc": "node ../../scripts/useSrc.js"
   },
   "dependencies": {
+    "@types/normalize-wheel": "^1.0.0",
+    "@types/file-saver": "^2.0.1",
     "@mui/icons-material": "^5.0.1",
     "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
