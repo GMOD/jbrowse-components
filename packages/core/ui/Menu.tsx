@@ -419,7 +419,7 @@ const MenuPage = forwardRef<HTMLDivElement, MenuPageProps>(
   },
 )
 
-interface MenuProps extends PopoverProps {
+export interface MenuProps extends PopoverProps {
   menuItems: MenuItem[]
   onMenuItemClick: (
     event: React.MouseEvent<HTMLLIElement>,
