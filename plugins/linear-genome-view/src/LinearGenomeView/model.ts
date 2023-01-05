@@ -1762,6 +1762,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
           ? this.pxToBp(self.width / 2)
           : undefined
       },
+
+      get visibleRegions() {
+        return self.dynamicBlocks.contentBlocks
+      },
     }))
     .actions(self => ({
       afterCreate() {
