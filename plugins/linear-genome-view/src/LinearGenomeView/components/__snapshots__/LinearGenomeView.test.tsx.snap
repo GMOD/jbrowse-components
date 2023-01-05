@@ -476,7 +476,7 @@ exports[`renders one track, one region 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1t6uc7x-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
@@ -1295,7 +1295,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1t6uc7x-MuiTypography-root-trackName"
           >
             <span>
               Foo Track
@@ -1427,7 +1427,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
+            class="MuiTypography-root MuiTypography-body1 css-1t6uc7x-MuiTypography-root-trackName"
           >
             <span>
               Bar Track

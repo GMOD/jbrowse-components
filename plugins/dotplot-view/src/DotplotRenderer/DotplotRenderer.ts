@@ -17,7 +17,7 @@ import ComparativeRenderer, {
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 
 // locals
-import { Dotplot1DView, Dotplot1DViewModel } from '../DotplotView/model'
+import { Dotplot1DView, Dotplot1DViewModel } from '../1dview'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 const { parseCigar } = MismatchParser

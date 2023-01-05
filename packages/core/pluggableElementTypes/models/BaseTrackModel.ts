@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { transaction } from 'mobx'
 import {
   getRoot,
@@ -16,9 +17,13 @@ import {
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
+import { Save } from '../../ui/Icons'
 import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
+
+// lazies
+const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
@@ -210,6 +215,16 @@ export function createBaseTrackModel(
 
         return [
           ...menuItems,
+          {
+            label: 'Save track data',
+            icon: Save,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SaveTrackDataDlg,
+                { model: self, handleClose },
+              ])
+            },
+          },
           ...(compatDisp.length > 1
             ? [
                 {

@@ -7,7 +7,7 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { Region } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { TabixIndexedFile } from '@gmod/tabix'
 import gff, { GFF3Feature, GFF3FeatureLineWithRefs } from '@gmod/gff'
 import { Observer } from 'rxjs'
@@ -36,22 +36,18 @@ export default class extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
+    const pm = this.pluginManager
     const gffGzLocation = readConfObject(config, 'gffGzLocation')
     const indexType = readConfObject(config, ['index', 'indexType'])
     const location = readConfObject(config, ['index', 'location'])
     const dontRedispatch = readConfObject(config, 'dontRedispatch')
 
     this.dontRedispatch = dontRedispatch || ['chromosome', 'contig', 'region']
+    const loc = openLocation(location, pm)
     this.gff = new TabixIndexedFile({
-      filehandle: openLocation(gffGzLocation, this.pluginManager),
-      csiFilehandle:
-        indexType === 'CSI'
-          ? openLocation(location, this.pluginManager)
-          : undefined,
-      tbiFilehandle:
-        indexType !== 'CSI'
-          ? openLocation(location, this.pluginManager)
-          : undefined,
+      filehandle: openLocation(gffGzLocation, pm),
+      csiFilehandle: indexType === 'CSI' ? loc : undefined,
+      tbiFilehandle: indexType !== 'CSI' ? loc : undefined,
       chunkCacheSize: 50 * 2 ** 20,
       renameRefSeqs: (n: string) => n,
     })
@@ -152,7 +148,8 @@ export default class extends BaseFeatureDataAdapter {
               f.get('end'),
               originalQuery.start,
               originalQuery.end,
-            )
+            ) &&
+            f.get('type') !== 'region'
           ) {
             observer.next(f)
           }

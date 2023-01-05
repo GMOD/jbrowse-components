@@ -2,10 +2,11 @@ import { ConfigurationSchema } from '../configuration'
 import PluginManager from '../PluginManager'
 
 /**
- * #config BaseAssembly
- * This corresponds to the assemblies section of the config
+ * #config Assembly
+ * This corresponds to the assemblies section of the config, generally accessed
+ * through the assemblyManager
  */
-function assemblyConfigSchema(pluginManager: PluginManager) {
+export default function assemblyConfigSchema(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'BaseAssembly',
     {
@@ -21,8 +22,8 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
 
       /**
        * #slot
-       * sequence refers to a reference sequence track that has an adapter containing,
-       * importantly, a sequence adapter such as IndexedFastaAdapter
+       * sequence refers to a reference sequence track that has an adapter
+       * containing, importantly, a sequence adapter such as IndexedFastaAdapter
        */
       sequence: pluginManager.getTrackType('ReferenceSequenceTrack')
         .configSchema,
@@ -42,9 +43,9 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           /**
            * #slot refNameAliases.adapter
-           * refNameAliases help resolve e.g. chr1 and 1 as the same entity
-           * the data for refNameAliases are fetched from an adapter, that is
-           * commonly a tsv like chromAliases.txt from UCSC or similar
+           * refNameAliases help resolve e.g. chr1 and 1 as the same entity the
+           * data for refNameAliases are fetched from an adapter, that is commonly a tsv
+           * like chromAliases.txt from UCSC or similar
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
@@ -64,8 +65,8 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           /**
            * #slot cytobands.adapter
-           * cytoband data is fetched from an adapter, and can be displayed by a
-           * view type as ideograms
+           * cytoband data is fetched from an adapter, and can be displayed by
+           * a view type as ideograms
            */
           adapter: pluginManager.pluggableConfigSchemaType('adapter'),
         },
@@ -94,13 +95,11 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
     {
       /**
        * #identifier name
-       * the name acts as a unique identifier in the config, so it cannot be duplicated.
-       * it usually a short human readable "id" like hg38, but you can also optionally
-       * customize the assembly "displayName" config slot
+       * the name acts as a unique identifier in the config, so it cannot be
+       * duplicated. it usually a short human readable "id" like hg38, but you can
+       * also optionally customize the assembly "displayName" config slot
        */
       explicitIdentifier: 'name',
     },
   )
 }
-
-export default assemblyConfigSchema
