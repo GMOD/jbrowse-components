@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { transaction } from 'mobx'
 import {
   getRoot,
@@ -16,9 +17,18 @@ import {
 } from '../../configuration'
 import PluginManager from '../../PluginManager'
 import { MenuItem } from '../../ui'
+import { Save } from '../../ui/Icons'
 import { getContainingView, getEnv, getSession } from '../../util'
 import { isSessionModelWithConfigEditing } from '../../util/types'
 import { ElementId } from '../../util/types/mst'
+
+// locals
+import { stringifyGFF3 } from './saveTrackFileTypes/gff3'
+import { stringifyGBK } from './saveTrackFileTypes/genbank'
+import { stringifyBED } from './saveTrackFileTypes/bed'
+
+// lazies
+const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData'))
 
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
@@ -183,6 +193,27 @@ export function createBaseTrackModel(
         })
       },
     }))
+    .views(() => ({
+      saveTrackFileFormatOptions() {
+        return {
+          gff3: {
+            name: 'GFF3',
+            extension: 'gff3',
+            callback: stringifyGFF3,
+          },
+          genbank: {
+            name: 'GenBank',
+            extension: 'gbk',
+            callback: stringifyGBK,
+          },
+          bed: {
+            name: 'BED',
+            extension: 'bed',
+            callback: stringifyBED,
+          },
+        }
+      },
+    }))
     .views(self => ({
       /**
        * #method
@@ -196,6 +227,19 @@ export function createBaseTrackModel(
 
         return [
           ...menuItems,
+          {
+            label: 'Save track data',
+            icon: Save,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SaveTrackDataDlg,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+          },
           ...(compatDisp.length > 1
             ? [
                 {

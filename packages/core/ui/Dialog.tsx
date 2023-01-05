@@ -37,7 +37,7 @@ function DialogError({ error }: { error: unknown }) {
   )
 }
 
-interface Props extends DialogProps {
+export interface Props extends DialogProps {
   header?: React.ReactNode
 }
 
