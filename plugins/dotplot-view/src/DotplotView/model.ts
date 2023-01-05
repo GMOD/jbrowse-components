@@ -36,7 +36,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 // locals
-import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
+import { Dotplot1DView, DotplotHView, DotplotVView } from '../1dview'
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
 import { BaseBlock } from './blockTypes'
 
@@ -734,5 +734,4 @@ export default function stateModelFactory(pm: PluginManager) {
 
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>
-
-export { type Dotplot1DViewModel, Dotplot1DView } from './1dview'
+export { type Dotplot1DViewModel, Dotplot1DView } from '../1dview'
