@@ -1,12 +1,5 @@
 import React, { useState } from 'react'
-import {
-  IconButton,
-  InputAdornment,
-  TextField,
-  Select,
-  FormControl,
-  InputLabel,
-} from '@mui/material'
+import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -31,37 +24,33 @@ export interface InfoArgs {
   id: string
   conf: AnyConfigurationModel
 }
-function Facet({ label, options }: { label: string; options: string[] }) {
-  return (
-    <FormControl sx={{ m: 0 }}>
-      <InputLabel shrink htmlFor="select-multiple-native">
-        {label}
-      </InputLabel>
-      <Select
-        multiple
-        native
-        value={[]}
-        label={label}
-        // @ts-ignore Typings are not considering `native`
-        onChange={() => {}}
-        inputProps={{
-          id: 'select-multiple-native',
-        }}
-      >
-        {options.map(name => (
-          <option key={name} value={name}>
-            {name}
-          </option>
-        ))}
-      </Select>
-    </FormControl>
-  )
+
+type Facets = Record<string, string>
+
+function getKeys(obj: Record<string, unknown>): string[] {
+  const keys = Object.keys(obj)
+  let ret = [] as string[]
+  console.log({ keys })
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    const o = obj[key]
+    if (typeof o === 'object' && o !== null && !Array.isArray(o)) {
+      console.log('k1', o)
+      ret = [...ret, ...getKeys(o as Record<string, unknown>)]
+    } else {
+      console.log('k2', key)
+      ret = [...ret, key]
+    }
+  }
+  console.log({ ret })
+  return ret
 }
 
 function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
   const { assemblyNames, view } = model
   const [filterText, setFilterText] = useState('')
   const [info, setInfo] = useState<InfoArgs>()
+  const [facets, setFacets] = useState<Facets>({})
   const assemblyName = assemblyNames[0]
   const session = getSession(model)
 
@@ -69,14 +58,23 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
     .trackConfigurations(assemblyName)
     .filter(conf => matches(filterText, conf, session))
 
-  const rows = tracks.map(track => ({
-    id: track.trackId,
-    name: getTrackName(track, session),
-    category: readConfObject(track, 'category')?.join(', '),
-    conf: track,
-  }))
+  const metadataTracks = tracks.map(track => readConfObject(track, 'metadata'))
+  const metadataKeys = metadataTracks
+    .map(track => getKeys(track))
+    .filter(f => f.length)
+  console.log({ metadataKeys })
 
-  const categories = [...new Set(rows.map(r => r.category || 'None'))]
+  const rows = tracks
+    .map(track => ({
+      id: track.trackId,
+      name: getTrackName(track, session),
+      category: readConfObject(track, 'category')?.join(', '),
+      conf: track,
+    }))
+    .filter(f => {
+      const r = facets['category']
+      return r ? f.category?.includes(r) : true
+    })
 
   const infoFields = [
     {
@@ -112,7 +110,7 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
     })),
   ]
   const shownTrackIds: string[] = view.tracks.map(
-    (t: any) => t.configuration.trackId as string,
+    (t: any) => t.configuration.trackId,
   )
 
   return (
@@ -120,9 +118,7 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
       {info ? (
         <JBrowseMenu
           anchorEl={info?.target}
-          menuItems={
-            getSession(model).getTrackActionMenuItems?.(info.conf) || []
-          }
+          menuItems={session.getTrackActionMenuItems?.(info.conf) || []}
           onMenuItemClick={(_event, callback) => {
             callback()
             setInfo(undefined)
@@ -147,7 +143,13 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
       />
       <div style={{ display: 'flex', margin: 5 }}>
         <div style={{ width: 200, marginRight: 10 }}>
-          <Facet label="Category" options={categories} />
+          <TextField
+            value={facets['category']}
+            onChange={event =>
+              setFacets({ ...facets, category: event.target.value })
+            }
+            label="Filter category"
+          />
         </div>
         <div
           style={{
