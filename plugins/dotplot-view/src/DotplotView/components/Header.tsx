@@ -93,6 +93,10 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
               label: 'Rectanglular view - same total bp',
             },
             {
+              onClick: () => model.showAllRegions(),
+              label: 'Show all regions',
+            },
+            {
               onClick: () => model.setDrawCigar(!model.drawCigar),
               type: 'checkbox',
               label: 'Draw CIGAR',
