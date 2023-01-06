@@ -1,6 +1,8 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton } from '@mui/material'
+
+// locals
 import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView'
 import { LinearSyntenyViewModel } from '../model'
 import { Curves, StraightLines } from './Icons'
