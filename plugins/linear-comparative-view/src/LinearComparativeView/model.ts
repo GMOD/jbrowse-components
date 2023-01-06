@@ -328,7 +328,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * includes a subset of view menu options because the full list is a
        * little overwhelming. overridden by subclasses
        */
-      headerMenuItems() {
+      headerMenuItems(): MenuItem[] {
         return []
       },
     }))
@@ -336,21 +336,19 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      menuItems() {
-        const menuItems: MenuItem[] = []
-
+      menuItems(): MenuItem[] {
         return [
           ...self.views
             .map((view, idx) => {
               const items = view.menuItems?.()
               return items
-                ? menuItems.push({
+                ? ({
                     label: `View ${idx + 1} Menu`,
                     subMenu: items,
-                  })
+                  } as MenuItem)
                 : undefined
             })
-            .filter(f => !!f),
+            .filter((f): f is MenuItem => !!f),
           {
             label: 'Return to import form',
             onClick: () => {
@@ -366,7 +364,6 @@ function stateModelFactory(pluginManager: PluginManager) {
             onClick: self.activateTrackSelector,
             icon: TrackSelectorIcon,
           },
-          ...self.headerMenuItems(),
         ]
       },
       /**
