@@ -16,30 +16,6 @@ In 2022, we published preprints for our main JBrowse 2 paper
 https://www.biorxiv.org/content/10.1101/2022.07.28.501447v1 and JBrowse Jupyter
 https://www.biorxiv.org/content/10.1101/2022.05.11.491552v1.
 
-## More plugins for the plugin store!
-
-We have continued see new plugins in the plugin ecosystem, including:
-
-- MultiLevelLinearView - a plugin that synchronizes multiple linear genome views
-  at multiple zoom levels, by @carolinebridge-oicr
-
-- Reactome - showing pathways using Reactome's pathway viewer, by
-  @carolinebridge-oicr
-
-- RefGet API for fetching sequence info from external contributor Emilio Righi,
-  who has also contributed in making Vue adapters for our React code
-
-See more here, as well as screenshots below:
-https://jbrowse.org/jb2/plugin_store/
-
-![](https://github.com/GMOD/jbrowse-plugin-multilevel-linear-view/raw/main/img/mllv.gif)
-
-Video of the MultiLevelLinearView
-
-![](https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/reactome-screenshot-fs8.png)
-
-Screenshot of the Reactome plugin, showing the pathway viewer
-
 ## URL query parameter API
 
 We added the ability to control JBrowse 2 using URL parameters in v1.6.4
@@ -56,14 +32,14 @@ pages for example. See https://jbrowse.org/jb2/docs/urlparams/ for more info.
 ## Navigating synteny using the linear genome view
 
 In v2.2.1, we added the ability to view "SyntenyTracks" as a regular linear
-genome view. You can then additionally right click a feature on these tracks an
-select "Open synteny view at this position" and it will show you e.g. the
-matching region on another assembly.
+genome view track. These tracks let you right click a feature and select "Open
+synteny view at this position" and it will show you e.g. the matching region on
+another assembly.
 
 ## Base pair exact rendering of synteny
 
-A long standing goal has been to render "base pair" exact rendering of synteny
-in JBrowse when the information is available e.g. as CIGAR strings.
+A long standing goal has been to render "base pair" exact synteny when the
+information is available e.g. as CIGAR strings.
 
 This allows us to see that a "deletion relative to one genome" is an "insertion
 relative to the other".
@@ -127,6 +103,30 @@ https://github.com/cmdcolin/jb2profile
 developers can manually opt-in to this with web worker RPC
 https://jbrowse.org/storybook/lgv/main/?path=/story/using-webworker-rpc--page)
 
+## More plugins for the plugin store!
+
+We have continued see new plugins in the plugin ecosystem, including:
+
+- MultiLevelLinearView - a plugin that synchronizes multiple linear genome views
+  at multiple zoom levels, by @carolinebridge-oicr
+
+- Reactome - showing pathways using Reactome's pathway viewer, by
+  @carolinebridge-oicr
+
+- RefGet API for fetching sequence info from external contributor Emilio Righi,
+  who has also contributed in making Vue adapters for our React code
+
+See more here, as well as screenshots below:
+https://jbrowse.org/jb2/plugin_store/
+
+![](https://github.com/GMOD/jbrowse-plugin-multilevel-linear-view/raw/main/img/mllv.gif)
+
+Video of the MultiLevelLinearView
+
+![](https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/reactome-screenshot-fs8.png)
+
+Screenshot of the Reactome plugin, showing the pathway viewer
+
 ## Multi-wiggle tracks
 
 We added the ability to have "multi-wiggle" tracks in v2.1.0, which let's you
@@ -145,14 +145,16 @@ see multiple quantitative signals on the same Y-scalebar easily.
 In v2.3.1, we introduced the ability to render the connection between paired-end
 and split-long reads using arcs! This style of view is similar to what we
 offered in the "breakpoint split view" but is more easily accessible being
-simply a linear genome view track rather than a custom view type! We also
-created the "read cloud view" which stratifies the reads according to "insert
-size". Each of these features is similar to ones available in JBrowse 1, but has
-the added ability in JBrowse 2 to be able to connect across discontinuous
-regions (xref https://jbrowse.org/docs/paired_reads.html for JBrowse 1).
+simply a linear genome view track rather than a custom view type!
 
-The arcs will color themselves according to read orientation (e.g. blue, teal,
-and green indicate various types of inversions or duplications) as well as
+We also created the "read cloud view" which stratifies the reads according to
+"insert size". Each of these features is similar to ones available in JBrowse 1,
+but has the added ability in JBrowse 2 to be able to connect across
+discontinuous regions (xref https://jbrowse.org/docs/paired_reads.html for
+JBrowse 1).
+
+The features will color themselves according to read orientation (e.g. blue,
+teal, and green indicate various types of inversions or duplications) as well as
 insert size (pink is dynamically added if the insert size is statistically too
 small, which read is added if the insert size is statistically too large, each
 using +/- 3sd as a measure).
