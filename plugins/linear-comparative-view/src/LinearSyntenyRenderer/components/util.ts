@@ -2,7 +2,7 @@ import { AssemblyManager, Feature, ViewSnap } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 
 // locals
-import { generateMatches, interstitialYPos } from '../../util'
+import { interstitialYPos } from '../../util'
 
 type RectTuple = [number, number, number, number]
 

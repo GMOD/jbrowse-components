@@ -55,7 +55,7 @@ interface Display {
   renderingComponent: React.FC<any>
   error: unknown
   message: string
-  filled: boolean
+  features: unknown
 }
 
 const ServerSideRenderedBlockContent = observer(function ({
@@ -69,7 +69,7 @@ const ServerSideRenderedBlockContent = observer(function ({
   if (model.message) {
     return <BlockMessage messageText={model.message} />
   }
-  if (!model.filled) {
+  if (!model.features) {
     return <LoadingMessage />
   }
 

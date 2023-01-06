@@ -6,9 +6,6 @@ import { observer } from 'mobx-react'
 import { Menu } from '@jbrowse/core/ui'
 
 // icons
-import LinkIcon from '@mui/icons-material/Link'
-import LinkOffIcon from '@mui/icons-material/LinkOff'
-import CropFreeIcon from '@mui/icons-material/CropFree'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 // locals

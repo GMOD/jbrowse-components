@@ -136,14 +136,9 @@ function stateModelFactory(pluginManager: PluginManager) {
           onAction(self, param => {
             if (self.linkViews) {
               const { name, path, args } = param
-              const actions = [
-                'horizontalScroll',
-                'zoomTo',
-                'setScaleFactor',
-                'showTrack',
-                'hideTrack',
-                'toggleTrack',
-              ]
+
+              // doesn't link showTrack/hideTrack, doesn't make sense in synteny views most time
+              const actions = ['horizontalScroll', 'zoomTo', 'setScaleFactor']
               if (actions.includes(name) && path) {
                 this.onSubviewAction(name, path, args)
               }

@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
+  Feature,
   getContainingView,
   getSession,
   makeAbortableReaction,
@@ -41,8 +42,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile((/* self */) => ({
       renderInProgress: undefined as AbortController | undefined,
-      filled: false,
-      data: undefined as unknown,
+      features: undefined as Feature[] | undefined,
       message: undefined as string | undefined,
       renderingComponent: undefined as unknown,
       ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
@@ -74,11 +74,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setLoading(abortController: AbortController) {
-          self.filled = false
           self.message = undefined
-          self.data = undefined
           self.error = undefined
-          self.renderingComponent = undefined
           renderInProgress = abortController
         },
 
@@ -90,11 +87,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           if (renderInProgress && !renderInProgress.signal.aborted) {
             renderInProgress.abort()
           }
-          self.filled = false
           self.message = messageText
-          self.data = undefined
           self.error = undefined
-          self.renderingComponent = undefined
           renderInProgress = undefined
         },
 
@@ -103,19 +97,29 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * controlled by a reaction
          */
         setRendered(args?: {
-          data: unknown
+          features: Feature[]
           renderingComponent: React.Component
         }) {
           if (!args) {
             return
           }
-          const { data, renderingComponent } = args
-          self.filled = true
+          const { features, renderingComponent } = args
+
+          const featIds = new Set(self.features?.map(f => f.id()) || [])
+          let foundFeatureNotInMap = false
+          for (let i = 0; i < features.length; i++) {
+            if (!featIds.has(features[i].id())) {
+              foundFeatureNotInMap = true
+              break
+            }
+          }
           self.message = undefined
-          self.data = data
           self.error = undefined
-          self.renderingComponent = renderingComponent
           renderInProgress = undefined
+          self.renderingComponent = renderingComponent
+          if (foundFeatureNotInMap) {
+            self.features = features
+          }
         },
 
         /**
@@ -128,9 +132,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             renderInProgress.abort()
           }
           // the rendering failed for some reason
-          self.filled = false
           self.message = undefined
-          self.data = undefined
           self.error = error
           self.renderingComponent = undefined
           renderInProgress = undefined
@@ -181,6 +183,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
           rendererType: rendererType.name,
           sessionId,
           timeout: 1000000,
+          self,
         },
       }
     : undefined
@@ -198,13 +201,13 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   const view0 = renderProps.view.views[0]
 
   const features = await rpcManager.call('getFeats', 'CoreGetFeatures', {
-    regions: view0.dynamicBlocks.contentBlocks,
+    regions: view0.staticBlocks.contentBlocks,
     sessionId: 'getFeats',
     adapterConfig,
   })
 
   return {
-    data: { features },
+    features,
     renderingComponent: rendererType.ReactComponent,
   }
 }
