@@ -32,7 +32,12 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 // locals
-import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview'
+import {
+  Dotplot1DView,
+  Dotplot1DViewModel,
+  DotplotHView,
+  DotplotVView,
+} from './1dview'
 
 type Coord = [number, number]
 
@@ -655,5 +660,6 @@ export default function stateModelFactory(pm: PluginManager) {
 }
 
 export { Dotplot1DView }
+export type { Dotplot1DViewModel }
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>

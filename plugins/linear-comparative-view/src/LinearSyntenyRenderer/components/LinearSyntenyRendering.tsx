@@ -124,6 +124,7 @@ function LinearSyntenyRendering({
     [es],
   )
   const drawCurves = parentView?.drawCurves
+  const drawCIGAR = parentView?.drawCIGAR
   const views = parentView?.views
   const offsets = views?.map(view => view.offsetPx)
 
@@ -258,7 +259,7 @@ function LinearSyntenyRendering({
             let cx2 = s1 === -1 ? x22 : x21
 
             const cigar = parsedCIGARs.get(f1.id())
-            if (cigar?.length) {
+            if (cigar?.length && drawCIGAR) {
               // continuingFlag skips drawing commands on very small CIGAR features
               let continuingFlag = false
 
@@ -336,6 +337,7 @@ function LinearSyntenyRendering({
       trackIds,
       width,
       drawCurves,
+      drawCIGAR,
       color,
       height,
       matches,
