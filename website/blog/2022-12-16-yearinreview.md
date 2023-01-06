@@ -38,7 +38,7 @@ another assembly.
 
 ## Base pair exact rendering of synteny
 
-A long standing goal has been to render "base pair" exact synteny when the
+A long standing goal has been to render "base pair exact synteny" when the
 information is available e.g. as CIGAR strings.
 
 This allows us to see that a "deletion relative to one genome" is an "insertion
@@ -50,9 +50,9 @@ The 'curvy' synteny line rendering mode was also added.
 
 ## Floating labels adding to gene glyphs
 
-In earlier versions of jbrowse, the label for a feature would not be visible if
-you were zoomed e.g. into the middle of the gene. In v1.7.0 we adding "floating
-labels" so that the feature label was always visible as you scroll.
+In earlier versions, the label for a feature would not be visible if you were
+zoomed e.g. into the middle of the gene. In v1.7.0 we adding "floating labels"
+so that the feature label was always visible as you scroll.
 
 ![](https://user-images.githubusercontent.com/6511937/163470981-cfbd4464-bd5a-4421-8d9c-c8e6bb2d19bc.png)
 
@@ -77,18 +77,20 @@ more info
 ## Upgrading to webpack 5 and reducing bundle sizes, and MUI v5 upgrade
 
 In v1.7.0, we upgraded to webpack 5 which improved our bundle sizes, which makes
-the app load faster! In fact, over the lifetime of jbrowse 2, we have decreased
-our bundle size. In fact, the initial load of v2.3.2 is 2.5x smaller than
-v1.0.0! We also upgraded to MUI v5, which kept us on track with the latest and
-greatest from MUI, who continues to improve their UI widgets like the data grid.
+the app load faster and feel more lightweight. In fact, over the lifetime of
+jbrowse 2, we have decreased our bundle size, and the initial load of v2.3.2 is
+actually 2.5x smaller than v1.0.0!
 
 ![](https://user-images.githubusercontent.com/6511937/209866358-a4d11fc9-e829-48b2-aa09-0ed567ba19c6.png)
 
+We also upgraded to MUI v5, which kept us on track with the latest and greatest
+from MUI, who continues to improve their UI widgets like the data grid.
+
 ## Improved performance of the alignments tracks
 
-We worked to alignments track performance throughout the year on a number of
-fronts. We greatly improved performance of the alignments track when web workers
-were used by avoiding serialization of all BAM/CRAM data (see
+We worked to improve alignments track performance throughout the year on a
+number of fronts. We greatly improved performance of the alignments track when
+web workers were used by avoiding serialization of all BAM/CRAM data (see
 https://jbrowse.org/jb2/blog/2022/04/26/v1.7.5-release/) and also did low level
 optimizations in our @gmod/bam and @gmod/cram libraries. There is still more to
 do, but we hope this improves user experience looking at large data files!
