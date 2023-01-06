@@ -104,20 +104,33 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             return
           }
           const { features, renderingComponent } = args
+          const existingFeatures = self.features || []
 
-          const featIds = new Set(self.features?.map(f => f.id()) || [])
-          let foundFeatureNotInMap = false
+          const featIds = new Set(existingFeatures.map(f => f.id()) || [])
+          const newFeatIds = new Set(features?.map(f => f.id()) || [])
+          let foundNewFeatureNotInExistingMap = false
+          let foundExistingFeatureNotInNewMap = false
           for (let i = 0; i < features.length; i++) {
             if (!featIds.has(features[i].id())) {
-              foundFeatureNotInMap = true
+              foundNewFeatureNotInExistingMap = true
               break
             }
           }
+          for (let i = 0; i < existingFeatures.length; i++) {
+            if (!newFeatIds.has(existingFeatures[i].id())) {
+              foundExistingFeatureNotInNewMap = true
+              break
+            }
+          }
+
           self.message = undefined
           self.error = undefined
           renderInProgress = undefined
           self.renderingComponent = renderingComponent
-          if (foundFeatureNotInMap) {
+          if (
+            foundNewFeatureNotInExistingMap ||
+            foundExistingFeatureNotInNewMap
+          ) {
             self.features = features
           }
         },
