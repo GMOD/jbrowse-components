@@ -1,11 +1,12 @@
 import { types, Instance } from 'mobx-state-tree'
+import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
-import { Curves, StraightLines } from './components/Icons'
+import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
@@ -25,6 +26,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         type: types.literal('LinearSyntenyView'),
         /**
+         * #property/
+         */
+        drawCIGAR: true,
+        /**
          * #property
          */
         drawCurves: false,
@@ -40,8 +45,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
+      toggleCIGAR() {
+        self.drawCIGAR = !self.drawCIGAR
+      },
+      /**
+       * #action
+       */
       showAllRegions() {
-        self.views.forEach(view => view.showAllRegions())
+        transaction(() => {
+          self.views.forEach(view => view.showAllRegionsInAssembly())
+        })
       },
     }))
     .views(self => {
@@ -69,16 +82,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: VisibilityIcon,
             },
             {
+              label: 'Draw CIGAR',
+              onClick: self.toggleCIGAR,
+              checked: self.drawCIGAR,
+              type: 'checkbox',
+              description: 'Draws per-base CIGAR level alignments',
+              icon: VisibilityIcon,
+            },
+            {
               label: self.linkViews ? 'Unlink views' : 'Link views',
               onClick: self.toggleLinkViews,
               icon: self.linkViews ? LinkOffIcon : LinkIcon,
             },
             {
-              label: self.drawCurves
-                ? 'Use straight lines'
-                : 'Use curved lines',
+              label: 'Use curved lines',
+              type: 'checkbox',
+              checked: self.drawCurves,
               onClick: self.toggleCurves,
-              icon: self.drawCurves ? StraightLines : Curves,
+              icon: Curves,
             },
           ]
         },
