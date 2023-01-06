@@ -6,7 +6,7 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 function ServerSideRenderedContent({ model }: { model: any }) {
   const { data, renderProps, renderingComponent: RenderingComponent } = model
 
-  return model.filled ? (
+  return model.features ? (
     <RenderingComponent {...data} {...renderProps} />
   ) : (
     <LoadingEllipses />

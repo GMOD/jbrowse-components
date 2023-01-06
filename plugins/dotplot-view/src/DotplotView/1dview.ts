@@ -13,7 +13,7 @@ const Dotplot1DView = Base1DView.extend(self => {
     views: {
       /**
        * #getter
-       * this uses padding=false and ellision=false
+       * this uses padding=false and elision=false
        */
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)

@@ -1,10 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { getSnapshot, isAlive } from 'mobx-state-tree'
-import SimpleFeature, {
-  SimpleFeatureSerialized,
-  Feature,
-} from '@jbrowse/core/util/simpleFeature'
 import { getConf } from '@jbrowse/core/configuration'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
@@ -12,6 +8,7 @@ import {
   getContainingView,
   getSession,
   isSessionModelWithWidgets,
+  Feature,
 } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 
@@ -72,7 +69,7 @@ function LinearSyntenyRendering({
   const width = view.width
 
   // @ts-ignore
-  const features = displayModel.data.features as Feature[]
+  const features = displayModel.features as Feature[]
   // canvas used for drawing visible screen
   const drawRef = useRef<HTMLCanvasElement>(null)
 
@@ -323,7 +320,7 @@ function LinearSyntenyRendering({
             let cx1 = k1
             let cx2 = s1 === -1 ? x22 : x21
 
-            const cigar = parsedCIGARs.get(f1.id())
+            const cigar = parsedCIGARs.get(f1.uniqueId)
             if (cigar?.length && drawCIGAR) {
               // continuingFlag skips drawing commands on very small CIGAR features
               let continuingFlag = false

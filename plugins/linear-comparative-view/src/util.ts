@@ -122,25 +122,3 @@ function bpToPx(
 export function interstitialYPos(cond: boolean, height: number) {
   return cond ? 0 : height
 }
-
-export function* generateMatches(
-  l1: Feature[] = [],
-  l2: Feature[] = [],
-  cb: (arg0: Feature) => number,
-) {
-  let i = 0
-  let j = 0
-  while (i < l1.length && j < l2.length) {
-    const a = cb(l1[i])
-    const b = cb(l2[j])
-    if (a < b) {
-      i++
-    } else if (b < a) {
-      j++
-    } else {
-      yield [l1[i], l2[j]]
-      i++
-      j++
-    }
-  }
-}
