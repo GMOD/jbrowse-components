@@ -10,7 +10,7 @@ const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 interface Match {
   layout: RectTuple
-  feature: Feature
+  feature: { start: number; end: number }
   level: number
   refName: string
 }
@@ -53,8 +53,8 @@ export function drawMatchSimple({
     if (!showIntraviewLinks && l1 === l2) {
       continue
     }
-    const length1 = f1.get('end') - f1.get('start')
-    const length2 = f2.get('end') - f2.get('start')
+    const length1 = f1.end - f1.start
+    const length2 = f2.end - f2.start
 
     if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
       continue
@@ -100,47 +100,39 @@ export function drawMatchSimple({
   }
 }
 
-export function layoutMatches(
-  feats: Feature[][],
-  assemblyManager?: AssemblyManager,
-) {
+export function layoutMatches(feats: Feature[], asmManager?: AssemblyManager) {
   const matches = []
   for (let i = 0; i < feats.length; i++) {
-    for (let j = i; j < feats.length; j++) {
-      if (i !== j) {
-        for (const [f1, f2] of generateMatches(feats[i], feats[j], f =>
-          f.get('syntenyId'),
-        )) {
-          let f1s = f1.get('start')
-          let f1e = f1.get('end')
-          const f2s = f2.get('start')
-          const f2e = f2.get('end')
+    const f = feats[i]
 
-          if (f1.get('strand') === -1) {
-            ;[f1e, f1s] = [f1s, f1e]
-          }
-          const a1 = assemblyManager?.get(f1.get('assemblyName'))
-          const a2 = assemblyManager?.get(f2.get('assemblyName'))
-          const r1 = f1.get('refName')
-          const r2 = f2.get('refName')
+    const mate = f.get('mate')
+    let f1s = f.get('start')
+    let f1e = f.get('end')
+    const f2s = mate.start
+    const f2e = mate.end
 
-          matches.push([
-            {
-              feature: f1,
-              level: i,
-              refName: a1?.getCanonicalRefName(r1) || r1,
-              layout: [f1s, 0, f1e, 10] as RectTuple,
-            },
-            {
-              feature: f2,
-              level: j,
-              refName: a2?.getCanonicalRefName(r2) || r2,
-              layout: [f2s, 0, f2e, 10] as RectTuple,
-            },
-          ])
-        }
-      }
+    if (f.get('strand') === -1) {
+      ;[f1e, f1s] = [f1s, f1e]
     }
+    const a1 = asmManager?.get(f.get('assemblyName'))
+    const a2 = asmManager?.get(mate.assemblyName)
+    const r1 = f.get('refName')
+    const r2 = mate.refName
+
+    matches.push([
+      {
+        feature: f.toJSON(),
+        level: 0,
+        refName: a1?.getCanonicalRefName(r1) || r1,
+        layout: [f1s, 0, f1e, 10] as RectTuple,
+      },
+      {
+        feature: mate,
+        level: 1,
+        refName: a2?.getCanonicalRefName(r2) || r2,
+        layout: [f2s, 0, f2e, 10] as RectTuple,
+      },
+    ])
   }
   return matches
 }

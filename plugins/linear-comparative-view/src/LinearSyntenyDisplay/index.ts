@@ -1,6 +1,7 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-
 import PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
 import { ReactComponent } from '../LinearComparativeDisplay'
 import configSchemaF from './configSchemaF'
 import stateModelFactory from './stateModelFactory'

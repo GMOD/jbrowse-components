@@ -6,7 +6,6 @@ import {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
-import clone from 'clone'
 import {
   getContainingView,
   getSession,
@@ -44,7 +43,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderInProgress: undefined as AbortController | undefined,
       filled: false,
       data: undefined as unknown,
-      reactElement: undefined as React.ReactElement | undefined,
       message: undefined as string | undefined,
       renderingComponent: undefined as unknown,
       ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
@@ -78,7 +76,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         setLoading(abortController: AbortController) {
           self.filled = false
           self.message = undefined
-          self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -95,7 +92,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           }
           self.filled = false
           self.message = messageText
-          self.reactElement = undefined
           self.data = undefined
           self.error = undefined
           self.renderingComponent = undefined
@@ -108,16 +104,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          */
         setRendered(args?: {
           data: unknown
-          reactElement: React.ReactElement
           renderingComponent: React.Component
         }) {
           if (!args) {
             return
           }
-          const { data, reactElement, renderingComponent } = args
+          const { data, renderingComponent } = args
           self.filled = true
           self.message = undefined
-          self.reactElement = reactElement
           self.data = data
           self.error = undefined
           self.renderingComponent = renderingComponent
@@ -136,7 +130,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // the rendering failed for some reason
           self.filled = false
           self.message = undefined
-          self.reactElement = undefined
           self.data = undefined
           self.error = error
           self.renderingComponent = undefined
@@ -183,7 +176,7 @@ function renderBlockData(self: LinearComparativeDisplay) {
         rpcManager,
         renderProps: {
           ...display.renderProps(),
-          view: clone(getSnapshot(parent)),
+          view: parent,
           adapterConfig,
           rendererType: rendererType.name,
           sessionId,
@@ -199,14 +192,21 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   }
 
   const { rendererType, rpcManager, renderProps } = props
+  const { adapterConfig } = renderProps
 
   // @ts-ignore
-  const { reactElement, ...data } = await rendererType.renderInClient(
-    rpcManager,
-    renderProps,
-  )
+  const view0 = renderProps.view.views[0]
 
-  return { reactElement, data, renderingComponent: rendererType.ReactComponent }
+  const features = await rpcManager.call('getFeats', 'CoreGetFeatures', {
+    regions: view0.dynamicBlocks.contentBlocks,
+    sessionId: 'getFeats',
+    adapterConfig,
+  })
+
+  return {
+    data: { features },
+    renderingComponent: rendererType.ReactComponent,
+  }
 }
 
 export default stateModelFactory
