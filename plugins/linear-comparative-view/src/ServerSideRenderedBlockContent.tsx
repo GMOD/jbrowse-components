@@ -45,13 +45,24 @@ function BlockMessage({ messageText }: { messageText: string }) {
   return <div className={classes.blockMessage}>{messageText}</div>
 }
 
-function BlockError({ error }: { error: Error }) {
+function BlockError({ error }: { error: unknown }) {
   const { classes } = useStyles()
-  return <div className={classes.blockError}>{error.message}</div>
+  return <div className={classes.blockError}>{`${error}`}</div>
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
+interface Display {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  renderingComponent: React.FC<any>
+  error: unknown
+  message: string
+  filled: boolean
+}
+
+const ServerSideRenderedBlockContent = observer(function ({
+  model,
+}: {
+  model: Display
+}) {
   if (model.error) {
     return <BlockError error={model.error} />
   }
@@ -61,7 +72,8 @@ const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
   if (!model.filled) {
     return <LoadingMessage />
   }
-  return model.reactElement
+
+  return <model.renderingComponent displayModel={model} />
 })
 
 export default ServerSideRenderedBlockContent

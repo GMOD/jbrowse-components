@@ -61,20 +61,18 @@ function getResources(model: LinearComparativeDisplay) {
 }
 
 function LinearSyntenyRendering({
-  height,
-  width,
   displayModel,
-  features,
-  trackIds,
   highResolutionScaling = 1,
 }: {
-  width: number
-  height: number
   displayModel: LinearComparativeDisplay
-  highResolutionScaling: number
-  features: SimpleFeatureSerialized[][]
-  trackIds: string[]
+  highResolutionScaling?: number
 }) {
+  const view = getContainingView(displayModel)
+  const height = view.middleComparativeHeight
+  const width = view.width
+
+  // @ts-ignore
+  const features = displayModel.data.features as Feature[]
   // canvas used for drawing visible screen
   const drawRef = useRef<HTMLCanvasElement>(null)
 
@@ -100,28 +98,21 @@ function LinearSyntenyRendering({
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
   const { color, assemblyManager, parentView } = getResources(displayModel)
-  const es = useMemo(
-    () =>
-      features.map(level =>
-        level
-          .map(
-            f =>
-              (typeof f.id === 'function'
-                ? f
-                : new SimpleFeature(f)) as Feature,
-          )
-          .sort((a, b) => a.get('syntenyId') - b.get('syntenyId')),
-      ),
-    [features],
-  )
+
   const matches = useMemo(
-    () => layoutMatches(es, assemblyManager),
-    [es, assemblyManager],
+    () => layoutMatches(features, assemblyManager),
+    [features, assemblyManager],
   )
 
   const parsedCIGARs = useMemo(
-    () => new Map(es.flat().map(f => [f.id(), parseCigar(f.get('CIGAR'))])),
-    [es],
+    () =>
+      new Map(
+        features.map(f => [
+          f.id(),
+          parseCigar(f.get('CIGAR') as string | undefined),
+        ]),
+      ),
+    [features],
   )
   const drawCurves = parentView?.drawCurves
   const drawCIGAR = parentView?.drawCIGAR
@@ -221,8 +212,8 @@ function LinearSyntenyRendering({
           if (!showIntraviewLinks && l1 === l2) {
             continue
           }
-          const length1 = f1.get('end') - f1.get('start')
-          const length2 = f2.get('end') - f2.get('start')
+          const length1 = f1.end - f1.start
+          const length2 = f2.end - f2.start
 
           if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
             continue
@@ -288,8 +279,8 @@ function LinearSyntenyRendering({
           if (!showIntraviewLinks && l1 === l2) {
             continue
           }
-          const length1 = f1.get('end') - f1.get('start')
-          const length2 = f2.get('end') - f2.get('start')
+          const length1 = f1.end - f1.start
+          const length2 = f2.end - f2.start
 
           if ((length1 < v1.bpPerPx || length2 < v2.bpPerPx) && hideTiny) {
             continue
@@ -319,7 +310,7 @@ function LinearSyntenyRendering({
           const mid = (y2 - y1) / 2
 
           if (!(length1 < v1.bpPerPx || length2 < v2.bpPerPx)) {
-            const s1 = f1.get('strand')
+            const s1 = f1.strand
             const k1 = s1 === -1 ? x12 : x11
             const k2 = s1 === -1 ? x11 : x12
 
@@ -408,7 +399,6 @@ function LinearSyntenyRendering({
     [
       displayModel,
       highResolutionScaling,
-      trackIds,
       width,
       drawCurves,
       drawCIGAR,
@@ -423,76 +413,84 @@ function LinearSyntenyRendering({
   )
 
   // draw mouseover shading on the mouseover'd ID
-  useEffect(() => {
-    if (!mouseoverRef.current || !offsets || !views || !isAlive(displayModel)) {
-      return
-    }
-    const ctx = mouseoverRef.current.getContext('2d')
-    if (!ctx) {
-      return
-    }
-    ctx.resetTransform()
-    ctx.scale(highResolutionScaling, highResolutionScaling)
-    ctx.clearRect(0, 0, width, height)
-    const showIntraviewLinks = false
-    const hideTiny = false
-    const viewSnaps = views.map(view => ({
-      ...getSnapshot(view),
-      staticBlocks: view.staticBlocks,
-      width: view.width,
-      interRegionPaddingWidth: view.interRegionPaddingWidth,
-      minimumBlockWidth: view.minimumBlockWidth,
-    }))
+  useEffect(
+    () => {
+      if (
+        !mouseoverRef.current ||
+        !offsets ||
+        !views ||
+        !isAlive(displayModel)
+      ) {
+        return
+      }
+      const ctx = mouseoverRef.current.getContext('2d')
+      if (!ctx) {
+        return
+      }
+      ctx.resetTransform()
+      ctx.scale(highResolutionScaling, highResolutionScaling)
+      ctx.clearRect(0, 0, width, height)
+      const showIntraviewLinks = false
+      const hideTiny = false
+      const viewSnaps = views.map(view => ({
+        ...getSnapshot(view),
+        staticBlocks: view.staticBlocks,
+        width: view.width,
+        interRegionPaddingWidth: view.interRegionPaddingWidth,
+        minimumBlockWidth: view.minimumBlockWidth,
+      }))
 
-    if (mouseoverId !== undefined && matches[mouseoverId]) {
-      const m = matches[mouseoverId]
-      ctx.fillStyle = 'rgb(0,0,0,0.1)'
-      drawMatchSimple({
-        match: m,
-        ctx,
-        offsets,
-        cb: ctx => ctx.fill(),
-        showIntraviewLinks,
-        height,
-        hideTiny,
-        viewSnaps,
-        drawCurves,
-      })
-    }
+      if (mouseoverId !== undefined && matches[mouseoverId]) {
+        const m = matches[mouseoverId]
+        ctx.fillStyle = 'rgb(0,0,0,0.1)'
+        drawMatchSimple({
+          match: m,
+          ctx,
+          offsets,
+          cb: ctx => ctx.fill(),
+          showIntraviewLinks,
+          height,
+          hideTiny,
+          viewSnaps,
+          drawCurves,
+        })
+      }
 
-    if (clickId !== undefined && matches[clickId]) {
-      const m = matches[clickId]
-      ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-      drawMatchSimple({
-        match: m,
-        ctx,
-        offsets,
-        cb: ctx => ctx.stroke(),
-        showIntraviewLinks,
-        height,
-        hideTiny,
-        viewSnaps,
-        drawCurves,
-      })
-    }
-  }, [
-    displayModel,
-    highResolutionScaling,
-    trackIds,
-    width,
-    drawCurves,
-    color,
-    height,
-    matches,
-    parsedCIGARs,
-    mouseoverId,
-    clickId,
-    // offsets,
-    // views,
-    // these are checked with a JSON.stringify to help compat with mobx
-    JSON.stringify(views), // eslint-disable-line  react-hooks/exhaustive-deps
-    JSON.stringify(offsets), // eslint-disable-line  react-hooks/exhaustive-deps
-  ])
+      if (clickId !== undefined && matches[clickId]) {
+        const m = matches[clickId]
+        ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
+        drawMatchSimple({
+          match: m,
+          ctx,
+          offsets,
+          cb: ctx => ctx.stroke(),
+          showIntraviewLinks,
+          height,
+          hideTiny,
+          viewSnaps,
+          drawCurves,
+        })
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      displayModel,
+      highResolutionScaling,
+      width,
+      drawCurves,
+      color,
+      height,
+      matches,
+      parsedCIGARs,
+      mouseoverId,
+      clickId,
+      // offsets,
+      // views,
+      // these are checked with a JSON.stringify to help compat with mobx
+      JSON.stringify(views), // eslint-disable-line  react-hooks/exhaustive-deps
+      JSON.stringify(offsets), // eslint-disable-line  react-hooks/exhaustive-deps
+    ],
+  )
 
   return (
     <div style={{ position: 'relative' }}>
@@ -538,11 +536,11 @@ function LinearSyntenyRendering({
           const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
           const f1 = match1[0].feature
           const f2 = match1[1].feature
-          const l1 = f1.get('end') - f1.get('start')
-          const l2 = f2.get('end') - f2.get('start')
-          const identity = f1.get('identity')
-          const n1 = f1.get('name')
-          const n2 = f2.get('name')
+          const l1 = f1.end - f1.start
+          const l2 = f2.end - f2.start
+          const identity = f1.identity
+          const n1 = f1.name
+          const n2 = f2.name
           const tooltip = [`Query len: ${l1}<br/>Target len: ${l2}`]
           if (identity) {
             tooltip.push(`Identity: ${identity}`)
