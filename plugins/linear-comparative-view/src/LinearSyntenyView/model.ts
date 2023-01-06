@@ -9,6 +9,7 @@ import { Curves, StraightLines } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 /**
  * #stateModel LinearSyntenyView
@@ -36,24 +37,36 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleCurves() {
         self.drawCurves = !self.drawCurves
       },
+      /**
+       * #action
+       */
+      showAllRegions() {
+        self.views.forEach(view => view.showAllRegions())
+      },
     }))
     .views(self => {
-      const superMenuItems = self.menuItems
+      const superMenuItems = self.headerMenuItems
       return {
         /**
          * #method
-         * adds functions to draw curves and square the view
+         * includes a subset of view menu options because the full list is a
+         * little overwhelming
          */
-        menuItems() {
+        headerMenuItems() {
           return [
             ...superMenuItems(),
-
             {
               label: 'Square view',
               onClick: self.squareView,
               description:
                 'Makes both views use the same zoom level, adjusting to the average of each',
               icon: CropFreeIcon,
+            },
+            {
+              label: 'Show all regions',
+              onClick: self.showAllRegions,
+              description: 'Show entire genome assemblies',
+              icon: VisibilityIcon,
             },
             {
               label: self.linkViews ? 'Unlink views' : 'Link views',
