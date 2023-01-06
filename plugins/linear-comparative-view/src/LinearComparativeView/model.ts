@@ -322,36 +322,52 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.tracks = cast([])
       },
     }))
+    .views(() => ({
+      /**
+       * #method
+       * includes a subset of view menu options because the full list is a
+       * little overwhelming. overridden by subclasses
+       */
+      headerMenuItems() {
+        return []
+      },
+    }))
     .views(self => ({
       /**
        * #method
        */
       menuItems() {
         const menuItems: MenuItem[] = []
-        self.views.forEach((view, idx) => {
-          if (view.menuItems?.()) {
-            menuItems.push({
-              label: `View ${idx + 1} Menu`,
-              subMenu: view.menuItems(),
+
+        return [
+          ...self.views
+            .map((view, idx) => {
+              const items = view.menuItems?.()
+              return items
+                ? menuItems.push({
+                    label: `View ${idx + 1} Menu`,
+                    subMenu: items,
+                  })
+                : undefined
             })
-          }
-        })
-        menuItems.push({
-          label: 'Return to import form',
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              ReturnToImportFormDialog,
-              { model: self, handleClose },
-            ])
+            .filter(f => !!f),
+          {
+            label: 'Return to import form',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                { model: self, handleClose },
+              ])
+            },
+            icon: FolderOpenIcon,
           },
-          icon: FolderOpenIcon,
-        })
-        menuItems.push({
-          label: 'Open track selector',
-          onClick: self.activateTrackSelector,
-          icon: TrackSelectorIcon,
-        })
-        return menuItems
+          {
+            label: 'Open track selector',
+            onClick: self.activateTrackSelector,
+            icon: TrackSelectorIcon,
+          },
+          ...self.headerMenuItems(),
+        ]
       },
       /**
        * #method
