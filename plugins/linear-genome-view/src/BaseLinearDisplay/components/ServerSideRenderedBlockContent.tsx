@@ -3,8 +3,11 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { LoadingEllipses } from '@jbrowse/core/ui'
+
+// icons
 import RefreshIcon from '@mui/icons-material/Refresh'
 
+// locals
 import BlockMsg from './BlockMsg'
 
 const useStyles = makeStyles()(theme => ({
@@ -53,37 +56,35 @@ const LoadingMessage = observer(({ model }: { model: any }) => {
   )
 })
 
-const ServerSideRenderedBlockContent = observer(
-  ({
-    model,
-  }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    model: any
-  }) => {
-    if (model.error) {
-      return (
-        <BlockMsg
-          message={`${model.error}`}
-          severity="error"
-          buttonText="reload"
-          icon={<RefreshIcon />}
-          action={model.reload}
-        />
-      )
-    }
-    if (model.message) {
-      // the message can be a fully rendered react component, e.g. the region too large message
-      return React.isValidElement(model.message) ? (
-        model.message
-      ) : (
-        <BlockMsg message={`${model.message}`} severity="info" />
-      )
-    }
-    if (!model.filled) {
-      return <LoadingMessage model={model} />
-    }
-    return model.reactElement
-  },
-)
+const ServerSideRenderedBlockContent = observer(function ({
+  model,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  model: any
+}) {
+  if (model.error) {
+    return (
+      <BlockMsg
+        message={`${model.error}`}
+        severity="error"
+        buttonText="reload"
+        icon={<RefreshIcon />}
+        action={model.reload}
+      />
+    )
+  }
+  if (model.message) {
+    // the message can be a fully rendered react component, e.g. the region too large message
+    return React.isValidElement(model.message) ? (
+      model.message
+    ) : (
+      <BlockMsg message={`${model.message}`} severity="info" />
+    )
+  }
+  if (!model.filled) {
+    return <LoadingMessage model={model} />
+  }
+  return model.reactElement
+})
 
 export default ServerSideRenderedBlockContent
