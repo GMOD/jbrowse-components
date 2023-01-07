@@ -25,12 +25,11 @@ function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
-export function drawRef(
-  model: LinearSyntenyDisplayModel,
-  ref: HTMLCanvasElement,
-) {
+export function drawRef(model: LinearSyntenyDisplayModel) {
   const highResolutionScaling = 1
-  const ctx1 = ref.getContext('2d')
+  const ctx1 = model.mainCanvas?.getContext('2d')
+  const ctx2 = model.clickMapCanvas?.getContext('2d')
+  const ctx3 = model.cigarClickMapCanvas?.getContext('2d')
 
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
@@ -39,13 +38,11 @@ export function drawRef(
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  // const ctx3 = cigarClickMapRef.current.getContext('2d')
-
-  if (!ctx1) {
+  if (!ctx1 || !ctx2 || !ctx3) {
     return
   }
 
-  // ctx3.imageSmoothingEnabled = false
+  ctx3.imageSmoothingEnabled = false
 
   ctx1.resetTransform()
   ctx1.scale(highResolutionScaling, highResolutionScaling)
@@ -95,7 +92,6 @@ export function drawRef(
 
   // this loop only draws small lines as a polyline, the polyline calls
   // ctx.stroke once is much more efficient than calling stroke() many times
-
   for (let i = 0; i < featPos.length; i++) {
     const { p11, p12, p21, p22, f, cigar } = featPos[i]
     ctx1.fillStyle = colorMap.M
@@ -143,7 +139,7 @@ export function drawRef(
         const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
-          // ctx3.fillStyle = makeColor(idx)
+          ctx3.fillStyle = makeColor(idx)
 
           const len = +cigar[j]
           const op = cigar[j + 1] as keyof typeof colorMap
@@ -193,7 +189,7 @@ export function drawRef(
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-              // draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
             }
           }
         }
@@ -206,33 +202,21 @@ export function drawRef(
   //
   //
   // draw click map
-  // requestIdleCallback(() => {
-  //   if (!clickMapRef.current) {
-  //     return
-  //   }
-  //   const ctx2 = clickMapRef.current.getContext('2d')
-  //   if (!ctx2) {
-  //     return
-  //   }
-  //   ctx2.imageSmoothingEnabled = false
-  //   ctx2.clearRect(0, 0, width, height)
-  //   for (let j = 0; j < matches.length; j++) {
-  //     const m = matches[j]
-  //     const idx = j * unitMultiplier + 1
-  //     ctx2.fillStyle = makeColor(idx)
+  ctx2.imageSmoothingEnabled = false
+  ctx2.clearRect(0, 0, width, height)
+  for (let i = 0; i < featPos.length; i++) {
+    const feature = featPos[i]
+    const idx = i * unitMultiplier + 1
+    ctx2.fillStyle = makeColor(idx)
 
-  //     // too many click map false positives with colored stroked lines
-  //     drawMatchSimple({
-  //       cb: ctx => ctx.fill(),
-  //       match: m,
-  //       ctx: ctx2,
-  //       drawCurves,
-  //       offsets,
-  //       hideTiny,
-  //       height,
-  //       viewSnaps,
-  //       showIntraviewLinks,
-  //     })
-  //   }
-  // })
+    // too many click map false positives with colored stroked lines
+    drawMatchSimple({
+      cb: ctx => ctx.fill(),
+      feature,
+      ctx: ctx2,
+      drawCurves,
+      offsets,
+      height,
+    })
+  }
 }
