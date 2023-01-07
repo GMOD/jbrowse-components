@@ -1,4 +1,4 @@
-import { types, Instance, addDisposer, getSnapshot } from 'mobx-state-tree'
+import { types, addDisposer, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   getConf,
   ConfigurationReference,
@@ -16,17 +16,21 @@ import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 // locals
 import { drawRef } from './drawSynteny'
 
-type Pos = { offsetPx: number }
+interface Pos {
+  offsetPx: number
+}
+
+interface FeatPos {
+  p11: Pos
+  p12: Pos
+  p21: Pos
+  p22: Pos
+  f: Feature
+  cigar: string[]
+}
 
 interface FeatMap {
-  [key: string]: {
-    p11: Pos
-    p12: Pos
-    p21: Pos
-    p22: Pos
-    f: Feature
-    cigar: string[]
-  }
+  [key: string]: FeatPos
 }
 
 /**
@@ -114,8 +118,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         addDisposer(
           self,
           autorun(() => {
-            if (self.mainCanvas && getContainingView(self).initialized) {
-              drawRef(self, self.mainCanvas)
+            const view = getContainingView(self)
+            if (view.initialized) {
+              drawRef(self)
             }
           }),
         )
@@ -209,15 +214,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         )
       },
     }))
-}
-
-const colorMap = {
-  I: '#ff03',
-  N: '#0a03',
-  D: '#00f3',
-  X: 'brown',
-  M: '#ff000020',
-  '=': '#f003',
 }
 
 export type LinearSyntenyDisplayStateModel = ReturnType<

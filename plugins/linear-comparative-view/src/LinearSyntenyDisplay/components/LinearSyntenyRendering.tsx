@@ -103,7 +103,11 @@ function LinearSyntenyRendering({
   return (
     <div style={{ position: 'relative' }}>
       <canvas
-        ref={() => {}}
+        ref={ref => {
+          if (isAlive(model)) {
+            model.setMouseoverCanvasRef(ref)
+          }
+        }}
         width={width}
         height={height}
         style={{ width, height, position: 'absolute', pointerEvents: 'none' }}
@@ -208,7 +212,11 @@ function LinearSyntenyRendering({
         height={height * highResolutionScaling}
       />
       <canvas
-        ref={() => {}}
+        ref={ref => {
+          if (isAlive(model)) {
+            model.setCigarClickMapCanvasRef(ref)
+          }
+        }}
         style={{
           imageRendering: 'pixelated',
           pointerEvents: 'none',
@@ -219,7 +227,11 @@ function LinearSyntenyRendering({
         height={height}
       />
       <canvas
-        ref={() => {}}
+        ref={ref => {
+          if (isAlive(model)) {
+            model.setClickMapCanvasRef(ref)
+          }
+        }}
         style={{
           imageRendering: 'pixelated',
           pointerEvents: 'none',
