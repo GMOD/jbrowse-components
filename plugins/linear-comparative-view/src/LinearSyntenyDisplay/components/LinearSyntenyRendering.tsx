@@ -1,7 +1,6 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { clone, getSnapshot, isAlive } from 'mobx-state-tree'
-import { getConf } from '@jbrowse/core/configuration'
+import { getSnapshot, isAlive } from 'mobx-state-tree'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import {
   assembleLocString,
@@ -18,11 +17,9 @@ import { interstitialYPos } from '../../util'
 import { LinearSyntenyViewModel } from '../../LinearSyntenyView/model'
 import { LinearComparativeDisplay } from '../../LinearComparativeDisplay/stateModelFactory'
 import SyntenyTooltip from './SyntenyTooltip'
-import { draw, drawMatchSimple, layoutMatches } from './util'
+import { draw, drawMatchSimple } from './util'
 
 const { parseCigar } = MismatchParser
-
-const [LEFT, , RIGHT] = [0, 1, 2, 3]
 
 const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
@@ -47,18 +44,17 @@ function getId(r: number, g: number, b: number, unitMultiplier: number) {
 }
 
 function LinearSyntenyRendering({
-  displayModel,
-  highResolutionScaling = 1,
+  model,
 }: {
-  displayModel: LinearComparativeDisplay
-  highResolutionScaling?: number
+  model: LinearComparativeDisplay
 }) {
-  const view = getContainingView(displayModel)
+  let highResolutionScaling = 1
+  const view = getContainingView(model)
   const height = view.middleComparativeHeight
   const width = view.width
 
   // @ts-ignore
-  const features = displayModel.features as Feature[]
+  const features = model.features as Feature[]
   // canvas used for drawing visible screen
   const drawRef = useRef<HTMLCanvasElement>(null)
 
@@ -83,9 +79,8 @@ function LinearSyntenyRendering({
   const [visibleCigarOp, setVisibleCigarOp] = useState('')
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-  const parentView = getContainingView(displayModel) as LinearSyntenyViewModel
-  const color = getConf(displayModel, ['renderer', 'color'])
-  const session = getSession(displayModel)
+  const parentView = getContainingView(model) as LinearSyntenyViewModel
+  const session = getSession(model)
   const { assemblyManager } = session
 
   const parsedCIGARs = useMemo(
@@ -168,7 +163,7 @@ function LinearSyntenyRendering({
         !cigarClickMapRef.current ||
         !offsets ||
         !views ||
-        !isAlive(displayModel)
+        !isAlive(model)
       ) {
         return
       }
@@ -414,12 +409,11 @@ function LinearSyntenyRendering({
     },
     // eslint-disable-next-line  react-hooks/exhaustive-deps
     [
-      displayModel,
+      model,
       highResolutionScaling,
       width,
       drawCurves,
       drawCIGAR,
-      color,
       height,
       featPositions,
       parsedCIGARs,
@@ -436,7 +430,7 @@ function LinearSyntenyRendering({
   //       !mouseoverRef.current ||
   //       !offsets ||
   //       !views ||
-  //       !isAlive(displayModel)
+  //       !isAlive(model)
   //     ) {
   //       return
   //     }
@@ -491,11 +485,10 @@ function LinearSyntenyRendering({
   // },
   // // eslint-disable-next-line react-hooks/exhaustive-deps
   // [
-  //   displayModel,
+  //   model,
   //   highResolutionScaling,
   //   width,
   //   drawCurves,
-  //   color,
   //   height,
   //   matches,
   //   parsedCIGARs,
@@ -592,7 +585,7 @@ function LinearSyntenyRendering({
           // const unitMultiplier = Math.floor(MAX_COLOR_RANGE / matches.length)
           // const id = getId(r1, g1, b1, unitMultiplier)
           // const match1 = matches[id]
-          // const session = getSession(displayModel)
+          // const session = getSession(model)
           // setClickId(id < 0 ? undefined : id)
           // if (match1 && isSessionModelWithWidgets(session)) {
           //   session.showWidget(

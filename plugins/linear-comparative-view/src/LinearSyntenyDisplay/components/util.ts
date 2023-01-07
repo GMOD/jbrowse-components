@@ -1,4 +1,4 @@
-import { AssemblyManager, Feature, ViewSnap } from '@jbrowse/core/util'
+import { ViewSnap } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 
 // locals

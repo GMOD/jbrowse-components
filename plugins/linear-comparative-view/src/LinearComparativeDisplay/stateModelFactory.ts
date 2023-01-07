@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  getConf,
   readConfObject,
   ConfigurationReference,
   AnyConfigurationSchemaType,
@@ -15,7 +14,6 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -44,16 +42,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderInProgress: undefined as AbortController | undefined,
       features: undefined as Feature[] | undefined,
       message: undefined as string | undefined,
-      renderingComponent: undefined as unknown,
-      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
       /**
        * #getter
        */
@@ -174,7 +164,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self)
   const display = self
-  const { rendererType } = display
 
   // Alternative to readConfObject(config) is below used because renderProps is
   // something under our control.  Compare to serverSideRenderedBlock
@@ -187,13 +176,11 @@ function renderBlockData(self: LinearComparativeDisplay) {
 
   return parent.initialized
     ? {
-        rendererType,
         rpcManager,
         renderProps: {
           ...display.renderProps(),
           view: parent,
           adapterConfig,
-          rendererType: rendererType.name,
           sessionId,
           timeout: 1000000,
           self,
@@ -207,7 +194,7 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
     return
   }
 
-  const { rendererType, rpcManager, renderProps } = props
+  const { rpcManager, renderProps } = props
   const { adapterConfig } = renderProps
 
   // @ts-ignore
@@ -221,7 +208,6 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
 
   return {
     features,
-    renderingComponent: rendererType.ReactComponent,
   }
 }
 

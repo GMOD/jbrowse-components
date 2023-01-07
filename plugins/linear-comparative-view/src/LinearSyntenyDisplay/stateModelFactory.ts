@@ -9,6 +9,7 @@ import { getContainingView } from '@jbrowse/core/util'
 // locals
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import LinearSyntenyRendering from './components/LinearSyntenyRendering'
 
 /**
  * #stateModel LinearSyntenyDisplay
@@ -40,17 +41,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return {
           rpcDriverName: self.rpcDriverName,
           displayModel: self,
-          config: getConf(self, 'renderer'),
           width: view.width,
           height: view.middleComparativeHeight,
         }
       },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return self.configuration.renderer.type
-      },
+
       /**
        * #getter
        */

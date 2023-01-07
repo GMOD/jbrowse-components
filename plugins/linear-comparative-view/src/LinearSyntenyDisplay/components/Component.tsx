@@ -3,6 +3,9 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 
+// locals
+import LinearSyntenyRendering from './LinearSyntenyRendering'
+
 const useStyles = makeStyles()({
   loading: {
     paddingLeft: '0.6em',
@@ -73,7 +76,7 @@ const ServerSideRenderedBlockContent = observer(function ({
     return <LoadingMessage />
   }
 
-  return <model.renderingComponent displayModel={model} />
+  return <LinearSyntenyRendering model={model} />
 })
 
 export default ServerSideRenderedBlockContent
