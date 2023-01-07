@@ -236,10 +236,14 @@ function LinearSyntenyRendering({
           const y2 = interstitialYPos(l2 < l1, height)
 
           const mid = (y2 - y1) / 2
+          const minX = x21
 
           // drawing a line if the results are thin results in much less
           // pixellation than filling in a thin polygon
-          if (length1 < v1.bpPerPx || length2 < v2.bpPerPx) {
+          if (
+            (length1 < v1.bpPerPx || length2 < v2.bpPerPx) &&
+            (minX < view.width || minX > 0)
+          ) {
             ctx1.moveTo(x11, y1)
 
             if (drawCurves) {
@@ -300,13 +304,18 @@ function LinearSyntenyRendering({
           const x12 = p12.offsetPx - offsets[l1]
           const x21 = p21.offsetPx - offsets[l2]
           const x22 = p22.offsetPx - offsets[l2]
+          const minX = Math.min(x21, x22)
+          const maxX = Math.max(x21, x22)
 
           const y1 = interstitialYPos(l1 < l2, height)
           const y2 = interstitialYPos(l2 < l1, height)
 
           const mid = (y2 - y1) / 2
 
-          if (!(length1 < v1.bpPerPx || length2 < v2.bpPerPx)) {
+          if (
+            !(length1 < v1.bpPerPx || length2 < v2.bpPerPx) &&
+            (minX < view.width || maxX > 0)
+          ) {
             const s1 = f1.strand
             const k1 = s1 === -1 ? x12 : x11
             const k2 = s1 === -1 ? x11 : x12
@@ -481,8 +490,6 @@ function LinearSyntenyRendering({
       parsedCIGARs,
       mouseoverId,
       clickId,
-      // offsets,
-      // views,
       // these are checked with a JSON.stringify to help compat with mobx
       JSON.stringify(views), // eslint-disable-line  react-hooks/exhaustive-deps
       JSON.stringify(offsets), // eslint-disable-line  react-hooks/exhaustive-deps
@@ -528,7 +535,7 @@ function LinearSyntenyRendering({
             setVisibleCigarOp('')
             return
           }
-          const cigar = parsedCIGARs.get(match1[0].feature.id()) || []
+          const cigar = parsedCIGARs.get(match1[0].feature.uniqueId) || []
           const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
           const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
           const f1 = match1[0].feature
@@ -543,10 +550,8 @@ function LinearSyntenyRendering({
             tooltip.push(`Identity: ${identity}`)
           }
           if (identity) {
-            // @ts-ignore
-            tooltip.push(`Loc1: ${assembleLocString(f1.toJSON())}`)
-            // @ts-ignore
-            tooltip.push(`Loc2: ${assembleLocString(f2.toJSON())}`)
+            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
+            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
           }
 
           if (cigar[cigarIdx]) {

@@ -110,7 +110,21 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
-        return self.width !== undefined && self.views.length > 0
+        return (
+          self.width !== undefined &&
+          self.views.length > 0 &&
+          this.assembliesInitialized
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get assembliesInitialized() {
+        const { assemblyManager } = getSession(self)
+        return this.assemblyNames.every(
+          a => assemblyManager.get(a)?.initialized,
+        )
       },
 
       /**
