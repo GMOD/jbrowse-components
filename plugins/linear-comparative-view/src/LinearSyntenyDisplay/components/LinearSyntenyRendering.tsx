@@ -76,66 +76,7 @@ function LinearSyntenyRendering({
     [features],
   )
 
-  const drawCurves = parentView?.drawCurves
-  const drawCIGAR = parentView?.drawCIGAR
   const views = parentView?.views
-  const offsets = views?.map(view => view.offsetPx)
-  const bpPerPxs = views?.map(view => view.bpPerPx)
-
-  const featPositions = useMemo(() => {
-    console.log(features.length)
-    const viewSnaps = views.map(view => ({
-      ...getSnapshot(view),
-      width: view.width,
-      staticBlocks: view.staticBlocks,
-      interRegionPaddingWidth: view.interRegionPaddingWidth,
-      minimumBlockWidth: view.minimumBlockWidth,
-    }))
-
-    type Pos = { offsetPx: number }
-
-    const map = {} as {
-      [key: string]: { p11: Pos; p12: Pos; p21: Pos; p22: Pos }
-    }
-
-    for (let i = 0; i < features.length; i++) {
-      const f = features[i]
-
-      const mate = f.get('mate')
-      let f1s = f.get('start')
-      let f1e = f.get('end')
-      const f2s = mate.start
-      const f2e = mate.end
-
-      if (f.get('strand') === -1) {
-        ;[f1e, f1s] = [f1s, f1e]
-      }
-      const a1 = assemblyManager?.get(f.get('assemblyName'))
-      const a2 = assemblyManager?.get(mate.assemblyName)
-      const r1 = f.get('refName')
-      const r2 = mate.refName
-      const ref1 = a1?.getCanonicalRefName(r1) || r1
-      const ref2 = a2?.getCanonicalRefName(r2) || r2
-      const v1 = viewSnaps[0]
-      const v2 = viewSnaps[1]
-      const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
-      const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
-      const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })
-      const p22 = bpToPx({ self: v2, refName: ref2, coord: f2e })
-
-      if (
-        p11 === undefined ||
-        p12 === undefined ||
-        p21 === undefined ||
-        p22 === undefined
-      ) {
-        continue
-      }
-      map[f.id()] = { p11, p12, p21, p22 }
-    }
-
-    return map
-  }, [views, features, assemblyManager, JSON.stringify(bpPerPxs)])
 
   // useEffect(
   //   () => {

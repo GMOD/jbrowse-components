@@ -1,0 +1,238 @@
+import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
+import { LinearSyntenyDisplayModel } from './stateModelFactory'
+import { draw, drawMatchSimple } from './components/util'
+
+const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
+
+function makeColor(idx: number) {
+  const r = Math.floor(idx / (255 * 255)) % 255
+  const g = Math.floor(idx / 255) % 255
+  const b = idx % 255
+  return `rgb(${r},${g},${b})`
+}
+
+const colorMap = {
+  I: '#ff03',
+  N: '#0a03',
+  D: '#00f3',
+  X: 'brown',
+  M: '#f003',
+  '=': '#f003',
+}
+
+function getId(r: number, g: number, b: number, unitMultiplier: number) {
+  return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
+}
+
+export function drawRef(
+  model: LinearSyntenyDisplayModel,
+  ref: HTMLCanvasElement,
+) {
+  const highResolutionScaling = 1
+  const ctx1 = ref.getContext('2d')
+
+  const view = getContainingView(model) as LinearSyntenyViewModel
+  const drawCurves = view.drawCurves
+  const drawCIGAR = view.drawCIGAR
+  const height = view.middleComparativeHeight
+  const width = view.width
+  const bpPerPxs = view.views.map(v => v.bpPerPx)
+
+  // const ctx3 = cigarClickMapRef.current.getContext('2d')
+
+  if (!ctx1) {
+    return
+  }
+
+  // ctx3.imageSmoothingEnabled = false
+
+  ctx1.resetTransform()
+  ctx1.scale(highResolutionScaling, highResolutionScaling)
+  ctx1.clearRect(0, 0, width, height)
+  ctx1.beginPath()
+  const featPos = Object.values(model.featPositions)
+  const offsets = view.views.map(v => v.offsetPx)
+  const oobLimit = 1600
+
+  const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPos.length)
+
+  // this loop is optimized to draw thousands/millions of thin lines as a polyline,
+  // the polyline calls ctx.stroke once is much more efficient than calling stroke()
+  // many times
+  for (let i = 0; i < featPos.length; i++) {
+    const { p11, p12, p21, p22 } = featPos[i]
+    ctx1.fillStyle = colorMap.M
+    ctx1.strokeStyle = colorMap.M
+
+    const x11 = p11.offsetPx - offsets[0]
+    const x12 = p12.offsetPx - offsets[0]
+    const x21 = p21.offsetPx - offsets[1]
+    const x22 = p22.offsetPx - offsets[1]
+    const l1 = Math.abs(x12 - x11)
+    const l2 = Math.abs(x22 - x21)
+
+    const y1 = 0
+    const y2 = height
+
+    const mid = (y2 - y1) / 2
+
+    if (l1 < 1 && l2 < 1) {
+      // drawing a line if the results are thin results in much less
+      // pixellation than filling in a thin polygon
+      if (x21 < width + oobLimit && x21 > -oobLimit) {
+        ctx1.moveTo(x11, y1)
+
+        if (drawCurves) {
+          ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+        } else {
+          ctx1.lineTo(x21, y2)
+        }
+      }
+    }
+  }
+  ctx1.stroke()
+
+  // this loop only draws small lines as a polyline, the polyline calls
+  // ctx.stroke once is much more efficient than calling stroke() many times
+
+  for (let i = 0; i < featPos.length; i++) {
+    const { p11, p12, p21, p22, f, cigar } = featPos[i]
+    ctx1.fillStyle = colorMap.M
+    ctx1.strokeStyle = colorMap.M
+
+    const x11 = p11.offsetPx - offsets[0]
+    const x12 = p12.offsetPx - offsets[0]
+    const x21 = p21.offsetPx - offsets[1]
+    const x22 = p22.offsetPx - offsets[1]
+    const l1 = Math.abs(x12 - x11)
+    const l2 = Math.abs(x22 - x21)
+
+    const minX = Math.min(x21, x22)
+    const maxX = Math.max(x21, x22)
+
+    const y1 = 0
+    const y2 = height
+
+    const mid = (y2 - y1) / 2
+
+    if (
+      !(l1 < 1 && l2 < 1) &&
+      doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
+    ) {
+      const s1 = f.get('strand')
+      const k1 = s1 === -1 ? x12 : x11
+      const k2 = s1 === -1 ? x11 : x12
+
+      // rev1/rev2 flip the direction of the CIGAR drawing in horizontally flipped
+      // modes. somewhat heuristically determined, but tested for
+      const rev1 = k1 < k2 ? 1 : -1
+      const rev2 = (x21 < x22 ? 1 : -1) * s1
+
+      // cx1/cx2 are the current x positions on top and bottom rows
+      let cx1 = k1
+      let cx2 = s1 === -1 ? x22 : x21
+
+      if (cigar?.length && drawCIGAR) {
+        // continuingFlag skips drawing commands on very small CIGAR features
+        let continuingFlag = false
+
+        // px1/px2 are the previous x positions on the top and bottom rows
+        let px1 = 0
+        let px2 = 0
+        const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+        for (let j = 0; j < cigar.length; j += 2) {
+          const idx = j * unitMultiplier2 + 1
+          // ctx3.fillStyle = makeColor(idx)
+
+          const len = +cigar[j]
+          const op = cigar[j + 1] as keyof typeof colorMap
+
+          if (!continuingFlag) {
+            px1 = cx1
+            px2 = cx2
+          }
+
+          const d1 = len / bpPerPxs[0]
+          const d2 = len / bpPerPxs[1]
+
+          if (op === 'M' || op === '=' || op === 'X') {
+            cx1 += d1 * rev1
+            cx2 += d2 * rev2
+          } else if (op === 'D' || op === 'N') {
+            cx1 += d1 * rev1
+          } else if (op === 'I') {
+            cx2 += d2 * rev2
+          }
+
+          // check that we are even drawing in view here, e.g. that all
+          // points are not all less than 0 or greater than width
+          if (
+            !(
+              Math.max(px1, px2, cx1, cx2) < 0 ||
+              Math.min(px1, px2, cx1, cx2) > width
+            )
+          ) {
+            // if it is a small feature and not the last element of the
+            // CIGAR (which could skip rendering it entire if we did turn
+            // it on), then turn on continuing flag
+            const isNotLast = j < cigar.length - 2
+            if (
+              Math.abs(cx1 - px1) < 1 &&
+              Math.abs(cx2 - px2) < 1 &&
+              isNotLast
+            ) {
+              continuingFlag = true
+            } else {
+              continuingFlag = false
+
+              // allow rendering the dominant color when using continuing
+              // flag if the last element of continuing was a large
+              // feature, else just use match
+              ctx1.fillStyle =
+                colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+
+              draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              // draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+            }
+          }
+        }
+      } else {
+        draw(ctx1, x11, x12, y1, x22, x21, y2, mid, drawCurves)
+      }
+    }
+  }
+  //
+  //
+  //
+  // draw click map
+  // requestIdleCallback(() => {
+  //   if (!clickMapRef.current) {
+  //     return
+  //   }
+  //   const ctx2 = clickMapRef.current.getContext('2d')
+  //   if (!ctx2) {
+  //     return
+  //   }
+  //   ctx2.imageSmoothingEnabled = false
+  //   ctx2.clearRect(0, 0, width, height)
+  //   for (let j = 0; j < matches.length; j++) {
+  //     const m = matches[j]
+  //     const idx = j * unitMultiplier + 1
+  //     ctx2.fillStyle = makeColor(idx)
+
+  //     // too many click map false positives with colored stroked lines
+  //     drawMatchSimple({
+  //       cb: ctx => ctx.fill(),
+  //       match: m,
+  //       ctx: ctx2,
+  //       drawCurves,
+  //       offsets,
+  //       hideTiny,
+  //       height,
+  //       viewSnaps,
+  //       showIntraviewLinks,
+  //     })
+  //   }
+  // })
+}
