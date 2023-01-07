@@ -118,6 +118,7 @@ function LinearSyntenyRendering({
 
   useEffect(
     () => {
+      console.log('t1')
       if (
         !drawRef.current ||
         !clickMapRef.current ||
@@ -413,7 +414,7 @@ function LinearSyntenyRendering({
       matches,
       parsedCIGARs,
       // these are checked with a JSON.stringify to help compat with mobx
-      JSON.stringify(views), // eslint-disable-line  react-hooks/exhaustive-deps
+      // JSON.stringify(views), // eslint-disable-line  react-hooks/exhaustive-deps
       JSON.stringify(offsets), // eslint-disable-line  react-hooks/exhaustive-deps
     ],
   )

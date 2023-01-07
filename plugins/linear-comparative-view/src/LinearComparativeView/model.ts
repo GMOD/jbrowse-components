@@ -15,7 +15,7 @@ import { autorun, transaction } from 'mobx'
 // jbrowse
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
-import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -46,10 +46,6 @@ function stateModelFactory(pluginManager: PluginManager) {
          * #property
          */
         type: types.literal('LinearComparativeView'),
-        /**
-         * #property
-         */
-        height: defaultHeight,
         /**
          * #property
          */
@@ -177,12 +173,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       setWidth(newWidth: number) {
         self.width = newWidth
       },
-      /**
-       * #action
-       */
-      setHeight(newHeight: number) {
-        self.height = newHeight
-      },
 
       /**
        * #action
@@ -302,11 +292,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       squareView() {
-        const bpPerPxs = self.views.map(v => v.bpPerPx)
-        const avg = bpPerPxs.reduce((a, b) => a + b, 0) / bpPerPxs.length
+        const average = avg(self.views.map(v => v.bpPerPx))
         self.views.forEach(view => {
           const center = view.pxToBp(view.width / 2)
-          view.setNewView(avg, view.offsetPx)
+          view.setNewView(average, view.offsetPx)
           if (!center.refName) {
             return
           }
