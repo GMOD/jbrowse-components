@@ -98,7 +98,6 @@ export function pxToBp(
   oob: boolean
   assemblyName: string
   offset: number
-  static: boolean
   start: number
   end: number
   reversed: boolean
@@ -203,7 +202,6 @@ export function bpToPx({
   const blocks = staticBlocks.contentBlocks
   const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
   let currBlock = 0
-  let staticBlock = false
 
   let i = 0
   for (; i < displayedRegions.length; i++) {
@@ -234,4 +232,55 @@ export function bpToPx({
   }
 
   return undefined
+}
+
+export function bpToPxMap({
+  refName,
+  coord,
+  regionNumber,
+  self,
+}: {
+  refName: string
+  coord: number
+  regionNumber?: number
+  self: ViewSnap
+}) {
+  let bpSoFar = 0
+
+  const { interRegionPaddingWidth, bpPerPx, displayedRegions, staticBlocks } =
+    self
+  const blocks = staticBlocks.contentBlocks
+  const interRegionPaddingBp = interRegionPaddingWidth * bpPerPx
+  const map = {}
+  let currBlock = 0
+
+  let i = 0
+  for (; i < displayedRegions.length; i++) {
+    const r = displayedRegions[i]
+    const len = r.end - r.start
+    if (refName === r.refName && coord >= r.start && coord <= r.end) {
+      if (regionNumber !== undefined ? regionNumber === i : true) {
+        bpSoFar += r.reversed ? r.end - coord : coord - r.start
+        break
+      }
+    }
+
+    // add the interRegionPaddingWidth if the boundary is in the screen e.g. in
+    // a static block
+    if (blocks[currBlock]?.regionNumber === i) {
+      bpSoFar += len + interRegionPaddingBp
+      currBlock++
+    } else {
+      bpSoFar += len
+    }
+  }
+  const found = displayedRegions[i]
+  if (found) {
+    return {
+      index: i,
+      offsetPx: Math.round(bpSoFar / bpPerPx),
+    }
+  }
+
+  return map
 }

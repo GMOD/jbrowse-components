@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { types, getParent, isAlive, cast, Instance } from 'mobx-state-tree'
+import {
+  types,
+  getParent,
+  isAlive,
+  cast,
+  Instance,
+  getSnapshot,
+} from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
@@ -238,7 +245,7 @@ export function renderBlockData(
           }
         },
         assemblyName: self.region.assemblyName,
-        regions: [self.region],
+        regions: [getSnapshot(self.region)],
         adapterConfig,
         rendererType: rendererType.name,
         sessionId,
