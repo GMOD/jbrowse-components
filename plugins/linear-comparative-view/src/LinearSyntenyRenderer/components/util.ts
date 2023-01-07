@@ -100,43 +100,6 @@ export function drawMatchSimple({
   }
 }
 
-export function layoutMatches(feats: Feature[], asmManager?: AssemblyManager) {
-  const matches = []
-  for (let i = 0; i < feats.length; i++) {
-    const f = feats[i]
-
-    const mate = f.get('mate')
-    let f1s = f.get('start')
-    let f1e = f.get('end')
-    const f2s = mate.start
-    const f2e = mate.end
-
-    if (f.get('strand') === -1) {
-      ;[f1e, f1s] = [f1s, f1e]
-    }
-    const a1 = asmManager?.get(f.get('assemblyName'))
-    const a2 = asmManager?.get(mate.assemblyName)
-    const r1 = f.get('refName')
-    const r2 = mate.refName
-
-    matches.push([
-      {
-        feature: f.toJSON(),
-        level: 0,
-        refName: a1?.getCanonicalRefName(r1) || r1,
-        layout: [f1s, 0, f1e, 10] as RectTuple,
-      },
-      {
-        feature: mate,
-        level: 1,
-        refName: a2?.getCanonicalRefName(r2) || r2,
-        layout: [f2s, 0, f2e, 10] as RectTuple,
-      },
-    ])
-  }
-  return matches
-}
-
 export function draw(
   ctx: CanvasRenderingContext2D,
   x1: number,
