@@ -113,17 +113,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         return (
           self.width !== undefined &&
           self.views.length > 0 &&
-          this.assembliesInitialized
-        )
-      },
-
-      /**
-       * #getter
-       */
-      get assembliesInitialized() {
-        const { assemblyManager } = getSession(self)
-        return this.assemblyNames.every(
-          a => assemblyManager.get(a)?.initialized,
+          self.views.every(view => view.initialized)
         )
       },
 
@@ -399,7 +389,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         addDisposer(
           self,
           autorun(() => {
-            if (self.initialized) {
+            if (self.width) {
               self.views.forEach(v => v.setWidth(self.width))
             }
           }),
