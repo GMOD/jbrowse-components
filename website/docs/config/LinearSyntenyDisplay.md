@@ -22,14 +22,6 @@ trackIds: {
       }
 ```
 
-#### slot: renderer
-
-```js
-renderer: types.optional(pluginManager.pluggableConfigSchemaType('renderer'), {
-  type: 'LinearSyntenyRenderer',
-})
-```
-
 #### slot: middle
 
 currently unused
@@ -40,7 +32,7 @@ middle: { type: 'boolean', defaultValue: true }
 
 ## LinearSyntenyDisplay - Derives from
 
-this refers to the base linear comparative display
+this refers to the LinearComparativeDisplay
 
 ```js
 baseConfiguration: baseConfigFactory(pluginManager)
