@@ -1,4 +1,4 @@
-import { doesIntersect2, getContainingView, rIC } from '@jbrowse/core/util'
+import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import { LinearSyntenyDisplayModel } from './stateModelFactory'
 import { draw, drawMatchSimple } from './components/util'
