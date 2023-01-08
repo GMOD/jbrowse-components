@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  getContainingView,
+  getSession,
+  isSessionModelWithWidgets,
+} from '@jbrowse/core/util'
 
 // locals
 import SyntenyTooltip from './SyntenyTooltip'
@@ -18,8 +23,7 @@ function LinearSyntenyRendering({
   const height = view.middleComparativeHeight
   const width = view.width
 
-  const [mouseoverId, setMouseoverId] = useState<number>()
-  const [visibleCigarOp, setVisibleCigarOp] = useState('')
+  const [tooltip, setTooltip] = useState('')
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
 
@@ -63,38 +67,47 @@ function LinearSyntenyRendering({
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
           model.setMouseoverId(id)
-          // if (!match1) {
-          //   setVisibleCigarOp('')
-          //   return
-          // }
-          // const cigar = parsedCIGARs.get(match1[0].feature.uniqueId) || []
-          // const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
-          // const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
-          // const f1 = match1[0].feature
-          // const f2 = match1[1].feature
-          // const l1 = f1.end - f1.start
-          // const l2 = f2.end - f2.start
-          // const identity = f1.identity
-          // const n1 = f1.name
-          // const n2 = f2.name
-          // const tooltip = [`Query len: ${l1}<br/>Target len: ${l2}`]
-          // if (identity) {
-          //   tooltip.push(`Identity: ${identity}`)
-          // }
-          // if (identity) {
-          //   tooltip.push(`Loc1: ${assembleLocString(f1)}`)
-          //   tooltip.push(`Loc2: ${assembleLocString(f2)}`)
-          // }
-          // if (cigar[cigarIdx]) {
-          //   tooltip.push(
-          //     `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
-          //   )
-          // }
-          // if (n1 && n2) {
-          //   tooltip.push(`Name 1: ${n1}`)
-          //   tooltip.push(`Name 2: ${n2}`)
-          // }
-          // setVisibleCigarOp(tooltip.join('<br/>'))
+          if (id === -1) {
+            setTooltip('')
+          } else {
+            const { f, cigar } = model.featPositions[id]
+            // @ts-ignore
+            const f1 = f.toJSON() as {
+              refName: string
+              start: number
+              end: number
+              assemblyName: string
+              identity?: number
+              name?: string
+            }
+            // @ts-ignore
+            const f2 = f1.mate
+            const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
+            const cigarIdx = getId(r2, g2, b2, unitMultiplier2)
+            const l1 = f1.end - f1.start
+            const l2 = f2.end - f2.start
+            const identity = f1.identity
+            const n1 = f1.name
+            const n2 = f2.name
+            const tooltip = [`Query len: ${l1}<br/>Target len: ${l2}`]
+            if (identity) {
+              tooltip.push(`Identity: ${identity}`)
+            }
+            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
+            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
+
+            console.log({ cigar, cigarIdx })
+            if (cigar[cigarIdx]) {
+              tooltip.push(
+                `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,
+              )
+            }
+            if (n1 && n2) {
+              tooltip.push(`Name 1: ${n1}`)
+              tooltip.push(`Name 2: ${n2}`)
+            }
+            setTooltip(tooltip.join('<br/>'))
+          }
         }}
         onMouseLeave={() => model.setMouseoverId(-1)}
         onClick={event => {
@@ -114,19 +127,19 @@ function LinearSyntenyRendering({
           const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
-          // const match1 = matches[id]
-          // const session = getSession(model)
           model.setClickId(id)
-          // if (match1 && isSessionModelWithWidgets(session)) {
-          //   session.showWidget(
-          //     session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
-          //       featureData: {
-          //         feature1: match1[0].feature,
-          //         feature2: match1[1].feature,
-          //       },
-          //     }),
-          //   )
-          // }
+          const f = model.featPositions[id - 1]
+          const session = getSession(model)
+          if (f && isSessionModelWithWidgets(session)) {
+            session.showWidget(
+              session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {
+                featureData: {
+                  feature1: f.f.toJSON(),
+                  feature2: f.f.get('mate'),
+                },
+              }),
+            )
+          }
         }}
         data-testid="synteny_canvas"
         style={{ width, height, position: 'absolute' }}
@@ -163,8 +176,8 @@ function LinearSyntenyRendering({
         width={width}
         height={height}
       />
-      {mouseoverId !== undefined && currX && currY ? (
-        <SyntenyTooltip x={currX} y={currY} title={visibleCigarOp} />
+      {model.mouseoverId !== -1 && currX && currY ? (
+        <SyntenyTooltip x={currX} y={currY} title={tooltip} />
       ) : null}
     </div>
   )
