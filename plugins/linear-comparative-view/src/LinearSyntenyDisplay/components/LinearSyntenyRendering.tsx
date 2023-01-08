@@ -96,7 +96,6 @@ function LinearSyntenyRendering({
             tooltip.push(`Loc1: ${assembleLocString(f1)}`)
             tooltip.push(`Loc2: ${assembleLocString(f2)}`)
 
-            console.log({ cigar, cigarIdx })
             if (cigar[cigarIdx]) {
               tooltip.push(
                 `CIGAR operator: ${cigar[cigarIdx]}${cigar[cigarIdx + 1]}`,

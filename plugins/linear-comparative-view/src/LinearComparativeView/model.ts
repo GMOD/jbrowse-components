@@ -32,7 +32,6 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
  * #stateModel LinearComparativeView
  */
 function stateModelFactory(pluginManager: PluginManager) {
-  const defaultHeight = 400
   return types
     .compose(
       'LinearComparativeView',
