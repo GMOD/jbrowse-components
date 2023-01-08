@@ -86,18 +86,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #action
          * controlled by a reaction
          */
-        setRendered(args?: {
-          features: Feature[]
-          renderingComponent: React.Component
-        }) {
+        setRendered(args?: { features: Feature[] }) {
           if (!args) {
             return
           }
-          const { features, renderingComponent } = args
+          const { features } = args
           const existingFeatures = self.features || []
 
           const featIds = new Set(existingFeatures.map(f => f.id()) || [])
           const newFeatIds = new Set(features?.map(f => f.id()) || [])
+
           let foundNewFeatureNotInExistingMap = false
           let foundExistingFeatureNotInNewMap = false
           for (let i = 0; i < features.length; i++) {
@@ -116,7 +114,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.message = undefined
           self.error = undefined
           renderInProgress = undefined
-          self.renderingComponent = renderingComponent
           if (
             foundNewFeatureNotInExistingMap ||
             foundExistingFeatureNotInNewMap
@@ -137,7 +134,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // the rendering failed for some reason
           self.message = undefined
           self.error = error
-          self.renderingComponent = undefined
           renderInProgress = undefined
         },
       }

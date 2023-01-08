@@ -14,7 +14,7 @@ import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 
 // locals
-import { drawRef } from './drawSynteny'
+import { drawMouseoverSynteny, drawRef } from './drawSynteny'
 
 interface Pos {
   offsetPx: number
@@ -29,10 +29,7 @@ interface FeatPos {
   cigar: string[]
 }
 
-interface FeatMap {
-  [key: string]: FeatPos
-}
-
+type LSV = LinearSyntenyViewModel
 /**
  * #stateModel LinearSyntenyDisplay
  * extends `LinearComparativeDisplay` model
@@ -71,25 +68,59 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       // canvas for drawing mouseover shading
       // this is separate from the other code for speed: don't have to redraw
       // entire canvas to do a feature's mouseover shading
-      mouseoverRef: null as HTMLCanvasElement | null,
+      mouseoverCanvas: null as HTMLCanvasElement | null,
 
-      featPositions: {} as FeatMap,
+      // assigned by reaction
+      featPositions: [] as FeatPos[],
+
+      // currently mouse'd over feature
+      mouseoverId: -1,
+
+      // currently click'd over feature
+      clickId: -1,
     }))
     .actions(self => ({
-      setFeatPositions(arg: FeatMap) {
+      /**
+       * #action
+       */
+      setFeatPositions(arg: FeatPos[]) {
         self.featPositions = arg
       },
+      /**
+       * #action
+       */
       setMainCanvasRef(ref: HTMLCanvasElement | null) {
         self.mainCanvas = ref
       },
+      /**
+       * #action
+       */
       setClickMapCanvasRef(ref: HTMLCanvasElement | null) {
         self.clickMapCanvas = ref
       },
+      /**
+       * #action
+       */
       setCigarClickMapCanvasRef(ref: HTMLCanvasElement | null) {
         self.cigarClickMapCanvas = ref
       },
+      /**
+       * #action
+       */
       setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverRef = ref
+        self.mouseoverCanvas = ref
+      },
+      /**
+       * #action
+       */
+      setMouseoverId(arg: number) {
+        self.mouseoverId = arg
+      },
+      /**
+       * #action
+       */
+      setClickId(arg: number) {
+        self.clickId = arg
       },
     }))
 
@@ -99,7 +130,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get adapterConfig() {
         return {
-          // @ts-ignore
           name: self.parentTrack.configuration.adapter.type,
           assemblyNames: getConf(self, 'assemblyNames'),
           ...getConf(self.parentTrack, 'adapter'),
@@ -107,10 +137,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * unused
        */
       get trackIds() {
         return getConf(self, 'trackIds') as string[]
+      },
+      /**
+       * #getter
+       */
+      get numFeats() {
+        return self.featPositions.length
+      },
+      /**
+       * #getter
+       */
+      get featMap() {
+        return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
       },
     }))
     .actions(self => ({
@@ -119,8 +160,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self,
           autorun(() => {
             const view = getContainingView(self)
-            if (view.initialized) {
-              drawRef(self)
+            if (!view.initialized) {
+              return
+            }
+            drawRef(self)
+          }),
+        )
+
+        addDisposer(
+          self,
+          autorun(() => {
+            const view = getContainingView(self)
+            if (!view.initialized) {
+              return
+            }
+            if (self.mouseoverId || self.clickId) {
+              drawMouseoverSynteny(self)
             }
           }),
         )
@@ -134,7 +189,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self,
           reaction(
             () => {
-              const view = getContainingView(self) as LinearSyntenyViewModel
+              const view = getContainingView(self) as LSV
               return {
                 bpPerPx: view.views.map(v => v.bpPerPx),
                 displayedRegions: view.views.map(v => v.displayedRegions),
@@ -147,11 +202,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 return
               }
               const { assemblyManager } = getSession(self)
-              const parentView = getContainingView(
-                self,
-              ) as LinearSyntenyViewModel
-              const viewSnaps = parentView.views.map(view => ({
-                // @ts-ignore
+              const view = getContainingView(self) as LSV
+              const viewSnaps = view.views.map(view => ({
                 ...getSnapshot(view),
                 width: view.width,
                 staticBlocks: view.staticBlocks,
@@ -159,8 +211,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 minimumBlockWidth: view.minimumBlockWidth,
               }))
 
-              const map = {} as FeatMap
-
+              const map = [] as FeatPos[]
               const feats = self.features || []
 
               for (let i = 0; i < feats.length; i++) {
@@ -195,16 +246,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 ) {
                   continue
                 }
-                map[f.id()] = {
+
+                const cigar = f.get('CIGAR') as string | undefined
+                map.push({
                   p11,
                   p12,
                   p21,
                   p22,
                   f,
-                  cigar: MismatchParser.parseCigar(
-                    f.get('CIGAR') as string | undefined,
-                  ),
-                }
+                  cigar: MismatchParser.parseCigar(cigar),
+                })
               }
 
               self.setFeatPositions(map)
