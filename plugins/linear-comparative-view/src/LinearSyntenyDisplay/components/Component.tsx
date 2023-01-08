@@ -5,6 +5,7 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 
 // locals
 import LinearSyntenyRendering from './LinearSyntenyRendering'
+import { LinearSyntenyDisplayModel } from '../stateModelFactory'
 
 const useStyles = makeStyles()({
   loading: {
@@ -53,18 +54,10 @@ function BlockError({ error }: { error: unknown }) {
   return <div className={classes.blockError}>{`${error}`}</div>
 }
 
-interface Display {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderingComponent: React.FC<any>
-  error: unknown
-  message: string
-  features: unknown
-}
-
 const ServerSideRenderedBlockContent = observer(function ({
   model,
 }: {
-  model: Display
+  model: LinearSyntenyDisplayModel
 }) {
   if (model.error) {
     return <BlockError error={model.error} />

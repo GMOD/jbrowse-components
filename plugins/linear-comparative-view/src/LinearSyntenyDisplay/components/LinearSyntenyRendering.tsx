@@ -6,6 +6,7 @@ import { getContainingView } from '@jbrowse/core/util'
 // locals
 import SyntenyTooltip from './SyntenyTooltip'
 import { LinearSyntenyDisplayModel } from '../stateModelFactory'
+import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 
 function LinearSyntenyRendering({
   model,
@@ -18,87 +19,9 @@ function LinearSyntenyRendering({
   const width = view.width
 
   const [mouseoverId, setMouseoverId] = useState<number>()
-  const [clickId, setClickId] = useState<number>()
   const [visibleCigarOp, setVisibleCigarOp] = useState('')
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
-
-  // draw mouseover shading on the mouseover'd ID
-  // useEffect(
-  //   () => {
-  //     if (
-  //       !mouseoverRef.current ||
-  //       !offsets ||
-  //       !views ||
-  //       !isAlive(model)
-  //     ) {
-  //       return
-  //     }
-  //     const ctx = mouseoverRef.current.getContext('2d')
-  //     if (!ctx) {
-  //       return
-  //     }
-  //     ctx.resetTransform()
-  //     ctx.scale(highResolutionScaling, highResolutionScaling)
-  //     ctx.clearRect(0, 0, width, height)
-  //     const showIntraviewLinks = false
-  //     const hideTiny = false
-  //     const viewSnaps = views.map(view => ({
-  //       ...getSnapshot(view),
-  //       staticBlocks: view.staticBlocks,
-  //       width: view.width,
-  //       interRegionPaddingWidth: view.interRegionPaddingWidth,
-  //       minimumBlockWidth: view.minimumBlockWidth,
-  //     }))
-
-  //     if (mouseoverId !== undefined && matches[mouseoverId]) {
-  //       const m = matches[mouseoverId]
-  //       ctx.fillStyle = 'rgb(0,0,0,0.1)'
-  //       drawMatchSimple({
-  //         match: m,
-  //         ctx,
-  //         offsets,
-  //         cb: ctx => ctx.fill(),
-  //         showIntraviewLinks,
-  //         height,
-  //         hideTiny,
-  //         viewSnaps,
-  //         drawCurves,
-  //       })
-  //     }
-
-  //     if (clickId !== undefined && matches[clickId]) {
-  //       const m = matches[clickId]
-  //       ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
-  //       drawMatchSimple({
-  //         match: m,
-  //         ctx,
-  //         offsets,
-  //         cb: ctx => ctx.stroke(),
-  //         showIntraviewLinks,
-  //         height,
-  //         hideTiny,
-  //         viewSnaps,
-  //         drawCurves,
-  //       })
-  //     }
-  // },
-  // // eslint-disable-next-line react-hooks/exhaustive-deps
-  // [
-  //   model,
-  //   highResolutionScaling,
-  //   width,
-  //   drawCurves,
-  //   height,
-  //   matches,
-  //   parsedCIGARs,
-  //   mouseoverId,
-  //   clickId,
-  //   // these are checked with a JSON.stringify to help compat with mobx
-  //   JSON.stringify(views), // eslint-disable-line  react-hooks/exhaustive-deps
-  //   JSON.stringify(offsets), // eslint-disable-line  react-hooks/exhaustive-deps
-  // ],
-  // )
 
   return (
     <div style={{ position: 'relative' }}>
@@ -119,28 +42,27 @@ function LinearSyntenyRendering({
           }
         }}
         onMouseMove={event => {
-          // const ref1 = clickMapRef.current
-          // const ref2 = cigarClickMapRef.current
-          // if (!ref1 || !ref2) {
-          //   return
-          // }
-          // const rect = ref1.getBoundingClientRect()
-          // const ctx1 = ref1.getContext('2d')
-          // const ctx2 = ref2.getContext('2d')
-          // if (!ctx1 || !ctx2) {
-          //   return
-          // }
-          // const { clientX, clientY } = event
-          // const x = clientX - rect.left
-          // const y = clientY - rect.top
-          // setCurrX(clientX)
-          // setCurrY(clientY)
-          // const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-          // const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
-          // const unitMultiplier = Math.floor(MAX_COLOR_RANGE / matches.length)
-          // const id = getId(r1, g1, b1, unitMultiplier)
-          // const match1 = matches[id]
-          // setMouseoverId(id < 0 ? undefined : id)
+          const ref1 = model.clickMapCanvas
+          const ref2 = model.cigarClickMapCanvas
+          if (!ref1 || !ref2) {
+            return
+          }
+          const rect = ref1.getBoundingClientRect()
+          const ctx1 = ref1.getContext('2d')
+          const ctx2 = ref2.getContext('2d')
+          if (!ctx1 || !ctx2) {
+            return
+          }
+          const { clientX, clientY } = event
+          const x = clientX - rect.left
+          const y = clientY - rect.top
+          setCurrX(clientX)
+          setCurrY(clientY)
+          const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+          const [r2, g2, b2] = ctx2.getImageData(x, y, 1, 1).data
+          const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+          const id = getId(r1, g1, b1, unitMultiplier)
+          model.setMouseoverId(id)
           // if (!match1) {
           //   setVisibleCigarOp('')
           //   return
@@ -174,27 +96,27 @@ function LinearSyntenyRendering({
           // }
           // setVisibleCigarOp(tooltip.join('<br/>'))
         }}
-        onMouseLeave={() => setMouseoverId(undefined)}
+        onMouseLeave={() => model.setMouseoverId(-1)}
         onClick={event => {
-          // const ref1 = clickMapRef.current
-          // const ref2 = cigarClickMapRef.current
-          // if (!ref1 || !ref2) {
-          //   return
-          // }
-          // const rect = ref1.getBoundingClientRect()
-          // const ctx1 = ref1.getContext('2d')
-          // const ctx2 = ref2.getContext('2d')
-          // if (!ctx1 || !ctx2) {
-          //   return
-          // }
-          // const x = event.clientX - rect.left
-          // const y = event.clientY - rect.top
-          // const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
-          // const unitMultiplier = Math.floor(MAX_COLOR_RANGE / matches.length)
-          // const id = getId(r1, g1, b1, unitMultiplier)
+          const ref1 = model.clickMapCanvas
+          const ref2 = model.cigarClickMapCanvas
+          if (!ref1 || !ref2) {
+            return
+          }
+          const rect = ref1.getBoundingClientRect()
+          const ctx1 = ref1.getContext('2d')
+          const ctx2 = ref2.getContext('2d')
+          if (!ctx1 || !ctx2) {
+            return
+          }
+          const x = event.clientX - rect.left
+          const y = event.clientY - rect.top
+          const [r1, g1, b1] = ctx1.getImageData(x, y, 1, 1).data
+          const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
+          const id = getId(r1, g1, b1, unitMultiplier)
           // const match1 = matches[id]
           // const session = getSession(model)
-          // setClickId(id < 0 ? undefined : id)
+          model.setClickId(id)
           // if (match1 && isSessionModelWithWidgets(session)) {
           //   session.showWidget(
           //     session.addWidget('SyntenyFeatureWidget', 'syntenyFeature', {

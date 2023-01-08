@@ -1,9 +1,9 @@
-import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
+import { doesIntersect2, getContainingView, rIC } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
 import { LinearSyntenyDisplayModel } from './stateModelFactory'
 import { draw, drawMatchSimple } from './components/util'
 
-const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
+export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
 
 function makeColor(idx: number) {
   const r = Math.floor(idx / (255 * 255)) % 255
@@ -21,14 +21,13 @@ const colorMap = {
   '=': '#f003',
 }
 
-function getId(r: number, g: number, b: number, unitMultiplier: number) {
+export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
 export function drawRef(model: LinearSyntenyDisplayModel) {
   const highResolutionScaling = 1
   const ctx1 = model.mainCanvas?.getContext('2d')
-  const ctx2 = model.clickMapCanvas?.getContext('2d')
   const ctx3 = model.cigarClickMapCanvas?.getContext('2d')
 
   const view = getContainingView(model) as LinearSyntenyViewModel
@@ -38,7 +37,7 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  if (!ctx1 || !ctx2 || !ctx3) {
+  if (!ctx1 || !ctx3) {
     return
   }
 
@@ -48,7 +47,7 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   ctx1.scale(highResolutionScaling, highResolutionScaling)
   ctx1.clearRect(0, 0, width, height)
   ctx1.beginPath()
-  const featPos = Object.values(model.featPositions)
+  const featPos = model.featPositions
   const offsets = view.views.map(v => v.offsetPx)
   const oobLimit = 1600
 
@@ -198,10 +197,12 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
       }
     }
   }
-  //
-  //
-  //
+
   // draw click map
+  const ctx2 = model.clickMapCanvas?.getContext('2d')
+  if (!ctx2) {
+    return
+  }
   ctx2.imageSmoothingEnabled = false
   ctx2.clearRect(0, 0, width, height)
   for (let i = 0; i < featPos.length; i++) {
@@ -214,6 +215,50 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
       cb: ctx => ctx.fill(),
       feature,
       ctx: ctx2,
+      drawCurves,
+      offsets,
+      height,
+    })
+  }
+}
+
+export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
+  const { clickId, mouseoverId } = model
+  const highResolutionScaling = 1
+  const view = getContainingView(model) as LinearSyntenyViewModel
+  const drawCurves = view.drawCurves
+  const height = view.middleComparativeHeight
+  const width = view.width
+  const ctx = model.mouseoverCanvas?.getContext('2d')
+  const offsets = view.views.map(v => v.offsetPx)
+
+  if (!ctx) {
+    return
+  }
+  ctx.resetTransform()
+  ctx.scale(highResolutionScaling, highResolutionScaling)
+  ctx.clearRect(0, 0, width, height)
+  if (mouseoverId !== -1 && model.features) {
+    const feature = model.featPositions[mouseoverId]
+    ctx.fillStyle = 'rgb(0,0,0,0.1)'
+    drawMatchSimple({
+      cb: ctx => ctx.fill(),
+      feature,
+      ctx,
+      drawCurves,
+      offsets,
+      height,
+    })
+  }
+
+  if (clickId !== -1 && model.features) {
+    const feature = model.featPositions[clickId]
+    ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
+
+    drawMatchSimple({
+      cb: ctx => ctx.stroke(),
+      feature,
+      ctx,
       drawCurves,
       offsets,
       height,
