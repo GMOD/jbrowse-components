@@ -27,50 +27,56 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SyntenyTooltip = observer(
-  ({ x, y, title }: { x: number; y: number; title: string }) => {
-    const [width, setWidth] = useState(0)
-    const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
-    const { classes } = useStyles()
+const SyntenyTooltip = observer(function ({
+  x,
+  y,
+  title,
+}: {
+  x: number
+  y: number
+  title: string
+}) {
+  const [width, setWidth] = useState(0)
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
+  const { classes } = useStyles()
 
-    // must be memoized a la https://github.com/popperjs/react-popper/issues/391
-    const virtElement = useMemo(
-      () => ({
-        getBoundingClientRect: () => {
-          return {
-            top: y,
-            left: x + width / 2,
-            bottom: y,
-            right: x,
-            width: 0,
-            height: 0,
-            x,
-            y,
-            toJSON() {},
-          }
-        },
-      }),
-      [x, y, width],
-    )
-    const { styles, attributes } = usePopper(virtElement, anchorEl)
+  // must be memoized a la https://github.com/popperjs/react-popper/issues/391
+  const virtElement = useMemo(
+    () => ({
+      getBoundingClientRect: () => {
+        return {
+          top: y,
+          left: x + width / 2,
+          bottom: y,
+          right: x,
+          width: 0,
+          height: 0,
+          x,
+          y,
+          toJSON() {},
+        }
+      },
+    }),
+    [x, y, width],
+  )
+  const { styles, attributes } = usePopper(virtElement, anchorEl)
 
-    return title ? (
-      <Portal>
-        <div
-          ref={ref => {
-            setWidth(ref?.getBoundingClientRect().width || 0)
-            setAnchorEl(ref)
-          }}
-          className={classes.tooltip}
-          // zIndex needed to go over widget drawer
-          style={{ ...styles.popper, zIndex: 100000 }}
-          {...attributes.popper}
-        >
-          <SanitizedHTML html={title} />
-        </div>
-      </Portal>
-    ) : null
-  },
-)
+  return title ? (
+    <Portal>
+      <div
+        ref={ref => {
+          setWidth(ref?.getBoundingClientRect().width || 0)
+          setAnchorEl(ref)
+        }}
+        className={classes.tooltip}
+        // zIndex needed to go over widget drawer
+        style={{ ...styles.popper, zIndex: 100000 }}
+        {...attributes.popper}
+      >
+        <SanitizedHTML html={title} />
+      </div>
+    </Portal>
+  ) : null
+})
 
 export default SyntenyTooltip
