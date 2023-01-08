@@ -262,7 +262,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * // ↳ 'chr1:1'
  * ```
  */
-export function assembleLocString(region: ParsedLocString): string {
+export function assembleLocString(region: ParsedLocString) {
   return assembleLocStringFast(region, toLocale)
 }
 
@@ -272,7 +272,7 @@ export function assembleLocString(region: ParsedLocString): string {
 export function assembleLocStringFast(
   region: ParsedLocString,
   cb = (n: number): string | number => n,
-): string {
+) {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString

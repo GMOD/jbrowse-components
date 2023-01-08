@@ -78,6 +78,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 
       // currently click'd over feature
       clickId: -1,
+
+      // currently mouseover'd CIGAR subfeature
+      cigarMouseoverId: -1,
     }))
     .actions(self => ({
       /**
@@ -115,6 +118,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       setMouseoverId(arg: number) {
         self.mouseoverId = arg
+      },
+      /**
+       * #action
+       */
+      setCigarMouseoverId(arg: number) {
+        self.cigarMouseoverId = arg
       },
       /**
        * #action
