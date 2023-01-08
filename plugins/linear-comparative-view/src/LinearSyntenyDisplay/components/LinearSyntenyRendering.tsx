@@ -13,7 +13,7 @@ import SyntenyTooltip from './SyntenyTooltip'
 import { LinearSyntenyDisplayModel } from '../stateModelFactory'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 
-function LinearSyntenyRendering({
+export default observer(function LinearSyntenyRendering({
   model,
 }: {
   model: LinearSyntenyDisplayModel
@@ -69,7 +69,7 @@ function LinearSyntenyRendering({
           model.setMouseoverId(id)
           if (id === -1) {
             setTooltip('')
-          } else {
+          } else if (model.featPositions[id]) {
             const { f, cigar } = model.featPositions[id]
             // @ts-ignore
             const f1 = f.toJSON() as {
@@ -175,11 +175,9 @@ function LinearSyntenyRendering({
         width={width}
         height={height}
       />
-      {model.mouseoverId !== -1 && currX && currY ? (
+      {model.mouseoverId !== -1 && tooltip && currX && currY ? (
         <SyntenyTooltip x={currX} y={currY} title={tooltip} />
       ) : null}
     </div>
   )
-}
-
-export default observer(LinearSyntenyRendering)
+})

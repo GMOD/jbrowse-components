@@ -1,4 +1,4 @@
-import { Feature } from '@jbrowse/core/util'
+import { doesIntersect2, Feature } from '@jbrowse/core/util'
 
 interface Pos {
   offsetPx: number
@@ -20,10 +20,14 @@ export function drawMatchSimple({
   cb,
   height,
   drawCurves,
+  oobLimit,
+  viewWidth,
 }: {
   feature: FeatPos
   ctx: CanvasRenderingContext2D
   offsets: number[]
+  oobLimit: number
+  viewWidth: number
   cb: (ctx: CanvasRenderingContext2D) => void
   height: number
   drawCurves?: boolean
@@ -40,6 +44,12 @@ export function drawMatchSimple({
   const y1 = 0
   const y2 = height
   const mid = (y2 - y1) / 2
+  const minX = Math.min(x21, x22)
+  const maxX = Math.max(x21, x22)
+
+  if (!doesIntersect2(minX, maxX, -oobLimit, viewWidth + oobLimit)) {
+    return
+  }
 
   // drawing a line if the results are thin: drawing a line results in much
   // less pixellation than filling in a thin polygon
@@ -104,6 +114,17 @@ export function drawBezierBox(
   y2: number,
   mid: number,
 ) {
+  const len1 = Math.abs(x1 - x2)
+  const len2 = Math.abs(x1 - x2)
+
+  // heuristic to not draw hourglass inversions with bezier curves when they
+  // are thin and far apart because it results in areas that are not drawn well
+  // demo https://codesandbox.io/s/fast-glitter-q3b1or?file=/src/index.js
+  if (len1 < 5 && len2 < 5 && x2 < x1 && Math.abs(x1 - x3) > 100) {
+    const tmp = x1
+    x1 = x2
+    x2 = tmp
+  }
   ctx.beginPath()
   ctx.moveTo(x1, y1)
   ctx.lineTo(x2, y1)

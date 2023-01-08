@@ -17,9 +17,11 @@ const colorMap = {
   N: '#0a03',
   D: '#00f3',
   X: 'brown',
-  M: '#f003',
+  M: '#ff000033',
   '=': '#f003',
 }
+
+const oobLimit = 1600
 
 export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
@@ -49,7 +51,6 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   ctx1.beginPath()
   const featPos = model.featPositions
   const offsets = view.views.map(v => v.offsetPx)
-  const oobLimit = 1600
 
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPos.length)
 
@@ -67,7 +68,6 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
     const x22 = p22.offsetPx - offsets[1]
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
-
     const y1 = 0
     const y2 = height
 
@@ -217,6 +217,8 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
       ctx: ctx2,
       drawCurves,
       offsets,
+      oobLimit,
+      viewWidth: view.width,
       height,
     })
   }
@@ -245,6 +247,8 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
       cb: ctx => ctx.fill(),
       feature,
       ctx,
+      oobLimit,
+      viewWidth: view.width,
       drawCurves,
       offsets,
       height,
@@ -259,6 +263,8 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
       cb: ctx => ctx.stroke(),
       feature,
       ctx,
+      oobLimit,
+      viewWidth: view.width,
       drawCurves,
       offsets,
       height,
