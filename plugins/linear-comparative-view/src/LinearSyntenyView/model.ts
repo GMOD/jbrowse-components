@@ -6,11 +6,11 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 /**
  * #stateModel LinearSyntenyView

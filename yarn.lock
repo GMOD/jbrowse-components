@@ -3311,9 +3311,9 @@
     nx "15.4.5"
 
 "@oclif/command@^1.8.11", "@oclif/command@^1.8.14", "@oclif/command@^1.8.15", "@oclif/command@^1.8.9":
-  version "1.8.20"
-  resolved "https://registry.yarnpkg.com/@oclif/command/-/command-1.8.20.tgz#7e28387be8744145e1b2ee7db89275bc7f708f2f"
-  integrity sha512-BHM9byujY0kf0PiRorIyp99K50cA3i6Hyro0+TPpFFx+4QM+PyQ5vMHO/TG5wkEP8tIivNRs24bF8QVyJru25g==
+  version "1.8.21"
+  resolved "https://registry.yarnpkg.com/@oclif/command/-/command-1.8.21.tgz#32f876f8c02d61094b9693e34167e08fe67b6411"
+  integrity sha512-kIDrRIbAcicVl+CWMzXeZkg5dRNuF1VI7koyFTAQMNYwRNZpeya5x7XDPr+fh7rDiBL7psnxc3B1+zoOWj96lQ==
   dependencies:
     "@oclif/config" "^1.18.2"
     "@oclif/errors" "^1.3.6"
@@ -14633,9 +14633,9 @@ mem@^8.1.1:
     mimic-fn "^3.1.0"
 
 memfs@^3.1.2, memfs@^3.2.2, memfs@^3.4.3:
-  version "3.4.12"
-  resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.4.12.tgz#d00f8ad8dab132dc277c659dc85bfd14b07d03bd"
-  integrity sha512-BcjuQn6vfqP+k100e0E9m61Hyqa//Brp+I3f0OBmN0ATHlFA8vx3Lt8z57R3u2bPqe3WGDBC+nF72fTH7isyEw==
+  version "3.4.13"
+  resolved "https://registry.yarnpkg.com/memfs/-/memfs-3.4.13.tgz#248a8bd239b3c240175cd5ec548de5227fc4f345"
+  integrity sha512-omTM41g3Skpvx5dSYeZIbXKcXoAVc/AoMNwn9TKx++L/gaen/+4TTttmu8ZSch5vfVJ8uJvGbroTsIlslRg6lg==
   dependencies:
     fs-monkey "^1.0.3"
 

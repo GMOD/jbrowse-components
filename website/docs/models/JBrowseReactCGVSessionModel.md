@@ -262,8 +262,6 @@ removeView: () => void
 
 #### action: addWidget
 
-does nothing
-
 ```js
 // type signature
 addWidget: (
@@ -275,8 +273,6 @@ addWidget: (
 ```
 
 #### action: showWidget
-
-does nothing
 
 ```js
 // type signature

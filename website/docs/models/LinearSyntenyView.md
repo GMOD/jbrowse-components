@@ -24,6 +24,15 @@ ISimpleType<"LinearSyntenyView">
 type: types.literal('LinearSyntenyView')
 ```
 
+#### property: /
+
+```js
+// type signature
+true
+// code
+drawCIGAR: true
+```
+
 #### property: drawCurves
 
 ```js
@@ -35,13 +44,14 @@ drawCurves: false
 
 ### LinearSyntenyView - Methods
 
-#### method: menuItems
+#### method: headerMenuItems
 
-adds functions to draw curves and square the view
+includes a subset of view menu options because the full list is a little
+overwhelming
 
 ```js
 // type signature
-menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 ### LinearSyntenyView - Actions
@@ -51,4 +61,18 @@ menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuIte
 ```js
 // type signature
 toggleCurves: () => void
+```
+
+#### action: toggleCIGAR
+
+```js
+// type signature
+toggleCIGAR: () => void
+```
+
+#### action: showAllRegions
+
+```js
+// type signature
+showAllRegions: () => void
 ```
