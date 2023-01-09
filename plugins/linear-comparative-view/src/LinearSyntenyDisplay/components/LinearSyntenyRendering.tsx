@@ -76,6 +76,7 @@ export default observer(function LinearSyntenyRendering({
               refName: string
               start: number
               end: number
+              strand?: number
               assemblyName: string
               identity?: number
               name?: string
@@ -89,12 +90,15 @@ export default observer(function LinearSyntenyRendering({
             const identity = f1.identity
             const n1 = f1.name
             const n2 = f2.name
-            const tooltip = [`Query len: ${l1}<br/>Target len: ${l2}`]
+            const tooltip = []
+            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
+            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
+            tooltip.push(`Inverted: ${f1.strand === -1}`)
+            tooltip.push(`Query len: ${l1}`)
+            tooltip.push(`Target len: ${l2}`)
             if (identity) {
               tooltip.push(`Identity: ${identity}`)
             }
-            tooltip.push(`Loc1: ${assembleLocString(f1)}`)
-            tooltip.push(`Loc2: ${assembleLocString(f2)}`)
 
             if (cigar[cigarIdx]) {
               tooltip.push(
