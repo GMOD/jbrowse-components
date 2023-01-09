@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { observer } from 'mobx-react'
-import { isAlive } from 'mobx-state-tree'
 import {
   assembleLocString,
   getContainingView,
@@ -27,24 +26,34 @@ export default observer(function LinearSyntenyRendering({
   const [currX, setCurrX] = useState<number>()
   const [currY, setCurrY] = useState<number>()
 
+  // these useCallbacks avoid new refs from being created on any mouseover, etc.
+  const k1 = useCallback(
+    (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
+    [model],
+  )
+  const k2 = useCallback(
+    (ref: HTMLCanvasElement) => model.setMainCanvasRef(ref),
+    [model],
+  )
+  const k3 = useCallback(
+    (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
+    [model],
+  )
+  const k4 = useCallback(
+    (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
+    [model],
+  )
+
   return (
     <div style={{ position: 'relative' }}>
       <canvas
-        ref={ref => {
-          if (isAlive(model)) {
-            model.setMouseoverCanvasRef(ref)
-          }
-        }}
+        ref={k1}
         width={width}
         height={height}
         style={{ width, height, position: 'absolute', pointerEvents: 'none' }}
       />
       <canvas
-        ref={ref => {
-          if (isAlive(model)) {
-            model.setMainCanvasRef(ref)
-          }
-        }}
+        ref={k2}
         onMouseMove={event => {
           const ref1 = model.clickMapCanvas
           const ref2 = model.cigarClickMapCanvas
@@ -150,11 +159,7 @@ export default observer(function LinearSyntenyRendering({
         height={height * highResolutionScaling}
       />
       <canvas
-        ref={ref => {
-          if (isAlive(model)) {
-            model.setCigarClickMapCanvasRef(ref)
-          }
-        }}
+        ref={k3}
         style={{
           imageRendering: 'pixelated',
           pointerEvents: 'none',
@@ -165,11 +170,7 @@ export default observer(function LinearSyntenyRendering({
         height={height}
       />
       <canvas
-        ref={ref => {
-          if (isAlive(model)) {
-            model.setClickMapCanvasRef(ref)
-          }
-        }}
+        ref={k4}
         style={{
           imageRendering: 'pixelated',
           pointerEvents: 'none',

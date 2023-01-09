@@ -121,7 +121,6 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
       // cx1/cx2 are the current x positions on top and bottom rows
       let cx1 = k1
       let cx2 = s1 === -1 ? x22 : x21
-
       if (cigar?.length && drawCIGAR) {
         // continuingFlag skips drawing commands on very small CIGAR features
         let continuingFlag = false
@@ -132,7 +131,6 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
         const unitMultiplier2 = Math.floor(MAX_COLOR_RANGE / cigar.length)
         for (let j = 0; j < cigar.length; j += 2) {
           const idx = j * unitMultiplier2 + 1
-          ctx3.fillStyle = makeColor(idx)
 
           const len = +cigar[j]
           const op = cigar[j + 1] as keyof typeof colorMap
@@ -167,8 +165,8 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
             // it on), then turn on continuing flag
             const isNotLast = j < cigar.length - 2
             if (
-              Math.abs(cx1 - px1) < 1 &&
-              Math.abs(cx2 - px2) < 1 &&
+              Math.abs(cx1 - px1) <= 1 &&
+              Math.abs(cx2 - px2) <= 1 &&
               isNotLast
             ) {
               continuingFlag = true
@@ -180,6 +178,7 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
               // feature, else just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
+              ctx3.fillStyle = makeColor(idx)
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
               draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
