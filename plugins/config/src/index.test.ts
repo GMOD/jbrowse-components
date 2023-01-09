@@ -6,11 +6,9 @@ describe('Config editing', () => {
   let pluginManager: PluginManager
 
   beforeAll(() => {
-    const originalConsoleWarn = console.warn
     pluginManager = new PluginManager([new ThisPlugin()])
     pluginManager.createPluggableElements()
     pluginManager.configure()
-    console.warn = originalConsoleWarn
   })
 
   it("won't add if already added", () => {
