@@ -21,6 +21,8 @@ const colorMap = {
   '=': '#f003',
 }
 
+const lineLimit = 3
+
 const oobLimit = 1600
 
 export function getId(r: number, g: number, b: number, unitMultiplier: number) {
@@ -54,14 +56,12 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
 
   const unitMultiplier = Math.floor(MAX_COLOR_RANGE / featPos.length)
 
-  // this loop is optimized to draw thousands/millions of thin lines as a polyline,
-  // the polyline calls ctx.stroke once is much more efficient than calling stroke()
-  // many times
+  // this loop is optimized to draw many thin lines with a single ctx.stroke
+  // call, a separate loop below draws larger boxes
   ctx1.fillStyle = colorMap.M
   ctx1.strokeStyle = colorMap.M
   for (let i = 0; i < featPos.length; i++) {
     const { p11, p12, p21, p22 } = featPos[i]
-
     const x11 = p11.offsetPx - offsets[0]
     const x12 = p12.offsetPx - offsets[0]
     const x21 = p21.offsetPx - offsets[1]
@@ -70,15 +70,13 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
     const l2 = Math.abs(x22 - x21)
     const y1 = 0
     const y2 = height
-
     const mid = (y2 - y1) / 2
 
-    if (l1 < 1 && l2 < 1) {
-      // drawing a line if the results are thin results in much less
-      // pixellation than filling in a thin polygon
+    // drawing a line if the results are thin results in much less pixellation
+    // than filling in a thin polygon
+    if (l1 <= lineLimit && l2 <= lineLimit) {
       if (x21 < width + oobLimit && x21 > -oobLimit) {
         ctx1.moveTo(x11, y1)
-
         if (drawCurves) {
           ctx1.bezierCurveTo(x11, mid, x21, mid, x21, y2)
         } else {
@@ -95,24 +93,20 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   ctx1.strokeStyle = colorMap.M
   for (let i = 0; i < featPos.length; i++) {
     const { p11, p12, p21, p22, f, cigar } = featPos[i]
-
     const x11 = p11.offsetPx - offsets[0]
     const x12 = p12.offsetPx - offsets[0]
     const x21 = p21.offsetPx - offsets[1]
     const x22 = p22.offsetPx - offsets[1]
     const l1 = Math.abs(x12 - x11)
     const l2 = Math.abs(x22 - x21)
-
     const minX = Math.min(x21, x22)
     const maxX = Math.max(x21, x22)
-
     const y1 = 0
     const y2 = height
-
     const mid = (y2 - y1) / 2
 
     if (
-      !(l1 < 1 && l2 < 1) &&
+      !(l1 <= lineLimit && l2 <= lineLimit) &&
       doesIntersect2(minX, maxX, -oobLimit, view.width + oobLimit)
     ) {
       const s1 = f.get('strand')
