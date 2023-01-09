@@ -2,26 +2,18 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  FileLocation,
-  NoAssemblyRegion,
-  Region,
-} from '@jbrowse/core/util/types'
+import { FileLocation, NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
-import { bytesForRegions } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
-import { Observer } from 'rxjs'
-import { GenericFilehandle } from 'generic-filehandle'
 
 // local
 import VcfFeature from '../VcfFeature'
 
 export default class extends BaseFeatureDataAdapter {
   private configured?: Promise<{
-    filehandle: GenericFilehandle
     vcf: TabixIndexedFile
     parser: VcfParser
   }>
@@ -44,7 +36,6 @@ export default class extends BaseFeatureDataAdapter {
 
     const header = await vcf.getHeader()
     return {
-      filehandle,
       vcf,
       parser: new VcfParser({ header }),
     }
