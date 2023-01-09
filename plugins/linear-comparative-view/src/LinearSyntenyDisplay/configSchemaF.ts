@@ -1,4 +1,3 @@
-import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import baseConfigFactory from '../LinearComparativeDisplay/configSchemaF'
@@ -18,13 +17,6 @@ function configSchemaFactory(pluginManager: PluginManager) {
         type: 'stringArray',
         defaultValue: [],
       },
-      /**
-       * #slot
-       */
-      renderer: types.optional(
-        pluginManager.pluggableConfigSchemaType('renderer'),
-        { type: 'LinearSyntenyRenderer' },
-      ),
 
       /**
        * #slot
@@ -35,7 +27,7 @@ function configSchemaFactory(pluginManager: PluginManager) {
     {
       /**
        * #baseConfiguration
-       * this refers to the base linear comparative display
+       * this refers to the LinearComparativeDisplay
        */
       baseConfiguration: baseConfigFactory(pluginManager),
       explicitlyTyped: true,

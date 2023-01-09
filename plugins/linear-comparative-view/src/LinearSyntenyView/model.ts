@@ -1,11 +1,13 @@
 import { types, Instance } from 'mobx-state-tree'
+import { transaction } from 'mobx'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
-import { Curves, StraightLines } from './components/Icons'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
@@ -24,6 +26,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         type: types.literal('LinearSyntenyView'),
         /**
+         * #property/
+         */
+        drawCIGAR: true,
+        /**
          * #property
          */
         drawCurves: false,
@@ -36,18 +42,32 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       toggleCurves() {
         self.drawCurves = !self.drawCurves
       },
+      /**
+       * #action
+       */
+      toggleCIGAR() {
+        self.drawCIGAR = !self.drawCIGAR
+      },
+      /**
+       * #action
+       */
+      showAllRegions() {
+        transaction(() => {
+          self.views.forEach(view => view.showAllRegionsInAssembly())
+        })
+      },
     }))
     .views(self => {
-      const superMenuItems = self.menuItems
+      const superMenuItems = self.headerMenuItems
       return {
         /**
          * #method
-         * adds functions to draw curves and square the view
+         * includes a subset of view menu options because the full list is a
+         * little overwhelming
          */
-        menuItems() {
+        headerMenuItems() {
           return [
             ...superMenuItems(),
-
             {
               label: 'Square view',
               onClick: self.squareView,
@@ -56,16 +76,30 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: CropFreeIcon,
             },
             {
+              label: 'Show all regions',
+              onClick: self.showAllRegions,
+              description: 'Show entire genome assemblies',
+              icon: VisibilityIcon,
+            },
+            {
+              label: 'Draw CIGAR',
+              onClick: self.toggleCIGAR,
+              checked: self.drawCIGAR,
+              type: 'checkbox',
+              description: 'Draws per-base CIGAR level alignments',
+              icon: VisibilityIcon,
+            },
+            {
               label: self.linkViews ? 'Unlink views' : 'Link views',
               onClick: self.toggleLinkViews,
               icon: self.linkViews ? LinkOffIcon : LinkIcon,
             },
             {
-              label: self.drawCurves
-                ? 'Use straight lines'
-                : 'Use curved lines',
+              label: 'Use curved lines',
+              type: 'checkbox',
+              checked: self.drawCurves,
               onClick: self.toggleCurves,
-              icon: self.drawCurves ? StraightLines : Curves,
+              icon: Curves,
             },
           ]
         },

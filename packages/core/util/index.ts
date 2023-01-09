@@ -60,7 +60,7 @@ export function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue
 }
 
-// https://stackoverflow.com/questions/56283920/how-to-debounce-a-callback-in-functional-component-using-hooks
+// https://stackoverflow.com/questions/56283920/
 export function useDebouncedCallback<A extends any[]>(
   callback: (...args: A) => void,
   wait = 400,
@@ -262,7 +262,7 @@ export function getContainingDisplay(node: IAnyStateTreeNode) {
  * // ↳ 'chr1:1'
  * ```
  */
-export function assembleLocString(region: ParsedLocString): string {
+export function assembleLocString(region: ParsedLocString) {
   return assembleLocStringFast(region, toLocale)
 }
 
@@ -272,7 +272,7 @@ export function assembleLocString(region: ParsedLocString): string {
 export function assembleLocStringFast(
   region: ParsedLocString,
   cb = (n: number): string | number => n,
-): string {
+) {
   const { assemblyName, refName, start, end, reversed } = region
   const assemblyNameString = assemblyName ? `{${assemblyName}}` : ''
   let startString
@@ -1181,8 +1181,8 @@ export function getStr(obj: unknown) {
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
 export function measureGridWidth(elements: string[]) {
-  return Math.max(
-    ...elements.map(element =>
+  return max(
+    elements.map(element =>
       Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
     ),
   )
@@ -1196,4 +1196,32 @@ export function localStorageGetItem(item: string) {
   return typeof localStorage !== 'undefined'
     ? localStorage.getItem(item)
     : undefined
+}
+
+export function max(arr: number[]) {
+  let max = -Infinity
+  for (let i = 0; i < arr.length; i++) {
+    max = arr[i] > max ? arr[i] : max
+  }
+  return max
+}
+
+export function min(arr: number[]) {
+  let min = Infinity
+  for (let i = 0; i < arr.length; i++) {
+    min = arr[i] < min ? arr[i] : min
+  }
+  return min
+}
+
+export function sum(arr: number[]) {
+  let sum = 0
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i]
+  }
+  return sum
+}
+
+export function avg(arr: number[]) {
+  return sum(arr) / arr.length
 }

@@ -1,8 +1,10 @@
 import { Observable, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 import { isStateTreeNode, getSnapshot } from 'mobx-state-tree'
+
+// locals
 import { ObservableCreate } from '../util/rxjs'
-import { checkAbortSignal } from '../util'
+import { checkAbortSignal, sum, max, min } from '../util'
 import { Feature } from '../util/simpleFeature'
 import {
   readConfObject,
@@ -186,6 +188,7 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
    * Currently this just calls getFeatureInRegion for each region. Adapters that
    * are frequently called on multiple regions simultaneously may want to
    * implement a more efficient custom version of this method.
+   *
    * @param regions - Regions
    * @param opts - Feature adapter options
    * @returns Observable of Feature objects in the regions
@@ -224,12 +227,12 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = feats.map(a => a.scoreMax).reduce((a, b) => Math.max(a, b))
-    const scoreMin = feats.map(a => a.scoreMin).reduce((a, b) => Math.min(a, b))
-    const scoreSum = feats.reduce((a, b) => a + b.scoreSum, 0)
-    const scoreSumSquares = feats.reduce((a, b) => a + b.scoreSumSquares, 0)
-    const featureCount = feats.reduce((a, b) => a + b.featureCount, 0)
-    const basesCovered = feats.reduce((a, b) => a + b.basesCovered, 0)
+    const scoreMax = max(feats.map(a => a.scoreMax))
+    const scoreMin = min(feats.map(a => a.scoreMin))
+    const scoreSum = sum(feats.map(a => a.scoreSum))
+    const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
+    const featureCount = sum(feats.map(a => a.featureCount))
+    const basesCovered = sum(feats.map(a => a.basesCovered))
 
     return rectifyStats({
       scoreMin,

@@ -1,9 +1,10 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ReactComponent } from '../LinearComparativeDisplay'
+
+// locals
 import configSchemaF from './configSchemaF'
 import stateModelFactory from './stateModelFactory'
+import LinearSyntenyRendering from './components/Component'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addDisplayType(() => {
@@ -14,7 +15,7 @@ export default (pluginManager: PluginManager) => {
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
       viewType: 'LinearSyntenyView',
-      ReactComponent,
+      ReactComponent: LinearSyntenyRendering,
     })
   })
 }

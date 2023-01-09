@@ -11,13 +11,12 @@ import {
 } from 'mobx-state-tree'
 
 import { getBlockLabelKeysToHide, makeTicks } from './components/util'
-import { observable, autorun, transaction } from 'mobx'
+import { autorun, transaction } from 'mobx'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
-import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
+import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import {
   getSession,
   isSessionModelWithWidgets,
@@ -32,51 +31,15 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
+// locals
+import {
+  Dotplot1DView,
+  Dotplot1DViewModel,
+  DotplotHView,
+  DotplotVView,
+} from './1dview'
+
 type Coord = [number, number]
-
-// Used in the renderer
-// ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
-//
-//
-
-export const Dotplot1DView = Base1DView.extend(self => {
-  const scaleFactor = observable.box(1)
-  return {
-    views: {
-      get dynamicBlocks() {
-        return calculateDynamicBlocks(self, false, false)
-      },
-      get scaleFactor() {
-        return scaleFactor.get()
-      },
-    },
-    actions: {
-      setScaleFactor(n: number) {
-        scaleFactor.set(n)
-      },
-    },
-  }
-})
-
-export type Dotplot1DViewModel = Instance<typeof Dotplot1DView>
-
-const DotplotHView = Dotplot1DView.extend(self => ({
-  views: {
-    get width() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return getParent<any>(self).viewWidth
-    },
-  },
-}))
-
-const DotplotVView = Dotplot1DView.extend(self => ({
-  views: {
-    get width() {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return getParent<any>(self).viewHeight
-    },
-  },
-}))
 
 /**
  * #stateModel DotplotView
@@ -590,17 +553,11 @@ export default function stateModelFactory(pm: PluginManager) {
             const padding = 40
             const vblocks = vview.dynamicBlocks.contentBlocks
             const hblocks = hview.dynamicBlocks.contentBlocks
+            const hoffset = hview.offsetPx
+            const voffset = vview.offsetPx
 
-            const vhide = getBlockLabelKeysToHide(
-              vblocks,
-              viewHeight,
-              vview.offsetPx,
-            )
-            const hhide = getBlockLabelKeysToHide(
-              hblocks,
-              viewWidth,
-              hview.offsetPx,
-            )
+            const vhide = getBlockLabelKeysToHide(vblocks, viewHeight, voffset)
+            const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
 
             const len = (a: string) => measureText(a.slice(0, 30))
             const by = hblocks
@@ -642,6 +599,15 @@ export default function stateModelFactory(pm: PluginManager) {
         vview.setBpPerPx(avg)
         vview.centerAt(vpx.coord, vpx.refName, vpx.index)
       },
+      /**
+       * #action
+       */
+      showAllRegions() {
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+        self.vview.center()
+        self.hview.center()
+      },
     }))
     .views(self => ({
       /**
@@ -668,6 +634,11 @@ export default function stateModelFactory(pm: PluginManager) {
             label: 'Rectangular view - same total bp',
             onClick: () => self.squareView(),
           },
+          {
+            label: 'Show all regions',
+            onClick: () => self.showAllRegions(),
+          },
+
           ...(isSessionModelWithWidgets(session)
             ? [
                 {
@@ -688,5 +659,7 @@ export default function stateModelFactory(pm: PluginManager) {
     }))
 }
 
+export { Dotplot1DView }
+export type { Dotplot1DViewModel }
 export type DotplotViewStateModel = ReturnType<typeof stateModelFactory>
 export type DotplotViewModel = Instance<DotplotViewStateModel>

@@ -60,7 +60,7 @@ export default function createModel(
         self.error = errorMessage
       },
       addInternetAccount(
-        internetAccount: SnapshotIn<typeof self.internetAccounts[0]>,
+        internetAccount: SnapshotIn<(typeof self.internetAccounts)[0]>,
       ) {
         self.internetAccounts.push(internetAccount)
       },

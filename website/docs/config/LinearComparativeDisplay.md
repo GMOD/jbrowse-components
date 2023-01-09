@@ -9,16 +9,6 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Docs
 
-### LinearComparativeDisplay - Slots
+### LinearComparativeDisplay - Identifier
 
-#### slot: renderer
-
-```js
-renderer: pluginManager.pluggableConfigSchemaType('renderer')
-```
-
-## LinearComparativeDisplay - Derives from
-
-```js
-baseConfiguration: baseLinearDisplayConfigSchema
-```
+#### slot: explicitIdentifier

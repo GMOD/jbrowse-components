@@ -3,6 +3,10 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 
+// locals
+import LinearSyntenyRendering from './LinearSyntenyRendering'
+import { LinearSyntenyDisplayModel } from '../stateModelFactory'
+
 const useStyles = makeStyles()({
   loading: {
     paddingLeft: '0.6em',
@@ -45,23 +49,27 @@ function BlockMessage({ messageText }: { messageText: string }) {
   return <div className={classes.blockMessage}>{messageText}</div>
 }
 
-function BlockError({ error }: { error: Error }) {
+function BlockError({ error }: { error: unknown }) {
   const { classes } = useStyles()
-  return <div className={classes.blockError}>{error.message}</div>
+  return <div className={classes.blockError}>{`${error}`}</div>
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ServerSideRenderedBlockContent = observer(({ model }: { model: any }) => {
+const ServerSideRenderedBlockContent = observer(function ({
+  model,
+}: {
+  model: LinearSyntenyDisplayModel
+}) {
   if (model.error) {
     return <BlockError error={model.error} />
   }
   if (model.message) {
     return <BlockMessage messageText={model.message} />
   }
-  if (!model.filled) {
+  if (!model.features) {
     return <LoadingMessage />
   }
-  return model.reactElement
+
+  return <LinearSyntenyRendering model={model} />
 })
 
 export default ServerSideRenderedBlockContent

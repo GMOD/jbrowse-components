@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Button,
   Container,
@@ -13,6 +13,8 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { transaction } from 'mobx'
+import { SnapshotIn } from 'mobx-state-tree'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 
@@ -32,21 +34,85 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+type Conf = SnapshotIn<AnyConfigurationModel>
+
+function TrackSelector({
+  setSessionTrackData,
+  setShowTrackId,
+  sessionTrackData,
+  assembly1,
+  assembly2,
+  model,
+}: {
+  sessionTrackData: Conf
+  setSessionTrackData: (arg: Conf) => void
+  setShowTrackId: (arg?: string) => void
+  model: DotplotViewModel
+  assembly1: string
+  assembly2: string
+}) {
+  const [choice, setChoice] = useState('none')
+
+  useEffect(() => {
+    if (choice === 'none') {
+      setSessionTrackData(undefined)
+      setShowTrackId(undefined)
+    }
+  }, [choice, setSessionTrackData, setShowTrackId])
+  return (
+    <>
+      <FormControl>
+        <FormLabel id="group-label">
+          (Optional) Select or add a synteny track
+        </FormLabel>
+        <RadioGroup
+          row
+          value={choice}
+          onChange={event => setChoice(event.target.value)}
+          aria-labelledby="group-label"
+        >
+          <FormControlLabel value="none" control={<Radio />} label="None" />
+          <FormControlLabel
+            value="tracklist"
+            control={<Radio />}
+            label="Existing track"
+          />
+          <FormControlLabel
+            value="custom"
+            control={<Radio />}
+            label="New track"
+          />
+        </RadioGroup>
+      </FormControl>
+      {choice === 'custom' ? (
+        <ImportCustomTrack
+          setSessionTrackData={setSessionTrackData}
+          sessionTrackData={sessionTrackData}
+          assembly2={assembly2}
+          assembly1={assembly1}
+        />
+      ) : null}
+      {choice === 'tracklist' ? (
+        <ImportSyntenyTrackSelector
+          model={model}
+          assembly1={assembly1}
+          assembly2={assembly2}
+          setShowTrackId={setShowTrackId}
+        />
+      ) : null}
+    </>
+  )
+}
+
 const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
-  const [assembly2, setAssembly2] = useState(
-    assemblyNames.length ? assemblyNames[0] : '',
-  )
-  const [assembly1, setAssembly1] = useState(
-    assemblyNames.length ? assemblyNames[0] : '',
-  )
+  const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
+  const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
   const [error, setError] = useState<unknown>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [sessionTrackData, setSessionTrackData] = useState<any>()
+  const [sessionTrackData, setSessionTrackData] = useState<Conf>()
   const [showTrackId, setShowTrackId] = useState<string>()
-  const [choice, setChoice] = useState('none')
 
   function onOpenClick() {
     try {
@@ -125,45 +191,14 @@ const DotplotImportForm = observer(({ model }: { model: DotplotViewModel }) => {
               </Grid>
             </Grid>
           </Paper>
-          <FormControl>
-            <FormLabel id="group-label">
-              (Optional) Select or add a synteny track
-            </FormLabel>
-            <RadioGroup
-              row
-              value={choice}
-              onChange={event => setChoice(event.target.value)}
-              aria-labelledby="group-label"
-            >
-              <FormControlLabel value="none" control={<Radio />} label="None" />
-              <FormControlLabel
-                value="tracklist"
-                control={<Radio />}
-                label="Existing track"
-              />
-              <FormControlLabel
-                value="custom"
-                control={<Radio />}
-                label="New track"
-              />
-            </RadioGroup>
-          </FormControl>
-          {choice === 'custom' ? (
-            <ImportCustomTrack
-              setSessionTrackData={setSessionTrackData}
-              sessionTrackData={sessionTrackData}
-              assembly2={assembly2}
-              assembly1={assembly1}
-            />
-          ) : null}
-          {choice === 'tracklist' ? (
-            <ImportSyntenyTrackSelector
-              model={model}
-              assembly1={assembly1}
-              assembly2={assembly2}
-              setShowTrackId={setShowTrackId}
-            />
-          ) : null}
+          <TrackSelector
+            setShowTrackId={setShowTrackId}
+            assembly2={assembly2}
+            assembly1={assembly1}
+            setSessionTrackData={setSessionTrackData}
+            sessionTrackData={sessionTrackData}
+            model={model}
+          />
         </Grid>
       </Grid>
     </Container>
