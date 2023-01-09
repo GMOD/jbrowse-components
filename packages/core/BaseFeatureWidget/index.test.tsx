@@ -9,7 +9,6 @@ import { stateModelFactory } from '.'
 import BaseFeatureDetails from './BaseFeatureDetail'
 
 test('open up a widget', async () => {
-  console.warn = jest.fn()
   const pluginManager = new PluginManager([])
 
   const Session = types.model({

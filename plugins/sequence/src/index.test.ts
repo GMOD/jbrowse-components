@@ -3,7 +3,6 @@ import { getSnapshot } from 'mobx-state-tree'
 import ThisPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {
-  console.warn = jest.fn()
   const pluginManager = new PluginManager([new ThisPlugin()])
   pluginManager.createPluggableElements()
   pluginManager.configure()
@@ -12,14 +11,10 @@ test('plugin in a stock JBrowse', () => {
   )
 
   const TwoBitAdapter = pluginManager.getAdapterType('TwoBitAdapter')
-  const config = TwoBitAdapter.configSchema.create({ type: 'TwoBitAdapter' })
-  expect(getSnapshot(config)).toMatchSnapshot()
+  const cfg = TwoBitAdapter.configSchema.create({ type: 'TwoBitAdapter' })
+  expect(getSnapshot(cfg)).toMatchSnapshot()
 
-  const IndexedFastaAdapter = pluginManager.getAdapterType(
-    'IndexedFastaAdapter',
-  )
-  const config2 = IndexedFastaAdapter.configSchema.create({
-    type: 'IndexedFastaAdapter',
-  })
-  expect(getSnapshot(config2)).toMatchSnapshot()
+  const FastaAdapter = pluginManager.getAdapterType('IndexedFastaAdapter')
+  const cfg2 = FastaAdapter.configSchema.create({ type: 'IndexedFastaAdapter' })
+  expect(getSnapshot(cfg2)).toMatchSnapshot()
 })

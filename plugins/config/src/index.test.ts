@@ -3,11 +3,10 @@ import { getSnapshot } from 'mobx-state-tree'
 import ThisPlugin from '.'
 
 describe('Config editing', () => {
-  let pluginManager
+  let pluginManager: PluginManager
 
   beforeAll(() => {
     const originalConsoleWarn = console.warn
-    console.warn = jest.fn()
     pluginManager = new PluginManager([new ThisPlugin()])
     pluginManager.createPluggableElements()
     pluginManager.configure()

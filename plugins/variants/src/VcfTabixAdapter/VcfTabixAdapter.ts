@@ -95,44 +95,5 @@ export default class extends BaseFeatureDataAdapter {
     }, opts.signal)
   }
 
-  /**
-   * Checks if the data source has data for the given reference sequence,
-   * and then gets the features in the region if it does
-   *
-   * Currently this just calls getFeatureInRegion for each region. Adapters that
-   * are frequently called on multiple regions simultaneously may want to
-   * implement a more efficient custom version of this method.
-   *
-   * Also includes a bit of extra logging to warn when fetching a large portion
-   * of a VCF
-   * @param regions - Regions
-   * @param opts - Feature adapter options
-   * @returns Observable of Feature objects in the regions
-   */
-  public getFeaturesInMultipleRegions(
-    regions: Region[],
-    opts: BaseOptions = {},
-  ) {
-    return ObservableCreate<Feature>(async (observer: Observer<Feature>) => {
-      const { vcf } = await this.configure()
-
-      // @ts-ignore
-      const bytes = await bytesForRegions(regions, vcf.index)
-      const { filehandle } = await this.configure()
-      const stat = await filehandle.stat()
-      let pct = Math.round((bytes / stat.size) * 100)
-      if (pct > 100) {
-        // this is just a bad estimate, make 100% if it goes over
-        pct = 100
-      }
-      if (pct > 60) {
-        console.warn(
-          `getFeaturesInMultipleRegions fetching ${pct}% of VCF file, but whole-file streaming not yet implemented`,
-        )
-      }
-      super.getFeaturesInMultipleRegions(regions, opts).subscribe(observer)
-    })
-  }
-
   public freeResources(/* { region } */): void {}
 }

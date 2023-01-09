@@ -82,7 +82,6 @@ describe('ConfigurationEditor widget', () => {
   })
 
   it('renders with defaults of the PileupTrack schema', () => {
-    console.warn = jest.fn()
     const pluginManager = new PluginManager([new Alignments(), new SVG()])
     pluginManager.createPluggableElements()
     pluginManager.configure()
