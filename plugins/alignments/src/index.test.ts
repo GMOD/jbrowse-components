@@ -4,7 +4,6 @@ import { getSnapshot } from 'mobx-state-tree'
 import ThisPlugin from '.'
 
 test('plugin in a stock JBrowse', () => {
-  console.warn = jest.fn()
   const pluginManager = new PluginManager([new ThisPlugin(), new SVG()])
   pluginManager.createPluggableElements()
   pluginManager.configure()

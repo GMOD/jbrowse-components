@@ -19,8 +19,8 @@ test("won't add if already added", () => {
 
 test('adds grid bookmark widget', () => {
   const GridBookmarkWidget = pluginManager.getWidgetType('GridBookmarkWidget')
-  const cfg = GridBookmarkWidget.cfgSchema.create({
+  const config = GridBookmarkWidget.configSchema.create({
     type: 'GridBookmarkWidget',
   })
-  expect(getSnapshot(cfg)).toMatchSnapshot()
+  expect(getSnapshot(config)).toMatchSnapshot()
 })

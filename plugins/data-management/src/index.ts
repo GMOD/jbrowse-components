@@ -12,19 +12,13 @@ import {
   configSchema as AddTrackConfigSchema,
 } from './AddTrackWidget'
 import { AddTrackModel } from './AddTrackWidget/model'
-import {
-  stateModel as AddConnectionStateModel,
-  configSchema as AddConnectionConfigSchema,
-} from './AddConnectionWidget'
+import AddConnectionWidgetF from './AddConnectionWidget'
 import {
   stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
   configSchema as HierarchicalTrackSelectorConfigSchema,
   HierarchicalTrackSelectorModel,
 } from './HierarchicalTrackSelectorWidget'
-import {
-  stateModelFactory as PluginStoreStateModelFactory,
-  configSchema as PluginStoreConfigSchema,
-} from './PluginStoreWidget'
+import PluginStoreWidgetF from './PluginStoreWidget'
 
 const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
 
@@ -78,29 +72,8 @@ export default class extends Plugin {
       })
     })
 
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: 'AddConnectionWidget',
-        heading: 'Add a connection',
-        configSchema: AddConnectionConfigSchema,
-        stateModel: AddConnectionStateModel,
-        ReactComponent: lazy(
-          () => import('./AddConnectionWidget/components/AddConnectionWidget'),
-        ),
-      })
-    })
-
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: 'PluginStoreWidget',
-        heading: 'Plugin store',
-        configSchema: PluginStoreConfigSchema,
-        stateModel: PluginStoreStateModelFactory(pluginManager),
-        ReactComponent: lazy(
-          () => import('./PluginStoreWidget/components/PluginStoreWidget'),
-        ),
-      })
-    })
+    AddConnectionWidgetF(pluginManager)
+    PluginStoreWidgetF(pluginManager)
   }
 
   configure(_pluginManager: PluginManager) {}

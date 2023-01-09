@@ -52,10 +52,13 @@ function standardInitializer() {
 const realLocation = window.location
 
 // https://stackoverflow.com/a/60110508/2129219
-function setWindowLoc(loc) {
+function setWindowLoc(loc: string) {
+  // @ts-ignore
   delete window.location
+  // @ts-ignore
   window.location = new URL(loc)
 }
+
 const FakeViewModel = types.model('FakeView', {
   id: types.identifier,
   type: types.literal('FakeView'),
@@ -67,7 +70,7 @@ const FakeViewModel = types.model('FakeView', {
 class FakeViewPlugin extends Plugin {
   name = 'FakeViewPlugin'
 
-  install(pluginManager) {
+  install(pluginManager: PluginManager) {
     pluginManager.addViewType(() => {
       return new ViewType({
         name: 'FakeView',
@@ -79,7 +82,7 @@ class FakeViewPlugin extends Plugin {
 }
 
 describe('tests on an LGV type system with view.assemblyNames, using URL', () => {
-  let session
+  let session: ReturnType<typeof standardInitializer>
   beforeEach(() => {
     session = standardInitializer()
   })
@@ -135,45 +138,40 @@ describe('tests on an LGV type system with view.assemblyNames, using URL', () =>
   })
 })
 
-describe('tests on an view without view.assemblyNames', () => {
-  let session
-  beforeEach(() => {
-    const pluginManager = new PluginManager([new FakeViewPlugin()])
-    pluginManager.createPluggableElements()
-    pluginManager.configure()
-    const SessionModel = types.model({
-      view: FakeViewModel,
-      widget: stateModelFactory(pluginManager),
-    })
+test('tests on an view without view.assemblyNames', () => {
+  const pluginManager = new PluginManager([new FakeViewPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
 
-    // no assemblyNames on the view, just in case some view does not implement
-    // view.assemblyNames (it is just a convenience)
-    session = SessionModel.create({
-      view: {
-        type: 'FakeView',
-        id: 'testing',
-      },
-      widget: {
-        type: 'AddTrackWidget',
-        view: 'testing',
-      },
-    })
+  const SessionModel = types.model({
+    view: FakeViewModel,
+    widget: stateModelFactory(pluginManager),
+  })
+  // no assemblyNames on the view, just in case some view does not implement
+  // view.assemblyNames (it is just a convenience)
+  const session = SessionModel.create({
+    view: {
+      type: 'FakeView',
+      id: 'testing',
+    },
+    widget: {
+      type: 'AddTrackWidget',
+      view: 'testing',
+    },
   })
 
-  it('adds url', () => {
-    const { widget } = session
-    widget.setTrackData({
-      uri: 'volvox-sorted.bam',
-      locationType: 'UriLocation',
-    })
-    expect(widget.trackName).toBe('volvox-sorted.bam')
-    expect(widget.isRelativeUrl).toBe(true)
-    expect(widget.assembly).toBe(undefined)
+  const { widget } = session
+  widget.setTrackData({
+    uri: 'volvox-sorted.bam',
+    locationType: 'UriLocation',
   })
+  expect(widget.trackName).toBe('volvox-sorted.bam')
+  expect(widget.isRelativeUrl).toBe(true)
+  expect(widget.assembly).toBe(undefined)
 })
 
 describe('tests different file types', () => {
-  let session
+  let session: ReturnType<typeof standardInitializer>
   beforeEach(() => {
     session = standardInitializer()
   })
@@ -229,7 +227,7 @@ describe('tests different file types', () => {
 })
 
 describe('tests localpath', () => {
-  let session
+  let session: ReturnType<typeof standardInitializer>
   beforeEach(() => {
     session = standardInitializer()
   })
