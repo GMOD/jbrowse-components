@@ -1,14 +1,13 @@
-import '@testing-library/jest-dom/extend-expect'
-import { cleanup, fireEvent, render } from '@testing-library/react'
 import React from 'react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 import FatalErrorDialog from './FatalErrorDialog'
 
 afterEach(cleanup)
 
 test('open fatal error dialog in web', async () => {
-  console.error = jest.fn()
   const { findByTestId, getByText } = render(
     <FatalErrorDialog
+      error="Hello"
       resetButtonText="Reset Session"
       onFactoryReset={() => (
         <div>Placeholder for actual factory reset func</div>
@@ -25,9 +24,9 @@ test('open fatal error dialog in web', async () => {
 })
 
 test('open fatal error dialog in desktop', async () => {
-  console.error = jest.fn()
   const { findByTestId, getByText } = render(
     <FatalErrorDialog
+      error="Hello2"
       onFactoryReset={() => (
         <div>Placeholder for actual factory reset func</div>
       )}

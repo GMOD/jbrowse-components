@@ -1,8 +1,10 @@
+import React from 'react'
 import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
-import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+// locals
 import { stateModelFactory } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
@@ -17,6 +19,7 @@ test('open up a widget', () => {
   })
   const session = Session.create(
     {
+      // @ts-ignore
       widget: { type: 'AlignmentsFeatureWidget' },
     },
     { pluginManager },

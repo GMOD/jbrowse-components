@@ -88,7 +88,6 @@ test('color by tag', async () => {
 }, 30000)
 
 test('toggle short-read arc display', async () => {
-  console.warn = jest.fn()
   const { view, findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
@@ -100,7 +99,6 @@ test('toggle short-read arc display', async () => {
 }, 30000)
 
 test('toggle short-read cloud display', async () => {
-  console.warn = jest.fn()
   const { view, findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
   await view.navToLocString('ctgA:1-50000')
@@ -112,7 +110,6 @@ test('toggle short-read cloud display', async () => {
 }, 30000)
 
 test('toggle long-read cloud display', async () => {
-  console.warn = jest.fn()
   const { view, findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
@@ -136,7 +133,6 @@ test('toggle long-read arc display', async () => {
 }, 30000)
 
 test('toggle long-read arc display, use out of view pairing', async () => {
-  console.warn = jest.fn()
   const { view, findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')
@@ -148,7 +144,6 @@ test('toggle long-read arc display, use out of view pairing', async () => {
 }, 30000)
 
 test('toggle short-read arc display, use out of view pairing', async () => {
-  console.warn = jest.fn()
   const { view, findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
   await view.navToLocString('ctgA:478..6,191')

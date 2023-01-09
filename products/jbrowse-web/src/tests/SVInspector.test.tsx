@@ -11,7 +11,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('opens a vcf.gz file in the sv inspector view', async () => {
-  console.warn = jest.fn()
+  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
   const { session, findByTestId, getByTestId, findByText } = createView()
 
   fireEvent.click(await findByText('File'))
@@ -32,4 +32,6 @@ test('opens a vcf.gz file in the sv inspector view', async () => {
   // confirm breakpoint split view opened
   expect(session.views.length).toBe(3)
   expect(session.views[2].displayName).toBe('bnd_A split detail')
+
+  consoleMock.mockRestore()
 }, 30000)

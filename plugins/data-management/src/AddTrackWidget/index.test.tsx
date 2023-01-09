@@ -92,7 +92,6 @@ describe('tests on an LGV type system with view.assemblyNames, using URL', () =>
   })
 
   it('adds relative URL (BAM)', () => {
-    console.warn = jest.fn()
     const { widget } = session
     widget.setTrackData({
       uri: 'volvox-sorted.bam',
