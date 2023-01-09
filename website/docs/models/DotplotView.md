@@ -421,3 +421,10 @@ squareView: () => void
 // type signature
 squareViewProportional: () => void
 ```
+
+#### action: showAllRegions
+
+```js
+// type signature
+showAllRegions: () => void
+```

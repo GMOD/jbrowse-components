@@ -3,6 +3,10 @@ import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 
+// locals
+import LinearSyntenyRendering from './LinearSyntenyRendering'
+import { LinearSyntenyDisplayModel } from '../stateModelFactory'
+
 const useStyles = makeStyles()({
   loading: {
     paddingLeft: '0.6em',
@@ -50,18 +54,10 @@ function BlockError({ error }: { error: unknown }) {
   return <div className={classes.blockError}>{`${error}`}</div>
 }
 
-interface Display {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  renderingComponent: React.FC<any>
-  error: unknown
-  message: string
-  features: unknown
-}
-
 const ServerSideRenderedBlockContent = observer(function ({
   model,
 }: {
-  model: Display
+  model: LinearSyntenyDisplayModel
 }) {
   if (model.error) {
     return <BlockError error={model.error} />
@@ -73,7 +69,7 @@ const ServerSideRenderedBlockContent = observer(function ({
     return <LoadingMessage />
   }
 
-  return <model.renderingComponent displayModel={model} />
+  return <LinearSyntenyRendering model={model} />
 })
 
 export default ServerSideRenderedBlockContent

@@ -42,13 +42,6 @@ height: 100
 
 ### LinearComparativeDisplay - Getters
 
-#### getter: rendererTypeName
-
-```js
-// type
-any
-```
-
 #### getter: renderProps
 
 ```js
@@ -82,7 +75,7 @@ controlled by a reaction
 
 ```js
 // type signature
-setRendered: (args?: { data: unknown; reactElement: React.ReactElement; renderingComponent: React.Component; }) => void
+setRendered: (args?: { features: Feature[]; }) => void
 ```
 
 #### action: setError

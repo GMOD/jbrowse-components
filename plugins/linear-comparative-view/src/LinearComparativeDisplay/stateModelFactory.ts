@@ -1,6 +1,4 @@
-import React from 'react'
 import {
-  getConf,
   readConfObject,
   ConfigurationReference,
   AnyConfigurationSchemaType,
@@ -15,7 +13,6 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 
 /**
  * #stateModel LinearComparativeDisplay
@@ -44,16 +41,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       renderInProgress: undefined as AbortController | undefined,
       features: undefined as Feature[] | undefined,
       message: undefined as string | undefined,
-      renderingComponent: undefined as unknown,
-      ReactComponent2: ServerSideRenderedBlockContent as unknown as React.FC,
     }))
     .views(self => ({
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
-      },
       /**
        * #getter
        */
@@ -96,18 +85,16 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #action
          * controlled by a reaction
          */
-        setRendered(args?: {
-          features: Feature[]
-          renderingComponent: React.Component
-        }) {
+        setRendered(args?: { features: Feature[] }) {
           if (!args) {
             return
           }
-          const { features, renderingComponent } = args
+          const { features } = args
           const existingFeatures = self.features || []
 
           const featIds = new Set(existingFeatures.map(f => f.id()) || [])
           const newFeatIds = new Set(features?.map(f => f.id()) || [])
+
           let foundNewFeatureNotInExistingMap = false
           let foundExistingFeatureNotInNewMap = false
           for (let i = 0; i < features.length; i++) {
@@ -126,7 +113,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.message = undefined
           self.error = undefined
           renderInProgress = undefined
-          self.renderingComponent = renderingComponent
           if (
             foundNewFeatureNotInExistingMap ||
             foundExistingFeatureNotInNewMap
@@ -147,7 +133,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // the rendering failed for some reason
           self.message = undefined
           self.error = error
-          self.renderingComponent = undefined
           renderInProgress = undefined
         },
       }
@@ -174,7 +159,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
 function renderBlockData(self: LinearComparativeDisplay) {
   const { rpcManager } = getSession(self)
   const display = self
-  const { rendererType } = display
 
   // Alternative to readConfObject(config) is below used because renderProps is
   // something under our control.  Compare to serverSideRenderedBlock
@@ -187,13 +171,11 @@ function renderBlockData(self: LinearComparativeDisplay) {
 
   return parent.initialized
     ? {
-        rendererType,
         rpcManager,
         renderProps: {
           ...display.renderProps(),
           view: parent,
           adapterConfig,
-          rendererType: rendererType.name,
           sessionId,
           timeout: 1000000,
           self,
@@ -207,7 +189,7 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
     return
   }
 
-  const { rendererType, rpcManager, renderProps } = props
+  const { rpcManager, renderProps } = props
   const { adapterConfig } = renderProps
 
   // @ts-ignore
@@ -221,7 +203,6 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
 
   return {
     features,
-    renderingComponent: rendererType.ReactComponent,
   }
 }
 

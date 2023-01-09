@@ -31,15 +31,6 @@ ISimpleType<"LinearComparativeView">
 type: types.literal('LinearComparativeView')
 ```
 
-#### property: height
-
-```js
-// type signature
-number
-// code
-height: defaultHeight
-```
-
 #### property: trackSelectorType
 
 ```js
@@ -156,6 +147,16 @@ any[]
 
 ### LinearComparativeView - Methods
 
+#### method: headerMenuItems
+
+includes a subset of view menu options because the full list is a little
+overwhelming. overridden by subclasses
+
+```js
+// type signature
+headerMenuItems: () => MenuItem[]
+```
+
 #### method: menuItems
 
 ```js
@@ -177,13 +178,6 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```js
 // type signature
 setWidth: (newWidth: number) => void
-```
-
-#### action: setHeight
-
-```js
-// type signature
-setHeight: (newHeight: number) => void
 ```
 
 #### action: setViews
