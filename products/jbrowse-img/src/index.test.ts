@@ -12,17 +12,25 @@ import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only'
 import { Image, createCanvas } from 'canvas'
 import fetch, { Headers, Response, Request } from 'node-fetch'
 
+// @ts-ignore
 global.fetch = fetch
+// @ts-ignore
 global.Headers = Headers
+// @ts-ignore
 global.Response = Response
+// @ts-ignore
 global.Request = Request
 
 const { document } = new JSDOM(`...`).window
 global.document = document
+
+// @ts-ignore
 global.nodeImage = Image
+// @ts-ignore
 global.nodeCreateCanvas = createCanvas
 
 xtest('renders a region with --session and --config args', async () => {
+  // @ts-ignore
   const result = await renderRegion({
     session: path.join(__dirname, '../test/clingen_session.json'),
     config: path.join(__dirname, '../data/config.json'),
@@ -32,6 +40,7 @@ xtest('renders a region with --session and --config args', async () => {
 }, 40000)
 
 xtest('renders a region with --session, --tracks, and --assembly args', async () => {
+  // @ts-ignore
   const result = await renderRegion({
     session: path.join(__dirname, '../test/clingen_session.json'),
     tracks: path.join(__dirname, '../data/tracks.json'),
@@ -42,8 +51,7 @@ xtest('renders a region with --session, --tracks, and --assembly args', async ()
 }, 40000)
 
 test('renders volvox with variety of args', async () => {
-  const fp = f => path.join(__dirname, '../data/volvox/' + f)
-  console.error = jest.fn()
+  const fp = (f: string) => path.join(__dirname, '../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
@@ -106,8 +114,7 @@ xtest('renders volvox with remote urls', async () => {
 }, 20000)
 
 test('renders volvox with variety of args (noRasterize)', async () => {
-  const fp = f => path.join(__dirname, '../data/volvox/' + f)
-  console.error = jest.fn()
+  const fp = (f: string) => path.join(__dirname, '../data/volvox/' + f)
   const result = await renderRegion({
     fasta: fp('volvox.fa'),
     trackList: [
