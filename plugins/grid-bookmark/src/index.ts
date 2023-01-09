@@ -1,36 +1,23 @@
-import { lazy } from 'react'
-
-import BookmarkIcon from '@mui/icons-material/Bookmark'
-import BookmarksIcon from '@mui/icons-material/Bookmarks'
-
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
-import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-
 import {
-  stateModelFactory as GridBookmarkStateModelFactory,
-  configSchema as GridBookmarkConfigSchema,
-} from './GridBookmarkWidget'
-import { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
+  PluggableElementType,
+  ViewType,
+} from '@jbrowse/core/pluggableElementTypes'
+
+// icons
+import BookmarkIcon from '@mui/icons-material/Bookmark'
+import BookmarksIcon from '@mui/icons-material/Bookmarks'
+
+import GridBookmarkWidgetF from './GridBookmarkWidget'
 
 export default class extends Plugin {
   name = 'GridBookmarkPlugin'
 
   install(pluginManager: PluginManager) {
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: 'GridBookmarkWidget',
-        heading: 'Bookmarked regions',
-        configSchema: GridBookmarkConfigSchema,
-        stateModel: GridBookmarkStateModelFactory(pluginManager),
-        ReactComponent: lazy(
-          () => import('./GridBookmarkWidget/components/GridBookmarkWidget'),
-        ),
-      })
-    })
+    GridBookmarkWidgetF(pluginManager)
 
     pluginManager.addToExtensionPoint(
       'Core-extendPluggableElement',

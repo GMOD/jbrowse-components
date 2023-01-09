@@ -21,7 +21,6 @@ beforeEach(() => {
 const delay = { timeout: 25000 }
 
 test('export svg', async () => {
-  console.error = jest.fn()
   const { view, findByTestId, findByText } = createView()
 
   await findByText('Help')

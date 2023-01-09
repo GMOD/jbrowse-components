@@ -1,8 +1,8 @@
 import { toArray } from 'rxjs/operators'
 import path from 'path'
+import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 import Adapter from './NCListAdapter'
 import configSchema from './configSchema'
-import { LocalFile, GenericFilehandle } from 'generic-filehandle'
 
 export function generateReadBuffer(
   getFileFunction: (str: string) => GenericFilehandle,
@@ -42,12 +42,12 @@ test('adapter can fetch features from ensembl_genes test set', async () => {
     end: 35960388,
   })
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray[0].get('refName')).toBe('21')
-  expect(featuresArray[0].id()).toBe(`test-21,0,0,19,22,0`)
-  const featuresJsonArray = featuresArray.map(f => f.toJSON())
-  expect(featuresJsonArray.length).toEqual(94)
-  for (const feature of featuresJsonArray) {
+  const featArr = await features.pipe(toArray()).toPromise()
+  expect(featArr[0].get('refName')).toBe('21')
+  expect(featArr[0].id()).toBe(`test-21,0,0,19,22,0`)
+  const featJson = featArr.map(f => f.toJSON())
+  expect(featJson.length).toEqual(94)
+  for (const feature of featJson) {
     expect(feature).toMatchSnapshot({ uniqueId: expect.any(String) })
   }
 

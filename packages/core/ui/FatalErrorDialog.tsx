@@ -47,7 +47,6 @@ const FatalErrorDialog = ({
   onFactoryReset: Function
   resetButtonText?: string
 }) => {
-  console.error(error)
   return (
     <Dialog open>
       <DialogTitle style={{ background: '#e88' }}>Fatal error</DialogTitle>

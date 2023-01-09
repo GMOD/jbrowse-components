@@ -13,7 +13,6 @@ beforeEach(() => {
 const delay = { timeout: 10000 }
 
 test('open a circular view', async () => {
-  console.warn = jest.fn()
   const { findByTestId, findByText, queryByTestId } = createView({
     ...configSnapshot,
     defaultSession: {

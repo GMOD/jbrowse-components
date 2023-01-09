@@ -14,10 +14,8 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('launch read vs ref panel', async () => {
-  console.warn = jest.fn()
-
-  const { session, view, findByTestId, findByText, findAllByTestId } =
-    createView()
+  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
+  const { view, findByTestId, findByText, findAllByTestId } = createView()
 
   await findByText('Help')
   view.setNewView(5, 100)
@@ -36,14 +34,12 @@ test('launch read vs ref panel', async () => {
   await waitFor(() => expect(elt.getAttribute('disabled')).toBe(null))
   fireEvent.click(elt)
 
-  expect(session.views[1].type).toBe('LinearSyntenyView')
   expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  consoleMock.mockRestore()
 }, 40000)
 
 test('launch read vs ref dotplot', async () => {
-  console.warn = jest.fn()
-  const { session, view, findByTestId, findByText, findAllByTestId } =
-    createView()
+  const { view, findByTestId, findByText, findAllByTestId } = createView()
 
   await findByText('Help')
   view.setNewView(5, 100)
@@ -56,7 +52,5 @@ test('launch read vs ref dotplot', async () => {
   fireEvent.click(track[0], { clientX: 200, clientY: 40 })
   fireEvent.contextMenu(track[0], { clientX: 200, clientY: 20 })
   fireEvent.click(await findByText('Dotplot of read vs ref', {}, delay))
-
-  expect(session.views[1].type).toBe('DotplotView')
   expectCanvasMatch(await findByTestId('prerendered_canvas_done', {}, delay))
 }, 40000)

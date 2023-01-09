@@ -197,3 +197,15 @@ export async function doSetupForImportForm(val?: unknown) {
     ...args,
   }
 }
+
+export async function mockConsole(fn: () => Promise<void>) {
+  const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+  await fn()
+  consoleMock.mockRestore()
+}
+
+export async function mockConsoleWarn(fn: () => Promise<void>) {
+  const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
+  await fn()
+  consoleMock.mockRestore()
+}

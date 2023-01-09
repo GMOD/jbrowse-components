@@ -12,7 +12,7 @@ test('adapter can fetch variants from volvox.vcf', async () => {
     }),
   )
 
-  const features = adapter.getFeatures({
+  const feat = adapter.getFeatures({
     assemblyName: 'volvox',
     refName: 'ctgA',
     start: 0,
@@ -22,6 +22,6 @@ test('adapter can fetch variants from volvox.vcf', async () => {
   const names = await adapter.getRefNames()
   expect(names).toMatchSnapshot()
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
-  expect(featuresArray.slice(0, 5)).toMatchSnapshot()
+  const featArray = await feat.pipe(toArray()).toPromise()
+  expect(featArray.slice(0, 5)).toMatchSnapshot()
 })

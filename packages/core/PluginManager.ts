@@ -384,7 +384,7 @@ export default class PluginManager {
 
     // try to smooth over the case when no types are registered, mostly
     // encountered in tests
-    if (pluggableTypes.length === 0) {
+    if (pluggableTypes.length === 0 && typeof jest === 'undefined') {
       console.warn(
         `No pluggable types found matching ('${groupName}','${fieldName}')`,
       )

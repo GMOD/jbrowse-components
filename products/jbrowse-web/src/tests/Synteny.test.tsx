@@ -64,8 +64,10 @@ afterEach(() => {
   sessionStorage.clear()
 })
 
+// onAction listener warning
+console.warn = jest.fn()
+
 test('horizontally flipped inverted alignment', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -85,7 +87,6 @@ test('horizontally flipped inverted alignment', async () => {
 }, 40000)
 
 test('regular orientation inverted alignment', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -105,7 +106,6 @@ test('regular orientation inverted alignment', async () => {
 }, 40000)
 
 test('regular orientation inverted alignment bottom', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -125,7 +125,6 @@ test('regular orientation inverted alignment bottom', async () => {
 }, 40000)
 
 test('regular orientation both horizontally flipped', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -145,7 +144,6 @@ test('regular orientation both horizontally flipped', async () => {
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -165,7 +163,6 @@ test('switch rows regular orientation both horizontally flipped', async () => {
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped rev 1', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -185,7 +182,6 @@ test('switch rows regular orientation both horizontally flipped rev 1', async ()
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped rev2', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [
@@ -205,7 +201,6 @@ test('switch rows regular orientation both horizontally flipped rev2', async () 
 }, 40000)
 
 test('switch rows regular orientation both horizontally flipped both rev', async () => {
-  console.warn = jest.fn()
   const str = `?config=test_data%2Fgrape_peach_synteny%2Fconfig.json&session=spec-${JSON.stringify(
     {
       views: [

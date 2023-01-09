@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HierarchicalTrackSelector widget renders nothing with no assembly 1`] = `
+exports[`renders nothing with no assembly 1`] = `
 <button
   class="MuiButtonBase-root MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary MuiFab-root MuiFab-circular MuiFab-sizeSmall MuiFab-secondary css-15opis6-MuiButtonBase-root-MuiFab-root-fab"
   tabindex="0"
@@ -23,7 +23,7 @@ exports[`HierarchicalTrackSelector widget renders nothing with no assembly 1`] =
 </button>
 `;
 
-exports[`HierarchicalTrackSelector widget renders with a couple of categorized tracks 1`] = `
+exports[`renders with a couple of categorized tracks 1`] = `
 <div
   data-testid="hierarchical_track_selector"
 >
@@ -120,7 +120,7 @@ exports[`HierarchicalTrackSelector widget renders with a couple of categorized t
 </div>
 `;
 
-exports[`HierarchicalTrackSelector widget renders with a couple of uncategorized tracks 1`] = `
+exports[`renders with a couple of uncategorized tracks 1`] = `
 <div
   data-testid="hierarchical_track_selector"
 >
