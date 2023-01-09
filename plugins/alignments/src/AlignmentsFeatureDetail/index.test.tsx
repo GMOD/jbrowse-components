@@ -9,7 +9,6 @@ import { stateModelFactory } from '.'
 import ReactComponent from './AlignmentsFeatureDetail'
 
 test('open up a widget', () => {
-  console.warn = jest.fn()
   const pluginManager = new PluginManager([])
 
   const Session = types.model({

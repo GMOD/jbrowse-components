@@ -121,7 +121,6 @@ test('toggle long-read cloud display', async () => {
 }, 30000)
 
 test('toggle long-read arc display', async () => {
-  console.warn = jest.fn()
   const { view, findByTestId, findAllByText, findByText } = createView()
   await findByText('Help')
   await view.navToLocString('ctgA:19,101..32,027')
