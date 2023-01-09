@@ -3,8 +3,9 @@ import { render } from '@testing-library/react'
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { stateModelFactory } from '.'
 
+// locals
+import { stateModelFactory } from '.'
 import VariantFeatureDetails from './VariantFeatureWidget'
 
 test('renders with just the required model elements', () => {
@@ -17,6 +18,7 @@ test('renders with just the required model elements', () => {
   const model = Session.create(
     {
       widget: {
+        // @ts-ignore
         type: 'VariantFeatureWidget',
       },
     },
