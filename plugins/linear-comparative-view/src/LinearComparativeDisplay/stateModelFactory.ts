@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
 import {
+  dedupe,
   Feature,
   getContainingView,
   getSession,
@@ -195,14 +196,14 @@ async function renderBlockEffect(props: ReturnType<typeof renderBlockData>) {
   // @ts-ignore
   const view0 = renderProps.view.views[0]
 
-  const features = await rpcManager.call('getFeats', 'CoreGetFeatures', {
+  const features = (await rpcManager.call('getFeats', 'CoreGetFeatures', {
     regions: view0.staticBlocks.contentBlocks,
     sessionId: 'getFeats',
     adapterConfig,
-  })
+  })) as Feature[]
 
   return {
-    features,
+    features: dedupe(features, f => f.id()),
   }
 }
 
