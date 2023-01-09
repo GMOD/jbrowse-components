@@ -1,6 +1,6 @@
 import { generateHierarchy } from './model'
 
-xtest('can generate hierarchy correctly', () => {
+test('can generate hierarchy correctly', () => {
   const trackConfigurations = [
     {
       trackId: 'zonker',

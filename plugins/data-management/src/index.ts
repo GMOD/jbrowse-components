@@ -1,24 +1,14 @@
 import { lazy } from 'react'
-import ConnectionType from '@jbrowse/core/pluggableElementTypes/ConnectionType'
-import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  configSchema as ucscConfigSchema,
-  modelFactory as ucscModelFactory,
-} from './ucsc-trackhub'
-import {
-  stateModelFactory as AddTrackStateModelFactory,
-  configSchema as AddTrackConfigSchema,
-} from './AddTrackWidget'
+import UCSCTrackHubConnectionF from './ucsc-trackhub'
+import AddTrackWidgetF from './AddTrackWidget'
 import { AddTrackModel } from './AddTrackWidget/model'
 import AddConnectionWidgetF from './AddConnectionWidget'
-import {
-  stateModelFactory as HierarchicalTrackSelectorStateModelFactory,
-  configSchema as HierarchicalTrackSelectorConfigSchema,
+import PluginStoreWidgetF from './PluginStoreWidget'
+import HierarchicalTrackSelectorWidgetF, {
   HierarchicalTrackSelectorModel,
 } from './HierarchicalTrackSelectorWidget'
-import PluginStoreWidgetF from './PluginStoreWidget'
 
 const SetDefaultSession = lazy(() => import('./SetDefaultSession'))
 
@@ -33,45 +23,9 @@ export default class extends Plugin {
   }
 
   install(pluginManager: PluginManager) {
-    pluginManager.addConnectionType(
-      () =>
-        new ConnectionType({
-          name: 'UCSCTrackHubConnection',
-          configSchema: ucscConfigSchema,
-          stateModel: ucscModelFactory(pluginManager),
-          displayName: 'UCSC Track Hub',
-          description: 'A track or assembly hub in the Track Hub format',
-          url: '//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro',
-        }),
-    )
-
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: 'HierarchicalTrackSelectorWidget',
-        heading: 'Available tracks',
-        configSchema: HierarchicalTrackSelectorConfigSchema,
-        stateModel: HierarchicalTrackSelectorStateModelFactory(pluginManager),
-        ReactComponent: lazy(
-          () =>
-            import(
-              './HierarchicalTrackSelectorWidget/components/HierarchicalTrackSelector'
-            ),
-        ),
-      })
-    })
-
-    pluginManager.addWidgetType(() => {
-      return new WidgetType({
-        name: 'AddTrackWidget',
-        heading: 'Add a track',
-        configSchema: AddTrackConfigSchema,
-        stateModel: AddTrackStateModelFactory(pluginManager),
-        ReactComponent: lazy(
-          () => import('./AddTrackWidget/components/AddTrackWidget'),
-        ),
-      })
-    })
-
+    UCSCTrackHubConnectionF(pluginManager)
+    AddTrackWidgetF(pluginManager)
+    HierarchicalTrackSelectorWidgetF(pluginManager)
     AddConnectionWidgetF(pluginManager)
     PluginStoreWidgetF(pluginManager)
   }
