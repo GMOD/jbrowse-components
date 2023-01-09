@@ -9,11 +9,9 @@ import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { MismatchParser } from '@jbrowse/plugin-alignments'
 import { reaction, autorun } from 'mobx'
 
-// locas
+// locals
 import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-
-// locals
 import { drawMouseoverSynteny, drawRef } from './drawSynteny'
 
 interface Pos {

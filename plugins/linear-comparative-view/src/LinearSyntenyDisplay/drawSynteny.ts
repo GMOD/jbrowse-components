@@ -57,10 +57,10 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   // this loop is optimized to draw thousands/millions of thin lines as a polyline,
   // the polyline calls ctx.stroke once is much more efficient than calling stroke()
   // many times
+  ctx1.fillStyle = colorMap.M
+  ctx1.strokeStyle = colorMap.M
   for (let i = 0; i < featPos.length; i++) {
     const { p11, p12, p21, p22 } = featPos[i]
-    ctx1.fillStyle = colorMap.M
-    ctx1.strokeStyle = colorMap.M
 
     const x11 = p11.offsetPx - offsets[0]
     const x12 = p12.offsetPx - offsets[0]
@@ -91,10 +91,10 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
 
   // this loop only draws small lines as a polyline, the polyline calls
   // ctx.stroke once is much more efficient than calling stroke() many times
+  ctx1.fillStyle = colorMap.M
+  ctx1.strokeStyle = colorMap.M
   for (let i = 0; i < featPos.length; i++) {
     const { p11, p12, p21, p22, f, cigar } = featPos[i]
-    ctx1.fillStyle = colorMap.M
-    ctx1.strokeStyle = colorMap.M
 
     const x11 = p11.offsetPx - offsets[0]
     const x12 = p12.offsetPx - offsets[0]
@@ -219,6 +219,7 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
       offsets,
       oobLimit,
       viewWidth: view.width,
+      hideTiny: true,
       height,
     })
   }
@@ -240,7 +241,7 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
   ctx.resetTransform()
   ctx.scale(highResolutionScaling, highResolutionScaling)
   ctx.clearRect(0, 0, width, height)
-  if (mouseoverId !== -1 && model.features) {
+  if (mouseoverId !== -1 && model.features && model.features[mouseoverId]) {
     const feature = model.featPositions[mouseoverId]
     ctx.fillStyle = 'rgb(0,0,0,0.1)'
     drawMatchSimple({
@@ -255,7 +256,7 @@ export function drawMouseoverSynteny(model: LinearSyntenyDisplayModel) {
     })
   }
 
-  if (clickId !== -1 && model.features) {
+  if (clickId !== -1 && model.features && model.featPositions[clickId]) {
     const feature = model.featPositions[clickId]
     ctx.strokeStyle = 'rgb(0, 0, 0, 0.9)'
 

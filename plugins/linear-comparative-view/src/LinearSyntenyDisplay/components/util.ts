@@ -22,6 +22,7 @@ export function drawMatchSimple({
   drawCurves,
   oobLimit,
   viewWidth,
+  hideTiny,
 }: {
   feature: FeatPos
   ctx: CanvasRenderingContext2D
@@ -31,6 +32,7 @@ export function drawMatchSimple({
   cb: (ctx: CanvasRenderingContext2D) => void
   height: number
   drawCurves?: boolean
+  hideTiny?: boolean
 }) {
   const { p11, p12, p21, p22 } = feature
 
@@ -53,15 +55,19 @@ export function drawMatchSimple({
 
   // drawing a line if the results are thin: drawing a line results in much
   // less pixellation than filling in a thin polygon
-  if (l1 < 1 || l2 < 1) {
-    ctx.beginPath()
-    ctx.moveTo(x11, y1)
-    if (drawCurves) {
-      ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
-    } else {
-      ctx.lineTo(x21, y2)
+  if (l1 <= 1 && l2 <= 1) {
+    // hideTiny can be used to avoid drawing mouseover for thin lines in this
+    // case
+    if (!hideTiny) {
+      ctx.beginPath()
+      ctx.moveTo(x11, y1)
+      if (drawCurves) {
+        ctx.bezierCurveTo(x11, mid, x21, mid, x21, y2)
+      } else {
+        ctx.lineTo(x21, y2)
+      }
+      ctx.stroke()
     }
-    ctx.stroke()
   } else {
     draw(ctx, x11, x12, y1, x22, x21, y2, mid, drawCurves)
     cb(ctx)
