@@ -12,7 +12,9 @@ global.nodeImage = Image
 // @ts-ignore
 global.nodeCreateCanvas = createCanvas
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const pluginManager = {} as any
+
 const renderer = new DensityRenderer({
   name: 'DensityRenderer',
   ReactComponent,

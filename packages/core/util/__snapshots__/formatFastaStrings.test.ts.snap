@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`formats headers and sequence 1`] = `
+">ctgA:1-10
+cattgttgcg
+>ctgB:1-81
+cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct
+t"
+`;
+
+exports[`sequence length is 80 characters 1`] = `"cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct"`;
+
+exports[`sequence length is less than 80 characters 1`] = `"cattgttgcg"`;
+
+exports[`sequence length is more than 80 characters 1`] = `
+"cattgttgcggagttgaacaACGGCATTAGGAACACTTCCGTCTCtcacttttatacgattatgattggttctttagcct
+t"
+`;
