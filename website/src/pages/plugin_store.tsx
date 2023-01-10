@@ -249,6 +249,8 @@ function PluginStore() {
 
   return (
     <ThemeProvider theme={theme}>
+      {/*
+// @ts-ignore */}
       <Layout title={`${siteConfig.title}`}>
         <div className={pluginStyles.body}>
           <div style={{ flexBasis: '50%' }}>

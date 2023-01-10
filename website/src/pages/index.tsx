@@ -16,9 +16,11 @@ import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
 function Home() {
   const context = useDocusaurusContext()
   const { siteConfig = {} } = context
+  // @ts-ignore
   const { currentVersion } = siteConfig.customFields
 
   return (
+    // @ts-ignore
     <Layout title={`${siteConfig.title}`}>
       <Box sx={{ margin: { xs: '0.5em', sm: '0.5em', md: '3em' } }}>
         <Box
