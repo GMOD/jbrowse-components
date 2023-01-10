@@ -3,6 +3,8 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { clamp, featureSpanPx, Feature, Region } from '@jbrowse/core/util'
+
+// locals
 import { getOrigin, getScale, ScaleOpts } from './util'
 
 // avoid drawing negative width features for SVG exports

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<PluginStoreWidget /> renders with the available plugins 1`] = `
+exports[`renders with the available plugins 1`] = `
 <div
   class="css-1kq0gb6-root"
 >
