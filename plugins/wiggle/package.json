@@ -60,7 +60,7 @@
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0",
-    "rxjs": "^6.0.0",
+    "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },
   "publishConfig": {
