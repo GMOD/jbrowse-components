@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`several features 1`] = `
+{
+  "imageData": Any<Object>,
+  "reducedFeatures": [
+    {
+      "end": 100,
+      "score": 1,
+      "start": 1,
+      "uniqueId": "t1",
+    },
+    {
+      "end": 200,
+      "score": 2,
+      "start": 101,
+      "uniqueId": "t2",
+    },
+  ],
+}
+`;

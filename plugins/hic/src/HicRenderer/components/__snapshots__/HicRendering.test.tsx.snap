@@ -2,7 +2,6 @@
 
 exports[`one 1`] = `
 <div
-  class="PileupRendering"
   style="position: relative; width: 500px; height: 500px;"
 >
   <canvas
