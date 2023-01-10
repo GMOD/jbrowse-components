@@ -29,19 +29,23 @@ export default observer(function LinearSyntenyRendering({
   // these useCallbacks avoid new refs from being created on any mouseover, etc.
   const k1 = useCallback(
     (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
-    [model],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, height],
   )
   const k2 = useCallback(
     (ref: HTMLCanvasElement) => model.setMainCanvasRef(ref),
-    [model],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, height],
   )
   const k3 = useCallback(
     (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
-    [model],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, height],
   )
   const k4 = useCallback(
     (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
-    [model],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [model, height],
   )
 
   return (
