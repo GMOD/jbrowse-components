@@ -30,9 +30,7 @@ function mockRemote1(exampleSite: Scope) {
 
 function mockRemote2(exampleSite: Scope) {
   return exampleSite
-    .get(
-      '/GMOD/jbrowse-components/cli_trix_indexer_stub/test_data/volvox/volvox.sort.gff3.gz',
-    )
+    .get('/GMOD/jbrowse-components/main/test_data/volvox/volvox.sort.gff3.gz')
     .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
 }
 

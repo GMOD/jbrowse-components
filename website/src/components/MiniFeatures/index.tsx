@@ -1,7 +1,8 @@
 import React from 'react'
-import clsx from 'clsx'
-import styles from './styles.module.css'
 import ReactPlayer from 'react-player'
+import clsx from 'clsx'
+
+import styles from './styles.module.css'
 
 const FeatureList = [
   {

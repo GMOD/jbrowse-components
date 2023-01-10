@@ -1,13 +1,14 @@
 import React from 'react'
+import { Alert, AlertTitle } from '@mui/material'
 import clsx from 'clsx'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import MiniFeatures from '@site/src/components/MiniFeatures'
-import MiniPlugins from '../components/MiniPlugins'
 
+// locals
+import MiniPlugins from '../components/MiniPlugins'
 import styles from './styles.module.css'
-import { Alert, AlertTitle } from '@mui/material'
 
 function Header() {
   const { siteConfig } = useDocusaurusContext()
@@ -26,7 +27,9 @@ function Header() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            href={`https://jbrowse.org/code/jb2/${siteConfig.customFields.currentVersion}/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt`}
+            href={`https://jbrowse.org/code/jb2/${
+              /* @ts-ignore */ siteConfig.customFields.currentVersion
+            }/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt`}
           >
             Browse a cancer annotations demo web instance
           </Link>
