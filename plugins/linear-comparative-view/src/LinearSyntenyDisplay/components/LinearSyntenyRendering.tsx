@@ -30,22 +30,22 @@ export default observer(function LinearSyntenyRendering({
   const k1 = useCallback(
     (ref: HTMLCanvasElement) => model.setMouseoverCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height],
+    [model, height, width],
   )
   const k2 = useCallback(
     (ref: HTMLCanvasElement) => model.setMainCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height],
+    [model, height, width],
   )
   const k3 = useCallback(
     (ref: HTMLCanvasElement) => model.setClickMapCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height],
+    [model, height, width],
   )
   const k4 = useCallback(
     (ref: HTMLCanvasElement) => model.setCigarClickMapCanvasRef(ref),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [model, height],
+    [model, height, width],
   )
 
   return (
