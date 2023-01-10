@@ -1,14 +1,18 @@
-import { render, cleanup, fireEvent } from '@testing-library/react'
 import React from 'react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
+
+// locals
 import AddConnectionWidget from './AddConnectionWidget'
+
 jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
 
-window.fetch = jest.fn(() => new Promise(resolve => resolve()))
+// window.fetch = jest.fn(() => new Promise(resolve => resolve()))
 
 describe('<AddConnectionWidget />', () => {
-  let model
-  let session
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let model: any
+  let session: ReturnType<typeof createTestSession>
 
   beforeEach(() => {
     session = createTestSession()
@@ -42,7 +46,8 @@ describe('<AddConnectionWidget />', () => {
   })
 
   it('can handle a custom UCSC trackHub URL', async () => {
-    const mockFetch = url => {
+    const mockFetch = async (url: RequestInfo | URL) => {
+      // @ts-ignore
       const urlText = url.href ? url.href : url
       let responseText = ''
       if (urlText.endsWith('hub.txt')) {
@@ -66,9 +71,11 @@ type bigWig
 `
       }
 
-      return Promise.resolve(new Response(responseText, { url: urlText }))
+      return new Response(responseText)
     }
+
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+
     const { findByTestId, getAllByRole, findAllByText, findByDisplayValue } =
       render(<AddConnectionWidget model={model} />)
     expect(session.connections.length).toBe(0)
@@ -90,7 +97,8 @@ type bigWig
   })
 
   it('can handle a custom JBrowse 1 data directory URL', async () => {
-    const mockFetch = url => {
+    const mockFetch = async (url: RequestInfo | URL) => {
+      // @ts-ignore
       const urlText = url.href ? url.href : url
       let responseText = ''
       if (urlText.endsWith('trackList.json')) {
@@ -98,9 +106,10 @@ type bigWig
       } else if (urlText.endsWith('refSeqs.json')) {
         responseText = '[]'
       }
-      return Promise.resolve(new Response(responseText, { url: urlText }))
+      return new Response(responseText)
     }
     jest.spyOn(global, 'fetch').mockImplementation(mockFetch)
+
     const {
       findByTestId,
       getAllByRole,

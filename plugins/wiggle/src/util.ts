@@ -21,7 +21,7 @@ export interface ScaleOpts {
   range: number[]
   scaleType: string
   pivotValue?: number
-  inverted: boolean
+  inverted?: boolean
 }
 
 export interface Source {
@@ -114,8 +114,8 @@ export function getNiceDomain({
   bounds,
 }: {
   scaleType: string
-  domain: number[]
-  bounds: number[]
+  domain: readonly [number, number]
+  bounds: readonly [number | undefined, number | undefined]
 }) {
   const [minScore, maxScore] = bounds
   let [min, max] = domain

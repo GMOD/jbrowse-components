@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { contrastingTextColor } from '@jbrowse/core/util/color'
-import { Feature } from '@jbrowse/core/util/simpleFeature'
+import { Feature } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
@@ -15,19 +15,6 @@ import {
   defaultCodonTable,
   generateCodonTable,
 } from '@jbrowse/core/util'
-
-interface MyProps {
-  exportSVG?: { rasterizeLayers: boolean }
-  features: Map<string, Feature>
-  regions: Region[]
-  bpPerPx: number
-  config: AnyConfigurationModel
-  highResolutionScaling: number
-  theme: any
-  showForward: boolean
-  showReverse: boolean
-  showTranslation: boolean
-}
 
 function Translation(props: {
   codonTable: any
@@ -179,9 +166,9 @@ const SequenceSVG = ({
   regions,
   theme: configTheme,
   features = new Map(),
-  showReverse,
-  showForward,
-  showTranslation,
+  showReverse = true,
+  showForward = true,
+  showTranslation = true,
   bpPerPx,
 }: any) => {
   const [region] = regions
@@ -283,7 +270,17 @@ const Wrapper = ({ exportSVG, width, totalHeight, children }: any) => {
   )
 }
 
-function Sequence(props: MyProps) {
+function Sequence(props: {
+  exportSVG?: { rasterizeLayers: boolean }
+  features: Map<string, Feature>
+  regions: Region[]
+  bpPerPx: number
+  config: AnyConfigurationModel
+  theme?: any
+  showForward?: boolean
+  showReverse?: boolean
+  showTranslation?: boolean
+}) {
   const { regions, bpPerPx } = props
   const [region] = regions
   const width = (region.end - region.start) / bpPerPx

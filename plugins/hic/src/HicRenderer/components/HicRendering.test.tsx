@@ -1,4 +1,3 @@
-import PrecomputedLayout from '@jbrowse/core/util/layouts/PrecomputedLayout'
 import React from 'react'
 import { render } from '@testing-library/react'
 import HicRendering from './HicRendering'
@@ -9,11 +8,12 @@ test('one', () => {
     <HicRendering
       width={500}
       height={500}
-      regions={[{ refName: 'zonk', start: 1, end: 3 }]}
-      layout={new PrecomputedLayout({ rectangles: {}, totalHeight: 20 })}
+      regions={[{ assemblyName: 'volvox', refName: 'zonk', start: 1, end: 3 }]}
       bpPerPx={3}
       blockKey="test"
-      config={{ type: 'DummyRenderer' }}
+      /*
+      // @ts-ignore */
+      displayModel={{}}
     />,
   )
 

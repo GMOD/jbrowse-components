@@ -9,11 +9,13 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  // @ts-ignore
   console.warn.mockRestore()
 })
 // change renderer
 class SNPCoverageRendererPlugin extends Plugin {
-  install(pluginManager) {
+  name = 'SNPCoverageRendererPlugin'
+  install(pluginManager: PluginManager) {
     SNPCoverageRenderer(pluginManager)
   }
 }

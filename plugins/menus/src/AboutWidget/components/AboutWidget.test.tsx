@@ -1,8 +1,10 @@
 import React from 'react'
 import { render } from '@testing-library/react'
-import AboutWidget from './AboutWidget'
 import { types } from 'mobx-state-tree'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+// locals
+import AboutWidget from './AboutWidget'
 
 describe('<AboutWidget />', () => {
   it('renders', () => {

@@ -6,10 +6,15 @@ import ReactComponent from '../WiggleRendering'
 
 import { Image, createCanvas } from 'canvas'
 
+// @ts-ignore
 global.nodeImage = Image
+
+// @ts-ignore
 global.nodeCreateCanvas = createCanvas
 
-const pluginManager = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const pluginManager = {} as any
+
 const renderer = new DensityRenderer({
   name: 'DensityRenderer',
   ReactComponent,
@@ -48,6 +53,7 @@ test('inverted mode and reversed', async () => {
   }
 
   const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
+    // @ts-ignore
     renderer.draw(ctx, renderProps),
   )
   expect(res).toMatchSnapshot({

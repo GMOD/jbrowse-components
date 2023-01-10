@@ -5,6 +5,8 @@ import {
   svgFeatureRendererConfigSchema,
   SvgFeatureRendererReactComponent,
 } from '@jbrowse/plugin-svg'
+
+// locals
 import PileupRenderer from '../../PileupRenderer'
 import SNPCoverageRenderer from '../../SNPCoverageRenderer'
 import LinearPileupDisplay from '../../LinearPileupDisplay'
@@ -17,11 +19,13 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  // @ts-ignore
   console.warn.mockRestore()
 })
 
 class AlignmentsPlugin extends Plugin {
-  install(pluginManager) {
+  name = 'AlignmentsPlugin'
+  install(pluginManager: PluginManager) {
     PileupRenderer(pluginManager)
 
     pluginManager.addRendererType(
