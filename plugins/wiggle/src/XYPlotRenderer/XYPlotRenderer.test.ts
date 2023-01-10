@@ -1,16 +1,18 @@
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { renderToAbstractCanvas } from '@jbrowse/core/util/offscreenCanvasUtils'
+import { SimpleFeature, renderToAbstractCanvas } from '@jbrowse/core/util'
+import { Image, createCanvas } from 'canvas'
+
+// locals
 import configSchema from './configSchema'
 import XYPlotRenderer from './XYPlotRenderer'
 import ReactComponent from '../WiggleRendering'
 
-import { Image, createCanvas } from 'canvas'
-
+// @ts-ignore
 global.nodeImage = Image
+// @ts-ignore
 global.nodeCreateCanvas = createCanvas
 
 test('several features', async () => {
-  const pluginManager = {}
+  const pluginManager = {} as any
   const renderer = new XYPlotRenderer({
     name: 'XYPlotRenderer',
     ReactComponent,
@@ -40,6 +42,7 @@ test('several features', async () => {
   }
 
   const res = await renderToAbstractCanvas(1000, 200, renderProps, ctx =>
+    // @ts-ignore
     renderer.draw(ctx, renderProps),
   )
   expect(res).toMatchSnapshot({
