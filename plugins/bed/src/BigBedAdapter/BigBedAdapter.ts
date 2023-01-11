@@ -72,7 +72,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           basesPerSpan: end - start,
         })
         ob.pipe(
-          // @ts-ignore
           mergeAll(),
           map(r => {
             const data = parser.parseLine(
