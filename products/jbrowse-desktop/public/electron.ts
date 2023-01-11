@@ -208,6 +208,14 @@ async function createWindow() {
     },
   })
   mainWindowState.manage(mainWindow)
+
+  // this ready-to-show handler must be attached before the loadURL
+  mainWindow.once('ready-to-show', () => {
+    // unsure how to error handle
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    autoUpdater.checkForUpdatesAndNotify()
+  })
+
   await mainWindow.loadURL(
     isDev
       ? url.format(devServerUrl)
@@ -330,12 +338,6 @@ async function createWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null
-  })
-
-  mainWindow.once('ready-to-show', () => {
-    // unsure how to error handle
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    autoUpdater.checkForUpdatesAndNotify()
   })
 }
 
