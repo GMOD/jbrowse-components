@@ -11,6 +11,7 @@ import { toArray } from 'rxjs/operators'
 
 // locals
 import BamSlightlyLazyFeature from './BamSlightlyLazyFeature'
+import { firstValueFrom } from 'rxjs'
 
 interface Header {
   idToName: string[]
@@ -138,7 +139,7 @@ export default class BamAdapter extends BaseFeatureDataAdapter {
       assemblyName: '',
     })
 
-    const seqChunks = await features.pipe(toArray()).toPromise()
+    const seqChunks = await firstValueFrom(features.pipe(toArray()))
 
     let sequence = ''
     seqChunks

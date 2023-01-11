@@ -57,7 +57,7 @@
     "mobx-state-tree": "^5.0.0",
     "prop-types": "^15.0.0",
     "react-use-measure": "^2.1.1",
-    "rxjs": "^6.0.0",
+    "rxjs": "^7.0.0",
     "tss-react": "^4.4.1"
   },
   "peerDependencies": {

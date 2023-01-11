@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
-    "@gmod/bbi": "^2.0.3",
+    "@gmod/bbi": "^3.0.0",
     "@gmod/bed": "^2.1.2",
     "@gmod/bgzf-filehandle": "^1.4.3",
     "@gmod/tabix": "^1.5.2"
@@ -48,7 +48,7 @@
     "mobx": "^6.0.0",
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
-    "rxjs": "^6.0.0"
+    "rxjs": "^7.0.0"
   },
   "publishConfig": {
     "access": "public"

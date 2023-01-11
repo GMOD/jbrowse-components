@@ -14,6 +14,7 @@ import RpcManager from '../../rpc/RpcManager'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
 import { dedupe } from '../../util'
+import { firstValueFrom } from 'rxjs'
 
 export interface RenderArgs extends ServerSideRenderArgs {
   displayModel: {}
@@ -128,13 +129,14 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
     })
 
     // note that getFeaturesInMultipleRegions does not do glyph expansion
-    const res = await (dataAdapter as BaseFeatureDataAdapter)
-      .getFeaturesInMultipleRegions(requestRegions, renderArgs)
-      .pipe(
-        filter(f => this.featurePassesFilters(renderArgs, f)),
-        toArray(),
-      )
-      .toPromise()
+    const res = await firstValueFrom(
+      (dataAdapter as BaseFeatureDataAdapter)
+        .getFeaturesInMultipleRegions(requestRegions, renderArgs)
+        .pipe(
+          filter(f => this.featurePassesFilters(renderArgs, f)),
+          toArray(),
+        ),
+    )
 
     // dedupe needed xref https://github.com/GMOD/jbrowse-components/pull/3404/
     return dedupe(res, f => f.id())

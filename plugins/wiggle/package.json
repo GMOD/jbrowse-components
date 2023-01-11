@@ -37,7 +37,7 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bbi": "^2.0.3",
+    "@gmod/bbi": "^3.0.0",
     "@mui/icons-material": "^5.0.2",
     "@popperjs/core": "^2.11.0",
     "clone": "^2.1.2",
@@ -60,7 +60,7 @@
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.0",
-    "rxjs": "^6.0.0",
+    "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },
   "publishConfig": {

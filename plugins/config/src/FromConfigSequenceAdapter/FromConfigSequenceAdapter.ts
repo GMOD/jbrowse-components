@@ -6,6 +6,7 @@ import { RegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // locals
 import FromConfigAdapter from '../FromConfigAdapter/FromConfigAdapter'
+import { firstValueFrom } from 'rxjs'
 
 export default class FromConfigSequenceAdapter
   extends FromConfigAdapter
@@ -18,7 +19,9 @@ export default class FromConfigSequenceAdapter
    */
   getFeatures(region: NoAssemblyRegion) {
     return ObservableCreate<Feature>(async observer => {
-      const feats = await super.getFeatures(region).pipe(toArray()).toPromise()
+      const feats = await firstValueFrom(
+        super.getFeatures(region).pipe(toArray()),
+      )
       const feat = feats[0]
       observer.next(
         new SimpleFeature({

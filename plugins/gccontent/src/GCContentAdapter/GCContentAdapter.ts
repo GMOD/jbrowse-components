@@ -2,6 +2,7 @@ import {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { firstValueFrom } from 'rxjs'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { SimpleFeature, Feature, Region } from '@jbrowse/core/util'
 import { toArray } from 'rxjs/operators'
@@ -51,7 +52,7 @@ export default class extends BaseFeatureDataAdapter {
         },
         opts,
       )
-      const feats = await ret.pipe(toArray()).toPromise()
+      const feats = await firstValueFrom(ret.pipe(toArray()))
       const residues = feats[0]?.get('seq') || ''
 
       for (let i = hw; i < residues.length - hw; i += this.windowDelta) {

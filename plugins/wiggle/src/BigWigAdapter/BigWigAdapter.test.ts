@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import BigWigAdapter from './BigWigAdapter'
 import configSchema from './configSchema'
 
@@ -26,7 +27,7 @@ describe('adapter can fetch features from volvox.bw', () => {
     expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
     expect(await adapter.hasDataForRefName('ctgB')).toBe(false)
 
-    const featuresArray = await features.pipe(toArray()).toPromise()
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
     const featuresJsonArray = featuresArray.map(f => f.toJSON())
     expect(featuresJsonArray.slice(1000, 1010)).toMatchSnapshot()
   })

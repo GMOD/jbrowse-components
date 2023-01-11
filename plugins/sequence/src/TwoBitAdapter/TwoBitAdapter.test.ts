@@ -1,4 +1,5 @@
 import { toArray } from 'rxjs/operators'
+import { firstValueFrom } from 'rxjs'
 import Adapter from './TwoBitAdapter'
 import configSchema from './configSchema'
 
@@ -18,7 +19,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     end: 20000,
   })
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray).toMatchSnapshot()
 
   const features2 = adapter.getFeatures({
@@ -27,7 +28,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     end: 55000,
   })
 
-  const featuresArray2 = await features2.pipe(toArray()).toPromise()
+  const featuresArray2 = await firstValueFrom(features2.pipe(toArray()))
   expect(featuresArray2[0].get('end')).toBe(50001)
 
   const features3 = adapter.getFeatures({
@@ -36,7 +37,7 @@ test('adapter can fetch features from volvox.2bit', async () => {
     end: 20000,
   })
 
-  const featuresArray3 = await features3.pipe(toArray()).toPromise()
+  const featuresArray3 = await firstValueFrom(features3.pipe(toArray()))
   expect(featuresArray3).toMatchSnapshot()
 })
 

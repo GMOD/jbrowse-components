@@ -9,6 +9,7 @@ import { SequenceAdapter } from './CramAdapter/CramTestAdapters'
 
 import cramConfigSchema from './CramAdapter/configSchema'
 import bamConfigSchema from './BamAdapter/configSchema'
+import { firstValueFrom } from 'rxjs'
 
 const pluginManager = new PluginManager()
 
@@ -55,8 +56,8 @@ async function getFeats(f1: string, f2: string) {
   }
   const bamFeatures = bamAdapter.getFeatures(query)
   const cramFeatures = cramAdapter.getFeatures(query)
-  const bamFeaturesArray = await bamFeatures.pipe(toArray()).toPromise()
-  const cramFeaturesArray = await cramFeatures.pipe(toArray()).toPromise()
+  const bamFeaturesArray = await firstValueFrom(bamFeatures.pipe(toArray()))
+  const cramFeaturesArray = await firstValueFrom(cramFeatures.pipe(toArray()))
   return { bamFeaturesArray, cramFeaturesArray }
 }
 

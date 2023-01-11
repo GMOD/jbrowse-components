@@ -1,5 +1,8 @@
 import { toArray } from 'rxjs/operators'
 import clone from 'clone'
+import { firstValueFrom } from 'rxjs'
+
+// locals
 import { checkAbortSignal, iterMap } from '../../util'
 import SimpleFeature, {
   Feature,
@@ -173,7 +176,7 @@ export default class FeatureRendererType extends ServerSideRendererType {
           )
         : dataAdapter.getFeaturesInMultipleRegions(requestRegions, renderArgs)
 
-    const feats = await featureObservable.pipe(toArray()).toPromise()
+    const feats = await firstValueFrom(featureObservable.pipe(toArray()))
     checkAbortSignal(signal)
     return new Map(
       feats

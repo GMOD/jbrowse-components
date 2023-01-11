@@ -2,6 +2,7 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { toArray } from 'rxjs/operators'
 import { Feature } from '@jbrowse/core/util/simpleFeature'
 import { AugmentedRegion } from '@jbrowse/core/util'
+import { firstValueFrom } from 'rxjs'
 // get tag from BAM or CRAM feature, where CRAM uses feature.get('tags') and
 // BAM does not
 export function getTag(feature: Feature, tag: string) {
@@ -86,14 +87,15 @@ export async function fetchSequence(
 ) {
   const { end, originalRefName, refName } = region
 
-  const feats = await adapter
-    .getFeatures({
-      ...region,
-      refName: originalRefName || refName,
-      end: end + 1,
-    })
-    .pipe(toArray())
-    .toPromise()
+  const feats = await firstValueFrom(
+    adapter
+      .getFeatures({
+        ...region,
+        refName: originalRefName || refName,
+        end: end + 1,
+      })
+      .pipe(toArray()),
+  )
   return feats[0]?.get('seq')
 }
 
