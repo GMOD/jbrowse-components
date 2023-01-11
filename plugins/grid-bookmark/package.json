@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-grid-bookmark",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "JBrowse 2 grid bookmark widget",
   "keywords": [
     "jbrowse",
@@ -37,8 +37,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@types/file-saver": "^2.0.1",
     "@mui/icons-material": "^5.0.1",
+    "@types/file-saver": "^2.0.1",
     "file-saver": "^2.0.0"
   },
   "peerDependencies": {

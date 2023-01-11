@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/core",
-  "version": "2.3.2",
+  "version": "2.3.3",
   "description": "JBrowse 2 core libraries used by plugins",
   "keywords": [
     "jbrowse",
@@ -28,9 +28,9 @@
     "build": "tsc -b tsconfig.build.json && cp package.json README.md ../../LICENSE dist/"
   },
   "dependencies": {
-    "@types/clone": "^2.0.0",
     "@babel/runtime": "^7.17.9",
     "@mui/icons-material": "^5.0.1",
+    "@types/clone": "^2.0.0",
     "abortable-promise-cache": "^1.5.0",
     "canvas-sequencer": "^3.1.0",
     "canvas2svg": "^1.0.16",
