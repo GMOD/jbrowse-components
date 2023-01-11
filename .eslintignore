@@ -7,6 +7,7 @@
 **/umd/**
 **/lib/**
 **/tmp/**
+**/website/**
 # TODO: decide whether or not to bring these up to eslint standards
 products/jbrowse-web/scripts/**
 /config/
