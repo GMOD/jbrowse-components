@@ -1,3 +1,84 @@
+## 2.3.3 (2023-01-11)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/text-indexing                  |                                                                   |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-arc                     |                                                                   |
+| @jbrowse/plugin-authentication          | https://www.npmjs.com/package/@jbrowse/plugin-authentication      |
+| @jbrowse/plugin-bed                     | https://www.npmjs.com/package/@jbrowse/plugin-bed                 |
+| @jbrowse/plugin-comparative-adapters    |                                                                   |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-gccontent               | https://www.npmjs.com/package/@jbrowse/plugin-gccontent           |
+| @jbrowse/plugin-gff3                    | https://www.npmjs.com/package/@jbrowse/plugin-gff3                |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-jobs-management         |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-lollipop                |                                                                   |
+| @jbrowse/plugin-menus                   |                                                                   |
+| @jbrowse/plugin-rdf                     |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-text-indexing           |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#3440](https://github.com/GMOD/jbrowse-components/pull/3440) "Show all
+    regions" for dotplot and synteny views and refactor synteny rendering RPC to
+    optimize scrolling ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- Other
+  - [#3451](https://github.com/GMOD/jbrowse-components/pull/3451) Fix
+    auto-updates on desktop not working since v2.2.2
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3428](https://github.com/GMOD/jbrowse-components/pull/3428) Add missing
+    dependencies to embedded component package.json's
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#3448](https://github.com/GMOD/jbrowse-components/pull/3448) Typescriptify
+  some docusaurus website code ([@cmdcolin](https://github.com/cmdcolin))
+- [#3444](https://github.com/GMOD/jbrowse-components/pull/3444) Human vs mouse
+  synteny demo ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :house: Internal
+
+- `core`
+  - [#3445](https://github.com/GMOD/jbrowse-components/pull/3445) Typescriptify
+    more tests ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3443](https://github.com/GMOD/jbrowse-components/pull/3443) Restore
+    console mocks after running ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 2.3.2 (2022-12-20)
 
 <details><summary>Packages in this release</summary>
