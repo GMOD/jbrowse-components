@@ -1,12 +1,10 @@
 import React, { useState } from 'react'
-import {
-  Typography,
-  Link,
-  Paper,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-} from '@mui/material'
+import Typography from '@mui/material/Typography'
+import Link from '@mui/material/Link'
+import Paper from '@mui/material/Paper'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormGroup from '@mui/material/FormGroup'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
@@ -17,6 +15,8 @@ import {
   BaseCard,
   SimpleValue,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+
+// locals
 import { parseCigar } from '../MismatchParser'
 
 const useStyles = makeStyles()({

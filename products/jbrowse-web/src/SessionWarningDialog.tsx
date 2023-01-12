@@ -1,11 +1,9 @@
 import React from 'react'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from '@mui/material'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import Button from '@mui/material/Button'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogActions from '@mui/material/DialogActions'
 import WarningIcon from '@mui/icons-material/Warning'
 
 export default function SessionWarningModal({

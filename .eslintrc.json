@@ -38,10 +38,16 @@
         "allow": ["error", "warn"]
       }
     ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "name": "@mui/material",
+        "message": "Please use \"import foo from '@mui/material/foo'\" instead."
+      }
+    ],
     "no-debugger": "warn",
     "no-undef": "error",
     "no-underscore-dangle": "warn",
-
     "import/no-extraneous-dependencies": "error",
     "import/no-anonymous-default-export": "off",
     "monorepo/no-internal-import": "off",

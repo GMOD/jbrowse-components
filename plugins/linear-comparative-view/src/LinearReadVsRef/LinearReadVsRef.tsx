@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import {
-  Button,
-  CircularProgress,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 import { makeStyles } from 'tss-react/mui'
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'

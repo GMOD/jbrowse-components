@@ -1,7 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { List, Typography } from '@mui/material'
+import List from '@mui/material/List'
+import Typography from '@mui/material/Typography'
 import PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
 import { PluginStoreModel } from '../model'
 import InstalledPlugin from './InstalledPlugin'
 

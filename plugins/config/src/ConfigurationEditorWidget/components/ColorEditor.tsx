@@ -1,6 +1,6 @@
 import React, { lazy, useState } from 'react'
 import { observer } from 'mobx-react'
-import { TextField } from '@mui/material'
+import TextField from '@mui/material/TextField'
 
 const ColorPicker = lazy(() => import('@jbrowse/core/ui/ColorPicker'))
 

@@ -3,7 +3,8 @@ import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { ThemeProvider, ScopedCssBaseline } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
+import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import { makeStyles } from 'tss-react/mui'
 
 // locals

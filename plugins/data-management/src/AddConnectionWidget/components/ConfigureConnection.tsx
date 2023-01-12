@@ -4,7 +4,7 @@ import { ConfigurationEditor } from '@jbrowse/plugin-config'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { AbstractSessionModel } from '@jbrowse/core/util'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 
 const ConfigureConnection = observer(
   (props: {

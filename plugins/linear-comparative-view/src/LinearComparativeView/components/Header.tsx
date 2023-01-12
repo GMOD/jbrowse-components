@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { IconButton, Typography } from '@mui/material'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { SearchBox } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
-import { Menu } from '@jbrowse/core/ui'
+import Menu from '@jbrowse/core/ui/Menu'
 
 // icons
 import MoreVertIcon from '@mui/icons-material/MoreVert'

@@ -1,7 +1,8 @@
 import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
-
-import { Popover, Typography, alpha } from '@mui/material'
+import Popover from '@mui/material/Popover'
+import Typography from '@mui/material/Typography'
+import { alpha } from '@mui/system/colorManipulator'
 import { stringify, toLocale } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => {

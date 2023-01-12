@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Button,
-  Container,
-  FormControl,
-  FormLabel,
-  FormControlLabel,
-  Grid,
-  Paper,
-  Radio,
-  RadioGroup,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Container from '@mui/material/Container'
+import FormControl from '@mui/material/FormControl'
+import FormLabel from '@mui/material/FormLabel'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Grid from '@mui/material/Grid'
+import Paper from '@mui/material/Paper'
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { SnapshotIn } from 'mobx-state-tree'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
 // locals
 import { LinearSyntenyViewModel } from '../model'

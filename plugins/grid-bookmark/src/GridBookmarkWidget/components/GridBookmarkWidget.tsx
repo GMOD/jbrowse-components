@@ -1,9 +1,13 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { Link, IconButton, Typography } from '@mui/material'
+import Link from '@mui/material/Link'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { getSession, assembleLocString, measureText } from '@jbrowse/core/util'
+
+// icons
 import DeleteIcon from '@mui/icons-material/Delete'
 
 // locals

@@ -1,15 +1,12 @@
 import React, { lazy, useEffect, useState, Suspense } from 'react'
-import {
-  IconButton,
-  IconButtonProps as IconButtonPropsType,
-  Paper,
-  SvgIconProps,
-  Typography,
-  useTheme,
-  alpha,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+import { alpha } from '@mui/system/colorManipulator'
+import { SvgIconProps } from '@mui/material/SvgIcon'
+import IconButton, { IconButtonProps as IBP } from '@mui/material/IconButton'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
 import MenuIcon from '@mui/icons-material/Menu'
+import { useTheme } from '@mui/material/styles'
+import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
 import useMeasure from 'react-use-measure'
@@ -54,7 +51,7 @@ const ViewMenu = observer(
     IconProps,
   }: {
     model: IBaseViewModel
-    IconButtonProps: IconButtonPropsType
+    IconButtonProps: IBP
     IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()

@@ -4,7 +4,7 @@ import { getEnv } from '@jbrowse/core/util'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material/styles'
-import { ScopedCssBaseline } from '@mui/material'
+import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import { makeStyles } from 'tss-react/mui'
 
 import ModalWidget from './ModalWidget'

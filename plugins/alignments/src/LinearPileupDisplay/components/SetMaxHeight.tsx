@@ -1,20 +1,18 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 import { makeStyles } from 'tss-react/mui'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   root: {
     width: 500,
   },
-}))
+})
 
 function SetMaxHeightDlg(props: {
   model: {

@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { FormControl, FormHelperText, Select, MenuItem } from '@mui/material'
+import FormControl from '@mui/material/FormControl'
+import FormHelperText from '@mui/material/FormHelperText'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
 import { getEnv } from '@jbrowse/core/util'
 
 // locals

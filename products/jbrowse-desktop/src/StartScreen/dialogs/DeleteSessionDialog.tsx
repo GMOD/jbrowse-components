@@ -1,12 +1,9 @@
 import React from 'react'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
 const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({
@@ -19,8 +16,11 @@ const DeleteSessionDialog = ({
   setError: (e: unknown) => void
 }) => {
   return (
-    <Dialog open onClose={() => onClose(false)}>
-      <DialogTitle>{`Delete ${sessionsToDelete.length} sessions?`}</DialogTitle>
+    <Dialog
+      open
+      onClose={() => onClose(false)}
+      title={`Delete ${sessionsToDelete.length} sessions?`}
+    >
       <DialogContent>
         <DialogContentText>This action cannot be undone</DialogContentText>
       </DialogContent>

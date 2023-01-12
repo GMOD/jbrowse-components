@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Menu, MenuItem } from '@jbrowse/core/ui'
+import Menu, { MenuItem } from '@jbrowse/core/ui/Menu'
 import { Instance } from 'mobx-state-tree'
 
 import SpreadsheetModel from '../models/Spreadsheet'

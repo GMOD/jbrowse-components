@@ -1,9 +1,8 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { iterMap } from '@jbrowse/core/util'
-import { Menu } from '@jbrowse/core/ui'
-import { MenuItem } from '@jbrowse/core/ui/Menu'
-import { SvgIcon } from '@mui/material'
+import Menu, { MenuItem } from '@jbrowse/core/ui/Menu'
+import SvgIcon from '@mui/material/SvgIcon'
 import { SpreadsheetModel } from '../models/Spreadsheet'
 import { SpreadsheetViewModel } from '../models/SpreadsheetView'
 

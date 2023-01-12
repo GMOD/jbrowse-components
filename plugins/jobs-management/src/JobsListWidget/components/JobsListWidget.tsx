@@ -1,11 +1,9 @@
 import React from 'react'
-import {
-  Accordion,
-  AccordionSummary,
-  Card,
-  CardContent,
-  Typography,
-} from '@mui/material'
+import Accordion from '@mui/material/Accordion'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 

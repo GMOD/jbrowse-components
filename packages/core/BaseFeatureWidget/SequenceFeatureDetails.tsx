@@ -1,13 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react'
-import {
-  Button,
-  FormControl,
-  IconButton,
-  MenuItem,
-  Select,
-  Typography,
-  Tooltip,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import FormControl from '@mui/material/FormControl'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
+import Select from '@mui/material/Select'
+import Typography from '@mui/material/Typography'
+import Tooltip from '@mui/material/Tooltip'
 import { makeStyles } from 'tss-react/mui'
 import copy from 'copy-to-clipboard'
 
@@ -20,7 +18,7 @@ import { BaseProps } from './types'
 import { getConf } from '../configuration'
 import { Feature, SimpleFeatureSerialized } from '../util/simpleFeature'
 import { ParentFeat, SeqState, ErrorState } from './util'
-import { LoadingEllipses } from '../ui'
+import LoadingEllipses from '../ui/LoadingEllipses'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'

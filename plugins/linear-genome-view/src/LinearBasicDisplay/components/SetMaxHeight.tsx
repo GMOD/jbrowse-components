@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Typography,
-  TextField,
-} from '@mui/material'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Typography from '@mui/material/Typography'
+import TextField from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()(theme => ({

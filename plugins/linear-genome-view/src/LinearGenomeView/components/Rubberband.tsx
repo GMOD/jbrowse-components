@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
-import { Menu } from '@jbrowse/core/ui'
+import Menu from '@jbrowse/core/ui/Menu'
 
 // locals
 import VerticalGuide from './VerticalGuide'

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { observer } from 'mobx-react'
 import { onSnapshot } from 'mobx-state-tree'
 import { useQueryParam, StringParam } from 'use-query-params'
-import { CssBaseline } from '@mui/material'
+import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 
 // core

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, TypographyProps } from '@mui/material'
+import Typography, { TypographyProps } from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { keyframes } from 'tss-react'
 

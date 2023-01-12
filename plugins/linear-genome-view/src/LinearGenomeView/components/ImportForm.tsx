@@ -2,14 +2,13 @@ import React, { useState, useEffect, lazy } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import {
-  Button,
-  CircularProgress,
-  FormControl,
-  Container,
-  Grid,
-} from '@mui/material'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import CircularProgress from '@mui/material/CircularProgress'
+import FormControl from '@mui/material/FormControl'
+import Container from '@mui/material/Container'
+import Grid from '@mui/material/Grid'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 // icons
@@ -19,6 +18,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel } from '..'
+
+// lazies
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles()(theme => ({

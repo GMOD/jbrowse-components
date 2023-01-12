@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  DialogContent,
-  DialogActions,
-  FormControlLabel,
-  Radio,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Radio from '@mui/material/Radio'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 import { ColorPicker } from '@jbrowse/core/ui/ColorPicker'
 
 function SetColorDialog({

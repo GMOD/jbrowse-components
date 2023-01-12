@@ -1,15 +1,13 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 
 function SetFeatureHeightDlg(props: {
   model: {

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Select, MenuItem, Paper, Typography } from '@mui/material'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
-import { ErrorMessage } from '@jbrowse/core/ui'
 import {
   AnyConfigurationModel,
   readConfObject,

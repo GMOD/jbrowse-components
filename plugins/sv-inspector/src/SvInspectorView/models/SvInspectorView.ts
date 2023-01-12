@@ -1,4 +1,3 @@
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import clone from 'clone'
 import {
   getContainingView,
@@ -12,6 +11,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { types, getParent, addDisposer, Instance } from 'mobx-state-tree'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+
+// icons
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
 // locals
 import {

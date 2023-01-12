@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tooltip } from '@mui/material'
+import Tooltip from '@mui/material/Tooltip'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { stringify } from '@jbrowse/core/util'

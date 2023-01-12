@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { Button, Grid, MenuItem, Paper, TextField } from '@mui/material'
-import { FileSelector } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import TextField from '@mui/material/TextField'
+import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 // icons

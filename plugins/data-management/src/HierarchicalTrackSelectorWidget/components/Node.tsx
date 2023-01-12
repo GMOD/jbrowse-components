@@ -1,11 +1,9 @@
 import React, { useState } from 'react'
-import {
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 
 // icons

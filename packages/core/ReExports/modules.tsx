@@ -9,7 +9,7 @@ import PropTypes from 'prop-types'
 
 import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
-import { useTheme } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import {
   useGridApiContext,
   useGridApiRef,

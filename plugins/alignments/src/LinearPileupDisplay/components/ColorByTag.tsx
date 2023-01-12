@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 
 function ColorByTagDlg(props: {
   model: { setColorScheme: Function }

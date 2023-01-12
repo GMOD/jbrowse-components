@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import FormControlLabel from '@mui/material/FormControlLabel'
 import { makeStyles } from 'tss-react/mui'
 import { getSnapshot } from 'mobx-state-tree'
 // jbrowse

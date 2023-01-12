@@ -1,5 +1,6 @@
 import React from 'react'
-import { Toolbar, Tooltip } from '@mui/material'
+import Toolbar from '@mui/material/Toolbar'
+import Tooltip from '@mui/material/Tooltip'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 

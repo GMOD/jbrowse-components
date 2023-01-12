@@ -1,12 +1,9 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogActions,
-  TextField,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import TextField from '@mui/material/TextField'
 
 export const HTTPBasicLoginForm = ({
   internetAccountId,
@@ -29,8 +26,12 @@ export const HTTPBasicLoginForm = ({
 
   return (
     <>
-      <Dialog open maxWidth="xl" data-testid="login-httpbasic">
-        <DialogTitle>Log In for {internetAccountId}</DialogTitle>
+      <Dialog
+        open
+        maxWidth="xl"
+        data-testid="login-httpbasic"
+        title={`Log In for ${internetAccountId}`}
+      >
         <form onSubmit={onSubmit}>
           <DialogContent style={{ display: 'flex', flexDirection: 'column' }}>
             <TextField

@@ -8,23 +8,20 @@ import {
   getSubType,
   getUnionSubTypes,
 } from '@jbrowse/core/util/mst-reflection'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Paper,
-  SvgIcon,
-  TextField,
-  TextFieldProps,
-} from '@mui/material'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Checkbox from '@mui/material/Checkbox'
+import FormControl from '@mui/material/FormControl'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import FormHelperText from '@mui/material/FormHelperText'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import SvgIcon from '@mui/material/SvgIcon'
+import TextField, { TextFieldProps } from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 
 // icons

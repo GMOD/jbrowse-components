@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import { Typography } from '@mui/material'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import Typography from '@mui/material/Typography'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({

@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import {
-  Button,
-  Checkbox,
-  CircularProgress,
-  FormControl,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Link,
-  Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
-  ToggleButtonProps,
-  Typography,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import CircularProgress from '@mui/material/CircularProgress'
+import FormControl from '@mui/material/FormControl'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import Link from '@mui/material/Link'
+import Tooltip from '@mui/material/Tooltip'
+import ToggleButton, { ToggleButtonProps } from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'

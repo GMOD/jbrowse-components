@@ -1,5 +1,7 @@
 import React from 'react'
-import { Tooltip, Button, Alert, AlertColor } from '@mui/material'
+import Tooltip from '@mui/material/Tooltip'
+import Button from '@mui/material/Button'
+import Alert, { AlertColor } from '@mui/material/Alert'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({

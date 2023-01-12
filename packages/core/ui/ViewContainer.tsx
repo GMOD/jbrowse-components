@@ -1,12 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  SvgIconProps,
-  IconButton,
-  IconButtonProps as IconButtonPropsType,
-  Paper,
-  Tooltip,
-  useTheme,
-} from '@mui/material'
+import { SvgIconProps } from '@mui/material/SvgIcon'
+import IconButton, { IconButtonProps as IBP } from '@mui/material/IconButton'
+import Paper from '@mui/material/Paper'
+import Tooltip from '@mui/material/Tooltip'
+import { useTheme } from '@mui/material/styles'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { isAlive } from 'mobx-state-tree'
@@ -64,7 +61,7 @@ const ViewMenu = observer(
     IconProps,
   }: {
     model: IBaseViewModel
-    IconButtonProps?: IconButtonPropsType
+    IconButtonProps?: IBP
     IconProps: SvgIconProps
   }) => {
     const [anchorEl, setAnchorEl] = useState<HTMLElement>()

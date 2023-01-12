@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react'
 import { observer } from 'mobx-react'
 import { ThemeProvider } from '@mui/material/styles'
-import { CssBaseline } from '@mui/material'
+import CssBaseline from '@mui/material/CssBaseline'
 
 // jbrowse
 import { getConf } from '@jbrowse/core/configuration'

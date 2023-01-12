@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import {
-  TextField,
-  MenuItem,
-  InputProps as IIP,
-  TextFieldProps as TFP,
-} from '@mui/material'
+import TextField, { TextFieldProps as TFP } from '@mui/material/TextField'
+import MenuItem from '@mui/material/MenuItem'
+import { InputProps as IIP } from '@mui/material/Input'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

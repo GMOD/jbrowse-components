@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { SnapshotIn } from 'mobx-state-tree'
 import path from 'path'
-import {
-  FormControlLabel,
-  Grid,
-  Paper,
-  Radio,
-  RadioGroup,
-  Typography,
-} from '@mui/material'
-import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Grid from '@mui/material/Grid'
+import Paper from '@mui/material/Paper'
+import Radio from '@mui/material/Radio'
+import RadioGroup from '@mui/material/RadioGroup'
+import Typography from '@mui/material/Typography'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import FileSelector from '@jbrowse/core/ui/FileSelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'

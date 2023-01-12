@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Button, Paper, TextField } from '@mui/material'
+import Button from '@mui/material/Button'
+import Paper from '@mui/material/Paper'
+import TextField from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { storeBlobLocation } from '@jbrowse/core/util/tracks'

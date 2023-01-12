@@ -1,34 +1,19 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 
-import {
-  Button,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
-import CloseIcon from '@mui/icons-material/Close'
+import Button from '@mui/material/Button'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Typography from '@mui/material/Typography'
 
+// icons
+import ClearAllIcon from '@mui/icons-material/ClearAll'
+
+// locals
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
-  closeDialog: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  dialogContainer: {
-    margin: 15,
-  },
-}))
-
 function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
-  const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const { clearAllBookmarks } = model
@@ -42,17 +27,11 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
       >
         Clear
       </Button>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>
-          Clear bookmarks
-          <IconButton
-            className={classes.closeDialog}
-            aria-label="close-dialog"
-            onClick={() => setDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        title="Clear bookmarks"
+      >
         <DialogContent>
           <Typography>
             Clear all bookmarks? Note this will clear bookmarks for all

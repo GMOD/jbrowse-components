@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { InputBase, Typography, TypographyProps, useTheme } from '@mui/material'
+import InputBase from '@mui/material/InputBase'
+import Typography, { TypographyProps } from '@mui/material/Typography'
+import { useTheme } from '@mui/material/styles'
 import { makeStyles } from 'tss-react/mui'
 
 type Variant = TypographyProps['variant']

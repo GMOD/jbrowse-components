@@ -7,7 +7,7 @@ import FeatureRendererType, {
   ResultsDeserialized,
 } from '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType'
 import { renderToAbstractCanvas, Feature } from '@jbrowse/core/util'
-import { ThemeOptions } from '@mui/material'
+import { ThemeOptions } from '@mui/material/styles'
 import { ScaleOpts, Source } from './util'
 
 export interface RenderArgs extends FeatureRenderArgs {

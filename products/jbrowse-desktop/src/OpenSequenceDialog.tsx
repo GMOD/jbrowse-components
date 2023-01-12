@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Grid,
-  MenuItem,
-  Paper,
-  TextField,
-  Typography,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Grid from '@mui/material/Grid'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
-import { FileSelector, Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import FileSelector from '@jbrowse/core/ui/FileSelector'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { FileLocation } from '@jbrowse/core/util/types'
 
 const { ipcRenderer } = window.require('electron')

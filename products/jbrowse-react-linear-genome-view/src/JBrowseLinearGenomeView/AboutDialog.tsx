@@ -1,7 +1,9 @@
 import React from 'react'
 import { version } from '../version'
-import { DialogContent, Link, Typography } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import DialogContent from '@mui/material/DialogContent'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 import { makeStyles } from 'tss-react/mui'
 
 const useStyles = makeStyles()({

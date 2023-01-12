@@ -1,5 +1,7 @@
 import React from 'react'
-import { ListSubheader, MenuItem, TextField } from '@mui/material'
+import ListSubheader from '@mui/material/ListSubheader'
+import MenuItem from '@mui/material/MenuItem'
+import TextField from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'

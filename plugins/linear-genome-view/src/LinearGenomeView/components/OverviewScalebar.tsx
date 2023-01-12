@@ -1,5 +1,7 @@
 import React from 'react'
-import { Typography, useTheme, alpha } from '@mui/material'
+import Typography from '@mui/material/Typography'
+import { useTheme } from '@mui/material/styles'
+import { alpha } from '@mui/system/colorManipulator'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 

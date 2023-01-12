@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Divider,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import Accordion from '@mui/material/Accordion'
+import AccordionDetails from '@mui/material/AccordionDetails'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import Divider from '@mui/material/Divider'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
-import ExpandMore from '@mui/icons-material/ExpandMore'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import isObject from 'is-object'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
+
+// icons
+import ExpandMore from '@mui/icons-material/ExpandMore'
 
 // locals
 import {
@@ -28,7 +28,8 @@ import {
   assembleLocString,
   ParsedLocString,
 } from '../util'
-import { ErrorMessage, SanitizedHTML } from '../ui'
+import ErrorMessage from '../ui/ErrorMessage'
+import SanitizedHTML from '../ui/SanitizedHTML'
 import SequenceFeatureDetails from './SequenceFeatureDetails'
 import { BaseCardProps, BaseProps } from './types'
 import { SimpleFeatureSerializedNoId } from '../util/simpleFeature'

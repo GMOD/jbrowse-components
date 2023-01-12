@@ -1,9 +1,12 @@
 import React, { useState } from 'react'
-import { Button, Container, Grid } from '@mui/material'
+import Button from '@mui/material/Button'
+import Container from '@mui/material/Container'
+import Grid from '@mui/material/Grid'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
-import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
+import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 
 const useStyles = makeStyles()(theme => ({
   importFormContainer: {

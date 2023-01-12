@@ -2,15 +2,13 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getRoot } from 'mobx-state-tree'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import {
-  Button,
-  Collapse,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  TextField,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Collapse from '@mui/material/Collapse'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import TextField from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 
 // icons

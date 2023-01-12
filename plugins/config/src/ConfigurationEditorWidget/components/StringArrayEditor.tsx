@@ -1,16 +1,13 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-
-import {
-  Button,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  List,
-  ListItem,
-  TextField,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import FormHelperText from '@mui/material/FormHelperText'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import InputLabel from '@mui/material/InputLabel'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import TextField from '@mui/material/TextField'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'

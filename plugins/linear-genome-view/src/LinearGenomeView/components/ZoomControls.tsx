@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { observer } from 'mobx-react'
-import { Slider, IconButton } from '@mui/material'
+import Slider from '@mui/material/Slider'
+import IconButton from '@mui/material/IconButton'
 import { makeStyles } from 'tss-react/mui'
+
+// icons
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 
 const useStyles = makeStyles()({

@@ -1,12 +1,10 @@
 import React, { Suspense } from 'react'
-import {
-  AppBar,
-  Dialog,
-  Paper,
-  Toolbar,
-  Typography,
-  ScopedCssBaseline,
-} from '@mui/material'
+import AppBar from '@mui/material/AppBar'
+import Dialog from '@mui/material/Dialog'
+import Paper from '@mui/material/Paper'
+import Toolbar from '@mui/material/Toolbar'
+import Typography from '@mui/material/Typography'
+import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getEnv } from 'mobx-state-tree'

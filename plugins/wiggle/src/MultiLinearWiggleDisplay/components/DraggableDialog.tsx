@@ -1,14 +1,10 @@
 import React from 'react'
-import {
-  Dialog,
-  DialogTitle,
-  IconButton,
-  Divider,
-  DialogProps,
-  Paper,
-  PaperProps,
-  ScopedCssBaseline,
-} from '@mui/material'
+import Dialog, { DialogProps } from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import IconButton from '@mui/material/IconButton'
+import Divider from '@mui/material/Divider'
+import Paper, { PaperProps } from '@mui/material/Paper'
+import ScopedCssBaseline from '@mui/material/ScopedCssBaseline'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 import Draggable from 'react-draggable'

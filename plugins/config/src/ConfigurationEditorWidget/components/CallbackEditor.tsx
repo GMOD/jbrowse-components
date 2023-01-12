@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Tooltip, IconButton, TextField } from '@mui/material'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
+import TextField from '@mui/material/TextField'
 import { useDebounce } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { getEnv } from 'mobx-state-tree'

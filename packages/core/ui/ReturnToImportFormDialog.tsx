@@ -1,6 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Typography from '@mui/material/Typography'
 import Dialog from './Dialog'
 
 function ReturnToImportFormDialog({

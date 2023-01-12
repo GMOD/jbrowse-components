@@ -1,13 +1,11 @@
 import React from 'react'
-import {
-  Button,
-  Checkbox,
-  DialogContent,
-  DialogActions,
-  FormControlLabel,
-  Typography,
-} from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import {

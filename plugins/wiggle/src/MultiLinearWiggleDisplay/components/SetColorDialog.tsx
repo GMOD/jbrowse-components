@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import { Button, DialogContent, DialogActions } from '@mui/material'
+import Button from '@mui/material/Button'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
 import { makeStyles } from 'tss-react/mui'
 import {
   getStr,

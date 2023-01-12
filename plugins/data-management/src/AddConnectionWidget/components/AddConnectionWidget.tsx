@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
 import { getSession, getEnv } from '@jbrowse/core/util'
-import {
-  Button,
-  Step,
-  StepContent,
-  StepLabel,
-  Stepper,
-  Typography,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Step from '@mui/material/Step'
+import StepContent from '@mui/material/StepContent'
+import StepLabel from '@mui/material/StepLabel'
+import Stepper from '@mui/material/Stepper'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'

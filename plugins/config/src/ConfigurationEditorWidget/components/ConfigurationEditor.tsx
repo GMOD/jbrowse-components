@@ -6,13 +6,11 @@ import {
   isConfigurationSlotType,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import {
-  FormGroup,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Typography,
-} from '@mui/material'
+import FormGroup from '@mui/material/FormGroup'
+import Accordion from '@mui/material/Accordion'
+import AccordionDetails from '@mui/material/AccordionDetails'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getMembers, IAnyType } from 'mobx-state-tree'

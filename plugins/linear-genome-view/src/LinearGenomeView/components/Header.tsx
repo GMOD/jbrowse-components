@@ -1,6 +1,9 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Button, FormGroup, Typography, alpha } from '@mui/material'
+import Button from '@mui/material/Button'
+import FormGroup from '@mui/material/FormGroup'
+import Typography from '@mui/material/Typography'
+import { alpha } from '@mui/system/colorManipulator'
 import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 

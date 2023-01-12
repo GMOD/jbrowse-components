@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  Link,
-  TextField,
-  Typography,
-} from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
+import FormControl from '@mui/material/FormControl'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Link from '@mui/material/Link'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import {
   supportedIndexingAdapters,

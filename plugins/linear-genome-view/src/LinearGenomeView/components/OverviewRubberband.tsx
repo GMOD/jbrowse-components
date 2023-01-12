@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { Tooltip } from '@mui/material'
+import Tooltip from '@mui/material/Tooltip'
 import { makeStyles } from 'tss-react/mui'
 import { getSession, stringify } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 import { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 import RubberbandSpan from './RubberbandSpan'
 import { getRelativeX } from './util'

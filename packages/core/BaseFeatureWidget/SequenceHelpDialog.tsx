@@ -1,6 +1,9 @@
 import React from 'react'
-import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'

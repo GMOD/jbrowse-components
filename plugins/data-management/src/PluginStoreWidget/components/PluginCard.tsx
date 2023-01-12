@@ -6,14 +6,12 @@ import {
   JBrowsePlugin,
   isSessionWithSessionPlugins,
 } from '@jbrowse/core/util/types'
-import {
-  Card,
-  CardActions,
-  CardContent,
-  Button,
-  Link,
-  Typography,
-} from '@mui/material'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import Button from '@mui/material/Button'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 
 // icons

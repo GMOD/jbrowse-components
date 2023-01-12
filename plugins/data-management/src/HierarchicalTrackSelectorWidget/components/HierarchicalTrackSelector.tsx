@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react'
-import { Fab, Menu, MenuItem } from '@mui/material'
+import Fab from '@mui/material/Fab'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import { makeStyles } from 'tss-react/mui'
 import {
   getSession,

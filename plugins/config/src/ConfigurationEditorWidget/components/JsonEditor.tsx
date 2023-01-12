@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { InputLabel, TextField } from '@mui/material'
+import InputLabel from '@mui/material/InputLabel'
+import TextField from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 

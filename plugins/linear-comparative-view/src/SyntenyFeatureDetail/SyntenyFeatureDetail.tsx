@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import copy from 'copy-to-clipboard'
-import { Paper } from '@mui/material'
+import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 import {
   BaseCoreDetails,

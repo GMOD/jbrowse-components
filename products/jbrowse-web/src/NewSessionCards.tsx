@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
-import { Card, CardMedia, Container, Typography } from '@mui/material'
+import Card from '@mui/material/Card'
+import CardMedia from '@mui/material/CardMedia'
+import Container from '@mui/material/Container'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 
 import emptyIcon from './img/emptyIcon.png'
 import linearGenomeViewIcon from './img/linearGenomeViewIcon.png'
 import svInspectorIcon from './img/svInspectorIcon.png'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   card: {
     width: 200,
     height: 150,
@@ -20,7 +23,7 @@ const useStyles = makeStyles()(theme => ({
   media: {
     height: 150,
   },
-}))
+})
 
 const emptySessionSnapshot = {
   name: `New session ${new Date().toLocaleString()}`,

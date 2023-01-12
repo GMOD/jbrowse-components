@@ -4,14 +4,11 @@ import { getSession, useDebounce, measureText } from '@jbrowse/core/util'
 import BaseResult, {
   RefSequenceResult,
 } from '@jbrowse/core/TextSearch/BaseResults'
-import {
-  Autocomplete,
-  CircularProgress,
-  IconButton,
-  InputAdornment,
-  TextField,
-  TextFieldProps as TFP,
-} from '@mui/material'
+import Autocomplete from '@mui/material/Autocomplete'
+import CircularProgress from '@mui/material/CircularProgress'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import TextField, { TextFieldProps as TFP } from '@mui/material/TextField'
 
 // icons
 import SearchIcon from '@mui/icons-material/Search'

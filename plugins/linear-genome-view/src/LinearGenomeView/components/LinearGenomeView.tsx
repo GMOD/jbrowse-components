@@ -1,8 +1,10 @@
 import React from 'react'
-import { Button, Paper, Typography } from '@mui/material'
+import Button from '@mui/material/Button'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 import { observer } from 'mobx-react'
 
 // locals

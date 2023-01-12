@@ -1,12 +1,10 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  FormControl,
-  MenuItem,
-  Paper,
-  Select,
-  Typography,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import FormControl from '@mui/material/FormControl'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import Select from '@mui/material/Select'
+import Typography from '@mui/material/Typography'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
 

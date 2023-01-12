@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { IconButton } from '@mui/material'
+import IconButton from '@mui/material/IconButton'
 import { makeStyles } from 'tss-react/mui'
 import { grey } from '@mui/material/colors'
 

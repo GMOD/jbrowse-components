@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import copy from 'copy-to-clipboard'
-import { Button, DialogContent, Typography } from '@mui/material'
+import Button from '@mui/material/Button'
+import DialogContent from '@mui/material/DialogContent'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import {
   getConf,

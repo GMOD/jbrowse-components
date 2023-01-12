@@ -1,32 +1,13 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-
 import { assembleLocString } from '@jbrowse/core/util'
-
-import {
-  IconButton,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
+import Button from '@mui/material/Button'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Typography from '@mui/material/Typography'
 
 import { GridBookmarkModel } from '../model'
-
-const useStyles = makeStyles()(() => ({
-  closeDialog: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  dialogContainer: {
-    margin: 15,
-  },
-}))
 
 function DeleteBookmarkDialog({
   rowNumber,
@@ -37,22 +18,14 @@ function DeleteBookmarkDialog({
   model: GridBookmarkModel
   onClose: () => void
 }) {
-  const { classes } = useStyles()
-
   const { removeBookmark } = model
 
   return (
-    <Dialog open={rowNumber !== undefined} onClose={onClose}>
-      <DialogTitle>
-        Delete bookmark
-        <IconButton
-          className={classes.closeDialog}
-          aria-label="close-dialog"
-          onClick={onClose}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog
+      open={rowNumber !== undefined}
+      onClose={onClose}
+      title="Delete bookmark"
+    >
       <DialogContent>
         <Typography>
           Remove{' '}

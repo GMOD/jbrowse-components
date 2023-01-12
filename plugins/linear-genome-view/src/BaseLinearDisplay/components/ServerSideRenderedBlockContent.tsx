@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
 
 // icons
 import RefreshIcon from '@mui/icons-material/Refresh'

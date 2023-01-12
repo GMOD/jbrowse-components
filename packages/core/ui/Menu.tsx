@@ -1,19 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  Divider,
-  Grow,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  MenuProps as MUIMenuProps,
-  MenuItem as MUIMenuItem,
-  MenuItemProps,
-  MenuList,
-  Paper,
-  Popover,
-  PopoverProps,
-  SvgIconProps,
-} from '@mui/material'
+import Divider from '@mui/material/Divider'
+import Grow from '@mui/material/Grow'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import ListSubheader from '@mui/material/ListSubheader'
+import { MenuProps as MUIMenuProps } from '@mui/material/Menu'
+import MUIMenuItem, { MenuItemProps } from '@mui/material/MenuItem'
+import MenuList from '@mui/material/MenuList'
+import Paper from '@mui/material/Paper'
+import Popover, { PopoverProps } from '@mui/material/Popover'
+import { SvgIconProps } from '@mui/material/SvgIcon'
 import { makeStyles } from 'tss-react/mui'
 // icons
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'

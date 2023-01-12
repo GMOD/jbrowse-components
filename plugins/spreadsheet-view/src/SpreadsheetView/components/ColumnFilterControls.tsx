@@ -1,5 +1,7 @@
 import React from 'react'
-import { Grid, IconButton, Typography } from '@mui/material'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import Typography from '@mui/material/Typography'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
 import { makeStyles } from 'tss-react/mui'

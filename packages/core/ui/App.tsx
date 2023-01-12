@@ -1,9 +1,13 @@
 import React, { Suspense } from 'react'
-import { AppBar, Fab, Tooltip } from '@mui/material'
+import AppBar from '@mui/material/AppBar'
+import Fab from '@mui/material/Fab'
+import Tooltip from '@mui/material/Tooltip'
 import { makeStyles } from 'tss-react/mui'
-import LaunchIcon from '@mui/icons-material/Launch'
 import { ErrorBoundary } from 'react-error-boundary'
 import { observer } from 'mobx-react'
+
+// icons
+import LaunchIcon from '@mui/icons-material/Launch'
 
 // locals
 import {

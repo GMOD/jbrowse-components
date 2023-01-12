@@ -1,8 +1,10 @@
 import React from 'react'
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { UriLocation } from '@jbrowse/core/util/types'
-import { SvgIconProps, SvgIcon } from '@mui/material'
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
 import { Instance, types } from 'mobx-state-tree'
+
+// locals
 import { DropboxOAuthInternetAccountConfigModel } from './configSchema'
 import baseModel from '../OAuthModel/model'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel'

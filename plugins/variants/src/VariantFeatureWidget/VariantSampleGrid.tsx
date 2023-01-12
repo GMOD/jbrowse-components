@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
-
-import {
-  FormControlLabel,
-  Checkbox,
-  TextField,
-  Typography,
-} from '@mui/material'
-
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Checkbox from '@mui/material/Checkbox'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 import { DataGrid } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'

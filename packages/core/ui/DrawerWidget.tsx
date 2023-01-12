@@ -1,21 +1,16 @@
 import React, { Suspense, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import {
-  AppBar,
-  FormControl,
-  IconButton,
-  Menu,
-  MenuItem,
-  Select,
-  Toolbar,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import AppBar from '@mui/material/AppBar'
+import FormControl from '@mui/material/FormControl'
+import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import Select from '@mui/material/Select'
+import Toolbar from '@mui/material/Toolbar'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { getEnv } from '../util'
-import LoadingEllipses from './LoadingEllipses'
-import { SessionWithDrawerWidgets } from '../util/types'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -26,6 +21,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 // locals
 import Drawer from './Drawer'
 import ErrorMessage from './ErrorMessage'
+import { getEnv } from '../util'
+import LoadingEllipses from './LoadingEllipses'
+import { SessionWithDrawerWidgets } from '../util/types'
 
 const useStyles = makeStyles()(theme => ({
   formControl: {

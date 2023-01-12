@@ -1,12 +1,9 @@
 import React from 'react'
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogActions from '@mui/material/DialogActions'
 
 export default ({
   open,
@@ -18,8 +15,7 @@ export default ({
   onFactoryReset: Function
 }) => {
   return (
-    <Dialog open={open} onClose={() => onClose()}>
-      <DialogTitle id="alert-dialog-title">Reset</DialogTitle>
+    <Dialog open={open} onClose={() => onClose()} title="Factory reset">
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           Are you sure you want to reset? This will remove all your sessions.

@@ -1,43 +1,36 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { getParent } from 'mobx-state-tree'
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogActions,
-  DialogContent,
-  IconButton,
-  ListItem,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import IconButton from '@mui/material/IconButton'
+import ListItem from '@mui/material/ListItem'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 
+// icons
 import CloseIcon from '@mui/icons-material/Close'
 import LockIcon from '@mui/icons-material/Lock'
 
+// misc
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSession } from '@jbrowse/core/util'
 import {
   BasePlugin,
   isSessionWithSessionPlugins,
 } from '@jbrowse/core/util/types'
+
+// locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
-  closeDialog: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  dialogContainer: {
-    margin: 15,
-  },
+const useStyles = makeStyles()({
   lockedPluginTooltip: {
     marginRight: '0.5rem',
   },
-}))
+})
 
 function LockedPlugin() {
   const { classes } = useStyles()
@@ -58,18 +51,8 @@ function PluginDialog({
   plugin: string
   onClose: (s?: string) => void
 }) {
-  const { classes } = useStyles()
   return (
-    <Dialog open onClose={() => onClose()}>
-      <DialogTitle>
-        <IconButton
-          className={classes.closeDialog}
-          aria-label="close-dialog"
-          onClick={() => onClose()}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+    <Dialog open onClose={() => onClose()} title="Remove plugin">
       <DialogContent>
         <Typography>
           Please confirm that you want to remove {plugin}. Note: if any

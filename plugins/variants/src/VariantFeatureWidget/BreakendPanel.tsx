@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
-import { Link, Typography } from '@mui/material'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
 import SimpleFeature, {
   SimpleFeatureSerialized,
 } from '@jbrowse/core/util/simpleFeature'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
+
+// locals
 import BreakendOptionDialog from './BreakendOptionDialog'
 
 export default function BreakendPanel(props: {

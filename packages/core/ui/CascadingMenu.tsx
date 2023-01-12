@@ -1,13 +1,11 @@
 import React, { useContext, useMemo, useCallback } from 'react'
-import {
-  Divider,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Menu,
-  MenuItem,
-  PopoverOrigin,
-} from '@mui/material'
+import Divider from '@mui/material/Divider'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import ListSubheader from '@mui/material/ListSubheader'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import { PopoverOrigin } from '@mui/material/Popover'
 import { MenuItem as JBMenuItem, MenuItemEndDecoration } from './Menu'
 import {
   bindHover,
@@ -17,6 +15,8 @@ import {
   PopupState,
 } from 'material-ui-popup-state/hooks'
 import HoverMenu from 'material-ui-popup-state/HoverMenu'
+
+// icons
 import ChevronRight from '@mui/icons-material/ChevronRight'
 
 const CascadingContext = React.createContext({

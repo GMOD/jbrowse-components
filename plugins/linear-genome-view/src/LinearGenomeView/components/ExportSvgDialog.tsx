@@ -1,15 +1,14 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  Checkbox,
-  CircularProgress,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
-import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import CircularProgress from '@mui/material/CircularProgress'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { ExportSvgOptions } from '..'
 
 function LoadingMessage() {

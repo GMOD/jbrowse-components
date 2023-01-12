@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import { Button, DialogActions, DialogContent } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Dialog from '@jbrowse/core/ui/Dialog'
 
 // icons
 import AddIcon from '@mui/icons-material/Add'

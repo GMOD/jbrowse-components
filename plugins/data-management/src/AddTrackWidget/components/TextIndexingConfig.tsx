@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react'
-import {
-  Card,
-  CardContent,
-  IconButton,
-  InputLabel,
-  InputAdornment,
-  List,
-  ListItem,
-  Paper,
-  TextField,
-} from '@mui/material'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import IconButton from '@mui/material/IconButton'
+import InputLabel from '@mui/material/InputLabel'
+import InputAdornment from '@mui/material/InputAdornment'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import Paper from '@mui/material/Paper'
+import TextField from '@mui/material/TextField'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 

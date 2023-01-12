@@ -1,13 +1,11 @@
 import React, { useState } from 'react'
-import {
-  Alert,
-  Button,
-  Step,
-  StepContent,
-  StepLabel,
-  Stepper,
-  Typography,
-} from '@mui/material'
+import Alert from '@mui/material/Alert'
+import Button from '@mui/material/Button'
+import Step from '@mui/material/Step'
+import StepContent from '@mui/material/StepContent'
+import StepLabel from '@mui/material/StepLabel'
+import Stepper from '@mui/material/Stepper'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import { getRoot } from 'mobx-state-tree'
 

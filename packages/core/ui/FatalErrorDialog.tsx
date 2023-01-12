@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+
+// locals
 import FactoryResetDialog from './FactoryResetDialog'
+import Dialog from './Dialog'
 
 const ResetComponent = ({
   onFactoryReset,
@@ -48,8 +47,7 @@ const FatalErrorDialog = ({
   resetButtonText?: string
 }) => {
   return (
-    <Dialog open>
-      <DialogTitle style={{ background: '#e88' }}>Fatal error</DialogTitle>
+    <Dialog open title={'Fatal error'}>
       <DialogContent>
         <pre>
           {`${error}`}

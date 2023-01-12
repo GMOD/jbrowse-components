@@ -3,7 +3,8 @@ import { observer } from 'mobx-react'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
-import { Link, Typography } from '@mui/material'
+import Link from '@mui/material/Link'
+import Typography from '@mui/material/Typography'
 
 const useStyles = makeStyles()(theme => ({
   root: {

@@ -1,11 +1,9 @@
 import React from 'react'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-} from '@mui/material'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
 import WarningIcon from '@mui/icons-material/Warning'
 
 export default function ConfigWarningModal({

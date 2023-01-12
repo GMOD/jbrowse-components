@@ -1,5 +1,5 @@
 import React from 'react'
-import { SvgIcon, SvgIconProps } from '@mui/material'
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon'
 
 export function Curves(props: SvgIconProps) {
   return (

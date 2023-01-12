@@ -1,13 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
-} from '@mui/material'
+import Dialog from '@jbrowse/core/ui/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Button from '@mui/material/Button'
+import Typography from '@mui/material/Typography'
 
 function canSetDefaultSession(obj: unknown): obj is {
   jbrowse: { setDefaultSessionConf: Function }
@@ -28,8 +25,7 @@ const SetDefaultSession = observer(
     const { jbrowse, session } = rootModel
 
     return (
-      <Dialog open onClose={onClose}>
-        <DialogTitle>Set default session</DialogTitle>
+      <Dialog open onClose={onClose} title="Set default session">
         <DialogContent>
           <Typography>
             Select &quot;Set current session as default&quot; to make your

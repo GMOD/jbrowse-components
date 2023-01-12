@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Button,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Menu,
-  MenuItem,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import LoadingEllipses from '@jbrowse/core/ui/LoadingEllipses'
+import deepmerge from 'deepmerge'
+
+// icons
 import SearchIcon from '@mui/icons-material/Search'
 import MoreIcon from '@mui/icons-material/MoreHoriz'
-import deepmerge from 'deepmerge'
 
 // locals
 import DeleteQuickstartDialog from './dialogs/DeleteQuickstartDialog'

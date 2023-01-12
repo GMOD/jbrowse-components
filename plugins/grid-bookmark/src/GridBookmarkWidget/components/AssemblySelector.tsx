@@ -1,7 +1,10 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 
-import { Typography, Select, MenuItem, FormControl } from '@mui/material'
+import Typography from '@mui/material/Typography'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
 import { makeStyles } from 'tss-react/mui'
 
 import { GridBookmarkModel } from '../model'

@@ -1,4 +1,5 @@
-import { Paper, Typography } from '@mui/material'
+import Paper from '@mui/material/Paper'
+import Typography from '@mui/material/Typography'
 import { makeStyles } from 'tss-react/mui'
 import {
   ContentBlock,

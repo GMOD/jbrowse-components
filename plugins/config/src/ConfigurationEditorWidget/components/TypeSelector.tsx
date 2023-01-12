@@ -1,5 +1,7 @@
 import React from 'react'
-import { MenuItem, Paper, TextField } from '@mui/material'
+import MenuItem from '@mui/material/MenuItem'
+import Paper from '@mui/material/Paper'
+import TextField from '@mui/material/TextField'
 import { observer } from 'mobx-react'
 import { useSlotEditorStyles } from './SlotEditor'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'

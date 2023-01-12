@@ -1,16 +1,13 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Box,
-  FormHelperText,
-  InputLabel,
-  Menu,
-  MenuItem,
-  Tooltip,
-  ToggleButtonGroup,
-  ToggleButton,
-  ToggleButtonProps,
-} from '@mui/material'
+import Box from '@mui/material/Box'
+import FormHelperText from '@mui/material/FormHelperText'
+import InputLabel from '@mui/material/InputLabel'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import Tooltip from '@mui/material/Tooltip'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import ToggleButton, { ToggleButtonProps } from '@mui/material/ToggleButton'
 
 // locals
 import {

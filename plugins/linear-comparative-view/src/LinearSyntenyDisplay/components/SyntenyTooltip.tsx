@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { observer } from 'mobx-react'
-import { Portal, alpha } from '@mui/material'
+import Portal from '@mui/material/Portal'
+import { alpha } from '@mui/system/colorManipulator'
 import { makeStyles } from 'tss-react/mui'
 import { usePopper } from 'react-popper'
 import { SanitizedHTML } from '@jbrowse/core/ui'

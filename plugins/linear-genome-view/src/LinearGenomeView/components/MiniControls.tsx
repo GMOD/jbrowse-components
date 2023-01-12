@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import { IconButton, Paper } from '@mui/material'
+import IconButton from '@mui/material/IconButton'
+import Paper from '@mui/material/Paper'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import ArrowDown from '@mui/icons-material/KeyboardArrowDown'

@@ -1,7 +1,10 @@
 import React, { useRef, useState } from 'react'
-import { Button, alpha } from '@mui/material'
+import Button from '@mui/material/Button'
+import { alpha } from '@mui/system/colorManipulator'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
+
+// icons
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 
 import Menu, { MenuItem } from './Menu'

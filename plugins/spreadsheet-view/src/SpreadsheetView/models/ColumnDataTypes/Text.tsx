@@ -1,11 +1,9 @@
 import React from 'react'
-import {
-  IconButton,
-  TextField,
-  MenuItem,
-  InputAdornment,
-  Select,
-} from '@mui/material'
+import IconButton from '@mui/material/IconButton'
+import TextField from '@mui/material/TextField'
+import MenuItem from '@mui/material/MenuItem'
+import InputAdornment from '@mui/material/InputAdornment'
+import Select from '@mui/material/Select'
 import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
 import { types, getType } from 'mobx-state-tree'

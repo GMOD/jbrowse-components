@@ -1,17 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { makeStyles } from 'tss-react/mui'
-import {
-  Button,
-  Checkbox,
-  CircularProgress,
-  Container,
-  DialogActions,
-  DialogContent,
-  FormGroup,
-  FormControlLabel,
-  TextField,
-  Typography,
-} from '@mui/material'
+import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
+import CircularProgress from '@mui/material/CircularProgress'
+import Container from '@mui/material/Container'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import FormGroup from '@mui/material/FormGroup'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
 import { observer } from 'mobx-react'
 import { saveAs } from 'file-saver'
 import { getConf } from '@jbrowse/core/configuration'

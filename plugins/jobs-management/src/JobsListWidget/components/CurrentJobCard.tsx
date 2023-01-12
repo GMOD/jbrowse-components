@@ -1,14 +1,12 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
-import {
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  LinearProgress,
-  Typography,
-} from '@mui/material'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import LinearProgress from '@mui/material/LinearProgress'
+import Typography from '@mui/material/Typography'
 import { NewJob } from '../model'
 
 function CurrentJobCard({ job }: { job: NewJob }) {

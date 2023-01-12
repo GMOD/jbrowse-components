@@ -1,6 +1,8 @@
 import React from 'react'
-import { Button, DialogActions, DialogContent, Divider } from '@mui/material'
-import { Dialog } from '@jbrowse/core/ui'
+import Button from '@mui/material/Button'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import Dialog from '@jbrowse/core/ui/Dialog'
 
 export default function HelpDialog({
   handleClose,
@@ -58,7 +60,6 @@ export default function HelpDialog({
           </li>
         </ul>
       </DialogContent>
-      <Divider />
       <DialogActions>
         <Button onClick={() => handleClose()} color="primary">
           Close

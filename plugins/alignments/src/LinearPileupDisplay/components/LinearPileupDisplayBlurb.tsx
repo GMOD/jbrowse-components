@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Typography } from '@mui/material'
+import Typography from '@mui/material/Typography'
 
 export interface LinearPileupDisplayBlurbProps {
   model: {
