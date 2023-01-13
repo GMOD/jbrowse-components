@@ -199,7 +199,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
               const view = getContainingView(self) as LSV
               return {
                 bpPerPx: view.views.map(v => v.bpPerPx),
-                displayedRegions: view.views.map(v => v.displayedRegions),
+
+                // stringifying 'deeply' accesses the displayed regions, see
+                // issue #3456
+                displayedRegions: JSON.stringify(
+                  view.views.map(v => v.displayedRegions),
+                ),
                 features: self.features,
                 initialized: view.initialized,
               }
