@@ -991,7 +991,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               <div
                 class="css-1ql7uaq-trackRenderingContainer"
                 data-testid="trackRenderingContainer-test_view-volvox_refseq"
-                style="height: 140px;"
+                style="height: 160px;"
               >
                 <div
                   class="css-v11ioz-renderingComponentContainer"
@@ -6897,7 +6897,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
               </div>
               <div
                 class="css-1hk9st0-overlay"
-                style="height: 140px;"
+                style="height: 160px;"
               />
               <div
                 class="css-14zcv15-horizontalHandle-resizeHandle"

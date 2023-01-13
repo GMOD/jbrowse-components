@@ -100,9 +100,12 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         addDisposer(
           self,
           autorun(() => {
-            const t = self.showTranslation ? 100 : 0
-            const r = self.showReverse ? 20 : 0
-            const s = self.showForward ? 20 : 0
+            const { showTranslation, showReverse, showForward } = self
+            const r1 = showReverse && showTranslation ? 60 : 0
+            const r2 = showForward && showTranslation ? 60 : 0
+            const t = r1 + r2
+            const r = showReverse ? 20 : 0
+            const s = showForward ? 20 : 0
             self.setHeight(t + r + s)
           }),
         )
