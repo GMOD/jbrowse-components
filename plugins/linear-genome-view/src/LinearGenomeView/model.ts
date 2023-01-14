@@ -205,7 +205,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "center line"
          */
         showCenterLine: types.optional(types.boolean, () =>
-          JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+          ),
         ),
 
         /**
@@ -213,7 +215,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * show the "cytobands" in the overview scale bar
          */
         showCytobandsSetting: types.optional(types.boolean, () =>
-          JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+          ),
         ),
 
         /**
