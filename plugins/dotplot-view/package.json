@@ -59,7 +59,6 @@
     "rxjs": "^7.0.0",
     "tss-react": "^4.0.0"
   },
-  "private": true,
   "distModule": "esm/index.js",
   "srcModule": "src/index.ts",
   "module": ""
