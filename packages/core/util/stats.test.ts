@@ -19,10 +19,11 @@ test('calc std', () => {
 })
 
 test('test rectify', () => {
-  // mean of 0 bases covered = 0
+  // mean of 0 bases covered is not defined.
+  // it's best to tell the truth to front-end code as accurately as possible.
   expect(
     rectifyStats({ basesCovered: 0 } as UnrectifiedFeatureStats).scoreMean,
-  ).toEqual(0)
+  ).toEqual(undefined)
   const s = rectifyStats({
     featureCount: 10,
     scoreSum: 1000,

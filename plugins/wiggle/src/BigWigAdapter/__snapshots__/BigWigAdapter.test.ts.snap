@@ -21,7 +21,7 @@ exports[`adapter can fetch features from volvox.bw get local stats 1`] = `
   "featureDensity": 1,
   "scoreMax": 38,
   "scoreMean": 19.297233333333335,
-  "scoreMin": 0,
+  "scoreMin": 5,
   "scoreStdDev": 4.380942680236127,
   "scoreSum": 578917,
   "scoreSumSquares": 11747257,
