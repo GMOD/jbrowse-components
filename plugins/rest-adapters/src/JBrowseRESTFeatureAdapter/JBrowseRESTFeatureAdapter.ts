@@ -113,7 +113,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     return this.fetch(fetcher, url, signal)
   }
 
-  // this method is mostly here to improve error reporting for unparseable responses
+  // this method is mostly here to improve error reporting for unparsable responses
   private async fetchJsonFromRestApi(
     relativeUrl: string,
     signal?: AbortSignal,
@@ -178,7 +178,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
 
   /**
    * called to provide a hint that data tied to a certain region
-   * will not be needed for the forseeable future and can be purged
+   * will not be needed for the foreseeable future and can be purged
    * from caches, etc
    */
   freeResources() {}
