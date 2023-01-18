@@ -223,65 +223,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
-
-    // adds two numbers that might be NaN or undefined, with undefined
-    // being the result if either of them is NaN or undefined
-    function undefinedAdd(a?: number, b?: number) {
-      if (a === undefined || isNaN(a)) {
-        if (b === undefined || isNaN(b)) {
-          return undefined
-        } else {
-          return b
-        }
-      } else {
-        if (b === undefined || isNaN(b)) {
-          return a
-        } else {
-          return a + b
-        }
-      }
-    }
-    function undefinedMax(a?: number, b?: number) {
-      if (a === undefined || isNaN(a)) {
-        if (b === undefined || isNaN(b)) {
-          return undefined
-        } else {
-          return b
-        }
-      } else {
-        if (b === undefined || isNaN(b)) {
-          return a
-        } else {
-          return Math.max(a, b)
-        }
-      }
-    }
-    function undefinedMin(a?: number, b?: number) {
-      if (a === undefined || isNaN(a)) {
-        if (b === undefined || isNaN(b)) {
-          return undefined
-        } else {
-          return b
-        }
-      } else {
-        if (b === undefined || isNaN(b)) {
-          return a
-        } else {
-          return Math.min(a, b)
-        }
-      }
-    }
-
-    const regionStats = await Promise.all(
+    const feats = await Promise.all(
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = max(regionStats.map(a => a.scoreMax))
-    const scoreMin = min(regionStats.map(a => a.scoreMin))
-    const scoreSum = sum(regionStats.map(a => a.scoreSum))
-    const scoreSumSquares = sum(regionStats.map(a => a.scoreSumSquares))
-    const featureCount = sum(regionStats.map(a => a.featureCount))
-    const basesCovered = sum(regionStats.map(a => a.basesCovered))
+    const scoreMax = max(feats.map(a => a.scoreMax))
+    const scoreMin = min(feats.map(a => a.scoreMin))
+    const scoreSum = sum(feats.map(a => a.scoreSum))
+    const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
+    const featureCount = sum(feats.map(a => a.featureCount))
+    const basesCovered = sum(feats.map(a => a.basesCovered))
 
     return rectifyStats({
       scoreMin,
