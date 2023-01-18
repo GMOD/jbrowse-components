@@ -54,6 +54,7 @@
         "developer_guides/creating_view",
         "developer_guides/extension_points",
         "developer_guides/pluggable_elements",
+        "developer_guides/feature_rest_api",
         "urlparams",
         "api_guide",
         {
