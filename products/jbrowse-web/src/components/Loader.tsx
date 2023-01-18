@@ -11,7 +11,6 @@ import {
 import { WindowHistoryAdapter } from 'use-query-params/adapters/window'
 import { LoadingEllipses, FatalErrorDialog } from '@jbrowse/core/ui'
 import '@fontsource/roboto'
-import 'requestidlecallback-polyfill'
 import shortid from 'shortid'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 

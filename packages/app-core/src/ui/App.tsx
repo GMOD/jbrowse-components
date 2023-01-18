@@ -23,7 +23,6 @@ import ViewPanel from './ViewPanel'
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    fontFamily: 'Roboto',
     display: 'grid',
     height: '100vh',
     width: '100%',

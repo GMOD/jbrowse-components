@@ -27,10 +27,10 @@ function Help({ model }: { model?: IAnyStateTreeNode }) {
         {root.version}
       </Typography>
 
-      <p>
+      <Typography>
         Here are some resources to get help. Please report the version number
         above when asking questions. Thanks!
-      </p>
+      </Typography>
       <ul>
         <li>
           <Link
