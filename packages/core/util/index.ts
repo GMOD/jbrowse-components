@@ -1198,30 +1198,36 @@ export function localStorageGetItem(item: string) {
     : undefined
 }
 
-export function max(arr: number[]) {
+export function max(arr: (number | undefined)[]) {
   let max = -Infinity
   for (let i = 0; i < arr.length; i++) {
-    max = arr[i] > max ? arr[i] : max
+    const el = arr[i]
+    if (el !== undefined && el > max) {
+      max = el
+    }
   }
   return max
 }
 
-export function min(arr: number[]) {
+export function min(arr: (number | undefined)[]) {
   let min = Infinity
   for (let i = 0; i < arr.length; i++) {
-    min = arr[i] < min ? arr[i] : min
+    const el = arr[i]
+    if (el !== undefined && el < min) {
+      min = el
+    }
   }
   return min
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: (number | undefined)[]) {
   let sum = 0
   for (let i = 0; i < arr.length; i++) {
-    sum += arr[i]
+    sum += arr[i] || 0
   }
   return sum
 }
 
-export function avg(arr: number[]) {
+export function avg(arr: (number | undefined)[]) {
   return sum(arr) / arr.length
 }

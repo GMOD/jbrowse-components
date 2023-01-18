@@ -31,6 +31,8 @@ import {
 
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
+import { FeatureStats } from '@jbrowse/core/util/stats'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
@@ -127,21 +129,25 @@ function stateModelFactory(
     )
     .volatile(() => ({
       message: undefined as undefined | string,
-      stats: undefined as { scoreMin: number; scoreMax: number } | undefined,
+      stats: undefined as { scoreMin?: number; scoreMax?: number } | undefined,
       statsFetchInProgress: undefined as undefined | AbortController,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      updateStats(stats: { scoreMin: number; scoreMax: number }) {
+      updateStats(stats: { scoreMin?: number; scoreMax?: number }) {
         const { scoreMin, scoreMax } = stats
         const EPSILON = 0.000001
         if (!self.stats) {
           self.stats = { scoreMin, scoreMax }
         } else if (
-          Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
-          Math.abs(self.stats.scoreMin - scoreMin) > EPSILON
+          self.stats.scoreMax === undefined ||
+          self.stats.scoreMin === undefined ||
+          (scoreMin !== undefined &&
+            scoreMax !== undefined &&
+            (Math.abs(self.stats.scoreMax - scoreMax) > EPSILON ||
+              Math.abs(self.stats.scoreMin - scoreMin) > EPSILON))
         ) {
           self.stats = { scoreMin, scoreMax }
         }
@@ -401,7 +407,11 @@ function stateModelFactory(
          */
         get domain() {
           const { stats, scaleType, minScore, maxScore } = self
-          if (!stats) {
+          if (
+            !stats ||
+            stats.scoreMin === undefined ||
+            stats.scoreMax === undefined
+          ) {
             return undefined
           }
 
@@ -679,6 +689,107 @@ function stateModelFactory(
 
       type ExportSvgOpts = Parameters<typeof superRenderSvg>[0]
 
+      async function getStats(opts: {
+        headers?: Record<string, string>
+        signal?: AbortSignal
+        filters?: string[]
+      }): Promise<FeatureStats> {
+        const { rpcManager } = getSession(self)
+        const nd = getConf(self, 'numStdDev') || 3
+        const { adapterConfig, autoscaleType } = self
+        const sessionId = getRpcSessionId(self)
+        const params = {
+          sessionId,
+          adapterConfig,
+          statusCallback: (message: string) => {
+            if (isAlive(self)) {
+              self.setMessage(message)
+            }
+          },
+          ...opts,
+        }
+
+        if (autoscaleType === 'global' || autoscaleType === 'globalsd') {
+          const results = (await rpcManager.call(
+            sessionId,
+            'WiggleGetGlobalStats',
+            params,
+          )) as FeatureStats
+
+          if (autoscaleType === 'globalsd') {
+            // globalsd uses an heuristic to avoid unnecessary scoreMin<0
+            // if the scoreMin is never less than 0
+            // helps with most coverage bigwigs just being >0
+            let { scoreMin, scoreMean, scoreStdDev } = results
+            if (scoreMin === undefined) {
+              scoreMin = 0
+            }
+            if (scoreMean === undefined) {
+              scoreMean = 0
+            }
+            if (scoreStdDev === undefined) {
+              scoreStdDev = 0
+            }
+            return {
+              ...results,
+              scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
+              scoreMax: scoreMean + nd * scoreStdDev,
+            }
+          }
+
+          return results
+        }
+        if (autoscaleType === 'local' || autoscaleType === 'localsd') {
+          const { dynamicBlocks, bpPerPx } = getContainingView(self) as LGV
+          const results = (await rpcManager.call(
+            sessionId,
+            'WiggleGetMultiRegionStats',
+            {
+              ...params,
+              regions: dynamicBlocks.contentBlocks.map(region => {
+                const { start, end } = region
+                return {
+                  ...JSON.parse(JSON.stringify(region)),
+                  start: Math.floor(start),
+                  end: Math.ceil(end),
+                }
+              }),
+              bpPerPx,
+            },
+          )) as FeatureStats
+
+          if (autoscaleType === 'localsd') {
+            // localsd uses an heuristic to avoid unnecessary scoreMin<0 if the
+            // scoreMin is never less than 0 helps with most coverage bigwigs
+            // just being >0
+            let { scoreMin, scoreMean, scoreStdDev } = results
+            if (scoreMin === undefined) {
+              scoreMin = 0
+            }
+            if (scoreMean === undefined) {
+              scoreMean = 0
+            }
+            if (scoreStdDev === undefined) {
+              scoreStdDev = 0
+            }
+            return {
+              ...results,
+              scoreMin: scoreMin >= 0 ? 0 : scoreMean - nd * scoreStdDev,
+              scoreMax: scoreMean + nd * scoreStdDev,
+            }
+          }
+
+          return results
+        }
+        if (autoscaleType === 'zscale') {
+          return rpcManager.call(
+            sessionId,
+            'WiggleGetGlobalStats',
+            params,
+          ) as Promise<FeatureStats>
+        }
+        throw new Error(`invalid autoscaleType '${autoscaleType}'`)
+      }
       return {
         /**
          * #action
@@ -689,7 +800,7 @@ function stateModelFactory(
           const aborter = new AbortController()
           self.setLoading(aborter)
           try {
-            const stats = await getStats(self, {
+            const stats = await getStats({
               signal: aborter.signal,
               ...self.renderProps(),
             })

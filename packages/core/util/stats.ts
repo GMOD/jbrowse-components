@@ -6,17 +6,21 @@ import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
 export interface UnrectifiedFeatureStats {
-  scoreMin: number
-  scoreMax: number
+  scoreMin?: number
+  scoreMax?: number
+  scoreSum?: number
+  scoreSumSquares?: number
+  featureCount?: number
+  basesCovered?: number
+}
+export interface FeatureStats extends UnrectifiedFeatureStats {
   scoreSum: number
   scoreSumSquares: number
   featureCount: number
   basesCovered: number
-}
-export interface FeatureStats extends UnrectifiedFeatureStats {
   featureDensity: number
-  scoreMean: number
-  scoreStdDev: number
+  scoreMean: number | undefined
+  scoreStdDev: number | undefined
 }
 
 /**
@@ -30,14 +34,21 @@ export interface FeatureStats extends UnrectifiedFeatureStats {
  * @returns - the estimated std deviation
  */
 export function calcStdFromSums(
-  sum: number,
-  sumSquares: number,
-  n: number,
+  sum: number | undefined,
+  sumSquares: number | undefined,
+  n: number | undefined,
   population = false,
 ): number {
-  if (n === 0) {
+  if (n === 0 || n === undefined) {
     return 0
   }
+  if (sum === undefined) {
+    sum = 0
+  }
+  if (sumSquares === undefined) {
+    sumSquares = 0
+  }
+
   let variance
   if (population) {
     variance = sumSquares / n - (sum * sum) / (n * n)
@@ -62,13 +73,17 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
+    scoreSum: s.scoreSum || 0,
+    scoreSumSquares: s.scoreSumSquares || 0,
+    featureCount: s.featureCount || 0,
+    basesCovered: s.basesCovered || 0,
     scoreStdDev: calcStdFromSums(
       s.scoreSum,
       s.scoreSumSquares,
       s.featureCount || s.basesCovered,
     ),
-    featureDensity: (s.featureCount || 1) / s.basesCovered,
-  } as FeatureStats
+    featureDensity: (s.featureCount || 1) / (s.basesCovered || 1),
+  }
 }
 
 /**

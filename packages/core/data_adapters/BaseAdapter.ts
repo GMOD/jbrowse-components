@@ -48,7 +48,7 @@ export interface AnyAdapter {
 }
 
 export type AnyDataAdapter =
-  | BaseAdapter
+| BaseAdapter
   | BaseFeatureDataAdapter
   | BaseRefNameAliasAdapter
   | BaseTextSearchAdapter
@@ -223,16 +223,16 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     if (!regions.length) {
       return blankStats()
     }
-    const feats = await Promise.all(
+    const regionStats = await Promise.all(
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = max(feats.map(a => a.scoreMax))
-    const scoreMin = min(feats.map(a => a.scoreMin))
-    const scoreSum = sum(feats.map(a => a.scoreSum))
-    const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
-    const featureCount = sum(feats.map(a => a.featureCount))
-    const basesCovered = sum(feats.map(a => a.basesCovered))
+    const scoreMax = max(regionStats.map(a => a.scoreMax))
+    const scoreMin = min(regionStats.map(a => a.scoreMin))
+    const scoreSum = sum(regionStats.map(a => a.scoreSum))
+    const scoreSumSquares = sum(regionStats.map(a => a.scoreSumSquares))
+    const featureCount = sum(regionStats.map(a => a.featureCount))
+    const basesCovered = sum(regionStats.map(a => a.basesCovered))
 
     return rectifyStats({
       scoreMin,
