@@ -361,7 +361,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               }
             }
             throw new Error(
-              `Token could not be refreshed. No refresh token found`,
+              `Token could not be refreshed. No refresh token found. Please reload the page.`,
             )
           } else {
             refreshTokenPromise = undefined
