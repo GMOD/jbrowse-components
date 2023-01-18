@@ -2,6 +2,7 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './JBrowseRESTFeatureAdapter'
 import configSchema from './configSchema'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { firstValueFrom } from 'rxjs'
 
 const testFeatures = [{ start: 100, end: 200, refName: '21', uniqueId: 'foo' }]
 const mockResponses = {
@@ -46,7 +47,7 @@ test('adapter can fetch features and stats from mocked API with no region stats'
     end: 35960388,
   })
 
-  const featuresArray = await features.pipe(toArray()).toPromise()
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray.length).toBe(testFeatures.length)
   expect(featuresArray[0].get('refName')).toBe('21')
   expect(featuresArray[0].id()).toBe('foo')

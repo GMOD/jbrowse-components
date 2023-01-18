@@ -31,8 +31,6 @@ import {
 
 import Tooltip from '../components/Tooltip'
 import { YScaleBar } from '../components/WiggleDisplayComponent'
-import { FeatureStats } from '@jbrowse/core/util/stats'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
