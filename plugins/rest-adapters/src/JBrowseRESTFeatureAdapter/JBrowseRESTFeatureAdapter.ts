@@ -95,10 +95,9 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     let url = baseLocation.uri + '/' + relativeUrl
 
     // add the extra_query vars if present
-    const extra_query = Object.entries(getConf(this, 'extra_query') || {}) as [
-      string,
-      string,
-    ][]
+    const extra_query = Object.entries(
+      (getConf(this, 'extra_query') || {}) as Record<string, string>,
+    )
     if (extra_query.length) {
       const p = new URL(url)
       extra_query.forEach(q => p.searchParams.append(...q))
