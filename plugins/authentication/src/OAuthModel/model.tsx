@@ -323,10 +323,16 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
             self.hasRefreshToken && self.retrieveRefreshToken()
           if (refreshToken) {
             try {
-              const token = await self.exchangeRefreshForAccessToken(refreshToken);
-              resolve(token);
+              const token = await self.exchangeRefreshForAccessToken(
+                refreshToken,
+              )
+              resolve(token)
             } catch (err) {
-              reject(new Error(`Token could not be refreshed. ${err}  Please reload the page.`));
+              reject(
+                new Error(
+                  `Token could not be refreshed. ${err}  Please reload the page.`,
+                ),
+              )
             }
           }
           this.addMessageChannel(resolve, reject)
@@ -351,10 +357,12 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
                 const newToken = await refreshTokenPromise
                 return this.validateToken(newToken, location)
               } catch (err) {
-                throw new Error(`Token could not be refreshed. ${err}`);
+                throw new Error(`Token could not be refreshed. ${err}`)
               }
             }
-            throw new Error(`Token could not be refreshed. No refresh token found`);
+            throw new Error(
+              `Token could not be refreshed. No refresh token found`,
+            )
           } else {
             refreshTokenPromise = undefined
           }
