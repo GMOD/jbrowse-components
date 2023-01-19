@@ -84,5 +84,12 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
+  async getSources() {
+    const { parser } = await this.configure()
+    return parser.samples.map(name => ({
+      name,
+    }))
+  }
+
   public freeResources(/* { region } */): void {}
 }

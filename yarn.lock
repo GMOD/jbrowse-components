@@ -2326,10 +2326,10 @@
   resolved "https://registry.yarnpkg.com/@gmod/ucsc-hub/-/ucsc-hub-0.3.0.tgz#375eeab1c515605510c706f6e2d76d6b42454f8c"
   integrity sha512-M8r1rpmNOVH6UHwUTSOR5Z86upWEhvI3BKbyYVq8imTS+nZAq8Gr9RJTBsGlL0sgX7fmLSXms8/pTyp7e3YAQA==
 
-"@gmod/vcf@^5.0.9":
-  version "5.0.10"
-  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-5.0.10.tgz#6c2d7952b15f61642454be90119ea89fd3c227de"
-  integrity sha512-o7QuPcOeXlJpzwQaFmgojhNvJE4yB9fhrfVEDKpkDjV27pAqwMy89367vtXu4JfBFE9t4zZ6sQRkqYaJ+cIheg==
+"@gmod/vcf@^6.0.0":
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/@gmod/vcf/-/vcf-6.0.0.tgz#68f53d2bf7e40c845d69518b950a0ba077ff1e67"
+  integrity sha512-8rwamVwPO25EfZUpXXf6h4nv2h8oj8GkMMwkeIZh/FNp2r87SC6YwDcyxGJRe2JAWV/zn8BkKyxdEQnJ5VG3DA==
 
 "@humanfs/core@^0.19.1":
   version "0.19.1"

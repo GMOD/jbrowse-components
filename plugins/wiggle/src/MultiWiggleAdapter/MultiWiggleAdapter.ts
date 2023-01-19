@@ -81,7 +81,10 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     ).filter(f => !!f)
     const scoreMin = min(stats.map(s => s.scoreMin))
     const scoreMax = max(stats.map(s => s.scoreMax))
-    return { scoreMin, scoreMax }
+    return {
+      scoreMin,
+      scoreMax,
+    }
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {

@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/vcf": "^5.0.9",
+    "@gmod/vcf": "^6.0.0",
     "@jbrowse/plugin-variants": "^2.17.0",
     "@mui/icons-material": "^6.0.0"
   },

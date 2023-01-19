@@ -1,49 +1,64 @@
 import { getSOTermAndDescription } from './util'
 
-import type VCF from '@gmod/vcf'
+import type VCFParser from '@gmod/vcf'
+import type { Variant } from '@gmod/vcf'
 import type { Feature } from '@jbrowse/core/util'
 
-type Samples = Record<
-  string,
-  Record<string, { values: string[] | number[] | null }>
->
+type FeatureData = ReturnType<typeof dataFromVariant>
 
-interface FeatureData {
-  [key: string]: unknown
-  refName: string
-  start: number
-  end: number
-  description?: string
-  type?: string
-  name?: string
-  aliases?: string[]
-  samples?: Samples
+function dataFromVariant(variant: Variant, parser: VCFParser) {
+  const { REF = '', ALT, POS, CHROM, ID } = variant
+  const start = POS - 1
+  const [type, description] = getSOTermAndDescription(REF, ALT, parser)
+
+  return {
+    refName: CHROM,
+    start,
+    end: getEnd(variant),
+    description,
+    type,
+    name: ID?.join(','),
+    aliases: ID && ID.length > 1 ? ID.slice(1) : undefined,
+  }
+}
+function getEnd(variant: Variant) {
+  const { POS, REF = '', ALT } = variant
+  const isTRA = ALT?.includes('<TRA>')
+  const start = POS - 1
+  const isSymbolic = ALT?.some(f => f.includes('<'))
+  if (isSymbolic) {
+    const info = variant.INFO
+    if (info.END && !isTRA) {
+      return +(info.END as string[])[0]!
+    }
+  }
+  return start + REF.length
 }
 
 export default class VCFFeature implements Feature {
-  private variant: any
+  private variant: Variant
 
-  private parser: VCF
+  private parser: VCFParser
 
   private data: FeatureData
 
   private _id: string
 
-  constructor(args: { variant: any; parser: VCF; id: string }) {
+  constructor(args: { variant: Variant; parser: VCFParser; id: string }) {
     this.variant = args.variant
     this.parser = args.parser
-    this.data = this.dataFromVariant(this.variant)
+    this.data = dataFromVariant(this.variant, this.parser)
     this._id = args.id
   }
 
   get(field: string): any {
     return field === 'samples'
-      ? this.variant.SAMPLES
-      : (this.data[field] ?? this.variant[field])
+      ? this.variant.SAMPLES()
+      : field === 'genotypes'
+        ? this.variant.GENOTYPES()
+        : (this.data[field as keyof typeof this.data] ??
+          this.variant[field as keyof typeof this.variant])
   }
-
-  set() {}
-
   parent() {
     return undefined
   }
@@ -52,45 +67,17 @@ export default class VCFFeature implements Feature {
     return undefined
   }
 
-  tags() {
-    return [...Object.keys(this.data), ...Object.keys(this.variant), 'samples']
-  }
-
   id() {
     return this._id
   }
 
-  dataFromVariant(variant: {
-    REF: string
-    POS: number
-    ALT?: string[]
-    CHROM: string
-    INFO: any
-    ID?: string[]
-  }): FeatureData {
-    const { REF, ALT, POS, CHROM, INFO, ID } = variant
-    const start = POS - 1
-    const [type, description] = getSOTermAndDescription(REF, ALT, this.parser)
-    const isTRA = ALT?.includes('<TRA>')
-    const isSymbolic = ALT?.some(f => f.includes('<'))
-
-    return {
-      refName: CHROM,
-      start,
-      end: isSymbolic && INFO.END && !isTRA ? +INFO.END[0] : start + REF.length,
-      description,
-      type,
-      name: ID?.join(','),
-      aliases: ID && ID.length > 1 ? ID.slice(1) : undefined,
-    }
-  }
-
   toJSON(): any {
+    const { SAMPLES, GENOTYPES, ...rest } = this.variant
     return {
       uniqueId: this._id,
-      ...this.variant,
+      ...rest,
       ...this.data,
-      samples: this.variant.SAMPLES,
+      samples: this.variant.SAMPLES(),
     }
   }
 }
