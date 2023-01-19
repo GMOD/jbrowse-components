@@ -6,6 +6,8 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ChordVariantDisplayF from './ChordVariantDisplay'
 import LinearVariantDisplayF from './LinearVariantDisplay'
+import LinearVariantMatrixDisplayF from './LinearVariantMatrixDisplay'
+import LinearVariantMatrixRendererF from './LinearVariantMatrixRenderer'
 import StructuralVariantChordRendererF from './StructuralVariantChordRenderer'
 import VariantFeatureWidgetF from './VariantFeatureWidget'
 
@@ -19,6 +21,8 @@ export default class VariantsPlugin extends Plugin {
     VariantTrackF(pluginManager)
     ExtensionPointsF(pluginManager)
     LinearVariantDisplayF(pluginManager)
+    LinearVariantMatrixDisplayF(pluginManager)
+    LinearVariantMatrixRendererF(pluginManager)
     StructuralVariantChordRendererF(pluginManager)
     ChordVariantDisplayF(pluginManager)
   }

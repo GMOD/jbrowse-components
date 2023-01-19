@@ -10,6 +10,10 @@ exports[`plugin in a stock JBrowse 2`] = `
       "type": "LinearVariantDisplay",
     },
     {
+      "displayId": "trackId0-LinearVariantMatrixDisplay",
+      "type": "LinearVariantMatrixDisplay",
+    },
+    {
       "displayId": "trackId0-ChordVariantDisplay",
       "type": "ChordVariantDisplay",
     },
