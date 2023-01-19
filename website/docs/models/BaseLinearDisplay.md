@@ -137,7 +137,7 @@ any
 
 ```js
 // type
-;(blockKey: string, x: number, y: number) => any
+;(blockKey: string, x: number, y: number) => string
 ```
 
 #### getter: getFeatureByID
@@ -241,7 +241,7 @@ trackMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+contextMenuItems: () => MenuItem[]
 ```
 
 #### method: renderProps
@@ -271,28 +271,28 @@ setMessage: (message: string) => void
 
 ```js
 // type signature
-estimateRegionsStats: (regions: Region[], opts: { headers?: Record<string, string>; signal?: AbortSignal; filters?: string[]; }) => Promise<{}>
+estimateRegionsStats: () => Promise<Stats>
 ```
 
-#### action: setRegionStatsP
+#### action: setRegionsStatsP
 
 ```js
 // type signature
-setRegionStatsP: (p?: Promise<Stats>) => void
+setRegionsStatsP: (arg: any) => void
 ```
 
-#### action: setRegionStats
+#### action: setRegionsStats
 
 ```js
 // type signature
-setRegionStats: (estimatedRegionStats?: Stats) => void
+setRegionsStats: (estimatedRegionsStats?: Stats) => void
 ```
 
-#### action: clearRegionStats
+#### action: clearRegionsStats
 
 ```js
 // type signature
-clearRegionStats: () => void
+clearRegionsStats: () => void
 ```
 
 #### action: setHeight
@@ -320,7 +320,7 @@ setScrollTop: (scrollTop: number) => void
 
 ```js
 // type signature
-updateStatsLimit: (stats: Stats) => void
+updateStatsLimit: (stats?: Stats) => void
 ```
 
 #### action: addBlock

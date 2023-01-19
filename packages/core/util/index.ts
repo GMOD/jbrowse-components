@@ -13,7 +13,7 @@ import {
   IAnyStateTreeNode,
   IStateTreeNode,
 } from 'mobx-state-tree'
-import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
+import { reaction, IReactionOptions } from 'mobx'
 import { Feature } from './simpleFeature'
 import {
   isSessionModel,
@@ -645,7 +645,6 @@ export function makeAbortableReaction<T, U, V>(
     arg: U | undefined,
     signal: AbortSignal,
     model: T,
-    handle: IReactionPublic,
   ) => Promise<V>,
   // @ts-expect-error
   reactionOptions: IReactionOptions,
@@ -657,10 +656,9 @@ export function makeAbortableReaction<T, U, V>(
 
   function handleError(error: unknown) {
     if (!isAbortException(error)) {
+      console.error(error)
       if (isAlive(self)) {
         errorFunction(error)
-      } else {
-        console.error(error)
       }
     }
   }
@@ -676,7 +674,7 @@ export function makeAbortableReaction<T, U, V>(
           return undefined
         }
       },
-      async (data, mobxReactionHandle) => {
+      async data => {
         if (inProgress && !inProgress.signal.aborted) {
           inProgress.abort()
         }
@@ -693,8 +691,6 @@ export function makeAbortableReaction<T, U, V>(
             data,
             thisInProgress.signal,
             self,
-            // @ts-expect-error
-            mobxReactionHandle,
           )
           checkAbortSignal(thisInProgress.signal)
           if (isAlive(self)) {

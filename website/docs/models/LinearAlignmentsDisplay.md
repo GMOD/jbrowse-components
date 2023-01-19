@@ -191,7 +191,7 @@ setSNPCoverageDisplay: (configuration: { [x: string]: any; } & NonEmptyObject & 
 
 ```js
 // type signature
-updateStatsLimit: (stats: unknown) => void
+updateStatsLimit: (stats?: unknown) => void
 ```
 
 #### action: setPileupDisplay

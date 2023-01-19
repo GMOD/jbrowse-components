@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { observer } from 'mobx-react'
 import { hydrate, unmountComponentAtNode } from 'react-dom'
-import { AnyReactComponentType, Feature, rIC } from '../../util'
+import { AnyReactComponentType, Feature } from '../../util'
 
 export default observer(function (props: {
   html: string
@@ -12,31 +12,34 @@ export default observer(function (props: {
   const ref = useRef<SVGGElement>(null)
   useEffect(() => {
     const domNode = ref.current
-    function doHydrate() {
-      if (domNode && html) {
-        if (domNode.innerHTML) {
-          unmountComponentAtNode(domNode)
-        }
-
-        // setting outline:none fixes react "focusable" element issue. see
-        // https://github.com/GMOD/jbrowse-components/issues/2160
-        domNode.style.outline = 'none'
-        domNode.innerHTML = html
-        // use requestIdleCallback to defer main-thread rendering
-        // and hydration for when we have some free time. helps
-        // keep the framerate up.
-        rIC(() => {
-          hydrate(<RenderingComponent {...props} />, domNode)
-        })
-      }
+    if (!domNode) {
+      return
     }
-    doHydrate()
+    if (domNode.innerHTML) {
+      unmountComponentAtNode(domNode)
+    }
+    // setting outline:none fixes react "focusable" element issue. see
+    // https://github.com/GMOD/jbrowse-components/issues/2160
+    domNode.style.outline = 'none'
+    // use requestIdleCallback to defer main-thread rendering
+    // and hydration for when we have some free time. helps
+    // keep the framerate up.
+    hydrate(<RenderingComponent {...props} />, domNode)
+
     return () => {
       if (domNode) {
-        unmountComponentAtNode(domNode)
+        // use setTimeout to try to avoid error :unmounted component rendered
+        // by another copy of react error, even when that is not the case. See
+        // https://github.com/facebook/react/issues/22343#issuecomment-924098716
+        // and specifically that comment
+
+        setTimeout(() => {
+          unmountComponentAtNode(domNode)
+        }, 0)
       }
     }
   }, [html, RenderingComponent, props])
 
-  return <g ref={ref} />
+  // eslint-disable-next-line react/no-danger
+  return <g ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 })

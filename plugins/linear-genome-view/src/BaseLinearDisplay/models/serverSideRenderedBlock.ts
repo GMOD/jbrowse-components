@@ -1,28 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import {
-  types,
+  cast,
+  getSnapshot,
   getParent,
   isAlive,
-  cast,
+  types,
   Instance,
-  getSnapshot,
 } from 'mobx-state-tree'
+import clone from 'clone'
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
-  assembleLocString,
+  assembleLocStringFast,
   getSession,
   getContainingDisplay,
   getContainingView,
   getViewParams,
+  isRetryException,
   makeAbortableReaction,
+  AbstractDisplayModel,
   Feature,
 } from '@jbrowse/core/util'
 import { Region } from '@jbrowse/core/util/types/mst'
-import {
-  AbstractDisplayModel,
-  isRetryException,
-} from '@jbrowse/core/util/types'
 
 import {
   getTrackAssemblyNames,
@@ -43,7 +42,7 @@ const blockState = types
   })
   // NOTE: all this volatile stuff has to be filled in at once, so that it stays consistent
   .volatile(() => ({
-    renderInProgress: undefined as AbortController | undefined,
+    destroyed: false,
     filled: false,
     reactElement: undefined as React.ReactElement | undefined,
     features: undefined as Map<string, Feature> | undefined,
@@ -53,150 +52,115 @@ const blockState = types
     message: undefined as string | undefined,
     maxHeightReached: false,
     ReactComponent: ServerSideRenderedBlockContent,
-    renderProps: undefined as any,
   }))
-  .actions(self => {
-    let renderInProgress: undefined | AbortController
-    return {
-      doReload() {
-        self.reloadFlag = self.reloadFlag + 1
-      },
-      afterAttach() {
-        const display = getContainingDisplay(self)
+  .actions(self => ({
+    doReload() {
+      self.reloadFlag = self.reloadFlag + 1
+    },
+    afterAttach() {
+      const { id, renderDelay } = getContainingDisplay(self)
+      // added after renderDelay to optimize some dynamicBlocks usage
+      setTimeout(() => {
+        if (self.destroyed) {
+          return
+        }
         makeAbortableReaction(
           self as any,
           renderBlockData,
-          renderBlockEffect, // reaction doesn't expect async here
+          renderBlockEffect,
           {
-            name: `${display.id}/${assembleLocString(self.region)} rendering`,
-            delay: display.renderDelay,
+            name: `${id}/${assembleLocStringFast(self.region)} rendering`,
+            delay: renderDelay,
             fireImmediately: true,
           },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
+          () => this.setLoading(),
+          () => {
+            /* do nothing, handled by actions of renderBlockEffect */
+          },
+          e => this.setError(e),
         )
-      },
-      setStatus(message: string) {
-        self.status = message
-      },
-      setLoading(abortController: AbortController) {
-        if (
-          renderInProgress !== undefined &&
-          !renderInProgress.signal.aborted
-        ) {
-          renderInProgress.abort()
-        }
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = abortController
-      },
-      setMessage(messageText: string) {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        self.filled = false
-        self.message = messageText
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.maxHeightReached = false
-        self.renderProps = undefined
-        renderInProgress = undefined
-      },
-      setRendered(
-        props:
-          | {
-              reactElement: React.ReactElement
-              features: Map<string, Feature>
-              layout: any
-              maxHeightReached: boolean
-              renderProps: any
-            }
-          | undefined,
-      ) {
-        if (!props) {
-          return
-        }
-        const {
-          reactElement,
-          features,
-          layout,
-          maxHeightReached,
-          renderProps,
-        } = props
-        self.filled = true
-        self.message = undefined
-        self.reactElement = reactElement
-        self.features = features
-        self.layout = layout
-        self.error = undefined
-        self.maxHeightReached = maxHeightReached
-        self.renderProps = renderProps
-        renderInProgress = undefined
-      },
-      setError(error: unknown) {
-        console.error(error)
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        // the rendering failed for some reason
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.maxHeightReached = false
-        self.error = error
-        self.renderProps = undefined
-        renderInProgress = undefined
-        if (isRetryException(error as Error)) {
-          this.reload()
-        }
-      },
-      reload() {
-        self.renderInProgress = undefined
-        self.filled = false
-        self.reactElement = undefined
-        self.features = undefined
-        self.layout = undefined
-        self.error = undefined
-        self.message = undefined
-        self.maxHeightReached = false
-        self.ReactComponent = ServerSideRenderedBlockContent
-        self.renderProps = undefined
-        getParent<any>(self, 2).reload()
-      },
-      beforeDestroy() {
-        if (renderInProgress && !renderInProgress.signal.aborted) {
-          renderInProgress.abort()
-        }
-        const display = getContainingDisplay(self)
-        const { rpcManager } = getSession(self)
-        const { rendererType } = display
-        const { renderArgs } = renderBlockData(cast(self))
-        // renderArgs can be undefined if an error occurred in this block
-        if (renderArgs) {
-          rendererType
-            .freeResourcesInClient(
-              rpcManager,
-              JSON.parse(JSON.stringify(renderArgs)),
-            )
-            .catch((e: Error) => {
-              // just console.error if it's something while it's being destroyed
-              console.warn('Error while destroying block', e)
-            })
-        }
-      },
-    }
-  })
+      }, renderDelay)
+    },
+    setStatus(message: string) {
+      self.status = message
+    },
+    setLoading() {
+      self.filled = false
+      self.message = undefined
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.error = undefined
+      self.maxHeightReached = false
+    },
+    setMessage(messageText: string) {
+      self.filled = false
+      self.message = messageText
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.error = undefined
+      self.maxHeightReached = false
+    },
+
+    setRendered({
+      layout,
+      features,
+      reactElement,
+      maxHeightReached,
+    }: {
+      reactElement: React.ReactElement
+      features: Map<string, Feature>
+      layout: any
+      maxHeightReached: boolean
+    }) {
+      self.filled = true
+      self.message = undefined
+      self.reactElement = reactElement
+      self.features = features
+      self.layout = layout
+      self.error = undefined
+      self.maxHeightReached = maxHeightReached
+    },
+    setError(error: unknown) {
+      console.error(error)
+      // the rendering failed for some reason
+      self.filled = false
+      self.message = undefined
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.maxHeightReached = false
+      self.error = error
+      if (isRetryException(error as Error)) {
+        this.reload()
+      }
+    },
+    reload() {
+      self.filled = false
+      self.reactElement = undefined
+      self.features = undefined
+      self.layout = undefined
+      self.error = undefined
+      self.message = undefined
+      self.maxHeightReached = false
+      getParent<any>(self, 2).reload()
+    },
+    beforeDestroy() {
+      self.destroyed = true
+      const display = getContainingDisplay(self)
+      const { rpcManager } = getSession(self)
+      const { rendererType } = display
+      const { renderArgs } = renderBlockData(cast(self))
+      // renderArgs can be undefined if an error occurred in this block
+      rendererType
+        ?.freeResourcesInClient(rpcManager, clone(renderArgs))
+        .catch((e: Error) => {
+          // just console.error if it's something while it's being destroyed
+          console.warn('Error while destroying block', e)
+        })
+    },
+  }))
 
 export default blockState
 export type BlockStateModel = typeof blockState
@@ -208,67 +172,63 @@ export function renderBlockData(
   self: BlockModel,
   optDisplay?: AbstractDisplayModel,
 ) {
-  try {
-    const display = optDisplay || (getContainingDisplay(self) as any)
-    const { assemblyManager, rpcManager } = getSession(display)
-    const { adapterConfig, rendererType, error, parentTrack } = display
-    const assemblyNames = getTrackAssemblyNames(parentTrack)
-    const regionAsm = self.region.assemblyName
-    if (
-      !assemblyNames.includes(regionAsm) &&
-      !assemblyNames.some(name => assemblyManager.get(name)?.hasName(regionAsm))
-    ) {
-      throw new Error(
-        `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
-      )
-    }
-
-    const renderProps = display.renderProps()
-    const { config } = renderProps
-
-    // This line is to trigger the mobx reaction when the config changes
-    // It won't trigger the reaction if it doesn't think we're accessing it
-    readConfObject(config)
-
-    const sessionId = getRpcSessionId(display)
-    const layoutId = getContainingView(display).id
-    const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
-
-    return {
-      rendererType,
-      rpcManager,
-      renderProps,
-      cannotBeRenderedReason,
-      displayError: error,
-      renderArgs: {
-        statusCallback: (message: string) => {
-          if (isAlive(self)) {
-            self.setStatus(message)
-          }
-        },
-        assemblyName: self.region.assemblyName,
-        regions: [getSnapshot(self.region)],
-        adapterConfig,
-        rendererType: rendererType.name,
-        sessionId,
-        layoutId,
-        blockKey: self.key,
-        reloadFlag: self.reloadFlag,
-        timeout: 1000000, // 10000,
-      },
-    }
-  } catch (e) {
-    return { displayError: e }
+  const display = optDisplay || (getContainingDisplay(self) as any)
+  const { assemblyManager, rpcManager } = getSession(display)
+  const { adapterConfig, rendererType, error, parentTrack } = display
+  const assemblyNames = getTrackAssemblyNames(parentTrack)
+  const regionAsm = self.region.assemblyName
+  if (
+    !assemblyNames.includes(regionAsm) &&
+    !assemblyNames.some(name => assemblyManager.get(name)?.hasName(regionAsm))
+  ) {
+    throw new Error(
+      `region assembly (${regionAsm}) does not match track assemblies (${assemblyNames})`,
+    )
   }
+
+  const renderProps = display.renderProps()
+  const { config } = renderProps
+
+  // This line is to trigger the mobx reaction when the config changes
+  // It won't trigger the reaction if it doesn't think we're accessing it
+  readConfObject(config)
+
+  const sessionId = getRpcSessionId(display)
+  const layoutId = getContainingView(display).id
+  const cannotBeRenderedReason = display.regionCannotBeRendered(self.region)
+
+  return {
+    rendererType,
+    rpcManager,
+    renderProps,
+    cannotBeRenderedReason,
+    displayError: error,
+    renderArgs: {
+      statusCallback: (message: string) => {
+        if (isAlive(self)) {
+          self.setStatus(message)
+        }
+      },
+      assemblyName: self.region.assemblyName,
+      regions: [getSnapshot(self.region)],
+      adapterConfig,
+      rendererType: rendererType.name,
+      sessionId,
+      layoutId,
+      blockKey: self.key,
+      reloadFlag: self.reloadFlag,
+      timeout: 1000000,
+    },
+  } as const
 }
 
-async function renderBlockEffect(
+export async function renderBlockEffect(
   props: ReturnType<typeof renderBlockData> | undefined,
   signal: AbortSignal,
-  self: BlockModel,
+  block: BlockModel,
 ) {
   if (!props) {
-    return
+    return undefined
   }
   const {
     rendererType,
@@ -278,35 +238,22 @@ async function renderBlockEffect(
     cannotBeRenderedReason,
     displayError,
   } = props
-  if (!isAlive(self)) {
-    return undefined
-  }
 
-  if (displayError) {
-    self.setError(displayError)
-    return undefined
-  }
-  if (cannotBeRenderedReason) {
-    self.setMessage(cannotBeRenderedReason)
-    return undefined
-  }
-
-  if (renderProps.notReady) {
-    return undefined
-  }
-
-  const { reactElement, features, layout, maxHeightReached } =
-    await rendererType.renderInClient(rpcManager, {
+  if (props.displayError) {
+    block.setError(displayError)
+  } else if (cannotBeRenderedReason) {
+    block.setMessage(cannotBeRenderedReason)
+  } else if (!renderProps.notReady) {
+    const res = await rendererType.renderInClient(rpcManager, {
       ...renderArgs,
       ...renderProps,
-      viewParams: getViewParams(self),
+      viewParams: getViewParams(block),
       signal,
     })
-  return {
-    reactElement,
-    features,
-    layout,
-    maxHeightReached,
-    renderProps,
+    if (isAlive(block)) {
+      block.setRendered(res)
+    }
   }
+
+  return undefined
 }

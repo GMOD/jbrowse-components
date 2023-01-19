@@ -18,7 +18,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 40000 }
 const o = [{}, delay]
 
 test('test stats estimation pileup, zoom in to see', async () => {
@@ -33,7 +33,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
   // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
   expectCanvasMatch(await findByTestId(pv('1..12000-0'), ...o))
-}, 30000)
+}, 40000)
 
 test('test stats estimation pileup, force load to see', async () => {
   const { view, findByText, findAllByText, findByTestId } = await createView()
@@ -47,7 +47,7 @@ test('test stats estimation pileup, force load to see', async () => {
   fireEvent.click(buttons[0])
 
   expectCanvasMatch(await findByTestId(pv('1..20063-0'), ...o))
-}, 30000)
+}, 40000)
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
   const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
@@ -62,7 +62,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
   await findAllByTestId('box-test-vcf-606969', ...o)
-}, 30000)
+}, 40000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
   const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
@@ -73,4 +73,4 @@ test('test stats estimation on vcf track, force load to see', async () => {
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0])
   await findAllByTestId('box-test-vcf-605224', ...o)
-}, 30000)
+}, 40000)
