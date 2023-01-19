@@ -67,20 +67,19 @@ Open two tabs in your terminal at `~/jbrowse-components`; in one tab, run:
 
 ```bash
 cd products/jbrowse-desktop
-yarn serve
+yarn start
 ```
 
 And in the other tab, run:
 
 ```bash
 cd products/jbrowse-desktop
-yarn develop
+yarn electron
 ```
 
 Doing this, you can quickly restart the "react app" part of JBrowse (the tab
-where you ran `yarn develop`) during your development without having to wait for
-the electron app (`yarn serve` tab) to restart, as you would if you simply ran
-`yarn start` in one tab.
+where you ran `yarn electron`) during your development without having to wait
+for the electron app (`yarn start` tab) to restart.
 
 A new window running JBrowse desktop will open.
 
@@ -132,16 +131,16 @@ For easy access to this session, navigate `File` -> `Save as..` to save the
 not automatically reload when you make changes to your plugin code. To see these
 changes applied, **press `F5` to refresh the desktop react application**.
 
-You can also abort the running process under the "yarn develop" tab we set up
+You can also abort the running process under the "yarn electron" tab we set up
 earlier, and start it again. :::
 
 :::info If you would like to see your `console.log` output under the "yarn
-develop" tab of your desktop development environment, follow these steps:
+electron" tab of your desktop development environment, follow these steps:
 
 1. Create or edit the `.bash_profile` file typically found in the root directory
    of your profile
 2. Add `export ELECTRON_ENABLE_LOGGING=1` on a new line to the file
-3. Restart your terminal and JBrowse `yarn develop` process
+3. Restart your terminal and JBrowse `yarn electron` process
 
 You should now be able to see console log statements in your terminal when
 developing on JBrowse desktop (denoted by a message prefixed with something like
