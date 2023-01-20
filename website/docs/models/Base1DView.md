@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/packages/core/util/Base1DViewModel.ts
+
 ## Docs
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the

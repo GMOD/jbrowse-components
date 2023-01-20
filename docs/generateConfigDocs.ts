@@ -11,14 +11,17 @@ import fs from 'fs'
 const contents = {} as { [key: string]: any }
 
 async function generateConfigDocs(files: string[]) {
+  const cwd = process.cwd() + '/'
   extractWithComment(files, obj => {
     const fn = obj.filename
+    const fn2 = fn.replace(cwd, '')
     if (!contents[fn]) {
       contents[fn] = {
         derives: undefined,
         id: undefined,
         slots: [],
         config: undefined,
+        filename: fn2,
       }
     }
     const current = contents[fn]
@@ -85,6 +88,10 @@ toplevel: true
 ---
 Note: this document is automatically generated from configuration objects in
 our source code. See [Config guide](/docs/config_guide) for more info
+
+## Source filename
+
+${config.filename}
 
 ## Docs
 

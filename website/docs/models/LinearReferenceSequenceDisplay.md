@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/plugins/sequence/src/LinearReferenceSequenceDisplay/model.ts
+
 ## Docs
 
 base model `BaseLinearDisplay`

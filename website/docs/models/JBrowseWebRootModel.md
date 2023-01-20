@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/products/jbrowse-web/src/rootModel.ts
+
 ## Docs
 
 note that many properties of the root model are available through the session,

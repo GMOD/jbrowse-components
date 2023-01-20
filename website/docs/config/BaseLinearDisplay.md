@@ -7,6 +7,10 @@ toplevel: true
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts
+
 ## Docs
 
 `BaseLinearDisplay` is a "base" config that is extended by classes like

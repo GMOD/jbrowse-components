@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/plugins/linear-genome-view/src/LinearGenomeView/model.ts
+
 ## Docs
 
 ### LinearGenomeView - Properties
@@ -147,7 +151,9 @@ show the "center line"
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCenterLine: types.optional(types.boolean, () =>
-          JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showCenterLine') || 'false'),
+          ),
         )
 ```
 
@@ -160,7 +166,9 @@ show the "cytobands" in the overview scale bar
 IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCytobandsSetting: types.optional(types.boolean, () =>
-          JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+          Boolean(
+            JSON.parse(localStorageGetItem('lgv-showCytobands') || 'true'),
+          ),
         )
 ```
 

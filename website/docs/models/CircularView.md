@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/plugins/circular-view/src/CircularView/models/CircularView.ts
+
 ## Docs
 
 extends `BaseViewModel`

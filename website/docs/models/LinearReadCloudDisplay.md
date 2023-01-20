@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+plugins/alignments/src/LinearReadCloudDisplay/model.tsx
+
 ## Docs
 
 extends `BaseLinearDisplay`

@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+/home/cdiesh/src/jbrowse-components/plugins/linear-comparative-view/src/LinearSyntenyView/model.ts
+
 ## Docs
 
 extends the `LinearComparativeView` base model

@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source filename
+
+plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx
+
 ## Docs
 
 extends `BaseDisplay`

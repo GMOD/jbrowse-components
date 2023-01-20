@@ -12,8 +12,10 @@ import fs from 'fs'
 const contents = {} as { [key: string]: any }
 
 function generateStateModelDocs(files: string[]) {
+  const cwd = process.cwd() + '/'
   extractWithComment(files, obj => {
     const fn = obj.filename
+    const fn2 = fn.replace(cwd, '')
     if (!contents[fn]) {
       contents[obj.filename] = {
         model: undefined,
@@ -21,6 +23,7 @@ function generateStateModelDocs(files: string[]) {
         actions: [],
         methods: [],
         properties: [],
+        filename: fn2,
       }
     }
     const current = contents[fn]
@@ -132,6 +135,13 @@ toplevel: true
 Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
+
+
+
+## Source filename
+
+${model.filename}
+
 
 ## Docs
 
