@@ -7,9 +7,9 @@ toplevel: true
 Note: this document is automatically generated from configuration objects in our
 source code. See [Config guide](/docs/config_guide) for more info
 
-## Source filename
+## Source file
 
-/home/cdiesh/src/jbrowse-components/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts
+[plugins/trix/src/TrixTextSearchAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts)
 
 ## Docs
 

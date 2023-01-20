@@ -9,9 +9,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source filename
+## Source file
 
-plugins/alignments/src/LinearReadCloudDisplay/model.tsx
+[plugins/alignments/src/LinearReadCloudDisplay/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearReadCloudDisplay/model.tsx)
 
 ## Docs
 

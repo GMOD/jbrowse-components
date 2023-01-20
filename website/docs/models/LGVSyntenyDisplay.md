@@ -9,9 +9,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source filename
+## Source file
 
-/home/cdiesh/src/jbrowse-components/plugins/linear-comparative-view/src/LGVSyntenyDisplay/stateModelFactory.ts
+[plugins/linear-comparative-view/src/LGVSyntenyDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/stateModelFactory.ts)
 
 ## Docs
 

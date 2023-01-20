@@ -9,9 +9,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source filename
+## Source file
 
-/home/cdiesh/src/jbrowse-components/packages/core/pluggableElementTypes/models/BaseViewModel.ts
+[packages/core/pluggableElementTypes/models/BaseViewModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseViewModel.ts)
 
 ## Docs
 

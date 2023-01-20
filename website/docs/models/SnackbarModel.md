@@ -9,9 +9,9 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
-## Source filename
+## Source file
 
-packages/core/ui/SnackbarModel.ts
+[packages/core/ui/SnackbarModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/SnackbarModel.ts)
 
 ## Docs
 
