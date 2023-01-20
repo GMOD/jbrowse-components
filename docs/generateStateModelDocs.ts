@@ -8,12 +8,47 @@ import {
 } from './util'
 import fs from 'fs'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const contents = {} as { [key: string]: any }
+interface Action {
+  name: string
+  docs: string
+  code: string
+}
+interface Method {
+  name: string
+  docs: string
+  code: string
+}
+interface Getter {
+  name: string
+  docs: string
+  code: string
+}
+interface Property {
+  name: string
+  docs: string
+  code: string
+}
+
+interface Model {
+  name: string
+  id: string
+  docs: string
+}
+interface StateModel {
+  model?: Model
+  getters: Getter[]
+  methods: Method[]
+  properties: Property[]
+  actions: Action[]
+  filename: string
+}
 
 function generateStateModelDocs(files: string[]) {
+  const cwd = process.cwd() + '/'
+  const contents = {} as { [key: string]: StateModel }
   extractWithComment(files, obj => {
     const fn = obj.filename
+    const fn2 = fn.replace(cwd, '')
     if (!contents[fn]) {
       contents[obj.filename] = {
         model: undefined,
@@ -21,6 +56,7 @@ function generateStateModelDocs(files: string[]) {
         actions: [],
         methods: [],
         properties: [],
+        filename: fn2,
       }
     }
     const current = contents[fn]
@@ -41,14 +77,15 @@ function generateStateModelDocs(files: string[]) {
       current.properties.push({ ...obj, name, docs, code })
     }
   })
+  return contents
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 ;(async () => {
-  generateStateModelDocs(await getAllFiles())
+  const contents = generateStateModelDocs(await getAllFiles())
 
   Object.values(contents).forEach(
-    ({ model, getters, properties, actions, methods }) => {
+    ({ model, getters, properties, actions, methods, filename }) => {
       if (model) {
         const getterstr =
           `${getters.length ? `### ${model.name} - Getters` : ''}\n` +
@@ -132,6 +169,13 @@ toplevel: true
 Note: this document is automatically generated from mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
+
+
+
+## Source file
+
+[${filename}](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
+
 
 ## Docs
 

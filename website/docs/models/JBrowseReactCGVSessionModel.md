@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source file
+
+[products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-circular-genome-view/src/createModel/createSessionModel.ts)
+
 ## Docs
 
 ### JBrowseReactCGVSessionModel - Properties

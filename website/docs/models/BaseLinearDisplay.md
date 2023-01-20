@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source file
+
+[plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/BaseLinearDisplayModel.tsx)
+
 ## Docs
 
 extends `BaseDisplay`

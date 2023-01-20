@@ -50,6 +50,7 @@ export function extractWithComment(
     const comment = ts.displayPartsToString(
       symbol.getDocumentationComment(checker),
     )
+
     const fulltext = node.getFullText()
     const r = {
       name: symbol.getName(),

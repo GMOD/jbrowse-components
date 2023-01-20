@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source file
+
+[packages/core/pluggableElementTypes/models/BaseTrackModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/pluggableElementTypes/models/BaseTrackModel.ts)
+
 ## Docs
 
 these MST models only exist for tracks that are _shown_. they should contain

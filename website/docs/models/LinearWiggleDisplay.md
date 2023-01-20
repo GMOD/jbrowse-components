@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source file
+
+[plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/LinearWiggleDisplay/models/model.tsx)
+
 ## Docs
 
 Extends `BaseLinearDisplay`

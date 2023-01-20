@@ -9,6 +9,10 @@ our source code. See
 [Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
 info
 
+## Source file
+
+[plugins/circular-view/src/CircularView/models/CircularView.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/models/CircularView.ts)
+
 ## Docs
 
 extends `BaseViewModel`
