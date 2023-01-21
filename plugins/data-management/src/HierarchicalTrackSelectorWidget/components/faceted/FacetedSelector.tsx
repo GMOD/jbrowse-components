@@ -69,14 +69,14 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
   const { classes } = useStyles()
 
   const rows = useMemo(() => {
-    const tracks = model.trackConfigurations(assemblyName)
-
-    return tracks
+    return model
+      .trackConfigurations(assemblyName)
       .filter(conf => matches(filterText, conf, session))
       .map(track => ({
         id: track.trackId,
         name: getTrackName(track, session),
         category: readConfObject(track, 'category')?.join(', '),
+        metadata: readConfObject(track, 'metadata'),
         conf: track,
       }))
   }, [assemblyName, model, filterText, session])
@@ -86,7 +86,6 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
     // @ts-ignore
     ...['category'].map(e => measureGridWidth(rows.map(r => r[e]))),
   ])
-
   const infoFields = [
     {
       field: 'name',
