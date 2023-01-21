@@ -1,23 +1,43 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { IconButton, InputAdornment, TextField } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
+import { DataGrid, GridCellParams } from '@mui/x-data-grid'
+import { makeStyles } from 'tss-react/mui'
+
+// jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import { getSession, measureGridWidth } from '@jbrowse/core/util'
-import { DataGrid, GridCellParams } from '@mui/x-data-grid'
-
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
+import { ResizeHandle } from '@jbrowse/core/ui'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
-import { matches, HierarchicalTrackSelectorModel } from '../model'
+import { matches, HierarchicalTrackSelectorModel } from '../../model'
+
+const useStyles = makeStyles()({
+  noPadding: {
+    padding: 0,
+  },
+  resizeBar: {
+    background: 'lightgrey',
+    height: 12,
+    position: 'relative',
+  },
+  tick: {
+    position: 'absolute',
+    height: '100%',
+    background: 'black',
+    width: 1,
+  },
+})
 
 export interface InfoArgs {
   target: HTMLElement
@@ -25,24 +45,18 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
-type Facets = Record<string, string>
-
 function getKeys(obj: Record<string, unknown>): string[] {
   const keys = Object.keys(obj)
   let ret = [] as string[]
-  console.log({ keys })
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]
     const o = obj[key]
     if (typeof o === 'object' && o !== null && !Array.isArray(o)) {
-      console.log('k1', o)
       ret = [...ret, ...getKeys(o as Record<string, unknown>)]
     } else {
-      console.log('k2', key)
       ret = [...ret, key]
     }
   }
-  console.log({ ret })
   return ret
 }
 
@@ -50,31 +64,28 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
   const { assemblyNames, view } = model
   const [filterText, setFilterText] = useState('')
   const [info, setInfo] = useState<InfoArgs>()
-  const [facets, setFacets] = useState<Facets>({})
   const assemblyName = assemblyNames[0]
   const session = getSession(model)
+  const { classes } = useStyles()
 
-  const tracks = model
-    .trackConfigurations(assemblyName)
-    .filter(conf => matches(filterText, conf, session))
+  const rows = useMemo(() => {
+    const tracks = model.trackConfigurations(assemblyName)
 
-  const metadataTracks = tracks.map(track => readConfObject(track, 'metadata'))
-  const metadataKeys = metadataTracks
-    .map(track => getKeys(track))
-    .filter(f => f.length)
-  console.log({ metadataKeys })
+    return tracks
+      .filter(conf => matches(filterText, conf, session))
+      .map(track => ({
+        id: track.trackId,
+        name: getTrackName(track, session),
+        category: readConfObject(track, 'category')?.join(', '),
+        conf: track,
+      }))
+  }, [assemblyName, model, filterText, session])
 
-  const rows = tracks
-    .map(track => ({
-      id: track.trackId,
-      name: getTrackName(track, session),
-      category: readConfObject(track, 'category')?.join(', '),
-      conf: track,
-    }))
-    .filter(f => {
-      const r = facets['category']
-      return r ? f.category?.includes(r) : true
-    })
+  const [widths, setWidths] = useState([
+    measureGridWidth(rows.map(r => r.name)) + 15,
+    // @ts-ignore
+    ...['category'].map(e => measureGridWidth(rows.map(r => r[e]))),
+  ])
 
   const infoFields = [
     {
@@ -92,26 +103,32 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
                   conf: row.conf,
                 })
               }
-              style={{ padding: 0 }}
+              className={classes.noPadding}
               color="secondary"
-              data-testid={`htsTrackEntryMenu-${id}`}
+              data-testid={`htsFacetedTrackMenu-${id}`}
             >
               <MoreHoriz />
             </IconButton>
           </>
         )
       },
-      width: measureGridWidth(rows.map(r => r.name)) + 15,
+      width: widths[0],
     },
-    ...['category'].map(e => ({
+    ...['category'].map((e, i) => ({
       field: e,
       // @ts-ignore
-      width: measureGridWidth(rows.map(r => r[e])),
+      width: widths[i + 1],
     })),
   ]
-  const shownTrackIds: string[] = view.tracks.map(
+  const shownTrackIds = view.tracks.map(
     (t: any) => t.configuration.trackId,
-  )
+  ) as string[]
+
+  // starting offset 52 for left checkbox column
+  const offsets = [] as number[]
+  infoFields
+    .map(info => info.width)
+    .reduce((a, b, i) => (offsets[i] = a + b), 52)
 
   return (
     <>
@@ -128,7 +145,7 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
         />
       ) : null}
       <TextField
-        label="Filter tracks"
+        label="Search..."
         value={filterText}
         onChange={event => setFilterText(event.target.value)}
         InputProps={{
@@ -142,15 +159,6 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
         }}
       />
       <div style={{ display: 'flex', margin: 5 }}>
-        <div style={{ width: 200, marginRight: 10 }}>
-          <TextField
-            value={facets['category']}
-            onChange={event =>
-              setFacets({ ...facets, category: event.target.value })
-            }
-            label="Filter category"
-          />
-        </div>
         <div
           style={{
             height: window.innerHeight * 0.75,
@@ -158,6 +166,20 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
             overflow: 'auto',
           }}
         >
+          <div className={classes.resizeBar}>
+            {offsets.map((left, i) => (
+              <ResizeHandle
+                onDrag={distance => {
+                  const newWidths = [...widths]
+                  newWidths[i] = newWidths[i] + distance
+                  setWidths(newWidths)
+                }}
+                vertical
+                className={classes.tick}
+                style={{ left }}
+              />
+            ))}
+          </div>
           <DataGrid
             rows={rows}
             checkboxSelection
@@ -177,7 +199,6 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
             selectionModel={shownTrackIds}
             columns={infoFields}
             rowHeight={25}
-            disableColumnMenu
           />
         </div>
       </div>

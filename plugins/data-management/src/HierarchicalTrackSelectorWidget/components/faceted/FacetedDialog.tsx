@@ -1,10 +1,10 @@
 import React from 'react'
-import { Button, DialogContent, DialogActions } from '@mui/material'
+import { DialogContent } from '@mui/material'
 import { Dialog } from '@jbrowse/core/ui'
 import { observer } from 'mobx-react'
 
 // locals
-import { HierarchicalTrackSelectorModel } from '../model'
+import { HierarchicalTrackSelectorModel } from '../../model'
 import FacetedSelector from './FacetedSelector'
 
 function FacetedDlg(props: {
@@ -17,15 +17,6 @@ function FacetedDlg(props: {
       <DialogContent>
         <FacetedSelector {...props} />
       </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => handleClose()}
-          variant="contained"
-          color="primary"
-        >
-          Close
-        </Button>
-      </DialogActions>
     </Dialog>
   )
 }

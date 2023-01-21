@@ -1,5 +1,11 @@
 import React, { Suspense, lazy, useState } from 'react'
-import { Badge, IconButton, InputAdornment, TextField } from '@mui/material'
+import {
+  Badge,
+  Button,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import JBrowseMenu, { MenuItem } from '@jbrowse/core/ui/Menu'
@@ -25,11 +31,19 @@ import { Cable } from '@jbrowse/core/ui/Icons'
 import { HierarchicalTrackSelectorModel } from '../model'
 
 // lazy components
-const CloseConnectionDialog = lazy(() => import('./CloseConnectionDialog'))
-const DeleteConnectionDialog = lazy(() => import('./DeleteConnectionDialog'))
-const ManageConnectionsDialog = lazy(() => import('./ManageConnectionsDialog'))
-const ToggleConnectionsDialog = lazy(() => import('./ToggleConnectionsDialog'))
-const FacetedDialog = lazy(() => import('./FacetedDialog'))
+const CloseConnectionDialog = lazy(
+  () => import('./dialogs/CloseConnectionDialog'),
+)
+const DeleteConnectionDialog = lazy(
+  () => import('./dialogs/DeleteConnectionDialog'),
+)
+const ManageConnectionsDialog = lazy(
+  () => import('./dialogs/ManageConnectionsDialog'),
+)
+const ToggleConnectionsDialog = lazy(
+  () => import('./dialogs/ToggleConnectionsDialog'),
+)
+const FacetedDialog = lazy(() => import('./faceted/FacetedDialog'))
 
 const useStyles = makeStyles()(theme => ({
   searchBox: {
@@ -57,12 +71,10 @@ function HierarchicalTrackSelectorHeader({
   model,
   setHeaderHeight,
   setAssemblyIdx,
-  assemblyIdx,
 }: {
   model: HierarchicalTrackSelectorModel
   setHeaderHeight: (n: number) => void
   setAssemblyIdx: (n: number) => void
-  assemblyIdx: number
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
@@ -213,12 +225,12 @@ function HierarchicalTrackSelectorHeader({
             ),
           }}
         />
-        <IconButton
+        <Button
           className={classes.menuIcon}
           onClick={() => setFacetedOpen(true)}
         >
-          <MenuIcon />
-        </IconButton>
+          Open faceted selector
+        </Button>
       </div>
       <JBrowseMenu
         anchorEl={connectionEl}
