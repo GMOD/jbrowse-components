@@ -144,7 +144,7 @@ export default observer(function LinearSyntenyRendering({
           const unitMultiplier = Math.floor(MAX_COLOR_RANGE / model.numFeats)
           const id = getId(r1, g1, b1, unitMultiplier)
           model.setClickId(id)
-          const f = model.featPositions[id - 1]
+          const f = model.featPositions[id]
           const session = getSession(model)
           if (f && isSessionModelWithWidgets(session)) {
             session.showWidget(
