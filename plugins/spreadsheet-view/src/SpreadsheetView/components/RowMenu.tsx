@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { Menu, MenuItem } from '@jbrowse/core/ui'
 import { Instance } from 'mobx-state-tree'
 
+// locals
 import SpreadsheetModel from '../models/Spreadsheet'
 import ViewModel from '../models/SpreadsheetView'
 

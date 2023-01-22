@@ -22,7 +22,9 @@ import { FileSelector, ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import { ImportWizardModel } from '../models/ImportWizard'
 
 const useStyles = makeStyles()(theme => ({
-  buttonContainer: { marginTop: theme.spacing(1) },
+  buttonContainer: {
+    marginTop: theme.spacing(1),
+  },
 }))
 
 const NumberEditor = observer(

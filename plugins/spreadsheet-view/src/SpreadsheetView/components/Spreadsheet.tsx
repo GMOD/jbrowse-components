@@ -39,11 +39,12 @@ export function numToColName(num: number) {
 }
 
 const useStyles = makeStyles()(theme => {
+  const { palette } = theme
   return {
     root: {
       position: 'relative',
       marginBottom: theme.spacing(1),
-      background: grey[500],
+      background: palette.background.paper,
       overflow: 'auto',
     },
     dataTable: {
@@ -51,20 +52,17 @@ const useStyles = makeStyles()(theme => {
       borderSpacing: 0,
       boxSizing: 'border-box',
       '& td': {
-        border: `1px solid ${grey[300]}`,
+        border: `1px solid ${palette.action.disabledBackground}`,
         padding: '0.2rem',
         maxWidth: '50em',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
       },
     },
-    dataTableBody: {
-      background: 'white',
-    },
+    dataTableBody: {},
     rowNumCell: {
-      background: grey[200],
       textAlign: 'left',
-      border: `1px solid ${grey[300]}`,
+      border: `1px solid ${palette.action.disabledBackground}`,
       position: 'relative',
       padding: '0 2px 0 0',
       whiteSpace: 'nowrap',
@@ -96,13 +94,11 @@ const useStyles = makeStyles()(theme => {
     },
     columnHead: {
       fontWeight: 'normal',
-      background: grey[200],
-      border: `1px solid ${grey[300]}`,
+      border: `1px solid ${palette.action.disabledBackground}`,
       position: 'sticky',
       top: '-1px',
       zIndex: 2,
       whiteSpace: 'nowrap',
-      // padding: [[0, theme.spacing(1)]],
     },
     sortIndicator: {
       position: 'relative',
@@ -114,16 +110,16 @@ const useStyles = makeStyles()(theme => {
       position: 'absolute',
       right: 0,
       top: 0,
-      background: grey[100],
+      background: palette.action.disabled,
       height: '100%',
       boxSizing: 'border-box',
-      borderLeft: `1px solid ${grey[300]}`,
+      borderLeft: `1px solid ${palette.action.disabledBackground}`,
     },
     columnButton: {
       padding: 0,
     },
     topLeftCorner: {
-      background: grey[300],
+      background: palette.action.disabledBackground,
       position: 'sticky',
       top: '-1px',
       zIndex: 2,
@@ -216,7 +212,6 @@ const DataRow = observer(
               event.preventDefault()
               event.stopPropagation()
             }}
-            color="secondary"
           >
             <ArrowDropDown className={classes.rowMenuButtonIcon} />
           </IconButton>
@@ -344,7 +339,6 @@ const DataTable = observer(
                     <IconButton
                       onClick={model.unselectAll}
                       disabled={!model.rowSet.selectedCount}
-                      color="secondary"
                     >
                       <CropFreeIcon />
                     </IconButton>
@@ -374,7 +368,6 @@ const DataTable = observer(
                     <IconButton
                       className={classes.columnButton}
                       onClick={columnButtonClick.bind(null, colNumber)}
-                      color="secondary"
                     >
                       <ArrowDropDown />
                     </IconButton>

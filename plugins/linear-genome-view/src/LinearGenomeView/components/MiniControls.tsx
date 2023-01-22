@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { IconButton, Paper } from '@mui/material'
+import Menu from '@jbrowse/core/ui/Menu'
+
+// icons
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import ArrowDown from '@mui/icons-material/KeyboardArrowDown'
-import Menu from '@jbrowse/core/ui/Menu'
+
+// locals
 import { LinearGenomeViewModel } from '..'
 
 const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
