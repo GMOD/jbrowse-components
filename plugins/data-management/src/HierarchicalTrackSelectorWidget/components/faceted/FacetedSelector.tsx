@@ -1,12 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import {
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  InputAdornment,
-  TextField,
-} from '@mui/material'
+import React, { useMemo, useState, useEffect } from 'react'
+import { IconButton } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
@@ -27,20 +20,21 @@ import {
 } from '@jbrowse/core/configuration'
 
 // icons
-import ClearIcon from '@mui/icons-material/Clear'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
 import ResizeBar from './ResizeBar'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
-import ShoppingCart from '../ShoppingCart'
+import FacetedHeader from './FacetedHeader'
 
 const useStyles = makeStyles()({
   noPadding: {
     padding: 0,
   },
 })
+
+const keys = ['category', 'adapter'] as const
 
 export interface InfoArgs {
   target: HTMLElement
@@ -84,19 +78,34 @@ export default observer(function FacetedSelector({
       }))
   }, [assemblyName, model, filterDebounced, session])
 
-  const allKeys = [
-    ...new Set(rows.map(r => getRootKeys(r.metadata)).flat()),
-  ].filter(f =>
-    !hideSparse
-      ? true
-      : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
-  )
-  const keys = ['category', 'adapter'] as const
+  const allKeys = useMemo(() => {
+    return [...new Set(rows.map(r => getRootKeys(r.metadata)).flat())].filter(
+      f =>
+        !hideSparse
+          ? true
+          : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
+    )
+  }, [hideSparse, rows])
+
   const [widths, setWidths] = useState([
     measureGridWidth(rows.map(r => r.name)) + 15,
     ...keys.map(e => measureGridWidth(rows.map(r => r[e]))),
     ...allKeys.map(e => measureGridWidth(rows.map(r => r.metadata[e]))),
   ])
+
+  useEffect(
+    () => {
+      setWidths([
+        ...widths.slice(0, 1 + keys.length),
+        ...allKeys.map(e => measureGridWidth(rows.map(r => r.metadata[e]))),
+      ])
+    },
+    // avoid specifying 'widths' in deps, not necessary in this case
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [allKeys, rows],
+  )
+
+  const widthsDebounced = useDebounce(widths, 400)
 
   const infoFields = [
     {
@@ -123,16 +132,16 @@ export default observer(function FacetedSelector({
           </>
         )
       },
-      width: widths[0],
+      width: widthsDebounced[0],
     },
     ...keys.map((e, i) => ({
       field: e,
-      width: widths[i + 1],
+      width: widthsDebounced[i + 1],
     })),
     ...allKeys.map((e, i) => ({
       field: e,
       renderCell: (params: GridCellParams) => params.row.metadata[e],
-      width: widths[i + 1 + keys.length],
+      width: widthsDebounced[i + 1 + keys.length],
     })),
   ]
   const shownTrackIds = view.tracks.map(
@@ -159,53 +168,16 @@ export default observer(function FacetedSelector({
           onClose={() => setInfo(undefined)}
         />
       ) : null}
+      <FacetedHeader
+        setHideSparse={setHideSparse}
+        setFilterText={setFilterText}
+        setUseShoppingCart={setUseShoppingCart}
+        hideSparse={hideSparse}
+        filterText={filterText}
+        useShoppingCart={useShoppingCart}
+        model={model}
+      />
 
-      <Grid container spacing={4} alignItems="center">
-        <Grid item>
-          <TextField
-            label="Search..."
-            value={filterText}
-            onChange={event => setFilterText(event.target.value)}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    color="secondary"
-                    onClick={() => setFilterText('')}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Grid>
-        <Grid item>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={useShoppingCart}
-                onChange={e => setUseShoppingCart(e.target.checked)}
-              />
-            }
-            label="Add tracks to selection instead of turning them on/off"
-          />
-        </Grid>
-        <Grid item>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={hideSparse}
-                onChange={e => setHideSparse(e.target.checked)}
-              />
-            }
-            label="Hide sparse metadata columns"
-          />
-        </Grid>
-        <Grid item>
-          <ShoppingCart model={model} />
-        </Grid>
-      </Grid>
       <div style={{ display: 'flex', margin: 5 }}>
         <div
           style={{
