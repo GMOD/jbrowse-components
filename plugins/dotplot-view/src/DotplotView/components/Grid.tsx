@@ -1,5 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
+import { useTheme } from '@mui/material'
 
 // locals
 import { DotplotViewModel } from '../model'
@@ -20,6 +21,7 @@ function Grid({
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
   const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
   const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
+  const theme = useTheme()
 
   // Uses math.max/math.min avoid making very large SVG rect offscreen element,
   // which can sometimes fail to draw
@@ -36,7 +38,13 @@ function Grid({
       width={viewWidth}
       height={viewHeight}
     >
-      <rect x={rx} y={ry} width={w} height={h} fill="#fff" />
+      <rect
+        x={rx}
+        y={ry}
+        width={w}
+        height={h}
+        fill={theme.palette.background.default}
+      />
       <g>
         {hblocks.map(region => {
           const x = region.offsetPx - hview.offsetPx

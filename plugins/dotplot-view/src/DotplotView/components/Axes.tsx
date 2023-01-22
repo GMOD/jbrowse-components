@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import { getSnapshot } from 'mobx-state-tree'
 import { getTickDisplayStr } from '@jbrowse/core/util'
 import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { useTheme } from '@mui/material'
 
 // locals
 import { getBlockLabelKeysToHide } from './util'
@@ -34,6 +35,7 @@ export const HorizontalAxis = observer(function ({
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
   const dblocks = dynamicBlocks.contentBlocks
   const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
+  const theme = useTheme()
   const hviewSnap = {
     ...getSnapshot(hview),
     width,
@@ -55,7 +57,7 @@ export const HorizontalAxis = observer(function ({
               key={JSON.stringify(region)}
               x={xoff}
               y={y + 1}
-              fill="black"
+              fill={theme.palette.text.primary}
               dominantBaseline="hanging"
               textAnchor="end"
             >
@@ -85,7 +87,7 @@ export const HorizontalAxis = observer(function ({
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            stroke={tick.type === 'major' ? '#555' : '#999'}
+            stroke={theme.palette.divider}
             data-bp={tick.base}
           />
         )
@@ -106,7 +108,7 @@ export const HorizontalAxis = observer(function ({
               y={y}
               transform={`rotate(${htextRotation},${x},${y})`}
               key={`text-${JSON.stringify(tick)}`}
-              fill="black"
+              fill={theme.palette.text.primary}
               fontSize={11}
               dominantBaseline="middle"
               textAnchor="end"
@@ -118,7 +120,7 @@ export const HorizontalAxis = observer(function ({
       <text
         y={borderY - 12}
         x={(viewWidth - borderX) / 2}
-        fill="black"
+        fill={theme.palette.text.primary}
         textAnchor="middle"
         dominantBaseline="hanging"
       >
@@ -137,6 +139,7 @@ export const VerticalAxis = observer(function ({
   const { offsetPx, width, dynamicBlocks, bpPerPx } = vview
   const dblocks = dynamicBlocks.contentBlocks
   const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
+  const theme = useTheme()
   const vviewSnap = {
     ...getSnapshot(vview),
     width,
@@ -157,7 +160,7 @@ export const VerticalAxis = observer(function ({
               key={JSON.stringify(region)}
               x={x}
               y={yoff}
-              fill="black"
+              fill={theme.palette.text.primary}
               textAnchor="end"
             >
               {[
@@ -186,7 +189,7 @@ export const VerticalAxis = observer(function ({
             x1={borderX}
             x2={borderX - (tick.type === 'major' ? 6 : 4)}
             strokeWidth={1}
-            stroke={tick.type === 'major' ? '#555' : '#999'}
+            stroke={theme.palette.divider}
             data-bp={tick.base}
           />
         )
@@ -206,7 +209,7 @@ export const VerticalAxis = observer(function ({
               x={borderX - 7}
               key={`text-${JSON.stringify(tick)}`}
               textAnchor="end"
-              fill="black"
+              fill={theme.palette.text.primary}
               dominantBaseline="hanging"
               fontSize={11}
             >
@@ -217,7 +220,7 @@ export const VerticalAxis = observer(function ({
       <text
         y={(viewHeight - borderY) / 2}
         x={12}
-        fill="black"
+        fill={theme.palette.text.primary}
         transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
         textAnchor="middle"
       >

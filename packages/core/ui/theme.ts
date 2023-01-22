@@ -37,25 +37,25 @@ const mandarin = '#FFB11D'
 
 const refTheme = createTheme()
 
-function getJBrowseDefaultPalette(mode: PaletteMode) {
+function getJBrowseDefaultPalette(mode?: PaletteMode) {
   return {
     mode,
-    ...(mode === 'light'
+    ...(mode === 'dark'
       ? {
-          // palette values for light mode
-          primary: { main: midnight },
-          secondary: { main: grape },
-          tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+          primary: { main: grey[200] },
+          secondary: { main: grey[800] },
+          tertiary: refTheme.palette.augmentColor({
+            color: { main: grey[900] },
+          }),
           quaternary: refTheme.palette.augmentColor({
             color: { main: mandarin },
           }),
         }
       : {
-          primary: { main: grey[300] },
-          secondary: { main: grey[800] },
-          tertiary: refTheme.palette.augmentColor({
-            color: { main: grey[900] },
-          }),
+          // palette values for light mode
+          primary: { main: midnight },
+          secondary: { main: grape },
+          tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
           quaternary: refTheme.palette.augmentColor({
             color: { main: mandarin },
           }),
@@ -180,7 +180,10 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
 }
 
 export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
-  const generatedPalette = deepmerge(getJBrowseDefaultPalette('dark'), palette)
+  const generatedPalette = deepmerge(
+    getJBrowseDefaultPalette(palette.mode),
+    palette,
+  )
   return {
     components: {
       MuiIconButton: {
@@ -227,10 +230,11 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
 }
 
 export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
+  console.log(palette?.mode)
   return {
-    palette: getJBrowseDefaultPalette(palette?.mode || 'dark'),
+    palette: getJBrowseDefaultPalette(palette?.mode),
     typography: { fontSize: 12 },
-    spacing: 4,
+    spacing: 2,
     ...deepmerge(
       createJBrowseDefaultProps(),
       createJBrowseDefaultOverrides(palette),
@@ -261,8 +265,6 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       },
     })
   }
-  const r = deepmerge(createJBrowseBaseTheme(theme?.palette), theme || {})
-  console.log({ r })
 
   return createTheme(
     deepmerge(createJBrowseBaseTheme(theme?.palette), theme || {}),
