@@ -15,11 +15,6 @@ const useStyles = makeStyles()({
   pointer: {
     cursor: 'pointer',
   },
-  toggleButton: {
-    '&.Mui-disabled': {
-      pointerEvents: 'auto',
-    },
-  },
 })
 
 export default function RecentSessionsList({

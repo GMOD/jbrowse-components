@@ -32,9 +32,6 @@ import RecentSessionsList from './RecentSessionList'
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
-  pointer: {
-    cursor: 'pointer',
-  },
   toggleButton: {
     '&.Mui-disabled': {
       pointerEvents: 'auto',
@@ -129,13 +126,15 @@ export default function RecentSessionPanel({
 
   return (
     <div>
-      <RenameSessionDialog
-        sessionToRename={sessionToRename}
-        onClose={() => {
-          setSessionToRename(undefined)
-          setUpdateSessionsList(s => s + 1)
-        }}
-      />
+      {sessionToRename ? (
+        <RenameSessionDialog
+          sessionToRename={sessionToRename}
+          onClose={() => {
+            setSessionToRename(undefined)
+            setUpdateSessionsList(s => s + 1)
+          }}
+        />
+      ) : null}
       {sessionsToDelete ? (
         <DeleteSessionDialog
           setError={setError}

@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 const { ipcRenderer } = window.require('electron')
 
 const DeleteSessionDialog = ({
@@ -19,8 +18,11 @@ const DeleteSessionDialog = ({
 }) => {
   const [error, setError] = useState<unknown>()
   return (
-    <Dialog open onClose={() => onClose(false)}>
-      <DialogTitle>{`Delete ${quickstartToDelete} quickstart?`}</DialogTitle>
+    <Dialog
+      open
+      onClose={() => onClose(false)}
+      title={`Delete ${quickstartToDelete} quickstart?`}
+    >
       <DialogContent>
         <DialogContentText>This action cannot be undone</DialogContentText>
         {error ? <Typography color="error">{`${error}`}</Typography> : null}

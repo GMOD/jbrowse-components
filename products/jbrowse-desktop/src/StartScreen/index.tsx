@@ -1,9 +1,8 @@
 import React from 'react'
 import { Grid, Paper, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-
-import { LogoFull } from '@jbrowse/core/ui/Logo'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { LogoFull } from '@jbrowse/core/ui/Logo'
 
 // locals
 import LauncherPanel from './LauncherPanel'
@@ -17,18 +16,10 @@ const useStyles = makeStyles()(theme => ({
     marginRight: 100,
     flexGrow: 1,
   },
-  formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-    maxWidth: 300,
-  },
+
   panel: {
     margin: theme.spacing(1),
     padding: theme.spacing(4),
-  },
-
-  settings: {
-    float: 'right',
   },
   logo: {
     margin: '0 auto',

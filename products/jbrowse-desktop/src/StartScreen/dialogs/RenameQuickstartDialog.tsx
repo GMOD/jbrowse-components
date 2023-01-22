@@ -1,14 +1,13 @@
 import React, { useState } from 'react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
   Input,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 const { ipcRenderer } = window.require('electron')
 
 const RenameQuickstartDialog = ({
@@ -24,8 +23,11 @@ const RenameQuickstartDialog = ({
   const [error, setError] = useState<unknown>()
 
   return (
-    <Dialog open={!!quickstartToRename} onClose={() => onClose(false)}>
-      <DialogTitle>Rename quickstart</DialogTitle>
+    <Dialog
+      open={!!quickstartToRename}
+      onClose={() => onClose(false)}
+      title="Rename quickstart"
+    >
       <DialogContent>
         <DialogContentText>
           Please enter a new name for the session:
