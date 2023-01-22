@@ -177,9 +177,7 @@
   ],
   "configuration": {
     "theme": {
-      "palette": {
-        "mode": "dark"
-      }
+      "palette": {}
     }
   },
   "connections": [],

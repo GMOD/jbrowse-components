@@ -3,10 +3,10 @@ import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 
 import {
   bindTrigger,
@@ -42,7 +42,6 @@ const useStyles = makeStyles()(theme => ({
   },
   dragHandle: {
     cursor: 'grab',
-    color: '#135560',
   },
   dragHandleIcon: {
     display: 'inline-block',

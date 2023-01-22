@@ -186,13 +186,6 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
   )
   return {
     components: {
-      MuiIconButton: {
-        styleOverrides: {
-          colorSecondary: {
-            color: generatedPalette.tertiary.main,
-          },
-        },
-      },
       MuiButton: {
         styleOverrides: {
           textSecondary: {
@@ -207,8 +200,6 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
           },
         },
       },
-      MuiLink: {},
-
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
@@ -227,7 +218,7 @@ export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
   return {
     palette: getJBrowseDefaultPalette(palette?.mode),
     typography: { fontSize: 12 },
-    spacing: 2,
+    spacing: 4,
     ...deepmerge(
       createJBrowseDefaultProps(),
       createJBrowseDefaultOverrides(palette),
