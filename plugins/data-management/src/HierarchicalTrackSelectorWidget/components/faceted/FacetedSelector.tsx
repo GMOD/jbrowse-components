@@ -48,19 +48,10 @@ export interface InfoArgs {
   conf: AnyConfigurationModel
 }
 
-function getKeys(obj: Record<string, unknown>): string[] {
-  const keys = Object.keys(obj)
-  let ret = [] as string[]
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
-    const o = obj[key]
-    if (typeof o === 'object' && o !== null && !Array.isArray(o)) {
-      ret = [...ret, ...getKeys(o as Record<string, unknown>)]
-    } else {
-      ret = [...ret, key]
-    }
-  }
-  return ret
+function getRootKeys(obj: Record<string, unknown>) {
+  return Object.entries(obj)
+    .map(([key, val]) => (typeof val === 'string' ? key : ''))
+    .filter(f => !!f)
 }
 
 export default observer(function FacetedSelector({
@@ -76,6 +67,7 @@ export default observer(function FacetedSelector({
   const session = getSession(model)
   const filterDebounced = useDebounce(filterText, 400)
   const [useShoppingCart, setUseShoppingCart] = useState(false)
+  const [hideSparse, setHideSparse] = useState(false)
   const { pluginManager } = getEnv(model)
 
   const rows = useMemo(() => {
@@ -87,15 +79,25 @@ export default observer(function FacetedSelector({
         name: getTrackName(track, session),
         category: readConfObject(track, 'category')?.join(', '),
         metadata: readConfObject(track, 'metadata'),
+        adapter: readConfObject(track, 'adapter')?.type,
         conf: track,
       }))
   }, [assemblyName, model, filterDebounced, session])
 
+  const allKeys = [
+    ...new Set(rows.map(r => getRootKeys(r.metadata)).flat()),
+  ].filter(f =>
+    !hideSparse
+      ? true
+      : rows.map(r => r.metadata[f]).filter(f => !!f).length > 5,
+  )
+  const keys = ['category', 'adapter'] as const
   const [widths, setWidths] = useState([
     measureGridWidth(rows.map(r => r.name)) + 15,
-    // @ts-ignore
-    ...['category'].map(e => measureGridWidth(rows.map(r => r[e]))),
+    ...keys.map(e => measureGridWidth(rows.map(r => r[e]))),
+    ...allKeys.map(e => measureGridWidth(rows.map(r => r.metadata[e]))),
   ])
+
   const infoFields = [
     {
       field: 'name',
@@ -123,10 +125,14 @@ export default observer(function FacetedSelector({
       },
       width: widths[0],
     },
-    ...['category'].map((e, i) => ({
+    ...keys.map((e, i) => ({
       field: e,
-      // @ts-ignore
       width: widths[i + 1],
+    })),
+    ...allKeys.map((e, i) => ({
+      field: e,
+      renderCell: (params: GridCellParams) => params.row.metadata[e],
+      width: widths[i + 1 + keys.length],
     })),
   ]
   const shownTrackIds = view.tracks.map(
@@ -183,6 +189,17 @@ export default observer(function FacetedSelector({
               />
             }
             label="Add tracks to selection instead of turning them on/off"
+          />
+        </Grid>
+        <Grid item>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={hideSparse}
+                onChange={e => setHideSparse(e.target.checked)}
+              />
+            }
+            label="Hide sparse metadata columns"
           />
         </Grid>
         <Grid item>
