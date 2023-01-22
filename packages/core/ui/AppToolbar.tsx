@@ -16,23 +16,26 @@ import EditableTypography from './EditableTypography'
 import AppLogo from './AppLogo'
 import { MenuItem as JBMenuItem } from './Menu'
 
-const useStyles = makeStyles()(theme => ({
-  grow: {
-    flexGrow: 1,
-  },
-  inputBase: {
-    color: theme.palette.primary.contrastText,
-  },
-  inputRoot: {
-    '&:hover': {
+const useStyles = makeStyles()(theme => {
+  console.log(theme.palette.primary.contrastText, theme.palette.primary.main)
+  return {
+    grow: {
+      flexGrow: 1,
+    },
+    inputBase: {
+      color: theme.palette.primary.contrastText,
+    },
+    inputRoot: {
+      '&:hover': {
+        backgroundColor: theme.palette.primary.light,
+      },
+    },
+    inputFocused: {
+      borderColor: theme.palette.secondary.main,
       backgroundColor: theme.palette.primary.light,
     },
-  },
-  inputFocused: {
-    borderColor: theme.palette.secondary.main,
-    backgroundColor: theme.palette.primary.light,
-  },
-}))
+  }
+})
 
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
 

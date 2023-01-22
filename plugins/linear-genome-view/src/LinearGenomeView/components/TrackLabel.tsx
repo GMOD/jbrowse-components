@@ -108,7 +108,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           onClick={() => view.hideTrack(trackId)}
           className={classes.iconButton}
           title="close this track"
-          color="secondary"
         >
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -123,7 +122,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
         <IconButton
           {...bindTrigger(popupState)}
           className={classes.iconButton}
-          color="secondary"
           data-testid="track_menu_icon"
           disabled={!items.length}
         >

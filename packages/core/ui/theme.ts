@@ -42,7 +42,7 @@ function getJBrowseDefaultPalette(mode?: PaletteMode) {
     mode,
     ...(mode === 'dark'
       ? {
-          primary: { main: grey[200] },
+          primary: { main: '#000' },
           secondary: { main: grey[800] },
           tertiary: refTheme.palette.augmentColor({
             color: { main: grey[900] },

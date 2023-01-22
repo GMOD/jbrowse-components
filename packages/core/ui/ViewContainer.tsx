@@ -26,36 +26,42 @@ import { IBaseViewModel } from '../pluggableElementTypes/models'
 import EditableTypography from './EditableTypography'
 import Menu from './Menu'
 
-const useStyles = makeStyles()(theme => ({
-  viewContainer: {
-    overflow: 'hidden',
-    background: theme.palette.secondary.main,
-    margin: theme.spacing(0.5),
-  },
-  icon: {
-    color: theme.palette.secondary.contrastText,
-  },
-  grow: {
-    flexGrow: 1,
-  },
+const useStyles = makeStyles()(theme => {
+  console.log(
+    theme.palette.secondary.contrastText,
+    theme.palette.secondary.main,
+  )
+  return {
+    viewContainer: {
+      overflow: 'hidden',
+      background: theme.palette.secondary.main,
+      margin: theme.spacing(0.5),
+    },
+    icon: {
+      color: theme.palette.secondary.contrastText,
+    },
+    grow: {
+      flexGrow: 1,
+    },
 
-  input: {
-    paddingBottom: 0,
-    paddingTop: 2,
-  },
-  inputBase: {
-    color: theme.palette.secondary.contrastText,
-  },
-  inputRoot: {
-    '&:hover': {
+    input: {
+      paddingBottom: 0,
+      paddingTop: 2,
+    },
+    inputBase: {
+      color: theme.palette.secondary.contrastText,
+    },
+    inputRoot: {
+      '&:hover': {
+        backgroundColor: theme.palette.secondary.light,
+      },
+    },
+    inputFocused: {
+      borderColor: theme.palette.primary.main,
       backgroundColor: theme.palette.secondary.light,
     },
-  },
-  inputFocused: {
-    borderColor: theme.palette.primary.main,
-    backgroundColor: theme.palette.secondary.light,
-  },
-}))
+  }
+})
 
 const ViewMenu = observer(
   ({
