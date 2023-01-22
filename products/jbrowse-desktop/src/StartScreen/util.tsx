@@ -166,3 +166,10 @@ export async function createPluginManager(
 
   return pm
 }
+
+export interface RecentSessionData {
+  path: string
+  name: string
+  screenshot?: string
+  updated: number
+}

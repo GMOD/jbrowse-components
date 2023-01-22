@@ -1,5 +1,12 @@
 import React, { useMemo, useState } from 'react'
-import { IconButton, InputAdornment, TextField } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  InputAdornment,
+  TextField,
+} from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
@@ -8,12 +15,11 @@ import { makeStyles } from 'tss-react/mui'
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
-import { getSession, measureGridWidth } from '@jbrowse/core/util'
+import { getSession, measureGridWidth, useDebounce } from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { ResizeHandle } from '@jbrowse/core/ui'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
@@ -21,21 +27,11 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
+import ResizeBar from './ResizeBar'
 
 const useStyles = makeStyles()({
   noPadding: {
     padding: 0,
-  },
-  resizeBar: {
-    background: 'lightgrey',
-    height: 12,
-    position: 'relative',
-  },
-  tick: {
-    position: 'absolute',
-    height: '100%',
-    background: 'black',
-    width: 1,
   },
 })
 
@@ -60,18 +56,24 @@ function getKeys(obj: Record<string, unknown>): string[] {
   return ret
 }
 
-function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
+export default observer(function FacetedSelector({
+  model,
+}: {
+  model: HierarchicalTrackSelectorModel
+}) {
   const { assemblyNames, view } = model
   const [filterText, setFilterText] = useState('')
   const [info, setInfo] = useState<InfoArgs>()
+  const { classes } = useStyles()
   const assemblyName = assemblyNames[0]
   const session = getSession(model)
-  const { classes } = useStyles()
+  const filterDebounced = useDebounce(filterText, 400)
+  const [useShoppingCart, setUseShoppingCart] = useState(false)
 
   const rows = useMemo(() => {
     return model
       .trackConfigurations(assemblyName)
-      .filter(conf => matches(filterText, conf, session))
+      .filter(conf => matches(filterDebounced, conf, session))
       .map(track => ({
         id: track.trackId,
         name: getTrackName(track, session),
@@ -79,7 +81,7 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
         metadata: readConfObject(track, 'metadata'),
         conf: track,
       }))
-  }, [assemblyName, model, filterText, session])
+  }, [assemblyName, model, filterDebounced, session])
 
   const [widths, setWidths] = useState([
     measureGridWidth(rows.map(r => r.name)) + 15,
@@ -143,20 +145,39 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
           onClose={() => setInfo(undefined)}
         />
       ) : null}
-      <TextField
-        label="Search..."
-        value={filterText}
-        onChange={event => setFilterText(event.target.value)}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton color="secondary" onClick={() => setFilterText('')}>
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+
+      <Grid container spacing={4} alignItems="center">
+        <Grid item>
+          <TextField
+            label="Search..."
+            value={filterText}
+            onChange={event => setFilterText(event.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    color="secondary"
+                    onClick={() => setFilterText('')}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={useShoppingCart}
+                onChange={e => setUseShoppingCart(e.target.checked)}
+              />
+            }
+            label="Select multiple tracks for group operation"
+          />
+        </Grid>
+      </Grid>
       <div style={{ display: 'flex', margin: 5 }}>
         <div
           style={{
@@ -165,34 +186,19 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
             overflow: 'auto',
           }}
         >
-          <div className={classes.resizeBar}>
-            {offsets.map((left, i) => (
-              <ResizeHandle
-                onDrag={distance => {
-                  const newWidths = [...widths]
-                  newWidths[i] = newWidths[i] + distance
-                  setWidths(newWidths)
-                }}
-                vertical
-                className={classes.tick}
-                style={{ left }}
-              />
-            ))}
-          </div>
+          <ResizeBar widths={widths} setWidths={setWidths} />
           <DataGrid
             rows={rows}
             checkboxSelection
             disableSelectionOnClick
             onSelectionModelChange={userSelectedIds => {
-              const arr1 = shownTrackIds
-              const arr2 = userSelectedIds
+              const a1 = shownTrackIds
+              const a2 = userSelectedIds as string[]
               // synchronize the user selection with the view
               // see share https://stackoverflow.com/a/33034768/2129219
-              const tracksToHide = arr1.filter(x => !arr2.includes(x))
-              const tracksToShow = arr2.filter(x => !arr1.includes(x as string))
               transaction(() => {
-                tracksToHide.map(t => view.hideTrack(t))
-                tracksToShow.map(t => view.showTrack(t))
+                a1.filter(x => !a2.includes(x)).map(t => view.hideTrack(t))
+                a2.filter(x => !a1.includes(x)).map(t => view.showTrack(t))
               })
             }}
             selectionModel={shownTrackIds}
@@ -203,6 +209,4 @@ function FacetedSelector({ model }: { model: HierarchicalTrackSelectorModel }) {
       </div>
     </>
   )
-}
-
-export default observer(FacetedSelector)
+})

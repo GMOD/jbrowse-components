@@ -9,40 +9,17 @@ import {
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import JBrowseMenu, { MenuItem } from '@jbrowse/core/ui/Menu'
-import {
-  getSession,
-  getEnv,
-  isSessionModelWithWidgets,
-  isSessionModelWithConnections,
-  isSessionWithAddTracks,
-} from '@jbrowse/core/util'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { getSession, getEnv } from '@jbrowse/core/util'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
-import MenuIcon from '@mui/icons-material/Menu'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-import { Cable } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { HierarchicalTrackSelectorModel } from '../model'
+import HamburgerMenu from './HamburgerMenu'
 
-// lazy components
-const CloseConnectionDialog = lazy(
-  () => import('./dialogs/CloseConnectionDialog'),
-)
-const DeleteConnectionDialog = lazy(
-  () => import('./dialogs/DeleteConnectionDialog'),
-)
-const ManageConnectionsDialog = lazy(
-  () => import('./dialogs/ManageConnectionsDialog'),
-)
-const ToggleConnectionsDialog = lazy(
-  () => import('./dialogs/ToggleConnectionsDialog'),
-)
+// lazies
 const FacetedDialog = lazy(() => import('./faceted/FacetedDialog'))
 
 const useStyles = makeStyles()(theme => ({
@@ -55,18 +32,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface ModalArgs {
-  connectionConf: AnyConfigurationModel
-  safelyBreakConnection: Function
-  dereferenceTypeCount: { [key: string]: number }
-  name: string
-}
-
-interface DialogDetails {
-  name: string
-  connectionConf: AnyConfigurationModel
-}
-
 function HierarchicalTrackSelectorHeader({
   model,
   setHeaderHeight,
@@ -78,98 +43,11 @@ function HierarchicalTrackSelectorHeader({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const [connectionEl, setConnectionEl] = useState<HTMLButtonElement>()
   const [selectionEl, setSelectionEl] = useState<HTMLButtonElement>()
-  const [menuEl, setMenuEl] = useState<HTMLButtonElement>()
-  const [modalInfo, setModalInfo] = useState<ModalArgs>()
-  const [deleteDlgDetails, setDeleteDlgDetails] = useState<DialogDetails>()
-  const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
-  const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [facetedOpen, setFacetedOpen] = useState(false)
-  const { assemblyNames } = model
 
-  function breakConnection(
-    connectionConf: AnyConfigurationModel,
-    deletingConnection?: boolean,
-  ) {
-    const name = readConfObject(connectionConf, 'name')
-
-    // @ts-ignore
-    const result = session.prepareToBreakConnection(connectionConf)
-    if (result) {
-      const [safelyBreakConnection, dereferenceTypeCount] = result
-      if (Object.keys(dereferenceTypeCount).length > 0) {
-        setModalInfo({
-          connectionConf,
-          safelyBreakConnection,
-          dereferenceTypeCount,
-          name,
-        })
-      } else {
-        safelyBreakConnection()
-      }
-    }
-    if (deletingConnection) {
-      setDeleteDlgDetails({ name, connectionConf })
-    }
-  }
-
-  const connectionMenuItems = [
-    {
-      label: 'Turn on/off connections...',
-      onClick: () => setConnectionToggleOpen(true),
-    },
-  ]
-
-  if (isSessionModelWithConnections(session)) {
-    connectionMenuItems.unshift({
-      label: 'Add connection',
-      onClick: () => {
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('AddConnectionWidget', 'addConnectionWidget'),
-          )
-        }
-      },
-    })
-
-    connectionMenuItems.push({
-      label: 'Delete connections...',
-      onClick: () => setConnectionManagerOpen(true),
-    })
-  }
-
-  const assemblyMenuItems =
-    assemblyNames.length > 1
-      ? [
-          {
-            label: 'Select assembly...',
-            subMenu: assemblyNames.map((name, idx) => ({
-              label: name,
-              onClick: () => setAssemblyIdx(idx),
-            })),
-          },
-        ]
-      : []
-
-  const menuItems = [
-    {
-      label: 'Add track...',
-      onClick: () => {
-        if (isSessionModelWithWidgets(session)) {
-          session.showWidget(
-            session.addWidget('AddTrackWidget', 'addTrackWidget', {
-              view: model.view.id,
-            }),
-          )
-        }
-      },
-    },
-
-    ...assemblyMenuItems,
-  ]
-
-  const items = getEnv(model).pluginManager.evaluateExtensionPoint(
+  const { pluginManager } = getEnv(model)
+  const items = pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
     [],
     { session },
@@ -180,24 +58,7 @@ function HierarchicalTrackSelectorHeader({
       data-testid="hierarchical_track_selector"
     >
       <div style={{ display: 'flex' }}>
-        {isSessionWithAddTracks(session) && (
-          <IconButton
-            className={classes.menuIcon}
-            onClick={event => setMenuEl(event.currentTarget)}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
-
-        {session.makeConnection && (
-          <IconButton
-            className={classes.menuIcon}
-            onClick={event => setConnectionEl(event.currentTarget)}
-          >
-            <Cable />
-          </IconButton>
-        )}
-
+        <HamburgerMenu model={model} setAssemblyIdx={setAssemblyIdx} />
         {model.selection.length ? (
           <IconButton
             className={classes.menuIcon}
@@ -232,26 +93,7 @@ function HierarchicalTrackSelectorHeader({
           Open faceted selector
         </Button>
       </div>
-      <JBrowseMenu
-        anchorEl={connectionEl}
-        open={Boolean(connectionEl)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setConnectionEl(undefined)
-        }}
-        onClose={() => setConnectionEl(undefined)}
-        menuItems={connectionMenuItems}
-      />
-      <JBrowseMenu
-        anchorEl={menuEl}
-        open={Boolean(menuEl)}
-        onMenuItemClick={(_, callback) => {
-          callback()
-          setMenuEl(undefined)
-        }}
-        onClose={() => setMenuEl(undefined)}
-        menuItems={menuItems}
-      />
+
       <JBrowseMenu
         anchorEl={selectionEl}
         open={Boolean(selectionEl)}
@@ -270,34 +112,8 @@ function HierarchicalTrackSelectorHeader({
           })),
         ]}
       />
+
       <Suspense fallback={<div />}>
-        {modalInfo ? (
-          <CloseConnectionDialog
-            modalInfo={modalInfo}
-            setModalInfo={setModalInfo}
-          />
-        ) : null}
-        {deleteDlgDetails ? (
-          <DeleteConnectionDialog
-            handleClose={() => setDeleteDlgDetails(undefined)}
-            deleteDialogDetails={deleteDlgDetails}
-            session={session}
-          />
-        ) : null}
-        {connectionManagerOpen ? (
-          <ManageConnectionsDialog
-            handleClose={() => setConnectionManagerOpen(false)}
-            breakConnection={breakConnection}
-            session={session}
-          />
-        ) : null}
-        {connectionToggleOpen ? (
-          <ToggleConnectionsDialog
-            handleClose={() => setConnectionToggleOpen(false)}
-            session={session}
-            breakConnection={breakConnection}
-          />
-        ) : null}
         {facetedOpen ? (
           <FacetedDialog
             handleClose={() => setFacetedOpen(false)}
