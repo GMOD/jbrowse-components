@@ -12,7 +12,7 @@ import {
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
-import { isUnsupported, NodeData } from './util'
+import { isUnsupported, NodeData } from '../util'
 
 const useStyles = makeStyles()({
   compactCheckbox: {

@@ -34,6 +34,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
 import ResizeBar from './ResizeBar'
 import { getRoot, resolveIdentifier } from 'mobx-state-tree'
+import ShoppingCart from '../ShoppingCart'
 
 const useStyles = makeStyles()({
   noPadding: {
@@ -184,6 +185,9 @@ export default observer(function FacetedSelector({
             label="Add tracks to selection instead of turning them on/off"
           />
         </Grid>
+        <Grid item>
+          <ShoppingCart model={model} />
+        </Grid>
       </Grid>
       <div style={{ display: 'flex', margin: 5 }}>
         <div
@@ -199,7 +203,7 @@ export default observer(function FacetedSelector({
             checkboxSelection
             disableSelectionOnClick
             onSelectionModelChange={userSelectedIds => {
-              if (useShoppingCart) {
+              if (!useShoppingCart) {
                 const a1 = shownTrackIds
                 const a2 = userSelectedIds as string[]
                 // synchronize the user selection with the view
@@ -211,11 +215,10 @@ export default observer(function FacetedSelector({
               } else {
                 const root = getRoot(model)
                 const schema = pluginManager.pluggableConfigSchemaType('track')
-                model.setSelection(
-                  userSelectedIds.map(id =>
-                    resolveIdentifier(schema, root, id),
-                  ),
+                const tracks = userSelectedIds.map(id =>
+                  resolveIdentifier(schema, root, id),
                 )
+                model.setSelection(tracks)
               }
             }}
             selectionModel={

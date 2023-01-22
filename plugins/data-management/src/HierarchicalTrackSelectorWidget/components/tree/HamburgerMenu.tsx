@@ -17,20 +17,20 @@ import {
 import MenuIcon from '@mui/icons-material/Menu'
 
 // locals
-import { HierarchicalTrackSelectorModel } from '../model'
+import { HierarchicalTrackSelectorModel } from '../../model'
 
 // lazy components
-const CloseConnectionDialog = lazy(
-  () => import('./dialogs/CloseConnectionDialog'),
+const CloseConnectionDlg = lazy(
+  () => import('../dialogs/CloseConnectionDialog'),
 )
-const DeleteConnectionDialog = lazy(
-  () => import('./dialogs/DeleteConnectionDialog'),
+const DeleteConnectionDlg = lazy(
+  () => import('../dialogs/DeleteConnectionDialog'),
 )
-const ManageConnectionsDialog = lazy(
-  () => import('./dialogs/ManageConnectionsDialog'),
+const ManageConnectionsDlg = lazy(
+  () => import('../dialogs/ManageConnectionsDialog'),
 )
-const ToggleConnectionsDialog = lazy(
-  () => import('./dialogs/ToggleConnectionsDialog'),
+const ToggleConnectionsDlg = lazy(
+  () => import('../dialogs/ToggleConnectionsDialog'),
 )
 
 const useStyles = makeStyles()(theme => ({
@@ -165,27 +165,27 @@ export default observer(function HamburgerMenu({
       />
       <Suspense fallback={<div />}>
         {modalInfo ? (
-          <CloseConnectionDialog
+          <CloseConnectionDlg
             modalInfo={modalInfo}
             setModalInfo={setModalInfo}
           />
         ) : null}
         {deleteDlgDetails ? (
-          <DeleteConnectionDialog
+          <DeleteConnectionDlg
             handleClose={() => setDeleteDlgDetails(undefined)}
             deleteDialogDetails={deleteDlgDetails}
             session={session}
           />
         ) : null}
         {connectionManagerOpen ? (
-          <ManageConnectionsDialog
+          <ManageConnectionsDlg
             handleClose={() => setConnectionManagerOpen(false)}
             breakConnection={breakConnection}
             session={session}
           />
         ) : null}
         {connectionToggleOpen ? (
-          <ToggleConnectionsDialog
+          <ToggleConnectionsDlg
             handleClose={() => setConnectionToggleOpen(false)}
             session={session}
             breakConnection={breakConnection}

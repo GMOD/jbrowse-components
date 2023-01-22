@@ -131,13 +131,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       id: ElementId,
       type: types.literal('HierarchicalTrackSelectorWidget'),
       collapsed: types.map(types.boolean),
-      filterText: '',
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
+      filterText: '',
     }))
     .actions(self => ({
       setSelection(elt: AnyConfigurationModel[]) {
