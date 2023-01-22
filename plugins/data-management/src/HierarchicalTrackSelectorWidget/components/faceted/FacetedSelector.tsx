@@ -15,7 +15,12 @@ import { makeStyles } from 'tss-react/mui'
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
-import { getSession, measureGridWidth, useDebounce } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  measureGridWidth,
+  useDebounce,
+} from '@jbrowse/core/util'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -28,6 +33,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 // locals
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
 import ResizeBar from './ResizeBar'
+import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 
 const useStyles = makeStyles()({
   noPadding: {
@@ -61,7 +67,7 @@ export default observer(function FacetedSelector({
 }: {
   model: HierarchicalTrackSelectorModel
 }) {
-  const { assemblyNames, view } = model
+  const { assemblyNames, view, selection } = model
   const [filterText, setFilterText] = useState('')
   const [info, setInfo] = useState<InfoArgs>()
   const { classes } = useStyles()
@@ -69,6 +75,7 @@ export default observer(function FacetedSelector({
   const session = getSession(model)
   const filterDebounced = useDebounce(filterText, 400)
   const [useShoppingCart, setUseShoppingCart] = useState(false)
+  const { pluginManager } = getEnv(model)
 
   const rows = useMemo(() => {
     return model
@@ -141,7 +148,7 @@ export default observer(function FacetedSelector({
             callback()
             setInfo(undefined)
           }}
-          open={Boolean(info)}
+          open={!!info}
           onClose={() => setInfo(undefined)}
         />
       ) : null}
@@ -174,7 +181,7 @@ export default observer(function FacetedSelector({
                 onChange={e => setUseShoppingCart(e.target.checked)}
               />
             }
-            label="Select multiple tracks for group operation"
+            label="Add tracks to selection instead of turning them on/off"
           />
         </Grid>
       </Grid>
@@ -192,16 +199,28 @@ export default observer(function FacetedSelector({
             checkboxSelection
             disableSelectionOnClick
             onSelectionModelChange={userSelectedIds => {
-              const a1 = shownTrackIds
-              const a2 = userSelectedIds as string[]
-              // synchronize the user selection with the view
-              // see share https://stackoverflow.com/a/33034768/2129219
-              transaction(() => {
-                a1.filter(x => !a2.includes(x)).map(t => view.hideTrack(t))
-                a2.filter(x => !a1.includes(x)).map(t => view.showTrack(t))
-              })
+              if (useShoppingCart) {
+                const a1 = shownTrackIds
+                const a2 = userSelectedIds as string[]
+                // synchronize the user selection with the view
+                // see share https://stackoverflow.com/a/33034768/2129219
+                transaction(() => {
+                  a1.filter(x => !a2.includes(x)).map(t => view.hideTrack(t))
+                  a2.filter(x => !a1.includes(x)).map(t => view.showTrack(t))
+                })
+              } else {
+                const root = getRoot(model)
+                const schema = pluginManager.pluggableConfigSchemaType('track')
+                model.setSelection(
+                  userSelectedIds.map(id =>
+                    resolveIdentifier(schema, root, id),
+                  ),
+                )
+              }
             }}
-            selectionModel={shownTrackIds}
+            selectionModel={
+              useShoppingCart ? selection.map(s => s.trackId) : shownTrackIds
+            }
             columns={infoFields}
             rowHeight={25}
           />

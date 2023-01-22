@@ -4,9 +4,9 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
-import HierarchicalTree from './HierarchicalTree'
 import HierarchicalFab from './HierarchicalFab'
-import HierarchicalHeader from './HierarchicalHeader'
+import HierarchicalTree from './tree/HierarchicalTree'
+import HierarchicalHeader from './tree/HierarchicalHeader'
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests

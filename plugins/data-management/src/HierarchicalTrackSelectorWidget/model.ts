@@ -140,6 +140,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       selection: [] as AnyConfigurationModel[],
     }))
     .actions(self => ({
+      setSelection(elt: AnyConfigurationModel[]) {
+        self.selection = elt
+      },
       addToSelection(elt: AnyConfigurationModel[]) {
         self.selection = dedupe([...self.selection, ...elt], e => e.trackId)
       },
