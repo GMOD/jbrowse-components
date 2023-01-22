@@ -175,7 +175,13 @@
       }
     }
   ],
-  "configuration": {},
+  "configuration": {
+    "theme": {
+      "palette": {
+        "mode": "dark"
+      }
+    }
+  },
   "connections": [],
   "defaultSession": {
     "name": "Integration test example",

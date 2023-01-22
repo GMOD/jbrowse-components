@@ -1,4 +1,5 @@
-import { blue, green, red, amber } from '@mui/material/colors'
+import { PaletteMode } from '@mui/material'
+import { blue, green, red, grey, amber } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type {
   PaletteAugmentColorOptions,
@@ -36,20 +37,39 @@ const mandarin = '#FFB11D'
 
 const refTheme = createTheme()
 
-export const jbrowseDefaultPalette = {
-  // type: 'dark',
-  primary: { main: midnight },
-  secondary: { main: grape },
-  tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-  quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-  stopCodon: '#e22',
-  startCodon: '#3e3',
-  bases: {
-    A: refTheme.palette.augmentColor({ color: green }),
-    C: refTheme.palette.augmentColor({ color: blue }),
-    G: refTheme.palette.augmentColor({ color: amber }),
-    T: refTheme.palette.augmentColor({ color: red }),
-  },
+function getJBrowseDefaultPalette(mode: PaletteMode) {
+  return {
+    mode,
+    ...(mode === 'light'
+      ? {
+          // palette values for light mode
+          primary: { main: midnight },
+          secondary: { main: grape },
+          tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+          quaternary: refTheme.palette.augmentColor({
+            color: { main: mandarin },
+          }),
+        }
+      : {
+          primary: { main: grey[300] },
+          secondary: { main: grey[800] },
+          tertiary: refTheme.palette.augmentColor({
+            color: { main: grey[900] },
+          }),
+          quaternary: refTheme.palette.augmentColor({
+            color: { main: mandarin },
+          }),
+        }),
+
+    stopCodon: '#e22',
+    startCodon: '#3e3',
+    bases: {
+      A: refTheme.palette.augmentColor({ color: green }),
+      C: refTheme.palette.augmentColor({ color: blue }),
+      G: refTheme.palette.augmentColor({ color: amber }),
+      T: refTheme.palette.augmentColor({ color: red }),
+    },
+  }
 }
 
 export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
@@ -160,7 +180,7 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
 }
 
 export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
-  const generatedPalette = deepmerge(jbrowseDefaultPalette, palette)
+  const generatedPalette = deepmerge(getJBrowseDefaultPalette('dark'), palette)
   return {
     components: {
       MuiIconButton: {
@@ -208,7 +228,7 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
 
 export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
   return {
-    palette: jbrowseDefaultPalette,
+    palette: getJBrowseDefaultPalette(palette?.mode || 'dark'),
     typography: { fontSize: 12 },
     spacing: 4,
     ...deepmerge(
@@ -241,6 +261,8 @@ export function createJBrowseTheme(theme?: ThemeOptions) {
       },
     })
   }
+  const r = deepmerge(createJBrowseBaseTheme(theme?.palette), theme || {})
+  console.log({ r })
 
   return createTheme(
     deepmerge(createJBrowseBaseTheme(theme?.palette), theme || {}),
