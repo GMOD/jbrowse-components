@@ -207,13 +207,7 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
           },
         },
       },
-      MuiLink: {
-        styleOverrides: {
-          root: {
-            color: generatedPalette.tertiary.main,
-          },
-        },
-      },
+      MuiLink: {},
 
       MuiAccordionSummary: {
         styleOverrides: {
@@ -230,7 +224,6 @@ export function createJBrowseDefaultOverrides(palette: PaletteOptions = {}) {
 }
 
 export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
-  console.log(palette?.mode)
   return {
     palette: getJBrowseDefaultPalette(palette?.mode),
     typography: { fontSize: 12 },

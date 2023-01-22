@@ -17,7 +17,6 @@ const useStyles = makeStyles()(theme => ({
     position: 'relative',
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
-    background: 'white',
   },
   scroller: {
     overflow: 'auto',

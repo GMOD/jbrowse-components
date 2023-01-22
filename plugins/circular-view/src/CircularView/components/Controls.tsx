@@ -2,7 +2,6 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { grey } from '@mui/material/colors'
 
 // icons
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
@@ -25,7 +24,6 @@ const useStyles = makeStyles()({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     position: 'absolute',
-    background: grey[200],
     boxSizing: 'border-box',
     borderRight: '1px solid #a2a2a2',
     borderBottom: '1px solid #a2a2a2',
@@ -43,7 +41,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         className={classes.iconButton}
         title={model.lockedFitToWindow ? 'unlock to zoom out' : 'zoom out'}
         disabled={model.atMaxBpPerPx || model.lockedFitToWindow}
-        color="secondary"
       >
         <ZoomOutIcon />
       </IconButton>
@@ -53,7 +50,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         className={classes.iconButton}
         title="zoom in"
         disabled={model.atMinBpPerPx}
-        color="secondary"
       >
         <ZoomInIcon />
       </IconButton>
@@ -62,7 +58,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         onClick={model.rotateCounterClockwiseButton}
         className={classes.iconButton}
         title="rotate counter-clockwise"
-        color="secondary"
       >
         <RotateLeftIcon />
       </IconButton>
@@ -71,7 +66,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         onClick={model.rotateClockwiseButton}
         className={classes.iconButton}
         title="rotate clockwise"
-        color="secondary"
       >
         <RotateRightIcon />
       </IconButton>
@@ -85,7 +79,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
             : 'unlocked model to zoom further'
         }
         disabled={model.tooSmallToLock}
-        color="secondary"
       >
         {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
@@ -95,7 +88,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
           onClick={model.activateTrackSelector}
           title="Open track selector"
           data-testid="circular_track_select"
-          color="secondary"
         >
           <TrackSelectorIcon />
         </IconButton>
