@@ -4,9 +4,9 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../model'
-import Header from './Header'
 import HierarchicalTree from './HierarchicalTree'
 import HierarchicalFab from './HierarchicalFab'
+import HierarchicalHeader from './HierarchicalHeader'
 
 // Don't use autosizer in jest and instead hardcode a height, otherwise fails
 // jest tests
@@ -66,34 +66,32 @@ const HierarchicalTrackSelectorContainer = observer(function ({
   )
 })
 
-const HierarchicalTrackSelector = observer(
-  ({
-    model,
-    toolbarHeight = 0,
-  }: {
-    model: HierarchicalTrackSelectorModel
-    toolbarHeight?: number
-  }) => {
-    const [assemblyIdx, setAssemblyIdx] = useState(0)
-    const [headerHeight, setHeaderHeight] = useState(0)
+const HierarchicalTrackSelector = observer(function ({
+  model,
+  toolbarHeight = 0,
+}: {
+  model: HierarchicalTrackSelectorModel
+  toolbarHeight?: number
+}) {
+  const [assemblyIdx, setAssemblyIdx] = useState(0)
+  const [headerHeight, setHeaderHeight] = useState(0)
 
-    const { assemblyNames } = model
-    const assemblyName = assemblyNames[assemblyIdx]
-    return assemblyName ? (
-      <>
-        <Header
-          model={model}
-          setHeaderHeight={setHeaderHeight}
-          setAssemblyIdx={setAssemblyIdx}
-        />
-        <AutoSizedHierarchicalTree
-          tree={model.hierarchy(assemblyName)}
-          model={model}
-          offset={toolbarHeight + headerHeight}
-        />
-      </>
-    ) : null
-  },
-)
+  const { assemblyNames } = model
+  const assemblyName = assemblyNames[assemblyIdx]
+  return assemblyName ? (
+    <>
+      <HierarchicalHeader
+        model={model}
+        setHeaderHeight={setHeaderHeight}
+        setAssemblyIdx={setAssemblyIdx}
+      />
+      <AutoSizedHierarchicalTree
+        tree={model.hierarchy(assemblyName)}
+        model={model}
+        offset={toolbarHeight + headerHeight}
+      />
+    </>
+  ) : null
+})
 
 export default HierarchicalTrackSelectorContainer

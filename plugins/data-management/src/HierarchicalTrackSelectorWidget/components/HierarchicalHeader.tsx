@@ -45,7 +45,7 @@ function HierarchicalTrackSelectorHeader({
   const session = getSession(model)
   const [selectionEl, setSelectionEl] = useState<HTMLButtonElement>()
   const [facetedOpen, setFacetedOpen] = useState(false)
-
+  const { selection, filterText } = model
   const { pluginManager } = getEnv(model)
   const items = pluginManager.evaluateExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
@@ -59,12 +59,12 @@ function HierarchicalTrackSelectorHeader({
     >
       <div style={{ display: 'flex' }}>
         <HamburgerMenu model={model} setAssemblyIdx={setAssemblyIdx} />
-        {model.selection.length ? (
+        {selection.length ? (
           <IconButton
             className={classes.menuIcon}
             onClick={event => setSelectionEl(event.currentTarget)}
           >
-            <Badge badgeContent={model.selection.length} color="primary">
+            <Badge badgeContent={selection.length} color="primary">
               <ShoppingCartIcon />
             </Badge>
           </IconButton>
@@ -73,13 +73,16 @@ function HierarchicalTrackSelectorHeader({
         <TextField
           className={classes.searchBox}
           label="Filter tracks"
-          value={model.filterText}
+          value={filterText}
           onChange={event => model.setFilterText(event.target.value)}
           fullWidth
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton color="secondary" onClick={model.clearFilterText}>
+                <IconButton
+                  color="secondary"
+                  onClick={() => model.clearFilterText()}
+                >
                   <ClearIcon />
                 </IconButton>
               </InputAdornment>
