@@ -315,12 +315,16 @@ export default function sessionModelFactory(
         return getParent<any>(self).version
       },
 
+      get theme() {
+        return getCurrentTheme(getConf(self, 'theme'), self.themeName)
+      },
+
       /**
        * #method
        */
       renderProps() {
         return {
-          theme: getCurrentTheme(getConf(self, 'theme'), self.themeName),
+          theme: this.theme,
         }
       },
 

@@ -1,24 +1,12 @@
 import React from 'react'
-import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getTickDisplayStr } from '@jbrowse/core/util'
 
 // locals
 import { makeTicks } from '../util'
+import { useTheme } from '@mui/material'
 
-const useStyles = makeStyles()({
-  majorTickLabel: {
-    fontSize: '11px',
-  },
-  majorTick: {
-    stroke: '#555',
-  },
-  minorTick: {
-    stroke: '#999',
-  },
-})
-
-function Ruler({
+export default observer(function Ruler({
   start,
   end,
   bpPerPx,
@@ -33,8 +21,8 @@ function Ruler({
   major?: boolean
   minor?: boolean
 }) {
-  const { classes } = useStyles()
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
+  const theme = useTheme()
   return (
     <>
       {ticks.map(tick => {
@@ -47,10 +35,7 @@ function Ruler({
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            stroke={tick.type === 'major' ? '#555' : '#999'}
-            className={
-              tick.type === 'major' ? classes.majorTick : classes.minorTick
-            }
+            stroke={theme.palette.divider}
             data-bp={tick.base}
           />
         )
@@ -64,8 +49,8 @@ function Ruler({
               x={x - 3}
               y={7 + 11}
               key={`label-${tick.base}`}
-              style={{ fontSize: '11px' }}
-              className={classes.majorTickLabel}
+              fontSize={11}
+              fill={theme.palette.text.primary}
             >
               {getTickDisplayStr(tick.base + 1, bpPerPx)}
             </text>
@@ -73,6 +58,4 @@ function Ruler({
         })}
     </>
   )
-}
-
-export default observer(Ruler)
+})

@@ -39,22 +39,21 @@ const forest = '#135560'
 const mandarin = '#FFB11D'
 
 const refTheme = createTheme()
-const { palette } = refTheme
 
 function getDefaultPalette() {
   return {
     mode: undefined,
     primary: { main: midnight },
     secondary: { main: grape },
-    tertiary: palette.augmentColor({ color: { main: forest } }),
-    quaternary: palette.augmentColor({ color: { main: mandarin } }),
+    tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
     stopCodon: '#e22',
     startCodon: '#3e3',
     bases: {
-      A: palette.augmentColor({ color: green }),
-      C: palette.augmentColor({ color: blue }),
-      G: palette.augmentColor({ color: amber }),
-      T: palette.augmentColor({ color: red }),
+      A: refTheme.palette.augmentColor({ color: green }),
+      C: refTheme.palette.augmentColor({ color: blue }),
+      G: refTheme.palette.augmentColor({ color: amber }),
+      T: refTheme.palette.augmentColor({ color: red }),
     },
   }
 }
@@ -64,15 +63,15 @@ function getDarkPalette() {
     mode: 'dark' as const,
     primary: { main: grey[700] },
     secondary: { main: grey[800] },
-    tertiary: palette.augmentColor({ color: { main: grey[900] } }),
-    quaternary: palette.augmentColor({ color: { main: mandarin } }),
+    tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
     stopCodon: '#e22',
     startCodon: '#3e3',
     bases: {
-      A: palette.augmentColor({ color: green }),
-      C: palette.augmentColor({ color: blue }),
-      G: palette.augmentColor({ color: amber }),
-      T: palette.augmentColor({ color: red }),
+      A: refTheme.palette.augmentColor({ color: green }),
+      C: refTheme.palette.augmentColor({ color: blue }),
+      G: refTheme.palette.augmentColor({ color: amber }),
+      T: refTheme.palette.augmentColor({ color: red }),
     },
   }
 }
@@ -81,21 +80,22 @@ function getMinimalPalette() {
   return {
     primary: { main: grey[900] },
     secondary: { main: grey[800] },
-    tertiary: palette.augmentColor({ color: { main: grey[900] } }),
-    quaternary: palette.augmentColor({ color: { main: mandarin } }),
+    tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
     stopCodon: '#e22',
     startCodon: '#3e3',
     bases: {
-      A: palette.augmentColor({ color: green }),
-      C: palette.augmentColor({ color: blue }),
-      G: palette.augmentColor({ color: amber }),
-      T: palette.augmentColor({ color: red }),
+      A: refTheme.palette.augmentColor({ color: green }),
+      C: refTheme.palette.augmentColor({ color: blue }),
+      G: refTheme.palette.augmentColor({ color: amber }),
+      T: refTheme.palette.augmentColor({ color: red }),
     },
   }
 }
 
 const palettes = {
   dark: getDarkPalette(),
+  default: getDefaultPalette(),
   light: getDefaultPalette(),
   minimal: getMinimalPalette(),
 } as const
@@ -209,11 +209,11 @@ export function createDefaultProps() {
 
 export function createDefaultOverrides(
   palette: PaletteOptions = {},
-  paletteName = 'light',
+  paletteName = 'default',
 ) {
   const generatedPalette = deepmerge(
     // @ts-ignore
-    palettes[paletteName as keyof typeof palettes] || palettes['light'],
+    palettes[paletteName as keyof typeof palettes] || palettes['default'],
     palette,
   )
   return {
@@ -295,11 +295,16 @@ export function getCurrentTheme(
     })
   }
 
-  const opt = paletteName || palette?.mode || 'light'
+  const opt = paletteName || 'default'
   const pal =
     palettes[opt as keyof typeof palettes] ||
     theme?.palette ||
-    palettes['light']
+    palettes['default']
 
-  return deepmerge(createJBrowseBaseTheme(pal, paletteName), theme)
+  const obj = createJBrowseBaseTheme(pal, paletteName)
+
+  return {
+    ...deepmerge(obj, theme),
+    ...(opt !== 'default' ? { palette: obj.palette } : {}),
+  }
 }

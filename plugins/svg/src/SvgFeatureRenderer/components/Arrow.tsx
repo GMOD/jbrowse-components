@@ -28,7 +28,7 @@ const Arrow = ({
 
   const c = readConfObject(config, 'color2', { feature })
   const theme = useTheme()
-  const color2 = c === '#f0f' ? theme.palette.divider : c
+  const color2 = c === '#f0f' ? theme.palette.text.disabled : c
   const p =
     strand * reverseFlip === -1
       ? left
@@ -47,6 +47,7 @@ const Arrow = ({
           [p + offset, y],
         ].toString()}
         stroke={color2}
+        fill={color2}
       />
     </>
   ) : null

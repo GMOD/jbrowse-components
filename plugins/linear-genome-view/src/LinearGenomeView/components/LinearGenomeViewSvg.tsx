@@ -6,6 +6,8 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getSession, getBpDisplayStr } from '@jbrowse/core/util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import { useTheme, ThemeProvider } from '@mui/material'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 // locals
 import Ruler from './Ruler'
@@ -23,19 +25,39 @@ function Scalebar({ model, fontSize }: { model: LGV; fontSize: number }) {
     offsetPx,
     dynamicBlocks: { totalWidthPxWithoutBorders: totalWidthPx, totalBp },
   } = model
+  const theme = useTheme()
   const displayBp = getBpDisplayStr(totalBp)
   const x0 = Math.max(-offsetPx, 0)
   const x1 = x0 + totalWidthPx
   return (
     <>
-      <line x1={x0} x2={x1} y1={10} y2={10} stroke="black" />
-      <line x1={x0} x2={x0} y1={5} y2={15} stroke="black" />
-      <line x1={x1} x2={x1} y1={5} y2={15} stroke="black" />
+      <line
+        x1={x0}
+        x2={x1}
+        y1={10}
+        y2={10}
+        stroke={theme.palette.text.secondary}
+      />
+      <line
+        x1={x0}
+        x2={x0}
+        y1={5}
+        y2={15}
+        stroke={theme.palette.text.secondary}
+      />
+      <line
+        x1={x1}
+        x2={x1}
+        y1={5}
+        y2={15}
+        stroke={theme.palette.text.secondary}
+      />
       <text
         x={x0 + (x1 - x0) / 2}
         y={fontSize * 2}
         textAnchor="middle"
         fontSize={fontSize}
+        fill={theme.palette.text.primary}
       >
         {displayBp}
       </text>
@@ -58,6 +80,7 @@ function SVGRuler({
     bpPerPx,
   } = model
   const renderRuler = contentBlocks.length < 5
+  const theme = useTheme()
   return (
     <>
       <defs>
@@ -70,7 +93,12 @@ function SVGRuler({
         const offsetLeft = offsetPx - viewOffsetPx
         return (
           <g key={`${key}`} transform={`translate(${offsetLeft} 0)`}>
-            <text x={offsetLeft / bpPerPx} y={fontSize} fontSize={fontSize}>
+            <text
+              x={offsetLeft / bpPerPx}
+              y={fontSize}
+              fontSize={fontSize}
+              fill={theme.palette.text.primary}
+            >
               {refName}
             </text>
             {renderRuler ? (
@@ -85,7 +113,7 @@ function SVGRuler({
             ) : (
               <line
                 strokeWidth={1}
-                stroke="black"
+                stroke={theme.palette.text.secondary}
                 x1={start / bpPerPx}
                 x2={end / bpPerPx}
                 y1={20}
@@ -126,6 +154,7 @@ const SVGHeader = ({ model }: { model: LGV }) => {
   const { assemblyManager } = getSession(model)
   const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]
   const assembly = assemblyManager.get(assemblyName)
+  const theme = useTheme()
 
   const overview = Base1DView.create({
     displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
@@ -156,7 +185,12 @@ const SVGHeader = ({ model }: { model: LGV }) => {
 
   return (
     <g id="header">
-      <text x={0} y={fontSize} fontSize={fontSize}>
+      <text
+        x={0}
+        y={fontSize}
+        fontSize={fontSize}
+        fill={theme.palette.text.primary}
+      >
         {assemblyName}
       </text>
 
@@ -213,22 +247,25 @@ const SVGRegionSeparators = ({
   )
 }
 
+interface DisplayResult {
+  track: {
+    configuration: AnyConfigurationModel
+    displays: { height: number }[]
+  }
+  result: string
+}
+
 // SVG component, tracks
 function SVGTracks({
   displayResults,
   model,
   offset,
 }: {
-  displayResults: {
-    track: {
-      configuration: AnyConfigurationModel
-      displays: { height: number }[]
-    }
-    result: string
-  }[]
+  displayResults: DisplayResult[]
   model: LGV
   offset: number
 }) {
+  const theme = useTheme()
   return (
     <>
       {displayResults.map(({ track, result }) => {
@@ -246,7 +283,11 @@ function SVGTracks({
             key={track.configuration.trackId}
             transform={`translate(0 ${current})`}
           >
-            <text fontSize={fontSize} x={Math.max(-model.offsetPx, 0)}>
+            <text
+              fontSize={fontSize}
+              x={Math.max(-model.offsetPx, 0)}
+              fill={theme.palette.text.primary}
+            >
               {trackName}
             </text>
             <g transform={`translate(0 ${textHeight})`}>
@@ -260,10 +301,30 @@ function SVGTracks({
   )
 }
 
+export function Background({
+  width,
+  height,
+  shift,
+}: {
+  width: number
+  height: number
+  shift: number
+}) {
+  const theme = useTheme()
+  return (
+    <rect
+      width={width + shift * 2}
+      height={height}
+      fill={theme.palette.background.default}
+    />
+  )
+}
+
 // render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const { Wrapper = ({ children }) => <>{children}</> } = opts
+  const session = getSession(model)
   const { width, tracks, showCytobands } = model
   const shift = 50
   const offset =
@@ -282,26 +343,26 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <Wrapper>
-      <svg
-        width={width}
-        height={height}
-        xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        viewBox={[0, 0, width + shift * 2, height].toString()}
-      >
-        {/* background white */}
-        <rect width={width + shift * 2} height={height} fill="white" />
-
-        <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
-          <SVGHeader model={model} />
-          <SVGTracks
-            model={model}
-            displayResults={displayResults}
-            offset={offset}
-          />
-        </g>
-      </svg>
-    </Wrapper>,
+    <ThemeProvider theme={createJBrowseTheme(session.theme)}>
+      <Wrapper>
+        <svg
+          width={width}
+          height={height}
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+          viewBox={[0, 0, width + shift * 2, height].toString()}
+        >
+          <Background width={width} height={height} shift={shift} />
+          <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+            <SVGHeader model={model} />
+            <SVGTracks
+              model={model}
+              displayResults={displayResults}
+              offset={offset}
+            />
+          </g>
+        </svg>
+      </Wrapper>
+    </ThemeProvider>,
   )
 }
