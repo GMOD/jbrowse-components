@@ -152,23 +152,27 @@ export default function sessionModelFactory(
         types.string,
         localStorage.getItem('drawerPosition') || 'right',
       ),
+
+      themeName: types.maybe(types.string),
     })
     .volatile((/* self */) => ({
       /**
-       * !volatile
+       * #volatile
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
        * kind of thing it is.
        */
       selection: undefined,
       /**
-       * !volatile
+       * #volatile
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
-
+      /**
+       * #volatile
+       */
       queueOfDialogs: observable.array(
         [] as [DialogComponentType, ReactProps][],
       ),
@@ -344,6 +348,12 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setThemeName(name: string) {
+        self.themeName = name
+      },
       /**
        * #action
        */
