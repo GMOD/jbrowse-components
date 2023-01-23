@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
@@ -50,6 +51,7 @@ export default observer(function ({
   const viewLeft = reversed ? params.end : params.start
 
   const [labelVisible, setLabelVisible] = useState(exportSVG)
+  const theme = useTheme()
 
   // we use an effect to set the label visible because there can be a
   // mismatch between the server and the client after hydration due to the
@@ -92,7 +94,12 @@ export default observer(function ({
   }
 
   return labelVisible ? (
-    <text x={x} y={y + fontHeight} fill={color} fontSize={fontHeight}>
+    <text
+      x={x}
+      y={y + fontHeight}
+      fill={color === '#f0f' ? theme.palette.primary.contrastText : color}
+      fontSize={fontHeight}
+    >
       {measuredTextWidth > totalWidth
         ? `${text.slice(0, totalWidth / (fontHeight * 0.6))}...`
         : text}

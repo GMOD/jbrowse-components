@@ -72,6 +72,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
     },
+
     labels: ConfigurationSchema('SvgFeatureLabels', {
       /**
        * #slot labels.name
@@ -89,7 +90,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       nameColor: {
         type: 'color',
         description: 'the color of the name label, if shown',
-        defaultValue: 'black',
+        defaultValue: '#f0f',
         contextVariable: ['feature'],
       },
       /**
