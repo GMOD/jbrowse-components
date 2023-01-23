@@ -77,9 +77,27 @@ function getDarkPalette() {
   }
 }
 
+function getMinimalPalette() {
+  return {
+    primary: { main: grey[900] },
+    secondary: { main: grey[800] },
+    tertiary: palette.augmentColor({ color: { main: grey[900] } }),
+    quaternary: palette.augmentColor({ color: { main: mandarin } }),
+    stopCodon: '#e22',
+    startCodon: '#3e3',
+    bases: {
+      A: palette.augmentColor({ color: green }),
+      C: palette.augmentColor({ color: blue }),
+      G: palette.augmentColor({ color: amber }),
+      T: palette.augmentColor({ color: red }),
+    },
+  }
+}
+
 const palettes = {
   dark: getDarkPalette(),
   light: getDefaultPalette(),
+  minimal: getMinimalPalette(),
 } as const
 
 export function createDefaultProps() {
