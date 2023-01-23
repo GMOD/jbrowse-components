@@ -289,7 +289,6 @@ export function createJBrowseTheme(
   }
 
   const opt = paletteName || palette?.mode || 'light'
-  console.log({ opt, paletteName })
   const pal =
     palettes[opt as keyof typeof palettes] ||
     theme?.palette ||

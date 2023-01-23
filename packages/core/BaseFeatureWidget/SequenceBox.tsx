@@ -1,5 +1,4 @@
 import React from 'react'
-import { useTheme } from '@mui/material'
 import { Feat, stitch } from './util'
 
 // note that these are currently put into the style section instead of being

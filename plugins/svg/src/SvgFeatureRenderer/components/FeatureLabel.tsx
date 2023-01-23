@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import { measureText, getViewParams, Feature, Region } from '@jbrowse/core/util'
@@ -41,7 +40,6 @@ export default observer(function ({
     offsetPx1: number
   }
 }) {
-  const theme = useTheme()
   const totalWidth = featureWidth + allowedWidthExpansion
   const measuredTextWidth = measureText(text, fontHeight)
   const params =
