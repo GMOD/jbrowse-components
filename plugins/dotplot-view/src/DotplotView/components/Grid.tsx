@@ -5,14 +5,12 @@ import { useTheme } from '@mui/material'
 // locals
 import { DotplotViewModel } from '../model'
 
-function Grid({
+export default observer(function Grid({
   model,
   children,
-  stroke = '#0003',
 }: {
   model: DotplotViewModel
   children: React.ReactNode
-  stroke?: string
 }) {
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
@@ -22,6 +20,7 @@ function Grid({
   const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
   const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
   const theme = useTheme()
+  const stroke = theme.palette.divider
 
   // Uses math.max/math.min avoid making very large SVG rect offscreen element,
   // which can sometimes fail to draw
@@ -92,5 +91,4 @@ function Grid({
       {children}
     </svg>
   )
-}
-export default observer(Grid)
+})

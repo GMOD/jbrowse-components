@@ -209,11 +209,11 @@ export function createDefaultProps() {
 
 export function createDefaultOverrides(
   palette: PaletteOptions = {},
-  paletteName = 'default',
+  paletteName = 'light',
 ) {
   const generatedPalette = deepmerge(
     // @ts-ignore
-    palettes[paletteName as keyof typeof palettes] || palettes['default'],
+    palettes[paletteName as keyof typeof palettes] || palettes['light'],
     palette,
   )
   return {
@@ -288,7 +288,10 @@ export function createJBrowseTheme(
     })
   }
 
-  const opt = paletteName || palette?.mode || 'default'
-  const pal = palettes[opt as keyof typeof palettes] || theme?.palette
+  const opt = paletteName || palette?.mode || 'light'
+  const pal =
+    palettes[opt as keyof typeof palettes] ||
+    theme?.palette ||
+    palettes['light']
   return createTheme(deepmerge(theme, createJBrowseBaseTheme(pal, paletteName)))
 }
