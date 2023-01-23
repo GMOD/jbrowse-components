@@ -29,7 +29,7 @@ exports[`renders with just the required model elements 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-125qixp-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"

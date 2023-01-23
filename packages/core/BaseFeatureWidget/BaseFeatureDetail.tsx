@@ -66,7 +66,7 @@ export const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(1),
   },
   expandIcon: {
-    color: '#FFFFFF',
+    color: theme.palette.tertiary?.contrastText || '#fff',
   },
   field: {
     display: 'flex',

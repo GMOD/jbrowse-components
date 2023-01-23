@@ -28,7 +28,7 @@ import { AbstractSessionModel } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {
-    color: '#fff',
+    color: theme.palette.tertiary?.contrastText || '#fff',
   },
   root: {
     padding: theme.spacing(1, 3, 1, 1),
@@ -36,11 +36,6 @@ const useStyles = makeStyles()(theme => ({
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
-  },
-
-  accordionSummary: {
-    background: theme.palette.tertiary.main,
-    color: theme.palette.tertiary.contrastText,
   },
   accordion: {
     border: `1px solid ${theme.palette.text.primary}`,
