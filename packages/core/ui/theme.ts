@@ -98,9 +98,9 @@ const palettes = {
   default: getDefaultPalette(),
   light: getDefaultPalette(),
   minimal: getMinimalPalette(),
-} as const
+} as { [key: string]: PaletteOptions }
 
-export function createDefaultProps() {
+function createDefaultProps() {
   return {
     components: {
       MuiButton: {
@@ -207,38 +207,26 @@ export function createDefaultProps() {
   }
 }
 
-export function createDefaultOverrides(
-  palette: PaletteOptions = {},
-  paletteName = 'default',
-) {
-  const generatedPalette = deepmerge(
-    // @ts-ignore
-    palettes[paletteName as keyof typeof palettes] || palettes['default'],
-    palette,
-  )
+export function createDefaultOverrides(palette: PaletteOptions = {}) {
   return {
     components: {
-      MuiButton: {
-        styleOverrides: {
-          textSecondary: {
-            color: generatedPalette.tertiary.main,
-          },
-        },
-      },
       MuiFab: {
         styleOverrides: {
           secondary: {
-            backgroundColor: generatedPalette.quaternary.main,
+            // @ts-ignore
+            backgroundColor: palette.quaternary.main,
           },
         },
       },
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
-            backgroundColor: generatedPalette.tertiary.main,
+            // @ts-ignore
+            backgroundColor: palette.tertiary.main,
           },
           content: {
-            color: generatedPalette.tertiary.contrastText,
+            // @ts-ignore
+            color: palette.tertiary.contrastText,
           },
         },
       },
@@ -246,18 +234,12 @@ export function createDefaultOverrides(
   }
 }
 
-export function createJBrowseBaseTheme(
-  palette: PaletteOptions | undefined,
-  paletteName?: string,
-): ThemeOptions {
+export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
   return {
     palette,
     typography: { fontSize: 12 },
     spacing: 4,
-    ...deepmerge(
-      createDefaultProps(),
-      createDefaultOverrides(palette, paletteName),
-    ),
+    ...deepmerge(createDefaultProps(), createDefaultOverrides(palette)),
   }
 }
 
@@ -270,7 +252,7 @@ export function createJBrowseTheme(
 
 export function getCurrentTheme(
   theme: ThemeOptions = {},
-  paletteName?: string,
+  paletteName = 'default',
 ) {
   if (theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
@@ -295,16 +277,16 @@ export function getCurrentTheme(
     })
   }
 
-  const opt = paletteName || 'default'
-  const pal =
-    palettes[opt as keyof typeof palettes] ||
-    theme?.palette ||
-    palettes['default']
+  const pal = palettes[paletteName] || palettes['default']
 
-  const obj = createJBrowseBaseTheme(pal, paletteName)
+  const obj = createJBrowseBaseTheme(
+    paletteName !== 'default'
+      ? pal
+      : deepmerge(palettes['default'], theme?.palette || {}),
+  )
 
   return {
     ...deepmerge(obj, theme),
-    ...(opt !== 'default' ? { palette: obj.palette } : {}),
+    ...(paletteName !== 'default' ? { palette: obj.palette } : {}),
   }
 }
