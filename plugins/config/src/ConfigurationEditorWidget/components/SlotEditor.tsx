@@ -134,7 +134,7 @@ const StringArrayMapEditor = observer(
             <CardHeader
               title={key}
               action={
-                <IconButton color="secondary" onClick={() => slot.remove(key)}>
+                <IconButton onClick={() => slot.remove(key)}>
                   <DeleteIcon />
                 </IconButton>
               }
@@ -173,7 +173,6 @@ const StringArrayMapEditor = observer(
                           slot.add(value, [])
                           setValue('')
                         }}
-                        color="secondary"
                       >
                         <AddIcon />
                       </IconButton>
@@ -212,7 +211,7 @@ const NumberMapEditor = observer(
             <CardHeader
               title={key}
               action={
-                <IconButton color="secondary" onClick={() => slot.remove(key)}>
+                <IconButton onClick={() => slot.remove(key)}>
                   <DeleteIcon />
                 </IconButton>
               }
@@ -245,7 +244,6 @@ const NumberMapEditor = observer(
                           slot.add(value, 0)
                           setValue('')
                         }}
-                        color="secondary"
                       >
                         <AddIcon />
                       </IconButton>
@@ -466,7 +464,6 @@ const SlotEditor = observer(
               title={`convert to ${
                 slot.isCallback ? 'regular value' : 'callback'
               }`}
-              color="secondary"
             >
               {!slot.isCallback ? (
                 <RadioButtonUncheckedIcon />

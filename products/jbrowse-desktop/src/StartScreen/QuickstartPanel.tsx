@@ -127,7 +127,6 @@ function QuickstartPanel({
           }
         }}
         variant="contained"
-        color="primary"
         disabled={!Object.values(selected).some(Boolean)}
       >
         Go
@@ -168,7 +167,6 @@ function QuickstartPanel({
                     setCurrentEl(name)
                     setAnchorEl(e.currentTarget)
                   }}
-                  color="secondary"
                 >
                   <MoreIcon />
                 </IconButton>
