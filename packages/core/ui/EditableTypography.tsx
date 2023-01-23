@@ -102,7 +102,7 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
             }
           }}
           onBlur={() => {
-            setValue(editedValue || '')
+            setValue(editedValue || value || '')
             setEditedValue(undefined)
           }}
         />
