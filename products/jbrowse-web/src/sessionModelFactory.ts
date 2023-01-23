@@ -18,7 +18,7 @@ import {
 } from '@jbrowse/core/util/types'
 
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView, localStorageGetItem } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 import {
   getMembers,
@@ -150,10 +150,13 @@ export default function sessionModelFactory(
        */
       drawerPosition: types.optional(
         types.string,
-        localStorage.getItem('drawerPosition') || 'right',
+        () => localStorage.getItem('drawerPosition') || 'right',
       ),
 
-      themeName: types.maybe(types.string),
+      themeName: types.optional(
+        types.string,
+        () => localStorageGetItem('themeName') || 'default',
+      ),
     })
     .volatile((/* self */) => ({
       /**
