@@ -94,12 +94,7 @@ export default observer(function ({
   }
 
   return labelVisible ? (
-    <text
-      x={x}
-      y={y + fontHeight}
-      fill={theme.palette.text.primary}
-      fontSize={fontHeight}
-    >
+    <text x={x} y={y + fontHeight} fill={color} fontSize={fontHeight}>
       {measuredTextWidth > totalWidth
         ? `${text.slice(0, totalWidth / (fontHeight * 0.6))}...`
         : text}

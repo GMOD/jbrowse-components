@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTheme } from '@mui/material'
 import { Feat, stitch } from './util'
 
 // note that these are currently put into the style section instead of being
@@ -60,7 +61,13 @@ export function GenecDNA({
   return (
     <>
       {upstream ? (
-        <span style={{ background: updownstreamColor }}>{upstream}</span>
+        <span
+          style={{
+            background: updownstreamColor,
+          }}
+        >
+          {upstream}
+        </span>
       ) : null}
 
       {chunks.map((chunk, idx) => {
@@ -105,7 +112,13 @@ export function Genomic({
   return (
     <>
       {upstream ? (
-        <span style={{ background: updownstreamColor }}>{upstream}</span>
+        <span
+          style={{
+            background: updownstreamColor,
+          }}
+        >
+          {upstream}
+        </span>
       ) : null}
 
       <span
@@ -117,7 +130,13 @@ export function Genomic({
       </span>
 
       {downstream ? (
-        <span style={{ background: updownstreamColor }}>{downstream}</span>
+        <span
+          style={{
+            background: updownstreamColor,
+          }}
+        >
+          {downstream}
+        </span>
       ) : null}
     </>
   )
