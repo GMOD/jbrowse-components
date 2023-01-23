@@ -25,7 +25,7 @@ const SvgFeatureRenderer = ConfigurationSchema(
       type: 'color',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: 'black',
+      defaultValue: '#f0f',
       contextVariable: ['feature'],
     },
     /**

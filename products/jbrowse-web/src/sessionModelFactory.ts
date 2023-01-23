@@ -51,6 +51,7 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
+import { getCurrentTheme } from '@jbrowse/core/ui'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -318,7 +319,9 @@ export default function sessionModelFactory(
        * #method
        */
       renderProps() {
-        return { theme: getConf(self, 'theme') }
+        return {
+          theme: getCurrentTheme(getConf(self, 'theme'), self.themeName),
+        }
       },
 
       /**

@@ -97,7 +97,7 @@ export default observer(function ({
     <text
       x={x}
       y={y + fontHeight}
-      fill={color === '#f0f' ? theme.palette.primary.contrastText : color}
+      fill={color === '#f0f' ? theme.palette.text.primary : color}
       fontSize={fontHeight}
     >
       {measuredTextWidth > totalWidth

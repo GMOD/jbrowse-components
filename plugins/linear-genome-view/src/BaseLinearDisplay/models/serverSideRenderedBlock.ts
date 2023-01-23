@@ -29,6 +29,7 @@ import {
   getRpcSessionId,
 } from '@jbrowse/core/util/tracks'
 
+// locals
 import ServerSideRenderedBlockContent from '../components/ServerSideRenderedBlockContent'
 
 // the MST state of a single server-side-rendered block in a display
@@ -65,7 +66,7 @@ const blockState = types
         makeAbortableReaction(
           self as any,
           renderBlockData,
-          renderBlockEffect as any, // reaction doesn't expect async here
+          renderBlockEffect, // reaction doesn't expect async here
           {
             name: `${display.id}/${assembleLocString(self.region)} rendering`,
             delay: display.renderDelay,
@@ -140,7 +141,7 @@ const blockState = types
         self.renderProps = renderProps
         renderInProgress = undefined
       },
-      setError(error: Error | unknown) {
+      setError(error: unknown) {
         console.error(error)
         if (renderInProgress && !renderInProgress.signal.aborted) {
           renderInProgress.abort()
@@ -260,24 +261,14 @@ export function renderBlockData(
   }
 }
 
-interface RenderProps {
-  displayError: Error
-  rendererType: any
-  renderProps: { [key: string]: any }
-  rpcManager: { call: Function }
-  cannotBeRenderedReason: string
-  renderArgs: { [key: string]: any }
-}
-
-interface ErrorProps {
-  displayError: string
-}
-
 async function renderBlockEffect(
-  props: RenderProps | ErrorProps,
+  props: ReturnType<typeof renderBlockData> | undefined,
   signal: AbortSignal,
   self: BlockModel,
 ) {
+  if (!props) {
+    return
+  }
   const {
     rendererType,
     renderProps,
@@ -285,7 +276,7 @@ async function renderBlockEffect(
     renderArgs,
     cannotBeRenderedReason,
     displayError,
-  } = props as RenderProps
+  } = props
   if (!isAlive(self)) {
     return undefined
   }
@@ -315,5 +306,6 @@ async function renderBlockEffect(
     features,
     layout,
     maxHeightReached,
+    renderProps,
   }
 }

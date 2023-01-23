@@ -265,6 +265,13 @@ export function createJBrowseTheme(
   theme: ThemeOptions = {},
   paletteName?: string,
 ) {
+  return createTheme(getCurrentTheme(theme, paletteName))
+}
+
+export function getCurrentTheme(
+  theme: ThemeOptions = {},
+  paletteName?: string,
+) {
   if (theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
@@ -294,5 +301,5 @@ export function createJBrowseTheme(
     theme?.palette ||
     palettes['light']
 
-  return createTheme(deepmerge(createJBrowseBaseTheme(pal, paletteName), theme))
+  return deepmerge(createJBrowseBaseTheme(pal, paletteName), theme)
 }
