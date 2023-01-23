@@ -124,7 +124,6 @@ export default observer(function FacetedSelector({
                 })
               }
               className={classes.noPadding}
-              color="secondary"
               data-testid={`htsFacetedTrackMenu-${id}`}
             >
               <MoreHoriz />
@@ -145,6 +144,7 @@ export default observer(function FacetedSelector({
     })),
   ]
   const shownTrackIds = view.tracks.map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (t: any) => t.configuration.trackId,
   ) as string[]
 
