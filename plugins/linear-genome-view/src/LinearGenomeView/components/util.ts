@@ -60,3 +60,16 @@ export function getRelativeX<
 >(event: T, element: HTMLElement | null) {
   return event.clientX - (element?.getBoundingClientRect().left || 0)
 }
+
+export function getCytobands(assembly: Assembly | undefined, refName: string) {
+  return (
+    assembly?.cytobands
+      ?.map(f => ({
+        refName: assembly.getCanonicalRefName(f.get('refName')),
+        start: f.get('start'),
+        end: f.get('end'),
+        type: f.get('type'),
+      }))
+      .filter(f => f.refName === refName) || []
+  )
+}
