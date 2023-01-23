@@ -21,7 +21,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
           class="css-122lw0e-grow"
         />
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-zubjuh-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
           tabindex="0"
           type="button"
         >
@@ -62,7 +62,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-1ps6pg7-MuiPaper-root"
       >
         <div
-          class="css-1e5hhmt-root"
+          class="css-1vtmdlf-root"
           data-testid="test_view"
           style="width: 800px; height: 400px;"
         >
@@ -136,10 +136,10 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             </div>
           </div>
           <div
-            class="css-1g5scrt-controls"
+            class="css-1dk43y1-controls"
           >
             <button
-              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-tugvmi-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
               disabled=""
               tabindex="-1"
               title="unlock to zoom out"
@@ -158,7 +158,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               </svg>
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-tugvmi-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
               tabindex="0"
               title="zoom in"
               type="button"
@@ -182,7 +182,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-tugvmi-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
               tabindex="0"
               title="rotate counter-clockwise"
               type="button"
@@ -203,7 +203,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-tugvmi-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
               tabindex="0"
               title="rotate clockwise"
               type="button"
@@ -224,7 +224,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-tugvmi-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
               tabindex="0"
               title="locked model to window size"
               type="button"
@@ -245,7 +245,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
               data-testid="circular_track_select"
               tabindex="0"
               title="Open track selector"

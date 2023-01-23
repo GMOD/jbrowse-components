@@ -62,7 +62,7 @@ exports[`open up a widget 1`] = `
               class="css-1m8nxnb-field"
             >
               <div
-                class="css-1y9c7n2-fieldName"
+                class="css-1q83rf3-fieldName"
               >
                 Position
               </div>
@@ -76,7 +76,7 @@ exports[`open up a widget 1`] = `
               class="css-1m8nxnb-field"
             >
               <div
-                class="css-1y9c7n2-fieldName"
+                class="css-1q83rf3-fieldName"
               >
                 Length
               </div>
@@ -100,7 +100,7 @@ exports[`open up a widget 1`] = `
               class="css-1m8nxnb-field"
             >
               <div
-                class="css-1y9c7n2-fieldName"
+                class="css-1q83rf3-fieldName"
                 style="width: 40px;"
               >
                 score

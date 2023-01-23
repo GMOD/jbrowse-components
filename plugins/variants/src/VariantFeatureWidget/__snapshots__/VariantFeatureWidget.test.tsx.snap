@@ -66,7 +66,7 @@ exports[`renders with just the required model elements 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Position
                 </div>
@@ -80,7 +80,7 @@ exports[`renders with just the required model elements 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Name
                 </div>
@@ -96,7 +96,7 @@ exports[`renders with just the required model elements 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Length
                 </div>
@@ -121,7 +121,7 @@ exports[`renders with just the required model elements 1`] = `
               >
                 <div
                   aria-label="reference base(s): Each base must be one of A,C,G,T,N (case insensitive)."
-                  class="css-1qe2j6j-fieldDescription-fieldName"
+                  class="css-18vnxxj-fieldDescription-fieldName"
                   data-mui-internal-clone-element="true"
                 >
                   REF
@@ -139,7 +139,7 @@ exports[`renders with just the required model elements 1`] = `
               >
                 <div
                   aria-label="alternate base(s): Comma-separated list of alternate non-reference alleles"
-                  class="css-1qe2j6j-fieldDescription-fieldName"
+                  class="css-18vnxxj-fieldDescription-fieldName"
                   data-mui-internal-clone-element="true"
                 >
                   ALT
@@ -157,7 +157,7 @@ exports[`renders with just the required model elements 1`] = `
               >
                 <div
                   aria-label="quality: Phred-scaled quality score for the assertion made in ALT"
-                  class="css-1qe2j6j-fieldDescription-fieldName"
+                  class="css-18vnxxj-fieldDescription-fieldName"
                   data-mui-internal-clone-element="true"
                 >
                   QUAL
@@ -174,7 +174,7 @@ exports[`renders with just the required model elements 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 62px;"
                 >
                   INFO.MQ

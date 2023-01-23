@@ -293,5 +293,6 @@ export function createJBrowseTheme(
     palettes[opt as keyof typeof palettes] ||
     theme?.palette ||
     palettes['light']
-  return createTheme(deepmerge(theme, createJBrowseBaseTheme(pal, paletteName)))
+
+  return createTheme(deepmerge(createJBrowseBaseTheme(pal, paletteName), theme))
 }
