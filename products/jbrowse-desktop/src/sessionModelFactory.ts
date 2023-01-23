@@ -11,9 +11,13 @@ import {
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
 import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
-import { observable } from 'mobx'
+import { autorun, observable } from 'mobx'
 import {
   getMembers,
   getParent,
@@ -26,6 +30,7 @@ import {
   walk,
   IAnyStateTreeNode,
   SnapshotIn,
+  addDisposer,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -113,7 +118,15 @@ export default function sessionModelFactory(
        */
       drawerPosition: types.optional(
         types.string,
-        localStorage.getItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') || 'right',
+      ),
+
+      /**
+       * #property
+       */
+      themeName: types.optional(
+        types.string,
+        () => localStorageGetItem('themeName') || 'default',
       ),
     })
     .volatile((/* self */) => ({
@@ -259,10 +272,12 @@ export default function sessionModelFactory(
       /**
        * #method
        * See if any MST nodes currently have a types.reference to this object.
+       *
        * @param object - object
-       * @returns An array where the first element is the node referring
-       * to the object and the second element is they property name the node is
-       * using to refer to the object
+       *
+       * @returns An array where the first element is the node referring to the
+       * object and the second element is they property name the node is using to
+       * refer to the object
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
@@ -281,6 +296,12 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setThemeName(name: string) {
+        self.themeName = name
+      },
       /**
        * #action
        */
@@ -882,6 +903,17 @@ export default function sessionModelFactory(
         ]
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem('drawerPosition', self.drawerPosition)
+            localStorageSetItem('themeName', self.themeName)
+          }),
+        )
+      },
+    }))
 
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(
     'Core-extendSession',
@@ -907,6 +939,3 @@ export default function sessionModelFactory(
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
-
-// a track is a combination of an assembly and a renderer, along with some conditions
-// specifying in which contexts it is available (which assemblies, which views, etc)

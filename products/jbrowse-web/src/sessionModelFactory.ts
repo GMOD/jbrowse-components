@@ -18,8 +18,12 @@ import {
 } from '@jbrowse/core/util/types'
 
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView, localStorageGetItem } from '@jbrowse/core/util'
-import { observable } from 'mobx'
+import {
+  getContainingView,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
+import { autorun, observable } from 'mobx'
 import {
   getMembers,
   getParent,
@@ -36,6 +40,7 @@ import {
   Instance,
   SnapshotIn,
   SnapshotOut,
+  addDisposer,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -150,9 +155,12 @@ export default function sessionModelFactory(
        */
       drawerPosition: types.optional(
         types.string,
-        () => localStorage.getItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') || 'right',
       ),
 
+      /**
+       * #property
+       */
       themeName: types.optional(
         types.string,
         () => localStorageGetItem('themeName') || 'default',
@@ -389,7 +397,6 @@ export default function sessionModelFactory(
        */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
-        localStorage.setItem('drawerPosition', arg)
       },
       /**
        * #action
@@ -1035,6 +1042,17 @@ export default function sessionModelFactory(
             icon: CopyIcon,
           },
         ]
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem('drawerPosition', self.drawerPosition)
+            localStorageSetItem('themeName', self.themeName)
+          }),
+        )
       },
     }))
 

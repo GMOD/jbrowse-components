@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import {
   addDisposer,
   cast,
@@ -36,6 +37,8 @@ import JBrowseDesktop from './jbrowseModel'
 import OpenSequenceDialog from './OpenSequenceDialog'
 
 const { ipcRenderer } = window.require('electron')
+
+const PreferencesDialog = lazy(() => import('./PreferencesDialog'))
 
 function getSaveSession(model: RootModel) {
   return {
@@ -373,6 +376,21 @@ export default function rootModelFactory(pluginManager: PluginManager) {
                     'pluginStoreWidget',
                   )
                   self.session.showWidget(widget)
+                }
+              },
+            },
+            {
+              label: 'Preferences',
+              icon: SettingsIcon,
+              onClick: () => {
+                if (self.session) {
+                  self.session.queueDialog(handleClose => [
+                    PreferencesDialog,
+                    {
+                      session: self.session,
+                      handleClose,
+                    },
+                  ])
                 }
               },
             },

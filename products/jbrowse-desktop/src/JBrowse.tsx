@@ -15,47 +15,50 @@ import './JBrowse.css'
 // locals
 import { RootModel } from './rootModel'
 
-const JBrowse = observer(
-  ({ pluginManager }: { pluginManager: PluginManager }) => {
-    const { rootModel } = pluginManager
-    return rootModel ? (
-      <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
-    ) : null
-  },
-)
+const JBrowse = observer(function ({
+  pluginManager,
+}: {
+  pluginManager: PluginManager
+}) {
+  const { rootModel } = pluginManager
+  return rootModel ? (
+    <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
+  ) : null
+})
 
-const JBrowseNonNullRoot = observer(
-  ({ rootModel }: { rootModel: RootModel }) => {
-    const { session, jbrowse, error, isAssemblyEditing, setAssemblyEditing } =
-      rootModel
+const JBrowseNonNullRoot = observer(function ({
+  rootModel,
+}: {
+  rootModel: RootModel
+}) {
+  const { session, jbrowse, error, isAssemblyEditing, setAssemblyEditing } =
+    rootModel
 
-    if (error) {
-      throw error
-    }
+  if (error) {
+    throw error
+  }
 
-    const theme = getConf(jbrowse, 'theme')
-
-    return (
-      <ThemeProvider theme={createJBrowseTheme(theme)}>
-        <CssBaseline />
-        {session ? (
-          <>
-            <App session={session} />
-            <Suspense fallback={<div />}>
-              {isAssemblyEditing ? (
-                <AssemblyManager
-                  rootModel={rootModel}
-                  onClose={() => setAssemblyEditing(false)}
-                />
-              ) : null}
-            </Suspense>
-          </>
-        ) : (
-          <div>No session</div>
-        )}
-      </ThemeProvider>
-    )
-  },
-)
+  const theme = getConf(jbrowse, 'theme')
+  return (
+    <ThemeProvider theme={createJBrowseTheme(theme, session?.themeName)}>
+      <CssBaseline />
+      {session ? (
+        <>
+          <App session={session} />
+          <Suspense fallback={<div />}>
+            {isAssemblyEditing ? (
+              <AssemblyManager
+                rootModel={rootModel}
+                onClose={() => setAssemblyEditing(false)}
+              />
+            ) : null}
+          </Suspense>
+        </>
+      ) : (
+        <div>No session</div>
+      )}
+    </ThemeProvider>
+  )
+})
 
 export default JBrowse

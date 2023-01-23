@@ -72,7 +72,7 @@ export default observer(function ({
   if (!session) {
     throw new Error('No session found')
   }
-  const theme = getConf(rootModel.jbrowse, 'theme')
+  const theme = getConf(jbrowse, 'theme')
   return (
     <ThemeProvider theme={createJBrowseTheme(theme, session.themeName)}>
       <CssBaseline />
