@@ -14,7 +14,11 @@ import {
   IStateTreeNode,
 } from 'mobx-state-tree'
 import { reaction, IReactionPublic, IReactionOptions } from 'mobx'
-import SimpleFeature, { Feature, isFeature } from './simpleFeature'
+import SimpleFeature, {
+  Feature,
+  SimpleFeatureSerialized,
+  isFeature,
+} from './simpleFeature'
 import {
   isSessionModel,
   isDisplayModel,
@@ -28,14 +32,13 @@ import { isAbortException, checkAbortSignal } from './aborting'
 import { BaseBlock } from './blockTypes'
 import { isUriLocation } from './types'
 
-export type { Feature }
 export * from './types'
 export * from './aborting'
 export * from './when'
 export * from './range'
 export * from './dedupe'
 export { SimpleFeature, isFeature }
-
+export type { Feature, SimpleFeatureSerialized }
 export * from './offscreenCanvasPonyfill'
 export * from './offscreenCanvasUtils'
 
@@ -45,7 +48,7 @@ export const inDevelopment =
   process.env.NODE_ENV === 'development'
 export const inProduction = !inDevelopment
 
-export function useDebounce<T>(value: T, delay: number): T {
+export function useDebounce<T>(value: T, delay: number) {
   const [debouncedValue, setDebouncedValue] = useState(value)
 
   useEffect(() => {
@@ -61,12 +64,12 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 // https://stackoverflow.com/questions/56283920/
-export function useDebouncedCallback<A extends any[]>(
-  callback: (...args: A) => void,
+export function useDebouncedCallback<T>(
+  callback: (...args: T[]) => void,
   wait = 400,
 ) {
   // track args & timeout handle between calls
-  const argsRef = useRef<A>()
+  const argsRef = useRef<T[]>()
   const timeout = useRef<ReturnType<typeof setTimeout>>()
 
   function cleanup() {
@@ -78,7 +81,7 @@ export function useDebouncedCallback<A extends any[]>(
   // make sure our timeout gets cleared if our consuming component gets unmounted
   useEffect(() => cleanup, [])
 
-  return function debouncedCallback(...args: A) {
+  return function debouncedCallback(...args: T[]) {
     // capture latest args
     argsRef.current = args
 
@@ -570,13 +573,13 @@ export function bpSpanPx(
 
 // do an array map of an iterable
 export function iterMap<T, U>(
-  iterable: Iterable<T>,
-  func: (item: T) => U,
+  iter: Iterable<T>,
+  func: (arg: T) => U,
   sizeHint?: number,
-): U[] {
-  const results = sizeHint ? new Array(sizeHint) : []
+) {
+  const results: U[] = sizeHint ? new Array(sizeHint) : []
   let counter = 0
-  for (const item of iterable) {
+  for (const item of iter) {
     results[counter] = func(item)
     counter += 1
   }
@@ -792,8 +795,10 @@ export function stringify({
     : ''
 }
 
-// this is recommended in a later comment in https://github.com/electron/electron/issues/2288
-// for detecting electron in a renderer process, which is the one that has node enabled for us
+// this is recommended in a later comment in
+// https://github.com/electron/electron/issues/2288 for detecting electron in a
+// renderer process, which is the one that has node enabled for us
+//
 // const isElectron = process.versions.electron
 // const i2 = process.versions.hasOwnProperty('electron')
 export const isElectron = /electron/i.test(
@@ -965,8 +970,8 @@ export const defaultCodonTable = {
 }
 
 /**
- *  take CodonTable above and generate larger codon table that includes
- *  all permutations of upper and lower case nucleotides
+ * take CodonTable above and generate larger codon table that includes all
+ * permutations of upper and lower case nucleotides
  */
 export function generateCodonTable(table: any) {
   const tempCodonTable: { [key: string]: string } = {}
@@ -1180,11 +1185,26 @@ export function getStr(obj: unknown) {
 }
 
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
-export function measureGridWidth(elements: string[]) {
+export function measureGridWidth(
+  elements: string[],
+  args?: {
+    minWidth?: number
+    fontSize?: number
+    maxWidth?: number
+    padding?: number
+  },
+) {
+  const {
+    padding = 30,
+    minWidth = 80,
+    fontSize = 12,
+    maxWidth = 1000,
+  } = args || {}
   return max(
-    elements.map(element =>
-      Math.min(Math.max(measureText(getStr(element), 14) + 50, 80), 1000),
-    ),
+    elements
+      .map(element => getStr(element))
+      .map(str => measureText(str, fontSize))
+      .map(n => Math.min(Math.max(n + padding, minWidth), maxWidth)),
   )
 }
 

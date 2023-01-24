@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react'
 
 import {
@@ -10,7 +9,8 @@ import {
 
 import { DataGrid } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import ResizeBar from '@jbrowse/core/ui/ResizeBar'
 
 interface Entry {
   sample: string
@@ -18,28 +18,19 @@ interface Entry {
   [key: string]: string
 }
 
+type InfoFields = Record<string, unknown>
+type Filters = Record<string, string>
+
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   descriptions: any
 }) {
-  const { feature, descriptions } = props
-  const [filter, setFilter] = useState<Record<string, string>>({})
+  const { feature, descriptions = {} } = props
+  const [filter, setFilter] = useState<Filters>({})
   const [showFilters, setShowFilters] = useState(false)
-  const { samples = {} } = feature as Record<
-    string,
-    Record<string, Record<string, unknown>>
-  >
+  const samples = (feature.samples || {}) as Record<string, InfoFields>
   const preFilteredRows = Object.entries(samples)
-  if (!preFilteredRows.length) {
-    return null
-  }
-
-  const infoFields = ['sample', ...Object.keys(preFilteredRows[0][1])].map(
-    field => ({
-      field,
-      description: descriptions.FORMAT?.[field]?.Description,
-    }),
-  )
 
   let error
   let rows = [] as Entry[]
@@ -50,16 +41,15 @@ export default function VariantSamples(props: {
   // sortable by the data-grid
   try {
     rows = preFilteredRows
-      .map(
-        row =>
-          ({
-            ...Object.fromEntries(
-              Object.entries(row[1]).map(entry => [entry[0], String(entry[1])]),
-            ),
-            sample: row[0],
-            id: row[0],
-          } as Entry),
-      )
+      .map(row => {
+        return {
+          ...Object.fromEntries(
+            Object.entries(row[1]).map(e => [e[0], `${e[1]}`]),
+          ),
+          sample: row[0],
+          id: row[0],
+        } as Entry
+      })
       .filter(row =>
         filters.length
           ? filters.every(key => {
@@ -72,9 +62,21 @@ export default function VariantSamples(props: {
   } catch (e) {
     error = e
   }
+
+  const keys = ['sample', ...Object.keys(preFilteredRows[0]?.[1] || {})]
+
+  const [widths, setWidths] = useState(
+    keys.map(e => measureGridWidth(rows.map(r => r[e]))),
+  )
+  const infoFields = keys.map((field, index) => ({
+    field,
+    description: descriptions.FORMAT?.[field]?.Description,
+    width: widths[index],
+  }))
+
   // disableSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
-  return (
+  return !preFilteredRows.length ? null : (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
 
@@ -107,12 +109,14 @@ export default function VariantSamples(props: {
           ))}
         </>
       ) : null}
+      <ResizeBar widths={widths} setWidths={setWidths} />
       <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
         <DataGrid
           rows={rows}
           columns={infoFields}
           disableSelectionOnClick
           rowHeight={25}
+          headerHeight={35}
           disableColumnMenu
         />
       </div>
