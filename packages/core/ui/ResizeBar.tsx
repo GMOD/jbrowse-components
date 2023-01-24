@@ -18,19 +18,21 @@ const useStyles = makeStyles()({
 export default function ResizeBar({
   widths,
   setWidths,
+  checkbox,
 }: {
   widths: number[]
   setWidths: (arg: number[]) => void
+  checkbox?: boolean
 }) {
   const { classes } = useStyles()
   const offsets = [] as number[]
-  widths.reduce((a, b, i) => (offsets[i] = a + b), 52)
+  widths.reduce((a, b, i) => (offsets[i] = a + b), checkbox ? 52 : 0)
 
   return (
     <div className={classes.resizeBar}>
       {offsets.map((left, i) => (
         <ResizeHandle
-          key={'tick-' + i}
+          key={'tick-' + i + '-' + left}
           onDrag={distance => {
             const newWidths = [...widths]
             newWidths[i] = newWidths[i] + distance
