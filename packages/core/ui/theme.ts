@@ -111,7 +111,7 @@ function getMinimalPalette() {
   }
 }
 
-const palettes = {
+export const palettes = {
   darkMinimal: getDarkMinimalPalette(),
   darkStock: getDarkStockPalette(),
   default: getDefaultPalette(),
