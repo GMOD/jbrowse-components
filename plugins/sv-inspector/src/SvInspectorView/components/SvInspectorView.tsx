@@ -59,7 +59,6 @@ const ViewControls = observer(({ model }: { model: SvInspectorViewModel }) => {
           onClick={() => model.setImportMode()}
           title="open a tabular file"
           data-testid="sv_inspector_view_open"
-          color="secondary"
         >
           <FolderOpenIcon />
         </IconButton>

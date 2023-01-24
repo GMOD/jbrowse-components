@@ -45,11 +45,7 @@ const LinkViews = observer(({ model }: { model: BreakpointViewModel }) => {
       onClick={() => model.toggleLinkViews()}
       title="Toggle linked scrolls and behavior across views"
     >
-      {model.linkViews ? (
-        <LinkIcon color="secondary" />
-      ) : (
-        <LinkOffIcon color="secondary" />
-      )}
+      {model.linkViews ? <LinkIcon /> : <LinkOffIcon />}
     </IconButton>
   )
 })
@@ -60,11 +56,7 @@ const Sync = observer(({ model }: { model: BreakpointViewModel }) => {
       onClick={model.toggleIntraviewLinks}
       title="Toggle rendering intraview links"
     >
-      {model.showIntraviewLinks ? (
-        <LeakAdd color="secondary" />
-      ) : (
-        <LeakRemove color="secondary" />
-      )}
+      {model.showIntraviewLinks ? <LeakAdd /> : <LeakRemove />}
     </IconButton>
   )
 })

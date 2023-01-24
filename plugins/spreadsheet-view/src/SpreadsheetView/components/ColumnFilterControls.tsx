@@ -65,7 +65,6 @@ const ColumnFilterControls = observer(
               getParent<any>(filterModel, 2).removeColumnFilter(filterModel)
             }
             title="remove filter"
-            color="secondary"
           >
             <CloseIcon />
           </IconButton>

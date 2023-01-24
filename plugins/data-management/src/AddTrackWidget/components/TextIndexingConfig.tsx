@@ -68,7 +68,6 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
                       endAdornment: (
                         <InputAdornment position="end">
                           <IconButton
-                            color="secondary"
                             onClick={() => {
                               const newAttr = section.values.filter((a, i) => {
                                 return i !== idx
@@ -113,7 +112,6 @@ const TextIndexingConfig = observer(({ model }: { model: AddTrackModel }) => {
                             }
                           }}
                           disabled={index === 0 ? value1 === '' : value2 === ''}
-                          color="secondary"
                           data-testid={`stringArrayAdd-Feat`}
                         >
                           <AddIcon />

@@ -5,26 +5,17 @@ import AssemblySelector from '@jbrowse/core/ui/AssemblySelector'
 import { FileLocation } from '@jbrowse/core/util/types'
 import { FileSelector } from '@jbrowse/core/ui'
 import { openLocation } from '@jbrowse/core/util/io'
-import {
-  IconButton,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-} from '@mui/material'
+import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
+
+// icons
 import ImportIcon from '@mui/icons-material/Publish'
+
+// locals
 import { GridBookmarkModel } from '../model'
 
 const useStyles = makeStyles()(() => ({
-  closeDialog: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
   dialogContainer: {
     margin: 15,
   },
@@ -59,17 +50,8 @@ function ImportBookmarks({
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         maxWidth="xl"
+        title="Import bookmarks"
       >
-        <DialogTitle>
-          Import bookmarks
-          <IconButton
-            className={classes.closeDialog}
-            aria-label="close-dialog"
-            onClick={() => setDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
         <DialogContent>
           <Typography>
             Choose a BED format file to import. The first 4 columns will be used
