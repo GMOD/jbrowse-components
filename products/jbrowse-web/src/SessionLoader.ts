@@ -48,6 +48,9 @@ async function fetchPlugins() {
 }
 
 async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
+  if (pluginsToCheck.length === 0) {
+    return true
+  }
   const storePlugins = await fetchPlugins()
   return pluginsToCheck.every(p => {
     if (isUMDPluginDefinition(p)) {
