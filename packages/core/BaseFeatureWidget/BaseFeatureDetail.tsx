@@ -115,7 +115,7 @@ export function BaseCard({
     <Accordion
       expanded={expanded}
       onChange={() => setExpanded(s => !s)}
-      TransitionProps={{ unmountOnExit: true }}
+      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
