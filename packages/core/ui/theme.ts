@@ -268,7 +268,7 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
                     color: theme.palette.text.secondary,
                   },
                 }
-              : props.ownerState
+              : undefined
           },
         },
       },

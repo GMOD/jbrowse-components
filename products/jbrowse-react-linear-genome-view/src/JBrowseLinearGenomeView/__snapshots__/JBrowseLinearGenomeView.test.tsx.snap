@@ -357,7 +357,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <span
-                    class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1o4aykj-MuiSlider-root-slider"
+                    class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1o03u7v-MuiSlider-root-slider"
                   >
                     <span
                       class="MuiSlider-rail css-14pt78w-MuiSlider-rail"

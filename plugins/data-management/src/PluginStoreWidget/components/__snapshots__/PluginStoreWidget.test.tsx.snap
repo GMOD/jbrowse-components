@@ -29,7 +29,7 @@ exports[`renders with the available plugins 1`] = `
         class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
       >
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-34yb2j-MuiButtonBase-root-MuiIconButton-root"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
           tabindex="0"
           type="button"
         >
@@ -789,7 +789,7 @@ exports[`renders with the available plugins 1`] = `
                     class="MuiTypography-root MuiTypography-h5 css-1ldbtdh-MuiTypography-root"
                   >
                     <a
-                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1173hzn-MuiTypography-root-MuiLink-root"
+                      class="MuiTypography-root MuiTypography-inherit MuiLink-root MuiLink-underlineAlways css-1qdqql0-MuiTypography-root-MuiLink-root"
                       href="https://github.com/GMOD/jbrowse-plugin-msaview#readme"
                       rel="noopener"
                       target="_blank"

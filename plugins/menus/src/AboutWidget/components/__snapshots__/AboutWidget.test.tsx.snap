@@ -5,7 +5,7 @@ exports[`<AboutWidget /> renders 1`] = `
   class="css-1a8qml5-root"
 >
   <h4
-    class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-1oih086-MuiTypography-root"
+    class="MuiTypography-root MuiTypography-h4 MuiTypography-alignCenter css-149xwtl-MuiTypography-root"
   >
     JBrowse 2
   </h4>

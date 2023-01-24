@@ -126,7 +126,7 @@ exports[`<AddConnectionWidget /> renders 1`] = `
                   >
                     A track or assembly hub in the Track Hub format
                     <a
-                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-1gws2xf-MuiButtonBase-root-MuiIconButton-root"
+                      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-78trlr-MuiButtonBase-root-MuiIconButton-root"
                       href="//genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html#Intro"
                       rel="noopener noreferrer"
                       tabindex="0"

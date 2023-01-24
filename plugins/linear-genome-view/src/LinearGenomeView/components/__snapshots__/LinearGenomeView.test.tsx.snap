@@ -265,7 +265,7 @@ exports[`renders one track, one region 1`] = `
             </svg>
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-s3dms4-MuiSlider-root-slider"
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1ub3usb-MuiSlider-root-slider"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -827,7 +827,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-s3dms4-MuiSlider-root-slider"
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1ub3usb-MuiSlider-root-slider"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
