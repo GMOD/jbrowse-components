@@ -27,7 +27,7 @@ function ResizeHandle({
   className: originalClassName,
   ...props
 }: {
-  onDrag: (arg: number) => number
+  onDrag: (arg: number) => number | void
   vertical?: boolean
   flexbox?: boolean
   className?: string
