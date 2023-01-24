@@ -58,7 +58,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
 
   return (
     <div className={classes.root}>
-      <Typography variant="h4" align="center" color="primary">
+      <Typography variant="h4" align="center">
         JBrowse 2
       </Typography>
       <Typography variant="h6" align="center" className={classes.subtitle}>

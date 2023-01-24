@@ -106,7 +106,6 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
           <div className={classes.customPluginButton}>
             <Button
               variant="contained"
-              color="primary"
               onClick={() => setCustomPluginFormOpen(true)}
             >
               Add custom plugin
@@ -127,10 +126,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton
-                color="secondary"
-                onClick={() => model.clearFilterText()}
-              >
+              <IconButton onClick={() => model.clearFilterText()}>
                 <ClearIcon />
               </IconButton>
             </InputAdornment>

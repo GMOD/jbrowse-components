@@ -6,7 +6,7 @@ import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { LinearGenomeViewModel } from '..'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   container: {
     display: 'flex',
     flexDirection: 'row',
@@ -14,8 +14,9 @@ const useStyles = makeStyles()({
   },
   slider: {
     width: 70,
+    color: theme.palette.text.secondary,
   },
-})
+}))
 
 function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
   const { classes } = useStyles()

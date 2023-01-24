@@ -58,7 +58,25 @@ function getDefaultPalette() {
   }
 }
 
-function getDarkPalette() {
+function getDarkStockPalette() {
+  return {
+    mode: 'dark',
+    primary: { main: midnight },
+    secondary: { main: grape },
+    tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+    stopCodon: '#e22',
+    startCodon: '#3e3',
+    bases: {
+      A: refTheme.palette.augmentColor({ color: green }),
+      C: refTheme.palette.augmentColor({ color: blue }),
+      G: refTheme.palette.augmentColor({ color: amber }),
+      T: refTheme.palette.augmentColor({ color: red }),
+    },
+  }
+}
+
+function getDarkMinimalPalette() {
   return {
     mode: 'dark' as const,
     primary: { main: grey[700] },
@@ -94,10 +112,11 @@ function getMinimalPalette() {
 }
 
 const palettes = {
-  dark: getDarkPalette(),
+  darkMinimal: getDarkMinimalPalette(),
+  darkStock: getDarkStockPalette(),
   default: getDefaultPalette(),
-  light: getDefaultPalette(),
-  minimal: getMinimalPalette(),
+  lightStock: getDefaultPalette(),
+  lightMinimal: getMinimalPalette(),
 } as { [key: string]: PaletteOptions }
 
 function createDefaultProps() {
@@ -215,6 +234,41 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
           secondary: {
             // @ts-ignore
             backgroundColor: palette.quaternary.main,
+          },
+        },
+      },
+      MuiLink: {
+        styleOverrides: {
+          // the default link color uses theme.palette.primary.main which is
+          // very bad with dark mode+midnight primary
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: ({ theme }: any) => ({
+            color: theme.palette.text.secondary,
+          }),
+        },
+      },
+      MuiCheckbox: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-checked': {
+                    color: theme.palette.text.secondary,
+                  },
+                }
+              : props.ownerState
           },
         },
       },
