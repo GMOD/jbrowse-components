@@ -10,7 +10,7 @@ import {
 
 import { DataGrid } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
-import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
+import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 interface Entry {
   sample: string
@@ -18,28 +18,21 @@ interface Entry {
   [key: string]: string
 }
 
+type InfoFields = Record<string, unknown>
+type Filters = Record<string, string>
+
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
   descriptions: any
 }) {
   const { feature, descriptions } = props
-  const [filter, setFilter] = useState<Record<string, string>>({})
+  const [filter, setFilter] = useState<Filters>({})
   const [showFilters, setShowFilters] = useState(false)
-  const { samples = {} } = feature as Record<
-    string,
-    Record<string, Record<string, unknown>>
-  >
+  const samples = (feature.samples || {}) as Record<string, InfoFields>
   const preFilteredRows = Object.entries(samples)
   if (!preFilteredRows.length) {
     return null
   }
-
-  const infoFields = ['sample', ...Object.keys(preFilteredRows[0][1])].map(
-    field => ({
-      field,
-      description: descriptions.FORMAT?.[field]?.Description,
-    }),
-  )
 
   let error
   let rows = [] as Entry[]
@@ -72,6 +65,14 @@ export default function VariantSamples(props: {
   } catch (e) {
     error = e
   }
+  const infoFields = ['sample', ...Object.keys(preFilteredRows[0][1])].map(
+    field => ({
+      field,
+      description: descriptions.FORMAT?.[field]?.Description,
+      width: measureGridWidth(rows.map(r => r[field])),
+    }),
+  )
+
   // disableSelectionOnClick helps avoid
   // https://github.com/mui-org/material-ui-x/issues/1197
   return (
