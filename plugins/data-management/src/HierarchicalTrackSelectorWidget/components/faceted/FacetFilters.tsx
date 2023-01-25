@@ -29,10 +29,20 @@ export default function FacetFilters({
 }) {
   const { classes } = useStyles()
   const facets = columns.slice(1)
-  const uniqs = facets.map(() => new Set<string>())
+  const uniqs = facets.map(() => new Map<string, number>())
   rows.forEach(row => {
     facets.forEach((column, index) => {
-      uniqs[index].add(`${row[column.field] || ''}`)
+      const elt = uniqs[index]
+      const key = `${row[column.field] || ''}`
+      const val = elt.get(key)
+      // we don't allow filtering on empty yet
+      if (key) {
+        if (val !== undefined) {
+          elt.set(key, val + 1)
+        } else {
+          elt.set(key, 1)
+        }
+      }
     })
   })
 
@@ -72,13 +82,11 @@ export default function FacetFilters({
                 dispatch({ key: column.field, val })
               }}
             >
-              {vals
-                .filter(f => !!f)
-                .map(name => (
-                  <option key={name} value={name}>
-                    {name}
-                  </option>
-                ))}
+              {vals.map(([name, count]) => (
+                <option key={name} value={name}>
+                  {name} ({count})
+                </option>
+              ))}
             </Select>
           </FormControl>
         )
