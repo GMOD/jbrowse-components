@@ -11,7 +11,6 @@ import ClearIcon from '@mui/icons-material/Clear'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
-    width: 390,
     margin: theme.spacing(2),
   },
 }))
@@ -21,11 +20,13 @@ export default function FacetFilters({
   columns,
   dispatch,
   filters,
+  width,
 }: {
   rows: Record<string, unknown>[]
   filters: Record<string, string[]>
   columns: { field: string }[]
   dispatch: (arg: { key: string; val: string[] }) => void
+  width: number
 }) {
   const { classes } = useStyles()
   const facets = columns.slice(1)
@@ -51,7 +52,11 @@ export default function FacetFilters({
       {facets.map((column, index) => {
         const vals = Array.from(uniqs[index])
         return (
-          <FormControl key={column.field} className={classes.facet}>
+          <FormControl
+            key={column.field}
+            className={classes.facet}
+            style={{ width }}
+          >
             <div style={{ display: 'flex' }}>
               <Typography>{column.field}</Typography>
               <Tooltip title="Clear selection on this facet filter">

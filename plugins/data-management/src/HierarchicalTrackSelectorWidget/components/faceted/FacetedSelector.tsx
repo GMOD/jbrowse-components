@@ -27,6 +27,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
+import { ResizeHandle } from '@jbrowse/core/ui'
 
 const keys = ['category', 'adapter'] as const
 
@@ -57,6 +58,7 @@ export default observer(function FacetedSelector({
   const [info, setInfo] = useState<InfoArgs>()
   const [useShoppingCart, setUseShoppingCart] = useState(false)
   const [hideSparse, setHideSparse] = useState(true)
+  const [panelWidth, setPanelWidth] = useState(400)
 
   const assemblyName = assemblyNames[0]
   const session = getSession(model)
@@ -103,9 +105,22 @@ export default observer(function FacetedSelector({
   )
 
   const [widths, setWidths] = useState([
-    measureGridWidth(rows.map(r => r.name)) + 15,
-    ...keys.map(e => measureGridWidth(rows.map(r => r[e]))),
-    ...allKeys.map(e => measureGridWidth(rows.map(r => r.metadata[e]))),
+    measureGridWidth(
+      rows.map(r => r.name),
+      { maxWidth: 500 },
+    ) + 15,
+    ...keys.map(e =>
+      measureGridWidth(
+        rows.map(r => r[e]),
+        { maxWidth: 400 },
+      ),
+    ),
+    ...allKeys.map(e =>
+      measureGridWidth(
+        rows.map(r => r.metadata[e]),
+        { maxWidth: 400 },
+      ),
+    ),
   ])
 
   useEffect(
@@ -197,7 +212,7 @@ export default observer(function FacetedSelector({
         <div
           style={{
             height: window.innerHeight * frac,
-            width: window.innerWidth * frac - 400,
+            width: window.innerWidth * frac - panelWidth,
           }}
         >
           <ResizeBar
@@ -239,8 +254,16 @@ export default observer(function FacetedSelector({
             rowHeight={25}
           />
         </div>
-        <div style={{ width: 400, overflowY: 'auto', overflowX: 'hidden' }}>
+        <ResizeHandle
+          vertical
+          onDrag={dist => setPanelWidth(panelWidth - dist)}
+          style={{ background: 'grey', width: 5 }}
+        />
+        <div
+          style={{ width: panelWidth, overflowY: 'auto', overflowX: 'hidden' }}
+        >
           <FacetFilters
+            width={panelWidth - 10}
             rows={rows}
             columns={columns}
             dispatch={dispatch}
