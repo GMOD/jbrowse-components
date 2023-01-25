@@ -367,7 +367,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       style="left: 0%; width: 56.78411120929245%;"
                     />
                     <span
-                      class="MuiSlider-thumb MuiSlider-thumbSizeSmall MuiSlider-thumbColorPrimary css-1kbujg-MuiSlider-thumb"
+                      class="MuiSlider-thumb MuiSlider-thumbColorPrimary MuiSlider-thumbSizeSmall css-1kbujg-MuiSlider-thumb"
                       data-focusvisible="false"
                       data-index="0"
                       style="left: 56.78411120929245%;"
