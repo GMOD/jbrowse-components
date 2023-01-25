@@ -1,12 +1,5 @@
-import React from 'react'
-import {
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  InputAdornment,
-  TextField,
-} from '@mui/material'
+import React, { useState } from 'react'
+import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
@@ -14,6 +7,8 @@ import ClearIcon from '@mui/icons-material/Clear'
 // locals
 import ShoppingCart from '../ShoppingCart'
 import { HierarchicalTrackSelectorModel } from '../../model'
+import { Menu } from '@jbrowse/core/ui'
+import MoreVert from '@mui/icons-material/MoreVert'
 
 export default function FacetedHeader({
   setFilterText,
@@ -32,49 +27,63 @@ export default function FacetedHeader({
   hideSparse: boolean
   model: HierarchicalTrackSelectorModel
 }) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+
   return (
-    <Grid container spacing={4} alignItems="center">
-      <Grid item>
-        <TextField
-          label="Search..."
-          value={filterText}
-          onChange={event => setFilterText(event.target.value)}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton color="secondary" onClick={() => setFilterText('')}>
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+    <>
+      <Grid container spacing={4} alignItems="center">
+        <Grid item>
+          <TextField
+            label="Search..."
+            value={filterText}
+            onChange={event => setFilterText(event.target.value)}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    color="secondary"
+                    onClick={() => setFilterText('')}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+
+        <Grid item>
+          <IconButton onClick={event => setAnchorEl(event.currentTarget)}>
+            <MoreVert />
+          </IconButton>
+        </Grid>
+        <Grid item>
+          <ShoppingCart model={model} />
+        </Grid>
       </Grid>
-      <Grid item>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={useShoppingCart}
-              onChange={e => setUseShoppingCart(e.target.checked)}
-            />
-          }
-          label="Add tracks to selection instead of turning them on/off"
-        />
-      </Grid>
-      <Grid item>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={hideSparse}
-              onChange={e => setHideSparse(e.target.checked)}
-            />
-          }
-          label="Hide sparse metadata columns"
-        />
-      </Grid>
-      <Grid item>
-        <ShoppingCart model={model} />
-      </Grid>
-    </Grid>
+      <Menu
+        anchorEl={anchorEl}
+        open={!!anchorEl}
+        onClose={() => setAnchorEl(null)}
+        onMenuItemClick={(_event, callback) => {
+          callback()
+          setAnchorEl(null)
+        }}
+        menuItems={[
+          {
+            label: 'Add tracks to selection instead of turning them on/off',
+            onClick: () => setUseShoppingCart(!useShoppingCart),
+            type: 'checkbox',
+            checked: useShoppingCart,
+          },
+          {
+            label: 'Hide sparse metadata columns',
+            onClick: () => setHideSparse(!hideSparse),
+            checked: hideSparse,
+            type: 'checkbox',
+          },
+        ]}
+      />
+    </>
   )
 }

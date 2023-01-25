@@ -1,13 +1,15 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { IconButton } from '@mui/material'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
+import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { makeStyles } from 'tss-react/mui'
 
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
+import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
 import {
   getEnv,
   getSession,
@@ -24,8 +26,6 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
-import ResizeBar from './ResizeBar'
-import { getRoot, resolveIdentifier } from 'mobx-state-tree'
 import FacetedHeader from './FacetedHeader'
 
 const useStyles = makeStyles()({
@@ -63,6 +63,7 @@ export default observer(function FacetedSelector({
   const [useShoppingCart, setUseShoppingCart] = useState(false)
   const [hideSparse, setHideSparse] = useState(false)
   const { pluginManager } = getEnv(model)
+  const { ref, scrollLeft } = useResizeBar()
 
   const rows = useMemo(() => {
     return model
@@ -178,15 +179,27 @@ export default observer(function FacetedSelector({
         model={model}
       />
 
-      <div style={{ display: 'flex', margin: 5 }}>
+      <div
+        ref={ref}
+        style={{
+          display: 'flex',
+          overflow: 'hidden',
+          height: window.innerHeight * 0.75,
+          width: window.innerWidth * 0.75,
+        }}
+      >
         <div
           style={{
             height: window.innerHeight * 0.75,
-            width: window.innerWidth * 0.75,
-            overflow: 'auto',
+            width: window.innerWidth,
           }}
         >
-          <ResizeBar widths={widths} setWidths={setWidths} />
+          <ResizeBar
+            checkbox
+            widths={widths}
+            setWidths={setWidths}
+            scrollLeft={scrollLeft}
+          />
           <DataGrid
             rows={rows}
             checkboxSelection
@@ -217,6 +230,7 @@ export default observer(function FacetedSelector({
             rowHeight={25}
           />
         </div>
+        <div style={{ width: 400, background: 'red' }} />
       </div>
     </>
   )
