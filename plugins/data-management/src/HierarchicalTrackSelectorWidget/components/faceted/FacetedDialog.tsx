@@ -13,7 +13,12 @@ function FacetedDlg(props: {
 }) {
   const { handleClose } = props
   return (
-    <Dialog open onClose={handleClose} maxWidth="xl" title="Track selector">
+    <Dialog
+      open
+      onClose={handleClose}
+      maxWidth="xl"
+      title="Faceted track selector"
+    >
       <DialogContent>
         <FacetedSelector {...props} />
       </DialogContent>
