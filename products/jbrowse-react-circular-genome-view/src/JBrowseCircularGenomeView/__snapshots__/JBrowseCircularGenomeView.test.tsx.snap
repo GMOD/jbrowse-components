@@ -269,7 +269,6 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
           <div
             class="css-1g8jgpw-horizontalHandle"
             data-resizer="true"
-            role="presentation"
             style="height: 3px; position: absolute; bottom: 0px; left: 0px; background: rgb(204, 204, 204); box-sizing: border-box; border-top: 1px solid #fafafa;"
           />
         </div>

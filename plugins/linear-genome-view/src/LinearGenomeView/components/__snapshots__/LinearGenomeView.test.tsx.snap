@@ -536,7 +536,6 @@ exports[`renders one track, one region 1`] = `
       <div
         class="css-14zcv15-horizontalHandle-resizeHandle"
         data-resizer="true"
-        role="presentation"
       />
     </div>
   </div>
@@ -1348,7 +1347,6 @@ exports[`renders two tracks, two regions 1`] = `
       <div
         class="css-14zcv15-horizontalHandle-resizeHandle"
         data-resizer="true"
-        role="presentation"
       />
     </div>
     <div
@@ -1479,7 +1477,6 @@ exports[`renders two tracks, two regions 1`] = `
       <div
         class="css-14zcv15-horizontalHandle-resizeHandle"
         data-resizer="true"
-        role="presentation"
       />
     </div>
   </div>
