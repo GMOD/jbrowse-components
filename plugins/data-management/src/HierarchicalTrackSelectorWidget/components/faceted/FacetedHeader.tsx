@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { Grid, IconButton, InputAdornment, TextField } from '@mui/material'
+import { Menu } from '@jbrowse/core/ui'
 
 // icons
 import ClearIcon from '@mui/icons-material/Clear'
+import MoreVert from '@mui/icons-material/MoreVert'
 
 // locals
 import ShoppingCart from '../ShoppingCart'
 import { HierarchicalTrackSelectorModel } from '../../model'
-import { Menu } from '@jbrowse/core/ui'
-import MoreVert from '@mui/icons-material/MoreVert'
 
 export default function FacetedHeader({
   setFilterText,
@@ -40,10 +40,7 @@ export default function FacetedHeader({
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton
-                    color="secondary"
-                    onClick={() => setFilterText('')}
-                  >
+                  <IconButton onClick={() => setFilterText('')}>
                     <ClearIcon />
                   </IconButton>
                 </InputAdornment>
