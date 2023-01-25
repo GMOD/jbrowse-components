@@ -89,7 +89,7 @@ export default observer(function FacetedSelector({
           ...metadata,
         }
       })
-  }, [assemblyName, model, filterDebounced, filters, session])
+  }, [assemblyName, model, filterDebounced, session])
 
   const allKeys = useMemo(
     () =>

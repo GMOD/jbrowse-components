@@ -1,6 +1,13 @@
 import React from 'react'
-import { Typography, FormControl, Select } from '@mui/material'
+import {
+  Typography,
+  FormControl,
+  Select,
+  IconButton,
+  Tooltip,
+} from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import ClearIcon from '@mui/icons-material/Clear'
 
 const useStyles = makeStyles()(theme => ({
   facet: {
@@ -35,7 +42,19 @@ export default function FacetFilters({
         const vals = Array.from(uniqs[index])
         return (
           <FormControl key={column.field} className={classes.facet}>
-            <Typography>{column.field}</Typography>
+            <div style={{ display: 'flex' }}>
+              <Typography>{column.field}</Typography>
+              <Tooltip title="Clear selection on this facet filter">
+                <IconButton
+                  onClick={() => {
+                    dispatch({ key: column.field, val: [] })
+                  }}
+                  size="small"
+                >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
             <Select
               multiple
               native
