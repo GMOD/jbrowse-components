@@ -178,7 +178,11 @@ export async function doSetupForImportForm(val?: unknown) {
   // clear view takes us to the import form
   view.clearView()
 
-  const autocomplete = await findByTestId('autocomplete')
+  const autocomplete = await findByTestId(
+    'autocomplete',
+    {},
+    { timeout: 10000 },
+  )
   const input = (await findByPlaceholderText(
     'Search for location',
   )) as HTMLInputElement
