@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
-import { PluginRecord } from '@jbrowse/core/PluginLoader'
 import { Region } from '@jbrowse/core/util/types'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -596,6 +595,9 @@ export const Hg38Exome = () => {
   return <JBrowseLinearGenomeView viewState={state} />
 }
 export const WithExternalPlugins = () => {
+  const [error, setError] = useState<unknown>()
+  const [viewState, setViewState] =
+    useState<ReturnType<typeof createViewState>>()
   // usage with buildtime plugins
   // this plugins array is then passed to the createViewState constructor
   //
@@ -606,112 +608,117 @@ export const WithExternalPlugins = () => {
   // import {loadPlugins} from '@jbrowse/react-linear-genome-view'
   //
   // we manually call loadPlugins, and pass the result to the createViewState constructor
-  const [plugins, setPlugins] = useState<PluginRecord[]>()
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     ;(async () => {
-      const loadedPlugins = await loadPlugins([
-        {
-          name: 'UCSC',
-          url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
-        },
-      ])
-      setPlugins(loadedPlugins)
-    })()
-  }, [setPlugins])
-
-  if (!plugins) {
-    return null
-  }
-
-  const state = createViewState({
-    assembly: {
-      name: 'hg19',
-      aliases: ['GRCh37'],
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'Pd8Wh30ei9R',
-        adapter: {
-          type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-            locationType: 'UriLocation',
-          },
-          faiLocation: {
-            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
-            locationType: 'UriLocation',
-          },
-          gziLocation: {
-            uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
-            locationType: 'UriLocation',
-          },
-        },
-      },
-      refNameAliases: {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: {
-            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
-            locationType: 'UriLocation',
-          },
-        },
-      },
-    },
-    plugins: plugins.map(p => p.plugin),
-    tracks: [
-      {
-        type: 'FeatureTrack',
-        trackId: 'segdups_ucsc_hg19',
-        name: 'UCSC SegDups',
-        category: ['Annotation'],
-        assemblyNames: ['hg19'],
-        adapter: {
-          type: 'UCSCAdapter',
-          track: 'genomicSuperDups',
-        },
-      },
-    ],
-    location: '1:2,467,681..2,667,681',
-    defaultSession: {
-      name: 'Runtime plugins',
-      view: {
-        id: 'aU9Nqje1U',
-        type: 'LinearGenomeView',
-        offsetPx: 22654,
-        bpPerPx: 108.93300653594771,
-        displayedRegions: [
+      try {
+        const plugins = await loadPlugins([
           {
-            refName: '1',
-            start: 0,
-            end: 249250621,
-            reversed: false,
-            assemblyName: 'hg19',
+            name: 'UCSC',
+            url: 'https://unpkg.com/jbrowse-plugin-ucsc@^1/dist/jbrowse-plugin-ucsc.umd.production.min.js',
           },
-        ],
-        tracks: [
-          {
-            id: 'MbiRphmDa',
-            type: 'FeatureTrack',
-            configuration: 'segdups_ucsc_hg19',
-            displays: [
-              {
-                id: '8ovhuA5cFM',
-                type: 'LinearBasicDisplay',
-                height: 100,
-                configuration: 'segdups_ucsc_hg19-LinearBasicDisplay',
+        ])
+        const state = createViewState({
+          assembly: {
+            name: 'hg19',
+            aliases: ['GRCh37'],
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'Pd8Wh30ei9R',
+              adapter: {
+                type: 'BgzipFastaAdapter',
+                fastaLocation: {
+                  uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+                  locationType: 'UriLocation',
+                },
+                faiLocation: {
+                  uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai',
+                  locationType: 'UriLocation',
+                },
+                gziLocation: {
+                  uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi',
+                  locationType: 'UriLocation',
+                },
               },
-            ],
+            },
+            refNameAliases: {
+              adapter: {
+                type: 'RefNameAliasAdapter',
+                location: {
+                  uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt',
+                  locationType: 'UriLocation',
+                },
+              },
+            },
           },
-        ],
-        hideHeader: false,
-        hideHeaderOverview: false,
-        trackSelectorType: 'hierarchical',
-        trackLabels: 'overlapping',
-        showCenterLine: false,
-      },
-    },
-  })
-  return <JBrowseLinearGenomeView viewState={state} />
+          plugins: plugins.map(p => p.plugin) || [],
+          tracks: [
+            {
+              type: 'FeatureTrack',
+              trackId: 'segdups_ucsc_hg19',
+              name: 'UCSC SegDups',
+              category: ['Annotation'],
+              assemblyNames: ['hg19'],
+              adapter: {
+                type: 'UCSCAdapter',
+                track: 'genomicSuperDups',
+              },
+            },
+          ],
+          location: '1:2,467,681..2,667,681',
+          defaultSession: {
+            name: 'Runtime plugins',
+            view: {
+              id: 'aU9Nqje1U',
+              type: 'LinearGenomeView',
+              offsetPx: 22654,
+              bpPerPx: 108.93300653594771,
+              displayedRegions: [
+                {
+                  refName: '1',
+                  start: 0,
+                  end: 249250621,
+                  reversed: false,
+                  assemblyName: 'hg19',
+                },
+              ],
+              tracks: [
+                {
+                  id: 'MbiRphmDa',
+                  type: 'FeatureTrack',
+                  configuration: 'segdups_ucsc_hg19',
+                  displays: [
+                    {
+                      id: '8ovhuA5cFM',
+                      type: 'LinearBasicDisplay',
+                      height: 100,
+                      configuration: 'segdups_ucsc_hg19-LinearBasicDisplay',
+                    },
+                  ],
+                },
+              ],
+              hideHeader: false,
+              hideHeaderOverview: false,
+              trackSelectorType: 'hierarchical',
+              trackLabels: 'overlapping',
+              showCenterLine: false,
+            },
+          },
+        })
+        setViewState(state)
+      } catch (e) {
+        setError(e)
+      }
+    })()
+  }, [])
+
+  return error ? (
+    <div style={{ color: 'red' }}>{`${error}`}</div>
+  ) : !viewState ? (
+    <div>Loading...</div>
+  ) : (
+    <JBrowseLinearGenomeView viewState={viewState} />
+  )
 }
 
 export const WithInternetAccounts = () => {

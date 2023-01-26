@@ -5,9 +5,13 @@ import ReExports from './ReExports'
 import { isElectron } from './util'
 
 export interface UMDLocPluginDefinition {
-  umdLoc: { uri: string; baseUri?: string }
+  umdLoc: {
+    uri: string
+    baseUri?: string
+  }
   name: string
 }
+
 export interface UMDUrlPluginDefinition {
   umdUrl: string
   name: string
@@ -78,10 +82,6 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
-export function getWindowPath(windowHref: string) {
-  return window.location.href + windowHref
-}
-
 function getGlobalObject(): Window {
   // Based on window-or-global
   // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
@@ -133,8 +133,8 @@ export default class PluginLoader {
     )
   }
 
-  async loadCJSPlugin(def: CJSPluginDefinition, windowHref?: string) {
-    const parsedUrl = new URL(def.cjsUrl, windowHref)
+  async loadCJSPlugin(def: CJSPluginDefinition, baseUri?: string) {
+    const parsedUrl = new URL(def.cjsUrl, baseUri)
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
         `Cannot load plugins using protocol "${parsedUrl.protocol}"`,
@@ -147,10 +147,10 @@ export default class PluginLoader {
     return this.fetchCJS(parsedUrl.href)
   }
 
-  async loadESMPlugin(def: ESMPluginDefinition, windowHref?: string) {
+  async loadESMPlugin(def: ESMPluginDefinition, baseUri?: string) {
     const parsedUrl =
       'esmUrl' in def
-        ? new URL(def.esmUrl, windowHref)
+        ? new URL(def.esmUrl, baseUri)
         : new URL(def.esmLoc.uri, def.esmLoc.baseUri)
 
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
@@ -170,13 +170,13 @@ export default class PluginLoader {
 
   async loadUMDPlugin(
     def: UMDPluginDefinition | LegacyUMDPluginDefinition,
-    windowHref?: string,
+    baseUri?: string,
   ) {
     const parsedUrl =
       'url' in def
-        ? new URL(def.url, windowHref)
+        ? new URL(def.url, baseUri)
         : 'umdUrl' in def
-        ? new URL(def.umdUrl, windowHref)
+        ? new URL(def.umdUrl, baseUri)
         : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
 
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
@@ -200,14 +200,14 @@ export default class PluginLoader {
     return plugin
   }
 
-  async loadPlugin(def: PluginDefinition, windowHref?: string) {
+  async loadPlugin(def: PluginDefinition, baseUri?: string) {
     let plugin: LoadedPlugin
     if (isElectron && isCJSPluginDefinition(def)) {
-      plugin = await this.loadCJSPlugin(def, windowHref)
+      plugin = await this.loadCJSPlugin(def, baseUri)
     } else if (isESMPluginDefinition(def)) {
-      plugin = await this.loadESMPlugin(def, windowHref)
+      plugin = await this.loadESMPlugin(def, baseUri)
     } else if (isUMDPluginDefinition(def)) {
-      plugin = await this.loadUMDPlugin(def, windowHref)
+      plugin = await this.loadUMDPlugin(def, baseUri)
     } else if (!isElectron && isCJSPluginDefinition(def)) {
       throw new Error(
         `CommonJS plugin found, but not in a NodeJS environment: ${JSON.stringify(
@@ -229,10 +229,10 @@ export default class PluginLoader {
     )
   }
 
-  async load(windowHref?: string) {
+  async load(baseUri?: string) {
     return Promise.all(
       this.definitions.map(async definition => ({
-        plugin: await this.loadPlugin(definition, windowHref),
+        plugin: await this.loadPlugin(definition, baseUri),
         definition,
       })),
     )
