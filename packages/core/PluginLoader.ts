@@ -133,7 +133,7 @@ export default class PluginLoader {
     )
   }
 
-  async loadCJSPlugin(def: CJSPluginDefinition, windowHref: string) {
+  async loadCJSPlugin(def: CJSPluginDefinition, windowHref?: string) {
     const parsedUrl = new URL(def.cjsUrl, windowHref)
     if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       throw new Error(
@@ -147,7 +147,7 @@ export default class PluginLoader {
     return this.fetchCJS(parsedUrl.href)
   }
 
-  async loadESMPlugin(def: ESMPluginDefinition, windowHref: string) {
+  async loadESMPlugin(def: ESMPluginDefinition, windowHref?: string) {
     const parsedUrl =
       'esmUrl' in def
         ? new URL(def.esmUrl, windowHref)
@@ -170,7 +170,7 @@ export default class PluginLoader {
 
   async loadUMDPlugin(
     def: UMDPluginDefinition | LegacyUMDPluginDefinition,
-    windowHref: string,
+    windowHref?: string,
   ) {
     const parsedUrl =
       'url' in def
@@ -200,7 +200,7 @@ export default class PluginLoader {
     return plugin
   }
 
-  async loadPlugin(def: PluginDefinition, windowHref: string) {
+  async loadPlugin(def: PluginDefinition, windowHref?: string) {
     let plugin: LoadedPlugin
     if (isElectron && isCJSPluginDefinition(def)) {
       plugin = await this.loadCJSPlugin(def, windowHref)
@@ -229,7 +229,7 @@ export default class PluginLoader {
     )
   }
 
-  async load(windowHref = '') {
+  async load(windowHref?: string) {
     return Promise.all(
       this.definitions.map(async definition => ({
         plugin: await this.loadPlugin(definition, windowHref),
