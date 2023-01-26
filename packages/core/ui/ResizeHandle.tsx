@@ -83,7 +83,6 @@ function ResizeHandle({
         prevPos.current = vertical ? event.clientX : event.clientY
         setMouseDragging(true)
       }}
-      role="presentation"
       className={cx(className, originalClassName)}
       {...props}
     />
