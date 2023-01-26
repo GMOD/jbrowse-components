@@ -5,7 +5,8 @@ import {
   rectifyStats,
   scoresToStats,
   calcPerBaseStats,
-  UnrectifiedFeatureStats,
+  MinimumFeatureScoreStats,
+  isFeatureScoreStats,
 } from './stats'
 
 test('calc std', () => {
@@ -21,12 +22,12 @@ test('calc std', () => {
 test('test rectify', () => {
   // mean of 0 bases covered = 0
   expect(
-    rectifyStats({ basesCovered: 0 } as UnrectifiedFeatureStats).scoreMean,
+    rectifyStats({ basesCovered: 0 } as MinimumFeatureScoreStats).scoreMean,
   ).toEqual(0)
   const s = rectifyStats({
     featureCount: 10,
     scoreSum: 1000,
-  } as UnrectifiedFeatureStats)
+  } as MinimumFeatureScoreStats)
 
   expect(s.scoreMean).toEqual(100)
   expect(s.featureCount).toEqual(10)
@@ -36,7 +37,7 @@ test('test rectify', () => {
       featureCount: 3,
       scoreSum: 6,
       scoreSumSquares: 14,
-    } as UnrectifiedFeatureStats).scoreStdDev,
+    } as MinimumFeatureScoreStats).scoreStdDev,
   ).toEqual(1) // calculated from a webapp about sample standard deviations
 })
 
@@ -46,14 +47,17 @@ test('scores to stats', async () => {
     from([
       new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 1 } }),
       new SimpleFeature({ id: 2, data: { start: 1, end: 2, score: 2 } }),
-      new SimpleFeature({ id: 3, data: { start: 2, end: 3, score: 3 } }),
+      new SimpleFeature({ id: 3, data: { start: 1, end: 3, score: 3 } }),
     ]),
   )
-  expect(ret.scoreMean).toEqual(2)
-  expect(ret.featureDensity).toEqual(1)
-  expect(ret.scoreMax).toEqual(3)
-  expect(ret.scoreMin).toEqual(1)
-  expect(ret.scoreStdDev).toEqual(1) // calculated from a webapp
+  expect(ret.featureDensity).toEqual(1.5)
+  expect(isFeatureScoreStats(ret)).toBeTruthy()
+  if (isFeatureScoreStats(ret)) {
+    expect(ret.scoreMean).toEqual(2)
+    expect(ret.scoreMax).toEqual(3)
+    expect(ret.scoreMin).toEqual(1)
+    expect(ret.scoreStdDev).toEqual(1) // calculated from a webapp
+  }
 })
 
 // peter TODO: fix this test

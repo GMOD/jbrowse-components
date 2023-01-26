@@ -13,7 +13,14 @@ import {
 } from '../configuration'
 import { getSubAdapterType } from './dataAdapterCache'
 import { AugmentedRegion as Region, NoAssemblyRegion } from '../util/types'
-import { blankStats, rectifyStats, scoresToStats } from '../util/stats'
+import {
+  blankStats,
+  FeatureCoverageStats,
+  FeatureScoreStats,
+  isFeatureScoreStats,
+  rectifyStats,
+  scoresToStats,
+} from '../util/stats'
 import BaseResult from '../TextSearch/BaseResults'
 import idMaker from '../util/idMaker'
 import PluginManager from '../PluginManager'
@@ -214,12 +221,18 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
     return refNames.includes(refName)
   }
 
-  public async getRegionStats(region: Region, opts?: BaseOptions) {
+  public async getRegionStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<FeatureScoreStats | FeatureCoverageStats> {
     const feats = this.getFeatures(region, opts)
     return scoresToStats(region, feats)
   }
 
-  public async getMultiRegionStats(regions: Region[] = [], opts?: BaseOptions) {
+  public async getMultiRegionStats(
+    regions: Region[] = [],
+    opts?: BaseOptions,
+  ): Promise<FeatureCoverageStats | FeatureScoreStats> {
     if (!regions.length) {
       return blankStats()
     }
@@ -227,21 +240,29 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
       regions.map(region => this.getRegionStats(region, opts)),
     )
 
-    const scoreMax = max(feats.map(a => a.scoreMax))
-    const scoreMin = min(feats.map(a => a.scoreMin))
-    const scoreSum = sum(feats.map(a => a.scoreSum))
-    const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
     const featureCount = sum(feats.map(a => a.featureCount))
     const basesCovered = sum(feats.map(a => a.basesCovered))
 
-    return rectifyStats({
-      scoreMin,
-      scoreMax,
-      featureCount,
-      basesCovered,
-      scoreSumSquares,
-      scoreSum,
-    })
+    if (feats.every(isFeatureScoreStats)) {
+      const scoreMax = max(feats.map(a => a.scoreMax))
+      const scoreMin = min(feats.map(a => a.scoreMin))
+      const scoreSum = sum(feats.map(a => a.scoreSum))
+      const scoreSumSquares = sum(feats.map(a => a.scoreSumSquares))
+      return rectifyStats({
+        scoreMin,
+        scoreMax,
+        featureCount,
+        basesCovered,
+        scoreSumSquares,
+        scoreSum,
+      })
+    } else {
+      return {
+        featureCount,
+        basesCovered,
+        featureDensity: featureCount / basesCovered,
+      }
+    }
   }
 
   public async estimateRegionsStats(regions: Region[], opts?: BaseOptions) {
