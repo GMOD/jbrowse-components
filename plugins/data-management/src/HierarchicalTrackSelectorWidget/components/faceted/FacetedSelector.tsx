@@ -7,7 +7,7 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { ResizeHandle, SanitizedHTML } from '@jbrowse/core/ui'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
 import {
@@ -136,10 +136,10 @@ export default observer(function FacetedSelector({
     setWidths(widths => [
       widths[0],
       ...filteredNonMetadataKeys.map(e =>
-        measureGridWidth(rows.map(r => r[e])),
+        measureGridWidth(rows.map(r => r[e], { stripHTML: true })),
       ),
       ...filteredMetadataKeys.map(e =>
-        measureGridWidth(rows.map(r => r.metadata[e])),
+        measureGridWidth(rows.map(r => r.metadata[e], { stripHTML: true })),
       ),
     ])
   }, [filteredMetadataKeys, filteredNonMetadataKeys, hideSparse, rows])
@@ -153,7 +153,7 @@ export default observer(function FacetedSelector({
         const { value, id, row } = params
         return (
           <>
-            {value}
+            <SanitizedHTML html={value} />
             <IconButton
               onClick={e =>
                 setInfo({
@@ -174,11 +174,19 @@ export default observer(function FacetedSelector({
       field: e,
       width: widthsDebounced[i + 1] || 100, // can be undefined before useEffect update
       hideable: false, // doesn't work with our resize bar yet
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return value ? <SanitizedHTML html={value} /> : ''
+      },
     })),
     ...filteredMetadataKeys.map((e, i) => ({
       field: e,
       width: widthsDebounced[i + 1 + filteredNonMetadataKeys.length] || 100, // can be undefined before useEffect update
       hideable: false, // doesn't work with our resize bar yet
+      renderCell: (params: GridCellParams) => {
+        const { value } = params
+        return value ? <SanitizedHTML html={value} /> : ''
+      },
     })),
   ]
   const shownTrackIds = view.tracks.map(
