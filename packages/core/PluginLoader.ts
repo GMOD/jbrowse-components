@@ -101,13 +101,13 @@ function isInWebWorker(globalObject: ReturnType<typeof getGlobalObject>) {
 export default class PluginLoader {
   definitions: PluginDefinition[] = []
 
-  fetchESM?: (url: string) => Promise<unknown>
+  fetchESM?: (url: string) => Promise<LoadedPlugin>
   fetchCJS?: (url: string) => Promise<LoadedPlugin>
 
   constructor(
     defs: PluginDefinition[] = [],
     args?: {
-      fetchESM?: (url: string) => Promise<unknown>
+      fetchESM?: (url: string) => Promise<LoadedPlugin>
       fetchCJS?: (url: string) => Promise<LoadedPlugin>
     },
   ) {
@@ -158,9 +158,11 @@ export default class PluginLoader {
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,
       )
     }
-    const plugin = (await this.fetchESM?.(parsedUrl.href)) as
-      | LoadedPlugin
-      | undefined
+
+    if (!this.fetchESM) {
+      throw new Error(`No ESM fetcher installed`)
+    }
+    const plugin = await this.fetchESM(parsedUrl.href)
 
     if (!plugin) {
       throw new Error(`Could not load ESM plugin: ${parsedUrl}`)

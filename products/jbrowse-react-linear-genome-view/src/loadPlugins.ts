@@ -1,4 +1,4 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 
 interface PluginDefinition {
   name: string
@@ -8,7 +8,7 @@ interface PluginDefinition {
 export default async function loadPlugins(
   pluginDefinitions: PluginDefinition[],
   args?: {
-    fetchESM?: (url: string) => Promise<unknown>
+    fetchESM?: (url: string) => Promise<LoadedPlugin>
     baseUrl?: string
   },
 ) {
