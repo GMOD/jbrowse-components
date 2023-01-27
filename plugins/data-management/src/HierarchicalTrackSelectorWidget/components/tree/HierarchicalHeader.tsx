@@ -55,10 +55,7 @@ function HierarchicalTrackSelectorHeader({
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton
-                  color="secondary"
-                  onClick={() => model.clearFilterText()}
-                >
+                <IconButton onClick={() => model.clearFilterText()}>
                   <ClearIcon />
                 </IconButton>
               </InputAdornment>

@@ -15,7 +15,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { isUnsupported, NodeData } from '../util'
 import { SanitizedHTML } from '@jbrowse/core/ui'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   compactCheckbox: {
     padding: 0,
   },
@@ -23,10 +23,10 @@ const useStyles = makeStyles()({
   checkboxLabel: {
     marginRight: 0,
     '&:hover': {
-      backgroundColor: '#eee',
+      backgroundColor: theme.palette.action.selected,
     },
   },
-})
+}))
 
 export interface InfoArgs {
   target: HTMLElement
@@ -70,7 +70,6 @@ export default function TrackLabel({ data }: { data: NodeData }) {
       <IconButton
         onClick={e => setInfo({ target: e.currentTarget, id, conf })}
         style={{ padding: 0 }}
-        color="secondary"
         data-testid={`htsTrackEntryMenu-${id}`}
       >
         <MoreHorizIcon />
