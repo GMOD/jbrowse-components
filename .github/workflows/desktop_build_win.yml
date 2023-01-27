@@ -9,7 +9,7 @@ jobs:
     name: Build Windows desktop app
     runs-on: ubuntu-latest
     container:
-      image: docker://node:14-bullseye
+      image: docker://node:16-bullseye
     steps:
       - uses: actions/checkout@v2
       - name: Install deps (with cache)

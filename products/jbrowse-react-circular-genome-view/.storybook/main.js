@@ -1,12 +1,20 @@
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 module.exports = {
-  stories: ['../stories/**/*.stories.@(ts|tsx|mdx)'],
-
+  stories: ['../stories/**/*.mdx', '../stories/**/*.stories.@(js|jsx|ts|tsx)'],
+  staticDirs: ['../public'],
   addons: [
-    '@storybook/addon-actions',
     '@storybook/addon-links',
-    '@storybook/addon-docs',
+    '@storybook/addon-essentials',
+    '@storybook/preset-create-react-app',
+    '@storybook/addon-interactions',
   ],
+  framework: {
+    name: '@storybook/react-webpack5',
+    options: {},
+  },
+  docs: {
+    docsPage: true,
+  },
 
   webpackFinal: async config => {
     config.plugins.push(
@@ -26,9 +34,5 @@ module.exports = {
     config.resolve.fallback.fs = false
     config.resolve.extensions.push('.ts', '.tsx')
     return config
-  },
-
-  core: {
-    builder: 'webpack5',
   },
 }
