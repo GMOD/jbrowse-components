@@ -409,6 +409,16 @@ function Menu(props: MenuProps) {
       open={open}
       onClose={onClose}
       BackdropProps={{ invisible: true }}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'right',
+        ...other.anchorOrigin,
+      }}
+      transformOrigin={{
+        vertical: 'top',
+        horizontal: 'left',
+        ...other.transformOrigin,
+      }}
       {...other}
     >
       <MenuPage
