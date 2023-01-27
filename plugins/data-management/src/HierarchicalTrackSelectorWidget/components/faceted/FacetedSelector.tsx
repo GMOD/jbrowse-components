@@ -228,6 +228,7 @@ export default observer(function FacetedSelector({
             headerHeight={35}
             checkboxSelection
             disableSelectionOnClick
+            keepNonExistentRowsSelected
             onSelectionModelChange={userSelectedIds => {
               if (!useShoppingCart) {
                 const a1 = shownTrackIds
