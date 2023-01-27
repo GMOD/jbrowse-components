@@ -34,8 +34,8 @@
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",
     "clean": "rimraf esm dist *.tsbuildinfo",
-    "storybook": "start-storybook --static-dir public --port 6006",
-    "storybook:build": "build-storybook --quiet --static-dir public"
+    "storybook": "storybook dev --port 6006",
+    "storybook:build": "storybook build"
   },
   "dependencies": {
     "@babel/runtime": "^7.17.9",
