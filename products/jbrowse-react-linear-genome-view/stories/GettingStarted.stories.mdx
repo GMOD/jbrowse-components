@@ -1,4 +1,5 @@
 import { Meta, Story, Canvas } from '@storybook/addon-docs'
+import * as ComponentStories from './JBrowseLinearGenomeView.stories'
 
 <Meta title="Getting Started" />
 
@@ -14,7 +15,12 @@ demonstration of how the component looks and works.
 
 This is an example of what a story looks like:
 
-<Story id="linear-view--one-linear-genome-view" name="One linear genome view" />
+<Canvas>
+  <Story
+    id="linear-view--one-linear-genome-view"
+    name="One linear genome view"
+  />
+</Canvas>
 
 You can test out the various features of the component, and open tracks and
 interact with it as you would in your app. You can also click on the code button
@@ -77,7 +83,9 @@ const state = createViewState({
 
 Example
 
-<Story id="linear-view--using-loc-object" name="Using location" />
+<Canvas>
+  <Story id="linear-view--using-loc-object" name="Using location" />
+</Canvas>
 
 ## Disabling the ability to add tracks
 
@@ -97,13 +105,17 @@ const state = createViewState({
 
 Example
 
-<Story id="linear-view--disable-add-tracks" name="Disable add tracks" />
+<Canvas>
+  <Story id="linear-view--disable-add-tracks" name="Disable add tracks" />
+</Canvas>
 
 ## Opening up tracks by default
 
 You can use the "showTrack" function on the object returned by createViewState
 
-<Story id="linear-view--with-show-track" name="Show track" />
+<Canvas>
+  <Story id="linear-view--with-show-track" name="Show track" />
+</Canvas>
 
 ## An overview of the LGV API
 
@@ -161,7 +173,9 @@ const state = createViewState({
 
 Example
 
-<Story id="linear-view--using-loc-object" name="Using loc object" />
+<Canvas>
+  <Story id="linear-view--using-loc-object" name="Using loc object" />
+</Canvas>
 
 ## Additional resources
 

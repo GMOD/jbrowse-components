@@ -51,7 +51,6 @@
     "@storybook/node-logger": "^7.0.0-beta.35",
     "@storybook/react": "^7.0.0-beta.35",
     "@storybook/react-webpack5": "^7.0.0-beta.35",
-    "@storybook/testing-library": "^0.0.13",
     "@testing-library/react": "^12.0.0",
     "@types/base64-js": "^1.2.5",
     "@types/buffer-crc32": "^0.2.2",
