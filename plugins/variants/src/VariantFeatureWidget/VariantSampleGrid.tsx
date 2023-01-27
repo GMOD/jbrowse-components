@@ -10,7 +10,7 @@ import {
 import { DataGrid } from '@mui/x-data-grid'
 import { BaseCard } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import { measureGridWidth, SimpleFeatureSerialized } from '@jbrowse/core/util'
-import ResizeBar from '@jbrowse/core/ui/ResizeBar'
+import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
 
 interface Entry {
   sample: string
@@ -27,6 +27,7 @@ export default function VariantSamples(props: {
   descriptions: any
 }) {
   const { feature, descriptions = {} } = props
+  const { ref, scrollLeft } = useResizeBar()
   const [filter, setFilter] = useState<Filters>({})
   const [showFilters, setShowFilters] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
@@ -109,16 +110,22 @@ export default function VariantSamples(props: {
           ))}
         </>
       ) : null}
-      <ResizeBar widths={widths} setWidths={setWidths} />
-      <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
-        <DataGrid
-          rows={rows}
-          columns={infoFields}
-          disableSelectionOnClick
-          rowHeight={25}
-          headerHeight={35}
-          disableColumnMenu
+      <div ref={ref}>
+        <ResizeBar
+          widths={widths}
+          setWidths={setWidths}
+          scrollLeft={scrollLeft}
         />
+        <div ref={ref} style={{ height: 600, width: '100%', overflow: 'auto' }}>
+          <DataGrid
+            rows={rows}
+            columns={infoFields}
+            disableSelectionOnClick
+            rowHeight={25}
+            headerHeight={35}
+            disableColumnMenu
+          />
+        </div>
       </div>
     </BaseCard>
   )
