@@ -33,23 +33,22 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     paddingLeft: 5,
   },
-
-  // margin:auto 0 to center text vertically
-  accordionText: {
-    margin: 'auto 0',
-  },
 }))
 
 // An individual node in the track selector. Note: manually sets cursor:
 // pointer improves usability for what can be clicked
-export default function Node(props: {
+export default function Node({
+  data,
+  isOpen,
+  style,
+  setOpen,
+}: {
   data: NodeData
   isOpen: boolean
   style?: { height: number }
   setOpen: (arg: boolean) => void
 }) {
-  const { data, isOpen, style, setOpen } = props
-  const { id, isLeaf, nestingLevel, toggleCollapse } = data
+  const { isLeaf, nestingLevel } = data
 
   const { classes } = useStyles()
   const width = 10
@@ -66,10 +65,6 @@ export default function Node(props: {
       ))}
       <div
         className={!isLeaf ? classes.accordionCard : undefined}
-        onClick={() => {
-          toggleCollapse(id)
-          setOpen(!isOpen)
-        }}
         style={{
           marginLeft,
           whiteSpace: 'nowrap',
@@ -78,7 +73,7 @@ export default function Node(props: {
       >
         <div className={!isLeaf ? classes.accordionColor : undefined}>
           {!isLeaf ? (
-            <Category isOpen={isOpen} data={data} />
+            <Category isOpen={isOpen} data={data} setOpen={setOpen} />
           ) : (
             <TrackLabel data={data} />
           )}

@@ -12,17 +12,6 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { getAllChildren, treeToMap, NodeData } from '../util'
 
 const useStyles = makeStyles()(theme => ({
-  compactCheckbox: {
-    padding: 0,
-  },
-
-  checkboxLabel: {
-    marginRight: 0,
-    '&:hover': {
-      backgroundColor: '#eee',
-    },
-  },
-
   contrastColor: {
     color: theme.palette.secondary.contrastText,
   },
@@ -30,22 +19,34 @@ const useStyles = makeStyles()(theme => ({
   // margin:auto 0 to center text vertically
   accordionText: {
     margin: 'auto 0',
+    // width 100 so you can click anywhere on the category bar
+    width: '100%',
   },
 }))
 
 export default function Category({
   isOpen,
+  setOpen,
   data,
 }: {
   isOpen: boolean
+  setOpen: (arg: boolean) => void
   data: NodeData
 }) {
   const { classes } = useStyles()
   const [menuEl, setMenuEl] = useState<HTMLElement | null>(null)
-  const { name, model, id, tree } = data
+  const { name, model, id, tree, toggleCollapse } = data
 
   return (
-    <div className={classes.accordionText}>
+    <div
+      className={classes.accordionText}
+      onClick={() => {
+        if (!menuEl) {
+          toggleCollapse(id)
+          setOpen(!isOpen)
+        }
+      }}
+    >
       <Typography>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
         {name}
