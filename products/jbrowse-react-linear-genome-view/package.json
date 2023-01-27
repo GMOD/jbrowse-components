@@ -36,7 +36,7 @@
     "build:webpack:dev": "cross-env NODE_ENV=development webpack",
     "build:webpack:prod": "cross-env NODE_ENV=production webpack",
     "clean": "rimraf dist esm *.tsbuildinfo",
-    "storybook": "storybook dev",
+    "storybook": "storybook dev --port 6006",
     "storybook:build": "storybook build",
     "prebuild": "yarn clean",
     "prepack": "yarn build && yarn useDist",
