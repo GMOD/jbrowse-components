@@ -96,17 +96,21 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         self.showTranslation = !self.showTranslation
       },
       afterAttach() {
-        // auto-adjust height depending on settings
         addDisposer(
           self,
           autorun(() => {
-            const { showTranslation, showReverse, showForward } = self
-            const r1 = showReverse && showTranslation ? 60 : 0
-            const r2 = showForward && showTranslation ? 60 : 0
-            const t = r1 + r2
-            const r = showReverse ? 20 : 0
-            const s = showForward ? 20 : 0
-            self.setHeight(t + r + s)
+            const view = getContainingView(self) as LinearGenomeViewModel
+            if (view?.bpPerPx >= 1) {
+              self.setHeight(50)
+            } else {
+              const { showTranslation, showReverse, showForward } = self
+              const r1 = showReverse && showTranslation ? 60 : 0
+              const r2 = showForward && showTranslation ? 60 : 0
+              const t = r1 + r2
+              const r = showReverse ? 20 : 0
+              const s = showForward ? 20 : 0
+              self.setHeight(t + r + s)
+            }
           }),
         )
       },

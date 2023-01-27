@@ -6,8 +6,6 @@ import {
   FormControl,
   FormControlLabel,
   Grid,
-  IconButton,
-  Link,
   Tooltip,
   ToggleButton,
   ToggleButtonGroup,
@@ -15,14 +13,11 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { useLocalStorage } from '@jbrowse/core/util'
-import { format } from 'timeago.js'
 
 // icons
 import DeleteIcon from '@mui/icons-material/Delete'
-import EditIcon from '@mui/icons-material/Edit'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import ListIcon from '@mui/icons-material/List'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
@@ -30,15 +25,13 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 // locals
 import RenameSessionDialog from './dialogs/RenameSessionDialog'
 import DeleteSessionDialog from './dialogs/DeleteSessionDialog'
-import { loadPluginManager } from './util'
-import SessionCard from './SessionCard'
+import { loadPluginManager, RecentSessionData } from './util'
+import RecentSessionsCards from './RecentSessionCards'
+import RecentSessionsList from './RecentSessionList'
 
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()({
-  pointer: {
-    cursor: 'pointer',
-  },
   toggleButton: {
     '&.Mui-disabled': {
       pointerEvents: 'auto',
@@ -46,171 +39,7 @@ const useStyles = makeStyles()({
   },
 })
 
-interface RecentSessionData {
-  path: string
-  name: string
-  screenshot?: string
-  updated: number
-}
-
 type RecentSessions = RecentSessionData[]
-
-function RecentSessionsList({
-  setError,
-  sessions,
-  setSelectedSessions,
-  setSessionToRename,
-  setPluginManager,
-}: {
-  setError: (e: unknown) => void
-  setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
-  setSelectedSessions: (arg: RecentSessionData[]) => void
-  sessions: RecentSessionData[]
-}) {
-  const { classes } = useStyles()
-  const columns = [
-    {
-      field: 'rename',
-      minWidth: 40,
-      width: 40,
-      sortable: false,
-      filterable: false,
-      headerName: ' ',
-      renderCell: (params: GridCellParams) => {
-        return (
-          <IconButton
-            onClick={() => setSessionToRename(params.row as RecentSessionData)}
-          >
-            <Tooltip title="Rename session">
-              <EditIcon />
-            </Tooltip>
-          </IconButton>
-        )
-      },
-    },
-    {
-      field: 'name',
-      headerName: 'Session name',
-      flex: 0.7,
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <Link
-            className={classes.pointer}
-            onClick={async () => {
-              try {
-                setPluginManager(await loadPluginManager(params.row.path))
-              } catch (e) {
-                console.error(e)
-                setError(e)
-              }
-            }}
-          >
-            {value}
-          </Link>
-        )
-      },
-    },
-    {
-      field: 'path',
-      headerName: 'Session path',
-      flex: 0.7,
-      renderCell: (params: GridCellParams) => {
-        const { value } = params
-        return (
-          <Tooltip title={String(value)}>
-            <div>{value}</div>
-          </Tooltip>
-        )
-      },
-    },
-    {
-      field: 'lastModified',
-      headerName: 'Last modified',
-      renderCell: ({ value }: GridCellParams) => {
-        if (!value) {
-          return null
-        }
-        const lastModified = new Date(value as string)
-        const now = Date.now()
-        const oneDayLength = 24 * 60 * 60 * 1000
-        if (now - lastModified.getTime() < oneDayLength) {
-          return (
-            <Tooltip title={lastModified.toLocaleString('en-US')}>
-              <div>{format(lastModified)}</div>
-            </Tooltip>
-          )
-        }
-        return lastModified.toLocaleString('en-US')
-      },
-      width: 150,
-    },
-  ]
-
-  return (
-    <div style={{ height: 400, width: '100%' }}>
-      <DataGrid
-        checkboxSelection
-        disableSelectionOnClick
-        onSelectionModelChange={args => {
-          setSelectedSessions(sessions.filter(s => args.includes(s.path)))
-        }}
-        rows={sessions.map(session => ({
-          id: session.path,
-          name: session.name,
-          rename: session.name,
-          delete: session.name,
-          lastModified: session.updated,
-          path: session.path,
-        }))}
-        rowHeight={25}
-        headerHeight={33}
-        columns={columns}
-      />
-    </div>
-  )
-}
-
-function RecentSessionsCards({
-  sessions,
-  setError,
-  setSessionsToDelete,
-  setSessionToRename,
-  setPluginManager,
-  addToQuickstartList,
-}: {
-  setError: (e: unknown) => void
-  setSessionsToDelete: (e: RecentSessionData[]) => void
-  setSessionToRename: (arg: RecentSessionData) => void
-  setPluginManager: (pm: PluginManager) => void
-  sessions: RecentSessionData[]
-  addToQuickstartList: (arg: RecentSessionData) => void
-}) {
-  return (
-    <Grid container spacing={4}>
-      {sessions?.map(session => (
-        <Grid item key={session.path}>
-          <SessionCard
-            sessionData={session}
-            onClick={async () => {
-              try {
-                const pm = await loadPluginManager(session.path)
-                setPluginManager(pm)
-              } catch (e) {
-                console.error(e)
-                setError(e)
-              }
-            }}
-            onDelete={del => setSessionsToDelete([del])}
-            onRename={setSessionToRename}
-            onAddToQuickstartList={addToQuickstartList}
-          />
-        </Grid>
-      ))}
-    </Grid>
-  )
-}
 
 // note: adjust props so disabled button can have a tooltip and not lose styling
 // https://stackoverflow.com/a/63276424
@@ -297,13 +126,15 @@ export default function RecentSessionPanel({
 
   return (
     <div>
-      <RenameSessionDialog
-        sessionToRename={sessionToRename}
-        onClose={() => {
-          setSessionToRename(undefined)
-          setUpdateSessionsList(s => s + 1)
-        }}
-      />
+      {sessionToRename ? (
+        <RenameSessionDialog
+          sessionToRename={sessionToRename}
+          onClose={() => {
+            setSessionToRename(undefined)
+            setUpdateSessionsList(s => s + 1)
+          }}
+        />
+      ) : null}
       {sessionsToDelete ? (
         <DeleteSessionDialog
           setError={setError}

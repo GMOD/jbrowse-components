@@ -161,7 +161,11 @@ function SequenceDialog({
             if (comp) {
               chunkSeq = complement(chunkSeq)
             }
-            return { header: chunkLocstring, seq: chunkSeq }
+            return {
+              header:
+                chunkLocstring + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
+              seq: chunkSeq,
+            }
           }),
       )
     : ''

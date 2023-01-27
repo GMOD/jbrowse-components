@@ -1,14 +1,13 @@
 import React, { useState } from 'react'
 import {
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
   Input,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 const { ipcRenderer } = window.require('electron')
 
 const RenameSessionDialog = ({
@@ -22,8 +21,7 @@ const RenameSessionDialog = ({
   const [error, setError] = useState<unknown>()
 
   return (
-    <Dialog open={!!sessionToRename} onClose={() => onClose(false)}>
-      <DialogTitle>Rename session</DialogTitle>
+    <Dialog open onClose={() => onClose(false)} title="Rename session">
       <DialogContent>
         <DialogContentText>
           Please enter a new name for the session:

@@ -675,6 +675,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "metadata": {
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo",
+        "sub": {
+          "subkey": "wow",
+        },
       },
       "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
       "trackId": "volvox_cram_pileup",

@@ -18,16 +18,16 @@ function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   return !!a1.find(value => a2.includes(value))
 }
 
-function passesFilter(
-  filter: string,
-  config: AnyConfigurationModel,
+export function matches(
+  query: string,
+  conf: AnyConfigurationModel,
   session: AbstractSessionModel,
 ) {
-  const categories = readConfObject(config, 'category') as string[] | undefined
-  const filterLower = filter.toLowerCase()
+  const categories = readConfObject(conf, 'category') as string[] | undefined
+  const queryLower = query.toLowerCase()
   return (
-    getTrackName(config, session).toLowerCase().includes(filterLower) ||
-    !!categories?.filter(c => c.toLowerCase().includes(filterLower)).length
+    getTrackName(conf, session).toLowerCase().includes(queryLower) ||
+    !!categories?.filter(c => c.toLowerCase().includes(queryLower)).length
   )
 }
 
@@ -74,7 +74,7 @@ export function generateHierarchy(
   const session = getSession(model)
 
   trackConfigurations
-    .filter(conf => passesFilter(filterText, conf, session))
+    .filter(conf => matches(filterText, conf, session))
     .forEach(conf => {
       // copy the categories since this array can be mutated downstream
       const categories = [...(readConfObject(conf, 'category') || [])]
@@ -131,15 +131,18 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       id: ElementId,
       type: types.literal('HierarchicalTrackSelectorWidget'),
       collapsed: types.map(types.boolean),
-      filterText: '',
       view: types.safeReference(
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
     .volatile(() => ({
       selection: [] as AnyConfigurationModel[],
+      filterText: '',
     }))
     .actions(self => ({
+      setSelection(elt: AnyConfigurationModel[]) {
+        self.selection = elt
+      },
       addToSelection(elt: AnyConfigurationModel[]) {
         self.selection = dedupe([...self.selection, ...elt], e => e.trackId)
       },
