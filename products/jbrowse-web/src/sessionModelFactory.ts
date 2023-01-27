@@ -1037,7 +1037,7 @@ export default function sessionModelFactory(
             onClick: () => {
               self.queueDialog(handleClose => [
                 AboutDialog,
-                { config, handleClose },
+                { config, handleClose, session: self },
               ])
             },
             icon: InfoIcon,
@@ -1058,10 +1058,10 @@ export default function sessionModelFactory(
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = clone(getSnapshot(config)) as any
+              const snap = clone(config) as any
               const now = Date.now()
               snap.trackId += `-${now}`
-              snap.displays.forEach((display: { displayId: string }) => {
+              snap.displays?.forEach((display: { displayId: string }) => {
                 display.displayId += `-${now}`
               })
               // the -sessionTrack suffix to trackId is used as metadata for

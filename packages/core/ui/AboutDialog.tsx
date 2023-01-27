@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import copy from 'copy-to-clipboard'
 import { Button, DialogContent, Typography } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+
+// locals
 import {
   getConf,
   readConfObject,
@@ -9,9 +11,10 @@ import {
 } from '../configuration'
 import Dialog from './Dialog'
 import LoadingEllipses from './LoadingEllipses'
-import { getSession, getEnv } from '../util'
+import { getEnv, AbstractSessionModel } from '../util'
 import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
+import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
 
 type FileInfo = Record<string, unknown> | string
 
@@ -21,10 +24,15 @@ const useStyles = makeStyles()({
   },
 })
 
-export function FileInfoPanel({ config }: { config: AnyConfigurationModel }) {
+export function FileInfoPanel({
+  config,
+  session,
+}: {
+  config: AnyConfigurationModel
+  session: AbstractSessionModel
+}) {
   const [error, setError] = useState<unknown>()
   const [info, setInfo] = useState<FileInfo>()
-  const session = getSession(config)
   const { rpcManager } = session
 
   useEffect(() => {
@@ -78,14 +86,19 @@ export function FileInfoPanel({ config }: { config: AnyConfigurationModel }) {
   ) : null
 }
 
-export function AboutContents({ config }: { config: AnyConfigurationModel }) {
+export function AboutContents({
+  config,
+  session,
+}: {
+  config: AnyConfigurationModel
+  session: AbstractSessionModel
+}) {
   const [copied, setCopied] = useState(false)
   const conf = readConfObject(config)
-  const session = getSession(config)
 
-  const hideUris =
-    getConf(session, ['formatAbout', 'hideUris']) ||
-    readConfObject(config, ['formatAbout', 'hideUris'])
+  const hideUris1 = getConf(session, ['formatAbout', 'hideUris'])
+  const hideUris2 = readConfObject(config, ['formatAbout', 'hideUris'])
+  const hideUris = hideUris1 || hideUris2
 
   const { pluginManager } = getEnv(session)
 
@@ -135,22 +148,28 @@ export function AboutContents({ config }: { config: AnyConfigurationModel }) {
           <ExtraPanel.Component config={config} />
         </BaseCard>
       ) : null}
-      <FileInfoPanel config={config} />
+      <FileInfoPanel config={config} session={session} />
     </>
   )
 }
 
 export default function AboutDialog({
-  config,
+  config: c,
   handleClose,
+  session,
 }: {
   config: AnyConfigurationModel
   handleClose: () => void
+  session: AbstractSessionModel
 }) {
   const { classes } = useStyles()
-  const session = getSession(config)
-  const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
+  const config = isStateTreeNode(c)
+    ? c
+    : // @ts-ignore
+      pluginManager.getTrackType(c.type).configSchema.create(c)
+
+  const trackName = getTrackName(config, session)
 
   const AboutComponent = pluginManager.evaluateExtensionPoint(
     'Core-replaceAbout',
@@ -162,7 +181,7 @@ export default function AboutDialog({
   return (
     <Dialog open onClose={handleClose} title={trackName} maxWidth="xl">
       <DialogContent className={classes.content}>
-        <AboutComponent config={config} />
+        <AboutComponent config={config} session={session} />
       </DialogContent>
     </Dialog>
   )

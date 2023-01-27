@@ -75,7 +75,7 @@ export default observer(function FacetedSelector({
       .trackConfigurations(assemblyName)
       .filter(conf => matches(filterDebounced, conf, session))
       .map(track => {
-        const metadata = readConfObject(track, 'metadata')
+        const metadata = readConfObject(track, 'metadata') || {}
         return {
           id: track.trackId,
           conf: track,

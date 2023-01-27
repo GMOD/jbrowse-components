@@ -152,7 +152,8 @@ export default function JBrowseWeb(
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
-      tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      tracks: types.frozen(),
+      // array(pluginManager.pluggableConfigSchemaType('track')),
       internetAccounts: types.array(
         pluginManager.pluggableConfigSchemaType('internet account'),
       ),
@@ -219,16 +220,18 @@ export default function JBrowseWeb(
           self.assemblies.remove(toRemove)
         }
       },
-      addTrackConf(trackConf: AnyConfigurationModel) {
-        const { type } = trackConf
+      addTrackConf(conf: AnyConfigurationModel) {
+        const { type } = conf
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const track = self.tracks.find(t => t.trackId === trackConf.trackId)
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const track = self.tracks.find((t: any) => t.trackId === conf.trackId)
         if (track) {
           return track
         }
-        const length = self.tracks.push(trackConf)
+        const length = self.tracks.push(conf)
         return self.tracks[length - 1]
       },
       addDisplayConf(trackId: string, displayConf: AnyConfigurationModel) {
@@ -236,7 +239,9 @@ export default function JBrowseWeb(
         if (!type) {
           throw new Error(`unknown display type ${type}`)
         }
-        const track = self.tracks.find(t => t.trackId === trackId)
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const track = self.tracks.find((t: any) => t.trackId === trackId)
         if (!track) {
           throw new Error(`could not find track with id ${trackId}`)
         }
@@ -263,7 +268,9 @@ export default function JBrowseWeb(
 
       deleteTrackConf(trackConf: AnyConfigurationModel) {
         const { trackId } = trackConf
-        const idx = self.tracks.findIndex(t => t.trackId === trackId)
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const idx = self.tracks.findIndex((t: any) => t.trackId === trackId)
         if (idx === -1) {
           return undefined
         }
