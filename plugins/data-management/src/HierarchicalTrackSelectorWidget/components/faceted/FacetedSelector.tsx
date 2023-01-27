@@ -170,12 +170,18 @@ export default observer(function FacetedSelector({
       width: widthsDebounced[i + 1 + keys.length],
     })),
   ]
-  const shownTrackIds = view.tracks.map(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (t: any) => t.configuration.trackId,
-  ) as string[]
 
   const arrFilters = Object.entries(filters).filter(f => f[1].length > 0)
+  const shownRows = rows.filter(row =>
+    arrFilters.every(([key, val]) => val.includes(row[key])),
+  )
+  const shownRowTrackIds = shownRows.map(r => r.id)
+  const shownTrackIds = (
+    view.tracks as { configuration: { trackId: string } }[]
+  )
+    .map(t => t.configuration.trackId)
+    .filter(f => shownRowTrackIds.includes(f))
+
   return (
     <>
       {info ? (
@@ -222,9 +228,7 @@ export default observer(function FacetedSelector({
             scrollLeft={scrollLeft}
           />
           <DataGrid
-            rows={rows.filter(row =>
-              arrFilters.every(([key, val]) => val.includes(row[key])),
-            )}
+            rows={shownRows}
             headerHeight={35}
             checkboxSelection
             disableSelectionOnClick
