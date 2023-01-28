@@ -243,14 +243,19 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initSnapshot = {}, displayInitSnapshot = {}) {
-        showTrackGeneric(self, trackId, initSnapshot, displayInitSnapshot)
+        return showTrackGeneric(
+          self,
+          trackId,
+          initSnapshot,
+          displayInitSnapshot,
+        )
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        hideTrackGeneric(self, trackId)
+        return hideTrackGeneric(self, trackId)
       },
       /**
        * #action

@@ -1,4 +1,10 @@
-import { getParent, isRoot, IAnyStateTreeNode } from 'mobx-state-tree'
+import {
+  getParent,
+  isRoot,
+  IAnyStateTreeNode,
+  resolveIdentifier,
+  getRoot,
+} from 'mobx-state-tree'
 import { getSession, objectHash, getEnv } from './index'
 import { PreFileLocation, FileLocation } from './types'
 import {
@@ -275,11 +281,15 @@ export function showTrackGeneric(
 ) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const conf = session.tracks.find(t => t.trackId === trackId)
+  let conf = session.tracks.find(t => t.trackId === trackId)
+  if (!conf) {
+    const schema = pluginManager.pluggableConfigSchemaType('track')
+    conf = resolveIdentifier(schema, getRoot(self), trackId)
+  }
   if (!conf) {
     throw new Error(`Could not resolve identifier "${trackId}"`)
   }
-  const trackType = pluginManager.getTrackType(conf?.type)
+  const trackType = pluginManager.getTrackType(conf.type)
   if (!trackType) {
     throw new Error(`Unknown track type ${conf.type}`)
   }
@@ -294,7 +304,7 @@ export function showTrackGeneric(
   trackType.displayTypes.forEach(displayType => {
     if (!displayTypes.has(displayType.name)) {
       displays.push({
-        displayId: `${conf.trackId}-${displayType.name}`,
+        displayId: `${trackId}-${displayType.name}`,
         type: displayType.name,
       })
     }
@@ -311,7 +321,7 @@ export function showTrackGeneric(
 
   const found = self.tracks.find(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (t: any) => t.configuration.trackId === conf.trackId,
+    (t: any) => t.configuration.trackId === trackId,
   )
   if (!found) {
     const track = trackType.stateModel.create({

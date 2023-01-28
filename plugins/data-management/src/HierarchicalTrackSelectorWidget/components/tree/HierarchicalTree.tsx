@@ -29,7 +29,7 @@ function getNodeData(
   }
 }
 
-type NodeData = ReturnType<typeof getNodeData>
+export type NodeData = ReturnType<typeof getNodeData>
 
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer

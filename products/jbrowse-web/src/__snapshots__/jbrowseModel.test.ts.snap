@@ -2315,6 +2315,31 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "VCF",
       ],
       "name": "volvox inversions",
+      "trackId": "volvox.inv.vcf_normal",
+      "type": "VariantTrack",
+    },
+    {
+      "adapter": {
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.inv.vcf.gz.tbi",
+          },
+        },
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.inv.vcf.gz",
+        },
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "VCF",
+      ],
+      "name": "volvox inversions (custom feat details/about panel)",
       "trackId": "volvox.inv.vcf",
       "type": "VariantTrack",
     },

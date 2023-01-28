@@ -1723,8 +1723,30 @@
     },
     {
       "type": "VariantTrack",
-      "trackId": "volvox.inv.vcf",
+      "trackId": "volvox.inv.vcf_normal",
       "name": "volvox inversions",
+      "category": ["VCF"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.inv.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.inv.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      }
+    },
+
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox.inv.vcf",
+      "name": "volvox inversions (custom feat details/about panel)",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
       "adapter": {
