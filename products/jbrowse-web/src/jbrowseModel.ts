@@ -234,7 +234,12 @@ export default function JBrowseWeb(
         if (track) {
           return track
         }
-        self.tracks = [...self.tracks, conf]
+
+        if (adminMode) {
+          self.tracks.push(conf)
+        } else {
+          self.tracks = [...self.tracks, conf]
+        }
         return self.tracks[self.tracks.length - 1]
       },
       addDisplayConf(trackId: string, displayConf: AnyConfigurationModel) {
@@ -278,10 +283,14 @@ export default function JBrowseWeb(
           return undefined
         }
 
-        const copy = [...self.tracks]
-        const res = copy.splice(idx, 1)
-        self.tracks = copy
-        return res
+        if (adminMode) {
+          return self.tracks.splice(idx, 1)
+        } else {
+          const copy = [...self.tracks]
+          const res = copy.splice(idx, 1)
+          self.tracks = copy
+          return res
+        }
       },
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         const newDefault =

@@ -29,6 +29,10 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
+import {
+  AnyConfigurationModel,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -501,6 +505,28 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       showTrack(trackId: string, initSnapshot = {}, displayInitSnapshot = {}) {
         showTrackGeneric(self, trackId, initSnapshot, displayInitSnapshot)
+      },
+
+      addTrackConf(configuration: AnyConfigurationModel, initialSnapshot = {}) {
+        const { type } = configuration
+        const name = readConfObject(configuration, 'name')
+        const trackType = pluginManager.getTrackType(type)
+        if (!trackType) {
+          throw new Error(`unknown track type ${configuration.type}`)
+        }
+        const viewType = pluginManager.getViewType(self.type)
+        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const displayConf = configuration.displays.find(
+          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+        )
+        const track = trackType.stateModel.create({
+          ...initialSnapshot,
+          name,
+          type,
+          configuration,
+          displays: [{ type: displayConf.type, configuration: displayConf }],
+        })
+        self.tracks.push(track)
       },
 
       /**
