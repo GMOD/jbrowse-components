@@ -72,7 +72,12 @@ export default function RootModel(
        * #property
        * `jbrowse` is a mapping of the config.json into the in-memory state tree
        */
-      jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema),
+      jbrowse: jbrowseWebFactory(
+        pluginManager,
+        Session,
+        assemblyConfigSchema,
+        adminMode,
+      ),
       /**
        * #property
        */

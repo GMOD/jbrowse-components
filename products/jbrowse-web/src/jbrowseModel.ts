@@ -46,6 +46,7 @@ export default function JBrowseWeb(
   pluginManager: PluginManager,
   Session: SessionStateModel,
   assemblyConfigSchemasType: AnyConfigurationSchemaType,
+  adminMode?: boolean,
 ) {
   const JBrowseModel = types
     .model('JBrowseWeb', {
@@ -152,7 +153,9 @@ export default function JBrowseWeb(
       assemblies: types.array(assemblyConfigSchemasType),
       // track configuration is an array of track config schemas. multiple
       // instances of a track can exist that use the same configuration
-      tracks: types.frozen(),
+      tracks: adminMode
+        ? types.array(pluginManager.pluggableConfigSchemaType('track'))
+        : types.frozen(),
       // array(pluginManager.pluggableConfigSchemaType('track')),
       internetAccounts: types.array(
         pluginManager.pluggableConfigSchemaType('internet account'),
@@ -231,8 +234,8 @@ export default function JBrowseWeb(
         if (track) {
           return track
         }
-        const length = self.tracks.push(conf)
-        return self.tracks[length - 1]
+        self.tracks = [...self.tracks, conf]
+        return self.tracks[self.tracks.length - 1]
       },
       addDisplayConf(trackId: string, displayConf: AnyConfigurationModel) {
         const { type } = displayConf
@@ -275,7 +278,10 @@ export default function JBrowseWeb(
           return undefined
         }
 
-        return self.tracks.splice(idx, 1)
+        const copy = [...self.tracks]
+        const res = copy.splice(idx, 1)
+        self.tracks = copy
+        return res
       },
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         const newDefault =

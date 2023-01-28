@@ -5,7 +5,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
-import { generateHierarchy } from './generateHierarchy'
+import { generateHierarchy, TreeNode } from './generateHierarchy'
 import { relevantTracksForView } from './relevantTracksForView'
 
 export default function stateTreeFactory(pluginManager: PluginManager) {
@@ -159,3 +159,5 @@ export type HierarchicalTrackSelectorStateModel = ReturnType<
 >
 export type HierarchicalTrackSelectorModel =
   Instance<HierarchicalTrackSelectorStateModel>
+
+export type { TreeNode }
