@@ -39,4 +39,5 @@ export interface NodeData {
   selected: boolean
   model: HierarchicalTrackSelectorModel
 }
-// export type NodeData = ReturnType<typeof getNodeData>
+
+export type NodeEntry = ReturnType<typeof getNodeData>

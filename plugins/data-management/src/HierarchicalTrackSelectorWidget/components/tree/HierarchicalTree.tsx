@@ -5,31 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 // locals
 import { TreeNode, HierarchicalTrackSelectorModel } from '../../model'
 import Node from './TrackListNode'
-
-function getNodeData(
-  node: TreeNode,
-  nestingLevel: number,
-  extra: Record<string, unknown>,
-  selection: Record<string, unknown>,
-) {
-  const isLeaf = !!node.conf
-  const selected = !!selection[node.id]
-  return {
-    data: {
-      defaultHeight: isLeaf ? 22 : 40,
-      isLeaf,
-      isOpenByDefault: true,
-      nestingLevel,
-      selected,
-      ...node,
-      ...extra,
-    },
-    nestingLevel,
-    node,
-  }
-}
-
-export type NodeData = ReturnType<typeof getNodeData>
+import { getNodeData, NodeEntry } from './util'
 
 // this is the main tree component for the hierarchical track selector in note:
 // in jbrowse-web the toolbar is position="sticky" which means the autosizer
@@ -44,7 +20,7 @@ export default observer(function HierarchicalTree({
   model: HierarchicalTrackSelectorModel
 }) {
   const { filterText, selection, view } = model
-  const treeRef = useRef<NodeData>(null)
+  const treeRef = useRef<NodeEntry>(null)
   const session = getSession(model)
   const { drawerPosition } = session
   const obj = useMemo(
