@@ -5,13 +5,13 @@ import { LinearGenomeViewModel } from '..'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   centerLineContainer: {
     background: 'transparent',
     height: '100%',
     zIndex: 5, // above the track but under menu
     position: 'absolute',
-    border: '1px black dashed',
+    border: `1px ${theme.palette.action.active} dashed`,
     borderTop: 'none',
     borderBottom: 'none',
     pointerEvents: 'none',
