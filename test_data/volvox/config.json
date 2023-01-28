@@ -1742,7 +1742,6 @@
         }
       }
     },
-
     {
       "type": "VariantTrack",
       "trackId": "volvox.inv.vcf",

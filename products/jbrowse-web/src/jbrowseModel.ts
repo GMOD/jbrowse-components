@@ -155,8 +155,8 @@ export default function JBrowseWeb(
       // instances of a track can exist that use the same configuration
       tracks: adminMode
         ? types.array(pluginManager.pluggableConfigSchemaType('track'))
-        : types.frozen(),
-      // array(pluginManager.pluggableConfigSchemaType('track')),
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          types.frozen([] as any[]),
       internetAccounts: types.array(
         pluginManager.pluggableConfigSchemaType('internet account'),
       ),

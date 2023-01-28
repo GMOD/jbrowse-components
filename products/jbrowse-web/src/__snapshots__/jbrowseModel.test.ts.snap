@@ -11,7 +11,7 @@ exports[`JBrowse model creates with empty snapshot 1`] = `
   },
   "internetAccounts": [],
   "plugins": [],
-  "tracks": undefined,
+  "tracks": [],
 }
 `;
 

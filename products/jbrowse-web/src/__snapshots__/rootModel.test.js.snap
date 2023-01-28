@@ -422,16 +422,6 @@ exports[`Root MST model adds track and connection configs to an assembly 1`] = `
 
 exports[`Root MST model adds track and connection configs to an assembly 2`] = `
 {
-  "displays": [
-    {
-      "displayId": "trackId0-LinearBasicDisplay",
-      "type": "LinearBasicDisplay",
-    },
-    {
-      "displayId": "trackId0-LinearArcDisplay",
-      "type": "LinearArcDisplay",
-    },
-  ],
   "trackId": "trackId0",
   "type": "FeatureTrack",
 }
