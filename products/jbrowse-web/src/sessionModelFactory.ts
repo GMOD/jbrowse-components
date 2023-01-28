@@ -42,6 +42,7 @@ import {
   Instance,
   SnapshotIn,
   SnapshotOut,
+  isStateTreeNode,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -1058,7 +1059,8 @@ export default function sessionModelFactory(
             label: 'Copy track',
             disabled: isRefSeq,
             onClick: () => {
-              const snap = clone(config) as any
+              const s = isStateTreeNode(config) ? getSnapshot(config) : config
+              const snap = clone(s) as any
               const now = Date.now()
               snap.trackId += `-${now}`
               snap.displays?.forEach((display: { displayId: string }) => {
