@@ -71,9 +71,7 @@ const useStyles = makeStyles()(theme => ({
   spacer: {
     flexGrow: 1,
   },
-  textFilterControlAdornment: {
-    marginRight: '-18px',
-  },
+
   resizeHandle: {
     height: 3,
     position: 'absolute',
@@ -142,6 +140,53 @@ const RowCountMessage = observer(function ({
   }
   return null
 })
+
+function StatusBar({
+  page,
+  rowsPerPage,
+  setPage,
+  setRowsPerPage,
+  spreadsheet,
+  mode,
+}: {
+  page: number
+  mode: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spreadsheet: any
+  rowsPerPage: number
+  setPage: (arg: number) => void
+  setRowsPerPage: (arg: number) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <div
+      className={classes.statusBar}
+      style={{ display: mode === 'display' ? undefined : 'none' }}
+    >
+      {spreadsheet ? (
+        <FormGroup row>
+          <div className={classes.verticallyCenter}>
+            <RowCountMessage spreadsheet={spreadsheet} />
+          </div>
+          <div className={classes.spacer} />
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 100, 1000]}
+            count={spreadsheet.rowSet.count}
+            component="div"
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            onRowsPerPageChange={event => {
+              setRowsPerPage(+event.target.value)
+              setPage(0)
+            }}
+          />
+          <div className={classes.spacer} />
+        </FormGroup>
+      ) : null}
+    </div>
+  )
+}
 
 const SpreadsheetView = observer(function ({
   model,
@@ -228,33 +273,14 @@ const SpreadsheetView = observer(function ({
           </div>
         </div>
       )}
-
-      <div
-        className={classes.statusBar}
-        style={{ display: mode === 'display' ? undefined : 'none' }}
-      >
-        {spreadsheet ? (
-          <FormGroup row>
-            <div className={classes.verticallyCenter}>
-              <RowCountMessage spreadsheet={spreadsheet} />
-            </div>
-            <div className={classes.spacer} />
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100, 1000]}
-              count={spreadsheet.rowSet.count}
-              component="div"
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={(_, newPage) => setPage(newPage)}
-              onRowsPerPageChange={event => {
-                setRowsPerPage(+event.target.value)
-                setPage(0)
-              }}
-            />
-            <div className={classes.spacer} />
-          </FormGroup>
-        ) : null}
-      </div>
+      <StatusBar
+        page={page}
+        setPage={setPage}
+        rowsPerPage={rowsPerPage}
+        setRowsPerPage={setRowsPerPage}
+        mode={mode}
+        spreadsheet={spreadsheet}
+      />
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle onDrag={resizeHeight} className={classes.resizeHandle} />
       )}
