@@ -272,6 +272,54 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
           },
         },
       },
+      MuiRadio: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-checked': {
+                    color: theme.palette.text.secondary,
+                  },
+                }
+              : undefined
+          },
+        },
+      },
+      MuiFormLabel: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-focused': {
+                    color: theme.palette.text.secondary,
+                  },
+                }
+              : undefined
+          },
+        },
+      },
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
