@@ -151,8 +151,7 @@ function StatusBar({
 }: {
   page: number
   mode: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  spreadsheet: any
+  spreadsheet: SpreadsheetModel
   rowsPerPage: number
   setPage: (arg: number) => void
   setRowsPerPage: (arg: number) => void
@@ -273,14 +272,16 @@ const SpreadsheetView = observer(function ({
           </div>
         </div>
       )}
-      <StatusBar
-        page={page}
-        setPage={setPage}
-        rowsPerPage={rowsPerPage}
-        setRowsPerPage={setRowsPerPage}
-        mode={mode}
-        spreadsheet={spreadsheet}
-      />
+      {spreadsheet ? (
+        <StatusBar
+          page={page}
+          setPage={setPage}
+          rowsPerPage={rowsPerPage}
+          setRowsPerPage={setRowsPerPage}
+          mode={mode}
+          spreadsheet={spreadsheet}
+        />
+      ) : null}
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle onDrag={resizeHeight} className={classes.resizeHandle} />
       )}
