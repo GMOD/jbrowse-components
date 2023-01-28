@@ -3,21 +3,18 @@ import {
   cast,
   getParent,
   getPath,
-  getRoot,
   onAction,
-  resolveIdentifier,
   types,
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-import { autorun, transaction } from 'mobx'
+import { autorun } from 'mobx'
 
 // jbrowse
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { MenuItem, ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { getSession, isSessionModelWithWidgets, avg } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import {
   LinearGenomeViewModel,
