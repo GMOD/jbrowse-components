@@ -265,3 +265,67 @@ export function getTrackName(
   }
   return trackName
 }
+
+export function showTrackGeneric(
+  self: any,
+  trackId: string,
+  initialSnapshot = {},
+  displayInitialSnapshot = {},
+) {
+  const { pluginManager } = getEnv(self)
+  const session = getSession(self)
+  const conf = session.tracks.find(t => t.trackId === trackId)
+  if (!conf) {
+    throw new Error(`Could not resolve identifier "${trackId}"`)
+  }
+  const trackType = pluginManager.getTrackType(conf?.type)
+  if (!trackType) {
+    throw new Error(`Unknown track type ${conf.type}`)
+  }
+  const viewType = pluginManager.getViewType(self.type)
+  const supportedDisplays = viewType.displayTypes.map(d => d.name)
+
+  const { displays = [] } = conf
+  const displayTypes = new Set()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  displays.forEach((d: any) => d && displayTypes.add(d.type))
+  trackType.displayTypes.forEach(displayType => {
+    if (!displayTypes.has(displayType.name)) {
+      displays.push({
+        displayId: `${conf.trackId}-${displayType.name}`,
+        type: displayType.name,
+      })
+    }
+  })
+
+  const displayConf = displays?.find((d: AnyConfigurationModel) =>
+    supportedDisplays.includes(d.type),
+  )
+  if (!displayConf) {
+    throw new Error(
+      `Could not find a compatible display for view type ${self.type}`,
+    )
+  }
+
+  const found = self.tracks.find(
+    (t: any) => t.configuration.trackId === conf.trackId,
+  )
+  if (!found) {
+    const track = trackType.stateModel.create({
+      ...initialSnapshot,
+      type: conf.type,
+      configuration: conf,
+      displays: [
+        {
+          type: displayConf.type,
+          configuration: displayConf,
+          ...displayInitialSnapshot,
+        },
+      ],
+    })
+    self.tracks.push(track)
+    return track
+  }
+  return found
+}

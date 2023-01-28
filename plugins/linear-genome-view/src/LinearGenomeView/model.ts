@@ -23,14 +23,15 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BlockSet, BaseBlock } from '@jbrowse/core/util/blockTypes'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { when, transaction, autorun } from 'mobx'
+import {
+  getParentRenderProps,
+  showTrackGeneric,
+} from '@jbrowse/core/util/tracks'
+import { when, autorun } from 'mobx'
 import {
   addDisposer,
   cast,
   getSnapshot,
-  getRoot,
-  resolveIdentifier,
   types,
   Instance,
 } from 'mobx-state-tree'
@@ -236,7 +237,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       volatileWidth: undefined as number | undefined,
       minimumBlockWidth: 3,
       draggingTrackId: undefined as undefined | string,
-      volatileError: undefined as undefined | Error,
+      volatileError: undefined as unknown,
 
       // array of callbacks to run after the next set of the displayedRegions,
       // which is basically like an onLoad
@@ -540,7 +541,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setError(error: Error | undefined) {
+      setError(error: unknown) {
         self.volatileError = error
       },
       /**
@@ -650,76 +651,19 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      showTrack(
-        trackId: string,
-        initialSnapshot = {},
-        displayInitialSnapshot = {},
-      ) {
-        const session = getSession(self)
-        const conf = session.tracks.find(t => t.trackId === trackId)
-        if (!conf) {
-          throw new Error(`Could not resolve identifier "${trackId}"`)
-        }
-        const trackType = pluginManager.getTrackType(conf?.type)
-        if (!trackType) {
-          throw new Error(`Unknown track type ${conf.type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
-
-        const { displays = [] } = conf
-        const displayTypes = new Set()
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        displays.forEach((d: any) => d && displayTypes.add(d.type))
-        trackType.displayTypes.forEach(displayType => {
-          if (!displayTypes.has(displayType.name)) {
-            displays.push({
-              displayId: `${conf.trackId}-${displayType.name}`,
-              type: displayType.name,
-            })
-          }
-        })
-
-        const displayConf = displays?.find((d: AnyConfigurationModel) =>
-          supportedDisplays.includes(d.type),
-        )
-        if (!displayConf) {
-          throw new Error(
-            `Could not find a compatible display for view type ${self.type}`,
-          )
-        }
-
-        const found = self.tracks.find(
-          t => t.configuration.trackId === conf.trackId,
-        )
-        if (!found) {
-          const track = trackType.stateModel.create({
-            ...initialSnapshot,
-            type: conf.type,
-            configuration: conf,
-            displays: [
-              {
-                type: displayConf.type,
-                configuration: displayConf,
-                ...displayInitialSnapshot,
-              },
-            ],
-          })
-          self.tracks.push(track)
-          return track
-        }
-        return found
+      showTrack(trackId: string, initSnapshot = {}, displayInitSnapshot = {}) {
+        showTrackGeneric(self, trackId, initSnapshot, displayInitSnapshot)
       },
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        const schema = pluginManager.pluggableConfigSchemaType('track')
-        const conf = resolveIdentifier(schema, getRoot(self), trackId)
-        const t = self.tracks.filter(t => t.configuration === conf)
-        transaction(() => t.forEach(t => self.tracks.remove(t)))
-        return t.length
+        const t = self.tracks.filter(t => t.configuration.trackId === trackId)
+        if (t) {
+          self.tracks.remove(t)
+          return 1
+        }
+        return 0
       },
     }))
     .actions(self => ({
