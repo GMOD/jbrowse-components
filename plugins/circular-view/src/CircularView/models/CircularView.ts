@@ -24,7 +24,11 @@ import {
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { showTrackGeneric } from '@jbrowse/core/util/tracks'
+import {
+  hideTrackGeneric,
+  showTrackGeneric,
+  toggleTrackGeneric,
+} from '@jbrowse/core/util/tracks'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -482,12 +486,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
-        const hiddenCount = this.hideTrack(trackId)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) {
-          this.showTrack(trackId)
-        }
+        toggleTrackGeneric(self, trackId)
       },
 
       /**
@@ -508,12 +507,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       hideTrack(trackId: string) {
-        const t = self.tracks.find(t => t.configuration.trackId === trackId)
-        if (t) {
-          self.tracks.remove(t)
-          return 1
-        }
-        return 0
+        hideTrackGeneric(self, trackId)
       },
 
       /**

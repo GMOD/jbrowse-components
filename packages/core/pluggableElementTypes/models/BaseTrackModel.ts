@@ -129,21 +129,6 @@ export function createBaseTrackModel(
       setMinimized(flag: boolean) {
         self.minimized = flag
       },
-      /**
-       * #action
-       */
-      activateConfigurationUI() {
-        const session = getSession(self)
-        const view = getContainingView(self)
-        if (isSessionModelWithConfigEditing(session)) {
-          // @ts-expect-error
-          const trackConf = session.editTrackConfiguration(self.configuration)
-          if (trackConf && trackConf !== self.configuration) {
-            view.hideTrack(self.configuration)
-            view.showTrack(trackConf)
-          }
-        }
-      },
 
       /**
        * #action

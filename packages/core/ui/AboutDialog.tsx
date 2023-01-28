@@ -14,7 +14,7 @@ import LoadingEllipses from './LoadingEllipses'
 import { getEnv, AbstractSessionModel } from '../util'
 import { getTrackName } from '../util/tracks'
 import { BaseCard, Attributes } from '../BaseFeatureWidget/BaseFeatureDetail'
-import { getSnapshot, isStateTreeNode } from 'mobx-state-tree'
+import { isStateTreeNode } from 'mobx-state-tree'
 
 type FileInfo = Record<string, unknown> | string
 

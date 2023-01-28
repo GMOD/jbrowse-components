@@ -267,6 +267,7 @@ export function getTrackName(
 }
 
 export function showTrackGeneric(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   self: any,
   trackId: string,
   initialSnapshot = {},
@@ -309,6 +310,7 @@ export function showTrackGeneric(
   }
 
   const found = self.tracks.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (t: any) => t.configuration.trackId === conf.trackId,
   )
   if (!found) {
@@ -328,4 +330,23 @@ export function showTrackGeneric(
     return track
   }
   return found
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function hideTrackGeneric(self: any, trackId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t = self.tracks.find((t: any) => t.configuration.trackId === trackId)
+  if (t) {
+    self.tracks.remove(t)
+    return 1
+  }
+  return 0
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function toggleTrackGeneric(self: any, trackId: string) {
+  const hiddenCount = hideTrackGeneric(self, trackId)
+  if (!hiddenCount) {
+    showTrackGeneric(self, trackId)
+  }
 }

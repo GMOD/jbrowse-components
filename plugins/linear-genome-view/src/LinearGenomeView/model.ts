@@ -25,7 +25,9 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import calculateStaticBlocks from '@jbrowse/core/util/calculateStaticBlocks'
 import {
   getParentRenderProps,
+  hideTrackGeneric,
   showTrackGeneric,
+  toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { when, autorun } from 'mobx'
 import {
@@ -658,12 +660,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       hideTrack(trackId: string) {
-        const t = self.tracks.filter(t => t.configuration.trackId === trackId)
-        if (t) {
-          self.tracks.remove(t)
-          return 1
-        }
-        return 0
+        hideTrackGeneric(self, trackId)
       },
     }))
     .actions(self => ({
@@ -704,12 +701,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
-        const hiddenCount = self.hideTrack(trackId)
-        // if none had that configuration, turn one on
-        if (!hiddenCount) {
-          self.showTrack(trackId)
-        }
+        toggleTrackGeneric(self, trackId)
       },
 
       /**
