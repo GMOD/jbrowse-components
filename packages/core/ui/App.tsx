@@ -2,13 +2,10 @@ import React, { Suspense } from 'react'
 import { AppBar, Fab, Tooltip } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import LaunchIcon from '@mui/icons-material/Launch'
-import { ErrorBoundary } from 'react-error-boundary'
 import { observer } from 'mobx-react'
 
 // locals
 import {
-  getEnv,
-  AbstractViewModel,
   NotificationLevel,
   SessionWithDrawerWidgets,
   SnackAction,
@@ -17,12 +14,10 @@ import {
 // ui elements
 import DrawerWidget from './DrawerWidget'
 import AppToolbar from './AppToolbar'
-import ErrorMessage from './ErrorMessage'
-import LoadingEllipses from './LoadingEllipses'
 import Snackbar from './Snackbar'
-import ViewContainer from './ViewContainer'
 import ViewLauncher from './ViewLauncher'
 import { MenuItem as JBMenuItem } from './Menu'
+import ViewPanel from './ViewPanel'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -62,48 +57,6 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 type SnackbarMessage = [string, NotificationLevel, SnackAction]
-
-type AppSession = SessionWithDrawerWidgets & {
-  savedSessionNames: string[]
-  menus: { label: string; menuItems: JBMenuItem[] }[]
-  renameCurrentSession: (arg: string) => void
-  snackbarMessages: SnackbarMessage[]
-  popSnackbarMessage: () => unknown
-}
-
-const ViewPanel = observer(function ({
-  view,
-  session,
-}: {
-  view: AbstractViewModel
-  session: AppSession
-}) {
-  const { pluginManager } = getEnv(session)
-  const viewType = pluginManager.getViewType(view.type)
-  if (!viewType) {
-    throw new Error(`unknown view type ${view.type}`)
-  }
-  const { ReactComponent } = viewType
-  return (
-    <ViewContainer
-      view={view}
-      onClose={() => session.removeView(view)}
-      onMinimize={() => view.setMinimized(!view.minimized)}
-    >
-      {!view.minimized ? (
-        <ErrorBoundary
-          FallbackComponent={({ error }) => <ErrorMessage error={error} />}
-        >
-          <Suspense fallback={<LoadingEllipses />}>
-            <ReactComponent model={view} session={session} />
-          </Suspense>
-        </ErrorBoundary>
-      ) : (
-        false
-      )}
-    </ViewContainer>
-  )
-})
 
 const App = observer(function (props: {
   HeaderButtons?: React.ReactElement

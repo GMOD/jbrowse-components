@@ -284,139 +284,135 @@ interface ColMenu {
   anchorEl: HTMLElement
 }
 
-const DataTable = observer(
-  ({
-    model,
-    page,
-    rowsPerPage,
-  }: {
-    model: SpreadsheetModel
-    page: number
-    rowsPerPage: number
-  }) => {
-    const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
-    const { classes } = useStyles()
+const DataTable = observer(function ({
+  model,
+  page,
+  rowsPerPage,
+}: {
+  model: SpreadsheetModel
+  page: number
+  rowsPerPage: number
+}) {
+  const { columnDisplayOrder, columns, hasColumnNames, rowSet } = model
+  const { classes } = useStyles()
 
-    // column menu active state
-    const [currentColumnMenu, setColumnMenu] = useState<ColMenu | null>(null)
-    function columnButtonClick(
-      colNumber: number,
-      evt: React.MouseEvent<HTMLElement>,
-    ) {
-      setColumnMenu({
-        colNumber,
-        anchorEl: evt.currentTarget,
-      })
-    }
+  // column menu active state
+  const [currentColumnMenu, setColumnMenu] = useState<ColMenu | null>(null)
+  function columnButtonClick(
+    colNumber: number,
+    evt: React.MouseEvent<HTMLElement>,
+  ) {
+    setColumnMenu({
+      colNumber,
+      anchorEl: evt.currentTarget,
+    })
+  }
 
-    // column header hover state
-    const [currentHoveredColumn, setHoveredColumn] = useState<number>()
-    function columnHeaderMouseOver(colNumber: number) {
-      setHoveredColumn(colNumber)
-    }
-    function columnHeaderMouseOut() {
-      setHoveredColumn(undefined)
-    }
+  // column header hover state
+  const [currentHoveredColumn, setHoveredColumn] = useState<number>()
+  function columnHeaderMouseOver(colNumber: number) {
+    setHoveredColumn(colNumber)
+  }
+  function columnHeaderMouseOut() {
+    setHoveredColumn(undefined)
+  }
 
-    const totalRows = rowSet.count
-    const rows = rowSet.sortedFilteredRows
+  const totalRows = rowSet.count
+  const rows = rowSet.sortedFilteredRows
 
-    return (
-      <>
-        <ColumnMenu
-          viewModel={getParent(model)}
-          spreadsheetModel={model}
-          currentColumnMenu={currentColumnMenu}
-          setColumnMenu={setColumnMenu}
-        />
-        <RowMenu viewModel={getParent(model)} spreadsheetModel={model} />
-        <table className={classes.dataTable}>
-          <thead>
-            <tr>
-              <th className={classes.topLeftCorner}>
-                <Tooltip title="Unselect all" placement="right">
-                  <span>
-                    <IconButton
-                      onClick={model.unselectAll}
-                      disabled={!model.rowSet.selectedCount}
-                    >
-                      <CropFreeIcon />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              </th>
-              {columnDisplayOrder.map(colNumber => (
-                <th
-                  className={classes.columnHead}
-                  key={colNumber}
-                  onMouseOver={columnHeaderMouseOver.bind(null, colNumber)}
-                  onMouseOut={columnHeaderMouseOut.bind(null, colNumber)}
-                >
-                  <SortIndicator model={model} columnNumber={colNumber} />
-                  {(hasColumnNames && columns[colNumber]?.name) ||
-                    numToColName(colNumber)}
-                  <div
-                    className={classes.columnButtonContainer}
-                    style={{
-                      display:
-                        currentHoveredColumn === colNumber ||
-                        currentColumnMenu?.colNumber === colNumber
-                          ? 'block'
-                          : 'none',
-                    }}
+  return (
+    <>
+      <ColumnMenu
+        viewModel={getParent(model)}
+        spreadsheetModel={model}
+        currentColumnMenu={currentColumnMenu}
+        setColumnMenu={setColumnMenu}
+      />
+      <RowMenu viewModel={getParent(model)} spreadsheetModel={model} />
+      <table className={classes.dataTable}>
+        <thead>
+          <tr>
+            <th className={classes.topLeftCorner}>
+              <Tooltip title="Unselect all" placement="right">
+                <span>
+                  <IconButton
+                    onClick={model.unselectAll}
+                    disabled={!model.rowSet.selectedCount}
                   >
-                    <IconButton
-                      className={classes.columnButton}
-                      onClick={columnButtonClick.bind(null, colNumber)}
-                    >
-                      <ArrowDropDown />
-                    </IconButton>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <DataTableBody
-            rows={rows}
-            spreadsheetModel={model}
-            page={page}
-            rowsPerPage={rowsPerPage}
-          />
-          {!rows.length ? (
-            <caption className={classes.emptyMessage}>
-              {totalRows ? 'no rows match criteria' : 'no rows present'}
-            </caption>
-          ) : null}
-        </table>
-      </>
-    )
-  },
-)
+                    <CropFreeIcon />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </th>
+            {columnDisplayOrder.map(colNumber => (
+              <th
+                className={classes.columnHead}
+                key={colNumber}
+                onMouseOver={columnHeaderMouseOver.bind(null, colNumber)}
+                onMouseOut={columnHeaderMouseOut.bind(null, colNumber)}
+              >
+                <SortIndicator model={model} columnNumber={colNumber} />
+                {(hasColumnNames && columns[colNumber]?.name) ||
+                  numToColName(colNumber)}
+                <div
+                  className={classes.columnButtonContainer}
+                  style={{
+                    display:
+                      currentHoveredColumn === colNumber ||
+                      currentColumnMenu?.colNumber === colNumber
+                        ? 'block'
+                        : 'none',
+                  }}
+                >
+                  <IconButton
+                    className={classes.columnButton}
+                    onClick={columnButtonClick.bind(null, colNumber)}
+                  >
+                    <ArrowDropDown />
+                  </IconButton>
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <DataTableBody
+          rows={rows}
+          spreadsheetModel={model}
+          page={page}
+          rowsPerPage={rowsPerPage}
+        />
+        {!rows.length ? (
+          <caption className={classes.emptyMessage}>
+            {totalRows ? 'no rows match criteria' : 'no rows present'}
+          </caption>
+        ) : null}
+      </table>
+    </>
+  )
+})
 
-const Spreadsheet = observer(
-  ({
-    model,
-    height,
-    page,
-    rowsPerPage,
-  }: {
-    model: SpreadsheetModel
-    height: number
-    page: number
-    rowsPerPage: number
-  }) => {
-    const { classes } = useStyles()
+const Spreadsheet = observer(function ({
+  model,
+  height,
+  page,
+  rowsPerPage,
+}: {
+  model: SpreadsheetModel
+  height: number
+  page: number
+  rowsPerPage: number
+}) {
+  const { classes } = useStyles()
 
-    return (
-      <div className={classes.root} style={{ height }}>
-        {model?.rowSet?.isLoaded && model.initialized ? (
-          <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
-        ) : (
-          <LoadingEllipses variant="h4" />
-        )}
-      </div>
-    )
-  },
-)
+  return (
+    <div className={classes.root} style={{ height }}>
+      {model?.rowSet?.isLoaded && model.initialized ? (
+        <DataTable model={model} page={page} rowsPerPage={rowsPerPage} />
+      ) : (
+        <LoadingEllipses variant="h2" />
+      )}
+    </div>
+  )
+})
 
 export default Spreadsheet
