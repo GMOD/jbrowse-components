@@ -25,7 +25,8 @@ import {
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
 // locals
-import { matches, HierarchicalTrackSelectorModel } from '../../model'
+import { HierarchicalTrackSelectorModel } from '../../model'
+import { matches } from '../../util'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
 import { getRootKeys } from './util'

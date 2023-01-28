@@ -13,7 +13,7 @@ import { useDebouncedCallback } from '@jbrowse/core/util'
 
 // locals
 import { LinearGenomeViewModel } from '..'
-import TrackLabelContainer from './TrackLabelContainer'
+import TrackLabel from './TrackLabel'
 
 const useStyles = makeStyles()({
   root: {
@@ -33,6 +33,9 @@ const useStyles = makeStyles()({
     width: '100%',
     zIndex: 3,
   },
+  trackLabel: {
+    zIndex: 3,
+  },
 
   // aligns with block boundaries. check for example the breakpoint split view
   // demo to see if features align if wanting to change things
@@ -43,7 +46,13 @@ const useStyles = makeStyles()({
     height: '100%',
     width: '100%',
   },
-
+  trackLabelOffset: {
+    position: 'relative',
+    display: 'inline-block',
+  },
+  trackLabelOverlap: {
+    position: 'absolute',
+  },
   trackRenderingContainer: {
     overflowY: 'auto',
     overflowX: 'hidden',
@@ -56,7 +65,23 @@ const useStyles = makeStyles()({
 
 type LGV = LinearGenomeViewModel
 
-export default observer(function TrackContainer({
+const TrackContainerLabel = observer(
+  ({ model, view }: { model: BaseTrackModel; view: LGV }) => {
+    const { classes, cx } = useStyles()
+    const display = model.displays[0]
+    const { trackLabel, trackLabelOverlap, trackLabelOffset } = classes
+    const labelStyle =
+      view.trackLabels !== 'overlapping' || display.prefersOffset
+        ? trackLabelOffset
+        : trackLabelOverlap
+
+    return view.trackLabels !== 'hidden' ? (
+      <TrackLabel track={model} className={cx(trackLabel, labelStyle)} />
+    ) : null
+  },
+)
+
+function TrackContainer({
   model,
   track,
 }: {
@@ -87,7 +112,7 @@ export default observer(function TrackContainer({
 
   return (
     <Paper className={classes.root} variant="outlined">
-      <TrackLabelContainer model={track} view={model} />
+      <TrackContainerLabel model={track} view={model} />
       <ErrorBoundary
         key={track.id}
         FallbackComponent={({ error }) => <ErrorMessage error={error} />}
@@ -141,4 +166,6 @@ export default observer(function TrackContainer({
       />
     </Paper>
   )
-})
+}
+
+export default observer(TrackContainer)

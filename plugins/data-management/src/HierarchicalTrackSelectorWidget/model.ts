@@ -4,15 +4,12 @@ import {
   readConfObject,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
-import {
-  AbstractSessionModel,
-  dedupe,
-  getSession,
-  getEnv,
-} from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { dedupe, getSession, getEnv } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import PluginManager from '@jbrowse/core/PluginManager'
+
+// locals
+import { generateHierarchy } from './generateHierarchy'
 
 function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
   // shortcut case is that arrays are single entries, and are equal
@@ -68,68 +65,6 @@ function filterTracks(
       const trackDisplays = c.displays.map((d: { type: string }) => d.type)
       return hasAnyOverlap(compatDisplays, trackDisplays)
     })
-}
-
-export function generateHierarchy(
-  model: HierarchicalTrackSelectorModel,
-  trackConfigurations: AnyConfigurationModel[],
-  collapsed: { get: (arg: string) => boolean | undefined },
-  extra?: string,
-) {
-  const hierarchy = { children: [] as TreeNode[] } as TreeNode
-  const { filterText, view } = model
-  const session = getSession(model)
-
-  trackConfigurations
-    .filter(conf => matches(filterText, conf, session))
-    .forEach(conf => {
-      // copy the categories since this array can be mutated downstream
-      const categories = [...(readConfObject(conf, 'category') || [])]
-
-      // silly thing where if trackId ends with sessionTrack, then push it to
-      // a category that starts with a space to force sort to the top...
-      // double whammy hackyness
-      if (conf.trackId.endsWith('sessionTrack')) {
-        categories.unshift(' Session tracks')
-      }
-
-      let currLevel = hierarchy
-
-      // find existing category to put track into or create it
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i]
-        const ret = currLevel.children.find(c => c.name === category)
-        const id = extra + '-' + categories.slice(0, i + 1).join(',')
-        if (!ret) {
-          const n = {
-            children: [],
-            name: category,
-            id,
-            isOpenByDefault: !collapsed.get(id),
-          }
-          currLevel.children.push(n)
-          currLevel = n
-        } else {
-          currLevel = ret
-        }
-      }
-      const tracks = view.tracks as { configuration: AnyConfigurationModel }[]
-
-      // using splice here tries to group leaf nodes above hierarchical nodes
-      currLevel.children.splice(
-        currLevel.children.findIndex(elt => elt.children.length),
-        0,
-        {
-          id: conf.trackId,
-          name: getTrackName(conf, session),
-          conf,
-          checked: tracks.some(f => f.configuration === conf),
-          children: [],
-        },
-      )
-    })
-
-  return hierarchy.children
 }
 
 export default function stateTreeFactory(pluginManager: PluginManager) {
