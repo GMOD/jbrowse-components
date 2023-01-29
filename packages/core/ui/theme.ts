@@ -42,6 +42,7 @@ const refTheme = createTheme()
 
 function getDefaultPalette() {
   return {
+    name: 'Default (from config)',
     mode: undefined,
     primary: { main: midnight },
     secondary: { main: grape },
@@ -60,6 +61,7 @@ function getDefaultPalette() {
 
 function getDarkStockPalette() {
   return {
+    name: 'Dark (stock)',
     mode: 'dark',
     primary: { main: midnight },
     secondary: { main: grape },
@@ -78,6 +80,7 @@ function getDarkStockPalette() {
 
 function getDarkMinimalPalette() {
   return {
+    name: 'Dark (minimal)',
     mode: 'dark' as const,
     primary: { main: grey[700] },
     secondary: { main: grey[800] },
@@ -96,6 +99,7 @@ function getDarkMinimalPalette() {
 
 function getMinimalPalette() {
   return {
+    name: 'Light (minimal)',
     primary: { main: grey[900] },
     secondary: { main: grey[800] },
     tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),

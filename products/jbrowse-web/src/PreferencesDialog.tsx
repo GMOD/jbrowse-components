@@ -32,11 +32,9 @@ export default function PreferencesDialog({
           value={session.themeName || 'default'}
           onChange={event => session.setThemeName(event.target.value)}
         >
-          <MenuItem value={'default'}>Default (from configuration)</MenuItem>
-          <MenuItem value={'lightStock'}>Light (stock)</MenuItem>
-          <MenuItem value={'lightMinimal'}>Light (minimal)</MenuItem>
-          <MenuItem value={'darkStock'}>Dark (stock)</MenuItem>
-          <MenuItem value={'darkMinimal'}>Dark (minimal)</MenuItem>
+          {Object.entries(session.getThemes()).map(([key, val]) => (
+            <MenuItem value={key}>{val.name}</MenuItem>
+          ))}
         </TextField>
       </DialogContent>
       <DialogActions>
