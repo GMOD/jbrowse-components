@@ -174,7 +174,7 @@ export default observer(function FacetedSelector({
     }))
   }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, hideSparse, rows])
 
-  const widthsDebounced = widths //useDebounce(widths, 400)
+  const widthsDebounced = useDebounce(widths, 400)
 
   const columns = [
     {
