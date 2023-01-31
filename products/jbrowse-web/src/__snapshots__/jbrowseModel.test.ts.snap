@@ -514,6 +514,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "VCF",
       ],
+      "description": "A uniquely interesting track",
       "displays": [
         {
           "displayId": "volvox_sv_test-LinearVariantDisplay",

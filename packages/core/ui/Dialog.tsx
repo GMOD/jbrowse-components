@@ -9,9 +9,12 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 import { makeStyles } from 'tss-react/mui'
+import { ErrorBoundary } from 'react-error-boundary'
 
 // icons
 import CloseIcon from '@mui/icons-material/Close'
+// locals
+import ErrorMessage from './ErrorMessage'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -21,6 +24,14 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.grey[500],
   },
 }))
+
+function DialogError({ error }: { error: unknown }) {
+  return (
+    <div style={{ width: 800, margin: 40 }}>
+      <ErrorMessage error={error} />
+    </div>
+  )
+}
 
 function JBrowseDialog(props: DialogProps & { title: string }) {
   const { classes } = useStyles()
@@ -44,7 +55,10 @@ function JBrowseDialog(props: DialogProps & { title: string }) {
           ) : null}
         </DialogTitle>
         <Divider />
-        {children}
+
+        <ErrorBoundary FallbackComponent={DialogError}>
+          {children}
+        </ErrorBoundary>
       </ScopedCssBaseline>
     </Dialog>
   )

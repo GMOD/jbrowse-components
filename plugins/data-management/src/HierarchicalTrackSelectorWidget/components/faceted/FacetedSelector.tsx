@@ -7,6 +7,7 @@ import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 
 // jbrowse
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { ResizeHandle } from '@jbrowse/core/ui'
 import JBrowseMenu from '@jbrowse/core/ui/Menu'
 import ResizeBar, { useResizeBar } from '@jbrowse/core/ui/ResizeBar'
 import {
@@ -27,9 +28,8 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
-import { ResizeHandle } from '@jbrowse/core/ui'
 
-const keys = ['category', 'adapter'] as const
+const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
 export interface InfoArgs {
   target: HTMLElement
@@ -87,13 +87,22 @@ export default observer(function FacetedSelector({
           name: getTrackName(track, session),
           category: readConfObject(track, 'category')?.join(', '),
           adapter: readConfObject(track, 'adapter')?.type,
+          description: readConfObject(track, 'description'),
           metadata,
           ...metadata,
         }
       })
   }, [assemblyName, model, filterDebounced, session])
 
-  const allKeys = useMemo(
+  const filteredNonMetadataKeys = useMemo(
+    () =>
+      nonMetadataKeys.filter(f =>
+        !hideSparse ? true : rows.map(r => r[f]).filter(f => !!f).length > 5,
+      ),
+    [hideSparse, rows],
+  )
+
+  const filteredMetadataKeys = useMemo(
     () =>
       [...new Set(rows.map(row => getRootKeys(row.metadata)).flat())].filter(
         f =>
@@ -109,13 +118,13 @@ export default observer(function FacetedSelector({
       rows.map(r => r.name),
       { maxWidth: 500 },
     ) + 15,
-    ...keys.map(e =>
+    ...filteredNonMetadataKeys.map(e =>
       measureGridWidth(
         rows.map(r => r[e]),
         { maxWidth: 400 },
       ),
     ),
-    ...allKeys.map(e =>
+    ...filteredMetadataKeys.map(e =>
       measureGridWidth(
         rows.map(r => r.metadata[e]),
         { maxWidth: 400 },
@@ -123,17 +132,17 @@ export default observer(function FacetedSelector({
     ),
   ])
 
-  useEffect(
-    () => {
-      setWidths([
-        ...widths.slice(0, 1 + keys.length),
-        ...allKeys.map(e => measureGridWidth(rows.map(r => r.metadata[e]))),
-      ])
-    },
-    // avoid specifying 'widths' in deps, not necessary in this case
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allKeys, rows],
-  )
+  useEffect(() => {
+    setWidths(widths => [
+      widths[0],
+      ...filteredNonMetadataKeys.map(e =>
+        measureGridWidth(rows.map(r => r[e])),
+      ),
+      ...filteredMetadataKeys.map(e =>
+        measureGridWidth(rows.map(r => r.metadata[e])),
+      ),
+    ])
+  }, [filteredMetadataKeys, filteredNonMetadataKeys, hideSparse, rows])
 
   const widthsDebounced = useDebounce(widths, 400)
 
@@ -159,15 +168,17 @@ export default observer(function FacetedSelector({
           </>
         )
       },
-      width: widthsDebounced[0],
+      width: widthsDebounced[0] || 100, // can be undefined before useEffect update
     },
-    ...keys.map((e, i) => ({
+    ...filteredNonMetadataKeys.map((e, i) => ({
       field: e,
-      width: widthsDebounced[i + 1],
+      width: widthsDebounced[i + 1] || 100, // can be undefined before useEffect update
+      hideable: false, // doesn't work with our resize bar yet
     })),
-    ...allKeys.map((e, i) => ({
+    ...filteredMetadataKeys.map((e, i) => ({
       field: e,
-      width: widthsDebounced[i + 1 + keys.length],
+      width: widthsDebounced[i + 1 + filteredNonMetadataKeys.length] || 100, // can be undefined before useEffect update
+      hideable: false, // doesn't work with our resize bar yet
     })),
   ]
   const shownTrackIds = view.tracks.map(
