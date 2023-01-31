@@ -83,9 +83,9 @@ exports[`open up a widget 1`] = `
               <div
                 class="css-1omt041-fieldValue"
               >
-                <div>
+                <span>
                   100
-                </div>
+                </span>
               </div>
             </div>
             <hr
@@ -108,9 +108,9 @@ exports[`open up a widget 1`] = `
               <div
                 class="css-1omt041-fieldValue"
               >
-                <div>
+                <span>
                   37
-                </div>
+                </span>
               </div>
             </div>
             <div

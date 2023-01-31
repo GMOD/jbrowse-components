@@ -98,9 +98,9 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-2-helper-text"
                   >
-                    <div>
+                    <span>
                       stringTest
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -674,9 +674,9 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-9-helper-text"
                   >
-                    <div>
+                    <span>
                       numberTest
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -729,9 +729,9 @@ exports[`ConfigurationEditor widget renders all the different types of built-in 
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-10-helper-text"
                   >
-                    <div>
+                    <span>
                       integerTest
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -960,9 +960,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-12-helper-text"
                   >
-                    <div>
+                    <span>
                       maximum features per pixel that is displayed in the view, used if byte size estimates not available
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1015,9 +1015,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-13-helper-text"
                   >
-                    <div>
+                    <span>
                       maximum data to attempt to download for a given track, used if adapter doesn't specify one
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1404,9 +1404,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-18-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     read sequencer orientation. fr is normal "reads pointing at each other ---&gt; &lt;--- while some other sequencers can use other options
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -1480,9 +1480,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-19-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     Alternative display modes
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -1535,9 +1535,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-20-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     the minimum width in px for a pileup mismatch feature. use for increasing/decreasing mismatch marker widths when zoomed out, e.g. 0 or 1
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -1590,9 +1590,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-21-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     the maximum height to be used in a pileup rendering
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -1645,9 +1645,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-22-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     the max clip size to be used in a pileup rendering
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -1700,9 +1700,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-23-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     the height of each feature in a pileup alignment
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -1829,9 +1829,9 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                   class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                                   id="mui-24-helper-text"
                                 >
-                                  <div>
+                                  <span>
                                     scale at which to draw the large insertion indicators (bp/pixel)
-                                  </div>
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -2004,7 +2004,7 @@ exports[`ConfigurationEditor widget renders with just the required model element
                     class="MuiFormHelperText-root MuiFormHelperText-sizeMedium MuiFormHelperText-contained MuiFormHelperText-filled css-1wc848c-MuiFormHelperText-root"
                     id="mui-1-helper-text"
                   >
-                    <div />
+                    <span />
                   </div>
                 </div>
               </div>

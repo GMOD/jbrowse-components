@@ -87,9 +87,9 @@ exports[`renders with just the required model elements 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     rs123
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
@@ -103,9 +103,9 @@ exports[`renders with just the required model elements 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     1
-                  </div>
+                  </span>
                 </div>
               </div>
               <hr
@@ -129,9 +129,9 @@ exports[`renders with just the required model elements 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     A
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
@@ -147,9 +147,9 @@ exports[`renders with just the required model elements 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     &lt;TRA&gt;
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
@@ -165,9 +165,9 @@ exports[`renders with just the required model elements 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     10.4
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
@@ -182,9 +182,9 @@ exports[`renders with just the required model elements 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     5
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
