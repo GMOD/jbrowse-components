@@ -87,9 +87,9 @@ exports[`open up a widget 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     ctgA_3_555_0:0:0_2:0:0_102d
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
@@ -103,9 +103,9 @@ exports[`open up a widget 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     100
-                  </div>
+                  </span>
                 </div>
               </div>
               <div
@@ -119,9 +119,9 @@ exports[`open up a widget 1`] = `
                 <div
                   class="css-1omt041-fieldValue"
                 >
-                  <div>
+                  <span>
                     match
-                  </div>
+                  </span>
                 </div>
               </div>
               <hr

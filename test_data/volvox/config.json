@@ -212,7 +212,7 @@
       "type": "VariantTrack",
       "trackId": "volvox_sv_test",
       "description": "A uniquely interesting track",
-      "name": "volvox structural variant test",
+      "name": "volvox structural variant test (<i>HTML italic</i>)",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
       "adapter": {
@@ -280,7 +280,7 @@
       "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
       "category": ["Integration test"],
       "metadata": {
-        "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo",
+        "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo. See <a href=https://google.com>Google</a>",
         "sub": {
           "subkey": "wow"
         }

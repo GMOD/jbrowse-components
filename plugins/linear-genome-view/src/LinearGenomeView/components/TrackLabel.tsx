@@ -22,6 +22,7 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
 
 import { LinearGenomeViewModel } from '..'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -117,7 +118,7 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           component="span"
           className={classes.trackName}
         >
-          {trackName + (minimized ? ' (minimized)' : '')}
+          <SanitizedHTML html={trackName + (minimized ? ' (minimized)' : '')} />
         </Typography>
         <IconButton
           {...bindTrigger(popupState)}

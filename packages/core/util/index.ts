@@ -1184,6 +1184,11 @@ export function getStr(obj: unknown) {
     : String(obj)
 }
 
+// tries to measure grid width without HTML tags included
+function coarseStripHTML(s: string) {
+  return s.replace(/(<([^>]+)>)/gi, '')
+}
+
 // heuristic measurement for a column of a @mui/x-data-grid, pass in values from a column
 export function measureGridWidth(
   elements: string[],
@@ -1192,6 +1197,7 @@ export function measureGridWidth(
     fontSize?: number
     maxWidth?: number
     padding?: number
+    stripHTML?: boolean
   },
 ) {
   const {
@@ -1199,10 +1205,12 @@ export function measureGridWidth(
     minWidth = 80,
     fontSize = 12,
     maxWidth = 1000,
+    stripHTML = false,
   } = args || {}
   return max(
     elements
       .map(element => getStr(element))
+      .map(str => (stripHTML ? coarseStripHTML(str) : str))
       .map(str => measureText(str, fontSize))
       .map(n => Math.min(Math.max(n + padding, minWidth), maxWidth)),
   )

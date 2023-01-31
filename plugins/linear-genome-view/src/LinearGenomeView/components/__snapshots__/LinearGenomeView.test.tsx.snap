@@ -471,7 +471,9 @@ exports[`renders one track, one region 1`] = `
         <span
           class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
         >
-          Foo Track
+          <span>
+            Foo Track
+          </span>
         </span>
         <button
           aria-haspopup="true"
@@ -1266,7 +1268,9 @@ exports[`renders two tracks, two regions 1`] = `
         <span
           class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
         >
-          Foo Track
+          <span>
+            Foo Track
+          </span>
         </span>
         <button
           aria-haspopup="true"
@@ -1396,7 +1400,9 @@ exports[`renders two tracks, two regions 1`] = `
         <span
           class="MuiTypography-root MuiTypography-body1 css-877agm-MuiTypography-root-trackName"
         >
-          Bar Track
+          <span>
+            Bar Track
+          </span>
         </span>
         <button
           aria-haspopup="true"
