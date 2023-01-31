@@ -94,7 +94,8 @@ export default function ResizeBar({
   const onDrag = useCallback(
     (distance: number, idx: number) => {
       const newWidths = [...widths]
-      newWidths[idx] = newWidths[idx] + distance
+      // mui doesn't allow columns smaller than 50
+      newWidths[idx] = Math.max(newWidths[idx] + distance, 50)
       setWidths(newWidths)
     },
     [widths, setWidths],

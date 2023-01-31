@@ -28,6 +28,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz'
 import { matches, HierarchicalTrackSelectorModel } from '../../model'
 import FacetedHeader from './FacetedHeader'
 import FacetFilters from './FacetFilters'
+import { getRootKeys } from './util'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
@@ -35,12 +36,6 @@ export interface InfoArgs {
   target: HTMLElement
   id: string
   conf: AnyConfigurationModel
-}
-
-function getRootKeys(obj: Record<string, unknown>) {
-  return Object.entries(obj)
-    .map(([key, val]) => (typeof val === 'string' ? key : ''))
-    .filter(f => !!f)
 }
 
 const frac = 0.75
@@ -113,42 +108,78 @@ export default observer(function FacetedSelector({
     [hideSparse, rows],
   )
 
-  const [widths, setWidths] = useState([
-    measureGridWidth(
-      rows.map(r => r.name),
-      { maxWidth: 500 },
-    ) + 15,
-    ...filteredNonMetadataKeys.map(e =>
+  const fields = useMemo(() => {
+    return ['name', ...filteredNonMetadataKeys, ...filteredMetadataKeys]
+  }, [filteredNonMetadataKeys, filteredMetadataKeys])
+
+  const [widths, setWidths] = useState({
+    name:
       measureGridWidth(
-        rows.map(r => r[e]),
-        { maxWidth: 400 },
-      ),
+        rows.map(r => r.name),
+        { maxWidth: 500, stripHTML: true },
+      ) + 15,
+    ...Object.fromEntries(
+      filteredNonMetadataKeys.map(e => [
+        e,
+        measureGridWidth(
+          rows.map(r => r[e]),
+          { maxWidth: 400, stripHTML: true },
+        ),
+      ]),
     ),
-    ...filteredMetadataKeys.map(e =>
-      measureGridWidth(
-        rows.map(r => r.metadata[e]),
-        { maxWidth: 400 },
-      ),
+    ...Object.fromEntries(
+      filteredMetadataKeys.map(e => [
+        e,
+        measureGridWidth(
+          rows.map(r => r.metadata[e]),
+          { maxWidth: 400, stripHTML: true },
+        ),
+      ]),
     ),
-  ])
+  } as { [key: string]: number })
+
+  const [visible, setVisible] = useState(
+    Object.fromEntries(fields.map(c => [c, true])),
+  )
+  useEffect(() => {
+    setVisible(visible => ({
+      ...Object.fromEntries(fields.map(c => [c, true])),
+      ...visible,
+    }))
+  }, [fields])
 
   useEffect(() => {
-    setWidths(widths => [
-      widths[0],
-      ...filteredNonMetadataKeys.map(e =>
-        measureGridWidth(rows.map(r => r[e], { stripHTML: true })),
+    setWidths(widths => ({
+      name: widths.name,
+      ...Object.fromEntries(
+        filteredNonMetadataKeys
+          .filter(f => visible[f])
+          .map(e => [
+            e,
+            measureGridWidth(
+              rows.map(r => r[e], { stripHTML: true, maxWidth: 400 }),
+            ),
+          ]),
       ),
-      ...filteredMetadataKeys.map(e =>
-        measureGridWidth(rows.map(r => r.metadata[e], { stripHTML: true })),
+      ...Object.fromEntries(
+        filteredMetadataKeys
+          .filter(f => visible[f])
+          .map(e => [
+            e,
+            measureGridWidth(
+              rows.map(r => r.metadata[e], { stripHTML: true, maxWidth: 400 }),
+            ),
+          ]),
       ),
-    ])
-  }, [filteredMetadataKeys, filteredNonMetadataKeys, hideSparse, rows])
+    }))
+  }, [filteredMetadataKeys, visible, filteredNonMetadataKeys, hideSparse, rows])
 
-  const widthsDebounced = useDebounce(widths, 400)
+  const widthsDebounced = widths //useDebounce(widths, 400)
 
   const columns = [
     {
       field: 'name',
+      hideable: false,
       renderCell: (params: GridCellParams) => {
         const { value, id, row } = params
         return (
@@ -168,27 +199,26 @@ export default observer(function FacetedSelector({
           </>
         )
       },
-      width: widthsDebounced[0] || 100, // can be undefined before useEffect update
+      width: widthsDebounced.name || 100, // can be undefined before useEffect update
     },
-    ...filteredNonMetadataKeys.map((e, i) => ({
+    ...filteredNonMetadataKeys.map(e => ({
       field: e,
-      width: widthsDebounced[i + 1] || 100, // can be undefined before useEffect update
-      hideable: false, // doesn't work with our resize bar yet
+      width: widthsDebounced[e] || 100, // can be undefined before useEffect update
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return value ? <SanitizedHTML html={value} /> : ''
       },
     })),
-    ...filteredMetadataKeys.map((e, i) => ({
+    ...filteredMetadataKeys.map(e => ({
       field: e,
-      width: widthsDebounced[i + 1 + filteredNonMetadataKeys.length] || 100, // can be undefined before useEffect update
-      hideable: false, // doesn't work with our resize bar yet
+      width: widthsDebounced[e] || 100, // can be undefined before useEffect update
       renderCell: (params: GridCellParams) => {
         const { value } = params
         return value ? <SanitizedHTML html={value} /> : ''
       },
     })),
   ]
+
   const shownTrackIds = view.tracks.map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (t: any) => t.configuration.trackId,
@@ -236,14 +266,25 @@ export default observer(function FacetedSelector({
         >
           <ResizeBar
             checkbox
-            widths={widths}
-            setWidths={setWidths}
+            widths={Object.values(widths)}
+            setWidths={newWidths =>
+              setWidths(
+                Object.fromEntries(
+                  Object.entries(widths).map((entry, idx) => [
+                    entry[0],
+                    newWidths[idx],
+                  ]),
+                ),
+              )
+            }
             scrollLeft={scrollLeft}
           />
           <DataGrid
             rows={rows.filter(row =>
               arrFilters.every(([key, val]) => val.includes(row[key])),
             )}
+            columnVisibilityModel={visible}
+            onColumnVisibilityModelChange={newModel => setVisible(newModel)}
             headerHeight={35}
             checkboxSelection
             disableSelectionOnClick
