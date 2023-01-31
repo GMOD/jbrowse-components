@@ -525,7 +525,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "ChordVariantDisplay",
         },
       ],
-      "name": "volvox structural variant test",
+      "name": "volvox structural variant test (<i>HTML italic</i>)",
       "trackId": "volvox_sv_test",
       "type": "VariantTrack",
     },

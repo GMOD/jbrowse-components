@@ -13,6 +13,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 
 // locals
 import { isUnsupported, NodeData } from '../util'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()({
   compactCheckbox: {
@@ -60,13 +61,8 @@ export default function TrackLabel({ data }: { data: NodeData }) {
             />
           }
           label={
-            <div
-              style={{
-                background: selected ? '#cccc' : undefined,
-                padding: 1,
-              }}
-            >
-              {name}
+            <div style={{ background: selected ? '#cccc' : undefined }}>
+              <SanitizedHTML html={name} />
             </div>
           }
         />
