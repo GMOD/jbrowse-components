@@ -211,6 +211,7 @@
     {
       "type": "VariantTrack",
       "trackId": "volvox_sv_test",
+      "description": "A uniquely interesting track",
       "name": "volvox structural variant test",
       "category": ["VCF"],
       "assemblyNames": ["volvox"],
