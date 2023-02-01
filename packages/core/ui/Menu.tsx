@@ -405,7 +405,6 @@ function Menu(props: MenuProps) {
 
   return (
     <Popover
-      transitionDuration={0}
       open={open}
       onClose={onClose}
       BackdropProps={{ invisible: true }}

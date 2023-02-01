@@ -7,9 +7,6 @@ import ArrowDropDown from '@mui/icons-material/ArrowDropDown'
 import Menu, { MenuItem } from './Menu'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    display: 'flex',
-  },
   buttonRoot: {
     '&:hover': {
       backgroundColor: alpha(
@@ -51,7 +48,7 @@ function DropDownMenu({
   }
 
   return (
-    <div className={classes.root}>
+    <>
       <Button
         ref={anchorEl}
         onClick={handleToggle}
@@ -70,7 +67,7 @@ function DropDownMenu({
         onClose={handleClose}
         menuItems={menuItems}
       />
-    </div>
+    </>
   )
 }
 
