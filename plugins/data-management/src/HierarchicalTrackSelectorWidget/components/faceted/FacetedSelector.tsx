@@ -157,7 +157,8 @@ export default observer(function FacetedSelector({
           .map(e => [
             e,
             measureGridWidth(
-              rows.map(r => r[e], { stripHTML: true, maxWidth: 400 }),
+              rows.map(r => r[e]),
+              { stripHTML: true, maxWidth: 400 },
             ),
           ]),
       ),
@@ -167,7 +168,8 @@ export default observer(function FacetedSelector({
           .map(e => [
             e,
             measureGridWidth(
-              rows.map(r => r.metadata[e], { stripHTML: true, maxWidth: 400 }),
+              rows.map(r => r.metadata[e]),
+              { stripHTML: true, maxWidth: 400 },
             ),
           ]),
       ),
