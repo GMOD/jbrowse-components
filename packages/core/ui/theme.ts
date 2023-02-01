@@ -378,7 +378,7 @@ export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
   }
 }
 
-type ThemeMap = { [key: string]: any }
+type ThemeMap = { [key: string]: ThemeOptions }
 
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
@@ -422,14 +422,15 @@ export function getCurrentTheme(
   const baseTheme = augmentTheme(theme)
   const userChoiceTheme = augmentTheme(themes[themeName] || themes['default'])
 
+  const isDefault = themeName !== 'default'
   const obj = createJBrowseBaseTheme(
-    themeName !== 'default'
+    isDefault
       ? userChoiceTheme.palette
-      : deepmerge(themes['default'].palette, baseTheme?.palette || {}),
+      : deepmerge(themes['default'].palette || {}, baseTheme?.palette || {}),
   )
 
   return {
     ...deepmerge(obj, theme),
-    ...(themeName !== 'default' ? { palette: obj.palette } : {}),
+    ...(isDefault ? { palette: obj.palette } : {}),
   }
 }

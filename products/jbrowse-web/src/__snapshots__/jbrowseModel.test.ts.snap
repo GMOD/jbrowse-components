@@ -429,7 +429,34 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       },
     },
   ],
-  "configuration": {},
+  "configuration": {
+    "extraThemes": {
+      "darkForest": {
+        "name": "Dark (forest)",
+        "palette": {
+          "mode": "dark",
+          "primary": {
+            "main": "#464",
+          },
+          "quaternary": {
+            "main": "#6a4",
+          },
+          "secondary": {
+            "main": "#376",
+          },
+          "tertiary": {
+            "main": "#253",
+          },
+        },
+      },
+    },
+    "logoPath": {
+      "internetAccountId": undefined,
+      "internetAccountPreAuthorization": undefined,
+      "locationType": "UriLocation",
+      "uri": "",
+    },
+  },
   "connections": [],
   "defaultSession": {
     "activeWidgets": {

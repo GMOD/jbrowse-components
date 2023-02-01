@@ -49,6 +49,7 @@ const Loader = observer(() => {
     <ThemeProvider
       theme={createJBrowseTheme(
         undefined,
+        undefined,
         localStorageGetItem('themeName') || '',
       )}
     >

@@ -5,6 +5,7 @@ import {
   DialogContent,
   MenuItem,
   TextField,
+  ThemeOptions,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { Dialog } from '@jbrowse/core/ui'
@@ -21,7 +22,7 @@ export default function PreferencesDialog({
 }: {
   handleClose: () => void
   session: {
-    allThemes: Record<string, any>
+    allThemes: Record<string, ThemeOptions & { name?: string }>
     themeName?: string
     setThemeName: (arg: string) => void
   }
@@ -38,7 +39,7 @@ export default function PreferencesDialog({
         >
           {Object.entries(session.allThemes).map(([key, val]) => (
             <MenuItem key={key} value={key}>
-              {val.name}
+              {val.name || '(Unknown name)'}
             </MenuItem>
           ))}
         </TextField>

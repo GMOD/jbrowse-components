@@ -295,7 +295,7 @@ const Renderer = observer(
               rpc.defaultDriver.set('WebWorkerRpcDriver')
             }
 
-            let afterInitializedCb = () => { }
+            let afterInitializedCb = () => {}
 
             // in order: saves the previous autosave for recovery, tries to
             // load the local session if session in query, or loads the default
@@ -324,9 +324,10 @@ const Renderer = observer(
                 .replace('[mobx-state-tree] ', '')
                 .replace(/\(.+/, '')
               rootModel.session?.notify(
-                `Session could not be loaded. ${errorMessage.length > 1000
-                  ? `${errorMessage.slice(0, 1000)}...see more in console`
-                  : errorMessage
+                `Session could not be loaded. ${
+                  errorMessage.length > 1000
+                    ? `${errorMessage.slice(0, 1000)}...see more in console`
+                    : errorMessage
                 }`,
               )
               console.error(e)
