@@ -1,3 +1,82 @@
+## 2.3.4 (2023-02-01)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- `core`
+  - [#3494](https://github.com/GMOD/jbrowse-components/pull/3494) Use
+    transitionDuration 0 as defaultProp in theme for both popovers and menus
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3488](https://github.com/GMOD/jbrowse-components/pull/3488) Render HTML in
+    faceted track selector for track data/metadata
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3483](https://github.com/GMOD/jbrowse-components/pull/3483) Add
+    anchorOrigin/transformOrigin to default menu component
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3470](https://github.com/GMOD/jbrowse-components/pull/3470) Variant sample
+    grid auto-size columns and resizer
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3304](https://github.com/GMOD/jbrowse-components/pull/3304) Faceted/data
+    grid style track selector ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3477](https://github.com/GMOD/jbrowse-components/pull/3477) Larger margins
+    to add track workflow to visually clarify next button behavior
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3475](https://github.com/GMOD/jbrowse-components/pull/3475) Bypass
+    plugins.json download if unneeded during app startup
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3458](https://github.com/GMOD/jbrowse-components/pull/3458) Improve
+    auto-update of sequence track height when toggling
+    forward/reverse/translation settings
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- `core`
+  - [#3482](https://github.com/GMOD/jbrowse-components/pull/3482) Fix loading
+    external plugins in embedded linear-genome-view demo
+    ([@cmdcolin](https://github.com/cmdcolin))
+- Other
+  - [#3457](https://github.com/GMOD/jbrowse-components/pull/3457) Fix synteny
+    view not drawing after horizontal flip in v2.3.3
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3459](https://github.com/GMOD/jbrowse-components/pull/3459) Booleanize
+    localstorage settings from older versions of LGV to avoid crash
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#3487](https://github.com/GMOD/jbrowse-components/pull/3487) Storybook 7
+  ([@cmdcolin](https://github.com/cmdcolin))
+- [#3464](https://github.com/GMOD/jbrowse-components/pull/3464) Add source file
+  to config/state model docs ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 1
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+
 ## 2.3.3 (2023-01-11)
 
 <details><summary>Packages in this release</summary>
