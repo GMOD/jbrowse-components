@@ -128,6 +128,16 @@ export function createJBrowseDefaultProps(/* palette: PaletteOptions = {} */) {
           size: 'small' as const,
         },
       },
+      MuiPopover: {
+        defaultProps: {
+          transitionDuration: 0,
+        },
+      },
+      MuiMenu: {
+        defaultProps: {
+          transitionDuration: 0,
+        },
+      },
       MuiMenuList: {
         defaultProps: {
           dense: true,
