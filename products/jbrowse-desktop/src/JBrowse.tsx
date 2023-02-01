@@ -4,8 +4,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 
 // jbrowse
-import { getConf } from '@jbrowse/core/configuration'
-import { App, createJBrowseTheme } from '@jbrowse/core/ui'
+import { App } from '@jbrowse/core/ui'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
@@ -31,16 +30,17 @@ const JBrowseNonNullRoot = observer(function ({
 }: {
   rootModel: RootModel
 }) {
-  const { session, jbrowse, error, isAssemblyEditing, setAssemblyEditing } =
-    rootModel
+  const { session, error, isAssemblyEditing, setAssemblyEditing } = rootModel
 
   if (error) {
     throw error
   }
+  if (!session) {
+    return null
+  }
 
-  const theme = getConf(jbrowse, 'theme')
   return (
-    <ThemeProvider theme={createJBrowseTheme(theme, session?.themeName)}>
+    <ThemeProvider theme={session.theme}>
       <CssBaseline />
       {session ? (
         <>

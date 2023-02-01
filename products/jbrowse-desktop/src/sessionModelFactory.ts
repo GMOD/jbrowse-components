@@ -4,7 +4,9 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import {
   readConfObject,
   isConfigurationModel,
+  getConf,
 } from '@jbrowse/core/configuration'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui/theme'
 import {
   Region,
   TrackViewModel,
@@ -19,6 +21,7 @@ import {
 import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
 import { autorun, observable } from 'mobx'
 import {
+  addDisposer,
   getMembers,
   getParent,
   getSnapshot,
@@ -30,7 +33,6 @@ import {
   walk,
   IAnyStateTreeNode,
   SnapshotIn,
-  addDisposer,
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -41,6 +43,7 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
+import { ThemeOptions } from '@mui/material'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -48,6 +51,8 @@ export declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
+
+type ThemeMap = { [key: string]: ThemeOptions }
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -145,6 +150,28 @@ export default function sessionModelFactory(
       queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get jbrowse() {
+        return getParent<any>(self).jbrowse
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get allThemes(): ThemeMap {
+        const extraThemes = getConf(self.jbrowse, 'extraThemes')
+        return { ...defaultThemes, ...extraThemes }
+      },
+      /**
+       * #getter
+       */
+      get theme() {
+        const configTheme = getConf(self.jbrowse, 'theme')
+        return createJBrowseTheme(configTheme, this.allThemes, self.themeName)
+      },
       /**
        * #getter
        */

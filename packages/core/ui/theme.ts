@@ -40,88 +40,117 @@ const mandarin = '#FFB11D'
 
 const refTheme = createTheme()
 
-function getDefaultPalette() {
+function getDefaultTheme() {
   return {
     name: 'Default (from config)',
-    mode: undefined,
-    primary: { main: midnight },
-    secondary: { main: grape },
-    tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-    stopCodon: '#e22',
-    startCodon: '#3e3',
-    bases: {
-      A: refTheme.palette.augmentColor({ color: green }),
-      C: refTheme.palette.augmentColor({ color: blue }),
-      G: refTheme.palette.augmentColor({ color: amber }),
-      T: refTheme.palette.augmentColor({ color: red }),
+    palette: {
+      mode: undefined,
+      primary: { main: midnight },
+      secondary: { main: grape },
+      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      stopCodon: '#e22',
+      startCodon: '#3e3',
+      bases: {
+        A: refTheme.palette.augmentColor({ color: green }),
+        C: refTheme.palette.augmentColor({ color: blue }),
+        G: refTheme.palette.augmentColor({ color: amber }),
+        T: refTheme.palette.augmentColor({ color: red }),
+      },
     },
   }
 }
 
-function getDarkStockPalette() {
+function getLightStockTheme() {
+  return {
+    name: 'Light (stock)',
+    palette: {
+      mode: undefined,
+      primary: { main: midnight },
+      secondary: { main: grape },
+      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      stopCodon: '#e22',
+      startCodon: '#3e3',
+      bases: {
+        A: refTheme.palette.augmentColor({ color: green }),
+        C: refTheme.palette.augmentColor({ color: blue }),
+        G: refTheme.palette.augmentColor({ color: amber }),
+        T: refTheme.palette.augmentColor({ color: red }),
+      },
+    },
+  }
+}
+
+function getDarkStockTheme() {
   return {
     name: 'Dark (stock)',
-    mode: 'dark',
-    primary: { main: midnight },
-    secondary: { main: grape },
-    tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-    stopCodon: '#e22',
-    startCodon: '#3e3',
-    bases: {
-      A: refTheme.palette.augmentColor({ color: green }),
-      C: refTheme.palette.augmentColor({ color: blue }),
-      G: refTheme.palette.augmentColor({ color: amber }),
-      T: refTheme.palette.augmentColor({ color: red }),
+    palette: {
+      mode: 'dark',
+      primary: { main: midnight },
+      secondary: { main: grape },
+      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      stopCodon: '#e22',
+      startCodon: '#3e3',
+      bases: {
+        A: refTheme.palette.augmentColor({ color: green }),
+        C: refTheme.palette.augmentColor({ color: blue }),
+        G: refTheme.palette.augmentColor({ color: amber }),
+        T: refTheme.palette.augmentColor({ color: red }),
+      },
     },
   }
 }
 
-function getDarkMinimalPalette() {
+function getDarkMinimalTheme() {
   return {
     name: 'Dark (minimal)',
-    mode: 'dark' as const,
-    primary: { main: grey[700] },
-    secondary: { main: grey[800] },
-    tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-    stopCodon: '#e22',
-    startCodon: '#3e3',
-    bases: {
-      A: refTheme.palette.augmentColor({ color: green }),
-      C: refTheme.palette.augmentColor({ color: blue }),
-      G: refTheme.palette.augmentColor({ color: amber }),
-      T: refTheme.palette.augmentColor({ color: red }),
+    palette: {
+      mode: 'dark' as const,
+      primary: { main: grey[700] },
+      secondary: { main: grey[800] },
+      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      stopCodon: '#e22',
+      startCodon: '#3e3',
+      bases: {
+        A: refTheme.palette.augmentColor({ color: green }),
+        C: refTheme.palette.augmentColor({ color: blue }),
+        G: refTheme.palette.augmentColor({ color: amber }),
+        T: refTheme.palette.augmentColor({ color: red }),
+      },
     },
   }
 }
 
-function getMinimalPalette() {
+function getMinimalTheme() {
   return {
     name: 'Light (minimal)',
-    primary: { main: grey[900] },
-    secondary: { main: grey[800] },
-    tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
-    quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-    stopCodon: '#e22',
-    startCodon: '#3e3',
-    bases: {
-      A: refTheme.palette.augmentColor({ color: green }),
-      C: refTheme.palette.augmentColor({ color: blue }),
-      G: refTheme.palette.augmentColor({ color: amber }),
-      T: refTheme.palette.augmentColor({ color: red }),
+    palette: {
+      primary: { main: grey[900] },
+      secondary: { main: grey[800] },
+      tertiary: refTheme.palette.augmentColor({ color: { main: grey[900] } }),
+      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      stopCodon: '#e22',
+      startCodon: '#3e3',
+      bases: {
+        A: refTheme.palette.augmentColor({ color: green }),
+        C: refTheme.palette.augmentColor({ color: blue }),
+        G: refTheme.palette.augmentColor({ color: amber }),
+        T: refTheme.palette.augmentColor({ color: red }),
+      },
     },
   }
 }
 
-export const palettes = {
-  darkMinimal: getDarkMinimalPalette(),
-  darkStock: getDarkStockPalette(),
-  default: getDefaultPalette(),
-  lightStock: getDefaultPalette(),
-  lightMinimal: getMinimalPalette(),
-} as { [key: string]: PaletteOptions }
+export const defaultThemes = {
+  default: getDefaultTheme(),
+  lightStock: getLightStockTheme(),
+  lightMinimal: getMinimalTheme(),
+  darkMinimal: getDarkMinimalTheme(),
+  darkStock: getDarkStockTheme(),
+} as ThemeMap
 
 function createDefaultProps() {
   return {
@@ -349,17 +378,17 @@ export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
   }
 }
 
-export function createJBrowseTheme(
-  theme: ThemeOptions = {},
-  paletteName?: string,
-) {
-  return createTheme(getCurrentTheme(theme, paletteName))
-}
+type ThemeMap = { [key: string]: any }
 
-export function getCurrentTheme(
-  theme: ThemeOptions = {},
+export function createJBrowseTheme(
+  configTheme: ThemeOptions = {},
+  themes = defaultThemes,
   paletteName = 'default',
 ) {
+  return createTheme(getCurrentTheme(configTheme, themes, paletteName))
+}
+
+function augmentTheme(theme: ThemeOptions = {}) {
   if (theme?.palette?.tertiary) {
     theme = deepmerge(theme, {
       palette: {
@@ -382,17 +411,25 @@ export function getCurrentTheme(
       },
     })
   }
+  return theme
+}
 
-  const pal = palettes[paletteName] || palettes['default']
+export function getCurrentTheme(
+  theme: ThemeOptions = {},
+  themes = defaultThemes,
+  themeName = 'default',
+) {
+  const baseTheme = augmentTheme(theme)
+  const userChoiceTheme = augmentTheme(themes[themeName] || themes['default'])
 
   const obj = createJBrowseBaseTheme(
-    paletteName !== 'default'
-      ? pal
-      : deepmerge(palettes['default'], theme?.palette || {}),
+    themeName !== 'default'
+      ? userChoiceTheme.palette
+      : deepmerge(themes['default'].palette, baseTheme?.palette || {}),
   )
 
   return {
     ...deepmerge(obj, theme),
-    ...(paletteName !== 'default' ? { palette: obj.palette } : {}),
+    ...(themeName !== 'default' ? { palette: obj.palette } : {}),
   }
 }

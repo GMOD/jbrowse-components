@@ -1,4 +1,6 @@
 import {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
   ConfigurationSchema,
   readConfObject,
 } from '@jbrowse/core/configuration'
@@ -14,12 +16,10 @@ import {
   cast,
 } from 'mobx-state-tree'
 import { toJS } from 'mobx'
-import { SessionStateModel } from './sessionModelFactory'
-import {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration/configurationSchema'
 import clone from 'clone'
+
+// locals
+import { SessionStateModel } from './sessionModelFactory'
 
 // poke some things for testing (this stuff will eventually be removed)
 // @ts-ignore
@@ -135,6 +135,10 @@ export default function JBrowseWeb(
          * #slot
          */
         theme: { type: 'frozen', defaultValue: {} },
+        /**
+         * #slot
+         */
+        extraThemes: { type: 'frozen', defaultValue: {} },
         /**
          * #slot
          */

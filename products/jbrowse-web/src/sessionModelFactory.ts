@@ -2,7 +2,9 @@
 import { lazy } from 'react'
 import clone from 'clone'
 import shortid from 'shortid'
+import { defaultThemes } from '@jbrowse/core/ui/theme'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   readConfObject,
   getConf,
@@ -16,8 +18,8 @@ import {
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
-
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
+import { ThemeOptions } from '@mui/material'
 import {
   getContainingView,
   localStorageGetItem,
@@ -51,7 +53,6 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
-import { getCurrentTheme } from '@jbrowse/core/ui'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -67,6 +68,8 @@ export declare interface ReactProps {
 type AnyConfiguration =
   | AnyConfigurationModel
   | SnapshotOut<AnyConfigurationModel>
+
+type ThemeMap = { [key: string]: ThemeOptions }
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -193,6 +196,28 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
+      get jbrowse() {
+        return getParent<any>(self).jbrowse
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get allThemes(): ThemeMap {
+        const extraThemes = getConf(self.jbrowse, 'extraThemes')
+        return { ...defaultThemes, ...extraThemes }
+      },
+      /**
+       * #getter
+       */
+      get theme() {
+        const configTheme = getConf(self.jbrowse, 'theme')
+        return createJBrowseTheme(configTheme, this.allThemes, self.themeName)
+      },
+      /**
+       * #getter
+       */
       get DialogComponent() {
         if (self.queueOfDialogs.length) {
           const firstInQueue = self.queueOfDialogs[0]
@@ -214,26 +239,26 @@ export default function sessionModelFactory(
        * #getter
        */
       get shareURL() {
-        return getConf(getParent<any>(self).jbrowse, 'shareURL')
+        return getConf(self.jbrowse, 'shareURL')
       },
       /**
        * #getter
        */
       get rpcManager() {
-        return getParent<any>(self).jbrowse.rpcManager as RpcManager
+        return self.jbrowse.rpcManager as RpcManager
       },
 
       /**
        * #getter
        */
       get configuration(): AnyConfigurationModel {
-        return getParent<any>(self).jbrowse.configuration
+        return self.jbrowse.configuration
       },
       /**
        * #getter
        */
       get assemblies(): AnyConfigurationModel[] {
-        return getParent<any>(self).jbrowse.assemblies
+        return self.jbrowse.assemblies
       },
       /**
        * #getter
@@ -261,10 +286,7 @@ export default function sessionModelFactory(
        * #getter
        */
       get connections(): AnyConfigurationModel[] {
-        return [
-          ...self.sessionConnections,
-          ...getParent<any>(self).jbrowse.connections,
-        ]
+        return [...self.sessionConnections, ...self.jbrowse.connections]
       },
       /**
        * #getter
@@ -313,10 +335,6 @@ export default function sessionModelFactory(
        */
       get version() {
         return getParent<any>(self).version
-      },
-
-      get theme() {
-        return getCurrentTheme(getConf(self, 'theme'), self.themeName)
       },
 
       /**
