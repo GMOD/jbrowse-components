@@ -105,7 +105,7 @@ export default function ResizeBar({
       {offsets.map((left, i) => (
         <Tick
           key={i}
-          left={left}
+          left={i === offsets.length - 1 ? left - 3 : left}
           onDrag={onDrag}
           idx={i}
           scrollLeft={scrollLeft}
