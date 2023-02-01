@@ -34,7 +34,7 @@ export default function PreferencesDialog({
         <TextField
           select
           label="Theme"
-          value={session.themeName || 'default'}
+          value={session.themeName}
           onChange={event => session.setThemeName(event.target.value)}
         >
           {Object.entries(session.allThemes).map(([key, val]) => (

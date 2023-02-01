@@ -129,7 +129,7 @@ export default function sessionModelFactory(
       /**
        * #property
        */
-      themeName: types.optional(
+      sessionThemeName: types.optional(
         types.string,
         () => localStorageGetItem('themeName') || 'default',
       ),
@@ -170,7 +170,15 @@ export default function sessionModelFactory(
        */
       get theme() {
         const configTheme = getConf(self.jbrowse, 'theme')
-        return createJBrowseTheme(configTheme, this.allThemes, self.themeName)
+        return createJBrowseTheme(configTheme, this.allThemes, this.themeName)
+      },
+      /**
+       * #getter
+       */
+      get themeName() {
+        return this.allThemes[self.sessionThemeName]
+          ? self.sessionThemeName
+          : 'default'
       },
       /**
        * #getter
@@ -327,7 +335,7 @@ export default function sessionModelFactory(
        * #action
        */
       setThemeName(name: string) {
-        self.themeName = name
+        self.sessionThemeName = name
       },
       /**
        * #action

@@ -12,9 +12,9 @@ exports[`JBrowseWebSessionModel creates with no parent and just a name 1`] = `
   "sessionAssemblies": [],
   "sessionConnections": [],
   "sessionPlugins": [],
+  "sessionThemeName": "default",
   "sessionTracks": [],
   "temporaryAssemblies": [],
-  "themeName": "default",
   "views": [],
   "widgets": {},
 }
