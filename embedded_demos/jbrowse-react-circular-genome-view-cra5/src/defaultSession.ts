@@ -1,4 +1,4 @@
-export default {
+const session = {
   name: 'My session',
   view: {
     id: 'circularView',
@@ -20,3 +20,5 @@ export default {
     ],
   },
 }
+
+export default session

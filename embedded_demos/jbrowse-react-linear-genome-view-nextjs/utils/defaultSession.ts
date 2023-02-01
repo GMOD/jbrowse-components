@@ -1,4 +1,4 @@
-export default {
+const session = {
   name: 'this session',
   margin: 0,
   view: {
@@ -128,3 +128,5 @@ export default {
     showGridlines: true,
   },
 }
+
+export default session
