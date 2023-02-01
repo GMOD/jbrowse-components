@@ -8,29 +8,6 @@ import {
 import assembly from './assembly'
 import tracks from './tracks'
 
-const defaultSession = {
-  name: 'My session',
-  view: {
-    id: 'circularView',
-    type: 'CircularView',
-    bpPerPx: 5000000,
-    tracks: [
-      {
-        id: 'uPdLKHik1',
-        type: 'VariantTrack',
-        configuration: 'pacbio_sv_vcf',
-        displays: [
-          {
-            id: 'v9QVAR3oaB',
-            type: 'ChordVariantDisplay',
-            configuration: 'pacbio_sv_vcf-ChordVariantDisplay',
-          },
-        ],
-      },
-    ],
-  },
-}
-
 function View() {
   const [viewState, setViewState] =
     useState<ReturnType<typeof createViewState>>()
@@ -44,8 +21,8 @@ function View() {
       onChange: (patch: any) => {
         setPatches(previous => previous + JSON.stringify(patch) + '\n')
       },
-      defaultSession,
     })
+    state.session.view.showTrack('volvox_sv_test_renamed')
     setViewState(state)
   }, [])
 
