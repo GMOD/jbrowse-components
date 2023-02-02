@@ -19,9 +19,6 @@ jest.spyOn(console, 'error').mockImplementation((...args) => {
     return undefined
   }
 
-  if (String(args).includes('hydrateRoot')) {
-    return undefined
-  }
   if (
     String(args).includes(
       "Can't perform a React state update on an unmounted component.",

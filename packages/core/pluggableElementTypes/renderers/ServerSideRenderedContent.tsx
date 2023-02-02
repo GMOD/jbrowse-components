@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import { ThemeProvider } from '@mui/material/styles'
-import { hydrate, unmountComponentAtNode } from 'react-dom'
+import { hydrateRoot, Root } from 'react-dom/client'
 
 // locals
 import { createJBrowseTheme } from '../../ui'
-import { rIC } from '../../util'
 import { ResultsSerialized, RenderArgs } from './ServerSideRendererType'
 
 interface Props extends ResultsSerialized, RenderArgs {
@@ -19,46 +18,34 @@ export default function ServerSideRenderedContent({
   ...rest
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const jbrowseTheme = createJBrowseTheme(theme)
+  const rootRef = useRef<Root>()
 
   useEffect(() => {
-    const domNode = ref.current
-    function doHydrate() {
-      if (domNode) {
-        if (domNode) {
-          unmountComponentAtNode(domNode)
-        }
-        domNode.innerHTML = html
-
-        // defer main-thread rendering and hydration for when
-        // we have some free time. helps keep the framerate up.
-        //
-        // note: the timeout param to rIC below helps when you are doing
-        // a long continuous scroll, it forces it to evaluate because
-        // otherwise the continuous scroll would never give it time to do
-        // so
-        rIC(
-          () => {
-            hydrate(
-              <ThemeProvider theme={jbrowseTheme}>
-                <RenderingComponent {...rest} />
-              </ThemeProvider>,
-              domNode,
-            )
-          },
-          { timeout: 300 },
+    const renderTimeout = setTimeout(() => {
+      if (!ref.current) {
+        return
+      }
+      const jbrowseTheme = createJBrowseTheme(theme)
+      rootRef.current =
+        rootRef.current ??
+        hydrateRoot(
+          ref.current,
+          <ThemeProvider theme={jbrowseTheme}>
+            <RenderingComponent {...rest} />
+          </ThemeProvider>,
         )
-      }
-    }
-
-    doHydrate()
-
+    })
     return () => {
-      if (domNode) {
-        unmountComponentAtNode(domNode)
-      }
-    }
-  }, [html, jbrowseTheme, rest, RenderingComponent])
+      clearTimeout(renderTimeout)
+      const root = rootRef.current
+      rootRef.current = undefined
 
-  return <div ref={ref} />
+      setTimeout(() => {
+        root?.unmount()
+      })
+    }
+  }, [html, theme, rest, RenderingComponent])
+
+  // eslint-disable-next-line react/no-danger
+  return <div ref={ref} dangerouslySetInnerHTML={{ __html: html }} />
 }

@@ -1,14 +1,14 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { getSession, getEnv } from '@jbrowse/core/util'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
 
 // locals
 import ConfigureConnection from './ConfigureConnection'
 import ConnectionTypeSelect from './ConnectionTypeSelect'
+import { isSessionWithConnections } from '@jbrowse/product-core'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -34,24 +34,30 @@ export default observer(function AddConnectionWidget({
   model: unknown
 }) {
   const [connectionType, setConnectionType] = useState<ConnectionType>()
-  const [configModel, setConfigModel] = useState<AnyConfigurationModel>()
-  const [activeStep, setActiveStep] = useState(0)
-  const { classes } = useStyles()
+  const [connectionId, setConnectionId] = useState<string>()
+  const [step, setStep] = useState(0)
   const session = getSession(model)
+  const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
+
+  // useMemo is needed for react@18+mobx-react@9, previous code called configScema.create directly in a setConfigModel useState hook setter but this caused infinite loop
+  const configModel = useMemo(
+    () => connectionType?.configSchema.create({ connectionId }, getEnv(model)),
+    [connectionId, connectionType, model],
+  )
 
   return (
     <div className={classes.root}>
       <Stepper
         className={classes.stepper}
-        activeStep={activeStep}
+        activeStep={step}
         orientation="vertical"
       >
         {steps.map(label => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
             <StepContent>
-              {activeStep === 0 ? (
+              {step === 0 ? (
                 <ConnectionTypeSelect
                   connectionTypeChoices={pluginManager.getConnectionElements()}
                   connectionType={connectionType}
@@ -60,10 +66,7 @@ export default observer(function AddConnectionWidget({
                     if (!c) {
                       return
                     }
-                    const connectionId = `${c.name}-${Date.now()}`
-                    setConfigModel(
-                      c.configSchema.create({ connectionId }, getEnv(model)),
-                    )
+                    setConnectionId(`${c.name}-${Date.now()}`)
                   }}
                 />
               ) : connectionType && configModel ? (
@@ -75,8 +78,8 @@ export default observer(function AddConnectionWidget({
               ) : null}
               <div className={classes.actionsContainer}>
                 <Button
-                  disabled={activeStep === 0}
-                  onClick={() => setActiveStep(activeStep - 1)}
+                  disabled={step === 0}
+                  onClick={() => setStep(step - 1)}
                   className={classes.button}
                 >
                   Back
@@ -84,25 +87,31 @@ export default observer(function AddConnectionWidget({
                 <Button
                   disabled={
                     !(
-                      (activeStep === 0 && connectionType) ||
-                      (activeStep === 1 && configModel)
+                      (step === 0 && connectionType) ||
+                      (step === 1 && configModel)
                     )
                   }
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    if (activeStep === steps.length - 1) {
-                      const conf = session.addConnectionConf(configModel)
-                      session.makeConnection?.(conf)
+                    if (step === steps.length - 1) {
+                      if (configModel && isSessionWithConnections(session)) {
+                        session.makeConnection(
+                          session.addConnectionConf(configModel),
+                        )
+                      } else {
+                        session.notify('No config model to add')
+                      }
+
                       session.hideWidget(model)
                     } else {
-                      setActiveStep(activeStep + 1)
+                      setStep(step + 1)
                     }
                   }}
                   className={classes.button}
                   data-testid="addConnectionNext"
                 >
-                  {activeStep === steps.length - 1 ? 'Connect' : 'Next'}
+                  {step === steps.length - 1 ? 'Connect' : 'Next'}
                 </Button>
               </div>
             </StepContent>

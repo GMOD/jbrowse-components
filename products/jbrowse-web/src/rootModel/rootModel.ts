@@ -461,11 +461,12 @@ export default function RootModel({
               label: 'Open connection...',
               icon: Cable,
               onClick: (session: SessionWithWidgets) => {
-                const widget = session.addWidget(
-                  'AddConnectionWidget',
-                  'addConnectionWidget',
+                session.showWidget(
+                  session.addWidget(
+                    'AddConnectionWidget',
+                    'addConnectionWidget',
+                  ),
                 )
-                session.showWidget(widget)
               },
             },
             { type: 'divider' },
@@ -524,11 +525,12 @@ export default function RootModel({
               icon: ExtensionIcon,
               onClick: () => {
                 if (self.session) {
-                  const widget = self.session.addWidget(
-                    'PluginStoreWidget',
-                    'pluginStoreWidget',
+                  self.session.showWidget(
+                    self.session.addWidget(
+                      'PluginStoreWidget',
+                      'pluginStoreWidget',
+                    ),
                   )
-                  self.session.showWidget(widget)
                 }
               },
             },

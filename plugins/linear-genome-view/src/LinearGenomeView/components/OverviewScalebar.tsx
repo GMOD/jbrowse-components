@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Typography, useTheme, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
@@ -312,11 +312,16 @@ export default observer(function OverviewScalebar({
   const { classes } = useStyles()
   const { totalBp, width, cytobandOffset, displayedRegions } = model
 
-  const overview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
-    interRegionPaddingWidth: 0,
-    minimumBlockWidth: model.minimumBlockWidth,
-  })
+  const overview = useMemo(
+    () =>
+      Base1DView.create({
+        displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
+        interRegionPaddingWidth: 0,
+        minimumBlockWidth: model.minimumBlockWidth,
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(displayedRegions), model.minimumBlockWidth],
+  )
 
   const modWidth = width - cytobandOffset
   overview.setVolatileWidth(modWidth)

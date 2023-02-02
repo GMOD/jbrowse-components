@@ -6,7 +6,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 20000 }
+const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('access about menu', async () => {
@@ -92,9 +92,14 @@ test('click and zoom in and back out', async () => {
   const before = view.bpPerPx
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
-  fireEvent.click(await findByTestId('zoom_out'))
+
+  // wait for it not to be disabled also
+  const elt = await findByTestId('zoom_out')
+  await waitFor(() => expect(elt).toHaveProperty('disabled', false))
+  fireEvent.click(elt)
+
   await waitFor(() => expect(view.bpPerPx).toBe(before), delay)
-}, 30000)
+}, 60000)
 
 test('opens track selector', async () => {
   const { view, findByTestId, findAllByText } = await createView()

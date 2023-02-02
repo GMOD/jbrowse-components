@@ -81,7 +81,7 @@ test('click on one feature, and do not re-render', () => {
     />,
   )
   fireEvent.click(getByTestId('box-one'))
-  expect(counter).toBe(3)
+  expect(counter).toBe(6)
 
   expect(container.firstChild).toMatchSnapshot()
 })

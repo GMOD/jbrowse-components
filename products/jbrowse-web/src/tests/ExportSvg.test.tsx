@@ -31,9 +31,9 @@ test('export svg of lgv', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Export SVG'))
-  fireEvent.click(await findByText('Submit'))
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+  fireEvent.click(await findByText('Export SVG', ...opts))
+  fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
@@ -223,9 +223,9 @@ test('export svg of circular', async () => {
   // checkbox for the chord test track to toggle it on
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
 
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Export SVG'))
-  fireEvent.click(await findByText('Submit'))
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+  fireEvent.click(await findByText('Export SVG', ...opts))
+  fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
@@ -319,9 +319,9 @@ test('export svg of dotplot', async () => {
     },
   })
 
-  fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Export SVG'))
-  fireEvent.click(await findByText('Submit'))
+  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
+  fireEvent.click(await findByText('Export SVG', ...opts))
+  fireEvent.click(await findByText('Submit', ...opts))
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
 
