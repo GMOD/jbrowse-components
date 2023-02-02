@@ -8,6 +8,7 @@ import {
   IAnyType,
   SnapshotOut,
 } from 'mobx-state-tree'
+import { getContainingTrack, getSession } from '../util'
 
 import { ElementId } from '../util/types/mst'
 
@@ -264,13 +265,57 @@ export function ConfigurationSchema<
     schemaDefinition,
     options,
   ) as AnyConfigurationSchemaType
-  // saving a couple of jbrowse-specific things in the type object. hope nobody gets mad.
+
+  // saving a couple of jbrowse-specific things in the type object. hope nobody
+  // gets mad.
   schemaType.isJBrowseConfigurationSchema = true
   schemaType.jbrowseSchemaDefinition = schemaDefinition
   schemaType.jbrowseSchemaOptions = options
   return schemaType
 }
 
+export function TrackConfigurationReference(schemaType: IAnyType) {
+  const trackRef = types.reference(schemaType, {
+    get(identifier, parent) {
+      const ret = getSession(parent).tracks.find(u => u.trackId === identifier)
+      console.log('r2', { ret })
+      if (!ret) {
+        throw new Error(`${identifier} not found`)
+      }
+      return schemaType.create(ret)
+    },
+    set(value) {
+      console.log('k2', { value })
+      return value.trackId
+    },
+  })
+  return types.union(trackRef, schemaType)
+}
+
+export function DisplayConfigurationReference(schemaType: IAnyType) {
+  const displayRef = types.reference(schemaType, {
+    get(identifier, parent) {
+      const track = getContainingTrack(parent)
+      const ret = track.configuration.displays.find(
+        (u: { displayId: string }) => u.displayId === identifier,
+      )
+      if (!ret) {
+        throw new Error(`${identifier} not found`)
+      }
+      return ret
+    },
+    set(value) {
+      return value.displayId
+    },
+  })
+  return types.union(displayRef, schemaType)
+}
+
+/**
+ * deprecated due to introduction of types.frozens in config not being able to
+ * resolve the types.reference without a custom resolver
+ * https://mobx-state-tree.js.org/concepts/references#customizable-references
+ */
 export function ConfigurationReference(schemaType: IAnyType) {
   return types.union(types.reference(schemaType), schemaType)
 }

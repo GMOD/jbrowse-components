@@ -1,6 +1,8 @@
 export {
   ConfigurationSchema,
   ConfigurationReference,
+  DisplayConfigurationReference,
+  TrackConfigurationReference,
 } from './configurationSchema'
 
 export type {

@@ -1,4 +1,7 @@
-import { getConf, ConfigurationReference } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  DisplayConfigurationReference,
+} from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
   getContainingTrack,
@@ -32,7 +35,7 @@ export default function stateModelFactory(
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
       }),
     )
 

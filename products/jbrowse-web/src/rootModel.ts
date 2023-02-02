@@ -278,16 +278,16 @@ export default function RootModel(
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
         const oldSession = self.session
         self.session = cast(sessionSnapshot)
-        if (self.session) {
-          // validate all references in the session snapshot
-          try {
-            filterSessionInPlace(self.session, getType(self.session))
-          } catch (error) {
-            // throws error if session filtering failed
-            self.session = oldSession
-            throw error
-          }
-        }
+        // if (self.session) {
+        //   // validate all references in the session snapshot
+        //   try {
+        //     filterSessionInPlace(self.session, getType(self.session))
+        //   } catch (error) {
+        //     // throws error if session filtering failed
+        //     self.session = oldSession
+        //     throw error
+        //   }
+        // }
       },
       initializeInternetAccount(
         internetAccountConfig: AnyConfigurationModel,

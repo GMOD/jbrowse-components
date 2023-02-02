@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 import {
   getConf,
-  ConfigurationReference,
+  DisplayConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
@@ -50,7 +50,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
       }),
     )
     .views(self => ({
