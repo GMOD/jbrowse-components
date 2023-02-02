@@ -34,11 +34,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 
 // locals
 import LinearPileupDisplayBlurb from './components/LinearPileupDisplayBlurb'
-import {
-  getUniqueTagValues,
-  getUniqueModificationValues,
-  FilterModel,
-} from '../shared'
+import { FilterModel } from '../shared'
 import { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import prepareTrack from './prepareTrack'
 
@@ -237,7 +233,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(self, autorun(prepareTrack, { delay: 1000 }))
+        addDisposer(
+          self,
+          autorun(() => prepareTrack(self), { delay: 1000 }),
+        )
 
         // autorun synchronizes featureUnderMouse with featureIdUnderMouse
         // asynchronously. this is needed due to how we do not serialize all

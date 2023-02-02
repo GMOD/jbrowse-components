@@ -729,7 +729,7 @@ export default function sessionModelFactory(
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
-        const track = self.sessionTracks.find((t: any) => t.trackId === trackId)
+        const track = self.sessionTracks.find(t => t.trackId === trackId)
         if (track) {
           return track
         }
