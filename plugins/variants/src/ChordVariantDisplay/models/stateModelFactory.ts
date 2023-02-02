@@ -1,7 +1,7 @@
 import { BaseChordDisplayModel } from '@jbrowse/plugin-circular-view'
 import {
   AnyConfigurationSchemaType,
-  ConfigurationReference,
+  DisplayConfigurationReference,
 } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
 import { Feature, getContainingView } from '@jbrowse/core/util'
@@ -24,7 +24,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
       }),
     )
     .views(self => ({

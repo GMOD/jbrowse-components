@@ -4,7 +4,7 @@ import { ThemeOptions } from '@mui/material'
 import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
-  ConfigurationReference,
+  DisplayConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
@@ -37,7 +37,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           /**
            * #property
            */
-          configuration: ConfigurationReference(configSchema),
+          configuration: DisplayConfigurationReference(configSchema),
         })
         .volatile(() => ({
           warnings: [] as { message: string; effect: string }[],

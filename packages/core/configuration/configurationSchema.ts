@@ -278,14 +278,12 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(identifier, parent) {
       const ret = getSession(parent).tracks.find(u => u.trackId === identifier)
-      console.log('r2', { ret })
       if (!ret) {
         throw new Error(`${identifier} not found`)
       }
       return schemaType.create(ret)
     },
     set(value) {
-      console.log('k2', { value })
       return value.trackId
     },
   })

@@ -1,6 +1,6 @@
 import {
   readConfObject,
-  ConfigurationReference,
+  DisplayConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { types, getSnapshot, Instance } from 'mobx-state-tree'
@@ -13,6 +13,8 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+
+// locals
 import { LinearComparativeViewModel } from '../LinearComparativeView/model'
 
 /**
@@ -31,7 +33,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
         /**
          * #property
          */

@@ -3,7 +3,7 @@ import { autorun } from 'mobx'
 import { addDisposer, cast, types, Instance } from 'mobx-state-tree'
 import {
   AnyConfigurationSchemaType,
-  ConfigurationReference,
+  DisplayConfigurationReference,
   ConfigurationSchema,
 } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
@@ -52,7 +52,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
 
         /**
          * #property

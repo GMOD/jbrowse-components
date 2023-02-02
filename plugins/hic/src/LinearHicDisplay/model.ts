@@ -1,7 +1,10 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  DisplayConfigurationReference,
+  AnyConfigurationSchemaType,
+  getConf,
+} from '@jbrowse/core/configuration'
 import { BaseLinearDisplay } from '@jbrowse/plugin-linear-genome-view'
 import { types, getEnv } from 'mobx-state-tree'
-import { AnyConfigurationSchemaType } from '@jbrowse/core/configuration/configurationSchema'
 
 export default (configSchema: AnyConfigurationSchemaType) =>
   types
@@ -10,7 +13,7 @@ export default (configSchema: AnyConfigurationSchemaType) =>
       BaseLinearDisplay,
       types.model({
         type: types.literal('LinearHicDisplay'),
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
         resolution: types.optional(types.number, 1),
       }),
     )

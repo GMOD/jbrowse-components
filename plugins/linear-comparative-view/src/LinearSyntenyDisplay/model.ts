@@ -1,7 +1,7 @@
 import { types, addDisposer, getSnapshot, Instance } from 'mobx-state-tree'
 import {
   getConf,
-  ConfigurationReference,
+  DisplayConfigurationReference,
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { Feature, getContainingView, getSession } from '@jbrowse/core/util'
@@ -45,7 +45,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #property
          */
-        configuration: ConfigurationReference(configSchema),
+        configuration: DisplayConfigurationReference(configSchema),
       }),
     )
     .volatile(() => ({
