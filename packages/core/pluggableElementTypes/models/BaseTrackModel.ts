@@ -53,6 +53,7 @@ export function createBaseTrackModel(
       /**
        * #property
        */
+      // @ts-ignore
       configuration: TrackConfigurationReference(baseTrackConfig),
       /**
        * #property

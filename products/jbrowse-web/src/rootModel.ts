@@ -3,7 +3,6 @@ import {
   addDisposer,
   cast,
   getSnapshot,
-  getType,
   types,
   IAnyStateTreeNode,
   SnapshotIn,
@@ -41,7 +40,6 @@ import makeWorkerInstance from './makeWorkerInstance'
 import corePlugins from './corePlugins'
 import jbrowseWebFactory from './jbrowseModel'
 import sessionModelFactory from './sessionModelFactory'
-import { filterSessionInPlace } from './util'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const PreferencesDialog = lazy(() => import('./PreferencesDialog'))
@@ -276,18 +274,7 @@ export default function RootModel(
        * #action
        */
       setSession(sessionSnapshot?: SnapshotIn<typeof Session>) {
-        const oldSession = self.session
         self.session = cast(sessionSnapshot)
-        // if (self.session) {
-        //   // validate all references in the session snapshot
-        //   try {
-        //     filterSessionInPlace(self.session, getType(self.session))
-        //   } catch (error) {
-        //     // throws error if session filtering failed
-        //     self.session = oldSession
-        //     throw error
-        //   }
-        // }
       },
       initializeInternetAccount(
         internetAccountConfig: AnyConfigurationModel,

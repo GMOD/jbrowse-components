@@ -313,14 +313,11 @@ const SessionLoader = types
     },
 
     async fetchSharedSession() {
+      const { sessionQuery = '', password = '', configSnapshot } = self
       const defaultURL = 'https://share.jbrowse.org/api/v1/'
-      const decryptedSession = await readSessionFromDynamo(
-        `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
-        self.sessionQuery || '',
-        self.password || '',
-      )
-
-      const session = JSON.parse(await fromUrlSafeB64(decryptedSession))
+      const dynamo = `${readConf(configSnapshot, 'shareURL', defaultURL)}load`
+      const d = await readSessionFromDynamo(dynamo, sessionQuery, password)
+      const session = JSON.parse(await fromUrlSafeB64(d))
       await this.setSessionSnapshot({ ...session, id: shortid() })
     },
 
