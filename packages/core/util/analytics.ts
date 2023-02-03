@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { readConfObject } from '../configuration'
+import { readConfObject, getConf } from '../configuration'
 import { isElectron } from '../util'
 
 interface AnalyticsObj {
@@ -127,12 +127,9 @@ export async function writeGAAnalytics(
 export function doAnalytics(
   rootModel: any,
   initialTimestamp: number,
-  initialSessionQuery: string | null | undefined,
+  initialSessionQuery?: string | null,
 ) {
-  if (
-    rootModel &&
-    !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
-  ) {
+  if (rootModel && !getConf(rootModel.jbrowse, 'disableAnalytics')) {
     // ok if these are unhandled
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)

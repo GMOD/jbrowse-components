@@ -1,78 +1,22 @@
-import { types, addDisposer, Instance, SnapshotOut } from 'mobx-state-tree'
+import { types, addDisposer, Instance } from 'mobx-state-tree'
 import { autorun } from 'mobx'
-import PluginManager from '@jbrowse/core/PluginManager'
+
 import PluginLoader, {
   PluginDefinition,
   PluginRecord,
-  isUMDPluginDefinition,
-  isCJSPluginDefinition,
-  isESMPluginDefinition,
 } from '@jbrowse/core/PluginLoader'
-import { fromUrlSafeB64 } from './util'
+import { addRelativeUris, checkPlugins, fromUrlSafeB64, readConf } from './util'
 import { readSessionFromDynamo } from './sessionSharing'
 import { openLocation } from '@jbrowse/core/util/io'
-import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
 import shortid from 'shortid'
+import PluginManager from '@jbrowse/core/PluginManager'
+import { doAnalytics } from '@jbrowse/core/util/analytics'
 
-type Config = SnapshotOut<AnyConfigurationModel>
-
-function addRelativeUris(config: Config, base: URL) {
-  if (typeof config === 'object') {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object') {
-        addRelativeUris(config[key], base)
-      } else if (key === 'uri') {
-        config.baseUri = base.href
-      }
-    }
-  }
-}
-
-type Root = { configuration?: Config }
-
-// raw readConf alternative for before conf is initialized
-function readConf({ configuration }: Root, attr: string, def: string) {
-  return configuration?.[attr] || def
-}
-
-async function fetchPlugins() {
-  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} ${response.statusText} fetching plugins`,
-    )
-  }
-  return response.json() as Promise<{ plugins: PluginDefinition[] }>
-}
-
-async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
-  if (pluginsToCheck.length === 0) {
-    return true
-  }
-  const storePlugins = await fetchPlugins()
-  return pluginsToCheck.every(p => {
-    if (isUMDPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp =>
-          isUMDPluginDefinition(p) &&
-          (('url' in pp && 'url' in p && p.url === pp.url) ||
-            ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
-      )
-    }
-    if (isESMPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp =>
-          isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
-      )
-    }
-    if (isCJSPluginDefinition(p)) {
-      return storePlugins.plugins.some(
-        pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
-      )
-    }
-    return false
-  })
-}
+// locals
+import JBrowseRootModelFactory from './rootModel'
+import packageJSON from '../package.json'
+import { loadSessionSpec } from './util'
+import corePlugins from './corePlugins'
 
 const SessionLoader = types
   .model({
@@ -158,6 +102,98 @@ const SessionLoader = types
       return self.sessionTracks ? JSON.parse(self.sessionTracks) : []
     },
   }))
+  .views(self => ({
+    get pluginManager() {
+      if (!self.ready) {
+        return undefined
+      }
+
+      // it is ready when a session has loaded and when there is no config
+      // error Assuming that the query changes self.sessionError or
+      // self.sessionSnapshot or self.blankSession
+      const pluginManager = new PluginManager([
+        ...corePlugins.map(P => ({
+          plugin: new P(),
+          metadata: { isCore: true },
+        })),
+        ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
+          plugin: new P(),
+          definition,
+          metadata: { url: definition.url },
+        })),
+        ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
+          plugin: new P(),
+          definition,
+          metadata: { url: definition.url },
+        })),
+      ])
+      pluginManager.createPluggableElements()
+      const RootModel = JBrowseRootModelFactory(pluginManager, !!self.adminKey)
+
+      if (!self.configSnapshot) {
+        return undefined
+      }
+      const rootModel = RootModel.create(
+        {
+          jbrowse: self.configSnapshot,
+          version: packageJSON.version,
+          configPath: self.configPath,
+        },
+        { pluginManager },
+      )
+
+      if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
+        const { rpc } = rootModel.jbrowse.configuration
+        rpc.defaultDriver.set('WebWorkerRpcDriver')
+      }
+
+      let afterInitializedCb = () => {}
+
+      // in order: saves the previous autosave for recovery, tries to
+      // load the local session if session in query, or loads the default
+      // session
+      try {
+        if (self.sessionError) {
+          rootModel.setDefaultSession()
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          rootModel.session!.notify(
+            `Error loading session: ${self.sessionError}. If you
+                received this URL from another user, request that they send you
+                a session generated with the "Share" button instead of copying
+                and pasting their URL`,
+          )
+        } else if (self.sessionSnapshot && !self.shareWarningOpen) {
+          rootModel.setSession(self.sessionSnapshot)
+        } else if (self.sessionSpec) {
+          afterInitializedCb = loadSessionSpec(self.sessionSpec, pluginManager)
+        } else if (rootModel.jbrowse.defaultSession?.views?.length) {
+          rootModel.setDefaultSession()
+        }
+      } catch (e) {
+        rootModel.setDefaultSession()
+        const str = `${e}`
+        const errorMessage = str
+          .replace('[mobx-state-tree] ', '')
+          .replace(/\(.+/, '')
+        rootModel.session?.notify(
+          `Session could not be loaded. ${
+            errorMessage.length > 1000
+              ? `${errorMessage.slice(0, 1000)}...see more in console`
+              : errorMessage
+          }`,
+        )
+        console.error(e)
+      }
+
+      // send analytics
+      doAnalytics(rootModel, +Date.now())
+
+      pluginManager.setRootModel(rootModel)
+      pluginManager.configure()
+      afterInitializedCb()
+      return pluginManager
+    },
+  }))
   .actions(self => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,
     setSessionQuery(session?: any) {
@@ -202,6 +238,7 @@ const SessionLoader = types
         pluginLoader.installGlobalReExports(window)
         const runtimePlugins = await pluginLoader.load(window.location.href)
         self.setRuntimePlugins([...runtimePlugins])
+        self.setConfigSnapshot(config)
       } catch (e) {
         console.error(e)
         self.setConfigError(e)
@@ -275,7 +312,6 @@ const SessionLoader = types
         }
       }
       await this.fetchPlugins(config)
-      self.setConfigSnapshot(config)
     },
 
     async fetchSessionStorageSession() {
@@ -440,53 +476,4 @@ const SessionLoader = types
   }))
 
 export type SessionLoaderModel = Instance<typeof SessionLoader>
-
 export default SessionLoader
-
-interface ViewSpec {
-  type: string
-  tracks?: string[]
-  assembly: string
-  loc: string
-}
-
-// use extension point named e.g. LaunchView-LinearGenomeView to initialize an
-// LGV session
-export function loadSessionSpec(
-  {
-    views,
-    sessionTracks = [],
-  }: {
-    views: ViewSpec[]
-    sessionTracks: unknown[]
-  },
-  pluginManager: PluginManager,
-) {
-  return async () => {
-    const { rootModel } = pluginManager
-    if (!rootModel) {
-      throw new Error('rootModel not initialized')
-    }
-    try {
-      // @ts-expect-error
-      rootModel.setSession({
-        name: `New session ${new Date().toLocaleString()}`,
-      })
-
-      // @ts-expect-error
-      sessionTracks.forEach(track => rootModel.session.addTrackConf(track))
-
-      await Promise.all(
-        views.map(view =>
-          pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + view.type, {
-            ...view,
-            session: rootModel.session,
-          }),
-        ),
-      )
-    } catch (e) {
-      console.error(e)
-      rootModel.session?.notify(`${e}`)
-    }
-  }
-}

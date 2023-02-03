@@ -10,7 +10,26 @@ import {
   IAnyType,
   IAnyStateTreeNode,
   Instance,
+  SnapshotOut,
 } from 'mobx-state-tree'
+
+import {
+  PluginDefinition,
+  isUMDPluginDefinition,
+  isCJSPluginDefinition,
+  isESMPluginDefinition,
+} from '@jbrowse/core/PluginLoader'
+import { AnyConfigurationModel } from '@jbrowse/core/configuration/configurationSchema'
+import PluginManager from '@jbrowse/core/PluginManager'
+
+type Config = SnapshotOut<AnyConfigurationModel>
+
+interface ViewSpec {
+  type: string
+  tracks?: string[]
+  assembly: string
+  loc: string
+}
 
 /**
  * Pad the end of a base64 string with "=" to make it valid
@@ -115,5 +134,112 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
       // @ts-ignore
       filterSessionInPlace(node[pname], ptype)
     })
+  }
+}
+
+export function addRelativeUris(config: Config, base: URL) {
+  if (typeof config === 'object') {
+    for (const key of Object.keys(config)) {
+      if (typeof config[key] === 'object') {
+        addRelativeUris(config[key], base)
+      } else if (key === 'uri') {
+        config.baseUri = base.href
+      }
+    }
+  }
+}
+
+// raw readConf alternative for before conf is initialized
+export function readConf(
+  { configuration = {} }: { configuration?: Config },
+  attr: string,
+  def: string,
+) {
+  return configuration[attr] || def
+}
+
+export async function fetchPlugins() {
+  const response = await fetch('https://jbrowse.org/plugin-store/plugins.json')
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status} ${response.statusText} fetching plugins`,
+    )
+  }
+  return response.json() as Promise<{ plugins: PluginDefinition[] }>
+}
+
+export async function checkPlugins(pluginsToCheck: PluginDefinition[]) {
+  if (pluginsToCheck.length === 0) {
+    return true
+  }
+  const storePlugins = await fetchPlugins()
+  return pluginsToCheck.every(p => {
+    if (isUMDPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          pp =>
+            isUMDPluginDefinition(p) &&
+            (('url' in pp && 'url' in p && p.url === pp.url) ||
+              ('umdUrl' in pp && 'umdUrl' in p && p.umdUrl === pp.umdUrl)),
+        ),
+      )
+    }
+    if (isESMPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          pp =>
+            isESMPluginDefinition(p) && 'esmUrl' in p && p.esmUrl === pp.esmUrl,
+        ),
+      )
+    }
+    if (isCJSPluginDefinition(p)) {
+      return Boolean(
+        storePlugins.plugins.find(
+          pp => isCJSPluginDefinition(p) && p.cjsUrl === pp.cjsUrl,
+        ),
+      )
+    }
+    return false
+  })
+}
+
+// use extension point named e.g. LaunchView-LinearGenomeView to initialize an
+// LGV session
+export function loadSessionSpec(
+  {
+    views,
+    sessionTracks = [],
+  }: {
+    views: ViewSpec[]
+    sessionTracks: unknown[]
+  },
+  pluginManager: PluginManager,
+) {
+  return async () => {
+    const { rootModel } = pluginManager
+    if (!rootModel) {
+      throw new Error('rootModel not initialized')
+    }
+    try {
+      // @ts-ignore
+      rootModel.setSession({
+        name: `New session ${new Date().toLocaleString()}`,
+      })
+
+      // @ts-ignore
+      sessionTracks.forEach(track => rootModel.session.addTrackConf(track))
+
+      await Promise.all(
+        views.map(view =>
+          pluginManager.evaluateAsyncExtensionPoint('LaunchView-' + view.type, {
+            ...view,
+            session: rootModel.session,
+          }),
+        ),
+      )
+    } catch (e) {
+      console.error(e)
+      rootModel.session?.notify(`${e}`)
+    }
   }
 }
