@@ -104,55 +104,59 @@ const SessionLoader = types
   }))
   .views(self => ({
     get pluginManager() {
-      if (!self.ready) {
-        return undefined
-      }
-
-      // it is ready when a session has loaded and when there is no config
-      // error Assuming that the query changes self.sessionError or
-      // self.sessionSnapshot or self.blankSession
-      const pluginManager = new PluginManager([
-        ...corePlugins.map(P => ({
-          plugin: new P(),
-          metadata: { isCore: true },
-        })),
-        ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
-          plugin: new P(),
-          definition,
-          metadata: { url: definition.url },
-        })),
-        ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
-          plugin: new P(),
-          definition,
-          metadata: { url: definition.url },
-        })),
-      ])
-      pluginManager.createPluggableElements()
-      const RootModel = JBrowseRootModelFactory(pluginManager, !!self.adminKey)
-
-      if (!self.configSnapshot) {
-        return undefined
-      }
-      const rootModel = RootModel.create(
-        {
-          jbrowse: self.configSnapshot,
-          version: packageJSON.version,
-          configPath: self.configPath,
-        },
-        { pluginManager },
-      )
-
-      if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
-        const { rpc } = rootModel.jbrowse.configuration
-        rpc.defaultDriver.set('WebWorkerRpcDriver')
-      }
-
-      let afterInitializedCb = () => {}
-
-      // in order: saves the previous autosave for recovery, tries to
-      // load the local session if session in query, or loads the default
-      // session
+      let pluginManager: PluginManager | undefined
       try {
+        if (!self.ready) {
+          return undefined
+        }
+
+        // it is ready when a session has loaded and when there is no config
+        // error Assuming that the query changes self.sessionError or
+        // self.sessionSnapshot or self.blankSession
+        const pluginManager = new PluginManager([
+          ...corePlugins.map(P => ({
+            plugin: new P(),
+            metadata: { isCore: true },
+          })),
+          ...self.runtimePlugins.map(({ plugin: P, definition }) => ({
+            plugin: new P(),
+            definition,
+            metadata: { url: definition.url },
+          })),
+          ...self.sessionPlugins.map(({ plugin: P, definition }) => ({
+            plugin: new P(),
+            definition,
+            metadata: { url: definition.url },
+          })),
+        ])
+        pluginManager.createPluggableElements()
+        const RootModel = JBrowseRootModelFactory(
+          pluginManager,
+          !!self.adminKey,
+        )
+
+        if (!self.configSnapshot) {
+          return undefined
+        }
+        const rootModel = RootModel.create(
+          {
+            jbrowse: self.configSnapshot,
+            version: packageJSON.version,
+            configPath: self.configPath,
+          },
+          { pluginManager },
+        )
+
+        if (!self.configSnapshot?.configuration?.rpc?.defaultDriver) {
+          const { rpc } = rootModel.jbrowse.configuration
+          rpc.defaultDriver.set('WebWorkerRpcDriver')
+        }
+
+        let afterInitializedCb = () => {}
+
+        // in order: saves the previous autosave for recovery, tries to
+        // load the local session if session in query, or loads the default
+        // session
         if (self.sessionError) {
           rootModel.setDefaultSession()
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -169,28 +173,38 @@ const SessionLoader = types
         } else if (rootModel.jbrowse.defaultSession?.views?.length) {
           rootModel.setDefaultSession()
         }
+
+        // send analytics
+        doAnalytics(rootModel, +Date.now())
+
+        pluginManager.setRootModel(rootModel)
+        pluginManager.configure()
+        afterInitializedCb()
       } catch (e) {
-        rootModel.setDefaultSession()
+        console.error(e)
+        let extra = ''
+        if (!pluginManager) {
+          extra = 'Fatal error creating PluginManager: '
+          pluginManager = new PluginManager({
+            ...corePlugins.map(P => ({
+              plugin: new P(),
+              metadata: { isCore: true },
+            })),
+          })
+        }
+        pluginManager?.rootModel.setDefaultSession()
         const str = `${e}`
         const errorMessage = str
           .replace('[mobx-state-tree] ', '')
           .replace(/\(.+/, '')
-        rootModel.session?.notify(
-          `Session could not be loaded. ${
+        pluginManager?.rootModel?.session?.notify(
+          `${extra}Session could not be loaded. ${
             errorMessage.length > 1000
               ? `${errorMessage.slice(0, 1000)}...see more in console`
               : errorMessage
           }`,
         )
-        console.error(e)
       }
-
-      // send analytics
-      doAnalytics(rootModel, +Date.now())
-
-      pluginManager.setRootModel(rootModel)
-      pluginManager.configure()
-      afterInitializedCb()
       return pluginManager
     },
   }))
@@ -244,6 +258,7 @@ const SessionLoader = types
         self.setConfigError(e)
       }
     },
+
     async fetchSessionPlugins(snap: { sessionPlugins?: PluginDefinition[] }) {
       try {
         const pluginLoader = new PluginLoader(snap.sessionPlugins || [], {
