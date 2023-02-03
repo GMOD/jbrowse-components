@@ -16,9 +16,12 @@ import {
   TrackViewModel,
   JBrowsePlugin,
   DialogComponentType,
+  AssemblyManager,
 } from '@jbrowse/core/util/types'
-import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ThemeOptions } from '@mui/material'
+import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
+import { getContainingView } from '@jbrowse/core/util'
+import { observable } from 'mobx'
 import {
   getContainingView,
   localStorageGetItem,
@@ -254,8 +257,8 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get rpcManager() {
-        return self.jbrowse.rpcManager as RpcManager
+      get rpcManager(): RpcManager {
+        return self.jbrowse.rpcManager
       },
 
       /**
@@ -287,7 +290,7 @@ export default function sessionModelFactory(
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
 
-      get tracksById() {
+      get tracksById(): Record<string, AnyConfigurationModel> {
         return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
       },
       /**
@@ -341,7 +344,7 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get assemblyManager() {
+      get assemblyManager(): AssemblyManager {
         return getParent<any>(self).assemblyManager
       },
       /**

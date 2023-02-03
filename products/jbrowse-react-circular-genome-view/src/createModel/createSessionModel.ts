@@ -3,6 +3,7 @@ import {
   AbstractSessionModel,
   TrackViewModel,
   DialogComponentType,
+  AssemblyManager,
 } from '@jbrowse/core/util/types'
 import { getContainingView } from '@jbrowse/core/util'
 import AboutDialog from '@jbrowse/core/ui/AboutDialog'
@@ -28,6 +29,7 @@ import InfoIcon from '@mui/icons-material/Info'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
 import { ReferringNode } from '../types'
 import { version } from '../version'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 /**
  * #stateModel JBrowseReactCGVSessionModel
@@ -104,32 +106,38 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get rpcManager() {
+      get rpcManager(): RpcManager {
         return getParent<any>(self).rpcManager
       },
       /**
        * #getter
        */
-      get configuration() {
+      get configuration(): AnyConfigurationModel {
         return getParent<any>(self).config.configuration
       },
       /**
        * #getter
        */
-      get assemblies() {
+      get assemblies(): AnyConfigurationModel[] {
         return [getParent<any>(self).config.assembly]
       },
       /**
        * #getter
        */
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         return [getParent<any>(self).config.assemblyName]
       },
       /**
        * #getter
        */
-      get tracks() {
+      get tracks(): AnyConfigurationModel[] {
         return getParent<any>(self).config.tracks
+      },
+      /**
+       * #getter
+       */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
       },
       /**
        * #getter
@@ -140,7 +148,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get connections() {
+      get connections(): AnyConfigurationModel[] {
         return getParent<any>(self).config.connections
       },
       /**
@@ -152,7 +160,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get assemblyManager() {
+      get assemblyManager(): AssemblyManager {
         return getParent<any>(self).assemblyManager
       },
       /**

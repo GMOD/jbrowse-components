@@ -36,6 +36,8 @@ import {
 } from 'mobx-state-tree'
 import PluginManager from '@jbrowse/core/PluginManager'
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
+import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { ThemeOptions } from '@mui/material'
 
 // icons
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -43,7 +45,6 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
-import { ThemeOptions } from '@mui/material'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -202,7 +203,7 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
-      get rpcManager() {
+      get rpcManager(): RpcManager {
         return getParent<any>(self).jbrowse.rpcManager
       },
       /**
@@ -232,13 +233,19 @@ export default function sessionModelFactory(
       /**
        * #getter
        */
+      get tracksById(): Record<string, AnyConfigurationModel> {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
+      /**
+       * #getter
+       */
       get textSearchManager(): TextSearchManager {
         return getParent<any>(self).textSearchManager
       },
       /**
        * #getter
        */
-      get connections() {
+      get connections(): AnyConfigurationModel[] {
         return getParent<any>(self).jbrowse.connections
       },
       /**
