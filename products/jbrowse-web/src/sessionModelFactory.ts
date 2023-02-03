@@ -286,6 +286,10 @@ export default function sessionModelFactory(
       get tracks(): AnyConfigurationModel[] {
         return [...self.sessionTracks, ...getParent<any>(self).jbrowse.tracks]
       },
+
+      get tracksById() {
+        return Object.fromEntries(this.tracks.map(t => [t.trackId, t]))
+      },
       /**
        * #getter
        */

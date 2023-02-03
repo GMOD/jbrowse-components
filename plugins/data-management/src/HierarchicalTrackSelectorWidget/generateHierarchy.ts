@@ -4,6 +4,8 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+
+// locals
 import { matches } from './util'
 
 export type TreeNode = {
@@ -27,6 +29,9 @@ export function generateHierarchy(
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
   const session = getSession(model)
+  const viewTrackMap = Object.entries(
+    view.tracks.map(t => [t.configuration.trackId, t]),
+  )
 
   trackConfigurations
     .filter(conf => matches(filterText, conf, session))
@@ -61,7 +66,6 @@ export function generateHierarchy(
           currLevel = ret
         }
       }
-      const tracks = view.tracks
 
       // using splice here tries to group leaf nodes above hierarchical nodes
       currLevel.children.splice(
@@ -71,7 +75,7 @@ export function generateHierarchy(
           id: conf.trackId,
           name: getTrackName(conf, session),
           conf,
-          checked: !!tracks.find(f => f.configuration.trackId === conf.trackId),
+          checked: !!viewTrackMap[conf.trackId],
           children: [],
         },
       )

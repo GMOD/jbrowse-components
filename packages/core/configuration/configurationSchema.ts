@@ -1,15 +1,16 @@
 import {
-  types,
+  getSnapshot,
+  getRoot,
+  getEnv,
   isStateTreeNode,
   isType,
   isLateType,
-  getSnapshot,
+  resolveIdentifier,
+  types,
+  IAnyModelType,
   Instance,
   IAnyType,
   SnapshotOut,
-  resolveIdentifier,
-  getRoot,
-  IAnyModelType,
 } from 'mobx-state-tree'
 import { getContainingTrack, getSession } from '../util'
 
@@ -277,17 +278,18 @@ export function ConfigurationSchema<
   return schemaType
 }
 
+
 export function TrackConfigurationReference(schemaType: IAnyModelType) {
   const trackRef = types.reference(schemaType, {
     get(identifier, parent) {
-      let ret = getSession(parent).tracks.find(u => u.trackId === identifier)
+      let ret = getSession(parent).tracksById[identifier]
       if (!ret) {
         ret = resolveIdentifier(schemaType, getRoot(parent), identifier)
       }
       if (!ret) {
         throw new Error(`${identifier} not found`)
       }
-      return isStateTreeNode(ret) ? ret : schemaType.create(ret)
+      return isStateTreeNode(ret) ? ret : schemaType.create(ret, getEnv(parent))
     },
     set(value) {
       return value.trackId
