@@ -159,7 +159,7 @@ export async function scoresToStats(
     : blankStats()
 }
 
-export function blankStats() {
+export function blankStats(): FeatureStats {
   return {
     scoreMin: 0,
     scoreMax: 0,
@@ -170,5 +170,5 @@ export function blankStats() {
     featureCount: 0,
     featureDensity: 0,
     basesCovered: 0,
-  } as FeatureStats
+  }
 }
