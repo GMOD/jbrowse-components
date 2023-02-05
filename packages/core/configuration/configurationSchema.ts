@@ -316,11 +316,7 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   return types.union(displayRef, schemaType)
 }
 
-/**
- * deprecated due to introduction of types.frozens in config not being able to
- * resolve the types.reference without a custom resolver
- * https://mobx-state-tree.js.org/concepts/references#customizable-references
- */
+// prefer track/display configuration reference if known
 export function ConfigurationReference(schemaType: IAnyType) {
   return types.union(types.reference(schemaType), schemaType)
 }

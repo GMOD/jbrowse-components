@@ -29,7 +29,7 @@ export function generateHierarchy(
   const hierarchy = { children: [] as TreeNode[] } as TreeNode
   const { filterText, view } = model
   const session = getSession(model)
-  const viewTrackMap = Object.entries(
+  const viewTrackMap = Object.fromEntries(
     view.tracks.map(t => [t.configuration.trackId, t]),
   )
 
