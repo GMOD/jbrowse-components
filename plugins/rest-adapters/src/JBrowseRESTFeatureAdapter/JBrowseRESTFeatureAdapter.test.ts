@@ -38,15 +38,7 @@ function createTestAdapter(
   )
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const fetchMock: any = mockFetchResponses(adapter, {
-    'https://mock.url/mock/url/features/volvox/21?start=34960388&end=35960388&extra_query=42':
-      {
-        features: testFeatures1,
-      },
-    'https://mock.url/mock/url/volvox/reference_sequences?extra_query=42': [
-      '21',
-    ],
-  })
+  const fetchMock: any = mockFetchResponses(adapter, mockResponses)
 
   return { adapter, fetchMock }
 }
@@ -68,6 +60,10 @@ test('adapter can fetch features and stats from mocked API with no region stats'
       'https://mock.url/mock/url/volvox/reference_sequences?extra_query=42': [
         '21',
       ],
+      'https://mock.url/mock/url/has_data_for_ref/volvox/ctgA?extra_query=42':
+        false,
+      'https://mock.url/mock/url/has_data_for_ref/volvox/21?extra_query=42':
+        true,
     },
   )
 

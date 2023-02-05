@@ -5,7 +5,7 @@ import { RenderArgs } from '@jbrowse/core/rpc/coreRpcMethods'
 import { renameRegionsIfNeeded, Region } from '@jbrowse/core/util'
 import { RemoteAbortSignal } from '@jbrowse/core/rpc/remoteAbortSignals'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { FeatureStats } from '@jbrowse/core/util/stats'
+import { FeatureScoreStats } from '@jbrowse/core/util/stats'
 
 export class WiggleGetGlobalStats extends RpcMethodType {
   name = 'WiggleGetGlobalStats'
@@ -31,7 +31,7 @@ export class WiggleGetGlobalStats extends RpcMethodType {
       sessionId: string
     },
     rpcDriverClassName: string,
-  ): Promise<FeatureStats> {
+  ): Promise<FeatureScoreStats> {
     const pm = this.pluginManager
     const deserializedArgs = await this.deserializeArguments(
       args,

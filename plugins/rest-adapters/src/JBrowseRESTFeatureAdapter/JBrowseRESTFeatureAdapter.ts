@@ -16,7 +16,11 @@ import type { Instance } from 'mobx-state-tree'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type MyConfigSchema from './configSchema'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import { rectifyStats, UnrectifiedFeatureStats } from '@jbrowse/core/util/stats'
+import {
+  isMinimumFeatureCoverageStats,
+  isMinimumFeatureScoreStats,
+  rectifyStats,
+} from '@jbrowse/core/util/stats'
 
 export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   pluginManager: PluginManager
@@ -138,9 +142,9 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
 
       return (await this.fetchJsonFromRestApi(
         'has_data_for_ref/' +
-          encodeURIComponent(refName) +
-          '?assemblies=' +
-          encodeURIComponent(JSON.stringify(assemblyNames)),
+          encodeURIComponent(assemblyNames[0]) +
+          '/' +
+          encodeURIComponent(refName),
         opts?.signal,
       )) as boolean
     }
@@ -164,8 +168,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     const assemblyNames: string[] = await this.getRequestAssemblyNames(opts)
 
     const json = await this.fetchJsonFromRestApi(
-      'reference_sequences?assemblies=' +
-        encodeURIComponent(JSON.stringify(assemblyNames)),
+      'reference_sequences/' + encodeURIComponent(assemblyNames[0]),
       opts?.signal,
     )
     if (!Array.isArray(json)) {
@@ -178,15 +181,15 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
 
   private async getRequestAssemblyNames(opts?: BaseOptions) {
     let assemblyNames: string[]
-    if (opts?.regions) {
+    if (opts?.assemblyName) {
+      assemblyNames = [opts.assemblyName as string]
+    } else if (opts?.regions) {
       const regions = opts.regions as Region[]
       assemblyNames = regions.map(r => r.assemblyName)
-    } else if (opts?.assemblyName) {
-      assemblyNames = [ opts.assemblyName ]
     } else {
       assemblyNames = await this.getAssemblyNames()
     }
-    if (assemblyNames.length === 0) {
+    if (!assemblyNames[0]) {
       throw new Error('could not determine which assemblies to use for request')
     }
     return assemblyNames
@@ -207,10 +210,16 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
       '&end=' +
       region.end
     const stats = await this.fetchJsonFromRestApi(url, opts?.signal)
-    if (Array.isArray(stats)) {
-      throw new TypeError(`invalid REST response for ${url}, not a JSON object`)
+    if (isMinimumFeatureScoreStats(stats)) {
+      return rectifyStats(stats)
+    } else if (isMinimumFeatureCoverageStats(stats)) {
+      return {
+        ...stats,
+        featureDensity: (stats.featureCount || 1) / stats.basesCovered,
+      }
+    } else {
+      throw new TypeError(`region stats returned from ${url} is not valid`)
     }
-    return rectifyStats(stats as UnrectifiedFeatureStats)
   }
 
   /**

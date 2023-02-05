@@ -5,18 +5,66 @@ import { reduce } from 'rxjs/operators'
 import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
-export interface UnrectifiedFeatureStats {
+interface MinimumFeatureCoverageStats {
+  featureCount: number
+  basesCovered: number
+}
+
+export function isMinimumFeatureCoverageStats(
+  thing: unknown,
+): thing is MinimumFeatureCoverageStats {
+  return Boolean(
+    thing &&
+      typeof thing === 'object' &&
+      'featureCount' in thing &&
+      'basesCovered' in thing,
+  )
+}
+
+export interface FeatureCoverageStats extends MinimumFeatureCoverageStats {
+  featureDensity: number
+}
+
+export function isFeatureCoverageStats(
+  thing: unknown,
+): thing is FeatureCoverageStats {
+  return isMinimumFeatureCoverageStats(thing) && 'featureDensity' in thing
+}
+
+export interface MinimumFeatureScoreStats extends MinimumFeatureCoverageStats {
   scoreMin: number
   scoreMax: number
   scoreSum: number
   scoreSumSquares: number
-  featureCount: number
-  basesCovered: number
 }
-export interface FeatureStats extends UnrectifiedFeatureStats {
-  featureDensity: number
+
+export function isMinimumFeatureScoreStats(
+  thing: unknown,
+): thing is MinimumFeatureScoreStats {
+  return Boolean(
+    isMinimumFeatureCoverageStats(thing) &&
+      'scoreMin' in thing &&
+      'scoreMax' in thing &&
+      'scoreSum' in thing &&
+      'scoreSumSquares' in thing,
+  )
+}
+export interface FeatureScoreStats
+  extends MinimumFeatureScoreStats,
+    FeatureCoverageStats {
   scoreMean: number
   scoreStdDev: number
+}
+
+export function isFeatureScoreStats(
+  thing: unknown,
+): thing is FeatureScoreStats {
+  return (
+    isFeatureCoverageStats(thing) &&
+    isMinimumFeatureScoreStats(thing) &&
+    'scoreMean' in thing &&
+    'scoreStdDev' in thing
+  )
 }
 
 /**
@@ -58,7 +106,7 @@ export function calcStdFromSums(
  * @returns - a summary stats object with
  * scoreMean, scoreStdDev, and featureDensity added
  */
-export function rectifyStats(s: UnrectifiedFeatureStats) {
+export function rectifyStats(s: MinimumFeatureScoreStats): FeatureScoreStats {
   return {
     ...s,
     scoreMean: (s.scoreSum || 0) / (s.featureCount || s.basesCovered || 1),
@@ -68,7 +116,7 @@ export function rectifyStats(s: UnrectifiedFeatureStats) {
       s.featureCount || s.basesCovered,
     ),
     featureDensity: (s.featureCount || 1) / s.basesCovered,
-  } as FeatureStats
+  }
 }
 
 /**
@@ -126,40 +174,51 @@ export async function scoresToStats(
     scoreSumSquares: 0,
     featureCount: 0,
   }
-  let found = false
+  let foundFeatures = false
+  let foundScores = false
 
   const { scoreMin, scoreMax, scoreSum, scoreSumSquares, featureCount } =
     await firstValueFrom(
       feats.pipe(
         reduce((acc, f) => {
-          const s = f.get('score')
-          const summary = f.get('summary')
-          const { scoreMax, scoreMin } = acc
-          acc.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
-          acc.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
-          acc.scoreSum += s
-          acc.scoreSumSquares += s * s
           acc.featureCount += 1
-          found = true
-
+          foundFeatures = true
+          const s = f.get('score')
+          if (s !== undefined) {
+            foundScores = true
+            const summary = f.get('summary')
+            const { scoreMax, scoreMin } = acc
+            acc.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
+            acc.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
+            acc.scoreSum += s
+            acc.scoreSumSquares += s * s
+          }
           return acc
         }, seed),
       ),
     )
 
-  return found
+  const basesCovered = end - start + 1
+
+  return foundScores
     ? rectifyStats({
         scoreMax,
         scoreMin,
         scoreSum,
         scoreSumSquares,
         featureCount,
-        basesCovered: end - start + 1,
+        basesCovered,
       })
+    : foundFeatures
+    ? {
+        featureCount,
+        basesCovered,
+        featureDensity: featureCount / basesCovered,
+      }
     : blankStats()
 }
 
-export function blankStats(): FeatureStats {
+export function blankStats(): FeatureScoreStats {
   return {
     scoreMin: 0,
     scoreMax: 0,
