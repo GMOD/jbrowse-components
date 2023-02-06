@@ -98,7 +98,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
       </div>
     </div>
     <button
-      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1lrsh0j-MuiButtonBase-root-MuiButton-root-menuIcon"
+      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
       tabindex="0"
       type="button"
     >
@@ -186,7 +186,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
       </div>
     </div>
     <button
-      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1lrsh0j-MuiButtonBase-root-MuiButton-root-menuIcon"
+      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall MuiButton-root MuiButton-text MuiButton-textPrimary MuiButton-sizeSmall MuiButton-textSizeSmall css-1c8zr45-MuiButtonBase-root-MuiButton-root-menuIcon"
       tabindex="0"
       type="button"
     >

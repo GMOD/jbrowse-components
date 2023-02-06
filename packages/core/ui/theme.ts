@@ -329,6 +329,27 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
           },
         },
       },
+      MuiButton: {
+        styleOverrides: {
+          // the default button, especially when not using variant=contained, uses
+          // theme.palette.primary.main for text which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps text secondary for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.primary,
+                }
+              : undefined
+          },
+        },
+      },
       MuiFormLabel: {
         styleOverrides: {
           // the default checkbox-when-checked color uses
