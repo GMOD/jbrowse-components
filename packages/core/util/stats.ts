@@ -203,7 +203,7 @@ export async function scoresToStats(
       ),
     )
 
-  const basesCovered = end - start + 1
+  const basesCovered = end - start
 
   return foundScores
     ? rectifyStats({
