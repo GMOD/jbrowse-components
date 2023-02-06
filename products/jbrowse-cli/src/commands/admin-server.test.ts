@@ -51,9 +51,9 @@ const testConfigContents = {
 // extend setup to include the addition of a simple HTML index to serve statically
 const testIndex = dataDir('simpleIndex.html')
 
-const setupWithCreate = setup.do(async ctx => {
-  await copyFile(testIndex, path.join(ctx.dir, path.basename(testIndex)))
-})
+const setupWithCreate = setup.do(ctx =>
+  copyFile(testIndex, path.join(ctx.dir, path.basename(testIndex))),
+)
 
 async function killExpress(ctx: { stdoutWrite: jest.Mock }, port: number) {
   const adminKey = ctx.stdoutWrite.mock.calls[0][0].match(
