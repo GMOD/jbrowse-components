@@ -1,6 +1,7 @@
 import domLoadScript from 'load-script2'
 
-import { PluginConstructor } from './Plugin'
+// locals
+import Plugin, { PluginConstructor } from './Plugin'
 import ReExports from './ReExports'
 import { isElectron } from './util'
 
@@ -116,7 +117,7 @@ export default class PluginLoader {
     this.definitions = JSON.parse(JSON.stringify(defs))
   }
 
-  async loadScript(scriptUrl: string): Promise<void> {
+  async loadScript(scriptUrl: string) {
     const globalObject = getGlobalObject()
     if (!isInWebWorker(globalObject)) {
       return domLoadScript(scriptUrl)
@@ -186,10 +187,16 @@ export default class PluginLoader {
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,
       )
     }
-    await this.loadScript(parsedUrl.href)
+    const globalObject = getGlobalObject()
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    const globalObject = getGlobalObject()
+    if (typeof jest !== 'undefined') {
+      // @ts-ignore
+      globalObject[umdName] = { default: Plugin }
+    } else {
+      await this.loadScript(parsedUrl.href)
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const plugin = (globalObject as any)[umdName] as
       | { default: PluginConstructor }
