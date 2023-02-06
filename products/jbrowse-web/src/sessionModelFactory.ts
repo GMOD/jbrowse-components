@@ -208,21 +208,25 @@ export default function sessionModelFactory(
         const extraThemes = getConf(self.jbrowse, 'extraThemes')
         return { ...defaultThemes, ...extraThemes }
       },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get themeName() {
+        const { allThemes, sessionThemeName } = self
+        return allThemes[sessionThemeName] ? sessionThemeName : 'default'
+      },
+    }))
+    .views(self => ({
       /**
        * #getter
        */
       get theme() {
         const configTheme = getConf(self.jbrowse, 'theme')
-        return createJBrowseTheme(configTheme, this.allThemes, this.themeName)
+        return createJBrowseTheme(configTheme, self.allThemes, self.themeName)
       },
-      /**
-       * #getter
-       */
-      get themeName() {
-        return this.allThemes[self.sessionThemeName]
-          ? self.sessionThemeName
-          : 'default'
-      },
+
       /**
        * #getter
        */

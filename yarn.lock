@@ -8963,9 +8963,9 @@ electron-publish@23.6.0:
     mime "^2.5.2"
 
 electron-to-chromium@^1.4.284:
-  version "1.4.286"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.286.tgz#0e039de59135f44ab9a8ec9025e53a9135eba11f"
-  integrity sha512-Vp3CVhmYpgf4iXNKAucoQUDcCrBQX3XLBtwgFqP9BUXuucgvAV9zWp1kYU7LL9j4++s9O+12cb3wMtN4SJy6UQ==
+  version "1.4.287"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.287.tgz#d121f9675aa099fd23ddbcba423ea4340f768efe"
+  integrity sha512-Dj649q67z9oYp4dj7B80hdxb1ExIvy8KvrFqjCuGqFxUHk43b+VXQVFkD5zxAFmhvA6Mu9fou6ZQjJkMSXNFFg==
 
 electron-updater@^5.0.1:
   version "5.3.0"
