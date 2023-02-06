@@ -30,12 +30,14 @@ function mockRemote1(exampleSite: Scope) {
 
 function mockRemote2(exampleSite: Scope) {
   return exampleSite
-    .get('/GMOD/jbrowse-components/main/test_data/volvox/volvox.sort.gff3.gz')
+    .get(
+      '/GMOD/jbrowse-components/raw/main/test_data/volvox/volvox.sort.gff3.gz',
+    )
     .reply(200, fs.createReadStream(dataDir('volvox.sort.gff3.gz')))
 }
 
-const ixLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ix')
-const ixxLoc = (loc: string) => path.join(loc, 'trix', 'volvox.ixx')
+const ixLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ix')
+const ixxLoc = (loc: string, b = 'volvox') => path.join(loc, 'trix', b + '.ixx')
 
 function readText(str: string) {
   return fs.readFileSync(str, 'utf8')
@@ -54,9 +56,9 @@ function readTrixJSON(d: string, s: string) {
   )
 }
 
-function verifyIxxFiles(ctx: string) {
-  const ixdata = readText(ixLoc(ctx))
-  const ixxdata = readText(ixxLoc(ctx))
+function verifyIxxFiles(ctx: string, base = 'volvox') {
+  const ixdata = readText(ixLoc(ctx, base))
+  const ixxdata = readText(ixxLoc(ctx, base))
   expect(ixdata.slice(0, 1000)).toMatchSnapshot()
   expect(ixdata.slice(-1000)).toMatchSnapshot()
   expect(ixdata.length).toMatchSnapshot()
@@ -73,9 +75,7 @@ describe('textIndexCommandErrors', () => {
 
   setup
     .command(['text-index', '--Command'])
-    .catch(err => {
-      expect(err.message).toContain('Unexpected argument:')
-    })
+    .catch(err => expect(err.message).toContain('Unexpected argument:'))
     .it('fails if there is an invalid flag')
 })
 
@@ -106,8 +106,7 @@ describe('text-index tracks', () => {
 // Remote GZ
 describe('text-index tracks', () => {
   setup
-
-    .nock('https://raw.githubusercontent.com', mockRemote2)
+    .nock('https://github.com', mockRemote2)
     .do(ctx => fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json')))
     .command([
       'text-index',
@@ -152,10 +151,8 @@ describe('text-index tracks', () => {
 
 describe('text-index tracks', () => {
   setup
-
+    .nock('https://github.com', mockRemote2)
     .nock('https://raw.githubusercontent.com', mockRemote1)
-
-    .nock('https://raw.githubusercontent.com', mockRemote2)
     .do(ctx => fs.copyFileSync(configPath, path.join(ctx.dir, 'config.json')))
     .command([
       'text-index',
@@ -168,6 +165,7 @@ describe('text-index tracks', () => {
 // URL and Local
 describe('text-index tracks', () => {
   setup
+    .nock('https://raw.githubusercontent.com', mockRemote1)
     .do(ctx => {
       const gff3File = dataDir('volvox.sort.gff3.gz')
       fs.copyFileSync(gff3File, path.join(ctx.dir, path.basename(gff3File)))
@@ -223,30 +221,18 @@ describe('text-index with multiple per-files', () => {
       '--file',
       'volvox.filtered.vcf.gz',
     ])
-    .it('Indexes with multiple per-file args', ctx => {
-      const base = path.join(ctx.dir, 'trix')
-      const ix = readText(path.join(base, 'aggregate.ix'))
-      const ixx = readText(path.join(base, 'aggregate.ixx'))
-      expect(ix.slice(0, 1000)).toMatchSnapshot()
-      expect(ix.slice(-1000)).toMatchSnapshot()
-      expect(ix.length).toMatchSnapshot()
-      expect(ixx).toMatchSnapshot()
-    })
+    .it('Indexes with multiple per-file args', ctx =>
+      verifyIxxFiles(ctx.dir, 'aggregate'),
+    )
 })
 
 describe('text-index with single per-file', () => {
   setup
     .do(ctx => copyDir(volvoxDir, ctx.dir))
     .command(['text-index', '--file', 'volvox.sort.gff3.gz'])
-    .it('Indexes with  single per-file arg', ctx => {
-      const b = path.join(ctx.dir, 'trix')
-      const ix = readText(path.join(b, 'volvox.sort.gff3.gz.ix'))
-      const ixx = readText(path.join(b, 'volvox.sort.gff3.gz.ixx'))
-      expect(ix.slice(0, 1000)).toMatchSnapshot()
-      expect(ix.slice(-1000)).toMatchSnapshot()
-      expect(ix.length).toMatchSnapshot()
-      expect(ixx).toMatchSnapshot()
-    })
+    .it('Indexes with  single per-file arg', ctx =>
+      verifyIxxFiles(ctx.dir, 'volvox.sort.gff3.gz'),
+    )
 })
 describe('run with a single assembly similar to embedded config', () => {
   let preVolvoxIx = ''
