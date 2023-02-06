@@ -267,7 +267,7 @@
       "assemblyNames": ["hg38"],
       "category": ["Annotation"],
       "adapter": {
-        "baseUrl": "https://mygene.info/v3/query?q=${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "baseUrl": "https://mygene.info/v3/query?q={ref}:{start}-{end}&size=1000&fields=all&size=1000&species=human",
         "type": "MyGeneV3Adapter"
       }
     },
@@ -278,7 +278,7 @@
       "assemblyNames": ["hg19"],
       "category": ["Annotation"],
       "adapter": {
-        "baseUrl": "https://mygene.info/v3/query?q=hg19.${ref}:${start}-${end}&size=1000&fields=all&size=1000&species=human",
+        "baseUrl": "https://mygene.info/v3/query?q=hg19.{ref}:{start}-{end}&size=1000&fields=all&size=1000&species=human",
         "type": "MyGeneV3Adapter"
       }
     },
