@@ -18,6 +18,8 @@ function NoConfigMessage() {
     ['test_data/config_honeybee.json', 'Honeybee'],
     ['test_data/config_wormbase.json', 'Wormbase'],
     ['test_data/config_human_dotplot.json', 'Human dotplot'],
+    ['test_data/volvox/theme.json', 'Theme test (wild color)'],
+    ['test_data/volvox/theme2.json', 'Theme test (wormbase color)'],
     ['test_data/wgbs/config.json', 'WGBS methylation'],
   ]
   return (

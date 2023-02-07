@@ -1,16 +1,15 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { getSession, getContainingView } from '@jbrowse/core/util'
-
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import { getUniqueTagValues, getUniqueModificationValues } from '../shared'
+import { LinearPileupDisplayModel } from './model'
 
 type LGV = LinearGenomeViewModel
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default async function prepareTrack(self: any) {
+export default async function prepareTrack(self: LinearPileupDisplayModel) {
   try {
     const { rpcManager } = getSession(self)
     const view = getContainingView(self) as LGV

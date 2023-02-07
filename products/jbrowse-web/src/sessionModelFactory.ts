@@ -20,8 +20,6 @@ import {
 } from '@jbrowse/core/util/types'
 import { ThemeOptions } from '@mui/material'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
-import { observable } from 'mobx'
 import {
   getContainingView,
   localStorageGetItem,
