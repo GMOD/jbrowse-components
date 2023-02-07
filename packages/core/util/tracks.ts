@@ -1,9 +1,12 @@
 import {
   getParent,
-  isRoot,
-  IAnyStateTreeNode,
-  resolveIdentifier,
   getRoot,
+  isRoot,
+  resolveIdentifier,
+  types,
+  IAnyStateTreeNode,
+  Instance,
+  IAnyType,
 } from 'mobx-state-tree'
 import { getSession, objectHash, getEnv } from './index'
 import { PreFileLocation, FileLocation } from './types'
@@ -272,9 +275,19 @@ export function getTrackName(
   return trackName
 }
 
+type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>
+
+interface MinimalTrack extends IAnyType {
+  configuration: { trackId: string }
+}
+
+type GenericView = {
+  type: string
+  tracks: MSTArray<MinimalTrack>
+}
+
 export function showTrackGeneric(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  self: any,
+  self: GenericView,
   trackId: string,
   initialSnapshot = {},
   displayInitialSnapshot = {},
@@ -319,10 +332,7 @@ export function showTrackGeneric(
     )
   }
 
-  const found = self.tracks.find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (t: any) => t.configuration.trackId === trackId,
-  )
+  const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (!found) {
     const track = trackType.stateModel.create({
       ...initialSnapshot,
@@ -342,10 +352,8 @@ export function showTrackGeneric(
   return found
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function hideTrackGeneric(self: any, trackId: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const t = self.tracks.find((t: any) => t.configuration.trackId === trackId)
+export function hideTrackGeneric(self: GenericView, trackId: string) {
+  const t = self.tracks.find(t => t.configuration.trackId === trackId)
   if (t) {
     self.tracks.remove(t)
     return 1
@@ -353,8 +361,7 @@ export function hideTrackGeneric(self: any, trackId: string) {
   return 0
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function toggleTrackGeneric(self: any, trackId: string) {
+export function toggleTrackGeneric(self: GenericView, trackId: string) {
   const hiddenCount = hideTrackGeneric(self, trackId)
   if (!hiddenCount) {
     showTrackGeneric(self, trackId)

@@ -3,14 +3,11 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import {
   cast,
   getParent,
-  getRoot,
-  resolveIdentifier,
   types,
   SnapshotOrInstance,
   Instance,
 } from 'mobx-state-tree'
 import { Region } from '@jbrowse/core/util/types/mst'
-import { transaction } from 'mobx'
 import { saveAs } from 'file-saver'
 import { renderToSvg } from '../svgcomponents/SVGCircularView'
 import {
@@ -29,10 +26,6 @@ import {
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import {
-  AnyConfigurationModel,
-  readConfObject,
-} from '@jbrowse/core/configuration'
 
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
