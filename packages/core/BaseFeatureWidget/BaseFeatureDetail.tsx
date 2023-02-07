@@ -6,6 +6,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Divider,
+  Link,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -163,7 +164,7 @@ export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
       {React.isValidElement(value) ? (
         value
       ) : isLink ? (
-        <SanitizedHTML html={`<a href="${value}">${value}</a>`} />
+        <Link href={`${value}`}>{`${value}`}</Link>
       ) : (
         <SanitizedHTML
           html={isObject(value) ? JSON.stringify(value) : String(value)}
