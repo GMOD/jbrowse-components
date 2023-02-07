@@ -420,12 +420,6 @@ function augmentTheme(theme: ThemeOptions = {}) {
         ),
       },
     })
-  } else {
-    theme = deepmerge(theme, {
-      palette: {
-        tertiary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
-      },
-    })
   }
 
   if (theme?.palette?.quaternary) {
@@ -436,12 +430,6 @@ function augmentTheme(theme: ThemeOptions = {}) {
             ? (theme.palette.quaternary as PaletteAugmentColorOptions)
             : { color: theme.palette.quaternary },
         ),
-      },
-    })
-  } else {
-    theme = deepmerge(theme, {
-      palette: {
-        quaternary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
       },
     })
   }
@@ -455,9 +443,23 @@ export function getCurrentTheme(
   themeName = 'default',
 ) {
   const baseTheme = augmentTheme(theme)
-  const userChoiceTheme = augmentTheme(themes[themeName] || themes['default'])
-
   const isDefault = themeName !== 'default'
+  let userChoiceTheme = augmentTheme(themes[themeName] || themes['default'])
+  if (!userChoiceTheme?.palette?.quaternary) {
+    userChoiceTheme = deepmerge(userChoiceTheme, {
+      palette: {
+        quaternary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
+      },
+    })
+  }
+  if (!userChoiceTheme?.palette?.tertiary) {
+    userChoiceTheme = deepmerge(userChoiceTheme, {
+      palette: {
+        tertiary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
+      },
+    })
+  }
+
   const obj = createJBrowseBaseTheme(
     isDefault
       ? userChoiceTheme.palette
