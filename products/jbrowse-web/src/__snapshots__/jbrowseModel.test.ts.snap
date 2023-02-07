@@ -655,6 +655,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_cram_pileup_pileup",
+          "height": 400,
           "type": "LinearPileupDisplay",
         },
         {
@@ -680,7 +681,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "subkey": "wow",
         },
       },
-      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height)",
       "trackId": "volvox_cram_pileup",
       "type": "AlignmentsTrack",
     },
@@ -932,6 +933,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "displays": [
         {
           "displayId": "volvox_alignments_alignments",
+          "height": 400,
           "pileupDisplay": {
             "displayId": "volvox_bam_altname_alignments_pileup",
             "type": "LinearPileupDisplay",
@@ -955,7 +957,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearReadCloudDisplay",
         },
       ],
-      "name": "volvox-sorted.bam (ctgA)",
+      "name": "volvox-sorted.bam (ctgA, larger default height)",
       "trackId": "volvox_alignments",
       "type": "AlignmentsTrack",
     },

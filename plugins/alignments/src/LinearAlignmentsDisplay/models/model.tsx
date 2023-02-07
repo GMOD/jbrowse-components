@@ -111,7 +111,7 @@ function AlignmentsModel(
     /**
      * #property
      */
-    height: 250,
+    heightPreConfig: types.maybe(types.number),
     /**
      * #property
      */
@@ -153,6 +153,14 @@ function stateModelFactory(
        */
       setSNPCoverageHeight(n: number) {
         self.snpCovHeight = n
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get height() {
+        return self.heightPreConfig ?? getConf(self, 'height')
       },
     }))
     .views(self => ({
@@ -245,8 +253,8 @@ function stateModelFactory(
        * #action
        */
       setHeight(n: number) {
-        self.height = Math.max(n, minDisplayHeight)
-        return self.height
+        self.heightPreConfig = Math.max(n, minDisplayHeight)
+        return self.heightPreConfig
       },
       /**
        * #action
@@ -368,6 +376,14 @@ function stateModelFactory(
           ]
         },
       }
+    })
+    .preProcessSnapshot(snap => {
+      if (!snap) {
+        return snap
+      }
+      // @ts-ignore
+      const { height, ...rest } = snap
+      return { heightPreConfig: height, ...rest }
     })
 }
 
