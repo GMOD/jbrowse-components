@@ -13,8 +13,6 @@ import ShareButton from './ShareButton'
 import AdminComponent from './AdminComponent'
 import { SessionModel } from './sessionModelFactory'
 
-import './JBrowse.css'
-
 export default observer(function ({
   pluginManager,
 }: {

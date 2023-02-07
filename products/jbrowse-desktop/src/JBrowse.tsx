@@ -8,22 +8,8 @@ import { App } from '@jbrowse/core/ui'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 
-// styles
-import './JBrowse.css'
-
 // locals
 import { RootModel } from './rootModel'
-
-const JBrowse = observer(function ({
-  pluginManager,
-}: {
-  pluginManager: PluginManager
-}) {
-  const { rootModel } = pluginManager
-  return rootModel ? (
-    <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
-  ) : null
-})
 
 const JBrowseNonNullRoot = observer(function ({
   rootModel,
@@ -61,4 +47,13 @@ const JBrowseNonNullRoot = observer(function ({
   )
 })
 
-export default JBrowse
+export default observer(function ({
+  pluginManager,
+}: {
+  pluginManager: PluginManager
+}) {
+  const { rootModel } = pluginManager
+  return rootModel ? (
+    <JBrowseNonNullRoot rootModel={rootModel as RootModel} />
+  ) : null
+})

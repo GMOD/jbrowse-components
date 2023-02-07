@@ -25,6 +25,7 @@ const useStyles = makeStyles()(theme => ({
     display: 'grid',
     height: '100vh',
     width: '100%',
+    colorScheme: theme.palette.mode,
   },
   fabLeft: {
     zIndex: 10000,
