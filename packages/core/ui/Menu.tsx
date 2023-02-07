@@ -74,14 +74,14 @@ export function MenuItemEndDecoration(props: MenuItemEndDecorationProps) {
     icon = <ArrowRightIcon color="action" />
   } else if (type === 'checkbox') {
     if (checked) {
-      const color = disabled ? 'inherit' : 'secondary'
+      const color = disabled ? 'inherit' : undefined
       icon = <CheckBoxIcon color={color} />
     } else {
       icon = <CheckBoxOutlineBlankIcon color="action" />
     }
   } else if (type === 'radio') {
     if (checked) {
-      const color = disabled ? 'inherit' : 'secondary'
+      const color = disabled ? 'inherit' : undefined
       icon = <RadioButtonCheckedIcon color={color} />
     } else {
       icon = <RadioButtonUncheckedIcon color="action" />

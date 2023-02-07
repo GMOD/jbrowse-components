@@ -21,6 +21,51 @@ interface Entry {
 type InfoFields = Record<string, unknown>
 type Filters = Record<string, string>
 
+function SampleFilters({
+  columns,
+  filter,
+  setFilter,
+}: {
+  columns: { field: string }[]
+  filter: Filters
+  setFilter: (arg: Filters) => void
+}) {
+  const [showFilters, setShowFilters] = useState(false)
+  return (
+    <>
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={showFilters}
+            onChange={() => setShowFilters(f => !f)}
+          />
+        }
+        label="Show sample filters"
+      />
+      {showFilters ? (
+        <>
+          <Typography>
+            These filters can use a plain text search or regex style query, e.g.
+            in the genotype field, entering 1 will query for all genotypes that
+            include the first alternate allele e.g. 0|1 or 1|1, entering
+            [1-9]\d* will find any non-zero allele e.g. 0|2 or 2/33
+          </Typography>
+          {columns.map(({ field }) => (
+            <TextField
+              key={`filter-${field}`}
+              placeholder={`Filter ${field}`}
+              value={filter[field] || ''}
+              onChange={event =>
+                setFilter({ ...filter, [field]: event.target.value })
+              }
+            />
+          ))}
+        </>
+      ) : null}
+    </>
+  )
+}
+
 export default function VariantSamples(props: {
   feature: SimpleFeatureSerialized
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +74,6 @@ export default function VariantSamples(props: {
   const { feature, descriptions = {} } = props
   const { ref, scrollLeft } = useResizeBar()
   const [filter, setFilter] = useState<Filters>({})
-  const [showFilters, setShowFilters] = useState(false)
   const samples = (feature.samples || {}) as Record<string, InfoFields>
   const preFilteredRows = Object.entries(samples)
 
@@ -69,7 +113,7 @@ export default function VariantSamples(props: {
   const [widths, setWidths] = useState(
     keys.map(e => measureGridWidth(rows.map(r => r[e]))),
   )
-  const infoFields = keys.map((field, index) => ({
+  const columns = keys.map((field, index) => ({
     field,
     description: descriptions.FORMAT?.[field]?.Description,
     width: widths[index],
@@ -80,36 +124,7 @@ export default function VariantSamples(props: {
   return !preFilteredRows.length ? null : (
     <BaseCard {...props} title="Samples">
       {error ? <Typography color="error">{`${error}`}</Typography> : null}
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showFilters}
-            onChange={() => setShowFilters(f => !f)}
-          />
-        }
-        label="Show sample filters"
-      />
-      {showFilters ? (
-        <>
-          <Typography>
-            These filters can use a plain text search or regex style query, e.g.
-            in the genotype field, entering 1 will query for all genotypes that
-            include the first alternate allele e.g. 0|1 or 1|1, entering
-            [1-9]\d* will find any non-zero allele e.g. 0|2 or 2/33
-          </Typography>
-          {infoFields.map(({ field }) => (
-            <TextField
-              key={`filter-${field}`}
-              placeholder={`Filter ${field}`}
-              value={filter[field] || ''}
-              onChange={event =>
-                setFilter({ ...filter, [field]: event.target.value })
-              }
-            />
-          ))}
-        </>
-      ) : null}
+      <SampleFilters setFilter={setFilter} columns={columns} filter={filter} />
       <div ref={ref}>
         <ResizeBar
           widths={widths}
@@ -119,7 +134,7 @@ export default function VariantSamples(props: {
         <div ref={ref} style={{ height: 600, width: '100%', overflow: 'auto' }}>
           <DataGrid
             rows={rows}
-            columns={infoFields}
+            columns={columns}
             disableSelectionOnClick
             rowHeight={25}
             headerHeight={35}

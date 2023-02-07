@@ -7,25 +7,25 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 import LinearSyntenyRendering from './LinearSyntenyRendering'
 import { LinearSyntenyDisplayModel } from '../stateModelFactory'
 
-const useStyles = makeStyles()({
-  loading: {
-    paddingLeft: '0.6em',
-    backgroundColor: '#f1f1f1',
-    backgroundImage:
-      'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-    height: '100%',
-    width: '100%',
-    textAlign: 'center',
-  },
-  blockMessage: {
-    background: '#f1f1f1',
-    padding: '10px',
-  },
-  blockError: {
-    background: '#f1f1f1',
-    padding: '10px',
-    color: 'red',
-  },
+const useStyles = makeStyles()(theme => {
+  const bg = theme.palette.action.disabledBackground
+  return {
+    loading: {
+      paddingLeft: '0.6em',
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+      textAlign: 'center',
+    },
+    blockMessage: {
+      background: '#f1f1f1',
+      padding: '10px',
+    },
+    blockError: {
+      background: '#f1f1f1',
+      padding: '10px',
+      color: 'red',
+    },
+  }
 })
 
 function LoadingMessage() {

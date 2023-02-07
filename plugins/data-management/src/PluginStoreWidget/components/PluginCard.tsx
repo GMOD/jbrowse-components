@@ -20,9 +20,11 @@ import { makeStyles } from 'tss-react/mui'
 import PersonIcon from '@mui/icons-material/Person'
 import AddIcon from '@mui/icons-material/Add'
 import CheckIcon from '@mui/icons-material/Check'
+
+// locals
 import { PluginStoreModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   card: {
     margin: '1em',
   },
@@ -38,9 +40,9 @@ const useStyles = makeStyles()(() => ({
     alignItems: 'center',
     margin: '0.4em 0em',
   },
-}))
+})
 
-function PluginCard({
+export default observer(function PluginCard({
   plugin,
   model,
   adminMode,
@@ -86,7 +88,6 @@ function PluginCard({
       <CardActions>
         <Button
           variant="contained"
-          color="primary"
           disabled={disableButton}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
@@ -103,6 +104,4 @@ function PluginCard({
       </CardActions>
     </Card>
   )
-}
-
-export default observer(PluginCard)
+})

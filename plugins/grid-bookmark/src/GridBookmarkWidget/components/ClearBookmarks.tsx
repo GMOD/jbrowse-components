@@ -1,38 +1,16 @@
 import React, { useState } from 'react'
 import { observer } from 'mobx-react'
+import { Button, DialogContent, DialogActions, Typography } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 
-import {
-  Button,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-} from '@mui/material'
-import { makeStyles } from 'tss-react/mui'
+// icons
 import ClearAllIcon from '@mui/icons-material/ClearAll'
-import CloseIcon from '@mui/icons-material/Close'
 
+// locals
 import { GridBookmarkModel } from '../model'
 
-const useStyles = makeStyles()(() => ({
-  closeDialog: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  dialogContainer: {
-    margin: 15,
-  },
-}))
-
 function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
-  const { classes } = useStyles()
   const [dialogOpen, setDialogOpen] = useState(false)
-
-  const { clearAllBookmarks } = model
-
   return (
     <>
       <Button
@@ -42,17 +20,11 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
       >
         Clear
       </Button>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>
-          Clear bookmarks
-          <IconButton
-            className={classes.closeDialog}
-            aria-label="close-dialog"
-            onClick={() => setDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        title="Clear bookmarks"
+      >
         <DialogContent>
           <Typography>
             Clear all bookmarks? Note this will clear bookmarks for all
@@ -73,7 +45,7 @@ function ClearBookmarks({ model }: { model: GridBookmarkModel }) {
             variant="contained"
             color="primary"
             onClick={() => {
-              clearAllBookmarks()
+              model.clearAllBookmarks()
               setDialogOpen(false)
             }}
           >

@@ -14,18 +14,20 @@ import { LinearReadArcsDisplayModel } from '../model'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
-  loading: {
-    paddingLeft: '0.6em',
-    backgroundColor: theme.palette.action.disabledBackground,
-    backgroundImage:
-      'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,.5) 5px, rgba(255,255,255,.5) 10px)',
-    height: '100%',
-    width: '100%',
-    pointerEvents: 'none',
-    textAlign: 'center',
-  },
-}))
+const useStyles = makeStyles()(theme => {
+  const bg = theme.palette.action.disabledBackground
+  return {
+    loading: {
+      paddingLeft: '0.6em',
+      backgroundColor: theme.palette.background.default,
+      backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 5px, ${bg} 5px, ${bg} 10px)`,
+      height: '100%',
+      width: '100%',
+      pointerEvents: 'none',
+      textAlign: 'center',
+    },
+  }
+})
 
 const Arcs = observer(function ({
   model,

@@ -3,10 +3,10 @@ import { IconButton, Paper, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
 import { getConf } from '@jbrowse/core/configuration'
-import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 
 import {
   bindTrigger,
@@ -42,7 +42,6 @@ const useStyles = makeStyles()(theme => ({
   },
   dragHandle: {
     cursor: 'grab',
-    color: '#135560',
   },
   dragHandleIcon: {
     display: 'inline-block',
@@ -108,7 +107,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           onClick={() => view.hideTrack(trackId)}
           className={classes.iconButton}
           title="close this track"
-          color="secondary"
         >
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -123,7 +121,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
         <IconButton
           {...bindTrigger(popupState)}
           className={classes.iconButton}
-          color="secondary"
           data-testid="track_menu_icon"
           disabled={!items.length}
         >

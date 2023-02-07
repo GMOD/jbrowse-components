@@ -25,7 +25,7 @@ export default function ExportSvgDlg({
   model,
   handleClose,
 }: {
-  model: { exportSvg(opts: ExportSvgOptions): void }
+  model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
   // @ts-ignore

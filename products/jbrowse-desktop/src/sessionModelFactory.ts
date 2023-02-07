@@ -4,17 +4,24 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration/configuration
 import {
   readConfObject,
   isConfigurationModel,
+  getConf,
 } from '@jbrowse/core/configuration'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui/theme'
 import {
   Region,
   TrackViewModel,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
-import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
-import { observable } from 'mobx'
 import {
+  getContainingView,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
+import { supportedIndexingAdapters } from '@jbrowse/text-indexing'
+import { autorun, observable } from 'mobx'
+import {
+  addDisposer,
   getMembers,
   getParent,
   getSnapshot,
@@ -36,6 +43,7 @@ import CopyIcon from '@mui/icons-material/FileCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import InfoIcon from '@mui/icons-material/Info'
 import { Indexing } from '@jbrowse/core/ui/Icons'
+import { ThemeOptions } from '@mui/material'
 
 const AboutDialog = lazy(() => import('@jbrowse/core/ui/AboutDialog'))
 
@@ -43,6 +51,8 @@ export declare interface ReferringNode {
   node: IAnyStateTreeNode
   key: string
 }
+
+type ThemeMap = { [key: string]: ThemeOptions }
 
 /**
  * #stateModel JBrowseDesktopSessionModel
@@ -113,7 +123,15 @@ export default function sessionModelFactory(
        */
       drawerPosition: types.optional(
         types.string,
-        localStorage.getItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') || 'right',
+      ),
+
+      /**
+       * #property
+       */
+      sessionThemeName: types.optional(
+        types.string,
+        () => localStorageGetItem('themeName') || 'default',
       ),
     })
     .volatile((/* self */) => ({
@@ -132,6 +150,42 @@ export default function sessionModelFactory(
       queueOfDialogs: observable.array([] as [DialogComponentType, any][]),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get jbrowse() {
+        return getParent<any>(self).jbrowse
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      allThemes(): ThemeMap {
+        const extraThemes = getConf(self.jbrowse, 'extraThemes')
+        return { ...defaultThemes, ...extraThemes }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get themeName() {
+        const { sessionThemeName } = self
+        const all = self.allThemes()
+        return all[sessionThemeName] ? sessionThemeName : 'default'
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get theme() {
+        const configTheme = getConf(self.jbrowse, 'theme')
+        const all = self.allThemes()
+        return createJBrowseTheme(configTheme, all, self.themeName)
+      },
+
       /**
        * #getter
        */
@@ -259,10 +313,12 @@ export default function sessionModelFactory(
       /**
        * #method
        * See if any MST nodes currently have a types.reference to this object.
+       *
        * @param object - object
-       * @returns An array where the first element is the node referring
-       * to the object and the second element is they property name the node is
-       * using to refer to the object
+       *
+       * @returns An array where the first element is the node referring to the
+       * object and the second element is they property name the node is using to
+       * refer to the object
        */
       getReferring(object: IAnyStateTreeNode) {
         const refs: ReferringNode[] = []
@@ -281,6 +337,12 @@ export default function sessionModelFactory(
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setThemeName(name: string) {
+        self.sessionThemeName = name
+      },
       /**
        * #action
        */
@@ -882,6 +944,17 @@ export default function sessionModelFactory(
         ]
       },
     }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem('drawerPosition', self.drawerPosition)
+            localStorageSetItem('themeName', self.themeName)
+          }),
+        )
+      },
+    }))
 
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(
     'Core-extendSession',
@@ -907,6 +980,3 @@ export default function sessionModelFactory(
 }
 
 export type SessionStateModel = ReturnType<typeof sessionModelFactory>
-
-// a track is a combination of an assembly and a renderer, along with some conditions
-// specifying in which contexts it is available (which assemblies, which views, etc)

@@ -87,7 +87,6 @@ const FilterReactComponent = observer(function ({
               <IconButton
                 aria-label="clear filter"
                 onClick={() => filterModel.setLocString('')}
-                color="secondary"
               >
                 <ClearIcon />
               </IconButton>

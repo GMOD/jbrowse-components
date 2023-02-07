@@ -13,7 +13,7 @@ import { getAllChildren, treeToMap, NodeData } from '../util'
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
-    color: theme.palette.secondary.contrastText,
+    color: theme.palette.tertiary.contrastText,
   },
 
   // margin:auto 0 to center text vertically

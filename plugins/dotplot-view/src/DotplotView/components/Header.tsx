@@ -40,11 +40,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<HTMLElement>()
   return (
     <div>
-      <IconButton
-        onClick={model.zoomOutButton}
-        className={classes.iconButton}
-        color="secondary"
-      >
+      <IconButton onClick={model.zoomOutButton} className={classes.iconButton}>
         <ZoomOut />
       </IconButton>
 
@@ -52,7 +48,6 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         onClick={model.zoomInButton}
         className={classes.iconButton}
         title="zoom in"
-        color="secondary"
       >
         <ZoomIn />
       </IconButton>
@@ -62,7 +57,6 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
         className={classes.iconButton}
         title="Open track selector"
         data-testid="circular_track_select"
-        color="secondary"
       >
         <TrackSelectorIcon />
       </IconButton>
@@ -70,7 +64,6 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
       <IconButton
         onClick={event => setMenuAnchorEl(event.currentTarget)}
         className={classes.iconButton}
-        color="secondary"
       >
         <MoreVert />
       </IconButton>

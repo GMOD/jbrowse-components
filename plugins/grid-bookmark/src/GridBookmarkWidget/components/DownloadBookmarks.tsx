@@ -2,39 +2,23 @@ import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 
 import {
-  IconButton,
   Button,
-  Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   MenuItem,
   Select,
   Typography,
 } from '@mui/material'
+import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from 'tss-react/mui'
-import CloseIcon from '@mui/icons-material/Close'
 import GetAppIcon from '@mui/icons-material/GetApp'
 
 import { GridBookmarkModel } from '../model'
 import { downloadBookmarkFile } from '../utils'
 
 const useStyles = makeStyles()(() => ({
-  closeDialog: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-  },
-  dialogContainer: {
-    margin: 15,
-  },
   flexItem: {
     margin: 5,
-  },
-  flexContainer: {
-    display: 'flex',
-    justifyContent: 'space-evenly',
-    width: 200,
   },
 }))
 
@@ -49,16 +33,11 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
       <Button startIcon={<GetAppIcon />} onClick={() => setDialogOpen(true)}>
         Download
       </Button>
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>
-          <IconButton
-            className={classes.closeDialog}
-            aria-label="close-dialog"
-            onClick={() => setDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        title="Download bookmarks"
+      >
         <DialogContent>
           <Typography>Format to download</Typography>
           <Select

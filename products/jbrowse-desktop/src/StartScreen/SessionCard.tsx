@@ -97,7 +97,7 @@ function RecentSessionCard({
                 setMenuAnchorEl(event.currentTarget)
               }}
             >
-              <MoreVertIcon color="secondary" />
+              <MoreVertIcon />
             </IconButton>
           }
           disableTypography
@@ -136,7 +136,7 @@ function RecentSessionCard({
           }}
         >
           <ListItemIcon>
-            <TextFieldsIcon color="secondary" />
+            <TextFieldsIcon />
           </ListItemIcon>
           <Typography variant="inherit">Rename</Typography>
         </MenuItem>
@@ -147,7 +147,7 @@ function RecentSessionCard({
           }}
         >
           <ListItemIcon>
-            <DeleteIcon color="secondary" />
+            <DeleteIcon />
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
         </MenuItem>
@@ -158,7 +158,7 @@ function RecentSessionCard({
           }}
         >
           <ListItemIcon>
-            <PlaylistAddIcon color="secondary" />
+            <PlaylistAddIcon />
           </ListItemIcon>
           <Typography variant="inherit">Add to quickstart list</Typography>
         </MenuItem>

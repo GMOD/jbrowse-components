@@ -21,7 +21,7 @@ const useStyles = makeStyles()(theme => ({
     margin: theme.spacing(1),
   },
   expandIcon: {
-    color: '#fff',
+    color: theme.palette.tertiary.contrastText,
   },
   button: {
     marginTop: theme.spacing(1),

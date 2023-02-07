@@ -3,15 +3,17 @@ import { observer } from 'mobx-react'
 import { Menu, MenuItem } from '@jbrowse/core/ui'
 import { Instance } from 'mobx-state-tree'
 
+// locals
 import SpreadsheetModel from '../models/Spreadsheet'
 import ViewModel from '../models/SpreadsheetView'
 
-export interface Props {
+const RowMenu = observer(function ({
+  viewModel,
+  spreadsheetModel,
+}: {
   viewModel: Instance<typeof ViewModel>
   spreadsheetModel: Instance<typeof SpreadsheetModel>
-}
-
-const RowMenu = observer(({ viewModel, spreadsheetModel }: Props) => {
+}) {
   const currentRowMenu = spreadsheetModel.rowMenuPosition
   const { setRowMenuPosition } = spreadsheetModel
 

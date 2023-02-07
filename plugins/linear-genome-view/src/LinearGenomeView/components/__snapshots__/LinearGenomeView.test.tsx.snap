@@ -31,7 +31,7 @@ exports[`renders one track, one region 1`] = `
               ctgA
             </p>
             <div
-              class="css-c4j89u-scalebarContig-scalebarContigForward-scalebarBorder"
+              class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
               style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
             >
               <p
@@ -90,7 +90,7 @@ exports[`renders one track, one region 1`] = `
         class="css-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-iqybyt-MuiButtonBase-root-MuiIconButton-root-toggleButton"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -117,7 +117,7 @@ exports[`renders one track, one region 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -137,7 +137,7 @@ exports[`renders one track, one region 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -246,7 +246,7 @@ exports[`renders one track, one region 1`] = `
           class="css-z84q6m-container"
         >
           <button
-            class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
             data-testid="zoom_out"
             disabled=""
             tabindex="-1"
@@ -265,7 +265,7 @@ exports[`renders one track, one region 1`] = `
             </svg>
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-s3dms4-MuiSlider-root-slider"
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1ub3usb-MuiSlider-root-slider"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -296,7 +296,7 @@ exports[`renders one track, one region 1`] = `
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
             data-testid="zoom_in"
             tabindex="0"
             type="button"
@@ -346,7 +346,7 @@ exports[`renders one track, one region 1`] = `
           style="width: 100px;"
         >
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: -1px;"
           />
           <div
@@ -431,7 +431,7 @@ exports[`renders one track, one region 1`] = `
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
       >
         <span
-          class="css-10js96-dragHandle"
+          class="css-k4omgw-dragHandle"
           data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
@@ -448,7 +448,7 @@ exports[`renders one track, one region 1`] = `
           </svg>
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
           tabindex="0"
           title="close this track"
           type="button"
@@ -477,7 +477,7 @@ exports[`renders one track, one region 1`] = `
         </span>
         <button
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
           data-testid="track_menu_icon"
           tabindex="0"
           type="button"
@@ -575,7 +575,7 @@ exports[`renders two tracks, two regions 1`] = `
               ctgA
             </p>
             <div
-              class="css-c4j89u-scalebarContig-scalebarContigForward-scalebarBorder"
+              class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
               style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
             />
           </div>
@@ -591,7 +591,7 @@ exports[`renders two tracks, two regions 1`] = `
               ctgB
             </p>
             <div
-              class="css-c4j89u-scalebarContig-scalebarContigForward-scalebarBorder"
+              class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
               style="left: 72.72727272727273px; width: 727.2727272727273px;"
             >
               <p
@@ -650,7 +650,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="css-ig8oez-headerBar"
       >
         <button
-          class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium MuiButton-root MuiButton-text MuiButton-textSecondary MuiButton-sizeMedium MuiButton-textSizeMedium css-10u97y-MuiButtonBase-root-MuiButton-root-toggleButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-iqybyt-MuiButtonBase-root-MuiIconButton-root-toggleButton"
           tabindex="0"
           title="Open track selector"
           type="button"
@@ -677,7 +677,7 @@ exports[`renders two tracks, two regions 1`] = `
           class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
         >
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -697,7 +697,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <button
-            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-1dgnv6i-MuiButtonBase-root-MuiButton-root-panButton"
+            class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeMedium MuiButton-outlinedSizeMedium css-8wbbs0-MuiButtonBase-root-MuiButton-root-panButton"
             tabindex="0"
             type="button"
           >
@@ -806,7 +806,7 @@ exports[`renders two tracks, two regions 1`] = `
           class="css-z84q6m-container"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
             data-testid="zoom_out"
             tabindex="0"
             type="button"
@@ -827,7 +827,7 @@ exports[`renders two tracks, two regions 1`] = `
             />
           </button>
           <span
-            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-s3dms4-MuiSlider-root-slider"
+            class="MuiSlider-root MuiSlider-colorPrimary MuiSlider-sizeSmall css-1ub3usb-MuiSlider-root-slider"
           >
             <span
               class="MuiSlider-rail css-14pt78w-MuiSlider-rail"
@@ -858,7 +858,7 @@ exports[`renders two tracks, two regions 1`] = `
             </span>
           </span>
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeLarge css-1f88mc5-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeLarge css-mf1cb5-MuiButtonBase-root-MuiIconButton-root"
             data-testid="zoom_in"
             tabindex="0"
             type="button"
@@ -908,7 +908,7 @@ exports[`renders two tracks, two regions 1`] = `
           style="width: 100px;"
         >
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: -1px;"
           />
           <div
@@ -937,7 +937,7 @@ exports[`renders two tracks, two regions 1`] = `
           />
         </div>
         <div
-          class="css-1x3apsi-interRegionPaddingBlock"
+          class="css-1b6zgog-interRegionPaddingBlock"
           style="width: 2px;"
         />
         <div
@@ -945,7 +945,7 @@ exports[`renders two tracks, two regions 1`] = `
           style="width: 800px;"
         >
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: -1px;"
           />
           <div
@@ -985,7 +985,7 @@ exports[`renders two tracks, two regions 1`] = `
             style="left: 179px;"
           />
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: 199px;"
           />
           <div
@@ -1025,7 +1025,7 @@ exports[`renders two tracks, two regions 1`] = `
             style="left: 379px;"
           />
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: 399px;"
           />
           <div
@@ -1065,7 +1065,7 @@ exports[`renders two tracks, two regions 1`] = `
             style="left: 579px;"
           />
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: 599px;"
           />
           <div
@@ -1105,7 +1105,7 @@ exports[`renders two tracks, two regions 1`] = `
             style="left: 779px;"
           />
           <div
-            class="css-1nnah7t-tick-majorTick"
+            class="css-1qcgmte-tick-majorTick"
             style="left: 799px;"
           />
           <div
@@ -1145,7 +1145,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </div>
             <div
-              class="css-1x3apsi-interRegionPaddingBlock"
+              class="css-1b6zgog-interRegionPaddingBlock"
               style="background: none; width: 2px;"
             />
             <div
@@ -1228,7 +1228,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
       >
         <span
-          class="css-10js96-dragHandle"
+          class="css-k4omgw-dragHandle"
           data-testid="dragHandle-lgv-testConfig"
           draggable="true"
         >
@@ -1245,7 +1245,7 @@ exports[`renders two tracks, two regions 1`] = `
           </svg>
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
           tabindex="0"
           title="close this track"
           type="button"
@@ -1274,7 +1274,7 @@ exports[`renders two tracks, two regions 1`] = `
         </span>
         <button
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
           data-testid="track_menu_icon"
           tabindex="0"
           type="button"
@@ -1327,7 +1327,7 @@ exports[`renders two tracks, two regions 1`] = `
                 />
               </div>
               <div
-                class="css-1x3apsi-interRegionPaddingBlock"
+                class="css-1b6zgog-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div
@@ -1360,7 +1360,7 @@ exports[`renders two tracks, two regions 1`] = `
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 css-lv7b0o-MuiPaper-root-trackLabel-trackLabelOverlap-root"
       >
         <span
-          class="css-10js96-dragHandle"
+          class="css-k4omgw-dragHandle"
           data-testid="dragHandle-lgv-testConfig2"
           draggable="true"
         >
@@ -1377,7 +1377,7 @@ exports[`renders two tracks, two regions 1`] = `
           </svg>
         </span>
         <button
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
           tabindex="0"
           title="close this track"
           type="button"
@@ -1406,7 +1406,7 @@ exports[`renders two tracks, two regions 1`] = `
         </span>
         <button
           aria-haspopup="true"
-          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeMedium css-9e64ep-MuiButtonBase-root-MuiIconButton-root-iconButton"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeMedium css-15mrns3-MuiButtonBase-root-MuiIconButton-root-iconButton"
           data-testid="track_menu_icon"
           tabindex="0"
           type="button"
@@ -1459,7 +1459,7 @@ exports[`renders two tracks, two regions 1`] = `
                 />
               </div>
               <div
-                class="css-1x3apsi-interRegionPaddingBlock"
+                class="css-1b6zgog-interRegionPaddingBlock"
                 style="background: none; width: 2px;"
               />
               <div

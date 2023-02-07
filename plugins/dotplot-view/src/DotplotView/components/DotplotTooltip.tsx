@@ -6,17 +6,17 @@ import { makeStyles } from 'tss-react/mui'
 import { DotplotViewModel } from '../model'
 import { locstr } from './util'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   popover: {
-    background: '#fff',
+    background: theme.palette.background.paper,
     maxWidth: 400,
     wordBreak: 'break-all',
     zIndex: 1000,
-    border: '1px solid black',
+    border: `1px solid ${theme.palette.action.active}`,
     pointerEvents: 'none',
     position: 'absolute',
   },
-})
+}))
 
 type Coord = [number, number] | undefined
 const blank = { left: 0, top: 0, width: 0, height: 0 }

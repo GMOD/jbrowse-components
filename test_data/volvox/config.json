@@ -175,7 +175,28 @@
       }
     }
   ],
-  "configuration": {},
+  "configuration": {
+    "extraThemes": {
+      "darkForest": {
+        "name": "Dark (forest, from config file)",
+        "palette": {
+          "primary": {
+            "main": "#464"
+          },
+          "secondary": {
+            "main": "#376"
+          },
+          "tertiary": {
+            "main": "#253"
+          },
+          "quaternary": {
+            "main": "#6a4"
+          },
+          "mode": "dark"
+        }
+      }
+    }
+  },
   "connections": [],
   "defaultSession": {
     "name": "Integration test example",

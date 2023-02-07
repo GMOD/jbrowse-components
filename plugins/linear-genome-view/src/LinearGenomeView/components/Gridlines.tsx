@@ -38,7 +38,7 @@ const useStyles = makeStyles()(theme => ({
     width: 1,
   },
   majorTick: {
-    background: theme.palette.text.secondary,
+    background: theme.palette.action.disabled,
   },
   minorTick: {
     background: theme.palette.divider,

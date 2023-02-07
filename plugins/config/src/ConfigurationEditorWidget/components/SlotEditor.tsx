@@ -2,34 +2,16 @@ import React, { useEffect, useState } from 'react'
 import { observer } from 'mobx-react'
 import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
 import { getEnv, FileLocation } from '@jbrowse/core/util'
-import { FileSelector, SanitizedHTML } from '@jbrowse/core/ui'
+import { FileSelector } from '@jbrowse/core/ui'
 import {
   getPropertyType,
   getSubType,
   getUnionSubTypes,
 } from '@jbrowse/core/util/mst-reflection'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Paper,
-  SvgIcon,
-  TextField,
-  TextFieldProps,
-} from '@mui/material'
+import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 
 // icons
-import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 
 // locals
@@ -37,23 +19,11 @@ import StringArrayEditor from './StringArrayEditor'
 import CallbackEditor from './CallbackEditor'
 import ColorEditor from './ColorEditor'
 import JsonEditor from './JsonEditor'
-
-// adds ability to have html in helperText. note that FormHelperTextProps is
-// div because the default is p which does not like div children
-function MyTextField(props: { helperText?: string } & TextFieldProps) {
-  const { helperText } = props
-  return (
-    <TextField
-      {...props}
-      helperText={<SanitizedHTML html={helperText || ''} />}
-      FormHelperTextProps={{
-        // @ts-ignore
-        component: 'div',
-      }}
-      fullWidth
-    />
-  )
-}
+import StringArrayMapEditor from './StringArrayMapEditor'
+import ConfigurationTextField from './ConfigurationTextField'
+import NumberMapEditor from './NumberMapEditor'
+import NumberEditor from './NumberEditor'
+import BooleanEditor from './BooleanEditor'
 
 const StringEditor = observer(
   ({
@@ -66,7 +36,7 @@ const StringEditor = observer(
       set: (arg: string) => void
     }
   }) => (
-    <MyTextField
+    <ConfigurationTextField
       label={slot.name}
       helperText={slot.description}
       value={slot.value}
@@ -103,198 +73,6 @@ const SvgCheckbox = () => (
   </SvgIcon>
 )
 
-const useMapEditorStyles = makeStyles()(theme => ({
-  card: {
-    marginTop: theme.spacing(1),
-  },
-}))
-
-const StringArrayMapEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      value: Map<string, string[]>
-      remove: (key: string) => void
-      add: (key: string, val: string[]) => void
-      description: string
-      setAtKeyIndex: (key: string, idx: number, val: string) => void
-      removeAtKeyIndex: (key: string, idx: number) => void
-      addToKey: (key: string, val: string) => void
-    }
-  }) => {
-    const { classes } = useMapEditorStyles()
-    const [value, setValue] = useState('')
-    return (
-      <>
-        <InputLabel>{slot.name}</InputLabel>
-        {Array.from(slot.value, ([key, val]) => (
-          <Card raised key={key} className={classes.card}>
-            <CardHeader
-              title={key}
-              action={
-                <IconButton color="secondary" onClick={() => slot.remove(key)}>
-                  <DeleteIcon />
-                </IconButton>
-              }
-            />
-            <CardContent>
-              <StringArrayEditor
-                slot={{
-                  name: slot.name,
-                  value: val,
-                  description: `Values associated with entry ${key}`,
-                  setAtIndex: (idx: number, val: string) =>
-                    slot.setAtKeyIndex(key, idx, val),
-                  removeAtIndex: (idx: number) =>
-                    slot.removeAtKeyIndex(key, idx),
-                  add: (val: string) => slot.addToKey(key, val),
-                }}
-              />
-            </CardContent>
-          </Card>
-        ))}
-        <Card raised className={classes.card}>
-          <CardHeader
-            disableTypography
-            title={
-              <TextField
-                fullWidth
-                value={value}
-                placeholder="add new"
-                onChange={event => setValue(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        disabled={value === ''}
-                        onClick={() => {
-                          slot.add(value, [])
-                          setValue('')
-                        }}
-                        color="secondary"
-                      >
-                        <AddIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            }
-          />
-        </Card>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  },
-)
-
-const NumberMapEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      value: Map<string, string>
-      remove: (key: string) => void
-      add: (key: string, val: number) => void
-      description: string
-    }
-  }) => {
-    const { classes } = useMapEditorStyles()
-    const [value, setValue] = useState('')
-    return (
-      <>
-        <InputLabel>{slot.name}</InputLabel>
-        {Array.from(slot.value, ([key, val]) => (
-          <Card raised key={key} className={classes.card}>
-            <CardHeader
-              title={key}
-              action={
-                <IconButton color="secondary" onClick={() => slot.remove(key)}>
-                  <DeleteIcon />
-                </IconButton>
-              }
-            />
-            <CardContent>
-              <NumberEditor
-                slot={{
-                  value: val,
-                  set: (val: number) => slot.add(key, val),
-                }}
-              />
-            </CardContent>
-          </Card>
-        ))}
-        <Card raised className={classes.card}>
-          <CardHeader
-            disableTypography
-            title={
-              <TextField
-                fullWidth
-                value={value}
-                placeholder="add new"
-                onChange={event => setValue(event.target.value)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        disabled={value === ''}
-                        onClick={() => {
-                          slot.add(value, 0)
-                          setValue('')
-                        }}
-                        color="secondary"
-                      >
-                        <AddIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            }
-          />
-        </Card>
-        <FormHelperText>{slot.description}</FormHelperText>
-      </>
-    )
-  },
-)
-
-const NumberEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name?: string
-      value: string
-      description?: string
-      set: (val: number) => void
-      reset?: () => void
-    }
-  }) => {
-    const [val, setVal] = useState(slot.value)
-    useEffect(() => {
-      const num = parseFloat(val)
-      if (!Number.isNaN(num)) {
-        slot.set(num)
-      } else {
-        slot.reset?.()
-      }
-    }, [slot, val])
-    return (
-      <MyTextField
-        label={slot.name}
-        helperText={slot.description}
-        value={val}
-        type="number"
-        onChange={evt => setVal(evt.target.value)}
-      />
-    )
-  },
-)
-
 const IntegerEditor = observer(
   ({
     slot,
@@ -314,7 +92,7 @@ const IntegerEditor = observer(
       }
     }, [slot, val])
     return (
-      <MyTextField
+      <ConfigurationTextField
         label={slot.name}
         helperText={slot.description}
         value={val}
@@ -325,80 +103,56 @@ const IntegerEditor = observer(
   },
 )
 
-const BooleanEditor = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      value: boolean
-      set: (arg: boolean) => void
-      description: string
-    }
-  }) => (
-    <FormControl>
-      <FormControlLabel
-        label={slot.name}
-        control={
-          <Checkbox
-            checked={slot.value}
-            onChange={evt => slot.set(evt.target.checked)}
-          />
-        }
-      />
-      <FormHelperText>{slot.description}</FormHelperText>
-    </FormControl>
-  ),
-)
-
-const StringEnumEditor = observer(
+const StringEnumEditor = observer(function ({
+  slot,
+  slotSchema,
+}: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ slot, slotSchema }: { slot: any; slotSchema: IAnyType }) => {
-    const p = getPropertyMembers(getSubType(slotSchema))
-    const choices = getUnionSubTypes(
-      getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
-    ).map(t => t.value)
+  slot: any
+  slotSchema: IAnyType
+}) {
+  const p = getPropertyMembers(getSubType(slotSchema))
+  const choices = getUnionSubTypes(
+    getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
+  ).map(t => t.value)
 
-    return (
-      <MyTextField
-        value={slot.value}
-        label={slot.name}
-        select
-        helperText={slot.description}
-        onChange={evt => slot.set(evt.target.value)}
-      >
-        {choices.map(str => (
-          <MenuItem key={str} value={str}>
-            {str}
-          </MenuItem>
-        ))}
-      </MyTextField>
-    )
-  },
-)
+  return (
+    <ConfigurationTextField
+      value={slot.value}
+      label={slot.name}
+      select
+      helperText={slot.description}
+      onChange={evt => slot.set(evt.target.value)}
+    >
+      {choices.map(str => (
+        <MenuItem key={str} value={str}>
+          {str}
+        </MenuItem>
+      ))}
+    </ConfigurationTextField>
+  )
+})
 
-const FileSelectorWrapper = observer(
-  ({
-    slot,
-  }: {
-    slot: {
-      name: string
-      value: FileLocation
-      set: (arg: FileLocation) => void
-      description: string
-    }
-  }) => {
-    return (
-      <FileSelector
-        location={slot.value}
-        setLocation={location => slot.set(location)}
-        name={slot.name}
-        description={slot.description}
-        rootModel={getEnv(slot).pluginManager?.rootModel}
-      />
-    )
-  },
-)
+const FileSelectorWrapper = observer(function ({
+  slot,
+}: {
+  slot: {
+    name: string
+    value: FileLocation
+    set: (arg: FileLocation) => void
+    description: string
+  }
+}) {
+  return (
+    <FileSelector
+      location={slot.value}
+      setLocation={location => slot.set(location)}
+      name={slot.name}
+      description={slot.description}
+      rootModel={getEnv(slot).pluginManager?.rootModel}
+    />
+  )
+})
 
 const valueComponents = {
   string: StringEditor,
@@ -466,7 +220,6 @@ const SlotEditor = observer(
               title={`convert to ${
                 slot.isCallback ? 'regular value' : 'callback'
               }`}
-              color="secondary"
             >
               {!slot.isCallback ? (
                 <RadioButtonUncheckedIcon />

@@ -31,7 +31,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
     style="display: flex;"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1m9x3cr-MuiButtonBase-root-MuiIconButton-root-menuIcon"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
       tabindex="0"
       type="button"
     >
@@ -75,7 +75,7 @@ exports[`renders with a couple of categorized tracks 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
@@ -119,7 +119,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
     style="display: flex;"
   >
     <button
-      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1m9x3cr-MuiButtonBase-root-MuiIconButton-root-menuIcon"
+      class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1kgqocu-MuiButtonBase-root-MuiIconButton-root-menuIcon"
       tabindex="0"
       type="button"
     >
@@ -163,7 +163,7 @@ exports[`renders with a couple of uncategorized tracks 1`] = `
           class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-1laqsz7-MuiInputAdornment-root"
         >
           <button
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorSecondary MuiIconButton-sizeSmall css-16a6k96-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >

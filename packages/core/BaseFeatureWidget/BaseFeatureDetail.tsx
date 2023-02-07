@@ -6,6 +6,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Divider,
+  Link,
   Tooltip,
   Typography,
 } from '@mui/material'
@@ -66,7 +67,7 @@ export const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(1),
   },
   expandIcon: {
-    color: '#FFFFFF',
+    color: theme.palette.tertiary?.contrastText || '#fff',
   },
   field: {
     display: 'flex',
@@ -82,7 +83,7 @@ export const useStyles = makeStyles()(theme => ({
     minWidth: 90,
     borderBottom: '1px solid #0003',
     fontSize: 12,
-    background: theme.palette.grey[200],
+    background: theme.palette.action.disabledBackground,
     marginRight: theme.spacing(1),
     padding: theme.spacing(0.5),
   },
@@ -97,8 +98,8 @@ export const useStyles = makeStyles()(theme => ({
     wordBreak: 'break-word',
     maxHeight: 300,
     padding: theme.spacing(0.5),
-    background: theme.palette.grey[100],
-    border: `1px solid ${theme.palette.grey[300]}`,
+    background: theme.palette.action.disabledBackground,
+    border: `1px solid ${theme.palette.action.disabledBackground}`,
     boxSizing: 'border-box',
     overflow: 'auto',
   },
@@ -115,7 +116,7 @@ export function BaseCard({
     <Accordion
       expanded={expanded}
       onChange={() => setExpanded(s => !s)}
-      TransitionProps={{ unmountOnExit: true }}
+      TransitionProps={{ unmountOnExit: true, timeout: 150 }}
     >
       <AccordionSummary
         expandIcon={<ExpandMore className={classes.expandIcon} />}
@@ -163,7 +164,7 @@ export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
       {React.isValidElement(value) ? (
         value
       ) : isLink ? (
-        <SanitizedHTML html={`<a href="${value}">${value}</a>`} />
+        <Link href={`${value}`}>{`${value}`}</Link>
       ) : (
         <SanitizedHTML
           html={isObject(value) ? JSON.stringify(value) : String(value)}

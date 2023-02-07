@@ -29,7 +29,7 @@ exports[`open up a widget 1`] = `
       >
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-125qixp-MuiSvgIcon-root-expandIcon"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
           data-testid="ExpandMoreIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -66,7 +66,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Position
                 </div>
@@ -80,7 +80,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Name
                 </div>
@@ -96,7 +96,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Length
                 </div>
@@ -112,7 +112,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                 >
                   Type
                 </div>
@@ -136,7 +136,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   seq
@@ -153,7 +153,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   score
@@ -170,7 +170,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   qual
@@ -197,7 +197,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   MQ
@@ -214,7 +214,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   CIGAR
@@ -231,7 +231,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   length_on_ref
@@ -248,7 +248,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   template_length
@@ -265,7 +265,7 @@ exports[`open up a widget 1`] = `
                 class="css-1m8nxnb-field"
               >
                 <div
-                  class="css-1y9c7n2-fieldName"
+                  class="css-1q83rf3-fieldName"
                   style="width: 96px;"
                 >
                   seq_length

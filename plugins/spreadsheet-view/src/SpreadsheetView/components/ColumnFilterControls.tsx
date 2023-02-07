@@ -39,44 +39,46 @@ function FilterOperations({ filterModel }: { filterModel: any }) {
   return null
 }
 
-const ColumnFilterControls = observer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ({ viewModel, filterModel, columnNumber, height }: any) => {
-    const { classes } = useStyles()
+const ColumnFilterControls = observer(function ({
+  viewModel,
+  filterModel,
+  columnNumber,
+  height,
+}: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+any) {
+  const { classes } = useStyles()
 
-    const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
-    if (!columnDefinition) {
-      throw new Error('no column definition! filters are probably out of date')
-    }
-    return (
-      <Grid
-        container
-        direction="row"
-        className={classes.columnFilter}
-        style={{ height }}
-      >
-        <Grid item className={classes.filterIconBg}>
-          <FilterIcon className={classes.filterIcon} />
-        </Grid>
-        <Grid item>
-          <IconButton
-            onClick={() =>
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              getParent<any>(filterModel, 2).removeColumnFilter(filterModel)
-            }
-            title="remove filter"
-            color="secondary"
-          >
-            <CloseIcon />
-          </IconButton>
-          <Typography className={classes.columnName} component="span">
-            {columnDefinition.name}
-          </Typography>{' '}
-          <FilterOperations filterModel={filterModel} />
-        </Grid>
+  const columnDefinition = viewModel.spreadsheet.columns[columnNumber]
+  if (!columnDefinition) {
+    throw new Error('no column definition! filters are probably out of date')
+  }
+  return (
+    <Grid
+      container
+      direction="row"
+      className={classes.columnFilter}
+      style={{ height }}
+    >
+      <Grid item className={classes.filterIconBg}>
+        <FilterIcon className={classes.filterIcon} />
       </Grid>
-    )
-  },
-)
+      <Grid item>
+        <IconButton
+          onClick={() =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            getParent<any>(filterModel, 2).removeColumnFilter(filterModel)
+          }
+          title="remove filter"
+        >
+          <CloseIcon />
+        </IconButton>
+        <Typography className={classes.columnName} component="span">
+          {columnDefinition.name}
+        </Typography>{' '}
+        <FilterOperations filterModel={filterModel} />
+      </Grid>
+    </Grid>
+  )
+})
 
 export default ColumnFilterControls

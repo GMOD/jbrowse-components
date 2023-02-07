@@ -51,7 +51,6 @@ const TextFilter = observer(
                 <IconButton
                   aria-label="clear filter"
                   onClick={() => setTextFilterValue('')}
-                  color="secondary"
                 >
                   <ClearIcon />
                 </IconButton>

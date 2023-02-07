@@ -7,8 +7,8 @@ import { stringify, toLocale } from '@jbrowse/core/util'
 const useStyles = makeStyles()(theme => {
   const { primary, tertiary } = theme.palette
   const background = tertiary
-    ? alpha(tertiary.main, 0.7)
-    : alpha(primary.main, 0.7)
+    ? alpha(tertiary.light, 0.7)
+    : alpha(primary.light, 0.7)
   return {
     rubberband: {
       height: '100%',

@@ -1,6 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
-import { Button, FormGroup, Typography, alpha } from '@mui/material'
+import { Button, IconButton, FormGroup, Typography, alpha } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
@@ -36,6 +36,7 @@ const useStyles = makeStyles()(theme => ({
 
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
+    color: theme.palette.text.primary,
     height: WIDGET_HEIGHT,
     margin: SPACING,
   },
@@ -57,15 +58,14 @@ const useStyles = makeStyles()(theme => ({
 const HeaderButtons = observer(({ model }: { model: LGV }) => {
   const { classes } = useStyles()
   return (
-    <Button
+    <IconButton
       onClick={model.activateTrackSelector}
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
-      color="secondary"
     >
       <TrackSelectorIcon className={classes.buttonSpacer} />
-    </Button>
+    </IconButton>
   )
 })
 

@@ -2,7 +2,9 @@
 import { lazy } from 'react'
 import clone from 'clone'
 import shortid from 'shortid'
+import { defaultThemes } from '@jbrowse/core/ui/theme'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   readConfObject,
   getConf,
@@ -16,11 +18,17 @@ import {
   JBrowsePlugin,
   DialogComponentType,
 } from '@jbrowse/core/util/types'
-
 import addSnackbarToModel from '@jbrowse/core/ui/SnackbarModel'
-import { getContainingView } from '@jbrowse/core/util'
-import { observable } from 'mobx'
+import { ThemeOptions } from '@mui/material'
 import {
+  getContainingView,
+  localStorageGetItem,
+  localStorageSetItem,
+} from '@jbrowse/core/util'
+import { autorun, observable } from 'mobx'
+import {
+  addDisposer,
+  cast,
   getMembers,
   getParent,
   getRoot,
@@ -31,7 +39,6 @@ import {
   isReferenceType,
   types,
   walk,
-  cast,
   IAnyStateTreeNode,
   Instance,
   SnapshotIn,
@@ -61,6 +68,8 @@ export declare interface ReactProps {
 type AnyConfiguration =
   | AnyConfigurationModel
   | SnapshotOut<AnyConfigurationModel>
+
+type ThemeMap = { [key: string]: ThemeOptions }
 
 /**
  * #stateModel JBrowseWebSessionModel
@@ -150,30 +159,76 @@ export default function sessionModelFactory(
        */
       drawerPosition: types.optional(
         types.string,
-        localStorage.getItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') || 'right',
+      ),
+
+      /**
+       * #property
+       */
+      sessionThemeName: types.optional(
+        types.string,
+        () => localStorageGetItem('themeName') || 'default',
       ),
     })
     .volatile((/* self */) => ({
       /**
-       * !volatile
+       * #volatile
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
        * kind of thing it is.
        */
       selection: undefined,
       /**
-       * !volatile
+       * #volatile
        * this is the current "task" that is being performed in the UI.
        * this is usually an object of the form
        * `{ taskName: "configure", target: thing_being_configured }`
        */
       task: undefined,
-
+      /**
+       * #volatile
+       */
       queueOfDialogs: observable.array(
         [] as [DialogComponentType, ReactProps][],
       ),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get jbrowse() {
+        return getParent<any>(self).jbrowse
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      allThemes(): ThemeMap {
+        const extraThemes = getConf(self.jbrowse, 'extraThemes')
+        return { ...defaultThemes, ...extraThemes }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get themeName() {
+        const { sessionThemeName } = self
+        const all = self.allThemes()
+        return all[sessionThemeName] ? sessionThemeName : 'default'
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get theme() {
+        const configTheme = getConf(self.jbrowse, 'theme')
+        const all = self.allThemes()
+        return createJBrowseTheme(configTheme, all, self.themeName)
+      },
+
       /**
        * #getter
        */
@@ -198,26 +253,26 @@ export default function sessionModelFactory(
        * #getter
        */
       get shareURL() {
-        return getConf(getParent<any>(self).jbrowse, 'shareURL')
+        return getConf(self.jbrowse, 'shareURL')
       },
       /**
        * #getter
        */
       get rpcManager() {
-        return getParent<any>(self).jbrowse.rpcManager as RpcManager
+        return self.jbrowse.rpcManager as RpcManager
       },
 
       /**
        * #getter
        */
       get configuration(): AnyConfigurationModel {
-        return getParent<any>(self).jbrowse.configuration
+        return self.jbrowse.configuration
       },
       /**
        * #getter
        */
       get assemblies(): AnyConfigurationModel[] {
-        return getParent<any>(self).jbrowse.assemblies
+        return self.jbrowse.assemblies
       },
       /**
        * #getter
@@ -245,10 +300,7 @@ export default function sessionModelFactory(
        * #getter
        */
       get connections(): AnyConfigurationModel[] {
-        return [
-          ...self.sessionConnections,
-          ...getParent<any>(self).jbrowse.connections,
-        ]
+        return [...self.sessionConnections, ...self.jbrowse.connections]
       },
       /**
        * #getter
@@ -303,7 +355,9 @@ export default function sessionModelFactory(
        * #method
        */
       renderProps() {
-        return { theme: getConf(self, 'theme') }
+        return {
+          theme: this.theme,
+        }
       },
 
       /**
@@ -347,6 +401,12 @@ export default function sessionModelFactory(
       /**
        * #action
        */
+      setThemeName(name: string) {
+        self.sessionThemeName = name
+      },
+      /**
+       * #action
+       */
       moveViewUp(id: string) {
         const idx = self.views.findIndex(v => v.id === id)
 
@@ -376,7 +436,6 @@ export default function sessionModelFactory(
        */
       setDrawerPosition(arg: string) {
         self.drawerPosition = arg
-        localStorage.setItem('drawerPosition', arg)
       },
       /**
        * #action
@@ -1022,6 +1081,17 @@ export default function sessionModelFactory(
             icon: CopyIcon,
           },
         ]
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            localStorageSetItem('drawerPosition', self.drawerPosition)
+            localStorageSetItem('themeName', self.themeName)
+          }),
+        )
       },
     }))
 

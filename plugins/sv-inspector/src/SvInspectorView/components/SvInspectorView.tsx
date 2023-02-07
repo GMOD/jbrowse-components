@@ -1,7 +1,6 @@
 import React from 'react'
 import { observer } from 'mobx-react'
 import { IconButton, Grid, FormControlLabel, Checkbox } from '@mui/material'
-import { grey } from '@mui/material/colors'
 import { makeStyles } from 'tss-react/mui'
 import { ResizeHandle } from '@jbrowse/core/ui'
 
@@ -13,17 +12,15 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
 const headerHeight = 52
 
-const style = {
-  width: 4,
-  background: '#ccc',
-  boxSizing: 'border-box',
-  borderTop: '1px solid #fafafa',
-}
-
 const useStyles = makeStyles()(theme => ({
+  resizeHandle: {
+    width: 4,
+    background: theme.palette.action.selected,
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  },
   root: {
     marginBottom: theme.spacing(1),
-    background: 'white',
     overflow: 'hidden',
   },
   header: {
@@ -31,8 +28,6 @@ const useStyles = makeStyles()(theme => ({
     whiteSpace: 'nowrap',
     boxSizing: 'border-box',
     height: headerHeight,
-    background: grey[200],
-    // borderBottom: '1px solid #a2a2a2',
   },
   viewControls: {
     margin: 0,
@@ -46,7 +41,6 @@ const useStyles = makeStyles()(theme => ({
   },
   circularViewOptions: {
     padding: theme.spacing(1),
-    background: grey[200],
   },
 }))
 
@@ -65,7 +59,6 @@ const ViewControls = observer(({ model }: { model: SvInspectorViewModel }) => {
           onClick={() => model.setImportMode()}
           title="open a tabular file"
           data-testid="sv_inspector_view_open"
-          color="secondary"
         >
           <FolderOpenIcon />
         </IconButton>
@@ -74,35 +67,37 @@ const ViewControls = observer(({ model }: { model: SvInspectorViewModel }) => {
   )
 })
 
-const CircularViewOptions = observer(
-  ({ svInspector }: { svInspector: SvInspectorViewModel }) => {
-    const { classes } = useStyles()
+const CircularViewOptions = observer(function ({
+  svInspector,
+}: {
+  svInspector: SvInspectorViewModel
+}) {
+  const { classes } = useStyles()
 
-    return (
-      <Grid
-        container
-        className={classes.circularViewOptions}
-        style={{ height: svInspector.circularViewOptionsBarHeight }}
-      >
-        <Grid item>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
-                onChange={e =>
-                  svInspector.setOnlyDisplayRelevantRegionsInCircularView(
-                    e.target.checked,
-                  )
-                }
-              />
-            }
-            label="show only regions with data"
-          />
-        </Grid>
+  return (
+    <Grid
+      container
+      className={classes.circularViewOptions}
+      style={{ height: svInspector.circularViewOptionsBarHeight }}
+    >
+      <Grid item>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
+              onChange={e =>
+                svInspector.setOnlyDisplayRelevantRegionsInCircularView(
+                  e.target.checked,
+                )
+              }
+            />
+          }
+          label="show only regions with data"
+        />
       </Grid>
-    )
-  },
-)
+    </Grid>
+  )
+})
 
 function SvInspectorView({ model }: { model: SvInspectorViewModel }) {
   const { classes } = useStyles()
@@ -137,7 +132,7 @@ function SvInspectorView({ model }: { model: SvInspectorViewModel }) {
               }}
               vertical
               flexbox
-              style={style}
+              className={classes.resizeHandle}
             />
             <div style={{ width: model.circularView.width }}>
               <CircularViewOptions svInspector={model} />

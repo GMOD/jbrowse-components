@@ -4,9 +4,9 @@ import { makeStyles } from 'tss-react/mui'
 // locals
 import ResizeHandle from './ResizeHandle'
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   resizeBar: {
-    background: 'lightgrey',
+    background: theme.palette.action.disabledBackground,
     height: 12,
     position: 'relative',
     overflow: 'hidden',
@@ -15,16 +15,15 @@ const useStyles = makeStyles()({
     position: 'absolute',
     height: '100%',
     pointerEvents: 'none',
-    background: 'black',
+    background: theme.palette.divider,
     width: 1,
   },
   hiddenTick: {
     position: 'absolute',
     height: '100%',
-    background: 'lightgrey',
     width: 5,
   },
-})
+}))
 
 export function useResizeBar() {
   const ref = useRef<HTMLDivElement>(null)

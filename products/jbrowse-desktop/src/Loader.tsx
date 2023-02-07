@@ -10,6 +10,7 @@ import { StringParam, useQueryParam } from 'use-query-params'
 import { loadPluginManager } from './StartScreen/util'
 import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
+import { localStorageGetItem } from '@jbrowse/core/util'
 
 const Loader = observer(() => {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
@@ -44,9 +45,14 @@ const Loader = observer(() => {
       }
     })()
   }, [config, handleSetPluginManager])
-
   return (
-    <ThemeProvider theme={createJBrowseTheme()}>
+    <ThemeProvider
+      theme={createJBrowseTheme(
+        undefined,
+        undefined,
+        localStorageGetItem('themeName') || '',
+      )}
+    >
       <CssBaseline />
 
       {error ? <ErrorMessage error={error} /> : null}

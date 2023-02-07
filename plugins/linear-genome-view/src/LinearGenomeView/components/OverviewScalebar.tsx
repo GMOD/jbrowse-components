@@ -7,7 +7,6 @@ import { observer } from 'mobx-react'
 import Base1DView, { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
 import { ContentBlock } from '@jbrowse/core/util/blockTypes'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
 // locals
 import {
@@ -17,6 +16,8 @@ import {
 } from '..'
 import { chooseGridPitch } from '../util'
 import OverviewRubberband from './OverviewRubberband'
+import Cytobands from './Cytobands'
+import { getCytobands } from './util'
 
 const wholeSeqSpacer = 2
 
@@ -34,11 +35,11 @@ const useStyles = makeStyles()(theme => ({
     height: HEADER_OVERVIEW_HEIGHT,
   },
   scalebarContigForward: {
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
   },
   scalebarContigReverse: {
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='%23ddd'/%3E%3C/svg%3E")`,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M6 0L0 4.5L6 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
   },
 
@@ -134,252 +135,91 @@ const Polygon = observer(
 
 type LGV = LinearGenomeViewModel
 
-// rounded rect from https://stackoverflow.com/a/45889603/2129219
-// prettier-ignore
-function rightRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
-  return "M" + x + "," + y
-       + "h" + (width - radius)
-       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + radius
-       + "v" + (height - 2 * radius)
-       + "a" + radius + "," + radius + " 0 0 1 " + -radius + "," + radius
-       + "h" + (radius - width)
-       + "z";
-}
+const OverviewBox = observer(function ({
+  scale,
+  model,
+  block,
+  overview,
+}: {
+  scale: number
+  model: LGV
+  block: ContentBlock
+  overview: Base1DViewModel
+}) {
+  const { classes, cx } = useStyles()
+  const theme = useTheme()
+  const { cytobandOffset, showCytobands } = model
+  const { start, end, reversed, refName, assemblyName } = block
+  const { majorPitch } = chooseGridPitch(scale, 120, 15)
+  const { assemblyManager } = getSession(model)
+  const assembly = assemblyManager.get(assemblyName)
+  const refNameColor = assembly?.getRefNameColor(refName)
 
-// prettier-ignore
-function leftRoundedRect(x: number, y: number, width: number, height: number, radius: number ) {
-  return "M" + (x + radius) + "," + y
-       + "h" + (width - radius)
-       + "v" + height
-       + "h" + (radius - width)
-       + "a" + radius + "," + radius + " 0 0 1 " + (-radius) + "," + (-radius)
-       + "v" + (2 * radius - height)
-       + "a" + radius + "," + radius + " 0 0 1 " + radius + "," + (-radius)
-       + "z";
-}
+  const tickLabels = []
+  for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
+    const offsetLabel = (i + 1) * majorPitch
+    tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
+  }
 
-const colorMap: { [key: string]: string | undefined } = {
-  gneg: 'rgb(227,227,227)',
-  gpos25: 'rgb(142,142,142)',
-  gpos50: 'rgb(85,85,85)',
-  gpos100: 'rgb(0,0,0)',
-  gpos75: 'rgb(57,57,57)',
-  gvar: 'rgb(0,0,0)',
-  stalk: 'rgb(127,127,127)',
-  acen: '#800',
-}
+  const canDisplayCytobands =
+    showCytobands && getCytobands(assembly, block.refName).length
 
-function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (
-    assembly?.cytobands
-      ?.map(f => ({
-        refName: assembly.getCanonicalRefName(f.get('refName')),
-        start: f.get('start'),
-        end: f.get('end'),
-        type: f.get('type'),
-      }))
-      .filter(f => f.refName === refName) || []
-  )
-}
+    <div>
+      {/* name of sequence */}
+      <Typography
+        style={{
+          left: block.offsetPx + 3,
+          color: canDisplayCytobands
+            ? theme.palette.primary.contrastText
+            : refNameColor,
+        }}
+        className={classes.scalebarRefName}
+      >
+        {refName}
+      </Typography>
+      <div
+        className={cx(
+          classes.scalebarContig,
+          canDisplayCytobands
+            ? undefined
+            : reversed
+            ? classes.scalebarContigReverse
+            : classes.scalebarContigForward,
+          !canDisplayCytobands ? classes.scalebarBorder : undefined,
+        )}
+        style={{
+          left: block.offsetPx + cytobandOffset,
+          width: block.widthPx,
+          borderColor: refNameColor,
+        }}
+      >
+        {!canDisplayCytobands
+          ? tickLabels.map((tickLabel, labelIdx) => (
+              <Typography
+                key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
+                className={classes.scalebarLabel}
+                variant="body2"
+                style={{
+                  left: ((labelIdx + 1) * majorPitch) / scale,
+                  pointerEvents: 'none',
+                  color: refNameColor,
+                }}
+              >
+                {getTickDisplayStr(tickLabel, overview.bpPerPx)}
+              </Typography>
+            ))
+          : null}
 
-const Cytobands = observer(
-  ({
-    overview,
-    block,
-    assembly,
-  }: {
-    overview: Base1DViewModel
-    assembly?: Assembly
-    block: ContentBlock
-  }) => {
-    const { offsetPx, reversed } = block
-    const cytobands = getCytobands(assembly, block.refName)
-    const coords = cytobands.map(f => {
-      const { refName, start, end, type } = f
-      return [
-        overview.bpToPx({
-          refName,
-          coord: start,
-        }),
-        overview.bpToPx({
-          refName,
-          coord: end,
-        }),
-        type,
-      ]
-    })
-
-    const arr = cytobands || []
-    const lcap = reversed ? arr.length - 1 : 0
-    const rcap = reversed ? 0 : arr.length - 1
-
-    let firstCent = true
-    return (
-      <g transform={`translate(-${offsetPx})`}>
-        {coords.map(([start, end, type], index) => {
-          const key = `${start}-${end}-${type}`
-          if (type === 'acen' && firstCent) {
-            firstCent = false
-            return (
-              <polygon
-                key={key}
-                points={[
-                  [start, 0],
-                  [end, HEADER_OVERVIEW_HEIGHT / 2],
-                  [start, HEADER_OVERVIEW_HEIGHT],
-                ].toString()}
-                fill={colorMap[type]}
-              />
-            )
-          }
-          if (type === 'acen' && !firstCent) {
-            return (
-              <polygon
-                key={key}
-                points={[
-                  [start, HEADER_OVERVIEW_HEIGHT / 2],
-                  [end, 0],
-                  [end, HEADER_OVERVIEW_HEIGHT],
-                ].toString()}
-                fill={colorMap[type]}
-              />
-            )
-          }
-
-          if (lcap === index) {
-            return (
-              <path
-                key={key}
-                d={leftRoundedRect(
-                  Math.min(start, end),
-                  0,
-                  Math.abs(end - start),
-                  HEADER_OVERVIEW_HEIGHT,
-                  8,
-                )}
-                fill={colorMap[type]}
-              />
-            )
-          } else if (rcap === index) {
-            return (
-              <path
-                key={key}
-                d={rightRoundedRect(
-                  Math.min(start, end),
-                  0,
-                  Math.abs(end - start) - 2,
-                  HEADER_OVERVIEW_HEIGHT,
-                  8,
-                )}
-                fill={colorMap[type]}
-              />
-            )
-          } else {
-            return (
-              <rect
-                key={key}
-                x={Math.min(start, end)}
-                y={0}
-                width={Math.abs(end - start)}
-                height={HEADER_OVERVIEW_HEIGHT}
-                fill={colorMap[type]}
-              />
-            )
-          }
-        })}
-      </g>
-    )
-  },
-)
-
-const OverviewBox = observer(
-  ({
-    scale,
-    model,
-    block,
-    overview,
-  }: {
-    scale: number
-    model: LGV
-    block: ContentBlock
-    overview: Base1DViewModel
-  }) => {
-    const { classes, cx } = useStyles()
-    const { cytobandOffset, showCytobands } = model
-    const { start, end, reversed, refName, assemblyName } = block
-    const { majorPitch } = chooseGridPitch(scale, 120, 15)
-    const { assemblyManager } = getSession(model)
-    const assembly = assemblyManager.get(assemblyName)
-    const refNameColor = assembly?.getRefNameColor(refName)
-
-    const tickLabels = []
-    for (let i = 0; i < Math.floor((end - start) / majorPitch); i++) {
-      const offsetLabel = (i + 1) * majorPitch
-      tickLabels.push(reversed ? end - offsetLabel : start + offsetLabel)
-    }
-
-    const canDisplayCytobands =
-      showCytobands && getCytobands(assembly, block.refName).length
-
-    return (
-      <div>
-        {/* name of sequence */}
-        <Typography
-          style={{
-            left: block.offsetPx + 3,
-            color: canDisplayCytobands ? 'black' : refNameColor,
-          }}
-          className={classes.scalebarRefName}
-        >
-          {refName}
-        </Typography>
-        <div
-          className={cx(
-            classes.scalebarContig,
-            canDisplayCytobands
-              ? undefined
-              : reversed
-              ? classes.scalebarContigReverse
-              : classes.scalebarContigForward,
-            !canDisplayCytobands ? classes.scalebarBorder : undefined,
-          )}
-          style={{
-            left: block.offsetPx + cytobandOffset,
-            width: block.widthPx,
-            borderColor: refNameColor,
-          }}
-        >
-          {!canDisplayCytobands
-            ? tickLabels.map((tickLabel, labelIdx) => (
-                <Typography
-                  key={`${JSON.stringify(block)}-${tickLabel}-${labelIdx}`}
-                  className={classes.scalebarLabel}
-                  variant="body2"
-                  style={{
-                    left: ((labelIdx + 1) * majorPitch) / scale,
-                    pointerEvents: 'none',
-                    color: refNameColor,
-                  }}
-                >
-                  {getTickDisplayStr(tickLabel, overview.bpPerPx)}
-                </Typography>
-              ))
-            : null}
-
-          {canDisplayCytobands ? (
-            <svg style={{ width: '100%' }}>
-              <Cytobands
-                overview={overview}
-                assembly={assembly}
-                block={block}
-              />
-            </svg>
-          ) : null}
-        </div>
+        {canDisplayCytobands ? (
+          <svg style={{ width: '100%' }}>
+            <Cytobands overview={overview} assembly={assembly} block={block} />
+          </svg>
+        ) : null}
       </div>
-    )
-  },
-)
+    </div>
+  )
+})
 
 const Scalebar = observer(
   ({

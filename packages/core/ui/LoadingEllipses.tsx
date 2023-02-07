@@ -12,18 +12,18 @@ const useStyles = makeStyles()({
       textAlign: 'left',
       animation: `${keyframes`
       0% {
-        content: '';
-      }
-      25% {
-          content: '.';
-      }
-      50% {
-        content: '..';
-      }
-      75% {
         content: '...';
       }
-      `} 1.4s infinite ease-in-out`,
+      25% {
+          content: '';
+      }
+      50% {
+        content: '.';
+      }
+      75% {
+        content: '..';
+      }
+      `} 1.2s infinite ease-in-out`,
     },
   },
 })

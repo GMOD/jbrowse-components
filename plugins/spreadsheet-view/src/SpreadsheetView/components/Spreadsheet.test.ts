@@ -1,4 +1,4 @@
-import { numToColName } from './Spreadsheet'
+import { numToColName } from './util'
 
 describe('num to col name', () => {
   const cases = [

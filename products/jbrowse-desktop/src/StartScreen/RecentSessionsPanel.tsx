@@ -198,12 +198,7 @@ export default function RecentSessionPanel({
           />
         </Grid>
         <Grid item>
-          <Button
-            variant="contained"
-            color="inherit"
-            component="label"
-            onClick={() => {}}
-          >
+          <Button variant="contained" component="label" onClick={() => {}}>
             Open saved session (.jbrowse) file
             <input
               type="file"

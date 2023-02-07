@@ -42,10 +42,7 @@ const StringArrayEditor = observer(
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        color="secondary"
-                        onClick={() => slot.removeAtIndex(idx)}
-                      >
+                      <IconButton onClick={() => slot.removeAtIndex(idx)}>
                         <DeleteIcon />
                       </IconButton>
                     </InputAdornment>

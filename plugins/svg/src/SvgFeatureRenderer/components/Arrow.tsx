@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { SceneGraph } from '@jbrowse/core/util/layouts'
 import { Region, Feature } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 
 const Arrow = ({
   feature,
@@ -24,7 +25,10 @@ const Arrow = ({
   const reverseFlip = region.reversed ? -1 : 1
   const offset = 7 * strand * reverseFlip
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
-  const color2 = readConfObject(config, 'color2', { feature })
+
+  const c = readConfObject(config, 'color2', { feature })
+  const theme = useTheme()
+  const color2 = c === '#f0f' ? theme.palette.text.disabled : c
   const p =
     strand * reverseFlip === -1
       ? left
@@ -43,6 +47,7 @@ const Arrow = ({
           [p + offset, y],
         ].toString()}
         stroke={color2}
+        fill={color2}
       />
     </>
   ) : null

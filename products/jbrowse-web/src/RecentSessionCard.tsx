@@ -53,7 +53,7 @@ function RecentSessionCard({
             setMenuAnchorEl(event.currentTarget)
           }}
         >
-          <MoreVertIcon color="secondary" />
+          <MoreVertIcon />
         </IconButton>
       </ListItem>
       <Menu
@@ -65,7 +65,7 @@ function RecentSessionCard({
       >
         <MenuItem onClick={() => handleMenuClose('delete')}>
           <ListItemIcon>
-            <DeleteIcon color="secondary" />
+            <DeleteIcon />
           </ListItemIcon>
           <Typography variant="inherit">Delete</Typography>
         </MenuItem>

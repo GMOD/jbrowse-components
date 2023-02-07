@@ -107,7 +107,6 @@ const FilterReactComponent = observer(
                 <IconButton
                   aria-label="clear filter"
                   onClick={() => filterModel.setString('')}
-                  color="secondary"
                 >
                   <ClearIcon />
                 </IconButton>

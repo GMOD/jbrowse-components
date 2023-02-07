@@ -25,7 +25,7 @@ exports[`open up a widget 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-125qixp-MuiSvgIcon-root-expandIcon"
+        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ymsoo8-MuiSvgIcon-root-expandIcon"
         data-testid="ExpandMoreIcon"
         focusable="false"
         viewBox="0 0 24 24"
@@ -62,7 +62,7 @@ exports[`open up a widget 1`] = `
               class="css-1m8nxnb-field"
             >
               <div
-                class="css-1y9c7n2-fieldName"
+                class="css-1q83rf3-fieldName"
               >
                 Position
               </div>
@@ -76,7 +76,7 @@ exports[`open up a widget 1`] = `
               class="css-1m8nxnb-field"
             >
               <div
-                class="css-1y9c7n2-fieldName"
+                class="css-1q83rf3-fieldName"
               >
                 Length
               </div>
@@ -100,7 +100,7 @@ exports[`open up a widget 1`] = `
               class="css-1m8nxnb-field"
             >
               <div
-                class="css-1y9c7n2-fieldName"
+                class="css-1q83rf3-fieldName"
                 style="width: 40px;"
               >
                 score
