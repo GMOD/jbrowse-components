@@ -17,12 +17,12 @@ export default ConfigurationSchema(
         'list of assembly names contained in this REST API. only used if the assembly_names optional resource is not implemented',
       defaultValue: [],
     },
-    extra_query: {
+    extraQuery: {
       description: 'additional URL query values to pass to the REST API',
       type: 'frozen',
       defaultValue: {},
     },
-    optional_resources: ConfigurationSchema(
+    optionalResources: ConfigurationSchema(
       'JBrowseRESTFeatureAdapterOptionalResources',
       {
         assembly_names: {
@@ -31,13 +31,13 @@ export default ConfigurationSchema(
           type: 'boolean',
           defaultValue: true,
         },
-        has_data_for_ref: {
+        has_data_for_reference: {
           description:
             'set to true if the REST endpoint provides a list of reference sequence names for its configured assemblies',
           type: 'boolean',
           defaultValue: true,
         },
-        get_ref_names: {
+        reference_sequences: {
           description:
             'set to true if the REST endpoint provides a list of reference sequence names for its configured assemblies',
           type: 'boolean',

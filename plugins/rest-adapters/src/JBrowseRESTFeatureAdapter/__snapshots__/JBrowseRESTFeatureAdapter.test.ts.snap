@@ -2,8 +2,30 @@
 
 exports[`adapter can fetch features and stats from mocked API with no region stats 1`] = `
 {
-  "basesCovered": 1000001,
+  "basesCovered": 1000000,
   "featureCount": 1,
-  "featureDensity": 9.99999000001e-7,
+  "featureDensity": 0.000001,
+}
+`;
+
+exports[`adapter can fetch features and stats from mocked API with region stats and REST assembly names 1`] = `
+{
+  "basesCovered": 400,
+  "featureCount": 20,
+  "featureDensity": 0.05,
+}
+`;
+
+exports[`adapter can fetch features and stats from mocked API with region stats and REST assembly names 2`] = `
+{
+  "basesCovered": 100,
+  "featureCount": 20,
+  "featureDensity": 0.2,
+  "scoreMax": 100,
+  "scoreMean": 20,
+  "scoreMin": 42,
+  "scoreStdDev": 10.25978352085154,
+  "scoreSum": 400,
+  "scoreSumSquares": 10000,
 }
 `;

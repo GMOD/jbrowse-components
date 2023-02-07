@@ -17,6 +17,8 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type MyConfigSchema from './configSchema'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import {
+  FeatureCoverageStats,
+  FeatureScoreStats,
   isMinimumFeatureCoverageStats,
   isMinimumFeatureScoreStats,
   rectifyStats,
@@ -49,14 +51,14 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   private validateConfiguration() {
     if (
       !(
-        this.implementsOptionalResource('has_data_for_ref') ||
-        this.implementsOptionalResource('get_ref_names')
+        this.implementsOptionalResource('has_data_for_reference') ||
+        this.implementsOptionalResource('reference_sequences')
       )
     ) {
       throw new Error(
         `REST API at ${this.getConf(
           'location',
-        )} must implement at least one of has_data_for_ref or get_ref_names'`,
+        )} must implement at least one of has_data_for_reference or reference_sequences'`,
       )
     }
 
@@ -73,7 +75,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   }
 
   protected implementsOptionalResource(resourceName: string) {
-    const value = getConf(this, ['optional_resources', resourceName])
+    const value = getConf(this, ['optionalResources', resourceName])
     return value === true
   }
 
@@ -89,7 +91,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
 
     // add the extra_query vars if present
     const extra_query = Object.entries(
-      (getConf(this, 'extra_query') || {}) as Record<string, string>,
+      (getConf(this, 'extraQuery') || {}) as Record<string, string>,
     )
     if (extra_query.length) {
       const p = new URL(url)
@@ -108,10 +110,21 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     try {
       return (await result.json()) as unknown
     } catch (e) {
-      throw new Error(
-        `invalid response from REST API call ${relativeUrl}: ${e}`,
-      )
+      throw this.invalidResponseError(relativeUrl, e, e)
     }
+  }
+
+  private invalidResponseError(
+    relativeUrl: string,
+    error: unknown,
+    cause?: unknown,
+  ) {
+    return new Error(
+      `invalid response from JBrowse REST API call ${this.makeFetchUrl(
+        relativeUrl,
+      )}: ${error}`,
+      { cause },
+    )
   }
 
   protected async fetchFromRestApi(relativeUrl: string, signal?: AbortSignal) {
@@ -137,11 +150,11 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     refName: string,
     opts?: BaseOptions,
   ): Promise<boolean> {
-    if (this.implementsOptionalResource('has_data_for_ref')) {
+    if (this.implementsOptionalResource('has_data_for_reference')) {
       const assemblyNames: string[] = await this.getRequestAssemblyNames(opts)
 
       return (await this.fetchJsonFromRestApi(
-        'has_data_for_ref/' +
+        'has_data_for_reference/' +
           encodeURIComponent(assemblyNames[0]) +
           '/' +
           encodeURIComponent(refName),
@@ -155,6 +168,13 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   /** get a list of the configured assemblies */
   public async getAssemblyNames(opts?: BaseOptions): Promise<string[]> {
     if (this.implementsOptionalResource('assembly_names')) {
+      const response = await this.fetchJsonFromRestApi(
+        'assembly_names',
+        opts?.signal,
+      )
+      if (Array.isArray(response)) {
+        return response
+      }
     }
     return this.getConf('assemblyNames')
   }
@@ -162,21 +182,22 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
   /*
    * @return Promise<string[]>
    */
-  public async getRefNames(opts: BaseOptions): Promise<string[]> {
+  public async getRefNames(opts?: BaseOptions): Promise<string[]> {
     // if opts.regions is passed, use that for assemblies, otherwise
     // use the configured assemblyNames
     const assemblyNames: string[] = await this.getRequestAssemblyNames(opts)
 
-    const json = await this.fetchJsonFromRestApi(
-      'reference_sequences/' + encodeURIComponent(assemblyNames[0]),
-      opts?.signal,
-    )
-    if (!Array.isArray(json)) {
-      throw new Error(
-        'invalid reference_sequences API response, the response must be a JSON array of string reference sequence names',
-      )
+    const relativeUrl =
+      'reference_sequences/' + encodeURIComponent(assemblyNames[0])
+
+    const json = await this.fetchJsonFromRestApi(relativeUrl, opts?.signal)
+    if (Array.isArray(json)) {
+      return json
     }
-    return json
+    throw this.invalidResponseError(
+      relativeUrl,
+      'response must be a JSON array of reference sequence names',
+    )
   }
 
   private async getRequestAssemblyNames(opts?: BaseOptions) {
@@ -195,7 +216,10 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
     return assemblyNames
   }
 
-  public async getRegionStats(region: Region, opts?: BaseOptions) {
+  public async getRegionStats(
+    region: Region,
+    opts?: BaseOptions,
+  ): Promise<FeatureCoverageStats | FeatureScoreStats> {
     if (!this.implementsOptionalResource('region_stats')) {
       return super.getRegionStats(region, opts)
     }
@@ -216,7 +240,7 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
       return {
         ...stats,
         featureDensity: (stats.featureCount || 1) / stats.basesCovered,
-      }
+      } as FeatureCoverageStats
     } else {
       throw new TypeError(`region stats returned from ${url} is not valid`)
     }
