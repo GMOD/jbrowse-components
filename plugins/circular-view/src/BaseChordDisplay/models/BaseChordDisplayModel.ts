@@ -48,19 +48,17 @@ export const BaseChordDisplayModel = types
       assemblyName: types.maybe(types.string),
     }),
   )
-  .volatile(() => {
-    return {
-      // NOTE: all this volatile stuff has to be filled in at once
-      // so that it stays consistent
-      filled: false,
-      reactElement: undefined as React.ReactElement | undefined,
-      data: undefined,
-      html: undefined as string | undefined,
-      message: '',
-      renderingComponent: undefined as undefined | AnyReactComponentType,
-      refNameMap: undefined as Record<string, string> | undefined,
-    }
-  })
+  .volatile(() => ({
+    // NOTE: all this volatile stuff has to be filled in at once
+    // so that it stays consistent
+    filled: false,
+    reactElement: undefined as React.ReactElement | undefined,
+    data: undefined,
+    html: undefined as string | undefined,
+    message: '',
+    renderingComponent: undefined as undefined | AnyReactComponentType,
+    refNameMap: undefined as Record<string, string> | undefined,
+  }))
   .actions(self => {
     const { pluginManager } = getEnv(self)
     const track = self

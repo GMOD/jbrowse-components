@@ -1,3 +1,4 @@
+import React from 'react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   cast,
@@ -10,6 +11,8 @@ import {
 } from 'mobx-state-tree'
 import { Region } from '@jbrowse/core/util/types/mst'
 import { transaction } from 'mobx'
+import { saveAs } from 'file-saver'
+import { renderToSvg } from '../svgcomponents/SVGCircularView'
 import {
   AnyConfigurationModel,
   readConfObject,
@@ -19,13 +22,19 @@ import {
   getSession,
   clamp,
   isSessionModelWithWidgets,
-  Region as IRegion,
 } from '@jbrowse/core/util'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 // locals
-import { calculateStaticSlices, sliceIsVisible } from './slices'
+import { calculateStaticSlices, sliceIsVisible, SliceRegion } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  filename?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Wrapper?: React.FC<any>
+}
 
 /**
  * #stateModel CircularView
@@ -121,12 +130,6 @@ function stateModelFactory(pluginManager: PluginManager) {
           )
         }
         return self.volatileWidth
-      },
-      /**
-       * #getter
-       */
-      get staticSlices() {
-        return calculateStaticSlices(self)
       },
 
       /**
@@ -263,20 +266,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * elide regions that are too small to see reasonably
        */
       get elidedRegions() {
-        const visible: (
-          | {
-              elided: true
-              widthBp: number
-              regions: IRegion[]
-            }
-          | {
-              elided: false
-              widthBp: number
-              start: number
-              end: number
-              refName: string
-            }
-        )[] = []
+        const visible: SliceRegion[] = []
         self.displayedRegions.forEach(region => {
           const widthBp = region.end - region.start
           const widthPx = widthBp / self.bpPerPx
@@ -329,6 +319,14 @@ function stateModelFactory(pluginManager: PluginManager) {
           self.volatileWidth !== undefined &&
           this.assemblyNames.every(a => assemblyManager.get(a)?.initialized)
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get staticSlices() {
+        return calculateStaticSlices(self)
       },
     }))
     .views(self => ({
@@ -530,14 +528,15 @@ function stateModelFactory(pluginManager: PluginManager) {
         const displayConf = configuration.displays.find(
           (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
         )
-        const track = trackType.stateModel.create({
-          ...initialSnapshot,
-          name,
-          type,
-          configuration,
-          displays: [{ type: displayConf.type, configuration: displayConf }],
-        })
-        self.tracks.push(track)
+        self.tracks.push(
+          trackType.stateModel.create({
+            ...initialSnapshot,
+            name,
+            type,
+            configuration,
+            displays: [{ type: displayConf.type, configuration: displayConf }],
+          }),
+        )
       },
 
       /**
@@ -560,6 +559,16 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.lockedFitToWindow = !self.lockedFitToWindow
         this.setModelViewWhenAdjust(self.atMinBpPerPx)
         return self.lockedFitToWindow
+      },
+      /**
+       * #action
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
       },
     }))
 }
