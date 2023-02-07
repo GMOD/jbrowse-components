@@ -5,6 +5,7 @@ import { reduce } from 'rxjs/operators'
 import { NoAssemblyRegion } from './types'
 import { Feature } from './simpleFeature'
 
+/** absolute minimum set of region stats */
 interface MinimumFeatureCoverageStats {
   featureCount: number
   basesCovered: number
@@ -21,6 +22,7 @@ export function isMinimumFeatureCoverageStats(
   )
 }
 
+/** region stats that include feature density but no score data */
 export interface FeatureCoverageStats extends MinimumFeatureCoverageStats {
   featureDensity: number
 }
@@ -31,6 +33,7 @@ export function isFeatureCoverageStats(
   return isMinimumFeatureCoverageStats(thing) && 'featureDensity' in thing
 }
 
+/** region stats that include both feature density and score data */
 export interface MinimumFeatureScoreStats extends MinimumFeatureCoverageStats {
   scoreMin: number
   scoreMax: number
@@ -49,6 +52,8 @@ export function isMinimumFeatureScoreStats(
       'scoreSumSquares' in thing,
   )
 }
+
+/** region stats that include both feature density and score data, along with calculated derived values */
 export interface FeatureScoreStats
   extends MinimumFeatureScoreStats,
     FeatureCoverageStats {
