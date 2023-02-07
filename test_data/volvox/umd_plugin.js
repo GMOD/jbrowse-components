@@ -60,6 +60,50 @@
         },
       )
 
+      pluginManager.addToExtensionPoint('Core-extendSession', session => {
+        return session.extend(self => {
+          const superThemes = self.allThemes
+          return {
+            views: {
+              allThemes() {
+                return {
+                  ...superThemes(),
+                  custom: {
+                    name: 'Custom theme from plugin',
+                    palette: {
+                      primary: { main: '#0f0' },
+                      secondary: { main: '#f00' },
+                    },
+                  },
+                }
+              },
+            },
+          }
+        })
+      })
+
+      pluginManager.addToExtensionPoint('Core-extendSession', session => {
+        return session.extend(self => {
+          const superThemes = self.allThemes
+          return {
+            views: {
+              allThemes() {
+                return {
+                  ...superThemes(),
+                  custom2: {
+                    name: 'Custom theme from plugin 2',
+                    palette: {
+                      primary: { main: '#00f' },
+                      secondary: { main: '#0ff' },
+                    },
+                  },
+                }
+              },
+            },
+          }
+        })
+      })
+
       pluginManager.addToExtensionPoint(
         'Core-replaceWidget',
         (DefaultWidget, { model }) => {

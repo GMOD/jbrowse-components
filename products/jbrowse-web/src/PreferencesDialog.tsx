@@ -22,7 +22,7 @@ export default function PreferencesDialog({
 }: {
   handleClose: () => void
   session: {
-    allThemes: Record<string, ThemeOptions & { name?: string }>
+    allThemes: () => Record<string, ThemeOptions & { name?: string }>
     themeName?: string
     setThemeName: (arg: string) => void
   }
@@ -37,7 +37,7 @@ export default function PreferencesDialog({
           value={session.themeName}
           onChange={event => session.setThemeName(event.target.value)}
         >
-          {Object.entries(session.allThemes).map(([key, val]) => (
+          {Object.entries(session.allThemes()).map(([key, val]) => (
             <MenuItem key={key} value={key}>
               {val.name || '(Unknown name)'}
             </MenuItem>

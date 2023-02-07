@@ -420,7 +420,14 @@ function augmentTheme(theme: ThemeOptions = {}) {
         ),
       },
     })
+  } else {
+    theme = deepmerge(theme, {
+      palette: {
+        tertiary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
+      },
+    })
   }
+
   if (theme?.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {
@@ -431,7 +438,14 @@ function augmentTheme(theme: ThemeOptions = {}) {
         ),
       },
     })
+  } else {
+    theme = deepmerge(theme, {
+      palette: {
+        quaternary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
+      },
+    })
   }
+
   return theme
 }
 

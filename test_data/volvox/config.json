@@ -178,7 +178,7 @@
   "configuration": {
     "extraThemes": {
       "darkForest": {
-        "name": "Dark (forest)",
+        "name": "Dark (forest, from config file)",
         "palette": {
           "primary": {
             "main": "#464"
