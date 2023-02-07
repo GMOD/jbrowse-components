@@ -38,31 +38,43 @@ test('allows customizing spacing', () => {
   const biggerSpacingTheme = createJBrowseTheme({ spacing: 16 })
   expect(biggerSpacingTheme.spacing(1)).toBe('16px')
 })
-// test('allows adding a custom override', () => {
-//   const muiPaperStyle = { root: { backgroundColor: 'green' } }
-//   const theme = createJBrowseTheme({
-//     overrides: { MuiPaper: muiPaperStyle },
-//   })
-//   expect(theme.overrides?.MuiPaper).toEqual(muiPaperStyle)
-//   expect(Object.keys(theme.overrides || {}).length).toBe(10)
-// })
-// test('allows modifying a default override', () => {
-//   const muiButtonStyle = { textSecondary: { color: 'orange' } }
-//   const theme = createJBrowseTheme({
-//     overrides: { MuiButton: muiButtonStyle },
-//   })
-//   expect(theme.overrides?.MuiButton).toEqual(muiButtonStyle)
-//   expect(Object.keys(theme.overrides || {}).length).toBe(9)
-// })
-// test('allows adding a custom prop', () => {
-//   const muiPaperProps = { variant: 'outlined' as const }
-//   const theme = createJBrowseTheme({ props: { MuiPaper: muiPaperProps } })
-//   expect(theme.props?.MuiPaper).toEqual(muiPaperProps)
-//   expect(Object.keys(theme.props || {}).length).toBe(18)
-// })
-// test('allows modifying a prop override', () => {
-//   const muiButtonProps = { size: 'medium' as const }
-//   const theme = createJBrowseTheme({ props: { MuiButton: muiButtonProps } })
-//   expect(theme.props?.MuiButton).toEqual(muiButtonProps)
-//   expect(Object.keys(theme.props || {}).length).toBe(17)
-// })
+
+test('allows adding a custom override', () => {
+  const muiPaperStyle = {
+    styleOverrides: { root: { backgroundColor: 'green' } },
+  }
+  const theme = createJBrowseTheme({
+    components: { MuiPaper: muiPaperStyle },
+  })
+  expect(theme.components?.MuiPaper).toEqual(muiPaperStyle)
+})
+
+test('allows modifying a default override', () => {
+  const muiButtonStyle = {
+    styleOverrides: { textSecondary: 'orange' },
+  }
+  const theme = createJBrowseTheme({
+    components: { MuiButton: muiButtonStyle },
+  })
+  expect(theme.components?.MuiButton?.styleOverrides?.textSecondary).toEqual(
+    muiButtonStyle.styleOverrides.textSecondary,
+  )
+})
+
+test('allows adding a custom prop', () => {
+  const muiPaperProps = { defaultProps: { variant: 'outlined' as const } }
+  const theme = createJBrowseTheme({ components: { MuiPaper: muiPaperProps } })
+  expect(theme.components?.MuiPaper?.defaultProps).toEqual(
+    muiPaperProps.defaultProps,
+  )
+})
+
+test('allows modifying a prop override', () => {
+  const muiButtonProps = { defaultProps: { size: 'medium' as const } }
+  const theme = createJBrowseTheme({
+    components: { MuiButton: muiButtonProps },
+  })
+  expect(theme.components?.MuiButton?.defaultProps).toEqual(
+    muiButtonProps.defaultProps,
+  )
+})

@@ -152,12 +152,31 @@ export const defaultThemes = {
   darkStock: getDarkStockTheme(),
 } as ThemeMap
 
-function createDefaultProps() {
+function createDefaultProps(theme?: ThemeOptions) {
   return {
     components: {
       MuiButton: {
         defaultProps: {
           size: 'small' as const,
+        },
+        styleOverrides: {
+          // the default button, especially when not using variant=contained, uses
+          // theme.palette.primary.main for text which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps text secondary for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.primary,
+                }
+              : undefined
+          },
         },
       },
       MuiAccordion: {
@@ -222,6 +241,12 @@ function createDefaultProps() {
         defaultProps: {
           size: 'small' as const,
         },
+        styleOverrides: {
+          secondary: {
+            // @ts-ignore
+            backgroundColor: theme?.palette?.quaternary?.main,
+          },
+        },
       },
       MuiTable: {
         defaultProps: {
@@ -253,21 +278,6 @@ function createDefaultProps() {
         defaultProps: {
           margin: 'dense' as const,
           variant: 'standard' as const,
-        },
-      },
-    },
-  }
-}
-
-export function createDefaultOverrides(palette: PaletteOptions = {}) {
-  return {
-    components: {
-      MuiFab: {
-        styleOverrides: {
-          secondary: {
-            // @ts-ignore
-            backgroundColor: palette.quaternary.main,
-          },
         },
       },
       MuiLink: {
@@ -329,27 +339,6 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
           },
         },
       },
-      MuiButton: {
-        styleOverrides: {
-          // the default button, especially when not using variant=contained, uses
-          // theme.palette.primary.main for text which is very bad with dark
-          // mode+midnight primary
-          //
-          // keeps text secondary for darkmode, uses
-          // a text-like coloring to ensure contrast
-          // xref https://stackoverflow.com/a/72546130/2129219
-          //
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          root: (props: any) => {
-            const { theme } = props
-            return theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.primary,
-                }
-              : undefined
-          },
-        },
-      },
       MuiFormLabel: {
         styleOverrides: {
           // the default checkbox-when-checked color uses
@@ -378,11 +367,11 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
         styleOverrides: {
           root: {
             // @ts-ignore
-            backgroundColor: palette.tertiary.main,
+            backgroundColor: theme?.palette?.tertiary?.main,
           },
           content: {
             // @ts-ignore
-            color: palette.tertiary.contrastText,
+            color: theme?.palette?.tertiary?.contrastText,
           },
         },
       },
@@ -390,12 +379,12 @@ export function createDefaultOverrides(palette: PaletteOptions = {}) {
   }
 }
 
-export function createJBrowseBaseTheme(palette?: PaletteOptions): ThemeOptions {
+export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return {
-    palette,
+    palette: theme?.palette,
     typography: { fontSize: 12 },
     spacing: 4,
-    ...deepmerge(createDefaultProps(), createDefaultOverrides(palette)),
+    ...createDefaultProps(theme),
   }
 }
 
@@ -462,12 +451,9 @@ export function getCurrentTheme(
 
   const obj = createJBrowseBaseTheme(
     isDefault
-      ? userChoiceTheme.palette
-      : deepmerge(themes['default'].palette || {}, baseTheme?.palette || {}),
+      ? userChoiceTheme
+      : deepmerge(themes['default'] || {}, baseTheme || {}),
   )
 
-  return {
-    ...deepmerge(obj, theme),
-    ...(isDefault ? { palette: obj.palette } : {}),
-  }
+  return deepmerge(obj, theme)
 }
