@@ -21,6 +21,14 @@ export default function configModelFactory(pm: PluginManager) {
        */
       snpCoverageDisplay: pm.getDisplayType('LinearSNPCoverageDisplay')
         .configSchema,
+
+      /**
+       * #slot
+       */
+      height: {
+        type: 'number',
+        defaultValue: 250,
+      },
     },
     {
       /**

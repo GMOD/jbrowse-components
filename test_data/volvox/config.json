@@ -298,7 +298,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram_pileup",
-      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay)",
+      "name": "volvox-sorted.cram (contigA, LinearPileupDisplay, large height)",
       "category": ["Integration test"],
       "metadata": {
         "source": "We generated 150bp paired end reads from a <i>Volvox mythicus</i>, an imaginary species, for this jbrowse demo. See <a href=https://google.com>Google</a>",
@@ -329,7 +329,8 @@
       "displays": [
         {
           "type": "LinearPileupDisplay",
-          "displayId": "volvox_cram_pileup_pileup"
+          "displayId": "volvox_cram_pileup_pileup",
+          "height": 400
         }
       ]
     },
@@ -454,7 +455,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "volvox_alignments",
-      "name": "volvox-sorted.bam (ctgA)",
+      "name": "volvox-sorted.bam (ctgA, larger default height)",
       "category": ["Integration test"],
       "assemblyNames": ["volvox", "volvox2"],
       "adapter": {
@@ -473,6 +474,7 @@
       "displays": [
         {
           "type": "LinearAlignmentsDisplay",
+          "height": 400,
           "displayId": "volvox_alignments_alignments",
           "pileupDisplay": {
             "type": "LinearPileupDisplay",

@@ -65,7 +65,6 @@ function getDisplayStr(totalBytes: number) {
 }
 
 const minDisplayHeight = 20
-const defaultDisplayHeight = 100
 
 /**
  * #stateModel BaseLinearDisplay
@@ -80,13 +79,12 @@ function stateModelFactory() {
         /**
          * #property
          */
-        height: types.optional(
+        heightPreConfig: types.maybe(
           types.refinement(
             'displayHeight',
             types.number,
             n => n >= minDisplayHeight,
           ),
-          defaultDisplayHeight,
         ),
         /**
          * #property
@@ -113,6 +111,9 @@ function stateModelFactory() {
       estimatedRegionStats: undefined as undefined | Stats,
     }))
     .views(self => ({
+      get height() {
+        return self.heightPreConfig ?? getConf(self, 'height')
+      },
       /**
        * #getter
        */
@@ -365,9 +366,9 @@ function stateModelFactory() {
        */
       setHeight(displayHeight: number) {
         if (displayHeight > minDisplayHeight) {
-          self.height = displayHeight
+          self.heightPreConfig = displayHeight
         } else {
-          self.height = minDisplayHeight
+          self.heightPreConfig = minDisplayHeight
         }
         return self.height
       },
@@ -788,6 +789,16 @@ function stateModelFactory() {
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      if (!snap) {
+        return snap
+      }
+      // rewrite "height" from older snapshots to "heightPreConfig", this allows
+      // us to maintain a height "getter" going forward
+      // @ts-ignore
+      const { height, ...rest } = snap
+      return { heightPreConfig: height, ...rest }
+    })
     .postProcessSnapshot(self => {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524 for Omit
       const r = self as Omit<typeof self, symbol>
