@@ -33,7 +33,7 @@ color2: {
       type: 'color',
       description:
         'the secondary color of each feature, used for connecting lines, etc',
-      defaultValue: 'black',
+      defaultValue: '#f0f',
       contextVariable: ['feature'],
     }
 ```
@@ -108,7 +108,7 @@ name: {
 nameColor: {
         type: 'color',
         description: 'the color of the name label, if shown',
-        defaultValue: 'black',
+        defaultValue: '#f0f',
         contextVariable: ['feature'],
       }
 ```

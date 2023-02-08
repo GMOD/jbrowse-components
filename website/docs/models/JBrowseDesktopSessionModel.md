@@ -128,11 +128,44 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 drawerPosition: types.optional(
         types.string,
-        localStorage.getItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') || 'right',
+      )
+```
+
+#### property: sessionThemeName
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+sessionThemeName: types.optional(
+        types.string,
+        () => localStorageGetItem('themeName') || 'default',
       )
 ```
 
 ### JBrowseDesktopSessionModel - Getters
+
+#### getter: jbrowse
+
+```js
+// type
+any
+```
+
+#### getter: themeName
+
+```js
+// type
+string
+```
+
+#### getter: theme
+
+```js
+// type
+Theme
+```
 
 #### getter: DialogComponent
 
@@ -255,6 +288,13 @@ boolean
 
 ### JBrowseDesktopSessionModel - Methods
 
+#### method: allThemes
+
+```js
+// type signature
+allThemes: () => ThemeMap
+```
+
 #### method: renderProps
 
 ```js
@@ -281,6 +321,13 @@ getTrackActionMenuItems: (config: any) => ({ label: string; onClick: () => void;
 ```
 
 ### JBrowseDesktopSessionModel - Actions
+
+#### action: setThemeName
+
+```js
+// type signature
+setThemeName: (name: string) => void
+```
 
 #### action: moveViewUp
 
@@ -575,7 +622,7 @@ clearConnections: () => void
 
 ```js
 // type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 7 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 8 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: removeSavedSession
@@ -617,5 +664,5 @@ setDefaultSession: () => any
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 7 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ name: ISimpleType<string>; margin: IType<number, number, number>; drawerWidth: IOptionalIType<ISimpleType<number>, [undefined]>; ... 8 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
 ```

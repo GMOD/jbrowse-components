@@ -168,11 +168,44 @@ IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 drawerPosition: types.optional(
         types.string,
-        localStorage.getItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') || 'right',
+      )
+```
+
+#### property: sessionThemeName
+
+```js
+// type signature
+IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+sessionThemeName: types.optional(
+        types.string,
+        () => localStorageGetItem('themeName') || 'default',
       )
 ```
 
 ### JBrowseWebSessionModel - Getters
+
+#### getter: jbrowse
+
+```js
+// type
+any
+```
+
+#### getter: themeName
+
+```js
+// type
+string
+```
+
+#### getter: theme
+
+```js
+// type
+Theme
+```
 
 #### getter: DialogComponent
 
@@ -309,6 +342,13 @@ any
 
 ### JBrowseWebSessionModel - Methods
 
+#### method: allThemes
+
+```js
+// type signature
+allThemes: () => ThemeMap
+```
+
 #### method: renderProps
 
 ```js
@@ -335,6 +375,13 @@ getTrackActionMenuItems: (config: { [x: string]: any; } & NonEmptyObject & { set
 ```
 
 ### JBrowseWebSessionModel - Actions
+
+#### action: setThemeName
+
+```js
+// type signature
+setThemeName: (name: string) => void
+```
 
 #### action: moveViewUp
 
@@ -629,7 +676,7 @@ clearConnections: () => void
 
 ```js
 // type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 12 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: removeSavedSession
@@ -685,7 +732,7 @@ loadAutosaveSession: () => any
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 12 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: editConfiguration

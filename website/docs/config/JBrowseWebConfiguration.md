@@ -118,6 +118,12 @@ disableAnalytics: {
 theme: { type: 'frozen', defaultValue: {} }
 ```
 
+#### slot: extraThemes
+
+```js
+extraThemes: { type: 'frozen', defaultValue: {} }
+```
+
 #### slot: logoPath
 
 ```js
