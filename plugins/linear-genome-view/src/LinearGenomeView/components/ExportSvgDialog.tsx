@@ -80,7 +80,16 @@ export default function ExportSvgDlg({
             setLoading(true)
             setError(undefined)
             try {
-              await model.exportSvg({ rasterizeLayers, filename })
+              await model.exportSvg({
+                rasterizeLayers,
+                filename,
+                fontSize: 15,
+                rulerHeight: 50,
+                textHeight: 20,
+                paddingHeight: 20,
+                headerHeight: 40,
+                cytobandHeight: 100,
+              })
               handleClose()
             } catch (e) {
               console.error(e)

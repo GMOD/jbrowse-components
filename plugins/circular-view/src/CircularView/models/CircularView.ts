@@ -22,8 +22,9 @@ import {
   Region as IRegion,
 } from '@jbrowse/core/util'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { calculateStaticSlices, sliceIsVisible } from './slices'
 
+// locals
+import { calculateStaticSlices, sliceIsVisible } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
 
 /**
@@ -565,14 +566,5 @@ function stateModelFactory(pluginManager: PluginManager) {
 
 export type CircularViewStateModel = ReturnType<typeof stateModelFactory>
 export type CircularViewModel = Instance<CircularViewStateModel>
-
-/**
-PLANS
-
-- tracks
-- ruler tick marks
-- set viewport scroll from state snapshot
-
-*/
 
 export default stateModelFactory
