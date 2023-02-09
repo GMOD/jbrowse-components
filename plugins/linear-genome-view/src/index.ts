@@ -17,7 +17,6 @@ import LinearBareDisplayF, {
   configSchemaFactory as linearBareDisplayConfigSchemaFactory,
 } from './LinearBareDisplay'
 import LinearGenomeViewF, {
-  renderToSvg,
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
   RefNameAutocomplete,
@@ -25,6 +24,12 @@ import LinearGenomeViewF, {
   ZoomControls,
   LinearGenomeView,
 } from './LinearGenomeView'
+
+import {
+  renderToSvg,
+  totalHeight,
+  SVGTracks,
+} from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
 import LinearBasicDisplayF, {
   configSchema as linearBasicDisplayConfigSchemaFactory,
   modelFactory as linearBasicDisplayModelFactory,
@@ -74,6 +79,8 @@ export {
   linearBasicDisplayConfigSchemaFactory,
   linearBasicDisplayModelFactory,
   renderToSvg,
+  totalHeight,
+  SVGTracks,
   BaseLinearDisplayComponent,
   BaseLinearDisplay,
   RefNameAutocomplete,

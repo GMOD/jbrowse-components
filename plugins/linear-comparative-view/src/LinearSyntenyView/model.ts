@@ -1,16 +1,21 @@
 import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
+import { getSession } from '@jbrowse/core/util'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { saveAs } from 'file-saver'
 
 // icons
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { Curves } from './components/Icons'
 
 // locals
 import baseModel from '../LinearComparativeView/model'
+import ExportSvgDlg from './components/ExportSvgDialog'
+import { renderToSvg } from './svgcomponents/SVGLinearSyntenyView'
 
 /**
  * #stateModel LinearSyntenyView
@@ -57,6 +62,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         })
       },
     }))
+    .actions(self => ({
+      async exportSvg(opts: any) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
+    }))
     .views(self => {
       const superMenuItems = self.headerMenuItems
       return {
@@ -100,6 +113,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               checked: self.drawCurves,
               onClick: self.toggleCurves,
               icon: Curves,
+            },
+
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDlg,
+                  { model: self, handleClose },
+                ])
+              },
             },
           ]
         },

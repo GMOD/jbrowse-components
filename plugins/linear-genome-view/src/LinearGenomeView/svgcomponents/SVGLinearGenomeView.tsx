@@ -20,11 +20,11 @@ interface Track {
   displays: Display[]
 }
 
-const totalHeight = (
+export function totalHeight(
   tracks: Track[],
   paddingHeight: number,
   textHeight: number,
-) => {
+) {
   return tracks.reduce(
     (accum, track) =>
       accum + track.displays[0].height + paddingHeight + textHeight,
@@ -91,3 +91,5 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     </ThemeProvider>,
   )
 }
+
+export { SVGTracks }
