@@ -385,6 +385,11 @@ function createDefaultProps(theme?: ThemeOptions) {
           },
         },
       },
+      MuiToggleButtonGroup: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
     },
   }
 }
