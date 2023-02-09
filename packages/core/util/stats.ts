@@ -161,10 +161,12 @@ export function calcPerBaseStats(
 }
 
 /**
- * transform a list of scores to summary statistics
+ * calculate summary statistics from an Observable of features.
+ * NOTE: all features in the observable MUST overlap the region for the stats to be
+ * correct
  *
  * @param region - object with start, end
- * @param features - array of features which are possibly summary features
+ * @param features - features which are possibly summary features
  * @returns - object with scoreMax, scoreMin, scoreSum, scoreSumSquares, etc
  */
 export async function scoresToStats(

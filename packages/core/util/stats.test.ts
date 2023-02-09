@@ -47,10 +47,10 @@ test('scores to stats', async () => {
     from([
       new SimpleFeature({ id: 1, data: { start: 0, end: 1, score: 1 } }),
       new SimpleFeature({ id: 2, data: { start: 1, end: 2, score: 2 } }),
-      new SimpleFeature({ id: 3, data: { start: 2, end: 3, score: 3 } }),
+      new SimpleFeature({ id: 3, data: { start: 1, end: 3, score: 3 } }),
     ]),
   )
-  expect(ret.featureDensity).toEqual(1)
+  expect(ret.featureDensity).toEqual(1.5)
   expect(isFeatureScoreStats(ret)).toBeTruthy()
   if (isFeatureScoreStats(ret)) {
     expect(ret.scoreMean).toEqual(2)
