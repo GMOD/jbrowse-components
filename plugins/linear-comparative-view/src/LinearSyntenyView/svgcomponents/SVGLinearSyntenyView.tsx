@@ -38,7 +38,7 @@ export async function renderToSvg(model: LSV, opts: any) {
   const heights = views.map(
     view => totalHeight(view.tracks, paddingHeight, textHeight) + offset,
   )
-  const totalHeightSvg = sum(heights)
+  const totalHeightSvg = sum(heights) + model.middleComparativeHeight + 100
   const displayResults = await Promise.all(
     views.map(
       async view =>
@@ -60,12 +60,11 @@ export async function renderToSvg(model: LSV, opts: any) {
       renderToAbstractCanvas(
         model.width,
         model.middleComparativeHeight,
-        opts,
+        { highResolutionScaling: 1, exportSVG: opts },
         ctx => drawRef(track.displays[0], ctx),
       ),
     ),
   )
-  console.log({ renderings })
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -79,7 +78,7 @@ export async function renderToSvg(model: LSV, opts: any) {
           viewBox={[0, 0, width + shift * 2, totalHeightSvg].toString()}
         >
           <SVGBackground width={width} height={totalHeightSvg} shift={shift} />
-          <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+          <g transform={`translate(${shift} ${fontSize})`}>
             <SVGRuler
               model={displayResults[0].view}
               fontSize={fontSize}
@@ -94,8 +93,17 @@ export async function renderToSvg(model: LSV, opts: any) {
               offset={offset}
             />
           </g>
-          <SVGSynteny view={model} />
-          <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+          <g transform={`translate(${shift} ${fontSize + heights[0]})`}>
+            {
+              // @ts-ignore
+              renderings.map(r => r.reactElement)
+            }
+          </g>
+          <g
+            transform={`translate(${shift} ${
+              fontSize + heights[0] + model.middleComparativeHeight
+            })`}
+          >
             <SVGRuler
               model={displayResults[1].view}
               fontSize={fontSize}

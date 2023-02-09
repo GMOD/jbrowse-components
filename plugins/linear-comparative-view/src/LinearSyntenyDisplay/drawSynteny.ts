@@ -31,12 +31,9 @@ export function getId(r: number, g: number, b: number, unitMultiplier: number) {
 
 export function drawRef(
   model: LinearSyntenyDisplayModel,
-  opt?: CanvasRenderingContext2D,
+  ctx1: CanvasRenderingContext2D,
+  ctx3?: CanvasRenderingContext2D,
 ) {
-  const highResolutionScaling = 1
-  const ctx1 = opt || model.mainCanvas?.getContext('2d')
-  const ctx3 = opt ? undefined : model.cigarClickMapCanvas?.getContext('2d')
-
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
@@ -44,19 +41,10 @@ export function drawRef(
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  if (!ctx1 || (!opt && !ctx3)) {
-    return
-  }
-
   if (ctx3) {
-    ctx3.resetTransform()
-    ctx3.clearRect(0, 0, width, height)
     ctx3.imageSmoothingEnabled = false
   }
 
-  ctx1.resetTransform()
-  ctx1.scale(highResolutionScaling, highResolutionScaling)
-  ctx1.clearRect(0, 0, width, height)
   ctx1.beginPath()
   const featPos = model.featPositions
   const offsets = view.views.map(v => v.offsetPx)

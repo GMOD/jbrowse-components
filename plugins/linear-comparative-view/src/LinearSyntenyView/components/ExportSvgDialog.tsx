@@ -90,6 +90,7 @@ export default function ExportSvgDlg({
                 headerHeight: 40,
                 cytobandHeight: 100,
               })
+              setLoading(false)
               handleClose()
             } catch (e) {
               console.error(e)
