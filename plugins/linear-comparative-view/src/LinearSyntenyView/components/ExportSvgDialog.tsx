@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ExportSvgOptions } from '..'
+import { ExportSvgOptions } from '../model'
 
 function LoadingMessage() {
   return (

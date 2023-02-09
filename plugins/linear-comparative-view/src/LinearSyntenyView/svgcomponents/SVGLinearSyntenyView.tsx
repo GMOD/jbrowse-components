@@ -14,13 +14,13 @@ import {
 
 // locals
 import SVGBackground from './SVGBackground'
-import { LinearSyntenyViewModel } from '../model'
+import { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 
 type LSV = LinearSyntenyViewModel
 
 // render LGV to SVG
-export async function renderToSvg(model: LSV, opts: any) {
+export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
     paddingHeight = 20,
@@ -28,6 +28,7 @@ export async function renderToSvg(model: LSV, opts: any) {
     headerHeight = 40,
     rulerHeight = 50,
     fontSize = 15,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Wrapper = ({ children }: any) => <>{children}</>,
   } = opts
   const session = getSession(model)

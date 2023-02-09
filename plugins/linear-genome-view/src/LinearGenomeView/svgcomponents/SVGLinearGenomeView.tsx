@@ -26,7 +26,6 @@ export function totalHeight(
   paddingHeight: number,
   textHeight: number,
 ) {
-  console.log({ tracks })
   return tracks.reduce(
     (accum, track) =>
       accum + track.displays[0].height + paddingHeight + textHeight,

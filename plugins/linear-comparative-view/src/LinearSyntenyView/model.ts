@@ -1,3 +1,4 @@
+import React from 'react'
 import { types, Instance } from 'mobx-state-tree'
 import { transaction } from 'mobx'
 import { getSession } from '@jbrowse/core/util'
@@ -16,6 +17,19 @@ import { Curves } from './components/Icons'
 import baseModel from '../LinearComparativeView/model'
 import ExportSvgDlg from './components/ExportSvgDialog'
 import { renderToSvg } from './svgcomponents/SVGLinearSyntenyView'
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  filename?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Wrapper?: React.FC<any>
+  fontSize?: number
+  rulerHeight?: number
+  textHeight?: number
+  paddingHeight?: number
+  headerHeight?: number
+  cytobandHeight?: number
+}
 
 /**
  * #stateModel LinearSyntenyView
@@ -63,7 +77,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      async exportSvg(opts: any) {
+      async exportSvg(opts: ExportSvgOptions) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
