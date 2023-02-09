@@ -1,16 +1,21 @@
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession, sum } from '@jbrowse/core/util'
+import { getSession, renderToAbstractCanvas, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 // locals
-import { SVGTracks, totalHeight } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGTracks,
+  SVGRuler,
+  totalHeight,
+} from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import SVGBackground from './SVGBackground'
 import { LinearSyntenyViewModel } from '../model'
+import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 
 type LSV = LinearSyntenyViewModel
 
@@ -30,27 +35,37 @@ export async function renderToSvg(model: LSV, opts: any) {
   const shift = 50
   const offset = headerHeight + rulerHeight + 20
 
-  const heights = views.map(view =>
-    totalHeight(view.tracks, paddingHeight, textHeight),
+  const heights = views.map(
+    view => totalHeight(view.tracks, paddingHeight, textHeight) + offset,
   )
   const totalHeightSvg = sum(heights)
   const displayResults = await Promise.all(
     views.map(
       async view =>
-        [
+        ({
           view,
-          await Promise.all(
+          data: await Promise.all(
             view.tracks.map(async track => {
-              const display = track.displays[0]
-              await when(() =>
-                display.ready !== undefined ? display.ready : true,
-              )
-              return { track, result: await display.renderSvg(opts) }
+              const d = track.displays[0]
+              await when(() => (d.ready !== undefined ? d.ready : true))
+              return { track, result: await d.renderSvg(opts) }
             }),
           ),
-        ] as const,
+        } as const),
     ),
   )
+
+  const renderings = await Promise.all(
+    model.tracks.map(track =>
+      renderToAbstractCanvas(
+        model.width,
+        model.middleComparativeHeight,
+        opts,
+        ctx => drawRef(track.displays[0], ctx),
+      ),
+    ),
+  )
+  console.log({ renderings })
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -64,23 +79,37 @@ export async function renderToSvg(model: LSV, opts: any) {
           viewBox={[0, 0, width + shift * 2, totalHeightSvg].toString()}
         >
           <SVGBackground width={width} height={totalHeightSvg} shift={shift} />
-          {displayResults.map(([view, displayResult], i) => (
-            <g
-              stroke="none"
-              transform={`translate(${shift} ${
-                fontSize + (heights[i - 1] || 0)
-              })`}
-            >
-              <SVGTracks
-                paddingHeight={paddingHeight}
-                textHeight={textHeight}
-                fontSize={fontSize}
-                model={view}
-                displayResults={displayResult}
-                offset={offset}
-              />
-            </g>
-          ))}
+          <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+            <SVGRuler
+              model={displayResults[0].view}
+              fontSize={fontSize}
+              width={displayResults[0].view.width}
+            />
+            <SVGTracks
+              paddingHeight={paddingHeight}
+              textHeight={textHeight}
+              fontSize={fontSize}
+              model={displayResults[0].view}
+              displayResults={displayResults[0].data}
+              offset={offset}
+            />
+          </g>
+          <SVGSynteny view={model} />
+          <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+            <SVGRuler
+              model={displayResults[1].view}
+              fontSize={fontSize}
+              width={displayResults[1].view.width}
+            />
+            <SVGTracks
+              paddingHeight={paddingHeight}
+              textHeight={textHeight}
+              fontSize={fontSize}
+              model={displayResults[1].view}
+              displayResults={displayResults[1].data}
+              offset={offset}
+            />
+          </g>
         </svg>
       </Wrapper>
     </ThemeProvider>,

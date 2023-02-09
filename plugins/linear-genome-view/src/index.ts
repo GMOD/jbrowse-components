@@ -29,6 +29,7 @@ import {
   renderToSvg,
   totalHeight,
   SVGTracks,
+  SVGRuler,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView'
 import LinearBasicDisplayF, {
   configSchema as linearBasicDisplayConfigSchemaFactory,
@@ -81,6 +82,7 @@ export {
   renderToSvg,
   totalHeight,
   SVGTracks,
+  SVGRuler,
   BaseLinearDisplayComponent,
   BaseLinearDisplay,
   RefNameAutocomplete,

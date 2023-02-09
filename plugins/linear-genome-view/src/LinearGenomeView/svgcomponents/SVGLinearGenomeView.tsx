@@ -10,6 +10,7 @@ import { LinearGenomeViewModel, ExportSvgOptions } from '..'
 import SVGBackground from './SVGBackground'
 import SVGTracks from './SVGTracks'
 import SVGHeader from './SVGHeader'
+import SVGRuler from './SVGRuler'
 
 type LGV = LinearGenomeViewModel
 
@@ -25,6 +26,7 @@ export function totalHeight(
   paddingHeight: number,
   textHeight: number,
 ) {
+  console.log({ tracks })
   return tracks.reduce(
     (accum, track) =>
       accum + track.displays[0].height + paddingHeight + textHeight,
@@ -92,4 +94,4 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 }
 
-export { SVGTracks }
+export { SVGTracks, SVGRuler }

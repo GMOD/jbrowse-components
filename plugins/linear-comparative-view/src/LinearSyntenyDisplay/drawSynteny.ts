@@ -29,10 +29,13 @@ export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
-export function drawRef(model: LinearSyntenyDisplayModel) {
+export function drawRef(
+  model: LinearSyntenyDisplayModel,
+  opt?: CanvasRenderingContext2D,
+) {
   const highResolutionScaling = 1
-  const ctx1 = model.mainCanvas?.getContext('2d')
-  const ctx3 = model.cigarClickMapCanvas?.getContext('2d')
+  const ctx1 = opt || model.mainCanvas?.getContext('2d')
+  const ctx3 = opt ? undefined : model.cigarClickMapCanvas?.getContext('2d')
 
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
@@ -41,11 +44,15 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  if (!ctx1 || !ctx3) {
+  if (!ctx1 || (!opt && !ctx3)) {
     return
   }
 
-  ctx3.imageSmoothingEnabled = false
+  if (ctx3) {
+    ctx3.resetTransform()
+    ctx3.clearRect(0, 0, width, height)
+    ctx3.imageSmoothingEnabled = false
+  }
 
   ctx1.resetTransform()
   ctx1.scale(highResolutionScaling, highResolutionScaling)
@@ -178,10 +185,12 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
               // feature, else just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
-              ctx3.fillStyle = makeColor(idx)
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-              draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              if (ctx3) {
+                ctx3.fillStyle = makeColor(idx)
+                draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              }
             }
           }
         }
