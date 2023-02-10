@@ -10,7 +10,9 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ExportSvgOptions } from '..'
+
+// locals
+import { ExportSvgOptions } from '../models/CircularView'
 
 function LoadingMessage() {
   return (
@@ -28,7 +30,6 @@ export default function ExportSvgDlg({
   model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
-  // @ts-ignore
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
@@ -83,12 +84,6 @@ export default function ExportSvgDlg({
               await model.exportSvg({
                 rasterizeLayers,
                 filename,
-                fontSize: 15,
-                rulerHeight: 50,
-                textHeight: 20,
-                paddingHeight: 20,
-                headerHeight: 40,
-                cytobandHeight: 100,
               })
               handleClose()
             } catch (e) {
