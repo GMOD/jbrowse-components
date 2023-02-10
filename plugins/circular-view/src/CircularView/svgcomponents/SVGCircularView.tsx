@@ -2,7 +2,7 @@ import React from 'react'
 import { ThemeProvider } from '@mui/material'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, radToDeg } from '@jbrowse/core/util'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 // locals
@@ -26,6 +26,9 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
     }),
   )
 
+  const { staticSlices, offsetRadians, centerXY } = model
+  const deg = radToDeg(offsetRadians)
+
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(session.theme)}>
@@ -38,8 +41,8 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
           viewBox={[0, 0, width + shift * 2, height].toString()}
         >
           <SVGBackground width={width} height={height} shift={shift} />
-          <g transform={`translate(${model.centerXY})`}>
-            {model.staticSlices.map((slice, i) => (
+          <g transform={`translate(${centerXY}) rotate(${deg})`}>
+            {staticSlices.map((slice, i) => (
               <Ruler key={i} model={model} slice={slice} />
             ))}
             {displayResults.map(({ result }, i) => (
