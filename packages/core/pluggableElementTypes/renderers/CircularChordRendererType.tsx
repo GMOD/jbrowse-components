@@ -12,7 +12,6 @@ export default class CircularChordRendererType extends FeatureRenderer {
     res: { features: SimpleFeatureSerialized[]; html: string },
     args: { exportSVG?: { rasterizeLayers?: boolean } },
   ) {
-    console.log({ res })
     const deserializedFeatures = new Map(
       res.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
     )
@@ -23,6 +22,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
       // document
       return {
         ...res,
+        features: deserializedFeatures,
         blockKey: 'circularChord',
         html: this.supportsSVG
           ? res.html
@@ -33,6 +33,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
     // hydrate res using ServerSideRenderedContent
     return {
       ...res,
+      features: deserializedFeatures,
       blockKey: 'circularChord',
       reactElement: (
         <RpcRenderedSvgGroup

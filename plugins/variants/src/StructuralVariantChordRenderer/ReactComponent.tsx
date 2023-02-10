@@ -40,8 +40,6 @@ export default observer(function StructuralVariantChords({
     return blocksForRefs
   }, [blockDefinitions])
   const chords = []
-
-  console.log({ features })
   for (const feature of features.values()) {
     const id = feature.id()
     const selected = String(selectedFeatureId) === String(id)

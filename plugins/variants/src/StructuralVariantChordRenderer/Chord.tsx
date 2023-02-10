@@ -109,7 +109,6 @@ const Chord = observer(function Chord({
     const hoverStrokeColor = readConfObject(config, 'strokeColorHover', {
       feature,
     })
-    console.log('t1ffff')
     return (
       <path
         data-testid={`chord-${feature.id()}`}

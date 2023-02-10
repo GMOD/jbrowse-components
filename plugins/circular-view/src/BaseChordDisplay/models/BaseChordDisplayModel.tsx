@@ -1,6 +1,6 @@
 import React from 'react'
 import clone from 'clone'
-import { getParent, getSnapshot, isAlive, types } from 'mobx-state-tree'
+import { getParent, isAlive, types } from 'mobx-state-tree'
 
 // jbrowse
 import { getConf } from '@jbrowse/core/configuration'

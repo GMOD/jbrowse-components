@@ -65,7 +65,6 @@ export class Slice {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function calculateStaticSlices(self: {
   elidedRegions: SliceRegion[]
   bpPerRadian: number
