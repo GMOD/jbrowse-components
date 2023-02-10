@@ -122,6 +122,10 @@ export default function WiggleConfigFactory(pluginManager: PluginManager) {
         MultiLineRenderer: MultiLineRendererConfigSchema,
         MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
       }),
+      height: {
+        type: 'number',
+        defaultValue: 200,
+      },
     },
     {
       /**
