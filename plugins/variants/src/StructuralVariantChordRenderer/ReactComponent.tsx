@@ -29,7 +29,6 @@ export default observer(function StructuralVariantChords({
     evt: unknown,
   ) => void
 }) {
-  console.log('chord renderer')
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
     const blocksForRefs = {} as { [key: string]: Block }
@@ -41,6 +40,8 @@ export default observer(function StructuralVariantChords({
     return blocksForRefs
   }, [blockDefinitions])
   const chords = []
+
+  console.log({ features })
   for (const feature of features.values()) {
     const id = feature.id()
     const selected = String(selectedFeatureId) === String(id)

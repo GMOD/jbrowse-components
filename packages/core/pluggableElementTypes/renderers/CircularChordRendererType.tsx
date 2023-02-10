@@ -6,13 +6,14 @@ import FeatureRenderer from './FeatureRendererType'
 import RpcRenderedSvgGroup from './RpcRenderedSvgGroup'
 
 export default class CircularChordRendererType extends FeatureRenderer {
+  supportsSVG = true
+
   deserializeResultsInClient(
     res: { features: SimpleFeatureSerialized[]; html: string },
     args: { exportSVG?: { rasterizeLayers?: boolean } },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any {
-    console.log('des')
-    const deserializedFeatures = new Map<string, SimpleFeature>(
+  ) {
+    console.log({ res })
+    const deserializedFeatures = new Map(
       res.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
     )
     // if we are rendering svg, we skip hydration
@@ -22,6 +23,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
       // document
       return {
         ...res,
+        blockKey: 'circularChord',
         html: this.supportsSVG
           ? res.html
           : '<text y="12" fill="black">SVG export not supported for this track</text>',
@@ -31,6 +33,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
     // hydrate res using ServerSideRenderedContent
     return {
       ...res,
+      blockKey: 'circularChord',
       reactElement: (
         <RpcRenderedSvgGroup
           {...args}

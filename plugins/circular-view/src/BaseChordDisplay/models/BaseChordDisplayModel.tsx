@@ -1,6 +1,6 @@
 import React from 'react'
 import clone from 'clone'
-import { getParent, isAlive, types } from 'mobx-state-tree'
+import { getParent, getSnapshot, isAlive, types } from 'mobx-state-tree'
 
 // jbrowse
 import { getConf } from '@jbrowse/core/configuration'
@@ -15,7 +15,6 @@ import {
   makeAbortableReaction,
   AnyReactComponentType,
   Feature,
-  Region,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -254,6 +253,7 @@ export const BaseChordDisplayModel = types
         self.renderSuccess,
         self.renderError,
       )
+
       makeAbortableReaction(
         self,
         () => ({
@@ -275,9 +275,7 @@ export const BaseChordDisplayModel = types
           fireImmediately: true,
         },
         () => {},
-        refNameMap => {
-          self.setRefNameMap(refNameMap)
-        },
+        refNameMap => self.setRefNameMap(refNameMap),
         error => {
           console.error(error)
           self.setError(error)
@@ -290,13 +288,15 @@ export const BaseChordDisplayModel = types
      * #method
      */
     async renderSvg(opts: ExportSvgOptions) {
-      console.log('t1')
       const data = renderReactionData(self)
-      console.log('t2')
       const rendering = await renderReactionEffect(data, undefined, self)
-      console.log('t3')
-      console.log({ rendering })
-
-      return <></>
+      return (
+        <>
+          <g
+            /* eslint-disable-next-line react/no-danger */
+            dangerouslySetInnerHTML={{ __html: rendering.html }}
+          />
+        </>
+      )
     },
   }))

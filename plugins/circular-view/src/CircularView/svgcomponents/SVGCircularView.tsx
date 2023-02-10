@@ -1,13 +1,14 @@
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession } from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 // locals
 import { ExportSvgOptions, CircularViewModel } from '../models/CircularView'
 import SVGBackground from './SVGBackground'
+import Ruler from '../components/Ruler'
 
 type CGV = CircularViewModel
 
@@ -30,7 +31,6 @@ export function totalHeight(
   )
 }
 
-// render CGV to SVG
 export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const { Wrapper = ({ children }) => <>{children}</> } = opts
@@ -44,21 +44,31 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
       return { track, result: await display.renderSvg(opts) }
     }),
   )
+  console.log(
+    { displayResults },
+    displayResults.map(r => r.result),
+  )
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(session.theme)}>
-      <Wrapper>
-        <svg
-          width={width}
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, width + shift * 2, height].toString()}
-        >
-          <SVGBackground width={width} height={height} shift={shift} />
-        </svg>
-      </Wrapper>
-    </ThemeProvider>,
+    <Wrapper>
+      <svg
+        width={width}
+        height={height}
+        xmlns="http://www.w3.org/2000/svg"
+        xmlnsXlink="http://www.w3.org/1999/xlink"
+        viewBox={[0, 0, width + shift * 2, height].toString()}
+      >
+        <SVGBackground width={width} height={height} shift={shift} />
+        <g transform={`translate(${model.centerXY})`}>
+          {model.staticSlices.map((slice, i) => (
+            <Ruler key={i} model={model} slice={slice} />
+          ))}
+          {displayResults.map(({ result }, i) => (
+            <React.Fragment key={i}>{result}</React.Fragment>
+          ))}
+        </g>
+      </svg>
+    </Wrapper>,
   )
 }

@@ -106,7 +106,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async augmentLocationObjects(thing: any): Promise<any> {
+  private async augmentLocationObjects(thing: any, i = 0): Promise<any> {
+    if (i > 20) {
+      return
+    }
     if (isStateTreeNode(thing) && !isAlive(thing)) {
       return thing
     }
@@ -116,17 +119,17 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     }
     if (Array.isArray(thing)) {
       for (const val of thing) {
-        await this.augmentLocationObjects(val)
+        await this.augmentLocationObjects(val, i + 1)
       }
     }
     if (typeof thing === 'object' && thing !== null) {
       for (const value of Object.values(thing)) {
         if (Array.isArray(value)) {
           for (const val of value) {
-            await this.augmentLocationObjects(val)
+            await this.augmentLocationObjects(val, i + 1)
           }
         } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(value)
+          await this.augmentLocationObjects(value, i + 1)
         }
       }
     }

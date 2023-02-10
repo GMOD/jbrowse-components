@@ -61,12 +61,11 @@ export async function renderReactionEffect(
       `renderer ${rendererType.name} is not compatible with this display type`,
     )
   }
-  console.log('t8')
+  console.log('t8', { renderArgs, renderProps, rendererType })
 
   const { html, ...data } = await rendererType.renderInClient(rpcManager, {
     ...renderArgs,
     ...renderProps,
-    signal,
   })
   console.log('t9')
 
