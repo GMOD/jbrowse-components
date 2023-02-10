@@ -17,7 +17,7 @@ import {
   AnyConfigurationModel,
   readConfObject,
 } from '@jbrowse/core/configuration'
-
+import { MenuItem } from '@jbrowse/core/ui'
 import {
   getSession,
   clamp,
@@ -25,7 +25,13 @@ import {
 } from '@jbrowse/core/util'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 
+// icons
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+
 // locals
+import ExportSvgDlg from '../components/ExportSvgDialog'
 import { calculateStaticSlices, sliceIsVisible, SliceRegion } from './slices'
 import { viewportVisibleSection } from './viewportVisibleRegion'
 
@@ -569,6 +575,36 @@ function stateModelFactory(pluginManager: PluginManager) {
         const html = await renderToSvg(self as any, opts)
         const blob = new Blob([html], { type: 'image/svg+xml' })
         saveAs(blob, opts.filename || 'image.svg')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * return the view menu items
+       */
+      menuItems(): MenuItem[] {
+        return [
+          {
+            label: 'Return to import form',
+            onClick: () => self.setDisplayedRegions([]),
+            icon: FolderOpenIcon,
+          },
+          {
+            label: 'Export SVG',
+            icon: PhotoCameraIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDlg,
+                { model: self, handleClose },
+              ])
+            },
+          },
+          {
+            label: 'Open track selector',
+            onClick: self.activateTrackSelector,
+            icon: TrackSelectorIcon,
+          },
+        ]
       },
     }))
 }

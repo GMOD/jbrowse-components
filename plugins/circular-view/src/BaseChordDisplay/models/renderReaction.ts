@@ -27,13 +27,15 @@ export function renderReactionData(self: any) {
 export async function renderReactionEffect(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   props: any,
-  signal: AbortSignal,
+  signal: AbortSignal | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   self: any,
 ) {
+  console.log('t5', props)
   if (!props) {
     throw new Error('cannot render with no props')
   }
+  console.log('t6')
 
   const {
     rendererType,
@@ -46,13 +48,10 @@ export async function renderReactionEffect(
   if (cannotBeRenderedReason) {
     return { message: cannotBeRenderedReason }
   }
+  console.log('t7')
 
   // don't try to render 0 or NaN radius or no regions
-  if (
-    !props.renderProps.radius ||
-    !props.renderArgs.regions ||
-    !props.renderArgs.regions.length
-  ) {
+  if (!renderProps.radius || !renderArgs.regions?.length) {
     return { message: 'Skipping render' }
   }
 
@@ -62,12 +61,14 @@ export async function renderReactionEffect(
       `renderer ${rendererType.name} is not compatible with this display type`,
     )
   }
+  console.log('t8')
 
   const { html, ...data } = await rendererType.renderInClient(rpcManager, {
     ...renderArgs,
     ...renderProps,
     signal,
   })
+  console.log('t9')
 
   return {
     html,

@@ -25,7 +25,10 @@ import {
 
 // locals
 import { renderReactionData, renderReactionEffect } from './renderReaction'
-import { CircularViewModel } from '../../CircularView/models/CircularView'
+import {
+  CircularViewModel,
+  ExportSvgOptions,
+} from '../../CircularView/models/CircularView'
 
 /**
  * #stateModel BaseChordDisplay
@@ -76,20 +79,19 @@ export const BaseChordDisplayModel = types
      * #getter
      */
     get blockDefinitions() {
-      const origSlices = (getContainingView(self) as CircularViewModel)
-        .staticSlices
+      const view = getContainingView(self) as CircularViewModel
+      const origSlices = view.staticSlices
       if (!self.refNameMap) {
         return origSlices
       }
 
       const slices = clone(origSlices)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      slices.forEach((slice: any) => {
+      slices.forEach(slice => {
         const regions = slice.region.elided
           ? slice.region.regions
           : [slice.region]
-        regions.forEach((region: Region) => {
+        regions.forEach(region => {
           const renamed = self.refNameMap?.[region.refName]
           if (renamed && region.refName !== renamed) {
             region.refName = renamed
@@ -281,5 +283,20 @@ export const BaseChordDisplayModel = types
           self.setError(error)
         },
       )
+    },
+  }))
+  .views(self => ({
+    /**
+     * #method
+     */
+    async renderSvg(opts: ExportSvgOptions) {
+      console.log('t1')
+      const data = renderReactionData(self)
+      console.log('t2')
+      const rendering = await renderReactionEffect(data, undefined, self)
+      console.log('t3')
+      console.log({ rendering })
+
+      return <></>
     },
   }))

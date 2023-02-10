@@ -11,6 +11,7 @@ export default class CircularChordRendererType extends FeatureRenderer {
     args: { exportSVG?: { rasterizeLayers?: boolean } },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any {
+    console.log('des')
     const deserializedFeatures = new Map<string, SimpleFeature>(
       res.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
     )

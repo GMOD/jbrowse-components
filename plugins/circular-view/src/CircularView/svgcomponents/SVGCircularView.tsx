@@ -44,7 +44,6 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
       return { track, result: await display.renderSvg(opts) }
     }),
   )
-  console.log({ displayResults })
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
