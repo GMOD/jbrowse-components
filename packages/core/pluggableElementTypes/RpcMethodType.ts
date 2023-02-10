@@ -1,7 +1,7 @@
+import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
-import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import {
   isAppRootModel,
   isUriLocation,
@@ -16,13 +16,46 @@ import {
   RemoteAbortSignal,
 } from '../rpc/remoteAbortSignals'
 
+function getGlobalObject(): Window {
+  // Based on window-or-global
+  // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
+  return (
+    // eslint-disable-next-line no-restricted-globals
+    (typeof self === 'object' && self.self === self && self) ||
+    (typeof global === 'object' && global.global === global && global) ||
+    // @ts-ignore
+    this
+  )
+}
+function isInWebWorker(globalObject: ReturnType<typeof getGlobalObject>) {
+  return Boolean('WorkerGlobalScope' in globalObject)
+}
+
+function deepSearch(obj: Record<string, unknown>) {
+  const queue = [obj]
+  const uris = [] as UriLocation[]
+
+  while (queue.length) {
+    const o = queue.shift()
+    if (!o) {
+      break
+    }
+    Object.values(o).forEach(v => {
+      if (isUriLocation(v)) {
+        uris.push(v)
+      } else if (v !== null && typeof v === 'object') {
+        queue.push(v as Record<string, unknown>)
+      }
+    })
+  }
+  return uris
+}
+
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  name = 'UNKNOWN'
-
   constructor(public pluginManager: PluginManager) {
-    super({ name: '' })
+    super({})
   }
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
@@ -39,7 +72,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       return loc
     }
 
-    const account = rootModel?.findAppropriateInternetAccount(loc)
+    const account = rootModel.findAppropriateInternetAccount(loc)
 
     if (account) {
       loc.internetAccountPreAuthorization =
@@ -49,20 +82,22 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async deserializeArguments<
-    SERIALIZED extends {
+    T extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
     },
-  >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
+  >(serializedArgs: T, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
     const { signal } = serializedArgs
-    if (signal && isRemoteAbortSignal(signal)) {
-      return { ...serializedArgs, signal: deserializeAbortSignal(signal) }
-    }
 
-    return { ...serializedArgs, signal: undefined }
+    return {
+      ...serializedArgs,
+      signal: isRemoteAbortSignal(signal)
+        ? deserializeAbortSignal(signal)
+        : undefined,
+    }
   }
 
   abstract execute(
@@ -81,20 +116,20 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async deserializeReturn(
     serializedReturn: unknown,
     _args: unknown,
-    _rpcDriverClassName: string,
-  ): Promise<unknown> {
+    _rpcDriver: string,
+  ) {
     let r
-    const { rootModel } = this.pluginManager
     try {
       r = await serializedReturn
     } catch (error) {
       if (isAuthNeededException(error)) {
-        // @ts-ignore
-        const retryAccount = rootModel?.createEphemeralInternetAccount(
-          `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
-          {},
-          error.url,
-        )
+        const retryAccount =
+          // @ts-ignore
+          this.pluginManager.rootModel?.createEphemeralInternetAccount(
+            `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
+            {},
+            error.url,
+          )
         throw new RetryError(
           'Retrying with created internet account',
           retryAccount.internetAccountId,
@@ -107,31 +142,10 @@ export default abstract class RpcMethodType extends PluggableElementBase {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async augmentLocationObjects(thing: any, i = 0): Promise<any> {
-    if (i > 20) {
-      return
-    }
-    if (isStateTreeNode(thing) && !isAlive(thing)) {
-      return thing
-    }
-
-    if (isUriLocation(thing)) {
-      await this.serializeNewAuthArguments(thing)
-    }
-    if (Array.isArray(thing)) {
-      for (const val of thing) {
-        await this.augmentLocationObjects(val, i + 1)
-      }
-    }
-    if (typeof thing === 'object' && thing !== null) {
-      for (const value of Object.values(thing)) {
-        if (Array.isArray(value)) {
-          for (const val of value) {
-            await this.augmentLocationObjects(val, i + 1)
-          }
-        } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(value, i + 1)
-        }
-      }
-    }
+    console.log({ thing })
+    const uris = deepSearch(thing)
+    console.log({ uris })
+    await Promise.all(uris.map(uri => this.serializeNewAuthArguments(uri)))
+    return thing
   }
 }

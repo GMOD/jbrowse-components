@@ -33,14 +33,14 @@ interface Props extends TypographyProps {
 }
 
 export default function LoadingEllipses({
-  message = 'Loading',
+  message,
   variant = 'body2',
   ...rest
 }: Props) {
   const { classes } = useStyles()
   return (
     <Typography className={classes.dots} {...rest} variant={variant}>
-      {`${message}`}
+      {`${message || 'Loading'}`}
     </Typography>
   )
 }
