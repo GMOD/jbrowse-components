@@ -11,11 +11,13 @@ import {
   Typography,
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
-import ExpandMore from '@mui/icons-material/ExpandMore'
 import { DataGrid, GridCellParams } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 import isObject from 'is-object'
 import { IAnyStateTreeNode } from 'mobx-state-tree'
+
+// icons
+import ExpandMore from '@mui/icons-material/ExpandMore'
 
 // locals
 import {
@@ -75,7 +77,7 @@ export const useStyles = makeStyles()(theme => ({
   },
   fieldDescription: {
     '&:hover': {
-      background: 'yellow',
+      background: theme.palette.mode === 'dark' ? '#e65100' : 'yellow',
     },
   },
   fieldName: {
@@ -174,7 +176,7 @@ export const BasicValue = ({ value }: { value: string | React.ReactNode }) => {
   )
 }
 
-export const SimpleValue = ({
+export function SimpleValue({
   name,
   value,
   description,
@@ -186,7 +188,7 @@ export const SimpleValue = ({
   value: any
   prefix?: string[]
   width?: number
-}) => {
+}) {
   const { classes } = useStyles()
   return value !== null && value !== undefined ? (
     <div className={classes.field}>
@@ -201,7 +203,7 @@ export const SimpleValue = ({
   ) : null
 }
 
-const ArrayValue = ({
+function ArrayValue({
   name,
   value,
   description,
@@ -211,7 +213,7 @@ const ArrayValue = ({
   name: string
   value: any[]
   prefix?: string[]
-}) => {
+}) {
   const { classes } = useStyles()
   if (value.length === 1) {
     return isObject(value[0]) ? (
@@ -322,16 +324,6 @@ export const BaseCoreDetails = (props: BaseProps) => {
   )
 }
 
-interface AttributeProps {
-  attributes: Record<string, any>
-  omit?: string[]
-  omitSingleLevel?: string[]
-  formatter?: (val: unknown, key: string) => React.ReactNode
-  descriptions?: Record<string, React.ReactNode>
-  prefix?: string[]
-  hideUris?: boolean
-}
-
 export function UriLink({
   value,
 }: {
@@ -341,7 +333,7 @@ export function UriLink({
   return <SanitizedHTML html={`<a href="${href}">${href}</a>`} />
 }
 
-const DataGridDetails = ({
+function DataGridDetails({
   value,
   prefix,
   name,
@@ -349,7 +341,7 @@ const DataGridDetails = ({
   name: string
   prefix?: string[]
   value: Record<string, any>
-}) => {
+}) {
   const keys = Object.keys(value[0]).sort()
   const unionKeys = new Set(keys)
   value.forEach((val: any) => Object.keys(val).forEach(k => unionKeys.add(k)))
@@ -466,7 +458,15 @@ function UriAttribute({
   )
 }
 
-export function Attributes(props: AttributeProps) {
+export function Attributes(props: {
+  attributes: Record<string, any>
+  omit?: string[]
+  omitSingleLevel?: string[]
+  formatter?: (val: unknown, key: string) => React.ReactNode
+  descriptions?: Record<string, React.ReactNode>
+  prefix?: string[]
+  hideUris?: boolean
+}) {
   const {
     attributes,
     omit = [],
@@ -581,13 +581,13 @@ interface PanelDescriptor {
   Component: React.FC<any>
 }
 
-export const FeatureDetails = (props: {
+export function FeatureDetails(props: {
   model: IAnyStateTreeNode
   feature: SimpleFeatureSerializedNoId
   depth?: number
   omit?: string[]
   formatter?: (val: unknown, key: string) => React.ReactNode
-}) => {
+}) {
   const { omit = [], model, feature, depth = 0 } = props
   const { name = '', id = '', type = '', subfeatures } = feature
   const pm = getEnv(model).pluginManager
@@ -652,7 +652,7 @@ export const FeatureDetails = (props: {
   )
 }
 
-const BaseFeatureDetails = observer(({ model }: BaseInputProps) => {
+export default observer(function ({ model }: BaseInputProps) {
   const { featureData } = model
 
   if (!featureData) {
@@ -663,14 +663,10 @@ const BaseFeatureDetails = observer(({ model }: BaseInputProps) => {
   // setting null is not allowed by jexl so we set it to undefined to hide. see
   // config guide. this replacement happens both here and when snapshotting the
   // featureData
-  const feature = JSON.parse(
+  const g = JSON.parse(
     JSON.stringify(featureData, (_, v) =>
       typeof v === 'undefined' ? null : v,
     ),
   )
-  return isEmpty(feature) ? null : (
-    <FeatureDetails model={model} feature={feature} />
-  )
+  return isEmpty(g) ? null : <FeatureDetails model={model} feature={g} />
 })
-
-export default BaseFeatureDetails
