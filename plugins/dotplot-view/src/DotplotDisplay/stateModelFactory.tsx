@@ -13,6 +13,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 // locals
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
+import { ExportSvgOptions } from '../DotplotView/model'
 
 /**
  * #stateModel DotplotDisplay
@@ -148,6 +149,26 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.error = error
           self.renderingComponent = undefined
           renderInProgress = undefined
+        },
+        /**
+         * #action
+         */
+        async renderSvg(opts: ExportSvgOptions) {
+          const props = renderBlockData(self)
+          if (!props) {
+            return <>Error</>
+          }
+
+          const { rendererType, rpcManager, renderProps } = props
+          const { reactElement } = await rendererType.renderInClient(
+            rpcManager,
+            {
+              ...renderProps,
+              exportSVG: opts,
+            },
+          )
+
+          return reactElement
         },
       }
     })
