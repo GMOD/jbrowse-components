@@ -83,20 +83,8 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
-function getGlobalObject(): Window {
-  // Based on window-or-global
-  // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
-  return (
-    // eslint-disable-next-line no-restricted-globals
-    (typeof self === 'object' && self.self === self && self) ||
-    (typeof global === 'object' && global.global === global && global) ||
-    // @ts-ignore
-    this
-  )
-}
-
-function isInWebWorker(globalObject: ReturnType<typeof getGlobalObject>) {
-  return Boolean('WorkerGlobalScope' in globalObject)
+function isInWebWorker() {
+  return Boolean('WorkerGlobalScope' in globalThis)
 }
 
 export default class PluginLoader {
@@ -118,15 +106,14 @@ export default class PluginLoader {
   }
 
   async loadScript(scriptUrl: string) {
-    const globalObject = getGlobalObject()
-    if (!isInWebWorker(globalObject)) {
+    if (!isInWebWorker()) {
       return domLoadScript(scriptUrl)
     }
 
     // @ts-ignore
-    if (globalObject?.importScripts) {
+    if (globalThis?.importScripts) {
       // @ts-ignore
-      await globalObject.importScripts(scriptUrl)
+      await globalThis.importScripts(scriptUrl)
       return
     }
     throw new Error(
@@ -187,23 +174,22 @@ export default class PluginLoader {
         `cannot load plugins using protocol "${parsedUrl.protocol}"`,
       )
     }
-    const globalObject = getGlobalObject()
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
     if (typeof jest !== 'undefined') {
       // @ts-ignore
-      globalObject[umdName] = { default: Plugin }
+      globalThis[umdName] = { default: Plugin }
     } else {
       await this.loadScript(parsedUrl.href)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const plugin = (globalObject as any)[umdName] as
+    // @ts-ignore
+    const plugin = globalThis[umdName] as
       | { default: PluginConstructor }
       | undefined
     if (!plugin) {
       throw new Error(
-        `Failed to load UMD bundle for ${moduleName}, ${globalObject.constructor.name}.${umdName} is undefined`,
+        `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,
       )
     }
     return plugin

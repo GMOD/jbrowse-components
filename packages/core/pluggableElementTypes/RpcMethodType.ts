@@ -111,16 +111,11 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     const uris = [] as UriLocation[]
 
     // using map-obj avoids cycles, seen in circular view svg export
-    mapObject(
-      thing,
-      (key, val) => {
-        if (isUriLocation(val)) {
-          uris.push(val)
-        }
-        return [key, val]
-      },
-      { deep: true },
-    )
+    mapObject(thing, val => {
+      if (isUriLocation(val)) {
+        uris.push(val)
+      }
+    })
     await Promise.all(uris.map(uri => this.serializeNewAuthArguments(uri)))
     return thing
   }
