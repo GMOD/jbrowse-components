@@ -15,7 +15,6 @@ import {
   makeAbortableReaction,
   AnyReactComponentType,
   Feature,
-  Region,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -25,7 +24,10 @@ import {
 
 // locals
 import { renderReactionData, renderReactionEffect } from './renderReaction'
-import { CircularViewModel } from '../../CircularView/models/CircularView'
+import {
+  CircularViewModel,
+  ExportSvgOptions,
+} from '../../CircularView/models/CircularView'
 
 /**
  * #stateModel BaseChordDisplay
@@ -48,19 +50,17 @@ export const BaseChordDisplayModel = types
       assemblyName: types.maybe(types.string),
     }),
   )
-  .volatile(() => {
-    return {
-      // NOTE: all this volatile stuff has to be filled in at once
-      // so that it stays consistent
-      filled: false,
-      reactElement: undefined as React.ReactElement | undefined,
-      data: undefined,
-      html: undefined as string | undefined,
-      message: '',
-      renderingComponent: undefined as undefined | AnyReactComponentType,
-      refNameMap: undefined as Record<string, string> | undefined,
-    }
-  })
+  .volatile(() => ({
+    // NOTE: all this volatile stuff has to be filled in at once
+    // so that it stays consistent
+    filled: false,
+    reactElement: undefined as React.ReactElement | undefined,
+    data: undefined,
+    html: undefined as string | undefined,
+    message: '',
+    renderingComponent: undefined as undefined | AnyReactComponentType,
+    refNameMap: undefined as Record<string, string> | undefined,
+  }))
   .actions(self => {
     const { pluginManager } = getEnv(self)
     const track = self
@@ -78,20 +78,19 @@ export const BaseChordDisplayModel = types
      * #getter
      */
     get blockDefinitions() {
-      const origSlices = (getContainingView(self) as CircularViewModel)
-        .staticSlices
+      const view = getContainingView(self) as CircularViewModel
+      const origSlices = view.staticSlices
       if (!self.refNameMap) {
         return origSlices
       }
 
       const slices = clone(origSlices)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      slices.forEach((slice: any) => {
+      slices.forEach(slice => {
         const regions = slice.region.elided
           ? slice.region.regions
           : [slice.region]
-        regions.forEach((region: Region) => {
+        regions.forEach(region => {
           const renamed = self.refNameMap?.[region.refName]
           if (renamed && region.refName !== renamed) {
             region.refName = renamed
@@ -254,6 +253,7 @@ export const BaseChordDisplayModel = types
         self.renderSuccess,
         self.renderError,
       )
+
       makeAbortableReaction(
         self,
         () => ({
@@ -275,13 +275,28 @@ export const BaseChordDisplayModel = types
           fireImmediately: true,
         },
         () => {},
-        refNameMap => {
-          self.setRefNameMap(refNameMap)
-        },
+        refNameMap => self.setRefNameMap(refNameMap),
         error => {
           console.error(error)
           self.setError(error)
         },
+      )
+    },
+  }))
+  .views(self => ({
+    /**
+     * #method
+     */
+    async renderSvg(opts: ExportSvgOptions) {
+      const data = renderReactionData(self)
+      const rendering = await renderReactionEffect(data, undefined, self)
+      return (
+        <>
+          <g
+            /* eslint-disable-next-line react/no-danger */
+            dangerouslySetInnerHTML={{ __html: rendering.html }}
+          />
+        </>
       )
     },
   }))

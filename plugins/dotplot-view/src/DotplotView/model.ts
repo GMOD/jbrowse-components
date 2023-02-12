@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   addDisposer,
   cast,
@@ -9,9 +10,9 @@ import {
   Instance,
   SnapshotIn,
 } from 'mobx-state-tree'
-
-import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { saveAs } from 'file-saver'
 import { autorun, transaction } from 'mobx'
+
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 import { ReturnToImportFormDialog } from '@jbrowse/core/ui'
 import { BaseTrackStateModel } from '@jbrowse/core/pluggableElementTypes/models'
@@ -30,6 +31,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 // icons
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
 // locals
 import {
@@ -38,8 +40,18 @@ import {
   DotplotHView,
   DotplotVView,
 } from './1dview'
+import { getBlockLabelKeysToHide, makeTicks } from './components/util'
+import { renderToSvg } from './svgcomponents/SVGDotplotView'
+import ExportSvgDlg from './components/ExportSvgDialog'
 
 type Coord = [number, number]
+
+export interface ExportSvgOptions {
+  rasterizeLayers?: boolean
+  filename?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Wrapper?: React.FC<any>
+}
 
 /**
  * #stateModel DotplotView
@@ -154,9 +166,8 @@ export default function stateModelFactory(pm: PluginManager) {
        * #getter
        */
       get assembliesInitialized() {
-        const { assemblyNames } = self
         const { assemblyManager } = getSession(self)
-        return assemblyNames.every(
+        return self.assemblyNames.every(
           n => assemblyManager.get(n)?.initialized ?? true,
         )
       },
@@ -317,15 +328,16 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       activateTrackSelector() {
         if (self.trackSelectorType === 'hierarchical') {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const session: any = getSession(self)
-          const selector = session.addWidget(
-            'HierarchicalTrackSelectorWidget',
-            'hierarchicalTrackSelector',
-            { view: self },
-          )
-          session.showWidget(selector)
-          return selector
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            session.showWidget(selector)
+            return selector
+          }
         }
         throw new Error(`invalid track selector type ${self.trackSelectorType}`)
       },
@@ -372,9 +384,7 @@ export default function stateModelFactory(pm: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        // if we have any tracks with that configuration, turn them off
         const hiddenCount = this.hideTrack(trackId)
-        // if none had that configuration, turn one on
         if (!hiddenCount) {
           this.showTrack(trackId)
         }
@@ -460,8 +470,7 @@ export default function stateModelFactory(pm: PluginManager) {
             )
             .filter(f => !!f)
             .map(displayConf => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const trackConf = getParent<any>(displayConf, 2)
+              const trackConf = getParent<AnyConfigurationModel>(displayConf, 2)
               return {
                 type: trackConf.type,
                 configuration: trackConf,
@@ -497,18 +506,26 @@ export default function stateModelFactory(pm: PluginManager) {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * creates an svg export and save using FileSaver
+       */
+      async exportSvg(opts: ExportSvgOptions = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const html = await renderToSvg(self as any, opts)
+        const blob = new Blob([html], { type: 'image/svg+xml' })
+        saveAs(blob, opts.filename || 'image.svg')
+      },
       // if any of our assemblies are temporary assemblies
       beforeDestroy() {
         const session = getSession(self)
-        self.assemblyNames.forEach(asm => {
-          session.removeTemporaryAssembly(asm)
-        })
+        self.assemblyNames.forEach(asm => session.removeTemporaryAssembly(asm))
       },
       afterAttach() {
         addDisposer(
           self,
           autorun(
-            function initializer() {
+            () => {
               const session = getSession(self)
               if (self.volatileWidth === undefined) {
                 return
@@ -638,7 +655,16 @@ export default function stateModelFactory(pm: PluginManager) {
             label: 'Show all regions',
             onClick: () => self.showAllRegions(),
           },
-
+          {
+            label: 'Export SVG',
+            icon: PhotoCameraIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDlg,
+                { model: self, handleClose },
+              ])
+            },
+          },
           ...(isSessionModelWithWidgets(session)
             ? [
                 {

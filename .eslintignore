@@ -19,4 +19,6 @@ webpack.config.js
 craco.config.js
 packages/core/util/QuickLRU.js
 packages/core/util/QuickLRU.d.ts
+packages/core/util/map-obj.js
+packages/core/util/map-obj.d.ts
 **/umd_plugin.js

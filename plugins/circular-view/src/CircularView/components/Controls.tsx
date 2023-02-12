@@ -15,22 +15,15 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 // locals
 import { CircularViewModel } from '../models/CircularView'
 
-const useStyles = makeStyles()({
-  iconButton: {
-    padding: '4px',
-    margin: '0 2px 0 2px',
-  },
+const useStyles = makeStyles()(theme => ({
   controls: {
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
     position: 'absolute',
-    boxSizing: 'border-box',
-    borderRight: '1px solid #a2a2a2',
-    borderBottom: '1px solid #a2a2a2',
+    borderRight: `1px solid ${theme.palette.divider}`,
+    borderBottom: `1px solid ${theme.palette.divider}`,
     left: 0,
     top: 0,
   },
-})
+}))
 
 const Controls = observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
@@ -38,7 +31,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
     <div className={classes.controls}>
       <IconButton
         onClick={model.zoomOutButton}
-        className={classes.iconButton}
         title={model.lockedFitToWindow ? 'unlock to zoom out' : 'zoom out'}
         disabled={model.atMaxBpPerPx || model.lockedFitToWindow}
       >
@@ -47,7 +39,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
 
       <IconButton
         onClick={model.zoomInButton}
-        className={classes.iconButton}
         title="zoom in"
         disabled={model.atMinBpPerPx}
       >
@@ -56,7 +47,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
 
       <IconButton
         onClick={model.rotateCounterClockwiseButton}
-        className={classes.iconButton}
         title="rotate counter-clockwise"
       >
         <RotateLeftIcon />
@@ -64,7 +54,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
 
       <IconButton
         onClick={model.rotateClockwiseButton}
-        className={classes.iconButton}
         title="rotate clockwise"
       >
         <RotateRightIcon />
@@ -72,7 +61,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
 
       <IconButton
         onClick={model.toggleFitToWindowLock}
-        className={classes.iconButton}
         title={
           model.lockedFitToWindow
             ? 'locked model to window size'

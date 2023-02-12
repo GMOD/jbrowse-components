@@ -32,6 +32,7 @@ const useStyles = makeStyles()(theme => {
         stroke: primary.light,
       },
     },
+
     '@keyframes dash': {
       '0%': {
         strokeDashoffset: offset,

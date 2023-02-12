@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
-import { ExportSvgOptions } from '..'
+import { ExportSvgOptions } from '../model'
 
 function LoadingMessage() {
   return (
@@ -82,12 +82,6 @@ export default function ExportSvgDlg({
               await model.exportSvg({
                 rasterizeLayers,
                 filename,
-                fontSize: 15,
-                rulerHeight: 50,
-                textHeight: 20,
-                paddingHeight: 20,
-                headerHeight: 40,
-                cytobandHeight: 100,
               })
               handleClose()
             } catch (e) {
