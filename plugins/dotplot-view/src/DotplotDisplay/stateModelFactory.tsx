@@ -7,13 +7,13 @@ import {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { makeAbortableReaction } from '@jbrowse/core/util'
+import { getContainingView, makeAbortableReaction } from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 
 // locals
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
-import { ExportSvgOptions } from '../DotplotView/model'
+import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
 
 /**
  * #stateModel DotplotDisplay
@@ -156,19 +156,29 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         async renderSvg(opts: ExportSvgOptions) {
           const props = renderBlockData(self)
           if (!props) {
-            return <>Error</>
+            return null
           }
 
           const { rendererType, rpcManager, renderProps } = props
-          const { reactElement } = await rendererType.renderInClient(
-            rpcManager,
-            {
-              ...renderProps,
-              exportSVG: opts,
-            },
+          const rendering = await rendererType.renderInClient(rpcManager, {
+            ...renderProps,
+            exportSVG: opts,
+          })
+          const { hview, vview } = getContainingView(self) as DotplotViewModel
+          const offX = -hview.offsetPx + rendering.offsetX
+          const offY = -vview.offsetPx + rendering.offsetY
+          return (
+            <g transform={`translate(${offX} ${offY})`}>
+              {React.isValidElement(rendering.reactElement) ? (
+                rendering.reactElement
+              ) : (
+                <g
+                  /* eslint-disable-next-line react/no-danger */
+                  dangerouslySetInnerHTML={{ __html: rendering.html }}
+                />
+              )}
+            </g>
           )
-
-          return reactElement
         },
       }
     })

@@ -7,7 +7,8 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 
 // locals
 import { DotplotViewModel, ExportSvgOptions } from '../model'
-import SVGBackground from './SVGBackground'
+import { GridRaw } from '../components/Grid'
+import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -17,7 +18,7 @@ export async function renderToSvg(
   await when(() => model.initialized)
   const { Wrapper = ({ children }) => <>{children}</> } = opts
   const session = getSession(model)
-  const { width, tracks, height } = model
+  const { width, borderX, viewHeight, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
     tracks.map(async track => {
@@ -26,6 +27,7 @@ export async function renderToSvg(
       return { track, result: await display.renderSvg(opts) }
     }),
   )
+  const w = width + shift * 2
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
@@ -36,14 +38,19 @@ export async function renderToSvg(
           height={height}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, width + shift * 2, height].toString()}
+          viewBox={[0, 0, w, height].toString()}
         >
-          <SVGBackground width={width} height={height} shift={shift} />
+          <rect x={0} y={0} width={w} height={height} fill="#ddd" />
+          <VerticalAxisRaw model={model} />
+          <g transform={`translate(${borderX} 0)`}>
+            <GridRaw model={model} />
 
-          <g>
             {displayResults.map(({ result }, i) => (
-              <React.Fragment key={i}>{result}</React.Fragment>
+              <g key={i}>{result}</g>
             ))}
+          </g>
+          <g transform={`translate(${borderX} ${viewHeight})`}>
+            <HorizontalAxisRaw model={model} />
           </g>
         </svg>
       </Wrapper>
