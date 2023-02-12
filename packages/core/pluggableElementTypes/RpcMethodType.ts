@@ -1,4 +1,4 @@
-import { isAlive, isStateTreeNode } from 'mobx-state-tree'
+import mapObject from 'map-obj'
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
@@ -16,40 +16,7 @@ import {
   RemoteAbortSignal,
 } from '../rpc/remoteAbortSignals'
 
-function getGlobalObject(): Window {
-  // Based on window-or-global
-  // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
-  return (
-    // eslint-disable-next-line no-restricted-globals
-    (typeof self === 'object' && self.self === self && self) ||
-    (typeof global === 'object' && global.global === global && global) ||
-    // @ts-ignore
-    this
-  )
-}
-function isInWebWorker(globalObject: ReturnType<typeof getGlobalObject>) {
-  return Boolean('WorkerGlobalScope' in globalObject)
-}
-
-function deepSearch(obj: Record<string, unknown>) {
-  const queue = [obj]
-  const uris = [] as UriLocation[]
-
-  while (queue.length) {
-    const o = queue.shift()
-    if (!o) {
-      break
-    }
-    Object.values(o).forEach(v => {
-      if (isUriLocation(v)) {
-        uris.push(v)
-      } else if (v !== null && typeof v === 'object') {
-        queue.push(v as Record<string, unknown>)
-      }
-    })
-  }
-  return uris
-}
+type Obj = Record<string, unknown>
 
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
@@ -140,11 +107,20 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async augmentLocationObjects(thing: any, i = 0): Promise<any> {
-    console.log({ thing })
-    const uris = deepSearch(thing)
-    console.log({ uris })
+  private async augmentLocationObjects(thing: Obj) {
+    const uris = [] as UriLocation[]
+
+    // using map-obj avoids cycles, seen in circular view svg export
+    mapObject(
+      thing,
+      (key, val) => {
+        if (isUriLocation(val)) {
+          uris.push(val)
+        }
+        return [key, val]
+      },
+      { deep: true },
+    )
     await Promise.all(uris.map(uri => this.serializeNewAuthArguments(uri)))
     return thing
   }

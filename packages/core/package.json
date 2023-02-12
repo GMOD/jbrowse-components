@@ -46,6 +46,7 @@
     "generic-filehandle": "^3.0.0",
     "http-range-fetcher": "^1.4.0",
     "is-object": "^1.0.1",
+    "map-obj": "^5.0.0",
     "jexl": "^2.3.0",
     "json-stable-stringify": "^1.0.1",
     "librpc-web-mod": "^1.1.5",
