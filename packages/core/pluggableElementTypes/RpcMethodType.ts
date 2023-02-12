@@ -1,4 +1,4 @@
-import mapObject from 'map-obj'
+import mapObject from '../util/map-obj'
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
