@@ -7,6 +7,8 @@ import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
  * #stateModel Dotplot1DView
  * ref https://mobx-state-tree.js.org/concepts/volatiles on volatile state used here
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
+
 const Dotplot1DView = Base1DView.extend(self => {
   const scaleFactor = observable.box(1)
   return {
