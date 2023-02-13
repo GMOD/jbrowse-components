@@ -290,7 +290,11 @@ export const BaseChordDisplayModel = types
      */
     async renderSvg(opts: ExportSvgOptions) {
       const data = renderReactionData(self)
-      const rendering = await renderReactionEffect(data, undefined, self)
+      const rendering = await renderReactionEffect(
+        { ...data, exportSVG: opts },
+        undefined,
+        self,
+      )
       return <ReactRendering rendering={rendering} />
     },
   }))

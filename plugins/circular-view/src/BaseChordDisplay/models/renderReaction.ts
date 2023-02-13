@@ -41,6 +41,7 @@ export async function renderReactionEffect(
     cannotBeRenderedReason,
     renderArgs,
     renderProps,
+    exportSVG,
   } = props
 
   if (cannotBeRenderedReason) {
@@ -62,6 +63,7 @@ export async function renderReactionEffect(
   const { html, ...data } = await rendererType.renderInClient(rpcManager, {
     ...renderArgs,
     ...renderProps,
+    exportSVG,
   })
 
   return {
