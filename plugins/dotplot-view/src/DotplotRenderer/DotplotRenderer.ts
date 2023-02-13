@@ -51,6 +51,7 @@ function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
   ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
   ctx.fill()
 }
+
 export default class DotplotRenderer extends ComparativeRenderer {
   supportsSVG = true
 
@@ -82,6 +83,7 @@ export default class DotplotRenderer extends ComparativeRenderer {
     ctx: CanvasRenderingContext2D,
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
+    console.log('drawing dotplot')
     const { config, views, height, drawCigar, theme } = props
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')

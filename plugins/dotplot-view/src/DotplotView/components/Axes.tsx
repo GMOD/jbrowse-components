@@ -75,14 +75,7 @@ export const HorizontalAxisRaw = observer(function ({
               dominantBaseline="hanging"
               textAnchor="end"
             >
-              {[
-                region.refName,
-                region.start !== 0
-                  ? Math.floor(region.start).toLocaleString('en-US')
-                  : '',
-              ]
-                .filter(f => !!f)
-                .join(':')}
+              {region.refName}
             </text>
           )
         })}
@@ -192,14 +185,7 @@ export const VerticalAxisRaw = observer(function ({
               fontSize={11}
               textAnchor="end"
             >
-              {[
-                region.refName,
-                region.start !== 0
-                  ? Math.floor(region.start).toLocaleString('en-US')
-                  : '',
-              ]
-                .filter(f => !!f)
-                .join(':')}
+              {region.refName}
             </text>
           )
         })}

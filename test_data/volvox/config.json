@@ -176,6 +176,9 @@
     }
   ],
   "configuration": {
+    "rpc": {
+      "defaultDriver": "MainThreadRpcDriver"
+    },
     "extraThemes": {
       "darkForest": {
         "name": "Dark (forest, from config file)",

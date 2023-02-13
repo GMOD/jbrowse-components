@@ -19,6 +19,7 @@ export async function renderToAbstractCanvas(
   ) => Promise<RenderReturn | void> | RenderReturn | void,
 ) {
   const { exportSVG, highResolutionScaling: scaling = 1 } = opts
+  console.log({ exportSVG })
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
