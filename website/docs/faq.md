@@ -152,7 +152,8 @@ also because you can manually edit in advanced configs after your tracks are
 loaded; however be careful:s corrupt configs can produce hard to understand
 errors, because our config system is strongly typed.
 
-Reach out to the team [on gitter](https://gitter.im/GMOD/jbrowse2) or in the
+Reach out to the team
+[on gitter](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im) or in the
 [discussions](https://github.com/GMOD/jbrowse-components/discussions) if you
 have any complex configuration issues.
 

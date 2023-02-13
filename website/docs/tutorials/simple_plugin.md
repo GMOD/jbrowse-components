@@ -858,5 +858,6 @@ thus more that you can do with plugins!) checkout our
 
 If you have further questions about plugin development, or development with
 JBrowse in general, stop by the JBrowse team
-[gitter channel](https://gitter.im/GMOD/jbrowse2), or start a discssion on the
+[gitter channel](https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im), or
+start a discssion on the
 [jbrowse-components discussions forum](https://github.com/GMOD/jbrowse-components/discussions).
