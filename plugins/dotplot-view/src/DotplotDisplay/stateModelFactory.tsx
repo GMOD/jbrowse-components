@@ -7,7 +7,11 @@ import {
   AnyConfigurationSchemaType,
 } from '@jbrowse/core/configuration'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
-import { getContainingView, makeAbortableReaction } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  makeAbortableReaction,
+  ReactRendering,
+} from '@jbrowse/core/util'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 
 // locals
@@ -160,7 +164,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           }
 
           const { rendererType, rpcManager, renderProps } = props
-          console.log({ opts })
           const rendering = await rendererType.renderInClient(rpcManager, {
             ...renderProps,
             exportSVG: opts,
@@ -168,17 +171,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const { hview, vview } = getContainingView(self) as DotplotViewModel
           const offX = -hview.offsetPx + rendering.offsetX
           const offY = -vview.offsetPx + rendering.offsetY
-          console.log({ offX, offY, rendering })
           return (
             <g transform={`translate(${offX} ${offY})`}>
-              {React.isValidElement(rendering.reactElement) ? (
-                rendering.reactElement
-              ) : (
-                <g
-                  /* eslint-disable-next-line react/no-danger */
-                  dangerouslySetInnerHTML={{ __html: rendering.html }}
-                />
-              )}
+              <ReactRendering rendering={rendering} />
             </g>
           )
         },

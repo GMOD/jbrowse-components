@@ -233,13 +233,11 @@ export default function stateModelFactory(pm: PluginManager) {
        * #method
        */
       renderProps() {
+        const session = getSession(self)
         return {
           ...getParentRenderProps(self),
           drawCigar: self.drawCigar,
-          highResolutionScaling: getConf(
-            getSession(self),
-            'highResolutionScaling',
-          ),
+          highResolutionScaling: getConf(session, 'highResolutionScaling'),
         }
       },
     }))

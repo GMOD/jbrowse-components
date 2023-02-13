@@ -83,7 +83,6 @@ export default class DotplotRenderer extends ComparativeRenderer {
     ctx: CanvasRenderingContext2D,
     props: DotplotRenderArgsDeserialized & { views: Dotplot1DViewModel[] },
   ) {
-    console.log('drawing dotplot')
     const { config, views, height, drawCigar, theme } = props
     const color = readConfObject(config, 'color')
     const posColor = readConfObject(config, 'posColor')
