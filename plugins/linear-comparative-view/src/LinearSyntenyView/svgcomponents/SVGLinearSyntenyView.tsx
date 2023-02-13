@@ -1,7 +1,13 @@
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession, renderToAbstractCanvas, sum } from '@jbrowse/core/util'
+import {
+  getSession,
+  hydrateSerializedSvg,
+  ReactRendering,
+  renderToAbstractCanvas,
+  sum,
+} from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
@@ -66,6 +72,21 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     ),
   )
 
+  const hydratedRenderings = !opts.rasterizeLayers
+    ? await Promise.all(
+        renderings.map(r =>
+          // @ts-ignore
+          hydrateSerializedSvg({
+            ...r,
+            width,
+            height: middleComparativeHeight,
+          }).then(r => ({
+            html: r.innerHTML,
+          })),
+        ),
+      )
+    : renderings
+
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(session.theme)}>
@@ -93,10 +114,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             />
           </g>
           <g transform={`translate(${shift} ${fontSize + heights[0]})`}>
-            {
+            {hydratedRenderings.map((r, i) => (
               // @ts-ignore
-              renderings.map(r => r.reactElement)
-            }
+              <ReactRendering key={i} rendering={r} />
+            ))}
           </g>
           <g
             transform={`translate(${shift} ${

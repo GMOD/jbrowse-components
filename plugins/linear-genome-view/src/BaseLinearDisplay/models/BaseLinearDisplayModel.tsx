@@ -13,6 +13,7 @@ import {
   isSessionModelWithWidgets,
   isFeature,
   Feature,
+  ReactRendering,
 } from '@jbrowse/core/util'
 import { Stats } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { BaseBlock } from '@jbrowse/core/util/blockTypes'
@@ -779,14 +780,7 @@ function stateModelFactory() {
                   </defs>
                   <g transform={`translate(${offset} 0)`}>
                     <g clipPath={`url(#${clipid})`}>
-                      {React.isValidElement(rendering.reactElement) ? (
-                        rendering.reactElement
-                      ) : (
-                        <g
-                          /* eslint-disable-next-line react/no-danger */
-                          dangerouslySetInnerHTML={{ __html: rendering.html }}
-                        />
-                      )}
+                      <ReactRendering rendering={rendering} />
                     </g>
                   </g>
                 </React.Fragment>

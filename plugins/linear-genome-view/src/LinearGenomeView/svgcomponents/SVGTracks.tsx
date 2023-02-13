@@ -1,11 +1,11 @@
 import React from 'react'
-import { useTheme } from '@mui/material'
 import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSession } from '@jbrowse/core/util'
 // locals
 import { LinearGenomeViewModel } from '..'
 import SVGRegionSeparators from './SVGRegionSeparators'
+import SVGTrackLabel from './SVGTrackLabel'
 
 type LGV = LinearGenomeViewModel
 
@@ -35,10 +35,8 @@ export default function SVGTracks({
   trackLabels?: string
   trackLabelOffset?: number
 }) {
-  const theme = useTheme()
   const session = getSession(model)
   const textOffset = trackLabels === 'offset' ? textHeight : 0
-  const fill = theme.palette.text.primary
   return (
     <>
       {displayResults.map(({ track, result }) => {
@@ -52,16 +50,16 @@ export default function SVGTracks({
             key={track.configuration.trackId}
             transform={`translate(0 ${current})`}
           >
-            {trackLabels !== 'none' ? (
-              <text x={x} y={fontSize + 2} fill={fill} fontSize={fontSize}>
-                {trackName}
-              </text>
-            ) : null}
-
             <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
               {result}
               <SVGRegionSeparators model={model} height={display.height} />
             </g>
+            <SVGTrackLabel
+              trackName={trackName}
+              fontSize={fontSize}
+              trackLabels={trackLabels}
+              x={x}
+            />
           </g>
         )
       })}

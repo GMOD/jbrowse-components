@@ -70,3 +70,39 @@ export async function renderToAbstractCanvas(
     return { ...result, imageData: await createImageBitmap(canvas) }
   }
 }
+
+export async function hydrateSerializedSvg(results: {
+  width: number
+  height: number
+  canvasRecordedData: unknown
+}) {
+  const { width, height, canvasRecordedData } = results
+
+  const C2S = await import('canvas2svg')
+  const ctx = new C2S.default(width, height)
+  const seq = new CanvasSequence(canvasRecordedData)
+  seq.execute(ctx)
+  return ctx.getSvg()
+}
+
+export function ReactRendering({
+  rendering,
+}: {
+  rendering: {
+    reactElement?: React.ReactNode
+    html?: string
+  }
+}) {
+  return (
+    <>
+      {React.isValidElement(rendering.reactElement) ? (
+        rendering.reactElement
+      ) : (
+        <g
+          /* eslint-disable-next-line react/no-danger */
+          dangerouslySetInnerHTML={{ __html: rendering.html || '' }}
+        />
+      )}
+    </>
+  )
+}

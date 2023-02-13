@@ -85,7 +85,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => {
-      const superMenuItems = self.headerMenuItems
+      const superHeaderMenuItems = self.headerMenuItems
+      const superMenuItems = self.menuItems
       return {
         /**
          * #method
@@ -94,7 +95,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         headerMenuItems() {
           return [
-            ...superMenuItems(),
+            ...superHeaderMenuItems(),
             {
               label: 'Square view',
               onClick: self.squareView,
@@ -129,6 +130,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               icon: Curves,
             },
 
+            {
+              label: 'Export SVG',
+              icon: PhotoCameraIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  ExportSvgDlg,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+          ]
+        },
+        menuItems() {
+          return [
+            ...superMenuItems(),
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,

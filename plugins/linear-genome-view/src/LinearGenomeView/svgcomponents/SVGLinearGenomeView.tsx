@@ -40,13 +40,12 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     Wrapper = ({ children }) => <>{children}</>,
   } = opts
   const session = getSession(model)
-  const themes = session.allThemes()
+  const theme = session.allThemes?.()[themeName]
   const { width, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
-  const offset = headerHeight + rulerHeight + c + 20
-  const height = totalHeight(tracks, textHeight) + offset
-  const theme = themes[themeName]
+  const offset = headerHeight + rulerHeight + c + 10
+  const height = totalHeight(tracks, textHeight) + offset + 100
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
@@ -76,7 +75,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           viewBox={[0, 0, w + shift * 2, height].toString()}
         >
           <SVGBackground width={w} height={height} shift={shift} />
-          <g transform={`translate(${shift} ${fontSize})`}>
+          <g transform={`translate(${shift} 0)`}>
             <g transform={`translate(${trackLabelOffset})`}>
               <SVGHeader
                 model={model}

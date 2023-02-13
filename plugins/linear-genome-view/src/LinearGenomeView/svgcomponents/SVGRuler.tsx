@@ -38,8 +38,7 @@ function Ruler({
             y1={0}
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
-            stroke={theme.palette.divider}
-            data-bp={tick.base}
+            stroke={theme.palette.text.secondary}
           />
         )
       })}
