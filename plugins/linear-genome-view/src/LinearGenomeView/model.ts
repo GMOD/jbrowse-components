@@ -87,6 +87,8 @@ export interface ExportSvgOptions {
   paddingHeight?: number
   headerHeight?: number
   cytobandHeight?: number
+  trackNames?: string
+  themeName?: string
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {

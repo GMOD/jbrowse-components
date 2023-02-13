@@ -23,7 +23,6 @@ export default function SVGRegionSeparators({
           width={interRegionPaddingWidth}
           y={0}
           height={height}
-          stroke="none"
           fill="grey"
         />
       ))}

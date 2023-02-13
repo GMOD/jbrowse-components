@@ -6,11 +6,13 @@ import {
   DialogActions,
   DialogContent,
   FormControlLabel,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ExportSvgOptions } from '..'
+import { getSession } from '@jbrowse/core/util'
 
 function LoadingMessage() {
   return (
@@ -28,11 +30,14 @@ export default function ExportSvgDlg({
   model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
+  const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
   const [filename, setFilename] = useState('jbrowse.svg')
+  const [trackNames, setTrackNames] = useState('offset')
   const [error, setError] = useState<unknown>()
+  const [themeName, setThemeName] = useState(session.themeName)
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
       <DialogContent>
@@ -46,6 +51,35 @@ export default function ExportSvgDlg({
           value={filename}
           onChange={event => setFilename(event.target.value)}
         />
+        <br />
+        <TextField
+          select
+          label="Track labels"
+          value={trackNames}
+          onChange={event => setTrackNames(event.target.value)}
+        >
+          <MenuItem value={'offset'}>Offset</MenuItem>
+          <MenuItem value={'overlay'}>Overlay</MenuItem>
+          <MenuItem value={'left'}>Left</MenuItem>
+          <MenuItem value={'none'}>None</MenuItem>
+        </TextField>
+        <br />
+        <TextField
+          select
+          label="Theme"
+          value={themeName}
+          onChange={event => setThemeName(event.target.value)}
+        >
+          {Object.entries(session.allThemes()).map(([key, val]) => (
+            <MenuItem key={key} value={key}>
+              {
+                // @ts-ignore
+                val.name || '(Unknown name)'
+              }
+            </MenuItem>
+          ))}
+        </TextField>
+
         {offscreenCanvas ? (
           <FormControlLabel
             control={
@@ -88,6 +122,8 @@ export default function ExportSvgDlg({
                 paddingHeight: 20,
                 headerHeight: 40,
                 cytobandHeight: 100,
+                trackNames,
+                themeName,
               })
               handleClose()
             } catch (e) {

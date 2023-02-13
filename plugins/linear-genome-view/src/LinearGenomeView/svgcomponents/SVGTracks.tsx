@@ -25,6 +25,7 @@ export default function SVGTracks({
   paddingHeight,
   textHeight,
   fontSize,
+  trackNames,
 }: {
   displayResults: DisplayResult[]
   model: LGV
@@ -32,6 +33,7 @@ export default function SVGTracks({
   paddingHeight: number
   textHeight: number
   fontSize: number
+  trackNames: string
 }) {
   const theme = useTheme()
   const session = getSession(model)
@@ -42,17 +44,15 @@ export default function SVGTracks({
         const trackName = getTrackName(track.configuration, session)
 
         const display = track.displays[0]
+        const fill = theme.palette.text.primary
+        const x = Math.max(-model.offsetPx, 0)
         offset += display.height + paddingHeight + textHeight
         return (
           <g
             key={track.configuration.trackId}
             transform={`translate(0 ${current})`}
           >
-            <text
-              fontSize={fontSize}
-              x={Math.max(-model.offsetPx, 0)}
-              fill={theme.palette.text.primary}
-            >
+            <text fontSize={fontSize} x={x} fill={fill}>
               {trackName}
             </text>
             <g transform={`translate(0 ${textHeight})`}>

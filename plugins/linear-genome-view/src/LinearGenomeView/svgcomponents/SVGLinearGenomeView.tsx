@@ -1,7 +1,7 @@
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
@@ -23,14 +23,10 @@ interface Track {
 
 export function totalHeight(
   tracks: Track[],
-  paddingHeight: number,
+  padding: number,
   textHeight: number,
 ) {
-  return tracks.reduce(
-    (accum, track) =>
-      accum + track.displays[0].height + paddingHeight + textHeight,
-    0,
-  )
+  return sum(tracks.map(t => t.displays[0].height + padding + textHeight))
 }
 
 // render LGV to SVG
@@ -43,9 +39,12 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     rulerHeight = 50,
     fontSize = 15,
     cytobandHeight = 100,
+    trackNames = 'offset',
+    themeName = 'default',
     Wrapper = ({ children }) => <>{children}</>,
   } = opts
   const session = getSession(model)
+  const themes = session.allThemes()
   const { width, tracks, showCytobands } = model
   const shift = 50
   const c = +showCytobands * cytobandHeight
@@ -61,7 +60,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(session.theme)}>
+    <ThemeProvider theme={createJBrowseTheme(themes[themeName])}>
       <Wrapper>
         <svg
           width={width}
@@ -71,7 +70,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           viewBox={[0, 0, width + shift * 2, height].toString()}
         >
           <SVGBackground width={width} height={height} shift={shift} />
-          <g stroke="none" transform={`translate(${shift} ${fontSize})`}>
+          <g transform={`translate(${shift} ${fontSize})`}>
             <SVGHeader
               model={model}
               fontSize={fontSize}
@@ -85,6 +84,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
               model={model}
               displayResults={displayResults}
               offset={offset}
+              trackNames={trackNames}
             />
           </g>
         </svg>
