@@ -18,7 +18,7 @@ export async function renderToSvg(
   await when(() => model.initialized)
   const { Wrapper = ({ children }) => <>{children}</> } = opts
   const session = getSession(model)
-  const { width, borderX, viewHeight, tracks, height } = model
+  const { width, borderX, viewWidth, viewHeight, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
     tracks.map(async track => {
@@ -45,9 +45,16 @@ export async function renderToSvg(
           <g transform={`translate(${borderX} 0)`}>
             <GridRaw model={model} />
 
-            {displayResults.map(({ result }, i) => (
-              <g key={i}>{result}</g>
-            ))}
+            <defs>
+              <clipPath id="clip-ruler">
+                <rect x={0} y={0} width={viewWidth} height={viewHeight} />
+              </clipPath>
+            </defs>
+            <g clipPath="url(#clip-ruler)">
+              {displayResults.map(({ result }, i) => (
+                <g key={i}>{result}</g>
+              ))}
+            </g>
           </g>
           <g transform={`translate(${borderX} ${viewHeight})`}>
             <HorizontalAxisRaw model={model} />
