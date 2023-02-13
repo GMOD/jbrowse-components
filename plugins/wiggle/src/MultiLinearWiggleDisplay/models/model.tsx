@@ -77,7 +77,6 @@ const stateModelFactory = (
         resolution: types.optional(types.number, 1),
         fill: types.maybe(types.boolean),
         minSize: types.maybe(types.number),
-        height: 200,
         color: types.maybe(types.string),
         posColor: types.maybe(types.string),
         negColor: types.maybe(types.string),
