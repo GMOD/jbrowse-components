@@ -23,7 +23,6 @@ type LSV = LinearSyntenyViewModel
 export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
-    paddingHeight = 20,
     textHeight = 20,
     headerHeight = 40,
     rulerHeight = 50,
@@ -32,14 +31,14 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     Wrapper = ({ children }: any) => <>{children}</>,
   } = opts
   const session = getSession(model)
-  const { width, views } = model
+  const { width, views, middleComparativeHeight, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight + 20
 
   const heights = views.map(
-    view => totalHeight(view.tracks, paddingHeight, textHeight) + offset,
+    view => totalHeight(view.tracks, textHeight) + offset,
   )
-  const totalHeightSvg = sum(heights) + model.middleComparativeHeight + 100
+  const totalHeightSvg = sum(heights) + middleComparativeHeight + 100
   const displayResults = await Promise.all(
     views.map(
       async view =>
@@ -57,10 +56,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   )
 
   const renderings = await Promise.all(
-    model.tracks.map(track =>
+    tracks.map(track =>
       renderToAbstractCanvas(
-        model.width,
-        model.middleComparativeHeight,
+        width,
+        middleComparativeHeight,
         { highResolutionScaling: 1, exportSVG: opts },
         ctx => drawRef(track.displays[0], ctx),
       ),
@@ -86,7 +85,6 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               width={displayResults[0].view.width}
             />
             <SVGTracks
-              paddingHeight={paddingHeight}
               textHeight={textHeight}
               fontSize={fontSize}
               model={displayResults[0].view}
@@ -102,7 +100,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           </g>
           <g
             transform={`translate(${shift} ${
-              fontSize + heights[0] + model.middleComparativeHeight
+              fontSize + heights[0] + middleComparativeHeight
             })`}
           >
             <SVGRuler
@@ -111,7 +109,6 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               width={displayResults[1].view.width}
             />
             <SVGTracks
-              paddingHeight={paddingHeight}
               textHeight={textHeight}
               fontSize={fontSize}
               model={displayResults[1].view}

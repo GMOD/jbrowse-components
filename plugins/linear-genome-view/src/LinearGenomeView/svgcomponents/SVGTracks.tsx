@@ -22,40 +22,43 @@ export default function SVGTracks({
   displayResults,
   model,
   offset,
-  paddingHeight,
   textHeight,
   fontSize,
-  trackNames,
+  trackLabels = 'offset',
+  trackLabelOffset = 0,
 }: {
   displayResults: DisplayResult[]
   model: LGV
   offset: number
-  paddingHeight: number
   textHeight: number
   fontSize: number
-  trackNames: string
+  trackLabels?: string
+  trackLabelOffset?: number
 }) {
   const theme = useTheme()
   const session = getSession(model)
+  const textOffset = trackLabels === 'offset' ? textHeight : 0
+  const fill = theme.palette.text.primary
   return (
     <>
       {displayResults.map(({ track, result }) => {
         const current = offset
         const trackName = getTrackName(track.configuration, session)
-
         const display = track.displays[0]
-        const fill = theme.palette.text.primary
         const x = Math.max(-model.offsetPx, 0)
-        offset += display.height + paddingHeight + textHeight
+        offset += display.height + textOffset
         return (
           <g
             key={track.configuration.trackId}
             transform={`translate(0 ${current})`}
           >
-            <text fontSize={fontSize} x={x} fill={fill}>
-              {trackName}
-            </text>
-            <g transform={`translate(0 ${textHeight})`}>
+            {trackLabels !== 'none' ? (
+              <text x={x} y={fontSize + 2} fill={fill} fontSize={fontSize}>
+                {trackName}
+              </text>
+            ) : null}
+
+            <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
               {result}
               <SVGRegionSeparators model={model} height={display.height} />
             </g>

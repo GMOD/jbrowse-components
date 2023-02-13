@@ -33,6 +33,7 @@ import { LinearGenomeViewModel, ExportSvgOptions } from '../../LinearGenomeView'
 import { Tooltip } from '../components/BaseLinearDisplay'
 import TooLargeMessage from '../components/TooLargeMessage'
 import BlockState, { renderBlockData } from './serverSideRenderedBlock'
+import { ThemeOptions } from '@mui/material'
 
 type LGV = LinearGenomeViewModel
 
@@ -707,7 +708,12 @@ function stateModelFactory() {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { overrideHeight: number }) {
+      async renderSvg(
+        opts: ExportSvgOptions & {
+          overrideHeight: number
+          theme: ThemeOptions
+        },
+      ) {
         const { height, id } = self
         const { overrideHeight } = opts
         const view = getContainingView(self) as LGV
@@ -747,6 +753,7 @@ function stateModelFactory() {
               ...renderProps,
               viewParams: getViewParams(self, true),
               exportSVG: opts,
+              theme: opts.theme || renderProps.theme,
             })
           }),
         )

@@ -16,7 +16,7 @@ export default observer(function ({
   feature,
   viewParams,
   color = 'black',
-  fontHeight = 13,
+  fontHeight = 11,
   featureWidth = 0,
   allowedWidthExpansion = 0,
   displayModel = {},

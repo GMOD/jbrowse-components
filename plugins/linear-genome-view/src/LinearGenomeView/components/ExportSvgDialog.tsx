@@ -11,8 +11,10 @@ import {
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { getSession, useLocalStorage } from '@jbrowse/core/util'
+
+// locals
 import { ExportSvgOptions } from '..'
-import { getSession } from '@jbrowse/core/util'
 
 function LoadingMessage() {
   return (
@@ -21,6 +23,10 @@ function LoadingMessage() {
       <Typography display="inline">Creating SVG</Typography>
     </div>
   )
+}
+
+function useSvgLocal<T>(key: string, val: T) {
+  return useLocalStorage('svg-' + key, val)
 }
 
 export default function ExportSvgDlg({
@@ -34,10 +40,10 @@ export default function ExportSvgDlg({
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
-  const [filename, setFilename] = useState('jbrowse.svg')
-  const [trackNames, setTrackNames] = useState('offset')
   const [error, setError] = useState<unknown>()
-  const [themeName, setThemeName] = useState(session.themeName)
+  const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
+  const [trackLabels, setTrackLabels] = useSvgLocal('tracklabels', 'offset')
+  const [themeName, setThemeName] = useSvgLocal('theme', session.themeName)
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
       <DialogContent>
@@ -55,13 +61,13 @@ export default function ExportSvgDlg({
         <TextField
           select
           label="Track labels"
-          value={trackNames}
-          onChange={event => setTrackNames(event.target.value)}
+          value={trackLabels}
+          onChange={event => setTrackLabels(event.target.value)}
         >
-          <MenuItem value={'offset'}>Offset</MenuItem>
-          <MenuItem value={'overlay'}>Overlay</MenuItem>
-          <MenuItem value={'left'}>Left</MenuItem>
-          <MenuItem value={'none'}>None</MenuItem>
+          <MenuItem value="offset">Offset</MenuItem>
+          <MenuItem value="overlay">Overlay</MenuItem>
+          <MenuItem value="left">Left</MenuItem>
+          <MenuItem value="none">None</MenuItem>
         </TextField>
         <br />
         <TextField
@@ -116,13 +122,7 @@ export default function ExportSvgDlg({
               await model.exportSvg({
                 rasterizeLayers,
                 filename,
-                fontSize: 15,
-                rulerHeight: 50,
-                textHeight: 20,
-                paddingHeight: 20,
-                headerHeight: 40,
-                cytobandHeight: 100,
-                trackNames,
+                trackLabels,
                 themeName,
               })
               handleClose()

@@ -1,7 +1,7 @@
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
-import { getSession, sum } from '@jbrowse/core/util'
+import { getSession, max, measureText, sum } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 
@@ -11,6 +11,7 @@ import SVGBackground from './SVGBackground'
 import SVGTracks from './SVGTracks'
 import SVGHeader from './SVGHeader'
 import SVGRuler from './SVGRuler'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 
 type LGV = LinearGenomeViewModel
 
@@ -21,25 +22,20 @@ interface Track {
   displays: Display[]
 }
 
-export function totalHeight(
-  tracks: Track[],
-  padding: number,
-  textHeight: number,
-) {
-  return sum(tracks.map(t => t.displays[0].height + padding + textHeight))
+export function totalHeight(tracks: Track[], textHeight: number) {
+  return sum(tracks.map(t => t.displays[0].height + textHeight))
 }
 
 // render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
-    paddingHeight = 20,
-    textHeight = 20,
+    textHeight = 16,
     headerHeight = 40,
     rulerHeight = 50,
-    fontSize = 15,
+    fontSize = 13,
     cytobandHeight = 100,
-    trackNames = 'offset',
+    trackLabels = 'offset',
     themeName = 'default',
     Wrapper = ({ children }) => <>{children}</>,
   } = opts
@@ -49,42 +45,54 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 20
-  const height = totalHeight(tracks, paddingHeight, textHeight) + offset
+  const height = totalHeight(tracks, textHeight) + offset
+  const theme = themes[themeName]
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
       await when(() => (display.ready !== undefined ? display.ready : true))
-      return { track, result: await display.renderSvg(opts) }
+      return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
+  const trackLabelMaxLen =
+    max(
+      tracks.map(
+        t => measureText(getTrackName(t.configuration, session), fontSize),
+        fontSize,
+      ),
+    ) + 40
+  const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
+  const w = width + trackLabelOffset
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(themes[themeName])}>
+    <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
-          width={width}
+          width={w}
           height={height}
           xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, width + shift * 2, height].toString()}
+          viewBox={[0, 0, w + shift * 2, height].toString()}
         >
-          <SVGBackground width={width} height={height} shift={shift} />
+          <SVGBackground width={w} height={height} shift={shift} />
           <g transform={`translate(${shift} ${fontSize})`}>
-            <SVGHeader
-              model={model}
-              fontSize={fontSize}
-              rulerHeight={rulerHeight}
-              cytobandHeight={cytobandHeight}
-            />
+            <g transform={`translate(${trackLabelOffset})`}>
+              <SVGHeader
+                model={model}
+                fontSize={fontSize}
+                rulerHeight={rulerHeight}
+                cytobandHeight={cytobandHeight}
+              />
+            </g>
             <SVGTracks
-              paddingHeight={paddingHeight}
               textHeight={textHeight}
               fontSize={fontSize}
               model={model}
               displayResults={displayResults}
               offset={offset}
-              trackNames={trackNames}
+              trackLabels={trackLabels}
+              trackLabelOffset={trackLabelOffset}
             />
           </g>
         </svg>

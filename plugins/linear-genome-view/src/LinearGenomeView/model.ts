@@ -87,7 +87,7 @@ export interface ExportSvgOptions {
   paddingHeight?: number
   headerHeight?: number
   cytobandHeight?: number
-  trackNames?: string
+  trackLabels?: string
   themeName?: string
 }
 
