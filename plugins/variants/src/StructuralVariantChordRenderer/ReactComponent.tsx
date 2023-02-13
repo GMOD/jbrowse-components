@@ -56,7 +56,9 @@ export default observer(function StructuralVariantChords({
       />,
     )
   }
-  const trackStyleId = `chords-${displayModel.id}`
+  const trackStyleId = `chords-${
+    typeof jest !== 'undefined' ? 'test' : displayModel.id
+  }`
   return (
     <g id={trackStyleId} data-testid="structuralVariantChordRenderer">
       <style

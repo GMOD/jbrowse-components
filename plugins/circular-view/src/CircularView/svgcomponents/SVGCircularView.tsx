@@ -14,8 +14,10 @@ type CGV = CircularViewModel
 
 export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
-  const { Wrapper = ({ children }) => <>{children}</> } = opts
+  const { themeName = 'default', Wrapper = ({ children }) => <>{children}</> } =
+    opts
   const session = getSession(model)
+  const theme = session.allThemes?.()[themeName]
   const { width, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
@@ -31,7 +33,7 @@ export async function renderToSvg(model: CGV, opts: ExportSvgOptions) {
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(session.theme)}>
+    <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
           width={width}

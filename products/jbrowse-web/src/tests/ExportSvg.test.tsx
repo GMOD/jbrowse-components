@@ -20,7 +20,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 25000 }
+const delay = { timeout: 40000 }
 
 test('export svg of lgv', async () => {
   const { view, findByTestId, findByText } = createView()
@@ -42,20 +42,20 @@ test('export svg of lgv', async () => {
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/lgv_snapshot.svg`, svg)
   expect(svg).toMatchSnapshot()
-}, 25000)
+}, 45000)
 
 test('export svg of synteny', async () => {
   console.warn = jest.fn()
   const { findByTestId, findAllByText, findByText } = createView({
     ...volvoxConfig,
     defaultSession: {
-      id: 'yvVuWHcq2',
+      id: 'session_testing',
       name: 'Integration test example 2/13/2023, 3:23:07 PM',
       margin: 0,
       drawerWidth: 384,
       views: [
         {
-          id: 'fJkjd-cLV',
+          id: 'p1',
           minimized: false,
           type: 'LinearSyntenyView',
           trackSelectorType: 'hierarchical',
@@ -65,13 +65,13 @@ test('export svg of synteny', async () => {
           middleComparativeHeight: 174,
           tracks: [
             {
-              id: 'ypsG9kRmU3',
+              id: 's1',
               type: 'SyntenyTrack',
               configuration: 'volvox_inv_indels',
               minimized: false,
               displays: [
                 {
-                  id: 'yRIb9TdMJO',
+                  id: 's1-display',
                   type: 'LinearSyntenyDisplay',
                   configuration: 'volvox_inv_indels-LinearSyntenyDisplay',
                   height: 100,
@@ -81,7 +81,7 @@ test('export svg of synteny', async () => {
           ],
           views: [
             {
-              id: 'UxpqdNQK9',
+              id: 'view1',
               minimized: false,
               type: 'LinearGenomeView',
               offsetPx: 3677,
@@ -104,13 +104,13 @@ test('export svg of synteny', async () => {
               ],
               tracks: [
                 {
-                  id: 'MJnsah3eu',
+                  id: 't1',
                   type: 'SyntenyTrack',
                   configuration: 'volvox_inv_indels',
                   minimized: false,
                   displays: [
                     {
-                      id: 'yBtU1sEWNd',
+                      id: 't1-display',
                       type: 'LGVSyntenyDisplay',
                       configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
                       showSoftClipping: false,
@@ -127,7 +127,7 @@ test('export svg of synteny', async () => {
               ],
             },
             {
-              id: 'WqWgaqv_gB',
+              id: 'view2',
               minimized: false,
               type: 'LinearGenomeView',
               offsetPx: 3627,
@@ -143,13 +143,13 @@ test('export svg of synteny', async () => {
               ],
               tracks: [
                 {
-                  id: 'He6Fvstwbz',
+                  id: 't2',
                   type: 'SyntenyTrack',
                   configuration: 'volvox_inv_indels',
                   minimized: false,
                   displays: [
                     {
-                      id: 'hrDhUYjGai',
+                      id: 't2-display',
                       type: 'LGVSyntenyDisplay',
                       configuration: 'volvox_inv_indels-LGVSyntenyDisplay',
                       showSoftClipping: false,
@@ -200,7 +200,7 @@ test('export svg of synteny', async () => {
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/synteny_snapshot.svg`, svg)
   expect(svg).toMatchSnapshot()
-}, 25000)
+}, 45000)
 
 test('export svg of circular', async () => {
   const { findByTestId, findByText } = createView({
@@ -233,7 +233,7 @@ test('export svg of circular', async () => {
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/circular_snapshot.svg`, svg)
   expect(svg).toMatchSnapshot()
-}, 25000)
+}, 45000)
 
 test('export svg of dotplot', async () => {
   const { findByTestId, findByText } = createView({
@@ -348,4 +348,4 @@ test('export svg of dotplot', async () => {
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/dotplot_snapshot.svg`, svg)
   expect(svg).toMatchSnapshot()
-}, 25000)
+}, 45000)

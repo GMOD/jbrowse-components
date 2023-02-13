@@ -43,7 +43,10 @@ export default function ExportSvgDlg({
   const [error, setError] = useState<unknown>()
   const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
   const [trackLabels, setTrackLabels] = useSvgLocal('tracklabels', 'offset')
-  const [themeName, setThemeName] = useSvgLocal('theme', session.themeName)
+  const [themeName, setThemeName] = useSvgLocal(
+    'theme',
+    session.themeName || 'default',
+  )
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
       <DialogContent>
@@ -70,21 +73,23 @@ export default function ExportSvgDlg({
           <MenuItem value="none">None</MenuItem>
         </TextField>
         <br />
-        <TextField
-          select
-          label="Theme"
-          value={themeName}
-          onChange={event => setThemeName(event.target.value)}
-        >
-          {Object.entries(session.allThemes()).map(([key, val]) => (
-            <MenuItem key={key} value={key}>
-              {
-                // @ts-ignore
-                val.name || '(Unknown name)'
-              }
-            </MenuItem>
-          ))}
-        </TextField>
+        {session.allThemes ? (
+          <TextField
+            select
+            label="Theme"
+            value={themeName}
+            onChange={event => setThemeName(event.target.value)}
+          >
+            {Object.entries(session.allThemes()).map(([key, val]) => (
+              <MenuItem key={key} value={key}>
+                {
+                  // @ts-ignore
+                  val.name || '(Unknown name)'
+                }
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : null}
 
         {offscreenCanvas ? (
           <FormControlLabel

@@ -40,7 +40,6 @@ export default class ComparativeRender extends RpcMethodType {
     const renderer = this.getRenderer(rendererType)
     const n = (await super.serializeArguments(args, rpcDriver)) as RenderArgs
     const result = await this.renameRegionsIfNeeded(n, renderer)
-    console.log({ r })
 
     return rpcDriver === 'MainThreadRpcDriver'
       ? result

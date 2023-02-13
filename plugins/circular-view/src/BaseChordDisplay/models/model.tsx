@@ -15,6 +15,7 @@ import {
   makeAbortableReaction,
   AnyReactComponentType,
   Feature,
+  ReactRendering,
 } from '@jbrowse/core/util'
 import {
   getParentRenderProps,
@@ -290,13 +291,6 @@ export const BaseChordDisplayModel = types
     async renderSvg(opts: ExportSvgOptions) {
       const data = renderReactionData(self)
       const rendering = await renderReactionEffect(data, undefined, self)
-      return (
-        <>
-          <g
-            /* eslint-disable-next-line react/no-danger */
-            dangerouslySetInnerHTML={{ __html: rendering.html }}
-          />
-        </>
-      )
+      return <ReactRendering rendering={rendering} />
     },
   }))
