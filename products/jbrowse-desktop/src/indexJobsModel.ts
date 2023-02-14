@@ -159,7 +159,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
           attributes,
           assemblies,
           indexType,
-        } = toJS(entry.indexingParams as TrackTextIndexing)
+        } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
         const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
           conf => {
@@ -255,7 +255,7 @@ export default function jobsModelFactory(pluginManager: PluginManager) {
       async runJob() {
         const { session } = self
         if (self.jobsQueue.length) {
-          const firstIndexingJob = self.jobsQueue[0] as TextJobsEntry
+          const firstIndexingJob = self.jobsQueue[0]
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)

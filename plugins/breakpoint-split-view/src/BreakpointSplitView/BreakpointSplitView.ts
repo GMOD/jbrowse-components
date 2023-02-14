@@ -25,7 +25,7 @@ export default class BreakpointSplitViewType extends ViewType {
     if (!assembly.regions) {
       throw new Error(`assembly ${assemblyName} regions not loaded`)
     }
-    const { getCanonicalRefName } = assembly as Assembly
+    const { getCanonicalRefName } = assembly
     const featureRefName = getCanonicalRefName(feature.get('refName'))
     const topRegion = assembly.regions.find(f => f.refName === featureRefName)
 

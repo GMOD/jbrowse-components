@@ -12,7 +12,7 @@ function InstalledPluginsList({
   pluginManager: PluginManager
   model: PluginStoreModel
 }) {
-  const { plugins } = pluginManager as PluginManager
+  const { plugins } = pluginManager
 
   const corePlugins = plugins
     .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)

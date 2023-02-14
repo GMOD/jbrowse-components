@@ -64,7 +64,7 @@ export function generateTracks(
   const tracks: any = []
 
   trackDb.forEach((track, trackName) => {
-    const trackKeys = Array.from(track.keys()) as string[]
+    const trackKeys = Array.from(track.keys())
     const parentTrackKeys = [
       'superTrack',
       'compositeTrack',

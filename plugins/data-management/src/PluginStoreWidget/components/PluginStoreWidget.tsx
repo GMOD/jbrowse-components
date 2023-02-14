@@ -167,7 +167,7 @@ function PluginStoreWidget({ model }: { model: PluginStoreModel }) {
             })
             .map(plugin => (
               <PluginCard
-                key={(plugin as JBrowsePlugin).name}
+                key={plugin.name}
                 plugin={plugin}
                 model={model}
                 adminMode={!!adminMode}

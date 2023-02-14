@@ -25,7 +25,7 @@ export default function MakeSpreadsheetColumnType(
     })
     .volatile(() => ({
       DataCellReactComponent,
-      FilterModelType: FilterModelType as any,
+      FilterModelType: FilterModelType,
       displayName: displayName || name,
       categoryName,
     }))

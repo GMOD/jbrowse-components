@@ -75,7 +75,7 @@ const DrawerHeader = observer(
               className={classes.drawerSelect}
               classes={{ icon: classes.dropDownIcon }}
               renderValue={widgetId => {
-                const widget = session.activeWidgets.get(widgetId as string)
+                const widget = session.activeWidgets.get(widgetId)
                 if (!widget) {
                   return (
                     <Typography variant="h6" color="inherit">

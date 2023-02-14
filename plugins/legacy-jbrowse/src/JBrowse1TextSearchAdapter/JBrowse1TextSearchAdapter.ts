@@ -80,11 +80,11 @@ export default class JBrowse1TextSearchAdapter
             })
           })),
       ...results.exact.map(result => {
-        const name = result[0] as string
-        const trackIndex = result[1] as number
-        const refName = result[3] as string
-        const start = result[4] as number
-        const end = result[5] as number
+        const name = result[0]
+        const trackIndex = result[1]
+        const refName = result[3]
+        const start = result[4]
+        const end = result[5]
         const locstring = `${refName || name}:${start}-${end}`
         return new BaseResult({
           locString: locstring,

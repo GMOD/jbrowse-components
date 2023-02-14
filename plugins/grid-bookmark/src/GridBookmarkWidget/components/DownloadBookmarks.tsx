@@ -44,7 +44,7 @@ function DownloadBookmarks({ model }: { model: GridBookmarkModel }) {
             className={classes.flexItem}
             data-testid="selectFileType"
             value={fileType}
-            onChange={event => setFileType(event.target.value as string)}
+            onChange={event => setFileType(event.target.value)}
           >
             <MenuItem value="BED">BED</MenuItem>
             <MenuItem value="TSV">TSV</MenuItem>

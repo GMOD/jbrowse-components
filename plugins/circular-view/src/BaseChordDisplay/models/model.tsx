@@ -259,7 +259,7 @@ export const BaseChordDisplayModel = types
       makeAbortableReaction(
         self,
         () => ({
-          assemblyNames: getTrackAssemblyNames(self.parentTrack) as string[],
+          assemblyNames: getTrackAssemblyNames(self.parentTrack),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           adapter: getConf(getParent<any>(self, 2), 'adapter'),
           assemblyManager: getSession(self).assemblyManager,

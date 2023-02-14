@@ -660,7 +660,7 @@ function stateModelFactory() {
       renderProps() {
         const view = getContainingView(self) as LGV
         return {
-          ...(getParentRenderProps(self) as any),
+          ...getParentRenderProps(self),
           notReady:
             self.currBpPerPx !== view.bpPerPx || !self.estimatedRegionStats,
           rpcDriverName: self.rpcDriverName,
