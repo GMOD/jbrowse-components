@@ -14,6 +14,30 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
       <div
         style="display: flex;"
       >
+        <button
+          aria-controls="view-menu"
+          aria-haspopup="true"
+          aria-label="more"
+          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-edgeStart MuiIconButton-sizeSmall css-15c2os-MuiButtonBase-root-MuiIconButton-root-iconRoot"
+          data-testid="view_menu_icon"
+          tabindex="0"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1pgqsr-MuiSvgIcon-root-icon"
+            data-testid="MenuIcon"
+            focusable="false"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+            />
+          </svg>
+          <span
+            class="MuiTouchRipple-root css-8je8zh-MuiTouchRipple-root"
+          />
+        </button>
         <div
           class="css-122lw0e-grow"
         />
@@ -70,76 +94,62 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
             class="css-4l8qn4-scroller"
             style="width: 800px; height: 400px;"
           >
-            <div
-              style="transform: rotate(-1.5707963267948966rad); transition: transform 0.5s; transform-origin: 108.1830988618379px 108.1830988618379px;"
+            <svg
+              height="216.3661977236758"
+              style="transform: rotate(-1.5707963267948966rad); transition: transform 0.5s; transform-origin: 108.1830988618379px 108.1830988618379px; position: absolute; left: 0px; top: 0px;"
+              width="216.3661977236758"
             >
-              <svg
-                class="css-9a6cxh-sliceRoot"
-                height="216.3661977236758px"
-                style="position: absolute; left: 0px; top: 0px;"
-                version="1.1"
-                width="216.3661977236758px"
+              <g
+                transform="translate(108.1830988618379,108.1830988618379)"
               >
-                <g
-                  transform="translate(108.1830988618379,108.1830988618379)"
+                <text
+                  class="css-wdlapd-rulerLabel"
+                  dominant-baseline="baseline"
+                  style="fill: rgb(153, 102, 0);"
+                  text-anchor="middle"
+                  transform="translate(-7.785762961041747,32.25678138297401) rotate(193.5698357099886)"
+                  x="0"
+                  y="0"
                 >
-                  <text
-                    class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
-                    style="fill: rgb(153, 102, 0);"
-                    text-anchor="middle"
-                    transform="translate(-7.785762961041747,32.25678138297401) rotate(193.5698357099886)"
-                    x="0"
-                    y="0"
-                  >
+                  ctgA
+                  <title>
                     ctgA
-                    <title>
-                      ctgA
-                    </title>
-                  </text>
-                  <path
-                    d="M 29.18309886183791 0 A 29.18309886183791 29.18309886183791 0 1 1 -25.969957187206447 -13.312196771174523"
-                    fill="none"
-                    stroke="rgb(153, 102, 0)"
-                    stroke-width="2"
-                  >
-                    <title>
-                      ctgA
-                    </title>
-                  </path>
-                  <text
-                    class="css-wdlapd-rulerLabel"
-                    dominant-baseline="baseline"
-                    style="fill: rgb(102, 102, 0);"
-                    text-anchor="middle"
-                    transform="translate(7.785762961041743,-32.25678138297401) rotate(373.56983570998864)"
-                    x="0"
-                    y="0"
-                  >
+                  </title>
+                </text>
+                <path
+                  d="M 29.18309886183791 0 A 29.18309886183791 29.18309886183791 0 1 1 -25.969957187206447 -13.312196771174523"
+                  fill="none"
+                  stroke="rgb(153, 102, 0)"
+                  stroke-width="2"
+                />
+                <text
+                  class="css-wdlapd-rulerLabel"
+                  dominant-baseline="baseline"
+                  style="fill: rgb(102, 102, 0);"
+                  text-anchor="middle"
+                  transform="translate(7.785762961041743,-32.25678138297401) rotate(373.56983570998864)"
+                  x="0"
+                  y="0"
+                >
+                  ctgB
+                  <title>
                     ctgB
-                    <title>
-                      ctgB
-                    </title>
-                  </text>
-                  <path
-                    d="M -19.727263543242238 -21.505541896805827 A 29.18309886183791 29.18309886183791 0 0 1 27.365229402833254 -10.138909157799736"
-                    fill="none"
-                    stroke="rgb(102, 102, 0)"
-                    stroke-width="2"
-                  >
-                    <title>
-                      ctgB
-                    </title>
-                  </path>
-                </g>
-              </svg>
-            </div>
+                  </title>
+                </text>
+                <path
+                  d="M -19.727263543242238 -21.505541896805827 A 29.18309886183791 29.18309886183791 0 0 1 27.365229402833254 -10.138909157799736"
+                  fill="none"
+                  stroke="rgb(102, 102, 0)"
+                  stroke-width="2"
+                />
+              </g>
+            </svg>
           </div>
           <div
-            class="css-1dk43y1-controls"
+            class="css-1vhj25i-controls"
           >
             <button
-              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
               disabled=""
               tabindex="-1"
               title="unlock to zoom out"
@@ -158,7 +168,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               </svg>
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="zoom in"
               type="button"
@@ -182,7 +192,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="rotate counter-clockwise"
               type="button"
@@ -203,7 +213,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="rotate clockwise"
               type="button"
@@ -224,7 +234,7 @@ exports[`<JBrowseCircularGenomeView /> renders successfully 1`] = `
               />
             </button>
             <button
-              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-54atei-MuiButtonBase-root-MuiIconButton-root-iconButton"
+              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-9vna8i-MuiButtonBase-root-MuiIconButton-root"
               tabindex="0"
               title="locked model to window size"
               type="button"

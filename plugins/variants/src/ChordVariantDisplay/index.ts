@@ -1,6 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { BaseChordDisplayComponent } from '@jbrowse/plugin-circular-view'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+
+// locals
 import configSchemaF from './models/configSchema'
 import stateModelF from './models/stateModelFactory'
 

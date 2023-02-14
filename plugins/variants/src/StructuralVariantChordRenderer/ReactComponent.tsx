@@ -6,7 +6,16 @@ import { AnyConfigurationModel } from '@jbrowse/core/configuration'
 // locals
 import Chord, { Block, AnyRegion } from './Chord'
 
-function StructuralVariantChords(props: {
+export default observer(function StructuralVariantChords({
+  features,
+  config,
+  displayModel,
+  blockDefinitions,
+  radius,
+  bezierRadius,
+  displayModel: { selectedFeatureId },
+  onChordClick,
+}: {
   features: Map<string, Feature>
   radius: number
   config: AnyConfigurationModel
@@ -20,16 +29,6 @@ function StructuralVariantChords(props: {
     evt: unknown,
   ) => void
 }) {
-  const {
-    features,
-    config,
-    displayModel,
-    blockDefinitions,
-    radius,
-    bezierRadius,
-    displayModel: { selectedFeatureId },
-    onChordClick,
-  } = props
   // make a map of refName -> blockDefinition
   const blocksForRefsMemo = useMemo(() => {
     const blocksForRefs = {} as { [key: string]: Block }
@@ -57,7 +56,9 @@ function StructuralVariantChords(props: {
       />,
     )
   }
-  const trackStyleId = `chords-${displayModel.id}`
+  const trackStyleId = `chords-${
+    typeof jest !== 'undefined' ? 'test' : displayModel.id
+  }`
   return (
     <g id={trackStyleId} data-testid="structuralVariantChordRenderer">
       <style
@@ -74,6 +75,4 @@ function StructuralVariantChords(props: {
       {chords}
     </g>
   )
-}
-
-export default observer(StructuralVariantChords)
+})

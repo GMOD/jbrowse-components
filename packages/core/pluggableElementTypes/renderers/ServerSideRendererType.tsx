@@ -1,7 +1,6 @@
 import React from 'react'
 import { ThemeOptions } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
-import { CanvasSequence } from 'canvas-sequencer'
 import { renderToString } from 'react-dom/server'
 import {
   SnapshotOrInstance,
@@ -11,7 +10,7 @@ import {
 } from 'mobx-state-tree'
 
 // locals
-import { checkAbortSignal, updateStatus } from '../../util'
+import { checkAbortSignal, getSerializedSvg, updateStatus } from '../../util'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
@@ -108,7 +107,7 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
 
-    // hydrate res using ServerSideRenderedContent
+    // get res using ServerSideRenderedContent
     return {
       ...res,
       reactElement: (
@@ -175,16 +174,7 @@ export default class ServerSideRenderer extends RendererType {
     )) as ResultsSerialized
 
     if (isSvgExport(results)) {
-      const { width, height, canvasRecordedData } = results
-
-      const C2S = await import('canvas2svg')
-      const ctx = new C2S.default(width, height)
-      const seq = new CanvasSequence(canvasRecordedData)
-      seq.execute(ctx)
-      const str = ctx.getSvg()
-      // innerHTML strips the outer <svg> element from returned data, we add
-      // our own <svg> element in the view's SVG export
-      results.html = str.innerHTML
+      results.html = await getSerializedSvg(results)
       delete results.reactElement
     }
     return results

@@ -13,7 +13,7 @@ import ServerSideRenderer, {
 import RpcManager from '../../rpc/RpcManager'
 import { getAdapter } from '../../data_adapters/dataAdapterCache'
 import { BaseFeatureDataAdapter } from '../../data_adapters/BaseAdapter'
-import { dedupe } from '../../util'
+import { dedupe, getSerializedSvg } from '../../util'
 import { firstValueFrom } from 'rxjs'
 
 export interface RenderArgs extends ServerSideRenderArgs {
@@ -38,6 +38,17 @@ export type ResultsSerialized = ServerSideResultsSerialized
 
 export interface ResultsDeserialized extends ServerSideResultsDeserialized {
   blockKey: string
+}
+
+export interface ResultsSerializedSvgExport extends ResultsSerialized {
+  canvasRecordedData: unknown
+  width: number
+  height: number
+  reactElement: unknown
+}
+
+function isSvgExport(e: ResultsSerialized): e is ResultsSerializedSvgExport {
+  return 'canvasRecordedData' in e
 }
 
 export default class ComparativeServerSideRenderer extends ServerSideRenderer {
@@ -82,11 +93,17 @@ export default class ComparativeServerSideRenderer extends ServerSideRenderer {
    * calls `render` with the RPC manager.
    */
   async renderInClient(rpcManager: RpcManager, args: RenderArgs) {
-    return rpcManager.call(
+    const results = (await rpcManager.call(
       args.sessionId,
       'ComparativeRender',
       args,
-    ) as Promise<ResultsSerialized>
+    )) as ResultsSerialized
+
+    if (isSvgExport(results)) {
+      results.html = await getSerializedSvg(results)
+      delete results.reactElement
+    }
+    return results
   }
 
   /**

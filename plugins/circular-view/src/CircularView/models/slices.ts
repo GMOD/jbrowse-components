@@ -1,10 +1,24 @@
 import { polarToCartesian, assembleLocString, Region } from '@jbrowse/core/util'
 import { thetaRangesOverlap } from './viewportVisibleRegion'
 
+export type SliceElidedRegion = {
+  elided: true
+  widthBp: number
+  regions: Region[]
+}
+
+export type SliceNonElidedRegion = {
+  elided: false
+  widthBp: number
+  start: number
+  end: number
+  refName: string
+  assemblyName: string
+}
+export type SliceRegion = SliceNonElidedRegion | SliceElidedRegion
+
 export class Slice {
   key: string
-
-  offsetRadians: number
 
   startRadians: number
 
@@ -16,18 +30,20 @@ export class Slice {
 
   constructor(
     view: { bpPerRadian: number },
-    public region: Region & { widthBp: number; elided: boolean },
-    currentRadianOffset: number,
+    public region: SliceRegion,
+    public offsetRadians: number,
     public radianWidth: number,
   ) {
     const { bpPerRadian } = view
-    this.key = assembleLocString(region)
-    this.offsetRadians = currentRadianOffset
+    this.key =
+      'regions' in region
+        ? JSON.stringify(region.regions)
+        : assembleLocString(region)
     this.bpPerRadian = bpPerRadian
     this.flipped = false
 
-    this.startRadians = this.offsetRadians
-    this.endRadians = region.widthBp / this.bpPerRadian + this.offsetRadians
+    this.startRadians = offsetRadians
+    this.endRadians = region.widthBp / this.bpPerRadian + offsetRadians
     Object.freeze(this)
   }
 
@@ -49,13 +65,17 @@ export class Slice {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function calculateStaticSlices(self: any) {
+function calculateStaticSlices(self: {
+  elidedRegions: SliceRegion[]
+  bpPerRadian: number
+  spacingPx: number
+  pxPerRadian: number
+}) {
   const slices = []
   let currentRadianOffset = 0
+  const { bpPerRadian, spacingPx, pxPerRadian } = self
   for (const region of self.elidedRegions) {
-    const radianWidth =
-      region.widthBp / self.bpPerRadian + self.spacingPx / self.pxPerRadian
+    const radianWidth = region.widthBp / bpPerRadian + spacingPx / pxPerRadian
     slices.push(new Slice(self, region, currentRadianOffset, radianWidth))
     currentRadianOffset += radianWidth
   }

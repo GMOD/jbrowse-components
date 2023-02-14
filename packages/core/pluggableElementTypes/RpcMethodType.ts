@@ -1,7 +1,7 @@
+import mapObject from '../util/map-obj'
 import PluginManager from '../PluginManager'
 import PluggableElementBase from './PluggableElementBase'
 import { setBlobMap, getBlobMap } from '../util/tracks'
-import { isAlive, isStateTreeNode } from 'mobx-state-tree'
 import {
   isAppRootModel,
   isUriLocation,
@@ -16,13 +16,13 @@ import {
   RemoteAbortSignal,
 } from '../rpc/remoteAbortSignals'
 
+type Obj = Record<string, unknown>
+
 export type RpcMethodConstructor = new (pm: PluginManager) => RpcMethodType
 
 export default abstract class RpcMethodType extends PluggableElementBase {
-  name = 'UNKNOWN'
-
   constructor(public pluginManager: PluginManager) {
-    super({ name: '' })
+    super({})
   }
 
   async serializeArguments(args: {}, _rpcDriverClassName: string): Promise<{}> {
@@ -39,7 +39,7 @@ export default abstract class RpcMethodType extends PluggableElementBase {
       return loc
     }
 
-    const account = rootModel?.findAppropriateInternetAccount(loc)
+    const account = rootModel.findAppropriateInternetAccount(loc)
 
     if (account) {
       loc.internetAccountPreAuthorization =
@@ -49,20 +49,22 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   }
 
   async deserializeArguments<
-    SERIALIZED extends {
+    T extends {
       signal?: RemoteAbortSignal
       blobMap?: Record<string, File>
     },
-  >(serializedArgs: SERIALIZED, _rpcDriverClassName: string) {
+  >(serializedArgs: T, _rpcDriverClassName: string) {
     if (serializedArgs.blobMap) {
       setBlobMap(serializedArgs.blobMap)
     }
     const { signal } = serializedArgs
-    if (signal && isRemoteAbortSignal(signal)) {
-      return { ...serializedArgs, signal: deserializeAbortSignal(signal) }
-    }
 
-    return { ...serializedArgs, signal: undefined }
+    return {
+      ...serializedArgs,
+      signal: isRemoteAbortSignal(signal)
+        ? deserializeAbortSignal(signal)
+        : undefined,
+    }
   }
 
   abstract execute(
@@ -81,20 +83,20 @@ export default abstract class RpcMethodType extends PluggableElementBase {
   async deserializeReturn(
     serializedReturn: unknown,
     _args: unknown,
-    _rpcDriverClassName: string,
-  ): Promise<unknown> {
+    _rpcDriver: string,
+  ) {
     let r
-    const { rootModel } = this.pluginManager
     try {
       r = await serializedReturn
     } catch (error) {
       if (isAuthNeededException(error)) {
-        // @ts-ignore
-        const retryAccount = rootModel?.createEphemeralInternetAccount(
-          `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
-          {},
-          error.url,
-        )
+        const retryAccount =
+          // @ts-ignore
+          this.pluginManager.rootModel?.createEphemeralInternetAccount(
+            `HTTPBasicInternetAccount-${new URL(error.url).origin}`,
+            {},
+            error.url,
+          )
         throw new RetryError(
           'Retrying with created internet account',
           retryAccount.internetAccountId,
@@ -105,30 +107,18 @@ export default abstract class RpcMethodType extends PluggableElementBase {
     return r
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async augmentLocationObjects(thing: any): Promise<any> {
-    if (isStateTreeNode(thing) && !isAlive(thing)) {
-      return thing
-    }
+  private async augmentLocationObjects(thing: Obj) {
+    const uris = [] as UriLocation[]
 
-    if (isUriLocation(thing)) {
-      await this.serializeNewAuthArguments(thing)
-    }
-    if (Array.isArray(thing)) {
-      for (const val of thing) {
-        await this.augmentLocationObjects(val)
+    // using map-obj avoids cycles, seen in circular view svg export
+    mapObject(thing, val => {
+      if (isUriLocation(val)) {
+        uris.push(val)
       }
+    })
+    for (const uri of uris) {
+      await this.serializeNewAuthArguments(uri)
     }
-    if (typeof thing === 'object' && thing !== null) {
-      for (const value of Object.values(thing)) {
-        if (Array.isArray(value)) {
-          for (const val of value) {
-            await this.augmentLocationObjects(val)
-          }
-        } else if (typeof value === 'object' && value !== null) {
-          await this.augmentLocationObjects(value)
-        }
-      }
-    }
+    return thing
   }
 }

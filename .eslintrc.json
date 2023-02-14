@@ -60,6 +60,10 @@
       }
     ]
   },
+  "globals": {
+    "globalThis": false
+  },
+
   "overrides": [
     {
       "files": ["**/*.ts", "**/*.tsx"],

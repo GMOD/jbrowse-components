@@ -1,6 +1,6 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import { LinearSyntenyDisplayModel } from './stateModelFactory'
+import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range
@@ -29,11 +29,11 @@ export function getId(r: number, g: number, b: number, unitMultiplier: number) {
   return Math.floor((r * 255 * 255 + g * 255 + b - 1) / unitMultiplier)
 }
 
-export function drawRef(model: LinearSyntenyDisplayModel) {
-  const highResolutionScaling = 1
-  const ctx1 = model.mainCanvas?.getContext('2d')
-  const ctx3 = model.cigarClickMapCanvas?.getContext('2d')
-
+export function drawRef(
+  model: LinearSyntenyDisplayModel,
+  ctx1: CanvasRenderingContext2D,
+  ctx3?: CanvasRenderingContext2D,
+) {
   const view = getContainingView(model) as LinearSyntenyViewModel
   const drawCurves = view.drawCurves
   const drawCIGAR = view.drawCIGAR
@@ -41,15 +41,10 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
   const width = view.width
   const bpPerPxs = view.views.map(v => v.bpPerPx)
 
-  if (!ctx1 || !ctx3) {
-    return
+  if (ctx3) {
+    ctx3.imageSmoothingEnabled = false
   }
 
-  ctx3.imageSmoothingEnabled = false
-
-  ctx1.resetTransform()
-  ctx1.scale(highResolutionScaling, highResolutionScaling)
-  ctx1.clearRect(0, 0, width, height)
   ctx1.beginPath()
   const featPos = model.featPositions
   const offsets = view.views.map(v => v.offsetPx)
@@ -178,10 +173,12 @@ export function drawRef(model: LinearSyntenyDisplayModel) {
               // feature, else just use match
               ctx1.fillStyle =
                 colorMap[(continuingFlag && d1 > 1) || d2 > 1 ? op : 'M']
-              ctx3.fillStyle = makeColor(idx)
 
               draw(ctx1, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
-              draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              if (ctx3) {
+                ctx3.fillStyle = makeColor(idx)
+                draw(ctx3, px1, cx1, y1, cx2, px2, y2, mid, drawCurves)
+              }
             }
           }
         }

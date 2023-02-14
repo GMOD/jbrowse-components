@@ -51,7 +51,7 @@ import ZoomInIcon from '@mui/icons-material/ZoomIn'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 // locals
-import { renderToSvg } from './components/LinearGenomeViewSvg'
+import { renderToSvg } from './svgcomponents/SVGLinearGenomeView'
 import RefNameAutocomplete from './components/RefNameAutocomplete'
 import SearchBox from './components/SearchBox'
 import ExportSvgDlg from './components/ExportSvgDialog'
@@ -76,12 +76,19 @@ export interface BpOffset {
   assemblyName?: string
   oob?: boolean
 }
-
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
   filename?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Wrapper?: React.FC<any>
+  fontSize?: number
+  rulerHeight?: number
+  textHeight?: number
+  paddingHeight?: number
+  headerHeight?: number
+  cytobandHeight?: number
+  trackLabels?: string
+  themeName?: string
 }
 
 function calculateVisibleLocStrings(contentBlocks: BaseBlock[]) {

@@ -13,7 +13,7 @@ import {
 
 // locals
 import { WiggleDisplayModel } from '../models/model'
-import YScaleBar from './YScaleBar'
+import YScaleBar from '../../shared/YScaleBar'
 
 type LGV = LinearGenomeViewModel
 

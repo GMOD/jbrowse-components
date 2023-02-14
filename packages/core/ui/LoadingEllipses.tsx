@@ -33,7 +33,7 @@ interface Props extends TypographyProps {
 }
 
 export default function LoadingEllipses({
-  message = 'Loading',
+  message,
   variant = 'body2',
   ...rest
 }: Props) {

@@ -51,7 +51,10 @@ function drawCir(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1) {
   ctx.arc(x, y, r / 2, 0, 2 * Math.PI)
   ctx.fill()
 }
+
 export default class DotplotRenderer extends ComparativeRenderer {
+  supportsSVG = true
+
   async renameRegionsIfNeeded(args: DotplotRenderArgs) {
     const pm = this.pluginManager
     const assemblyManager = pm.rootModel?.session?.assemblyManager

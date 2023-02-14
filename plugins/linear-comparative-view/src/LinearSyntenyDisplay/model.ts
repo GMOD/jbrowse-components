@@ -156,6 +156,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * used for synteny svg rendering
+       */
+      get ready() {
+        return this.numFeats > 0
+      },
+
+      /**
+       * #getter
        */
       get featMap() {
         return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
@@ -170,7 +178,17 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             if (!view.initialized) {
               return
             }
-            drawRef(self)
+            const ctx1 = self.mainCanvas?.getContext('2d')
+            const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
+            if (!ctx1 || !ctx3) {
+              return
+            }
+
+            const height = view.middleComparativeHeight
+            const width = view.width
+            ctx1.clearRect(0, 0, width, height)
+            ctx3.clearRect(0, 0, width, height)
+            drawRef(self, ctx1, ctx3)
           }),
         )
 

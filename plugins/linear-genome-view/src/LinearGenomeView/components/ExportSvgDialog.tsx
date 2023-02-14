@@ -6,10 +6,14 @@ import {
   DialogActions,
   DialogContent,
   FormControlLabel,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { getSession, useLocalStorage } from '@jbrowse/core/util'
+
+// locals
 import { ExportSvgOptions } from '..'
 
 function LoadingMessage() {
@@ -21,6 +25,10 @@ function LoadingMessage() {
   )
 }
 
+function useSvgLocal<T>(key: string, val: T) {
+  return useLocalStorage('svg-' + key, val)
+}
+
 export default function ExportSvgDlg({
   model,
   handleClose,
@@ -28,12 +36,17 @@ export default function ExportSvgDlg({
   model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
-  // @ts-ignore
+  const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
-  const [filename, setFilename] = useState('jbrowse.svg')
   const [error, setError] = useState<unknown>()
+  const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
+  const [trackLabels, setTrackLabels] = useSvgLocal('tracklabels', 'offset')
+  const [themeName, setThemeName] = useSvgLocal(
+    'theme',
+    session.themeName || 'default',
+  )
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
       <DialogContent>
@@ -47,6 +60,40 @@ export default function ExportSvgDlg({
           value={filename}
           onChange={event => setFilename(event.target.value)}
         />
+        <br />
+        <TextField
+          select
+          label="Track label positioning"
+          variant="outlined"
+          style={{ width: 150 }}
+          value={trackLabels}
+          onChange={event => setTrackLabels(event.target.value)}
+        >
+          <MenuItem value="offset">Offset</MenuItem>
+          <MenuItem value="overlay">Overlay</MenuItem>
+          <MenuItem value="left">Left</MenuItem>
+          <MenuItem value="none">None</MenuItem>
+        </TextField>
+        <br />
+        {session.allThemes ? (
+          <TextField
+            select
+            label="Theme"
+            variant="outlined"
+            value={themeName}
+            onChange={event => setThemeName(event.target.value)}
+          >
+            {Object.entries(session.allThemes()).map(([key, val]) => (
+              <MenuItem key={key} value={key}>
+                {
+                  // @ts-ignore
+                  val.name || '(Unknown name)'
+                }
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : null}
+
         {offscreenCanvas ? (
           <FormControlLabel
             control={
@@ -80,7 +127,12 @@ export default function ExportSvgDlg({
             setLoading(true)
             setError(undefined)
             try {
-              await model.exportSvg({ rasterizeLayers, filename })
+              await model.exportSvg({
+                rasterizeLayers,
+                filename,
+                trackLabels,
+                themeName,
+              })
               handleClose()
             } catch (e) {
               console.error(e)

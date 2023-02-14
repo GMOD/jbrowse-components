@@ -53,7 +53,7 @@ exports[`no features 1`] = `
 exports[`one feature (compact mode) 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="120"
+  height="119"
   width="333.3333333333333"
 >
   <g>
@@ -205,9 +205,9 @@ exports[`one feature (compact mode) 1`] = `
     />
     <text
       fill="rgba(0, 0, 0, 0.87)"
-      font-size="13"
+      font-size="12"
       x="1991.7"
-      y="20"
+      y="19"
     >
       au9.g1002.t1
     </text>
@@ -238,7 +238,7 @@ exports[`one feature 1`] = `
 exports[`processed transcript (exons + impliedUTR) 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="140"
+  height="138"
   width="333.3333333333333"
 >
   <g>
@@ -408,17 +408,17 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
     />
     <text
       fill="rgba(0, 0, 0, 0.87)"
-      font-size="13"
+      font-size="12"
       x="7759845"
-      y="25"
+      y="24"
     >
       LACTBL1
     </text>
     <text
       fill="blue"
-      font-size="13"
+      font-size="12"
       x="7759845"
-      y="40"
+      y="38"
     >
       lactamase beta like 1
     </text>
@@ -449,7 +449,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 exports[`processed transcript 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="125"
+  height="124"
   width="333.3333333333333"
 >
   <g>
@@ -601,9 +601,9 @@ exports[`processed transcript 1`] = `
     />
     <text
       fill="rgba(0, 0, 0, 0.87)"
-      font-size="13"
+      font-size="12"
       x="1991.7"
-      y="25"
+      y="24"
     >
       au9.g1002.t1
     </text>

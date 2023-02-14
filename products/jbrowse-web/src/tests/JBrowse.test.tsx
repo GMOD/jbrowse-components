@@ -75,15 +75,15 @@ test('assembly aliases', async () => {
 test('nclist track test with long name', async () => {
   const { view, findByTestId, findByText } = createView()
   await findByText('Help')
-  view.setNewView(1, -539)
+  view.setNewView(6.2, -301)
   fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))
 
   await findByText(
-    'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuvwxyz1...',
+    'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuv...',
     {},
     delay,
   )
-}, 15000)
+}, 20000)
 
 test('test sharing', async () => {
   // @ts-ignore

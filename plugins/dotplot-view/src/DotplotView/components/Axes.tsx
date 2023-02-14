@@ -30,7 +30,20 @@ export const HorizontalAxis = observer(function ({
 }: {
   model: DotplotViewModel
 }) {
+  const { viewWidth, borderY } = model
   const { classes } = useStyles()
+  return (
+    <svg width={viewWidth} height={borderY} className={classes.htext}>
+      <HorizontalAxisRaw model={model} />
+    </svg>
+  )
+})
+
+export const HorizontalAxisRaw = observer(function ({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
   const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
   const dblocks = dynamicBlocks.contentBlocks
@@ -43,7 +56,7 @@ export const HorizontalAxis = observer(function ({
   }
 
   return (
-    <svg width={viewWidth} height={borderY} className={classes.htext}>
+    <>
       {dblocks
         .filter(region => !hide.has(region.key))
         .map(region => {
@@ -58,17 +71,11 @@ export const HorizontalAxis = observer(function ({
               x={xoff}
               y={y + 1}
               fill={theme.palette.text.primary}
+              fontSize={11}
               dominantBaseline="hanging"
               textAnchor="end"
             >
-              {[
-                region.refName,
-                region.start !== 0
-                  ? Math.floor(region.start).toLocaleString('en-US')
-                  : '',
-              ]
-                .filter(f => !!f)
-                .join(':')}
+              {region.refName}
             </text>
           )
         })}
@@ -88,7 +95,6 @@ export const HorizontalAxis = observer(function ({
             y2={tick.type === 'major' ? 6 : 4}
             strokeWidth={1}
             stroke={theme.palette.divider}
-            data-bp={tick.base}
           />
         )
       })}
@@ -122,20 +128,35 @@ export const HorizontalAxis = observer(function ({
         x={(viewWidth - borderX) / 2}
         fill={theme.palette.text.primary}
         textAnchor="middle"
+        fontSize={11}
         dominantBaseline="hanging"
       >
         {hview.assemblyNames.join(',')}
       </text>
-    </svg>
+    </>
   )
 })
+
 export const VerticalAxis = observer(function ({
   model,
 }: {
   model: DotplotViewModel
 }) {
+  const { borderX, viewHeight } = model
   const { classes } = useStyles()
-  const { borderX, viewHeight, borderY, vview, vtextRotation, vticks } = model
+  return (
+    <svg className={classes.vtext} width={borderX} height={viewHeight}>
+      <VerticalAxisRaw model={model} />
+    </svg>
+  )
+})
+
+export const VerticalAxisRaw = observer(function ({
+  model,
+}: {
+  model: DotplotViewModel
+}) {
+  const { viewHeight, borderX, borderY, vview, vtextRotation, vticks } = model
   const { offsetPx, width, dynamicBlocks, bpPerPx } = vview
   const dblocks = dynamicBlocks.contentBlocks
   const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
@@ -146,7 +167,7 @@ export const VerticalAxis = observer(function ({
     staticBlocks: vview.staticBlocks,
   }
   return (
-    <svg className={classes.vtext} width={borderX} height={viewHeight}>
+    <>
       {dblocks
         .filter(region => !hide.has(region.key))
         .map(region => {
@@ -161,16 +182,10 @@ export const VerticalAxis = observer(function ({
               x={x}
               y={yoff}
               fill={theme.palette.text.primary}
+              fontSize={11}
               textAnchor="end"
             >
-              {[
-                region.refName,
-                region.start !== 0
-                  ? Math.floor(region.start).toLocaleString('en-US')
-                  : '',
-              ]
-                .filter(f => !!f)
-                .join(':')}
+              {region.refName}
             </text>
           )
         })}
@@ -190,7 +205,6 @@ export const VerticalAxis = observer(function ({
             x2={borderX - (tick.type === 'major' ? 6 : 4)}
             strokeWidth={1}
             stroke={theme.palette.divider}
-            data-bp={tick.base}
           />
         )
       })}
@@ -223,9 +237,10 @@ export const VerticalAxis = observer(function ({
         fill={theme.palette.text.primary}
         transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
         textAnchor="middle"
+        fontSize={11}
       >
         {vview.assemblyNames.join(',')}
       </text>
-    </svg>
+    </>
   )
 })

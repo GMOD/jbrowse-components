@@ -9,7 +9,7 @@ import {
 
 // locals
 import SyntenyTooltip from './SyntenyTooltip'
-import { LinearSyntenyDisplayModel } from '../stateModelFactory'
+import { LinearSyntenyDisplayModel } from '../model'
 import { getId, MAX_COLOR_RANGE } from '../drawSynteny'
 
 export default observer(function LinearSyntenyRendering({

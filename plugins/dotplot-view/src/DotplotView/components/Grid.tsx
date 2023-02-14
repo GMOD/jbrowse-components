@@ -5,12 +5,12 @@ import { useTheme } from '@mui/material'
 // locals
 import { DotplotViewModel } from '../model'
 
-export default observer(function Grid({
+export const GridRaw = observer(function ({
   model,
   children,
 }: {
   model: DotplotViewModel
-  children: React.ReactNode
+  children?: React.ReactNode
 }) {
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
@@ -32,11 +32,7 @@ export default observer(function Grid({
   let lastx = Infinity
   let lasty = Infinity
   return (
-    <svg
-      style={{ background: 'rgba(0,0,0,0.12)' }}
-      width={viewWidth}
-      height={viewHeight}
-    >
+    <>
       <rect
         x={rx}
         y={ry}
@@ -89,6 +85,25 @@ export default observer(function Grid({
         />
       </g>
       {children}
-    </svg>
+    </>
   )
 })
+
+export default function Grid({
+  model,
+  children,
+}: {
+  model: DotplotViewModel
+  children?: React.ReactNode
+}) {
+  const { viewWidth, viewHeight } = model
+  return (
+    <svg
+      width={viewWidth}
+      height={viewHeight}
+      style={{ background: 'rgba(0,0,0,0.12)' }}
+    >
+      <GridRaw model={model}>{children}</GridRaw>
+    </svg>
+  )
+}

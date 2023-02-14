@@ -22,18 +22,6 @@ function fixup(buf: string) {
   return buf.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
-function getGlobalObject(): Window {
-  // Based on window-or-global
-  // https://github.com/purposeindustries/window-or-global/blob/322abc71de0010c9e5d9d0729df40959e1ef8775/lib/index.js
-  return (
-    // eslint-disable-next-line no-restricted-globals
-    (typeof self === 'object' && self.self === self && self) ||
-    (typeof global === 'object' && global.global === global && global) ||
-    // @ts-ignore
-    this
-  )
-}
-
 const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
   return InternetAccount.named('OAuthInternetAccount')
     .props({
@@ -47,9 +35,8 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           if (codeVerifier) {
             return codeVerifier
           }
-          const global = getGlobalObject()
           const array = new Uint8Array(32)
-          global.crypto.getRandomValues(array)
+          globalThis.crypto.getRandomValues(array)
           codeVerifier = fixup(Buffer.from(array).toString('base64'))
           return codeVerifier
         },
