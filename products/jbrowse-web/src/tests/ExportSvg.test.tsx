@@ -316,25 +316,6 @@ test('export svg of dotplot', async () => {
           viewTrackConfigs: [],
         },
       ],
-      widgets: {
-        hierarchicalTrackSelector: {
-          id: 'hierarchicalTrackSelector',
-          type: 'HierarchicalTrackSelectorWidget',
-          collapsed: {},
-        },
-      },
-      activeWidgets: {
-        hierarchicalTrackSelector: 'hierarchicalTrackSelector',
-      },
-      connectionInstances: [],
-      sessionTracks: [],
-      sessionConnections: [],
-      sessionAssemblies: [],
-      temporaryAssemblies: [],
-      sessionPlugins: [],
-      minimized: false,
-      drawerPosition: 'right',
-      sessionThemeName: 'default',
     },
   })
 

@@ -15,14 +15,17 @@ export const GridRaw = observer(function ({
   const { viewWidth, viewHeight, hview, vview } = model
   const hblocks = hview.dynamicBlocks.contentBlocks
   const vblocks = vview.dynamicBlocks.contentBlocks
+  if (!hblocks.length || !vblocks.length) {
+    return null
+  }
   const htop = hview.displayedRegionsTotalPx - hview.offsetPx
   const vtop = vview.displayedRegionsTotalPx - vview.offsetPx
-  const hbottom = hblocks[0]?.offsetPx - hview.offsetPx
-  const vbottom = vblocks[0]?.offsetPx - vview.offsetPx
+  const hbottom = hblocks[0].offsetPx - hview.offsetPx
+  const vbottom = vblocks[0].offsetPx - vview.offsetPx
   const theme = useTheme()
   const stroke = theme.palette.divider
 
-  // Uses math.max/math.min avoid making very large SVG rect offscreen element,
+  // Uses math.max/min avoid making very large SVG rect offscreen element,
   // which can sometimes fail to draw
   const rx = Math.max(hbottom, 0)
   const ry = Math.max(viewHeight - vtop, 0)

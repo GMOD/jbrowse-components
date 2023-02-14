@@ -1,7 +1,6 @@
 import React from 'react'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 import { createTestSession } from '@jbrowse/web/src/rootModel'
-import '@testing-library/jest-dom/extend-expect'
 import 'requestidlecallback-polyfill'
 
 // locals
@@ -81,9 +80,8 @@ test('renders one track, one region', async () => {
   })
   const model = session.views[0]
   model.setWidth(800)
-  const { container, queryByText, getByPlaceholderText, findByText } = render(
-    <LinearGenomeView model={model} />,
-  )
+  const { container, queryAllByTestId, getByPlaceholderText, findByText } =
+    render(<LinearGenomeView model={model} />)
   await findByText('Foo Track')
   // test needs to wait until it's updated to display 100 bp in the header to
   // make snapshot pass
@@ -94,8 +92,9 @@ test('renders one track, one region', async () => {
       (getByPlaceholderText('Search for location') as HTMLInputElement).value,
     ).toEqual('ctgA:1..100')
   })
-  await waitFor(() => expect(queryByText('Loading')).not.toBeInTheDocument())
-  expect(container.firstChild).toMatchSnapshot()
+  await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(1))
+  // snapshot has no features rendered
+  expect(container).toMatchSnapshot()
 })
 
 test('renders two tracks, two regions', async () => {
@@ -158,13 +157,11 @@ test('renders two tracks, two regions', async () => {
   })
   const model = session.views[0]
   model.setWidth(800)
-  const { container, findByText, queryByText, findAllByTestId } = render(
+  const { container, findByText, queryAllByTestId } = render(
     <LinearGenomeView model={model} />,
   )
   await findByText('Foo Track')
   await findByText('798bp')
-  await findAllByTestId('svgfeatures', {}, { timeout: 10000 })
-  await waitFor(() => expect(queryByText('Loading')).not.toBeInTheDocument())
-
-  expect(container.firstChild).toMatchSnapshot()
+  await waitFor(() => expect(queryAllByTestId('svgfeatures').length).toBe(4))
+  expect(container).toMatchSnapshot()
 }, 15000)
