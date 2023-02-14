@@ -79,7 +79,7 @@ function BreakendOptionDialog({
               viewSnapshot.views[0].offsetPx -= view.width / 2 + 100
               viewSnapshot.views[1].offsetPx -= view.width / 2 + 100
               viewSnapshot.featureData = feature
-              const viewTracks = getSnapshot(view.tracks)
+              const viewTracks = getSnapshot(view.tracks) as unknown[]
               viewSnapshot.views[0].tracks = remapIds(viewTracks)
               viewSnapshot.views[1].tracks = remapIds(
                 mirrorTracks ? viewTracks.slice().reverse() : viewTracks,
