@@ -29,6 +29,7 @@ import {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/models/CircularView'
+import { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel BaseChordDisplay
@@ -288,10 +289,18 @@ export const BaseChordDisplayModel = types
     /**
      * #method
      */
-    async renderSvg(opts: ExportSvgOptions) {
+    async renderSvg(
+      opts: ExportSvgOptions & {
+        theme: ThemeOptions
+      },
+    ) {
       const data = renderReactionData(self)
       const rendering = await renderReactionEffect(
-        { ...data, exportSVG: opts },
+        {
+          ...data,
+          exportSVG: opts,
+          theme: opts.theme || data.renderProps.theme,
+        },
         undefined,
         self,
       )
