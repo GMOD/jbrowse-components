@@ -47,7 +47,9 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   const shift = 50
   const offset = headerHeight + rulerHeight
 
-  const heights = views.map(v => totalHeight(v.tracks, textHeight) + offset)
+  const heights = views.map(
+    v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
+  )
   const totalHeightSvg = sum(heights) + synH + 100
   const displayResults = await Promise.all(
     views.map(

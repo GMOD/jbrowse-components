@@ -22,8 +22,18 @@ interface Track {
   displays: Display[]
 }
 
-export function totalHeight(tracks: Track[], textHeight: number) {
-  return sum(tracks.map(t => t.displays[0].height + textHeight))
+export function totalHeight(
+  tracks: Track[],
+  textHeight: number,
+  trackLabels: string,
+) {
+  return sum(
+    tracks.map(
+      t =>
+        t.displays[0].height +
+        (['none', 'left'].includes(trackLabels) ? 0 : textHeight),
+    ),
+  )
 }
 
 // render LGV to SVG
@@ -45,7 +55,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const shift = 50
   const c = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + c + 10
-  const height = totalHeight(tracks, textHeight) + offset + 100
+  const height = totalHeight(tracks, textHeight, trackLabels) + offset + 100
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
