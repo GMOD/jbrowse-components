@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
 import {
   getSession,
-  hydrateSerializedSvg,
+  getSerializedSvg,
   max,
   measureText,
   ReactRendering,
@@ -47,9 +47,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   const shift = 50
   const offset = headerHeight + rulerHeight
 
-  const heights = views.map(
-    view => totalHeight(view.tracks, textHeight) + offset,
-  )
+  const heights = views.map(v => totalHeight(v.tracks, textHeight) + offset)
   const totalHeightSvg = sum(heights) + middleComparativeHeight + 100
   const displayResults = await Promise.all(
     views.map(
@@ -68,14 +66,23 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   )
 
   const renderings = await Promise.all(
-    tracks.map(track =>
-      renderToAbstractCanvas(
+    tracks.map(async track => {
+      const d = track.displays[0]
+      await when(() => (d.ready !== undefined ? d.ready : true))
+      const r = await renderToAbstractCanvas(
         width,
         middleComparativeHeight,
         { highResolutionScaling: 1, exportSVG: opts },
-        ctx => drawRef(track.displays[0], ctx),
-      ),
-    ),
+        ctx => drawRef(d, ctx),
+      )
+      return 'canvasRecordedData' in r
+        ? getSerializedSvg({
+            ...r,
+            width,
+            height: middleComparativeHeight,
+          })
+        : r
+    }),
   )
 
   const trackLabelMaxLen =
@@ -91,21 +98,6 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
-
-  const hydratedRenderings = !opts.rasterizeLayers
-    ? await Promise.all(
-        renderings.map(r =>
-          // @ts-ignore
-          hydrateSerializedSvg({
-            ...r,
-            width,
-            height: middleComparativeHeight,
-          }).then(r => ({
-            html: r.innerHTML,
-          })),
-        ),
-      )
-    : renderings
 
   const t = createJBrowseTheme(theme)
 
@@ -148,7 +140,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               fontSize + heights[0]
             })`}
           >
-            {hydratedRenderings.map((r, i) => (
+            {renderings.map((r, i) => (
               // @ts-ignore
               <ReactRendering key={i} rendering={r} />
             ))}

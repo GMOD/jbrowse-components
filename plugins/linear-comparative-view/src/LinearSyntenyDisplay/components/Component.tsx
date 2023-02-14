@@ -5,7 +5,7 @@ import { LoadingEllipses } from '@jbrowse/core/ui'
 
 // locals
 import LinearSyntenyRendering from './LinearSyntenyRendering'
-import { LinearSyntenyDisplayModel } from '../stateModelFactory'
+import { LinearSyntenyDisplayModel } from '../model'
 
 const useStyles = makeStyles()(theme => {
   const bg = theme.palette.action.disabledBackground

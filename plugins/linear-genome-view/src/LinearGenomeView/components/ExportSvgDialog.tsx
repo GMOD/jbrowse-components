@@ -63,7 +63,9 @@ export default function ExportSvgDlg({
         <br />
         <TextField
           select
-          label="Track labels"
+          label="Track label positioning"
+          variant="outlined"
+          style={{ width: 150 }}
           value={trackLabels}
           onChange={event => setTrackLabels(event.target.value)}
         >
@@ -77,6 +79,7 @@ export default function ExportSvgDlg({
           <TextField
             select
             label="Theme"
+            variant="outlined"
             value={themeName}
             onChange={event => setThemeName(event.target.value)}
           >

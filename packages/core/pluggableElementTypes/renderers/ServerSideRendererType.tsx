@@ -10,11 +10,7 @@ import {
 } from 'mobx-state-tree'
 
 // locals
-import {
-  checkAbortSignal,
-  hydrateSerializedSvg,
-  updateStatus,
-} from '../../util'
+import { checkAbortSignal, getSerializedSvg, updateStatus } from '../../util'
 import SerializableFilterChain, {
   SerializedFilterChain,
 } from './util/serializableFilterChain'
@@ -111,7 +107,7 @@ export default class ServerSideRenderer extends RendererType {
       }
     }
 
-    // hydrate res using ServerSideRenderedContent
+    // get res using ServerSideRenderedContent
     return {
       ...res,
       reactElement: (
@@ -178,11 +174,7 @@ export default class ServerSideRenderer extends RendererType {
     )) as ResultsSerialized
 
     if (isSvgExport(results)) {
-      const svg = await hydrateSerializedSvg(results)
-
-      // innerHTML strips the outer <svg> element from returned data, we add
-      // our own <svg> element in the view's SVG export
-      results.html = svg.innerHTML
+      results.html = await getSerializedSvg(results)
       delete results.reactElement
     }
     return results

@@ -3,7 +3,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 // locals
 import configSchemaF from './configSchemaF'
-import stateModelFactory from './stateModelFactory'
+import stateModelFactory from './model'
 import LinearSyntenyRendering from './components/Component'
 
 export default (pluginManager: PluginManager) => {

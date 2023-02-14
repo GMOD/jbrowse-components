@@ -71,7 +71,7 @@ export async function renderToAbstractCanvas(
   }
 }
 
-export async function hydrateSerializedSvg(results: {
+export async function getSerializedSvg(results: {
   width: number
   height: number
   canvasRecordedData: unknown
@@ -82,7 +82,10 @@ export async function hydrateSerializedSvg(results: {
   const ctx = new C2S.default(width, height)
   const seq = new CanvasSequence(canvasRecordedData)
   seq.execute(ctx)
-  return ctx.getSvg()
+
+  // innerHTML strips the outer <svg> element from returned data, we add
+  // our own <svg> element in the view's SVG export
+  return ctx.getSvg().innerHTML as string
 }
 
 export function ReactRendering({

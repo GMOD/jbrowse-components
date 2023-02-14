@@ -6,10 +6,13 @@ import { NoAssemblyRegion } from '@jbrowse/core/util/types'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import IntervalTree from '@flatten-js/interval-tree'
-import SimpleFeature, { Feature } from '@jbrowse/core/util/simpleFeature'
+import { SimpleFeature, Feature } from '@jbrowse/core/util'
 import { unzip } from '@gmod/bgzf-filehandle'
 import gtf from '@gmod/gtf'
+
+// locals
 import { FeatureLoc, featureData } from '../util'
+
 function isGzip(buf: Buffer) {
   return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
 }

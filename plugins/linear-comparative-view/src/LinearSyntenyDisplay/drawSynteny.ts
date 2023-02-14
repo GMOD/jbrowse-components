@@ -1,6 +1,6 @@
 import { doesIntersect2, getContainingView } from '@jbrowse/core/util'
 import { LinearSyntenyViewModel } from '../LinearSyntenyView/model'
-import { LinearSyntenyDisplayModel } from './stateModelFactory'
+import { LinearSyntenyDisplayModel } from './model'
 import { draw, drawMatchSimple } from './components/util'
 
 export const MAX_COLOR_RANGE = 255 * 255 * 255 // max color range

@@ -156,6 +156,14 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * used for synteny svg rendering
+       */
+      get ready() {
+        return this.numFeats > 0
+      },
+
+      /**
+       * #getter
        */
       get featMap() {
         return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))

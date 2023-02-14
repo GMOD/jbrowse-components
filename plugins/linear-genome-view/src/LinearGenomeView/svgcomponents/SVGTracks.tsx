@@ -58,6 +58,7 @@ export default function SVGTracks({
               trackName={trackName}
               fontSize={fontSize}
               trackLabels={trackLabels}
+              trackLabelOffset={trackLabelOffset}
               x={x}
             />
           </g>
