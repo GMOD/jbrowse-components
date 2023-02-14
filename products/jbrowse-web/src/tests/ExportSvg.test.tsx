@@ -21,6 +21,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 40000 }
+const opts = [{}, delay]
 
 test('export svg of lgv', async () => {
   const { view, findByTestId, findByText } = createView()
@@ -28,7 +29,7 @@ test('export svg of lgv', async () => {
   await findByText('Help')
   view.setNewView(0.1, 1)
   fireEvent.click(
-    await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
+    await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
   fireEvent.click(await findByTestId('view_menu_icon'))
@@ -211,16 +212,16 @@ test('export svg of circular', async () => {
     },
   })
   // try opening a track before opening the actual view
-  fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText(/Open track/))
-  fireEvent.click(await findByText('Open'))
+  fireEvent.click(await findByText('File', ...opts))
+  fireEvent.click(await findByText(/Open track/, ...opts))
+  fireEvent.click(await findByText('Open', ...opts))
 
   // open a track selector for the circular view
-  fireEvent.click(await findByTestId('circular_track_select'))
+  fireEvent.click(await findByTestId('circular_track_select', ...opts))
 
   // wait for the track selector to open and then click the
   // checkbox for the chord test track to toggle it on
-  fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
+  fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
 
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Export SVG'))

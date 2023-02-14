@@ -30,7 +30,7 @@ import {
 } from '../../util'
 
 import Tooltip from '../components/Tooltip'
-import { YScaleBar } from '../components/WiggleDisplayComponent'
+import YScaleBar from '../../shared/YScaleBar'
 
 const SetMinMaxDlg = lazy(() => import('../../shared/SetMinMaxDialog'))
 const SetColorDlg = lazy(() => import('../components/SetColorDialog'))
