@@ -6,11 +6,13 @@ import {
   DialogActions,
   DialogContent,
   FormControlLabel,
+  MenuItem,
   TextField,
   Typography,
 } from '@mui/material'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { ExportSvgOptions } from '../model'
+import { getSession, useLocalStorage } from '@jbrowse/core/util'
 
 function LoadingMessage() {
   return (
@@ -21,6 +23,10 @@ function LoadingMessage() {
   )
 }
 
+function useSvgLocal<T>(key: string, val: T) {
+  return useLocalStorage('svg-' + key, val)
+}
+
 export default function ExportSvgDlg({
   model,
   handleClose,
@@ -28,11 +34,16 @@ export default function ExportSvgDlg({
   model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
   handleClose: () => void
 }) {
+  const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
   const [rasterizeLayers, setRasterizeLayers] = useState(offscreenCanvas)
   const [loading, setLoading] = useState(false)
-  const [filename, setFilename] = useState('jbrowse.svg')
   const [error, setError] = useState<unknown>()
+  const [filename, setFilename] = useSvgLocal('file', 'jbrowse.svg')
+  const [themeName, setThemeName] = useSvgLocal(
+    'theme',
+    session.themeName || 'default',
+  )
   return (
     <Dialog open onClose={handleClose} title="Export SVG">
       <DialogContent>
@@ -46,6 +57,24 @@ export default function ExportSvgDlg({
           value={filename}
           onChange={event => setFilename(event.target.value)}
         />
+        <br />
+        {session.allThemes ? (
+          <TextField
+            select
+            label="Theme"
+            value={themeName}
+            onChange={event => setThemeName(event.target.value)}
+          >
+            {Object.entries(session.allThemes()).map(([key, val]) => (
+              <MenuItem key={key} value={key}>
+                {
+                  // @ts-ignore
+                  val.name || '(Unknown name)'
+                }
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : null}
         {offscreenCanvas ? (
           <FormControlLabel
             control={
@@ -82,6 +111,7 @@ export default function ExportSvgDlg({
               await model.exportSvg({
                 rasterizeLayers,
                 filename,
+                themeName,
               })
               handleClose()
             } catch (e) {

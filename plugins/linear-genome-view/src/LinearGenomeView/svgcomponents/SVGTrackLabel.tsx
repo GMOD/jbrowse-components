@@ -17,7 +17,12 @@ export default function SVGTrackLabel({
   const xoff = trackLabels === 'overlay' ? 5 : 0
   return trackLabels !== 'none' ? (
     <g>
-      <text x={x + xoff} y={fontSize + 2} fill={fill} fontSize={fontSize}>
+      <text
+        x={x + xoff}
+        fill={fill}
+        fontSize={fontSize}
+        dominantBaseline="hanging"
+      >
         {trackName}
       </text>
     </g>

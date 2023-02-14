@@ -30,7 +30,7 @@ export function totalHeight(tracks: Track[], textHeight: number) {
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
-    textHeight = 16,
+    textHeight = 18,
     headerHeight = 40,
     rulerHeight = 50,
     fontSize = 13,

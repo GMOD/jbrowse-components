@@ -13,10 +13,8 @@ export default class CircularChordRendererType extends FeatureRenderer {
     const deserializedFeatures = new Map(
       res.features.map(f => SimpleFeature.fromJSON(f)).map(f => [f.id(), f]),
     )
-    console.log({ args })
     // if we are rendering svg, we skip hydration
     if (args.exportSVG) {
-      console.log({ res })
       // only return the res if the renderer explicitly has
       // this.supportsSVG support to avoid garbage being rendered in SVG
       // document

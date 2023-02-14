@@ -18,6 +18,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
+import { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel DotplotDisplay
@@ -157,7 +158,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #action
          */
-        async renderSvg(opts: ExportSvgOptions) {
+        async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
           const props = renderBlockData(self)
           if (!props) {
             return null
@@ -167,6 +168,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const rendering = await rendererType.renderInClient(rpcManager, {
             ...renderProps,
             exportSVG: opts,
+            theme: opts.theme || renderProps.theme,
           })
           const { hview, vview } = getContainingView(self) as DotplotViewModel
           const offX = -hview.offsetPx + rendering.offsetX

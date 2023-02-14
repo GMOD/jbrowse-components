@@ -16,22 +16,26 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { Wrapper = ({ children }) => <>{children}</> } = opts
+  const { themeName = 'default', Wrapper = ({ children }) => <>{children}</> } =
+    opts
   const session = getSession(model)
+  const theme = session.allThemes?.()[themeName]
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
   const shift = 50
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
       await when(() => (display.ready !== undefined ? display.ready : true))
-      return { track, result: await display.renderSvg(opts) }
+      return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
   const w = width + shift * 2
 
+  const t = createJBrowseTheme(theme)
+
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(session.theme)}>
+    <ThemeProvider theme={t}>
       <Wrapper>
         <svg
           width={width}
@@ -40,7 +44,13 @@ export async function renderToSvg(
           xmlnsXlink="http://www.w3.org/1999/xlink"
           viewBox={[0, 0, w, height].toString()}
         >
-          <rect x={0} y={0} width={w} height={height} fill="#ddd" />
+          <rect
+            x={0}
+            y={0}
+            width={w}
+            height={height}
+            fill={t.palette.background.default}
+          />
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
             <GridRaw model={model} />
