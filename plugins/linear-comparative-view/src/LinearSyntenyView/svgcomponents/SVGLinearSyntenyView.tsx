@@ -43,12 +43,12 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
   } = opts
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
-  const { width, views, middleComparativeHeight, tracks } = model
+  const { width, views, middleComparativeHeight: synH, tracks } = model
   const shift = 50
   const offset = headerHeight + rulerHeight
 
   const heights = views.map(v => totalHeight(v.tracks, textHeight) + offset)
-  const totalHeightSvg = sum(heights) + middleComparativeHeight + 100
+  const totalHeightSvg = sum(heights) + synH + 100
   const displayResults = await Promise.all(
     views.map(
       async view =>
@@ -71,17 +71,24 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
       await when(() => (d.ready !== undefined ? d.ready : true))
       const r = await renderToAbstractCanvas(
         width,
-        middleComparativeHeight,
+        synH,
         { highResolutionScaling: 1, exportSVG: opts },
         ctx => drawRef(d, ctx),
       )
-      return 'canvasRecordedData' in r
-        ? getSerializedSvg({
+
+      if ('imageData' in r) {
+        throw new Error('found a canvas in svg export, probably a bug')
+      } else if ('canvasRecordedData' in r) {
+        return {
+          html: await getSerializedSvg({
             ...r,
             width,
-            height: middleComparativeHeight,
-          })
-        : r
+            height: synH,
+          }),
+        }
+      } else {
+        return r
+      }
     }),
   )
 
@@ -141,15 +148,10 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
             })`}
           >
             {renderings.map((r, i) => (
-              // @ts-ignore
               <ReactRendering key={i} rendering={r} />
             ))}
           </g>
-          <g
-            transform={`translate(${shift} ${
-              fontSize + heights[0] + middleComparativeHeight
-            })`}
-          >
+          <g transform={`translate(${shift} ${fontSize + heights[0] + synH})`}>
             <g transform={`translate(${trackLabelOffset})`}>
               <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
                 {views[1].assemblyNames.join(', ')}

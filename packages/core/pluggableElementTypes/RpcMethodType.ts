@@ -116,7 +116,9 @@ export default abstract class RpcMethodType extends PluggableElementBase {
         uris.push(val)
       }
     })
-    await Promise.all(uris.map(uri => this.serializeNewAuthArguments(uri)))
+    for (const uri of uris) {
+      await this.serializeNewAuthArguments(uri)
+    }
     return thing
   }
 }
