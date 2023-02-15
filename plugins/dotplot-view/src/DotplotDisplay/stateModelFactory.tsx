@@ -70,6 +70,32 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
+        const props = renderBlockData(self)
+        if (!props) {
+          return null
+        }
+
+        const { rendererType, rpcManager, renderProps } = props
+        const rendering = await rendererType.renderInClient(rpcManager, {
+          ...renderProps,
+          exportSVG: opts,
+          theme: opts.theme || renderProps.theme,
+        })
+        const { hview, vview } = getContainingView(self) as DotplotViewModel
+        const offX = -hview.offsetPx + rendering.offsetX
+        const offY = -vview.offsetPx + rendering.offsetY
+        return (
+          <g transform={`translate(${offX} ${offY})`}>
+            <ReactRendering rendering={rendering} />
+          </g>
+        )
+      },
+    }))
     .actions(self => {
       let renderInProgress: undefined | AbortController
 
@@ -154,30 +180,6 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.error = error
           self.renderingComponent = undefined
           renderInProgress = undefined
-        },
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
-          const props = renderBlockData(self)
-          if (!props) {
-            return null
-          }
-
-          const { rendererType, rpcManager, renderProps } = props
-          const rendering = await rendererType.renderInClient(rpcManager, {
-            ...renderProps,
-            exportSVG: opts,
-            theme: opts.theme || renderProps.theme,
-          })
-          const { hview, vview } = getContainingView(self) as DotplotViewModel
-          const offX = -hview.offsetPx + rendering.offsetX
-          const offY = -vview.offsetPx + rendering.offsetY
-          return (
-            <g transform={`translate(${offX} ${offY})`}>
-              <ReactRendering rendering={rendering} />
-            </g>
-          )
         },
       }
     })
