@@ -164,264 +164,257 @@ export const defaultThemes = {
 
 function createDefaultProps(theme?: ThemeOptions) {
   return {
-    components: deepmerge(
-      {
-        MuiButton: {
-          defaultProps: {
-            size: 'small' as const,
-          },
-          styleOverrides: {
-            // the default button, especially when not using variant=contained, uses
-            // theme.palette.primary.main for text which is very bad with dark
-            // mode+midnight primary
-            //
-            // keeps text secondary for darkmode, uses
-            // a text-like coloring to ensure contrast
-            // xref https://stackoverflow.com/a/72546130/2129219
-            //
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            root: (props: any) => {
-              const { theme } = props
-              return theme.palette.mode === 'dark'
-                ? {
-                    color: theme.palette.text.primary,
-                  }
-                : undefined
-            },
-          },
+    components: {
+      MuiButton: {
+        defaultProps: {
+          size: 'small' as const,
         },
-        MuiAccordion: {
-          defaultProps: {
-            disableGutters: true,
-            TransitionProps: { timeout: 150 },
-          },
-        },
-        MuiFilledInput: {
-          defaultProps: {
-            margin: 'dense' as const,
-          },
-        },
-        MuiFormControl: {
-          defaultProps: {
-            margin: 'dense' as const,
-            size: 'small' as const,
-          },
-        },
-        MuiFormHelperText: {
-          defaultProps: {
-            margin: 'dense' as const,
-          },
-        },
-
-        MuiIconButton: {
-          defaultProps: {
-            size: 'small' as const,
-          },
-        },
-        MuiInputBase: {
-          defaultProps: {
-            margin: 'dense' as const,
-          },
-        },
-        MuiAutocomplete: {
-          defaultProps: {
-            size: 'small' as const,
-          },
-        },
-        MuiInputLabel: {
-          defaultProps: {
-            margin: 'dense' as const,
-          },
-        },
-        MuiToolbar: {
-          defaultProps: {
-            variant: 'dense' as const,
-          },
-        },
-        MuiListItem: {
-          defaultProps: {
-            dense: true,
-          },
-        },
-        MuiOutlinedInput: {
-          defaultProps: {
-            margin: 'dense' as const,
-          },
-        },
-        MuiFab: {
-          defaultProps: {
-            size: 'small' as const,
-          },
-          styleOverrides: {
-            secondary: {
-              // @ts-ignore
-              backgroundColor: theme?.palette?.quaternary?.main,
-            },
-          },
-        },
-        MuiTable: {
-          defaultProps: {
-            size: 'small' as const,
-          },
-        },
-        MuiPopover: {
-          defaultProps: {
-            transitionDuration: 0,
-          },
-        },
-        MuiMenu: {
-          defaultProps: {
-            transitionDuration: 0,
-          },
-        },
-        MuiMenuList: {
-          defaultProps: {
-            dense: true,
-          },
-        },
-        MuiMenuItem: {
-          defaultProps: {
-            dense: true,
-          },
-        },
-
-        MuiTextField: {
-          defaultProps: {
-            margin: 'dense' as const,
-            variant: 'standard' as const,
-          },
-        },
-        MuiLink: {
-          styleOverrides: {
-            // the default link color uses theme.palette.primary.main which is
-            // very bad with dark mode+midnight primary
-            //
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            root: ({ theme }: any) => ({
-              color: theme.palette.text.secondary,
-            }),
-          },
-        },
-        MuiCheckbox: {
-          styleOverrides: {
-            // the default checkbox-when-checked color uses
-            // theme.palette.primary.main which is very bad with dark
-            // mode+midnight primary
-            //
-            // keeps the forest-green checkbox by default but for darkmode, uses
-            // a text-like coloring to ensure contrast
-            // xref https://stackoverflow.com/a/72546130/2129219
-            //
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            root: (props: any) => {
-              const { theme } = props
-              return theme.palette.mode === 'dark'
-                ? {
-                    color: theme.palette.text.secondary,
-                    '&.Mui-checked': {
-                      color: theme.palette.text.secondary,
-                    },
-                  }
-                : undefined
-            },
-          },
-        },
-        MuiRadio: {
-          styleOverrides: {
-            // the default checkbox-when-checked color uses
-            // theme.palette.primary.main which is very bad with dark
-            // mode+midnight primary
-            //
-            // keeps the forest-green checkbox by default but for darkmode, uses
-            // a text-like coloring to ensure contrast
-            // xref https://stackoverflow.com/a/72546130/2129219
-            //
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            root: (props: any) => {
-              const { theme } = props
-              return theme.palette.mode === 'dark'
-                ? {
-                    color: theme.palette.text.secondary,
-                    '&.Mui-checked': {
-                      color: theme.palette.text.secondary,
-                    },
-                  }
-                : undefined
-            },
-          },
-        },
-        MuiFormLabel: {
-          styleOverrides: {
-            // the default checkbox-when-checked color uses
-            // theme.palette.primary.main which is very bad with dark
-            // mode+midnight primary
-            //
-            // keeps the forest-green checkbox by default but for darkmode, uses
-            // a text-like coloring to ensure contrast
-            // xref https://stackoverflow.com/a/72546130/2129219
-            //
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            root: (props: any) => {
-              const { theme } = props
-              return theme.palette.mode === 'dark'
-                ? {
-                    color: theme.palette.text.secondary,
-                    '&.Mui-focused': {
-                      color: theme.palette.text.secondary,
-                    },
-                  }
-                : undefined
-            },
-          },
-        },
-        MuiAccordionSummary: {
-          styleOverrides: {
-            root: {
-              // @ts-ignore
-              backgroundColor: theme?.palette?.tertiary?.main,
-            },
-            content: {
-              // @ts-ignore
-              color: theme?.palette?.tertiary?.contrastText,
-            },
+        styleOverrides: {
+          // the default button, especially when not using variant=contained, uses
+          // theme.palette.primary.main for text which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps text secondary for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.primary,
+                }
+              : undefined
           },
         },
       },
-      theme?.components || {},
-    ),
+      MuiAccordion: {
+        defaultProps: {
+          disableGutters: true,
+          TransitionProps: { timeout: 150 },
+        },
+      },
+      MuiFilledInput: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiFormControl: {
+        defaultProps: {
+          margin: 'dense' as const,
+          size: 'small' as const,
+        },
+      },
+      MuiFormHelperText: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+
+      MuiIconButton: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
+      MuiInputBase: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiAutocomplete: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
+      MuiInputLabel: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiToolbar: {
+        defaultProps: {
+          variant: 'dense' as const,
+        },
+      },
+      MuiListItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+      MuiOutlinedInput: {
+        defaultProps: {
+          margin: 'dense' as const,
+        },
+      },
+      MuiFab: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+        styleOverrides: {
+          secondary: {
+            // @ts-ignore
+            backgroundColor: theme?.palette?.quaternary?.main,
+          },
+        },
+      },
+      MuiTable: {
+        defaultProps: {
+          size: 'small' as const,
+        },
+      },
+      MuiPopover: {
+        defaultProps: {
+          transitionDuration: 0,
+        },
+      },
+      MuiMenu: {
+        defaultProps: {
+          transitionDuration: 0,
+        },
+      },
+      MuiMenuList: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+      MuiMenuItem: {
+        defaultProps: {
+          dense: true,
+        },
+      },
+
+      MuiTextField: {
+        defaultProps: {
+          margin: 'dense' as const,
+          variant: 'standard' as const,
+        },
+      },
+      MuiLink: {
+        styleOverrides: {
+          // the default link color uses theme.palette.primary.main which is
+          // very bad with dark mode+midnight primary
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: ({ theme }: any) => ({
+            color: theme.palette.text.secondary,
+          }),
+        },
+      },
+      MuiCheckbox: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-checked': {
+                    color: theme.palette.text.secondary,
+                  },
+                }
+              : undefined
+          },
+        },
+      },
+      MuiRadio: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-checked': {
+                    color: theme.palette.text.secondary,
+                  },
+                }
+              : undefined
+          },
+        },
+      },
+      MuiFormLabel: {
+        styleOverrides: {
+          // the default checkbox-when-checked color uses
+          // theme.palette.primary.main which is very bad with dark
+          // mode+midnight primary
+          //
+          // keeps the forest-green checkbox by default but for darkmode, uses
+          // a text-like coloring to ensure contrast
+          // xref https://stackoverflow.com/a/72546130/2129219
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: (props: any) => {
+            const { theme } = props
+            return theme.palette.mode === 'dark'
+              ? {
+                  color: theme.palette.text.secondary,
+                  '&.Mui-focused': {
+                    color: theme.palette.text.secondary,
+                  },
+                }
+              : undefined
+          },
+        },
+      },
+      MuiAccordionSummary: {
+        styleOverrides: {
+          root: {
+            // @ts-ignore
+            backgroundColor: theme?.palette?.tertiary?.main,
+          },
+          content: {
+            // @ts-ignore
+            color: theme?.palette?.tertiary?.contrastText,
+          },
+        },
+      },
+    },
   }
 }
 
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
-  return {
-    palette: theme?.palette,
-    typography: { fontSize: 12 },
-    spacing: 4,
-    ...createDefaultProps(theme),
-  }
+  return deepmerge(
+    {
+      palette: theme?.palette,
+      typography: { fontSize: 12 },
+      spacing: 4,
+      ...createDefaultProps(theme),
+    },
+    theme || {},
+  )
 }
 
 type ThemeMap = { [key: string]: ThemeOptions }
 
-// used on main thread, incorporates possibly named themes
-export function createJBrowseNamedTheme(
+export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes = defaultThemes,
   themeName = 'default',
 ) {
-  // special handling of default: we merge config theme into the default theme
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
         ? deepmerge(getDefaultTheme(), augmentTheme(configTheme))
-        : augmentTheme(themes[themeName]) || themes['default'],
+        : augmentThemePlus(themes[themeName]) || themes['default'],
     ),
   )
-}
-
-// used on web worker primarily, passed in fully created theme
-export function createJBrowseTheme(theme: ThemeOptions = {}) {
-  return createTheme(createJBrowseBaseTheme(theme))
 }
 
 function augmentTheme(theme: ThemeOptions = {}) {
@@ -448,6 +441,13 @@ function augmentTheme(theme: ThemeOptions = {}) {
       },
     })
   }
+
+  return theme
+}
+
+// creates some blank quaternary/tertiary colors if unsupplied by a user theme
+function augmentThemePlus(theme: ThemeOptions = {}) {
+  augmentTheme(theme)
   if (!theme?.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {
@@ -462,6 +462,5 @@ function augmentTheme(theme: ThemeOptions = {}) {
       },
     })
   }
-
   return theme
 }

@@ -2,7 +2,7 @@
 import { lazy } from 'react'
 import clone from 'clone'
 import shortid from 'shortid'
-import { createJBrowseNamedTheme, defaultThemes } from '@jbrowse/core/ui/theme'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui/theme'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import {
   readConfObject,
@@ -225,7 +225,7 @@ export default function sessionModelFactory(
       get theme() {
         const configTheme = getConf(self.jbrowse, 'theme')
         const all = self.allThemes()
-        return createJBrowseNamedTheme(configTheme, all, self.themeName)
+        return createJBrowseTheme(configTheme, all, self.themeName)
       },
 
       /**

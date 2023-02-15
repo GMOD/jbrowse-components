@@ -74,11 +74,9 @@ function getColorBaseMap(theme: Theme) {
 }
 
 function getContrastBaseMap(theme: Theme) {
+  const map = getColorBaseMap(theme)
   return Object.fromEntries(
-    Object.entries(getColorBaseMap(theme)).map(([key, value]) => [
-      key,
-      theme.palette.getContrastText(value),
-    ]),
+    Object.entries(map).map(([k, v]) => [k, theme.palette.getContrastText(v)]),
   )
 }
 

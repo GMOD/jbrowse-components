@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { observer } from 'mobx-react'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { CssBaseline, ThemeProvider } from '@mui/material'
-import { createJBrowseNamedTheme } from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import ErrorMessage from '@jbrowse/core/ui/ErrorMessage'
 import { StringParam, useQueryParam } from 'use-query-params'
 
@@ -47,7 +47,7 @@ const Loader = observer(() => {
   }, [config, handleSetPluginManager])
   return (
     <ThemeProvider
-      theme={createJBrowseNamedTheme(
+      theme={createJBrowseTheme(
         undefined,
         undefined,
         localStorageGetItem('themeName') || '',

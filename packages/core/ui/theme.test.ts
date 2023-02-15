@@ -25,7 +25,6 @@ test('allows overriding tertiary and quaternary colors', () => {
       quaternary: { main: 'hsl(0,0,54)' },
     },
   })
-  // @ts-ignore
   const { tertiary, quaternary } = theme.palette
   expect(tertiary.main).toEqual('#888')
   expect(tertiary.light).toBeTruthy()

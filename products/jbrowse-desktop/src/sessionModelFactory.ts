@@ -6,7 +6,7 @@ import {
   isConfigurationModel,
   getConf,
 } from '@jbrowse/core/configuration'
-import { createJBrowseNamedTheme, defaultThemes } from '@jbrowse/core/ui/theme'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui/theme'
 import {
   Region,
   TrackViewModel,
@@ -183,7 +183,7 @@ export default function sessionModelFactory(
       get theme() {
         const configTheme = getConf(self.jbrowse, 'theme')
         const all = self.allThemes()
-        return createJBrowseNamedTheme(configTheme, all, self.themeName)
+        return createJBrowseTheme(configTheme, all, self.themeName)
       },
 
       /**
