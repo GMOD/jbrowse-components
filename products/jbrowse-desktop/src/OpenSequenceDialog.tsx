@@ -243,12 +243,12 @@ const OpenSequenceDialog = ({
         {showAdvanced ? (
           <Paper className={classes.paper}>
             <FileSelector
-              name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can tab separated file of ref names e.g. .chromAliases files from UCSC"
+              name="Add refName aliases e.g. remap chr1 and 1 to same entity. Can use a tab separated file of aliases, such as a .chromAliases files from UCSC"
               location={refNameAliasesLocation}
               setLocation={setRefNameAliasesLocation}
             />
             <FileSelector
-              name="Add cytobands for assembly. Can use e.g. cytoBands.txt from UCSC"
+              name="Add cytobands for assembly with the format of cytoBands.txt or cytoBands.txt.gz from UCSC"
               location={cytobandsLocation}
               setLocation={setCytobandsLocation}
             />
