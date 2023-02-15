@@ -1,6 +1,5 @@
 import { getSession, Feature } from '@jbrowse/core/util'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
-import { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import { parseBreakend } from '@gmod/vcf'
 import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
