@@ -395,8 +395,8 @@ function createDefaultProps(theme?: ThemeOptions) {
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   return {
     palette: theme?.palette,
-    typography: { fontSize: 10 },
-    spacing: 2,
+    typography: { fontSize: 12 },
+    spacing: 4,
     ...createDefaultProps(theme),
   }
 }
@@ -409,13 +409,12 @@ export function createJBrowseNamedTheme(
   themes = defaultThemes,
   themeName = 'default',
 ) {
+  // special handling of default: we merge config theme into the default theme
   return createTheme(
     createJBrowseBaseTheme(
-      augmentTheme(
-        themeName === 'default'
-          ? deepmerge(getDefaultTheme(), configTheme)
-          : themes[themeName] || themes['default'],
-      ),
+      themeName === 'default'
+        ? deepmerge(getDefaultTheme(), augmentTheme(configTheme))
+        : augmentTheme(themes[themeName]) || themes['default'],
     ),
   )
 }
