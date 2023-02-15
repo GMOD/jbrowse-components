@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
+import { ThemeOptions } from '@mui/material'
 import { types, Instance } from 'mobx-state-tree'
 import {
   getConf,
@@ -18,7 +19,6 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent'
 import { renderBlockData, renderBlockEffect } from './renderDotplotBlock'
 import { DotplotViewModel, ExportSvgOptions } from '../DotplotView/model'
-import { ThemeOptions } from '@mui/material'
 
 /**
  * #stateModel DotplotDisplay
@@ -70,9 +70,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       },
     }))
-    .actions(self => ({
+    .views(self => ({
       /**
-       * #action
+       * #method
        */
       async renderSvg(opts: ExportSvgOptions & { theme: ThemeOptions }) {
         const props = renderBlockData(self)
@@ -90,7 +90,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const offX = -hview.offsetPx + rendering.offsetX
         const offY = -vview.offsetPx + rendering.offsetY
         return (
-          <g transform={`translate(${offX} ${offY})`}>
+          <g transform={`translate(${offX} ${-offY})`}>
             <ReactRendering rendering={rendering} />
           </g>
         )

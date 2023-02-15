@@ -536,9 +536,24 @@ export default function stateModelFactory(pm: PluginManager) {
           autorun(
             () => {
               const session = getSession(self)
-              if (self.initialized) {
+
+              // don't operate if width not set yet
+              if (
+                self.volatileWidth === undefined ||
+                !self.assembliesInitialized
+              ) {
                 return
               }
+
+              // also don't operate if displayedRegions already set, this is a
+              // helper autorun to load regions from assembly
+              if (
+                self.hview.displayedRegions.length > 0 &&
+                self.vview.displayedRegions.length > 0
+              ) {
+                return
+              }
+
               const views = [self.hview, self.vview]
               transaction(() => {
                 self.assemblyNames.forEach((name, index) => {

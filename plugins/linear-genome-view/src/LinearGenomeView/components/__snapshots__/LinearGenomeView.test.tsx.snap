@@ -158,7 +158,7 @@ exports[`renders one track, one region 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-l3ln04-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 200px;"
             >
@@ -726,7 +726,7 @@ exports[`renders two tracks, two regions 1`] = `
               />
             </button>
             <div
-              class="MuiAutocomplete-root css-l3ln04-MuiAutocomplete-root"
+              class="MuiAutocomplete-root css-1qqsdnr-MuiAutocomplete-root"
               data-testid="autocomplete"
               style="width: 260.27500000000003px;"
             >
