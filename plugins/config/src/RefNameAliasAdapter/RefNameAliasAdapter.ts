@@ -3,19 +3,18 @@ import {
   BaseAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { openLocation } from '@jbrowse/core/util/io'
-import { readConfObject } from '@jbrowse/core/configuration'
 
 export default class RefNameAliasAdapter
   extends BaseAdapter
   implements BaseRefNameAliasAdapter
 {
   async getRefNameAliases() {
-    const loc = readConfObject(this.config, 'location')
+    const loc = this.getConf('location')
     if (loc.uri === '' || loc.uri === '/path/to/my/aliases.txt') {
       return []
     }
-    const results = await openLocation(loc).readFile('utf8')
-    const refColumn = readConfObject(this.config, 'refNameColumn')
+    const results = await openLocation(loc, this.pluginManager).readFile('utf8')
+    const refColumn = this.getConf('refNameColumn')
     return results
       .trim()
       .split(/\n|\r\n|\r/)

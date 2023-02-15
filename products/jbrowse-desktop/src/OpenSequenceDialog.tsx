@@ -148,7 +148,7 @@ const OpenSequenceDialog = ({
         ? {
             refNameAliases: {
               adapter: {
-                type: 'RefNameAliasesAdapter',
+                type: 'RefNameAliasAdapter',
                 location: refNameAliasesLocation,
               },
             },
@@ -159,7 +159,7 @@ const OpenSequenceDialog = ({
             cytobands: {
               adapter: {
                 type: 'CytobandAdapter',
-                location: cytobandsLocation,
+                cytobandsLocation: cytobandsLocation,
               },
             },
           }
@@ -248,7 +248,7 @@ const OpenSequenceDialog = ({
               setLocation={setRefNameAliasesLocation}
             />
             <FileSelector
-              name="Add cytobands for assembly with the format of cytoBands.txt or cytoBands.txt.gz from UCSC"
+              name="Add cytobands for assembly with the format of cytoBands.txt/cytoBandIdeo.txt from UCSC (.gz also allowed)"
               location={cytobandsLocation}
               setLocation={setCytobandsLocation}
             />

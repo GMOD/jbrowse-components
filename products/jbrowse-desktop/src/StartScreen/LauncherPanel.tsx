@@ -22,7 +22,7 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export default function StartScreenOptionsPanel({
+export default function LauncherPanel({
   setPluginManager,
 }: {
   setPluginManager: (arg0: PluginManager) => void
