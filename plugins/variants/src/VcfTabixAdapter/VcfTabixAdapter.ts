@@ -24,7 +24,7 @@ export default class extends BaseFeatureDataAdapter {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(vcfGzLocation as FileLocation, pm)
+    const filehandle = openLocation(vcfGzLocation, pm)
     const isCSI = indexType === 'CSI'
     const vcf = new TabixIndexedFile({
       filehandle,
