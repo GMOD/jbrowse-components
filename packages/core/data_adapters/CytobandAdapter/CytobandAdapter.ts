@@ -10,7 +10,6 @@ export function isGzip(buf: Buffer) {
 }
 
 export default class CytobandAdapter extends BaseAdapter {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async getData() {
     const loc = this.getConf('cytobandLocation')
     if (loc.uri === '' || loc.uri === '/path/to/cytoband.txt.gz') {
