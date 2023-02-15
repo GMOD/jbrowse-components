@@ -11,7 +11,7 @@ info
 
 ## Source file
 
-[plugins/linear-comparative-view/src/LinearSyntenyDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/stateModelFactory.ts)
+[plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/model.ts)
 
 ## Docs
 
@@ -58,6 +58,15 @@ string[]
 ```js
 // type
 number
+```
+
+#### getter: ready
+
+used for synteny svg rendering
+
+```js
+// type
+boolean
 ```
 
 #### getter: featMap

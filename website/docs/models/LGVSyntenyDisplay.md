@@ -11,7 +11,7 @@ info
 
 ## Source file
 
-[plugins/linear-comparative-view/src/LGVSyntenyDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/stateModelFactory.ts)
+[plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LGVSyntenyDisplay/model.ts)
 
 ## Docs
 

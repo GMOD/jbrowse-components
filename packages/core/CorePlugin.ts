@@ -3,12 +3,8 @@ import { configSchema, stateModelFactory } from './BaseFeatureWidget'
 import Plugin from './Plugin'
 import PluginManager from './PluginManager'
 import * as coreRpcMethods from './rpc/coreRpcMethods'
-import AdapterType from './pluggableElementTypes/AdapterType'
 import WidgetType from './pluggableElementTypes/WidgetType'
-import {
-  configSchema as cytobandConfigSchema,
-  DataAdapter,
-} from './data_adapters/CytobandAdapter'
+import CytobandAdapterF from './data_adapters/CytobandAdapter'
 
 // the core plugin, which registers types that ALL JBrowse applications are
 // expected to need.
@@ -21,14 +17,7 @@ export default class CorePlugin extends Plugin {
       pluginManager.addRpcMethod(() => new RpcMethod(pluginManager))
     })
 
-    pluginManager.addAdapterType(
-      () =>
-        new AdapterType({
-          name: 'CytobandAdapter',
-          configSchema: cytobandConfigSchema,
-          AdapterClass: DataAdapter,
-        }),
-    )
+    CytobandAdapterF(pluginManager)
 
     pluginManager.addWidgetType(() => {
       return new WidgetType({

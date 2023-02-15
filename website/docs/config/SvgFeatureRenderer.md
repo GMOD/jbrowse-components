@@ -142,7 +142,7 @@ fontSize: {
         type: 'number',
         description:
           'height in pixels of the text to use for names and descriptions',
-        defaultValue: 13,
+        defaultValue: 12,
         contextVariable: ['feature'],
       }
 ```

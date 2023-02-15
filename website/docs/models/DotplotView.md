@@ -258,7 +258,7 @@ renderProps: () => any
 
 ```js
 // type signature
-menuItems: () => ({ label: string; onClick: () => void; icon?: undefined; } | { label: string; onClick: () => any; icon: (props: SvgIconProps<"svg", {}>) => Element; })[]
+menuItems: () => ({ label: string; onClick: () => void; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; } | { label: string; onClick: () => void; icon?: undefined; } | { ...; })[]
 ```
 
 ### DotplotView - Actions
@@ -349,7 +349,7 @@ zoomInButton: () => void
 
 ```js
 // type signature
-activateTrackSelector: () => any
+activateTrackSelector: () => Widget
 ```
 
 #### action: showTrack
@@ -403,6 +403,13 @@ zooms into clicked and dragged region
 zoomIn: (mousedown: Coord, mouseup: Coord) => void
 ```
 
+#### action: showAllRegions
+
+```js
+// type signature
+showAllRegions: () => void
+```
+
 #### action: onDotplotView
 
 creates a linear synteny view from the clicked and dragged region
@@ -410,6 +417,15 @@ creates a linear synteny view from the clicked and dragged region
 ```js
 // type signature
 onDotplotView: (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```js
+// type signature
+exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### action: squareView
@@ -424,11 +440,4 @@ squareView: () => void
 ```js
 // type signature
 squareViewProportional: () => void
-```
-
-#### action: showAllRegions
-
-```js
-// type signature
-showAllRegions: () => void
 ```
