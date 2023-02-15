@@ -7,12 +7,16 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import PluginManager from '@jbrowse/core/PluginManager'
-import { Instance, types } from 'mobx-state-tree'
-import { LinearGenomeViewStateModel, stateModelFactory } from '.'
+import { types } from 'mobx-state-tree'
+
+// locals
+import { LinearGenomeViewModel, stateModelFactory } from '.'
 import { BaseLinearDisplayComponent } from '..'
 import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay'
 import hg38Regions from './hg38DisplayedRegions.json'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json'
+
+type LGV = LinearGenomeViewModel
 
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
@@ -99,7 +103,7 @@ function initialize() {
       }),
     })
     .actions(self => ({
-      setView(view: Instance<LinearGenomeViewStateModel>) {
+      setView(view: LGV) {
         self.view = view
         return view
       },
@@ -306,7 +310,7 @@ test('can navToMultiple', () => {
 
 describe('Zoom to selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
-  let model: Instance<ReturnType<typeof stateModelFactory>>
+  let model: LGV
   let largestBpPerPx: number
   beforeEach(() => {
     const session = Session.create({
@@ -674,7 +678,7 @@ describe('get sequence for selected displayed regions', () => {
   /* the start of all the results should be +1
   the sequence dialog then handles converting from 1-based closed to interbase
   */
-  let model: Instance<ReturnType<typeof stateModelFactory>>
+  let model: LGV
   beforeEach(() => {
     const session = Session.create({
       configuration: {},

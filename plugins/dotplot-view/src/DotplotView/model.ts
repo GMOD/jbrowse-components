@@ -23,6 +23,7 @@ import {
   isSessionModelWithWidgets,
   minmax,
   measureText,
+  max,
 } from '@jbrowse/core/util'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -576,12 +577,12 @@ export default function stateModelFactory(pm: PluginManager) {
             const hhide = getBlockLabelKeysToHide(hblocks, viewWidth, hoffset)
 
             const len = (a: string) => measureText(a.slice(0, 30))
-            const by = hblocks
-              .filter(b => !hhide.has(b.key))
-              .reduce((a, b) => Math.max(a, len(b.refName)), 0)
-            const bx = vblocks
-              .filter(b => !vhide.has(b.key))
-              .reduce((a, b) => Math.max(a, len(b.refName)), 0)
+            const by = max(
+              hblocks.filter(b => !hhide.has(b.key)).map(b => len(b.refName)),
+            )
+            const bx = max(
+              vblocks.filter(b => !vhide.has(b.key)).map(b => len(b.refName)),
+            )
             // these are set via autorun to avoid dependency cycle
             self.setBorderY(Math.max(by + padding, 50))
             self.setBorderX(Math.max(bx + padding, 50))

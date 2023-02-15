@@ -9,6 +9,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { DotplotViewModel, ExportSvgOptions } from '../model'
 import { GridRaw } from '../components/Grid'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes'
+import SVGBackground from './SVGBackground'
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -31,11 +32,9 @@ export async function renderToSvg(
   )
   const w = width + shift * 2
 
-  const t = createJBrowseTheme(theme)
-
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={t}>
+    <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
         <svg
           width={width}
@@ -44,13 +43,7 @@ export async function renderToSvg(
           xmlnsXlink="http://www.w3.org/1999/xlink"
           viewBox={[0, 0, w, height].toString()}
         >
-          <rect
-            x={0}
-            y={0}
-            width={w}
-            height={height}
-            fill={t.palette.background.default}
-          />
+          <SVGBackground width={w} height={height} />
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
             <GridRaw model={model} />
