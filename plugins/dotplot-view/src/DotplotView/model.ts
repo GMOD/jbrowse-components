@@ -433,6 +433,15 @@ export default function stateModelFactory(pm: PluginManager) {
       },
       /**
        * #action
+       */
+      showAllRegions() {
+        self.hview.zoomTo(self.hview.maxBpPerPx)
+        self.vview.zoomTo(self.vview.maxBpPerPx)
+        self.vview.center()
+        self.hview.center()
+      },
+      /**
+       * #action
        * creates a linear synteny view from the clicked and dragged region
        */
       onDotplotView(mousedown: Coord, mouseup: Coord) {
@@ -527,33 +536,32 @@ export default function stateModelFactory(pm: PluginManager) {
           autorun(
             () => {
               const session = getSession(self)
-              if (self.volatileWidth === undefined) {
+
+              // don't operate if width not set yet
+              if (
+                self.volatileWidth === undefined ||
+                !self.assembliesInitialized
+              ) {
                 return
               }
 
-              if (self.initialized) {
+              // also don't operate if displayedRegions already set, this is a
+              // helper autorun to load regions from assembly
+              if (
+                self.hview.displayedRegions.length > 0 &&
+                self.vview.displayedRegions.length > 0
+              ) {
                 return
               }
-              const axis = [self.viewWidth, self.viewHeight]
+
               const views = [self.hview, self.vview]
-              self.assemblyNames.forEach((name, index) => {
-                const assembly = session.assemblyManager.get(name)
-                if (assembly) {
-                  if (assembly.error) {
-                    self.setError(assembly.error)
-                  }
-                  const { regions } = assembly
-                  if (regions && regions.length) {
-                    const regionsSnapshot = regions
-                    if (regionsSnapshot) {
-                      transaction(() => {
-                        const view = views[index]
-                        view.setDisplayedRegions(regionsSnapshot)
-                        view.setBpPerPx(view.totalBp / axis[index])
-                      })
-                    }
-                  }
-                }
+              transaction(() => {
+                self.assemblyNames.forEach((name, index) => {
+                  const assembly = session.assemblyManager.get(name)
+                  const view = views[index]
+                  view.setDisplayedRegions(assembly?.regions || [])
+                })
+                self.showAllRegions()
               })
             },
             { delay: 1000 },
@@ -615,15 +623,6 @@ export default function stateModelFactory(pm: PluginManager) {
         hview.centerAt(hpx.coord, hpx.refName, hpx.index)
         vview.setBpPerPx(avg)
         vview.centerAt(vpx.coord, vpx.refName, vpx.index)
-      },
-      /**
-       * #action
-       */
-      showAllRegions() {
-        self.hview.zoomTo(self.hview.maxBpPerPx)
-        self.vview.zoomTo(self.vview.maxBpPerPx)
-        self.vview.center()
-        self.hview.center()
       },
     }))
     .views(self => ({

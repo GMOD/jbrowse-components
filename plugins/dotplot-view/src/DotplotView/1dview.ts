@@ -32,7 +32,7 @@ const Dotplot1DView = Base1DView.extend(self => {
        * #getter
        */
       get maxBpPerPx() {
-        return self.totalBp / self.width
+        return self.totalBp / (self.width - 50)
       },
     },
     actions: {
@@ -49,7 +49,7 @@ const Dotplot1DView = Base1DView.extend(self => {
       center() {
         const centerBp = self.totalBp / 2
         const centerPx = centerBp / self.bpPerPx
-        self.scrollTo(Math.round(centerPx - self.width / 2))
+        self.scrollTo(centerPx - self.width / 2)
       },
     },
   }

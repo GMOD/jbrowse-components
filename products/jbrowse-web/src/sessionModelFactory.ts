@@ -2,9 +2,8 @@
 import { lazy } from 'react'
 import clone from 'clone'
 import shortid from 'shortid'
-import { defaultThemes } from '@jbrowse/core/ui/theme'
+import { createJBrowseTheme, defaultThemes } from '@jbrowse/core/ui/theme'
 import { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   readConfObject,
   getConf,

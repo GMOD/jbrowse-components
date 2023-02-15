@@ -97,6 +97,19 @@ function getDarkStockTheme() {
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
+    components: {
+      MuiAppBar: {
+        defaultProps: {
+          enableColorOnDark: true,
+        },
+        styleOverrides: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          primary: (props: any) => {
+            return props.theme.palette.primary.main
+          },
+        },
+      },
+    },
   }
 }
 
@@ -377,12 +390,15 @@ function createDefaultProps(theme?: ThemeOptions) {
 }
 
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
-  return {
-    palette: theme?.palette,
-    typography: { fontSize: 12 },
-    spacing: 4,
-    ...createDefaultProps(theme),
-  }
+  return deepmerge(
+    {
+      palette: theme?.palette,
+      typography: { fontSize: 12 },
+      spacing: 4,
+      ...createDefaultProps(theme),
+    },
+    theme || {},
+  )
 }
 
 type ThemeMap = { [key: string]: ThemeOptions }
@@ -390,9 +406,15 @@ type ThemeMap = { [key: string]: ThemeOptions }
 export function createJBrowseTheme(
   configTheme: ThemeOptions = {},
   themes = defaultThemes,
-  paletteName = 'default',
+  themeName = 'default',
 ) {
-  return createTheme(getCurrentTheme(configTheme, themes, paletteName))
+  return createTheme(
+    createJBrowseBaseTheme(
+      themeName === 'default'
+        ? deepmerge(getDefaultTheme(), augmentTheme(configTheme))
+        : augmentThemePlus(themes[themeName]) || themes['default'],
+    ),
+  )
 }
 
 function augmentTheme(theme: ThemeOptions = {}) {
@@ -423,34 +445,22 @@ function augmentTheme(theme: ThemeOptions = {}) {
   return theme
 }
 
-export function getCurrentTheme(
-  theme: ThemeOptions = {},
-  themes = defaultThemes,
-  themeName = 'default',
-) {
-  const baseTheme = augmentTheme(theme)
-  const isDefault = themeName !== 'default'
-  let userChoiceTheme = augmentTheme(themes[themeName] || themes['default'])
-  if (!userChoiceTheme?.palette?.quaternary) {
-    userChoiceTheme = deepmerge(userChoiceTheme, {
+// creates some blank quaternary/tertiary colors if unsupplied by a user theme
+function augmentThemePlus(theme: ThemeOptions = {}) {
+  augmentTheme(theme)
+  if (!theme?.palette?.quaternary) {
+    theme = deepmerge(theme, {
       palette: {
         quaternary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
       },
     })
   }
-  if (!userChoiceTheme?.palette?.tertiary) {
-    userChoiceTheme = deepmerge(userChoiceTheme, {
+  if (!theme?.palette?.tertiary) {
+    theme = deepmerge(theme, {
       palette: {
         tertiary: refTheme.palette.augmentColor({ color: { main: '#aaa' } }),
       },
     })
   }
-
-  const obj = createJBrowseBaseTheme(
-    isDefault
-      ? userChoiceTheme
-      : deepmerge(themes['default'] || {}, baseTheme || {}),
-  )
-
-  return deepmerge(obj, theme)
+  return theme
 }
