@@ -104,6 +104,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
           ),
         )
         .flat(),
+      0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset

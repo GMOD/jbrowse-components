@@ -1232,16 +1232,16 @@ export function localStorageSetItem(str: string, item: string) {
     : undefined
 }
 
-export function max(arr: number[]) {
-  let max = -Infinity
+export function max(arr: number[], init = -Infinity) {
+  let max = init
   for (let i = 0; i < arr.length; i++) {
     max = arr[i] > max ? arr[i] : max
   }
   return max
 }
 
-export function min(arr: number[]) {
-  let min = Infinity
+export function min(arr: number[], init = Infinity) {
+  let min = init
   for (let i = 0; i < arr.length; i++) {
     min = arr[i] < min ? arr[i] : min
   }
