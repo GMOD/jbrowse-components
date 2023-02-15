@@ -9,7 +9,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
-[plugins/circular-view/src/BaseChordDisplay/models/baseChordDisplayConfig.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/baseChordDisplayConfig.ts)
+[plugins/circular-view/src/BaseChordDisplay/models/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/configSchema.ts)
 
 ## Docs
 

@@ -123,6 +123,15 @@ renderers: ConfigurationSchema('RenderersConfiguration', {
 })
 ```
 
+#### slot: height
+
+```js
+height: {
+        type: 'number',
+        defaultValue: 200,
+      }
+```
+
 ## MultiLinearWiggleDisplay - Derives from
 
 ```js

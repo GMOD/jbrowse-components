@@ -70,13 +70,13 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: height
+#### property: heightPreConfig
 
 ```js
 // type signature
-number
+IMaybe<ISimpleType<number>>
 // code
-height: 250
+heightPreConfig: types.maybe(types.number)
 ```
 
 #### property: userFeatureScreenDensity
@@ -98,6 +98,13 @@ lowerPanelType: 'LinearPileupDisplay'
 ```
 
 ### LinearAlignmentsDisplay - Getters
+
+#### getter: height
+
+```js
+// type
+any
+```
 
 #### getter: pileupConf
 

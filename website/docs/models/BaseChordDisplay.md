@@ -11,7 +11,7 @@ info
 
 ## Source file
 
-[plugins/circular-view/src/BaseChordDisplay/models/BaseChordDisplayModel.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/BaseChordDisplayModel.ts)
+[plugins/circular-view/src/BaseChordDisplay/models/model.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/BaseChordDisplay/models/model.tsx)
 
 ## Docs
 
@@ -79,6 +79,13 @@ renderProps: () => any
 ```js
 // type signature
 isCompatibleWithRenderer: (renderer: RendererType) => boolean
+```
+
+#### method: renderSvg
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
 ```
 
 ### BaseChordDisplay - Actions

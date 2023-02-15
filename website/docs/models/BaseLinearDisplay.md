@@ -19,19 +19,18 @@ extends `BaseDisplay`
 
 ### BaseLinearDisplay - Properties
 
-#### property: height
+#### property: heightPreConfig
 
 ```js
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+IMaybe<ISimpleType<number>>
 // code
-height: types.optional(
+heightPreConfig: types.maybe(
           types.refinement(
             'displayHeight',
             types.number,
             n => n >= minDisplayHeight,
           ),
-          defaultDisplayHeight,
         )
 ```
 
@@ -256,7 +255,7 @@ renderProps: () => any
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; }) => Promise<Element>
+renderSvg: (opts: ExportSvgOptions & { overrideHeight: number; theme: ThemeOptions; }) => Promise<Element>
 ```
 
 ### BaseLinearDisplay - Actions
@@ -300,7 +299,7 @@ clearRegionStats: () => void
 
 ```js
 // type signature
-setHeight: (displayHeight: number) => number
+setHeight: (displayHeight: number) => any
 ```
 
 #### action: resizeHeight

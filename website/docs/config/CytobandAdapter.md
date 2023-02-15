@@ -9,7 +9,7 @@ source code. See [Config guide](/docs/config_guide) for more info
 
 ## Source file
 
-[packages/core/data_adapters/CytobandAdapter.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/data_adapters/CytobandAdapter.ts)
+[packages/core/data_adapters/CytobandAdapter/configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/data_adapters/CytobandAdapter/configSchema.ts)
 
 ## Docs
 

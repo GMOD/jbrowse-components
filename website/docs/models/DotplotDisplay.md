@@ -11,7 +11,7 @@ info
 
 ## Source file
 
-[plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.ts)
+[plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/stateModelFactory.tsx)
 
 ## Docs
 
@@ -51,6 +51,13 @@ any
 ```js
 // type signature
 renderProps: () => any
+```
+
+#### method: renderSvg
+
+```js
+// type signature
+renderSvg: (opts: ExportSvgOptions & { theme: ThemeOptions; }) => Promise<Element>
 ```
 
 ### DotplotDisplay - Actions
