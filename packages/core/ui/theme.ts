@@ -1,13 +1,14 @@
+import React from 'react'
 import { blue, green, red, grey, amber } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type { PaletteAugmentColorOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
-declare module '@mui/material/styles/createPalette' {
+declare module '@mui/material/styles' {
   interface Palette {
     tertiary: Palette['primary']
     quaternary: Palette['primary']
-    icon: Palette['primary']
+    icon?: Palette['primary']
     stopCodon?: string
     startCodon?: string
     bases: {
@@ -20,7 +21,7 @@ declare module '@mui/material/styles/createPalette' {
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
     quaternary?: PaletteOptions['primary']
-    icon: Palette['primary']
+    icon?: PaletteOptions['primary']
     stopCodon?: string
     startCodon?: string
     bases?: {
@@ -39,9 +40,8 @@ const mandarin = '#FFB11D'
 
 const refTheme = createTheme()
 
-function getDefaultTheme() {
+function stockTheme() {
   return {
-    name: 'Default (from config)',
     palette: {
       mode: undefined,
       primary: { main: midnight },
@@ -61,31 +61,33 @@ function getDefaultTheme() {
         T: refTheme.palette.augmentColor({ color: red }),
       },
     },
+    components: {
+      MuiLink: {
+        styleOverrides: {
+          // the default link color uses theme.palette.primary.main which is
+          // very bad with dark mode+midnight primary
+          //
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          root: ({ theme }: any) => ({
+            color: theme.palette.tertiary.main,
+          }),
+        },
+      },
+    },
+  }
+}
+
+function getDefaultTheme() {
+  return {
+    name: 'Default (from config)',
+    ...stockTheme(),
   }
 }
 
 function getLightStockTheme() {
   return {
     name: 'Light (stock)',
-    palette: {
-      mode: undefined,
-      primary: { main: midnight },
-      secondary: { main: grape },
-      tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
-      quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      icon: refTheme.palette.augmentColor({
-        color: { main: forest },
-        name: 'icon',
-      }),
-      stopCodon: '#e22',
-      startCodon: '#3e3',
-      bases: {
-        A: refTheme.palette.augmentColor({ color: green }),
-        C: refTheme.palette.augmentColor({ color: blue }),
-        G: refTheme.palette.augmentColor({ color: amber }),
-        T: refTheme.palette.augmentColor({ color: red }),
-      },
-    },
+    ...stockTheme(),
   }
 }
 
@@ -462,7 +464,7 @@ function augmentTheme(theme: ThemeOptions = {}) {
 
 // creates some blank quaternary/tertiary colors if unsupplied by a user theme
 function augmentThemePlus(theme: ThemeOptions = {}) {
-  augmentTheme(theme)
+  theme = augmentTheme(theme)
   if (!theme?.palette?.quaternary) {
     theme = deepmerge(theme, {
       palette: {

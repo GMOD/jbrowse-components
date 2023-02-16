@@ -43,6 +43,7 @@ const TrackSelector = observer(({ model }: { model: LCV }) => {
     <IconButton
       onClick={model.activateTrackSelector}
       title="Open track selector"
+      color="icon"
     >
       <TrackSelectorIcon />
     </IconButton>
@@ -60,6 +61,7 @@ const Header = observer(function ({ model }: { model: LCV }) {
       <IconButton
         onClick={event => setMenuAnchorEl(event.currentTarget)}
         className={classes.iconButton}
+        color="icon"
       >
         <MoreVertIcon />
       </IconButton>
