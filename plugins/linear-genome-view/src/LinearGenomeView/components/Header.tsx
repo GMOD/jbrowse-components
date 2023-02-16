@@ -10,12 +10,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 // locals
-import {
-  LinearGenomeViewModel,
-  WIDGET_HEIGHT,
-  SPACING,
-  HEADER_BAR_HEIGHT,
-} from '..'
+import { LinearGenomeViewModel, SPACING } from '..'
 import OverviewScalebar from './OverviewScalebar'
 import ZoomControls from './ZoomControls'
 import SearchBox from './SearchBox'
@@ -23,7 +18,6 @@ import SearchBox from './SearchBox'
 type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(theme => ({
   headerBar: {
-    height: HEADER_BAR_HEIGHT,
     display: 'flex',
   },
   headerForm: {
@@ -37,7 +31,6 @@ const useStyles = makeStyles()(theme => ({
   panButton: {
     background: alpha(theme.palette.background.paper, 0.8),
     color: theme.palette.text.primary,
-    height: WIDGET_HEIGHT,
     margin: SPACING,
   },
   bp: {
@@ -48,7 +41,7 @@ const useStyles = makeStyles()(theme => ({
   toggleButton: {
     height: 44,
     border: 'none',
-    margin: theme.spacing(0.5),
+    marginLeft: theme.spacing(4),
   },
   buttonSpacer: {
     marginRight: theme.spacing(2),
@@ -63,6 +56,7 @@ const HeaderButtons = observer(({ model }: { model: LGV }) => {
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
+      color="icon"
     >
       <TrackSelectorIcon className={classes.buttonSpacer} />
     </IconButton>

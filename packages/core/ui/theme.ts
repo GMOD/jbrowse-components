@@ -7,6 +7,7 @@ declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
     quaternary: Palette['primary']
+    icon: Palette['primary']
     stopCodon?: string
     startCodon?: string
     bases: {
@@ -19,6 +20,7 @@ declare module '@mui/material/styles/createPalette' {
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
     quaternary?: PaletteOptions['primary']
+    icon: Palette['primary']
     stopCodon?: string
     startCodon?: string
     bases?: {
@@ -46,6 +48,10 @@ function getDefaultTheme() {
       secondary: { main: grape },
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      icon: refTheme.palette.augmentColor({
+        color: { main: forest },
+        name: 'icon',
+      }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {
@@ -67,6 +73,10 @@ function getLightStockTheme() {
       secondary: { main: grape },
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
+      icon: refTheme.palette.augmentColor({
+        color: { main: forest },
+        name: 'icon',
+      }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {
