@@ -33,7 +33,6 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         onClick={() => model.zoom(bpPerPx * 2)}
         disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
         size="large"
-        color="icon"
       >
         <ZoomOut />
       </IconButton>
@@ -53,7 +52,6 @@ function ZoomControls({ model }: { model: LinearGenomeViewModel }) {
         onClick={() => model.zoom(model.bpPerPx / 2)}
         disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
         size="large"
-        color="icon"
       >
         <ZoomIn />
       </IconButton>

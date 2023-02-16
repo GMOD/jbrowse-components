@@ -56,7 +56,6 @@ const HeaderButtons = observer(({ model }: { model: LGV }) => {
       className={classes.toggleButton}
       title="Open track selector"
       value="track_select"
-      color="icon"
     >
       <TrackSelectorIcon className={classes.buttonSpacer} />
     </IconButton>

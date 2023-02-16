@@ -41,7 +41,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         onClick={model.zoomInButton}
         disabled={model.atMinBpPerPx}
         title="zoom in"
-        color="icon"
       >
         <ZoomInIcon />
       </IconButton>
@@ -49,7 +48,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
       <IconButton
         onClick={model.rotateCounterClockwiseButton}
         title="rotate counter-clockwise"
-        color="icon"
       >
         <RotateLeftIcon />
       </IconButton>
@@ -57,7 +55,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
       <IconButton
         onClick={model.rotateClockwiseButton}
         title="rotate clockwise"
-        color="icon"
       >
         <RotateRightIcon />
       </IconButton>
@@ -70,7 +67,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
             : 'unlocked model to zoom further'
         }
         disabled={model.tooSmallToLock}
-        color="icon"
       >
         {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
@@ -80,7 +76,6 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
           onClick={model.activateTrackSelector}
           title="Open track selector"
           data-testid="circular_track_select"
-          color="icon"
         >
           <TrackSelectorIcon />
         </IconButton>

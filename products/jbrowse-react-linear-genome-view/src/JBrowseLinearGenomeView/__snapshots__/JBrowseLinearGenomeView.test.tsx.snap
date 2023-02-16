@@ -177,10 +177,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                 />
               </svg>
               <div
-                class="css-ig8oez-headerBar"
+                class="css-cwpsam-headerBar"
               >
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1t14cn4-MuiButtonBase-root-MuiIconButton-root-toggleButton"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1iml0wn-MuiButtonBase-root-MuiIconButton-root-toggleButton"
                   tabindex="0"
                   title="Open track selector"
                   type="button"
@@ -207,7 +207,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   class="MuiFormGroup-root MuiFormGroup-row css-1gwpy8f-MuiFormGroup-root-headerForm"
                 >
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall css-28uksh-MuiButtonBase-root-MuiButton-root-panButton"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall css-1th20m7-MuiButtonBase-root-MuiButton-root-panButton"
                     tabindex="0"
                     type="button"
                   >
@@ -227,7 +227,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     />
                   </button>
                   <button
-                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall css-28uksh-MuiButtonBase-root-MuiButton-root-panButton"
+                    class="MuiButtonBase-root MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall MuiButton-root MuiButton-outlined MuiButton-outlinedPrimary MuiButton-sizeSmall MuiButton-outlinedSizeSmall css-1th20m7-MuiButtonBase-root-MuiButton-root-panButton"
                     tabindex="0"
                     type="button"
                   >

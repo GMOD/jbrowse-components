@@ -101,17 +101,12 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           onDragEnd={() => view.setDraggingTrackId(undefined)}
           data-testid={`dragHandle-${view.id}-${trackId}`}
         >
-          <DragIcon
-            className={classes.dragHandleIcon}
-            fontSize="small"
-            color="icon"
-          />
+          <DragIcon className={classes.dragHandleIcon} fontSize="small" />
         </span>
         <IconButton
           onClick={() => view.hideTrack(trackId)}
           className={classes.iconButton}
           title="close this track"
-          color="icon"
         >
           <CloseIcon fontSize="small" />
         </IconButton>
@@ -128,7 +123,6 @@ const TrackLabel = React.forwardRef<HTMLDivElement, Props>(
           className={classes.iconButton}
           data-testid="track_menu_icon"
           disabled={!items.length}
-          color="icon"
         >
           <MoreVertIcon fontSize="small" />
         </IconButton>

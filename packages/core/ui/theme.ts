@@ -1,14 +1,12 @@
-import React from 'react'
 import { blue, green, red, grey, amber } from '@mui/material/colors'
 import { createTheme, ThemeOptions } from '@mui/material/styles'
 import type { PaletteAugmentColorOptions } from '@mui/material/styles/createPalette'
 import deepmerge from 'deepmerge'
 
-declare module '@mui/material/styles' {
+declare module '@mui/material/styles/createPalette' {
   interface Palette {
     tertiary: Palette['primary']
     quaternary: Palette['primary']
-    icon?: Palette['primary']
     stopCodon?: string
     startCodon?: string
     bases: {
@@ -21,7 +19,6 @@ declare module '@mui/material/styles' {
   interface PaletteOptions {
     tertiary?: PaletteOptions['primary']
     quaternary?: PaletteOptions['primary']
-    icon?: PaletteOptions['primary']
     stopCodon?: string
     startCodon?: string
     bases?: {
@@ -48,10 +45,6 @@ function stockTheme() {
       secondary: { main: grape },
       tertiary: refTheme.palette.augmentColor({ color: { main: forest } }),
       quaternary: refTheme.palette.augmentColor({ color: { main: mandarin } }),
-      icon: refTheme.palette.augmentColor({
-        color: { main: forest },
-        name: 'icon',
-      }),
       stopCodon: '#e22',
       startCodon: '#3e3',
       bases: {

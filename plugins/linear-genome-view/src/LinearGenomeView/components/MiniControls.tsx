@@ -19,10 +19,7 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
   return hideHeader ? (
     <div style={{ position: 'absolute', right: '0px', zIndex: '1001' }}>
       <Paper style={{ background: '#aaa7' }}>
-        <IconButton
-          onClick={event => setAnchorEl(event.currentTarget)}
-          color="icon"
-        >
+        <IconButton onClick={event => setAnchorEl(event.currentTarget)}>
           <ArrowDown fontSize="small" />
         </IconButton>
 
@@ -30,7 +27,6 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           data-testid="zoom_out"
           onClick={() => model.zoom(bpPerPx * 2)}
           disabled={bpPerPx >= maxBpPerPx - 0.0001 || scaleFactor !== 1}
-          color="icon"
         >
           <ZoomOut fontSize="small" />
         </IconButton>
@@ -38,7 +34,6 @@ const MiniControls = observer((props: { model: LinearGenomeViewModel }) => {
           data-testid="zoom_in"
           onClick={() => model.zoom(model.bpPerPx / 2)}
           disabled={bpPerPx <= minBpPerPx + 0.0001 || scaleFactor !== 1}
-          color="icon"
         >
           <ZoomIn fontSize="small" />
         </IconButton>
