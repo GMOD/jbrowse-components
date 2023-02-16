@@ -6,6 +6,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getSession, getContainingView } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import CascadingMenu from '@jbrowse/core/ui/CascadingMenu'
 
 import {
@@ -22,7 +23,6 @@ import MinimizeIcon from '@mui/icons-material/Minimize'
 import AddIcon from '@mui/icons-material/Add'
 
 import { LinearGenomeViewModel } from '..'
-import { SanitizedHTML } from '@jbrowse/core/ui'
 
 const useStyles = makeStyles()(theme => ({
   root: {

@@ -39,8 +39,8 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
 
       <IconButton
         onClick={model.zoomInButton}
-        title="zoom in"
         disabled={model.atMinBpPerPx}
+        title="zoom in"
       >
         <ZoomInIcon />
       </IconButton>

@@ -69,6 +69,7 @@ export default observer(function ({
   if (!session) {
     throw new Error('No session found')
   }
+
   return (
     <ThemeProvider theme={session.theme}>
       <CssBaseline />
