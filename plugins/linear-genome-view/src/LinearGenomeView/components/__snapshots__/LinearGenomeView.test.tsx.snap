@@ -21,7 +21,7 @@ exports[`renders one track, one region 1`] = `
               style="width: 800px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
             />
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
             />
             <div>
@@ -32,7 +32,7 @@ exports[`renders one track, one region 1`] = `
                 ctgA
               </p>
               <div
-                class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
               >
                 <p
@@ -68,7 +68,7 @@ exports[`renders one track, one region 1`] = `
               </div>
             </div>
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
             />
           </div>
@@ -347,6 +347,10 @@ exports[`renders one track, one region 1`] = `
             style="width: 100px;"
           >
             <div
+              class="css-i794sq-tick-minorTick"
+              style="left: -21px;"
+            />
+            <div
               class="css-1qcgmte-tick-majorTick"
               style="left: -1px;"
             />
@@ -373,6 +377,10 @@ exports[`renders one track, one region 1`] = `
             <div
               class="css-i794sq-tick-minorTick"
               style="left: 119px;"
+            />
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: 139px;"
             />
           </div>
           <div
@@ -573,7 +581,7 @@ exports[`renders two tracks, two regions 1`] = `
               style="width: 580px; left: 0px; background: rgba(66, 165, 245, 0.3); border-color: #42a5f5;"
             />
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
             />
             <div>
@@ -584,12 +592,12 @@ exports[`renders two tracks, two regions 1`] = `
                 ctgA
               </p>
               <div
-                class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 0px; width: 72.72727272727273px; border-color: rgb(153, 102, 0);"
               />
             </div>
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 72.72727272727273px; background-color: rgb(153, 153, 153);"
             />
             <div>
@@ -600,7 +608,7 @@ exports[`renders two tracks, two regions 1`] = `
                 ctgB
               </p>
               <div
-                class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                 style="left: 72.72727272727273px; width: 727.2727272727273px;"
               >
                 <p
@@ -636,7 +644,7 @@ exports[`renders two tracks, two regions 1`] = `
               </div>
             </div>
             <div
-              class="css-osn2dd-scalebarContig"
+              class="css-2jeg0a-scalebarContig"
               style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
             />
           </div>
@@ -917,6 +925,10 @@ exports[`renders two tracks, two regions 1`] = `
             style="width: 100px;"
           >
             <div
+              class="css-i794sq-tick-minorTick"
+              style="left: -21px;"
+            />
+            <div
               class="css-1qcgmte-tick-majorTick"
               style="left: -1px;"
             />
@@ -944,6 +956,10 @@ exports[`renders two tracks, two regions 1`] = `
               class="css-i794sq-tick-minorTick"
               style="left: 119px;"
             />
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: 139px;"
+            />
           </div>
           <div
             class="css-1b6zgog-interRegionPaddingBlock"
@@ -953,6 +969,10 @@ exports[`renders two tracks, two regions 1`] = `
             class="css-1dmfa10-contentBlock"
             style="width: 800px;"
           >
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: -21px;"
+            />
             <div
               class="css-1qcgmte-tick-majorTick"
               style="left: -1px;"
@@ -1120,6 +1140,10 @@ exports[`renders two tracks, two regions 1`] = `
             <div
               class="css-i794sq-tick-minorTick"
               style="left: 819px;"
+            />
+            <div
+              class="css-i794sq-tick-minorTick"
+              style="left: 839px;"
             />
           </div>
         </div>

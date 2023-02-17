@@ -104,7 +104,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     style="width: 267px; left: 0px; background: rgba(66, 119, 127, 0.3); border-color: rgb(66, 119, 127);"
                   />
                   <div
-                    class="css-osn2dd-scalebarContig"
+                    class="css-2jeg0a-scalebarContig"
                     style="width: 0px; left: 0px; background-color: rgb(153, 153, 153);"
                   />
                   <div>
@@ -115,7 +115,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                       ctgA
                     </p>
                     <div
-                      class="css-1npsllo-scalebarContig-scalebarContigForward-scalebarBorder"
+                      class="css-rtx9ov-scalebarContig-scalebarContigForward-scalebarBorder"
                       style="left: 0px; width: 800px; border-color: rgb(153, 102, 0);"
                     >
                       <p
@@ -157,7 +157,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     </div>
                   </div>
                   <div
-                    class="css-osn2dd-scalebarContig"
+                    class="css-2jeg0a-scalebarContig"
                     style="width: 0px; left: 800px; background-color: rgb(153, 153, 153);"
                   />
                 </div>
@@ -605,6 +605,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                     class="css-i794sq-tick-minorTick"
                     style="left: 800px;"
                   />
+                  <div
+                    class="css-i794sq-tick-minorTick"
+                    style="left: 820px;"
+                  />
                 </div>
                 <div
                   class="css-1dmfa10-contentBlock"
@@ -777,6 +781,10 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <div
                     class="css-i794sq-tick-minorTick"
                     style="left: 800px;"
+                  />
+                  <div
+                    class="css-i794sq-tick-minorTick"
+                    style="left: 820px;"
                   />
                 </div>
               </div>

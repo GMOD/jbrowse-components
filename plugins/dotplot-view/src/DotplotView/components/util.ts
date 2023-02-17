@@ -96,9 +96,10 @@ export function makeTicks(
 
     const minBase = start
     const maxBase = end
+
     for (
-      let base = Math.ceil(minBase / iterPitch) * iterPitch;
-      base < maxBase;
+      let base = Math.floor(minBase / iterPitch) * iterPitch;
+      base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
       if (emitMinor && base % gridPitch.majorPitch) {
