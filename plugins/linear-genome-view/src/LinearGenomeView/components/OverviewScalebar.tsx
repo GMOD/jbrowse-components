@@ -33,6 +33,7 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     height: HEADER_OVERVIEW_HEIGHT,
+    overflow: 'hidden',
   },
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
