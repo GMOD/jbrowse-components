@@ -11,6 +11,7 @@ export default observer(function (props: {
   parentRef: React.RefObject<SVGSVGElement>
   model: BreakpointViewModel
   trackId: string
+  getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { model, trackId } = props
   const tracks = model.getMatchedTracks(trackId)

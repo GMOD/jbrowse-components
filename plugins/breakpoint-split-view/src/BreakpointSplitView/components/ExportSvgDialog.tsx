@@ -14,7 +14,7 @@ import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { getSession, useLocalStorage } from '@jbrowse/core/util'
 
 // locals
-import { ExportSvgOptions } from '..'
+import { ExportSvgOptions } from '../model'
 
 function LoadingMessage() {
   return (

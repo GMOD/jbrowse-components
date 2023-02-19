@@ -2,12 +2,10 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
 import {
+  AbstractSessionModel,
   getSession,
-  getSerializedSvg,
   max,
   measureText,
-  ReactRendering,
-  renderToAbstractCanvas,
   sum,
 } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
@@ -18,15 +16,48 @@ import {
   SVGTracks,
   SVGRuler,
   totalHeight,
+  LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // locals
 import SVGBackground from './SVGBackground'
 import { ExportSvgOptions, BreakpointViewModel } from '../model'
-import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import Overlay from '../components/Overlay'
 
 type BSV = BreakpointViewModel
+
+function getTrackNameMaxLen(
+  views: LinearGenomeViewModel[],
+  fontSize: number,
+  session: AbstractSessionModel,
+) {
+  return max(
+    views
+      .map(view =>
+        view.tracks.map(
+          t => measureText(getTrackName(t.configuration, session), fontSize),
+          fontSize,
+        ),
+      )
+      .flat(),
+    0,
+  )
+}
+function getTrackOffsets(
+  view: LinearGenomeViewModel,
+  textOffset: number,
+  extra = 0,
+) {
+  const offsets = {} as { [key: string]: number }
+  let curr = textOffset
+  for (let i = 0; i < view.tracks.length; i++) {
+    const track = view.tracks[i]
+    offsets[track.configuration.trackId] = curr + extra
+    curr += track.displays[0].height + textOffset
+  }
+  return offsets
+}
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
@@ -66,26 +97,19 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     ),
   )
 
-  const trackLabelMaxLen =
-    max(
-      views
-        .map(view =>
-          view.tracks.map(
-            t => measureText(getTrackName(t.configuration, session), fontSize),
-            fontSize,
-          ),
-        )
-        .flat(),
-      0,
-    ) + 40
+  const trackLabelMaxLen = getTrackNameMaxLen(views, fontSize, session) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
+  const textOffset = trackLabels === 'offset' ? textHeight : 0
+  const trackOffsets = [
+    getTrackOffsets(views[0], textOffset, fontSize + offset),
+    getTrackOffsets(views[1], textOffset, fontSize + heights[0] + offset),
+  ]
   const w = width + trackLabelOffset
-
   const t = createJBrowseTheme(theme)
 
   // the xlink namespace is used for rendering <image> tag
   return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
+    <ThemeProvider theme={t}>
       <Wrapper>
         <svg
           width={width}
@@ -138,6 +162,26 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
               offset={offset}
               trackLabelOffset={trackLabelOffset}
             />
+          </g>
+
+          <defs>
+            <clipPath id="clip-bsv">
+              <rect x={0} y={0} width={width} height={totalHeightSvg} />
+            </clipPath>
+          </defs>
+          <g
+            transform={`translate(${trackLabelOffset + shift})`}
+            clipPath="url(#clip-bsv)"
+          >
+            {model.matchedTracks.map(track => (
+              <Overlay
+                parentRef={{ current: null }}
+                key={track.configuration.trackId}
+                model={model}
+                trackId={track.configuration.trackId}
+                getTrackYPosOverride={(id, level) => trackOffsets[level][id]}
+              />
+            ))}
           </g>
         </svg>
       </Wrapper>

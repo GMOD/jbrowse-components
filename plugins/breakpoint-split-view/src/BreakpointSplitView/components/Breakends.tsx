@@ -15,10 +15,12 @@ const Breakends = observer(function ({
   model,
   trackId,
   parentRef: ref,
+  getTrackYPosOverride,
 }: {
   model: BreakpointViewModel
   trackId: string
   parentRef: React.RefObject<SVGSVGElement>
+  getTrackYPosOverride?: (trackId: string, level: number) => number
 }) {
   const { views } = model
   const session = getSession(model)
@@ -81,8 +83,12 @@ const Breakends = observer(function ({
           const reversed2 = views[level2].pxToBp(x2).reversed
 
           const tracks = views.map(v => v.getTrack(trackId))
-          const y1 = yPos(trackId, level1, views, tracks, c1) - yoff
-          const y2 = yPos(trackId, level2, views, tracks, c2) - yoff
+          const y1 =
+            yPos(trackId, level1, views, tracks, c1, getTrackYPosOverride) -
+            yoff
+          const y2 =
+            yPos(trackId, level2, views, tracks, c2, getTrackYPosOverride) -
+            yoff
           if (!relevantAlt) {
             console.warn('the relevant ALT allele was not found, cannot render')
           } else {

@@ -9,18 +9,6 @@ import Header from './Header'
 import Overlay from './Overlay'
 
 const useStyles = makeStyles()(theme => ({
-  root: {
-    position: 'relative',
-    marginBottom: theme.spacing(1),
-    overflow: 'hidden',
-  },
-  breakpointMarker: {
-    position: 'absolute',
-    top: 0,
-    height: '100%',
-    width: 3,
-    background: 'magenta',
-  },
   viewDivider: {
     background: theme.palette.secondary.main,
     height: 3,
@@ -85,22 +73,20 @@ const BreakpointSplitView = observer(function ({
               pointerEvents: model.interactToggled ? undefined : 'none',
             }}
           >
-            {model.matchedTracks.map(track => {
+            {model.matchedTracks.map(track => (
               // note: we must pass ref down, because the child component
               // needs to getBoundingClientRect on the this components SVG,
               // and we cannot rely on using getBoundingClientRect in this
               // component to make sure this works because if it gets
               // shifted around by another element, this will not re-render
               // necessarily
-              return (
-                <Overlay
-                  parentRef={ref}
-                  key={track.configuration.trackId}
-                  model={model}
-                  trackId={track.configuration.trackId}
-                />
-              )
-            })}
+              <Overlay
+                parentRef={ref}
+                key={track.configuration.trackId}
+                model={model}
+                trackId={track.configuration.trackId}
+              />
+            ))}
           </svg>
         </div>
       </div>
