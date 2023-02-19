@@ -39,6 +39,8 @@
   "dependencies": {
     "@gmod/vcf": "^5.0.9",
     "@mui/icons-material": "^5.0.1",
+    "@types/file-saver": "^2.0.1",
+    "file-saver": "^2.0.0",
     "svg-path-generator": "^1.1.0"
   },
   "peerDependencies": {
@@ -49,6 +51,7 @@
     "mobx-react": "^7.0.0",
     "mobx-state-tree": "^5.0.0",
     "react": ">=16.8.4",
+    "react-dom": ">=16.8.4",
     "tss-react": "^4.0.0"
   },
   "private": true,
