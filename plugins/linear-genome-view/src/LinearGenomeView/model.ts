@@ -914,7 +914,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #action
+       * #method
        * creates an svg export and save using FileSaver
        */
       async exportSvg(opts: ExportSvgOptions = {}) {

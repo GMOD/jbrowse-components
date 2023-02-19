@@ -721,7 +721,7 @@ function stateModelFactory() {
         const { offsetPx: viewOffsetPx, roundedDynamicBlocks, width } = view
 
         const renderings = await Promise.all(
-          roundedDynamicBlocks.map(block => {
+          roundedDynamicBlocks.map(async block => {
             const blockState = BlockState.create({
               key: block.key,
               region: block,
@@ -734,34 +734,40 @@ function stateModelFactory() {
               self.regionCannotBeRendered(block)
 
             if (cannotBeRenderedReason) {
-              return {
-                reactElement: (
-                  <>
-                    <rect x={0} y={0} width={width} height={20} fill="#aaa" />
-                    <text x={0} y={15}>
-                      {cannotBeRenderedReason}
-                    </text>
-                  </>
-                ),
-              }
+              return [
+                block,
+                {
+                  reactElement: (
+                    <>
+                      <rect x={0} y={0} width={width} height={20} fill="#aaa" />
+                      <text x={0} y={15}>
+                        {cannotBeRenderedReason}
+                      </text>
+                    </>
+                  ),
+                },
+              ] as const
             }
 
             const { rpcManager, renderArgs, renderProps, rendererType } =
               renderBlockData(blockState, self)
 
-            return rendererType.renderInClient(rpcManager, {
-              ...renderArgs,
-              ...renderProps,
-              viewParams: getViewParams(self, true),
-              exportSVG: opts,
-              theme: opts.theme || renderProps.theme,
-            })
+            return [
+              block,
+              await rendererType.renderInClient(rpcManager, {
+                ...renderArgs,
+                ...renderProps,
+                viewParams: getViewParams(self, true),
+                exportSVG: opts,
+                theme: opts.theme || renderProps.theme,
+              }),
+            ] as const
           }),
         )
 
         return (
           <>
-            {renderings.map((rendering, index) => {
+            {renderings.map(([block, rendering], index) => {
               const { offsetPx } = roundedDynamicBlocks[index]
               const offset = offsetPx - viewOffsetPx
               const clipid = getId(id, index)
@@ -773,7 +779,7 @@ function stateModelFactory() {
                       <rect
                         x={0}
                         y={0}
-                        width={width}
+                        width={block.widthPx}
                         height={overrideHeight || height}
                       />
                     </clipPath>
