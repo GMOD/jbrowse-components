@@ -334,12 +334,19 @@ test('export svg of dotplot', async () => {
 }, 45000)
 
 test('export svg of breakpoint split view', async () => {
-  const { findByTestId, findByText } = createView(breakpointConfig)
+  doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
+  console.warn = jest.fn()
+  const { findByTestId, findAllByText, findByText } =
+    createView(breakpointConfig)
 
   await findByText('Help')
 
+  // the breakpoint split view requires that the view was rendered first,
+  // so add an arbitrary delay here. would need refactoring to fix properly
+  await new Promise(resolve => setTimeout(resolve, 10000))
+
   fireEvent.click(await findByTestId('view_menu_icon'))
-  fireEvent.click(await findByText('Export SVG'))
+  fireEvent.click((await findAllByText('Export SVG'))[0])
   fireEvent.click(await findByText('Submit'))
 
   await waitFor(() => expect(FileSaver.saveAs).toHaveBeenCalled(), delay)
