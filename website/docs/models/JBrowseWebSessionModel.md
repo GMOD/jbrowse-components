@@ -172,18 +172,6 @@ drawerPosition: types.optional(
       )
 ```
 
-#### property: sessionThemeName
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-sessionThemeName: types.optional(
-        types.string,
-        () => localStorageGetItem('themeName') || 'default',
-      )
-```
-
 ### JBrowseWebSessionModel - Getters
 
 #### getter: jbrowse
@@ -676,7 +664,7 @@ clearConnections: () => void
 
 ```js
 // type signature
-addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 12 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
+addSavedSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: removeSavedSession
@@ -732,7 +720,7 @@ loadAutosaveSession: () => any
 
 ```js
 // type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 12 more ...; sessionThemeName: IOptionalIType<...>; }>>) => any
+setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number, number, number>; ... 11 more ...; drawerPosition: IOptionalIType<...>; }>>) => any
 ```
 
 #### action: editConfiguration

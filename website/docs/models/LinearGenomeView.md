@@ -484,6 +484,15 @@ were selected by the rubberband
 getSelectedRegions: (leftOffset?: BpOffset, rightOffset?: BpOffset) => { start: number; end: number; regionNumber?: number; reversed?: boolean; refName: string; assemblyName: string; key: string; offsetPx: number; widthPx: number; variant?: string; isLeftEndOfDisplayedRegion?: boolean; }[]
 ```
 
+#### method: exportSvg
+
+creates an svg export and save using FileSaver
+
+```js
+// type signature
+exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```
+
 #### method: menuItems
 
 return the view menu items
@@ -772,15 +781,6 @@ this "clears the view" and makes the view return to the import form
 ```js
 // type signature
 clearView: () => void
-```
-
-#### action: exportSvg
-
-creates an svg export and save using FileSaver
-
-```js
-// type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### action: slide

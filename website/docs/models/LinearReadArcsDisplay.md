@@ -133,7 +133,7 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions) => Promise<Element>
+renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
 ```
 
 ### LinearReadArcsDisplay - Actions

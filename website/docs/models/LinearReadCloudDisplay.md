@@ -83,7 +83,7 @@ trackMenuItems: () => MenuItem[]
 
 ```js
 // type signature
-renderSvg: (opts: ExportSvgOptions) => Promise<Element>
+renderSvg: (opts: { rasterizeLayers?: boolean; }) => Promise<Element>
 ```
 
 ### LinearReadCloudDisplay - Actions
