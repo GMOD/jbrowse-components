@@ -231,8 +231,6 @@ Now that you have an overview of the different pluggable element types that are
 available to you, review your
 [understanding of the configuration model](../config_model).
 
-Also checkout the
-[guided tutorial](/docs/tutorials/simple_plugin_tutorial/01_introduction) for
-writing a plugin, which will take you through everything from installation,
-creating a new pluggable element, and general development tips for working with
-JBrowse 2.
+Also checkout the [guided tutorial](/docs/tutorials/simple_plugin/) for writing
+a plugin, which will take you through everything from installation, creating a
+new pluggable element, and general development tips for working with JBrowse 2.

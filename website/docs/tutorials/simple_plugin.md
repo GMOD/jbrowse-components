@@ -147,7 +147,7 @@ For this tutorial, we're going to be creating a custom
 [Jexl](https://github.com/TomFrost/Jexl) callback to open it when we click a
 chord on the circular genome view.
 
-<Figure src="../img/plugin-dev-tutorial-final.png" caption="A screenshot of the finished product of this tutorial: a widget with a jexl callback on the circular view." />
+<Figure src="/img/plugin-dev-tutorial-final.png" caption="A screenshot of the finished product of this tutorial: a widget with a jexl callback on the circular view." />
 
 ## Add new files, stubs, and install dependencies
 
@@ -546,7 +546,7 @@ Take some time to dissect what's being added here:
 - the specified `onChordClick` callback function is that which we defined in our
   plugin class, the jexl function
 
-<Figure src="../img/plugin-dev-tutorial-track-added.png" caption="A screenshot of what it will look like when you add a track to your configuration; that is, it will be available in the add track menu when you open a view." />
+<Figure src="/img/plugin-dev-tutorial-track-added.png" caption="A screenshot of what it will look like when you add a track to your configuration; that is, it will be available in the add track menu when you open a view." />
 
 ## Testing it out
 
@@ -577,7 +577,7 @@ Expected result:
 The widget opens on the right hand side with two panels, one with our editable
 widget byline, and one with our feature data.
 
-<Figure src="../img/plugin-dev-tutorial-final.png" caption="A screenshot of the widget displayed after clicking on the chord." />
+<Figure src="/img/plugin-dev-tutorial-final.png" caption="A screenshot of the widget displayed after clicking on the chord." />
 
 :::info Troubleshooting
 
@@ -639,7 +639,7 @@ Right now our test does two things:
 - visits our JBrowse URL (default configured to `localhost:8999`) with that
   configuration and a circular view open
 
-Notice the use of [URL params](../../../urlparams) to speed up the test setup;
+Notice the use of [URL params](/docs/urlparams) to speed up the test setup;
 using URL params like this can come in handy for larger suites.
 
 Take a moment to add the track specification to `hello_view.json` for testing
@@ -679,7 +679,7 @@ running. Open a third tab in your terminal at your project directory, and run
 `yarn cypress:open`. A cypress browser will open, click on the test you just
 wrote to run it.
 
-<Figure src="../img/plugin-dev-tutorial-cypress.png" caption="A screenshot of the cypress interface when you run yarn cypress:open." />
+<Figure src="/img/plugin-dev-tutorial-cypress.png" caption="A screenshot of the cypress interface when you run yarn cypress:open." />
 
 Now that we have a visual on our test running, let's add some more complexity:
 
@@ -723,7 +723,7 @@ property on the widget model.
 Run your suite again for completeness (you may have to reset your instance of
 cypress, then run `yarn cypress:open` again).
 
-<Figure src="../img/plugin-dev-tutorial-running-cypress.png" caption="A screenshot of a cypress test running with the built-in browser; this is what your test should look like (and pass) when finished here." />
+<Figure src="/img/plugin-dev-tutorial-running-cypress.png" caption="A screenshot of a cypress test running with the built-in browser; this is what your test should look like (and pass) when finished here." />
 
 ## Next steps
 
