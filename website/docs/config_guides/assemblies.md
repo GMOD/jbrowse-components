@@ -130,7 +130,7 @@ jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
 ```
 
 See our
-[configure JBrowse using the cli](/docs/tutorials/config_cli/#adding-a-genome-assembly)
+[configure JBrowse using the cli](/docs/quickstart_web/#adding-a-genome-assembly-in-fasta-format)
 tutorial for more in-depth instructions, or more information on the
 `add-assembly` command through our
 [CLI tools guide](/docs/cli/#jbrowse-add-assembly-sequence).

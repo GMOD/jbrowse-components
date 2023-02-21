@@ -144,7 +144,7 @@ link" that you can give to other users
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
 See
-[this FAQ entry for more info about how shared sessions work](../faq#how-does-the-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+[this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-the-session-sharing-work-with-shortened-urls-work-in-jbrowse-web)
 
 #### Session spec
 

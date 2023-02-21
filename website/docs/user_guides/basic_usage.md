@@ -61,7 +61,7 @@ You can search a location in several ways when typing in the search box:
 
 To configure name searching, you or the admin of the instance will need to
 create a "text index". See the
-[configuration guide](/docs/tutorials/config_cli#indexing-feature-names-for-searching)
+[configuration guide](/docs/quickstart_web/#indexing-feature-names-for-searching)
 for more information.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
@@ -135,7 +135,7 @@ specify the index file explicitly.
 :::info Note
 
 If you are an administrator, you can add tracks with the
-[command line](/docs/tutorials/config_cli/#adding-a-track) or with the
+[command line](/docs/quickstart_web/#adding-tracks) or with the
 [admin server](/docs/tutorials/config_gui).
 
 :::

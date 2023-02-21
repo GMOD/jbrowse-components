@@ -32,7 +32,7 @@ jbrowse add-track myfile.paf --type SyntenyTrack --assemblyNames \
 The first assembly is the "target" and the second assembly is the "query."
 
 See how to
-[configure JBrowse using the CLI](/docs/tutorials/config_cli/#adding-a-synteny-track)
+[configure JBrowse using the CLI](/docs/quickstart_web/#adding-a-synteny-track-from-a-paf-file)
 for more ways to load synteny tracks with the CLI.
 
 ### PAFAdapter config

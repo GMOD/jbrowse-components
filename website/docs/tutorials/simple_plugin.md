@@ -11,7 +11,7 @@ adapters, etc), and to modify behavior of the application by adding code that
 watches the application's state.
 
 For the full list of what kinds of pluggable element types plugins can add, see
-the [pluggable elements](/docs/developer_guide/#pluggable-elements) page.
+the [pluggable elements](/docs/developer_guides/pluggable_elements/) page.
 
 The following tutorial will walk you through establishing your developer
 environment, spinning up a plugin, and running a local JBrowse instance with
@@ -137,13 +137,13 @@ However, if you:
 
 You can develop against the latest JBrowse core build by taking a quick detour
 to our
-[developing with JBrowse web and desktop tutorial](../develop_web_and_desktop_tutorial).
+[developing with JBrowse web and desktop tutorial](/docs/tutorials/develop_web_and_desktop_tutorial).
 
 Now that our environment is set up and running, we're going to add our own
 pluggable element to the project and observe it running in JBrowse.
 
 For this tutorial, we're going to be creating a custom
-[widget](/docs/developer_guide/#widgets), and using a
+[widget](/docs/developer_guides/creating_widget), and using a
 [Jexl](https://github.com/TomFrost/Jexl) callback to open it when we click a
 chord on the circular genome view.
 
