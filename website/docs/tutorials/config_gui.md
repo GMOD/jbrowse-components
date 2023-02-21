@@ -13,8 +13,8 @@ JBrowse 2's graphical configuration editing.
 
 :::note
 
-You can also do this configuration with JBrowse CLI. See that guide
-[here](../config_cli).
+You can also do this configuration with JBrowse CLI. See
+[here](/docs/quickstart_web/).
 
 :::
 
@@ -22,7 +22,7 @@ You can also do this configuration with JBrowse CLI. See that guide
 
 This tutorial requires having the following software installed
 
-- [JBrowse CLI](/docs/quickstart_web/#installing-the-cli-tools)
+- [JBrowse CLI](/docs/quickstart_web/#installing-the-jbrowse-cli)
 
 - [JBrowse 2 web application](/docs/quickstart_web/#using-jbrowse-create-to-download-jbrowse-2)
 

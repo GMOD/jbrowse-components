@@ -54,6 +54,7 @@
         "developer_guides/creating_view",
         "developer_guides/extension_points",
         "developer_guides/pluggable_elements",
+        "developer_guides/modifying_menus",
         "urlparams",
         "api_guide",
         {

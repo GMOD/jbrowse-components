@@ -38,6 +38,13 @@ jobs:
         run: |
           cd website/
           yarn build
+          mkdir testing
+          mv build testing/jb2
+      - name: Check website links
+        uses: untitaker/hyperlink@0.1.27
+        with:
+          args: website/testing/ --check-anchors
+
   buildwholerepo:
     name: Build whole repo on node 16 and ubuntu-latest
     runs-on: ubuntu-latest

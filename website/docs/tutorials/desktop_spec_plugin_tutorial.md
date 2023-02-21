@@ -192,9 +192,8 @@ you run your template plugin on the app to test.
 
 We'll need some way to accept the file from the user through the JBrowse UI.
 Adding a new widget here is the same as doing it for a typical JBrowse plugin
-(see the
-[simple JBrowse 2 plugin guide](../simple_plugin_tutorial/01_introduction) if
-you haven't already).
+(see the [simple JBrowse 2 plugin guide](/docs/tutorials/simple_plugin) if you
+haven't already).
 
 1. Create a basic component and add it through the plugin manager
 
@@ -591,7 +590,7 @@ Your final product should look something like the following:
 ## Distributing the plugin
 
 Distributing a desktop plugin is very similar to the
-[publishing steps outlined in the simple plugin tutorial](../simple_plugin_tutorial/04_publishing).
+[publishing steps outlined in the simple plugin tutorial](/docs/tutorials/simple_plugin).
 
 As stated before, we encourage you to clearly indicate when a plugin is intended
 for desktop use only, as desktop-only operations are likely to crash when used

@@ -6,4 +6,4 @@ toplevel: true
 
 import Figure from '../figure'
 
-Contents moved [/docs/quickstart_web](here)
+Contents moved [here](/docs/quickstart_web)
