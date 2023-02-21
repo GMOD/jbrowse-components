@@ -13,8 +13,8 @@ JBrowse 2's graphical configuration editing.
 
 :::note
 
-You can also do this configuration with JBrowse CLI. See the JBrowse CLI guide
-[here](/docs/config_cli).
+You can also do this configuration with JBrowse CLI. See
+[here](/docs/quickstart_web/).
 
 :::
 

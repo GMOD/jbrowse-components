@@ -222,7 +222,7 @@ callback that is called at an appropriate time.
 
 Checkout the [full extension point API](/docs/developer_guides/extension_points)
 or an
-[example for adding context menu items](/docs/developer_guides/modifying_menu)
+[example for adding context menu items](/docs/developer_guides/modifying_menus)
 for more detailed information.
 
 ## Next steps
