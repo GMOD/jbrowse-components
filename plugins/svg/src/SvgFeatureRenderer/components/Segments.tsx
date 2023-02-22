@@ -33,7 +33,7 @@ function Segments(props: {
 
   const theme = useTheme()
   const c = readConfObject(config, 'color2', { feature })
-  const color2 = c === '#f0f' ? theme.palette.text.disabled : c
+  const color2 = c === '#f0f' ? theme.palette.text.secondary : c
 
   const { left = 0, top = 0, width = 0, height = 0 } = featureLayout.absolute
 

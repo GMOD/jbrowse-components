@@ -28,7 +28,7 @@ const Arrow = ({
 
   const c = readConfObject(config, 'color2', { feature })
   const theme = useTheme()
-  const color2 = c === '#f0f' ? theme.palette.text.disabled : c
+  const color2 = c === '#f0f' ? theme.palette.text.secondary : c
   const p =
     strand * reverseFlip === -1
       ? left

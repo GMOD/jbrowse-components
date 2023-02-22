@@ -5,9 +5,9 @@ import { CanvasSequence } from 'canvas-sequencer'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './index'
 
-export type RenderReturn = Record<string, unknown>
+export type RenderReturn = Record<string, unknown> | void
 
-type RenderReturnOrVoid = RenderReturn | void
+type RendererRet = Promise<RenderReturn> | RenderReturn
 
 export async function renderToAbstractCanvas(
   width: number,
@@ -16,48 +16,48 @@ export async function renderToAbstractCanvas(
     exportSVG?: { rasterizeLayers?: boolean; scale?: number }
     highResolutionScaling?: number
   },
-  cb: (
-    ctx: CanvasRenderingContext2D,
-  ) => Promise<RenderReturnOrVoid> | RenderReturnOrVoid,
+  cb: (ctx: CanvasRenderingContext2D) => RendererRet,
 ) {
   const { exportSVG, highResolutionScaling = 1 } = opts
 
-  if (exportSVG?.rasterizeLayers) {
-    const fakeCtx = new CanvasSequence()
-    const result = await cb(fakeCtx)
-    return {
-      ...result,
-      canvasRecordedData: fakeCtx.toJSON(),
-    }
-  } else if (exportSVG) {
-    const s = exportSVG.scale || highResolutionScaling
-    const canvas = createCanvas(Math.ceil(width * s), height * s)
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      throw new Error('2d canvas rendering not supported on this platform')
-    }
-    ctx.scale(s, s)
-    const result = await cb(ctx)
+  if (exportSVG) {
+    if (!exportSVG.rasterizeLayers) {
+      const fakeCtx = new CanvasSequence()
+      const result = await cb(fakeCtx)
+      return {
+        ...result,
+        canvasRecordedData: fakeCtx.toJSON(),
+      }
+    } else {
+      const s = exportSVG.scale || highResolutionScaling
+      const canvas = createCanvas(Math.ceil(width * s), height * s)
+      const ctx = canvas.getContext('2d')
+      if (!ctx) {
+        throw new Error('2d canvas rendering not supported on this platform')
+      }
+      ctx.scale(s, s)
+      const result = await cb(ctx)
 
-    // two methods needed for converting canvas to PNG, one for webworker
-    // offscreen canvas, one for main thread
-    return {
-      ...result,
-      reactElement: (
-        <image
-          width={width}
-          height={height}
-          xlinkHref={
-            'convertToBlob' in canvas
-              ? await blobToDataURL(
-                  await canvas.convertToBlob({
-                    type: 'image/png',
-                  }),
-                )
-              : canvas.toDataURL('image/png')
-          }
-        />
-      ),
+      // two methods needed for converting canvas to PNG, one for webworker
+      // offscreen canvas, one for main thread
+      return {
+        ...result,
+        reactElement: (
+          <image
+            width={width}
+            height={height}
+            xlinkHref={
+              'convertToBlob' in canvas
+                ? await blobToDataURL(
+                    await canvas.convertToBlob({
+                      type: 'image/png',
+                    }),
+                  )
+                : canvas.toDataURL('image/png')
+            }
+          />
+        ),
+      }
     }
   } else {
     const s = highResolutionScaling

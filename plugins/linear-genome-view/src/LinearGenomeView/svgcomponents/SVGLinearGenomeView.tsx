@@ -69,6 +69,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         t => measureText(getTrackName(t.configuration, session), fontSize),
         fontSize,
       ),
+      0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset

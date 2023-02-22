@@ -86,7 +86,7 @@ export default function SVGHeader({
         <SVGScalebar model={model} fontSize={fontSize} />
       </g>
       <g transform={`translate(0 ${rulerHeight + c})`}>
-        <SVGRuler model={model} fontSize={fontSize} width={width} />
+        <SVGRuler model={model} fontSize={fontSize} />
       </g>
     </g>
   )

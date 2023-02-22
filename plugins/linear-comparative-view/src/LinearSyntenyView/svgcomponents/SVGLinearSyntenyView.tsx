@@ -127,11 +127,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
                 {views[0].assemblyNames.join(', ')}
               </text>
 
-              <SVGRuler
-                model={displayResults[0].view}
-                fontSize={fontSize}
-                width={displayResults[0].view.width}
-              />
+              <SVGRuler model={displayResults[0].view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
@@ -164,11 +160,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
                 {views[1].assemblyNames.join(', ')}
               </text>
-              <SVGRuler
-                model={displayResults[1].view}
-                fontSize={fontSize}
-                width={displayResults[1].view.width}
-              />
+              <SVGRuler model={displayResults[1].view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
