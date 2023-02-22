@@ -125,16 +125,9 @@ export default function sessionModelFactory(
         types.string,
         () => localStorageGetItem('drawerPosition') || 'right',
       ),
-
-      /**
-       * #property
-       */
-      sessionThemeName: types.optional(
-        types.string,
-        () => localStorageGetItem('themeName') || 'default',
-      ),
     })
     .volatile((/* self */) => ({
+      sessionThemeName: localStorageGetItem('themeName') || 'default',
       /**
        * this is the globally "selected" object. can be anything.
        * code that wants to deal with this should examine it to see what
