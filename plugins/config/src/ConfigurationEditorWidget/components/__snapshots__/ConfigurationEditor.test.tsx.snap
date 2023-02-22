@@ -1571,7 +1571,7 @@ exports[`ConfigurationEditor widget renders with defaults of the PileupTrack sch
                                     class="MuiInputBase-input MuiOutlinedInput-input css-1t8l2tu-MuiInputBase-input-MuiOutlinedInput-input"
                                     id="mui-21"
                                     type="number"
-                                    value="0.7"
+                                    value="1"
                                   />
                                   <fieldset
                                     aria-hidden="true"

@@ -144,7 +144,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="19970"
       y="70"
@@ -169,7 +169,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       B
     </text>
     <rect
-      fill="#ffc107"
+      fill="#ff9800"
       height="20"
       stroke="#555"
       width="20"
@@ -178,7 +178,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
-      fill="black"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="19930"
       y="70"
@@ -246,7 +246,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="19850"
       y="70"
@@ -297,7 +297,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="19970"
       y="90"
@@ -331,7 +331,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="19930"
       y="90"
@@ -390,7 +390,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
       F
     </text>
     <rect
-      fill="#ffc107"
+      fill="#ff9800"
       height="20"
       stroke="#555"
       width="20"
@@ -399,7 +399,7 @@ exports[`renders with one feature reversed with a correct seq, zoomed in, should
     />
     <text
       dominant-baseline="middle"
-      fill="black"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="19850"
       y="90"
@@ -714,7 +714,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="30"
       y="70"
@@ -748,7 +748,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="70"
       y="70"
@@ -807,7 +807,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       F
     </text>
     <rect
-      fill="#ffc107"
+      fill="#ff9800"
       height="20"
       stroke="#555"
       width="20"
@@ -816,7 +816,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
-      fill="black"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="150"
       y="70"
@@ -867,7 +867,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="30"
       y="90"
@@ -892,7 +892,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
       B
     </text>
     <rect
-      fill="#ffc107"
+      fill="#ff9800"
       height="20"
       stroke="#555"
       width="20"
@@ -901,7 +901,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
-      fill="black"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="70"
       y="90"
@@ -969,7 +969,7 @@ exports[`renders with one feature with a correct seq, zoomed in, should render n
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="150"
       y="90"
@@ -1200,7 +1200,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="30"
       y="70"
@@ -1234,7 +1234,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="70"
       y="70"
@@ -1251,7 +1251,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     />
     <text
       dominant-baseline="middle"
-      fill="white"
+      fill="#fff"
       text-anchor="middle"
       x="30"
       y="90"
@@ -1276,7 +1276,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
       B
     </text>
     <rect
-      fill="#ffc107"
+      fill="#ff9800"
       height="20"
       stroke="#555"
       width="20"
@@ -1285,7 +1285,7 @@ exports[`renders with one feature with an incorrect seq, zoomed in, should throw
     />
     <text
       dominant-baseline="middle"
-      fill="black"
+      fill="rgba(0, 0, 0, 0.87)"
       text-anchor="middle"
       x="70"
       y="90"

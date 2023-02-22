@@ -150,7 +150,9 @@ function DNA(props: {
                 y={y + height / 2}
                 dominantBaseline="middle"
                 textAnchor="middle"
-                fill={color ? contrastingTextColor(color.main) : 'black'}
+                fill={
+                  color ? theme.palette.getContrastText(color.main) : 'black'
+                }
               >
                 {letter}
               </text>
