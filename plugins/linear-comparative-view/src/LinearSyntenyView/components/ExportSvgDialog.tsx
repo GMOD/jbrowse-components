@@ -131,11 +131,11 @@ export default function ExportSvgDlg({
                 themeName,
                 trackLabels,
               })
-              setLoading(false)
               handleClose()
             } catch (e) {
               console.error(e)
               setError(e)
+            } finally {
               setLoading(false)
             }
           }}

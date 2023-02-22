@@ -20,6 +20,7 @@ import { renderToSvg } from './svgcomponents/SVGLinearSyntenyView'
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean
+  scale?: number
   filename?: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Wrapper?: React.FC<any>
