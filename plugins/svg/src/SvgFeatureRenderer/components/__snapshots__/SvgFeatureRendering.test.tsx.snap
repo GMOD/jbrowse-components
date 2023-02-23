@@ -3,7 +3,7 @@
 exports[`click on one feature, and do not re-render 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="130"
+  height="145"
   width="333.3333333333333"
 >
   <g>
@@ -25,7 +25,7 @@ exports[`click on one feature, and do not re-render 1`] = `
       stroke=""
       width="2"
       x="0.3"
-      y="10"
+      y="15"
     />
   </g>
   <g>
@@ -36,7 +36,7 @@ exports[`click on one feature, and do not re-render 1`] = `
       stroke=""
       width="2"
       x="0.3"
-      y="20"
+      y="30"
     />
   </g>
 </svg>
@@ -53,7 +53,7 @@ exports[`no features 1`] = `
 exports[`one feature (compact mode) 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="119"
+  height="122"
   width="333.3333333333333"
 >
   <g>
@@ -207,7 +207,7 @@ exports[`one feature (compact mode) 1`] = `
       fill="rgba(0, 0, 0, 0.87)"
       font-size="12"
       x="1991.7"
-      y="19"
+      y="17"
     >
       au9.g1002.t1
     </text>
@@ -218,7 +218,7 @@ exports[`one feature (compact mode) 1`] = `
 exports[`one feature 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="110"
+  height="115"
   width="333.3333333333333"
 >
   <g>
@@ -238,7 +238,7 @@ exports[`one feature 1`] = `
 exports[`processed transcript (exons + impliedUTR) 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="138"
+  height="139"
   width="333.3333333333333"
 >
   <g>
@@ -410,7 +410,7 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
       fill="rgba(0, 0, 0, 0.87)"
       font-size="12"
       x="7759845"
-      y="24"
+      y="22"
     >
       LACTBL1
     </text>
@@ -418,7 +418,7 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
       fill="blue"
       font-size="12"
       x="7759845"
-      y="38"
+      y="34"
     >
       lactamase beta like 1
     </text>
@@ -429,7 +429,7 @@ exports[`processed transcript (exons + impliedUTR) 1`] = `
 exports[`processed transcript (reducedRepresentation mode) 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="110"
+  height="115"
   width="333.3333333333333"
 >
   <g>
@@ -449,7 +449,7 @@ exports[`processed transcript (reducedRepresentation mode) 1`] = `
 exports[`processed transcript 1`] = `
 <svg
   data-testid="svgfeatures"
-  height="124"
+  height="127"
   width="333.3333333333333"
 >
   <g>
@@ -603,7 +603,7 @@ exports[`processed transcript 1`] = `
       fill="rgba(0, 0, 0, 0.87)"
       font-size="12"
       x="1991.7"
-      y="24"
+      y="22"
     >
       au9.g1002.t1
     </text>

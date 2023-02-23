@@ -18,8 +18,8 @@ import {
 } from './util'
 
 // used to make features have a little padding for their labels
-const xPadding = 8
-const yPadding = 8
+const xPadding = 3
+const yPadding = 5
 
 // used so that user can click-away-from-feature below the laid out features
 // (issue #1248)
@@ -90,7 +90,7 @@ function RenderedFeatureGlyph(props: {
     const getWidth = (text: string) => {
       const glyphWidth = rootLayout.width + expansion
       const textWidth = measureText(text, fontHeight)
-      return Math.round(Math.min(textWidth, glyphWidth)) + xPadding
+      return Math.round(Math.min(textWidth, glyphWidth))
     }
 
     description = String(
@@ -104,7 +104,7 @@ function RenderedFeatureGlyph(props: {
         0,
         featureLayout.bottom,
         getWidth(name),
-        fontHeight + yPadding,
+        fontHeight,
       )
     }
 
@@ -118,7 +118,7 @@ function RenderedFeatureGlyph(props: {
         0,
         aboveLayout.bottom,
         getWidth(description),
-        fontHeight + yPadding,
+        fontHeight,
       )
     }
   }
@@ -126,8 +126,8 @@ function RenderedFeatureGlyph(props: {
   const topPx = layout.addRect(
     feature.id(),
     feature.get('start'),
-    feature.get('start') + rootLayout.width * bpPerPx,
-    rootLayout.height,
+    feature.get('start') + rootLayout.width * bpPerPx + xPadding * bpPerPx,
+    rootLayout.height + yPadding,
   )
   if (topPx === null) {
     return null
