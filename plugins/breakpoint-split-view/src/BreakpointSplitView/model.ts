@@ -22,6 +22,7 @@ import { AnyConfigurationModel, getConf } from '@jbrowse/core/configuration'
 
 // icons
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
+import LinkIcon from '@mui/icons-material/Link'
 
 // locals
 import { intersect } from './util'
@@ -132,25 +133,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           elt => elt.configuration.trackId as string,
           ...self.views.map(view => view.tracks),
         )
-      },
-
-      menuItems() {
-        return [
-          ...self.views
-            .map((view, idx) => [idx, view.menuItems?.()])
-            .filter(f => !!f[1])
-            .map(f => ({ label: `View ${f[0]} Menu`, subMenu: f[1] })),
-          {
-            label: 'Export SVG',
-            icon: PhotoCamera,
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                ExportSvgDlg,
-                { model: self, handleClose },
-              ])
-            },
-          },
-        ]
       },
 
       // Get tracks with a given trackId across multiple views
@@ -304,6 +286,46 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             }
           }),
         )
+      },
+
+      menuItems() {
+        return [
+          ...self.views
+            .map((view, idx) => [idx, view.menuItems?.()] as const)
+            .filter(f => !!f[1])
+            .map(f => ({ label: `View ${f[0] + 1} Menu`, subMenu: f[1] })),
+
+          {
+            label: 'Show intra-view links',
+            type: 'checkbox',
+            checked: self.showIntraviewLinks,
+            onClick: () => self.toggleIntraviewLinks(),
+          },
+          {
+            label: 'Allow clicking alignment squiggles?',
+            type: 'checkbox',
+            checked: self.interactToggled,
+            onClick: () => self.toggleLinkViews(),
+          },
+
+          {
+            label: 'Link views',
+            type: 'checkbox',
+            icon: LinkIcon,
+            checked: self.linkViews,
+            onClick: () => self.toggleLinkViews(),
+          },
+          {
+            label: 'Export SVG',
+            icon: PhotoCamera,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                ExportSvgDlg,
+                { model: self, handleClose },
+              ])
+            },
+          },
+        ]
       },
     }))
 

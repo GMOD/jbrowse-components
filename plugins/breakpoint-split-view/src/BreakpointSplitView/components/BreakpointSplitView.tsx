@@ -5,7 +5,6 @@ import { makeStyles } from 'tss-react/mui'
 
 // locals
 import { BreakpointViewModel } from '../model'
-import Header from './Header'
 import Overlay from './Overlay'
 
 const useStyles = makeStyles()(theme => ({
@@ -42,7 +41,6 @@ const BreakpointSplitView = observer(function ({
 
   return (
     <div>
-      <Header model={model} />
       <div className={classes.container}>
         <div className={classes.content}>
           <div style={{ position: 'relative' }}>
