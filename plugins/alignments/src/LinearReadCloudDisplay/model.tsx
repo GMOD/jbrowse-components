@@ -17,10 +17,7 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import { FilterModel } from '../shared'
 import { fetchChains, ChainData } from '../shared/fetchChains'
 import drawFeats from './drawFeats'
-import {
-  ExportSvgOptions,
-  LinearGenomeViewModel,
-} from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
+import { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
@@ -30,6 +27,12 @@ interface Filter {
   flagExclude: number
   readName?: string
   tagFilter?: { tag: string; value: string }
+}
+
+// stabilize clipid under test for snapshot
+function getId(id: string) {
+  const isJest = typeof jest === 'undefined'
+  return `cloud-clip-${isJest ? id : 'jest'}`
 }
 
 /**
@@ -205,7 +208,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
-        async renderSvg(opts: ExportSvgOptions) {
+        async renderSvg(opts: { rasterizeLayers?: boolean }) {
           const view = getContainingView(self) as LinearGenomeViewModel
           const width = view.dynamicBlocks.totalWidthPx
           const height = self.height
@@ -232,9 +235,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             const C2S = await import('canvas2svg')
             const ctx = new C2S.default(width, height)
             await drawFeats(self, ctx)
+            const clipid = getId(self.id)
             str = (
-              // eslint-disable-next-line react/no-danger
-              <g dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }} />
+              <>
+                <defs>
+                  <clipPath id={clipid}>
+                    <rect x={0} y={0} width={width} height={height} />
+                  </clipPath>
+                </defs>
+                <g
+                  /* eslint-disable-next-line react/no-danger */
+                  dangerouslySetInnerHTML={{
+                    __html: ctx.getSvg().innerHTML,
+                  }}
+                  clipPath={`url(#${clipid})`}
+                />
+              </>
             )
           }
 

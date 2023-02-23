@@ -22,10 +22,15 @@ import FilterListIcon from '@mui/icons-material/ClearAll'
 import { FilterModel } from '../shared'
 import drawFeats from './drawFeats'
 import { fetchChains, ChainData } from '../shared/fetchChains'
-import { ExportSvgOptions } from '@jbrowse/plugin-linear-genome-view/src/LinearGenomeView'
 
 // async
 const FilterByTagDlg = lazy(() => import('../shared/FilterByTag'))
+
+// stabilize clipid under test for snapshot
+function getId(id: string) {
+  const isJest = typeof jest === 'undefined'
+  return `arc-clip-${isJest ? id : 'jest'}`
+}
 
 interface Filter {
   flagInclude: number
@@ -333,7 +338,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions) {
+      async renderSvg(opts: { rasterizeLayers?: boolean }) {
         const view = getContainingView(self) as LGV
         const width = view.dynamicBlocks.totalWidthPx
         const height = self.height
@@ -360,13 +365,26 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           const C2S = await import('canvas2svg')
           const ctx = new C2S.default(width, height)
           await drawFeats(self, ctx)
+          const clipid = getId(self.id)
           str = (
-            // eslint-disable-next-line react/no-danger
-            <g dangerouslySetInnerHTML={{ __html: ctx.getSvg().innerHTML }} />
+            <>
+              <defs>
+                <clipPath id={clipid}>
+                  <rect x={0} y={0} width={width} height={height} />
+                </clipPath>
+              </defs>
+              <g
+                /* eslint-disable-next-line react/no-danger */
+                dangerouslySetInnerHTML={{
+                  __html: ctx.getSvg().innerHTML,
+                }}
+                clipPath={`url(#${clipid})`}
+              />
+            </>
           )
         }
 
-        return <g>{str}</g>
+        return <>{str}</>
       },
     }))
     .actions(self => ({
