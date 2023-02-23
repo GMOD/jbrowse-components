@@ -421,7 +421,7 @@ export function createJBrowseTheme(
   return createTheme(
     createJBrowseBaseTheme(
       themeName === 'default'
-        ? deepmerge(getDefaultTheme(), augmentTheme(configTheme))
+        ? deepmerge(themes['default'], augmentTheme(configTheme))
         : augmentThemePlus(themes[themeName]) || themes['default'],
     ),
   )

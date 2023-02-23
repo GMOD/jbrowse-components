@@ -82,14 +82,24 @@
         })
       })
 
+      // extend session twice, just to ensure both work
       pluginManager.addToExtensionPoint('Core-extendSession', session => {
         return session.extend(self => {
           const superThemes = self.allThemes
           return {
             views: {
               allThemes() {
+                const s = superThemes()
                 return {
-                  ...superThemes(),
+                  ...s,
+                  // modify the default theme
+                  default: {
+                    ...s.default,
+                    palette: {
+                      ...s.default.palette,
+                      quaternary: { main: '#090' },
+                    },
+                  },
                   custom2: {
                     name: 'Custom theme from plugin 2',
                     palette: {
