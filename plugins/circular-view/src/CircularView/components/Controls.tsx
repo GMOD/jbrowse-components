@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { observer } from 'mobx-react'
 import { IconButton } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
+import JBrowseMenu from '@jbrowse/core/ui/Menu'
 
 // icons
 import ZoomOutIcon from '@mui/icons-material/ZoomOut'
@@ -10,6 +11,8 @@ import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import RotateRightIcon from '@mui/icons-material/RotateRight'
 import LockOpenIcon from '@mui/icons-material/LockOpen'
 import LockIcon from '@mui/icons-material/Lock'
+import PhotoCamera from '@mui/icons-material/PhotoCamera'
+import MoreVert from '@mui/icons-material/MoreVert'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
@@ -25,8 +28,9 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const Controls = observer(function ({ model }: { model: CircularViewModel }) {
+export default observer(function ({ model }: { model: CircularViewModel }) {
   const { classes } = useStyles()
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   return (
     <div className={classes.controls}>
       <IconButton
@@ -71,6 +75,10 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
         {model.lockedFitToWindow ? <LockIcon /> : <LockOpenIcon />}
       </IconButton>
 
+      <IconButton onClick={event => setAnchorEl(event.currentTarget)}>
+        <MoreVert />
+      </IconButton>
+
       {model.hideTrackSelectorButton ? null : (
         <IconButton
           onClick={model.activateTrackSelector}
@@ -80,7 +88,25 @@ const Controls = observer(function ({ model }: { model: CircularViewModel }) {
           <TrackSelectorIcon />
         </IconButton>
       )}
+
+      {anchorEl ? (
+        <JBrowseMenu
+          anchorEl={anchorEl}
+          menuItems={[
+            {
+              label: 'Export SVG',
+              icon: PhotoCamera,
+              onClick: () => model.exportSvg(),
+            },
+          ]}
+          onMenuItemClick={(_event, callback) => {
+            callback()
+            setAnchorEl(null)
+          }}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        />
+      ) : null}
     </div>
   )
 })
-export default Controls
