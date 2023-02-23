@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material'
 import { makeTicks } from '../util'
 
 import { LinearGenomeViewModel } from '..'
+import SVGRegionSeparators from './SVGRegionSeparators'
 
 type LGV = LinearGenomeViewModel
 
@@ -83,48 +84,37 @@ export default function SVGRuler({
   const theme = useTheme()
   return (
     <>
-      {contentBlocks.map((block, i) => {
-        const { start, end, reversed, offsetPx, refName, widthPx } = block
-        const offsetLeft = offsetPx - viewOffsetPx
-        const key = `clip-${block.key}`
-        const x = offsetLeft / bpPerPx
+      <SVGRegionSeparators model={model} height={30} />
+      {contentBlocks.map(block => {
+        const { start, end, key, reversed, offsetPx, refName, widthPx } = block
+        const offset = offsetPx - viewOffsetPx
+        const clipid = `clip-${key}`
         return (
-          <g key={block.key}>
+          <g key={key}>
             <defs>
-              <clipPath id={key}>
+              <clipPath id={clipid}>
                 <rect x={0} y={0} width={widthPx} height={100} />
               </clipPath>
             </defs>
-            <g
-              transform={`translate(${offsetLeft} 0)`}
-              clipPath={`url(#${key})`}
-            >
-              {i === 0 ? null : (
-                <line
-                  x1={x}
-                  x2={x}
-                  y1={0}
-                  y2={30}
-                  strokeWidth={2}
-                  stroke={theme.palette.text.secondary}
-                />
-              )}
-              <text
-                x={x + 4}
-                y={fontSize}
-                fontSize={fontSize}
-                fill={theme.palette.text.primary}
-              >
-                {refName}
-              </text>
-              <g transform="translate(0 20)">
-                <Ruler
-                  hideText={!renderRuler}
-                  start={start}
-                  end={end}
-                  bpPerPx={bpPerPx}
-                  reversed={reversed}
-                />
+            <g transform={`translate(${offset} 0)`}>
+              <g clipPath={`url(#${clipid})`}>
+                <text
+                  x={4}
+                  y={fontSize}
+                  fontSize={fontSize}
+                  fill={theme.palette.text.primary}
+                >
+                  {refName}
+                </text>
+                <g transform="translate(0 20)">
+                  <Ruler
+                    hideText={!renderRuler}
+                    start={start}
+                    end={end}
+                    bpPerPx={bpPerPx}
+                    reversed={reversed}
+                  />
+                </g>
               </g>
             </g>
           </g>
