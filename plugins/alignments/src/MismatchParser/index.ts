@@ -25,7 +25,7 @@ export function cigarToMismatches(
   seq?: string,
   ref?: string,
   qual?: Buffer,
-): Mismatch[] {
+) {
   let roffset = 0 // reference offset
   let soffset = 0 // seq offset
   const mismatches: Mismatch[] = []
@@ -125,7 +125,7 @@ export function mdToMismatches(
   cigarMismatches: Mismatch[],
   seq: string,
   qual?: Buffer,
-): Mismatch[] {
+) {
   const mismatchRecords: Mismatch[] = []
   let curr: Mismatch = { start: 0, base: '', length: 0, type: 'mismatch' }
   const skips = cigarMismatches.filter(cigar => cigar.type === 'skip')
@@ -216,7 +216,7 @@ export function getMismatches(
   seq?: string,
   ref?: string,
   qual?: Buffer,
-): Mismatch[] {
+) {
   let mismatches: Mismatch[] = []
   const ops = parseCigar(cigar)
 

@@ -303,7 +303,7 @@ const DotplotView = observer(({ model }: { model: DotplotViewModel }) => {
   }
 
   if (loading) {
-    return <LoadingEllipses variant="h5" />
+    return <LoadingEllipses variant="h6" />
   }
 
   return <DotplotViewInternal model={model} />

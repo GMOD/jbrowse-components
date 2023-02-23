@@ -50,7 +50,7 @@ const ViewPanel = observer(function ({
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorMessage error={error} />}
         >
-          <Suspense fallback={<LoadingEllipses variant="h4" />}>
+          <Suspense fallback={<LoadingEllipses variant="h6" />}>
             <ReactComponent model={view} session={session} />
           </Suspense>
         </ErrorBoundary>
