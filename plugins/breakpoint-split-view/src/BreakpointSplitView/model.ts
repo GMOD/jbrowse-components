@@ -305,7 +305,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             label: 'Allow clicking alignment squiggles?',
             type: 'checkbox',
             checked: self.interactToggled,
-            onClick: () => self.toggleLinkViews(),
+            onClick: () => self.toggleInteract(),
           },
 
           {
