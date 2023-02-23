@@ -768,7 +768,7 @@ function stateModelFactory() {
         return (
           <>
             {renderings.map(([block, rendering], index) => {
-              const { offsetPx } = roundedDynamicBlocks[index]
+              const { offsetPx, widthPx } = block
               const offset = offsetPx - viewOffsetPx
               const clipid = getId(id, index)
 
@@ -779,7 +779,7 @@ function stateModelFactory() {
                       <rect
                         x={0}
                         y={0}
-                        width={block.widthPx}
+                        width={widthPx}
                         height={overrideHeight || height}
                       />
                     </clipPath>

@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material'
 import { makeTicks } from '../util'
 
 import { LinearGenomeViewModel } from '..'
+import SVGRegionSeparators from './SVGRegionSeparators'
 
 type LGV = LinearGenomeViewModel
 
@@ -16,6 +17,7 @@ function Ruler({
   reversed = false,
   major = true,
   minor = true,
+  hideText = false,
 }: {
   start: number
   end: number
@@ -23,6 +25,7 @@ function Ruler({
   reversed?: boolean
   major?: boolean
   minor?: boolean
+  hideText?: boolean
 }) {
   const ticks = makeTicks(start, end, bpPerPx, major, minor)
   const theme = useTheme()
@@ -42,22 +45,25 @@ function Ruler({
           />
         )
       })}
-      {ticks
-        .filter(tick => tick.type === 'major')
-        .map(tick => {
-          const x = (reversed ? end - tick.base : tick.base - start) / bpPerPx
-          return (
-            <text
-              x={x - 3}
-              y={7 + 11}
-              key={`label-${tick.base}`}
-              fontSize={11}
-              fill={theme.palette.text.primary}
-            >
-              {getTickDisplayStr(tick.base + 1, bpPerPx)}
-            </text>
-          )
-        })}
+      {!hideText
+        ? ticks
+            .filter(tick => tick.type === 'major')
+            .map(tick => {
+              const x =
+                (reversed ? end - tick.base : tick.base - start) / bpPerPx
+              return (
+                <text
+                  x={x - 3}
+                  y={7 + 11}
+                  key={`label-${tick.base}`}
+                  fontSize={11}
+                  fill={theme.palette.text.primary}
+                >
+                  {getTickDisplayStr(tick.base + 1, bpPerPx)}
+                </text>
+              )
+            })
+        : null}
     </>
   )
 }
@@ -65,11 +71,9 @@ function Ruler({
 export default function SVGRuler({
   model,
   fontSize,
-  width,
 }: {
   model: LGV
   fontSize: number
-  width: number
 }) {
   const {
     dynamicBlocks: { contentBlocks },
@@ -80,43 +84,39 @@ export default function SVGRuler({
   const theme = useTheme()
   return (
     <>
-      <defs>
-        <clipPath id="clip-ruler">
-          <rect x={0} y={0} width={width} height={20} />
-        </clipPath>
-      </defs>
+      <SVGRegionSeparators model={model} height={30} />
       {contentBlocks.map(block => {
-        const { key, start, end, reversed, offsetPx, refName } = block
-        const offsetLeft = offsetPx - viewOffsetPx
+        const { start, end, key, reversed, offsetPx, refName, widthPx } = block
+        const offset = offsetPx - viewOffsetPx
+        const clipid = `clip-${key}`
         return (
-          <g key={`${key}`} transform={`translate(${offsetLeft} 0)`}>
-            <text
-              x={offsetLeft / bpPerPx}
-              y={fontSize}
-              fontSize={fontSize}
-              fill={theme.palette.text.primary}
-            >
-              {refName}
-            </text>
-            {renderRuler ? (
-              <g transform="translate(0 20)" clipPath="url(#clip-ruler)">
-                <Ruler
-                  start={start}
-                  end={end}
-                  bpPerPx={bpPerPx}
-                  reversed={reversed}
-                />
+          <g key={key}>
+            <defs>
+              <clipPath id={clipid}>
+                <rect x={0} y={0} width={widthPx} height={100} />
+              </clipPath>
+            </defs>
+            <g transform={`translate(${offset} 0)`}>
+              <g clipPath={`url(#${clipid})`}>
+                <text
+                  x={4}
+                  y={fontSize}
+                  fontSize={fontSize}
+                  fill={theme.palette.text.primary}
+                >
+                  {refName}
+                </text>
+                <g transform="translate(0 20)">
+                  <Ruler
+                    hideText={!renderRuler}
+                    start={start}
+                    end={end}
+                    bpPerPx={bpPerPx}
+                    reversed={reversed}
+                  />
+                </g>
               </g>
-            ) : (
-              <line
-                strokeWidth={1}
-                stroke={theme.palette.text.secondary}
-                x1={start / bpPerPx}
-                x2={end / bpPerPx}
-                y1={20}
-                y2={20}
-              />
-            )}
+            </g>
           </g>
         )
       })}

@@ -19,7 +19,7 @@ export default function SVGRegionSeparators({
       {dynamicBlocks.contentBlocks.slice(1).map(block => (
         <rect
           key={block.key}
-          x={block.offsetPx - offsetPx - interRegionPaddingWidth}
+          x={block.offsetPx - offsetPx}
           width={interRegionPaddingWidth}
           y={0}
           height={height}

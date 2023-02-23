@@ -49,8 +49,8 @@ export default function SVGTracks({
         return (
           <g key={conf.trackId} transform={`translate(0 ${current})`}>
             <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
-              {result}
               <SVGRegionSeparators model={model} height={display.height} />
+              {result}
             </g>
             <SVGTrackLabel
               trackName={trackName}

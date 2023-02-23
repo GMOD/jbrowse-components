@@ -5,20 +5,20 @@ import { CanvasSequence } from 'canvas-sequencer'
 import { createCanvas, createImageBitmap } from './offscreenCanvasPonyfill'
 import { blobToDataURL } from './index'
 
-export type RenderReturn = Record<string, unknown>
+export type RenderReturn = Record<string, unknown> | void
+
+type RendererRet = Promise<RenderReturn> | RenderReturn
 
 export async function renderToAbstractCanvas(
   width: number,
   height: number,
   opts: {
-    exportSVG?: { rasterizeLayers?: boolean }
-    highResolutionScaling: number
+    exportSVG?: { rasterizeLayers?: boolean; scale?: number }
+    highResolutionScaling?: number
   },
-  cb: (
-    ctx: CanvasRenderingContext2D,
-  ) => Promise<RenderReturn | void> | RenderReturn | void,
+  cb: (ctx: CanvasRenderingContext2D) => RendererRet,
 ) {
-  const { exportSVG, highResolutionScaling: scaling = 1 } = opts
+  const { exportSVG, highResolutionScaling = 1 } = opts
 
   if (exportSVG) {
     if (!exportSVG.rasterizeLayers) {
@@ -29,13 +29,13 @@ export async function renderToAbstractCanvas(
         canvasRecordedData: fakeCtx.toJSON(),
       }
     } else {
-      const scale = 4
-      const canvas = createCanvas(Math.ceil(width * scale), height * scale)
+      const s = exportSVG.scale || highResolutionScaling
+      const canvas = createCanvas(Math.ceil(width * s), height * s)
       const ctx = canvas.getContext('2d')
       if (!ctx) {
         throw new Error('2d canvas rendering not supported on this platform')
       }
-      ctx.scale(scale, scale)
+      ctx.scale(s, s)
       const result = await cb(ctx)
 
       // two methods needed for converting canvas to PNG, one for webworker
@@ -60,12 +60,13 @@ export async function renderToAbstractCanvas(
       }
     }
   } else {
-    const canvas = createCanvas(Math.ceil(width * scaling), height * scaling)
+    const s = highResolutionScaling
+    const canvas = createCanvas(Math.ceil(width * s), height * s)
     const ctx = canvas.getContext('2d')
     if (!ctx) {
       throw new Error('2d canvas rendering not supported on this platform')
     }
-    ctx.scale(scaling, scaling)
+    ctx.scale(s, s)
     const result = await cb(ctx)
     return { ...result, imageData: await createImageBitmap(canvas) }
   }

@@ -1,4 +1,5 @@
 import React from 'react'
+import { ThemeProvider } from '@mui/material'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { when } from 'mobx'
 import {
@@ -10,10 +11,8 @@ import {
   renderToAbstractCanvas,
   sum,
 } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
+import { getTrackName } from '@jbrowse/core/util/tracks'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-
-// locals
 import {
   SVGTracks,
   SVGRuler,
@@ -24,7 +23,6 @@ import {
 import SVGBackground from './SVGBackground'
 import { ExportSvgOptions, LinearSyntenyViewModel } from '../model'
 import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 
 type LSV = LinearSyntenyViewModel
 
@@ -74,7 +72,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
       const r = await renderToAbstractCanvas(
         width,
         synH,
-        { highResolutionScaling: 1, exportSVG: opts },
+        { exportSVG: opts },
         ctx => drawRef(d, ctx),
       )
 
@@ -129,11 +127,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
                 {views[0].assemblyNames.join(', ')}
               </text>
 
-              <SVGRuler
-                model={displayResults[0].view}
-                fontSize={fontSize}
-                width={displayResults[0].view.width}
-              />
+              <SVGRuler model={displayResults[0].view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
@@ -145,10 +139,17 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               trackLabelOffset={trackLabelOffset}
             />
           </g>
+
+          <defs>
+            <clipPath id={'synclip'}>
+              <rect x={0} y={0} width={width} height={synH} />
+            </clipPath>
+          </defs>
           <g
             transform={`translate(${shift + trackLabelOffset} ${
               fontSize + heights[0]
             })`}
+            clipPath={`url(#synclip)`}
           >
             {renderings.map((r, i) => (
               <ReactRendering key={i} rendering={r} />
@@ -159,11 +160,7 @@ export async function renderToSvg(model: LSV, opts: ExportSvgOptions) {
               <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
                 {views[1].assemblyNames.join(', ')}
               </text>
-              <SVGRuler
-                model={displayResults[1].view}
-                fontSize={fontSize}
-                width={displayResults[1].view.width}
-              />
+              <SVGRuler model={displayResults[1].view} fontSize={fontSize} />
             </g>
             <SVGTracks
               textHeight={textHeight}
