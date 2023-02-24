@@ -17,6 +17,8 @@ import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 
 // locals
 import { CircularViewModel } from '../models/CircularView'
+import { getSession } from '@jbrowse/core/util'
+import ExportSvgDlg from './ExportSvgDialog'
 
 const useStyles = makeStyles()(theme => ({
   controls: {
@@ -96,7 +98,12 @@ export default observer(function ({ model }: { model: CircularViewModel }) {
             {
               label: 'Export SVG',
               icon: PhotoCamera,
-              onClick: () => model.exportSvg(),
+              onClick: () => {
+                getSession(model).queueDialog(handleClose => [
+                  ExportSvgDlg,
+                  { model, handleClose },
+                ])
+              },
             },
           ]}
           onMenuItemClick={(_event, callback) => {
