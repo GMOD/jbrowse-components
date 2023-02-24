@@ -103,10 +103,11 @@ function SearchBox({
         })
       }
       model={model}
+      minWidth={175}
       TextFieldProps={{
         variant: 'outlined',
         className: classes.headerRefName,
-        style: { margin: SPACING, minWidth: '175px' },
+        style: { margin: SPACING },
         InputProps: {
           style: {
             padding: 0,
