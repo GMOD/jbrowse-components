@@ -4,9 +4,9 @@ import { getPropertyMembers, IAnyType } from 'mobx-state-tree'
 import { getEnv, FileLocation } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
-  getPropertyType,
   getSubType,
   getUnionSubTypes,
+  ILiteralType,
 } from '@jbrowse/core/util/mst-reflection'
 import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
@@ -24,6 +24,10 @@ import ConfigurationTextField from './ConfigurationTextField'
 import NumberMapEditor from './NumberMapEditor'
 import NumberEditor from './NumberEditor'
 import BooleanEditor from './BooleanEditor'
+import {
+  AnyConfigurationSlot,
+  AnyConfigurationSlotType,
+} from '@jbrowse/core/configuration/configurationSchema'
 
 const StringEditor = observer(
   ({
@@ -107,14 +111,13 @@ const StringEnumEditor = observer(function ({
   slot,
   slotSchema,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  slot: any
-  slotSchema: IAnyType
+  slot: AnyConfigurationSlot
+  slotSchema: AnyConfigurationSlotType
 }) {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
-  ).map(t => t.value)
+    getUnionSubTypes(getSubType(p.properties.value))[1],
+  ).map(t => (t as ILiteralType<string>).value)
 
   return (
     <ConfigurationTextField

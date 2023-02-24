@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import { observer } from 'mobx-react'
-import { types, getType, getParent } from 'mobx-state-tree'
+import { types, getParent, getPropertyMembers } from 'mobx-state-tree'
 
 // jbrowse imports
 import {
@@ -57,7 +57,7 @@ const FilterReactComponent = observer(function ({
 }) {
   const { classes } = useStyles()
   const operationChoices = getEnumerationValues(
-    getSubType(getPropertyType(getType(filterModel), 'operation')),
+    getSubType(getPropertyType(getPropertyMembers(filterModel), 'operation')),
   )
   return (
     <>

@@ -8,7 +8,7 @@ import {
 } from '@mui/material'
 import { makeStyles } from 'tss-react/mui'
 import MakeSpreadsheetColumnType from './MakeSpreadsheetColumnType'
-import { types, getType } from 'mobx-state-tree'
+import { types, getPropertyMembers } from 'mobx-state-tree'
 import { observer } from 'mobx-react'
 import {
   getPropertyType,
@@ -77,7 +77,7 @@ const FilterReactComponent = observer(
   ({ filterModel }: { filterModel: any }) => {
     const { classes } = useStyles()
     const operationChoices = getEnumerationValues(
-      getSubType(getPropertyType(getType(filterModel), 'operation')),
+      getSubType(getPropertyType(getPropertyMembers(filterModel), 'operation')),
     )
     return (
       <>
