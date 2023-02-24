@@ -1,3 +1,81 @@
+## 2.4.0 (2023-02-24)
+
+<details><summary>Packages in this release</summary>
+<p>
+
+| Package                                 | Download                                                          |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| @jbrowse/core                           | https://www.npmjs.com/package/@jbrowse/core                       |
+| @jbrowse/plugin-alignments              | https://www.npmjs.com/package/@jbrowse/plugin-alignments          |
+| @jbrowse/plugin-authentication          | https://www.npmjs.com/package/@jbrowse/plugin-authentication      |
+| @jbrowse/plugin-breakpoint-split-view   |                                                                   |
+| @jbrowse/plugin-circular-view           | https://www.npmjs.com/package/@jbrowse/plugin-circular-view       |
+| @jbrowse/plugin-config                  | https://www.npmjs.com/package/@jbrowse/plugin-config              |
+| @jbrowse/plugin-data-management         | https://www.npmjs.com/package/@jbrowse/plugin-data-management     |
+| @jbrowse/plugin-dotplot-view            |                                                                   |
+| @jbrowse/plugin-grid-bookmark           | https://www.npmjs.com/package/@jbrowse/plugin-grid-bookmark       |
+| @jbrowse/plugin-gtf                     | https://www.npmjs.com/package/@jbrowse/plugin-gtf                 |
+| @jbrowse/plugin-hic                     |                                                                   |
+| @jbrowse/plugin-jobs-management         |                                                                   |
+| @jbrowse/plugin-legacy-jbrowse          | https://www.npmjs.com/package/@jbrowse/plugin-legacy-jbrowse      |
+| @jbrowse/plugin-linear-comparative-view |                                                                   |
+| @jbrowse/plugin-linear-genome-view      | https://www.npmjs.com/package/@jbrowse/plugin-linear-genome-view  |
+| @jbrowse/plugin-menus                   |                                                                   |
+| @jbrowse/plugin-sequence                | https://www.npmjs.com/package/@jbrowse/plugin-sequence            |
+| @jbrowse/plugin-spreadsheet-view        |                                                                   |
+| @jbrowse/plugin-sv-inspector            |                                                                   |
+| @jbrowse/plugin-svg                     | https://www.npmjs.com/package/@jbrowse/plugin-svg                 |
+| @jbrowse/plugin-variants                | https://www.npmjs.com/package/@jbrowse/plugin-variants            |
+| @jbrowse/plugin-wiggle                  | https://www.npmjs.com/package/@jbrowse/plugin-wiggle              |
+| @jbrowse/cli                            | https://www.npmjs.com/package/@jbrowse/cli                        |
+| @jbrowse/desktop                        |                                                                   |
+| @jbrowse/img                            | https://www.npmjs.com/package/@jbrowse/img                        |
+| @jbrowse/react-circular-genome-view     | https://www.npmjs.com/package/@jbrowse/react-circular-genome-view |
+| @jbrowse/react-linear-genome-view       | https://www.npmjs.com/package/@jbrowse/react-linear-genome-view   |
+| @jbrowse/web                            |                                                                   |
+
+</p>
+</details>
+
+#### :rocket: Enhancement
+
+- Other
+  - [#3527](https://github.com/GMOD/jbrowse-components/pull/3527) Breakpoint
+    split view SVG export ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3510](https://github.com/GMOD/jbrowse-components/pull/3510) Allow
+    configuring default display height
+    ([@cmdcolin](https://github.com/cmdcolin))
+- `core`
+  - [#3513](https://github.com/GMOD/jbrowse-components/pull/3513) Add ability to
+    open refNameAliases+cytobands in "Open sequence" start screen on desktop
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3512](https://github.com/GMOD/jbrowse-components/pull/3512) SVG export of
+    linear synteny view, dotplot, and circular views
+    ([@cmdcolin](https://github.com/cmdcolin))
+  - [#3467](https://github.com/GMOD/jbrowse-components/pull/3467) Create dark
+    theme and allow user to toggle different themes from preferences dialog
+    ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :bug: Bug Fix
+
+- [#3525](https://github.com/GMOD/jbrowse-components/pull/3525) Fix missing grid
+  ticks in dotplot ([@cmdcolin](https://github.com/cmdcolin))
+- [#3524](https://github.com/GMOD/jbrowse-components/pull/3524) Fix loading
+  session shares that have a plus sign in the sessionId
+  ([@cmdcolin](https://github.com/cmdcolin))
+
+#### :memo: Documentation
+
+- [#3532](https://github.com/GMOD/jbrowse-components/pull/3532) Check website
+  links in CI ([@cmdcolin](https://github.com/cmdcolin))
+- [#3507](https://github.com/GMOD/jbrowse-components/pull/3507) Fix mygene.info
+  demo track ([@cmdcolin](https://github.com/cmdcolin))
+
+#### Committers: 2
+
+- Colin Diesh ([@cmdcolin](https://github.com/cmdcolin))
+- Garrett Stevens ([@garrettjstevens](https://github.com/garrettjstevens))
+
 ## 2.3.4 (2023-02-01)
 
 <details><summary>Packages in this release</summary>
