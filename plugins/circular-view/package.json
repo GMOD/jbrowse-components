@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-circular-view",
-  "version": "2.3.4",
+  "version": "2.4.0",
   "description": "JBrowse 2 circular view",
   "keywords": [
     "jbrowse",
@@ -37,8 +37,8 @@
     "clean": "rimraf dist esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@types/file-saver": "^2.0.0",
     "@mui/icons-material": "^5.0.1",
+    "@types/file-saver": "^2.0.0",
     "clone": "^2.1.2",
     "file-saver": "^2.0.0"
   },
