@@ -136,8 +136,8 @@ function RefNameAutocomplete({
 
         setLoaded(false)
         const results = await fetchResults(debouncedSearch)
-        setLoaded(true)
         if (active) {
+          setLoaded(true)
           setSearchOptions(getDeduplicatedResult(results))
         }
       } catch (e) {
