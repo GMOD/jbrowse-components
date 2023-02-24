@@ -37,7 +37,7 @@ const useStyles = makeStyles()(theme => ({
 
 type LGV = LinearGenomeViewModel
 
-const ImportForm = observer(({ model }: { model: LGV }) => {
+export default observer(function ({ model }: { model: LGV }) {
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames, assemblyManager, textSearchManager } = session
@@ -49,10 +49,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const assemblyError = assemblyNames.length
     ? assembly?.error
     : 'No configured assemblies'
-  const regions = assembly?.regions || []
   const displayError = assemblyError || error
   const [value, setValue] = useState('')
-  const r0 = regions[0]?.refName
+  const regions = assembly?.regions
+  const assemblyLoaded = !!regions
+  const r0 = regions ? regions[0]?.refName : ''
 
   // useEffect resets to an "initial state" of displaying first region from
   // assembly after assembly change. needs to react to selectedAsm as well as
@@ -154,7 +155,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               {selectedAsm ? (
                 assemblyError ? (
                   <CloseIcon style={{ color: 'red' }} />
-                ) : regions.length ? (
+                ) : assemblyLoaded ? (
                   <FormControl>
                     <RefNameAutocomplete
                       fetchResults={queryString =>
@@ -224,5 +225,3 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
     </div>
   )
 })
-
-export default ImportForm

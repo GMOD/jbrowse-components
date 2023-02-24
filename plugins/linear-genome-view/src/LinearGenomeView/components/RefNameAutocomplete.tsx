@@ -6,7 +6,6 @@ import BaseResult, {
 } from '@jbrowse/core/TextSearch/BaseResults'
 import {
   Autocomplete,
-  CircularProgress,
   IconButton,
   InputAdornment,
   TextField,
@@ -244,21 +243,17 @@ function RefNameAutocomplete({
 
                 endAdornment: (
                   <>
-                    {!loaded ? (
-                      <CircularProgress color="inherit" size={20} />
-                    ) : (
-                      <InputAdornment position="end" style={{ marginRight: 7 }}>
-                        <SearchIcon fontSize="small" />
-                        {showHelp ? (
-                          <IconButton
-                            onClick={() => setHelpDialogDisplayed(true)}
-                            size="small"
-                          >
-                            <HelpIcon fontSize="small" />
-                          </IconButton>
-                        ) : null}
-                      </InputAdornment>
-                    )}
+                    <InputAdornment position="end" style={{ marginRight: 7 }}>
+                      <SearchIcon fontSize="small" />
+                      {showHelp ? (
+                        <IconButton
+                          onClick={() => setHelpDialogDisplayed(true)}
+                          size="small"
+                        >
+                          <HelpIcon fontSize="small" />
+                        </IconButton>
+                      ) : null}
+                    </InputAdornment>
                     {params.InputProps.endAdornment}
                   </>
                 ),
