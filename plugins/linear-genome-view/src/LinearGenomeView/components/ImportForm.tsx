@@ -4,10 +4,10 @@ import { observer } from 'mobx-react'
 import { getSession } from '@jbrowse/core/util'
 import {
   Button,
-  CircularProgress,
   FormControl,
   Container,
   Grid,
+  CircularProgress,
 } from '@mui/material'
 import { ErrorMessage, AssemblySelector } from '@jbrowse/core/ui'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
@@ -19,6 +19,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import RefNameAutocomplete from './RefNameAutocomplete'
 import { fetchResults, splitLast } from './util'
 import { LinearGenomeViewModel } from '..'
+
+// lazies
 const SearchResultsDialog = lazy(() => import('./SearchResultsDialog'))
 
 const useStyles = makeStyles()(theme => ({
@@ -42,9 +44,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const { rankSearchResults, isSearchDialogDisplayed, error } = model
   const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0])
   const [option, setOption] = useState<BaseResult>()
-
   const searchScope = model.searchScope(selectedAsm)
-
   const assembly = assemblyManager.get(selectedAsm)
   const assemblyError = assemblyNames.length
     ? assembly?.error
@@ -54,10 +54,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
   const [value, setValue] = useState('')
   const r0 = regions[0]?.refName
 
-  // useEffect resets to an "initial state" of displaying first region from assembly
-  // after assembly change. needs to react to selectedAsm as well as r0 because changing
-  // assembly will run setValue('') and then r0 may not change if assembly names are the
-  // same across assemblies, but it still needs to be reset
+  // useEffect resets to an "initial state" of displaying first region from
+  // assembly after assembly change. needs to react to selectedAsm as well as
+  // r0 because changing assembly will run setValue('') and then r0 may not
+  // change if assembly names are the same across assemblies, but it still
+  // needs to be reset
   useEffect(() => {
     setValue(r0)
   }, [r0, selectedAsm])
@@ -142,10 +143,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
             <Grid item>
               <FormControl>
                 <AssemblySelector
-                  onChange={val => {
-                    setSelectedAsm(val)
-                    setValue('')
-                  }}
+                  onChange={val => setSelectedAsm(val)}
                   localStorageKey="lgv"
                   session={session}
                   selected={selectedAsm}
@@ -156,7 +154,7 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
               {selectedAsm ? (
                 assemblyError ? (
                   <CloseIcon style={{ color: 'red' }} />
-                ) : value ? (
+                ) : regions.length ? (
                   <FormControl>
                     <RefNameAutocomplete
                       fetchResults={queryString =>
@@ -169,9 +167,8 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                         })
                       }
                       model={model}
-                      assemblyName={assemblyError ? undefined : selectedAsm}
+                      assemblyName={selectedAsm}
                       value={value}
-                      // note: minWidth 270 accommodates full width of helperText
                       minWidth={270}
                       onChange={str => setValue(str)}
                       onSelect={val => setOption(val)}
@@ -179,16 +176,11 @@ const ImportForm = observer(({ model }: { model: LGV }) => {
                         variant: 'outlined',
                         helperText:
                           'Enter sequence name, feature name, or location',
-                        style: { minWidth: '175px' },
                       }}
                     />
                   </FormControl>
                 ) : (
-                  <CircularProgress
-                    role="progressbar"
-                    size={20}
-                    disableShrink
-                  />
+                  <CircularProgress size={20} disableShrink />
                 )
               ) : null}
             </Grid>

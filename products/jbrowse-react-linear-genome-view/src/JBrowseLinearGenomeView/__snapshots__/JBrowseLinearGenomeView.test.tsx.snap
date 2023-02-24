@@ -249,11 +249,11 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                   <div
                     class="MuiAutocomplete-root css-4xbbh5-MuiAutocomplete-root"
                     data-testid="autocomplete"
-                    style="width: 200px;"
+                    style="width: 175px;"
                   >
                     <div
                       class="MuiFormControl-root MuiFormControl-marginDense MuiFormControl-fullWidth MuiTextField-root css-19wwqcl-MuiFormControl-root-MuiTextField-root-headerRefName"
-                      style="margin: 7px; min-width: 175px;"
+                      style="margin: 7px;"
                     >
                       <div
                         class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-fullWidth MuiInputBase-formControl MuiInputBase-sizeSmall MuiInputBase-adornedEnd MuiAutocomplete-inputRoot css-1dityd8-MuiInputBase-root-MuiOutlinedInput-root"
@@ -266,7 +266,7 @@ exports[`<JBrowseLinearGenomeView /> renders successfully 1`] = `
                           autocapitalize="none"
                           autocomplete="off"
                           class="MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall MuiInputBase-inputAdornedEnd MuiAutocomplete-input MuiAutocomplete-inputFocused css-19qh8xo-MuiInputBase-input-MuiOutlinedInput-input"
-                          id="refNameAutocomplete-test_view"
+                          id="mui-3"
                           placeholder="Search for location"
                           role="combobox"
                           spellcheck="false"
