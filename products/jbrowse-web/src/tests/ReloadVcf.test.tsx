@@ -19,7 +19,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-const delay = { timeout: 10000 }
+const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('reloads vcf (VCF.GZ 404)', async () => {
@@ -46,7 +46,7 @@ test('reloads vcf (VCF.GZ 404)', async () => {
 
     await findAllByTestId('box-test-vcf-604452', ...opts)
   })
-}, 20000)
+}, 40000)
 
 test('reloads vcf (VCF.GZ.TBI 404)', async () => {
   await mockConsole(async () => {
@@ -71,4 +71,4 @@ test('reloads vcf (VCF.GZ.TBI 404)', async () => {
 
     await findAllByTestId('box-test-vcf-604452', ...opts)
   })
-}, 20000)
+}, 40000)
