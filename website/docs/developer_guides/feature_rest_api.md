@@ -14,6 +14,24 @@ that satisfy the REST API it expects.
 
 The JBrowse REST feature store requires the following server resources.
 
+#### `GET (base)/reference_sequences/(assembly_name)`
+
+Optional, but recommended. Returns a JSON array of reference sequence names in
+the given assembly.
+
+Example return JSON:
+
+    ['ctgA','ctgB']
+
+#### `GET (base)/has_data_for_reference/(assembly_name)/(refseq_name)`
+
+Optional. Returns 'true' (single JSON boolean value) if the endpoint contains
+feature data for the given assembly name and reference sequence name.
+
+Example return JSON:
+
+    true
+
 #### `GET (base)/stats/region/(assembly_name)/(refseq_name)?start=123&end=456`
 
 Optional, but recommended. Get statistics for a particular region. Returns the
