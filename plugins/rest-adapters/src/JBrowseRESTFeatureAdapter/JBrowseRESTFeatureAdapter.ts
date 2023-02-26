@@ -183,6 +183,10 @@ export default class JBrowseRESTFeatureAdapter extends BaseFeatureDataAdapter {
    * @return Promise<string[]>
    */
   public async getRefNames(opts?: BaseOptions): Promise<string[]> {
+    if (!this.implementsOptionalResource('reference_sequences')) {
+      return []
+    }
+
     // if opts.regions is passed, use that for assemblies, otherwise
     // use the configured assemblyNames
     const assemblyNames: string[] = await this.getRequestAssemblyNames(opts)
