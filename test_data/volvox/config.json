@@ -1109,6 +1109,20 @@
       }
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "rest_genes",
+      "assemblyNames": ["volvox"],
+      "name": "Genes (via REST test server)",
+      "category": ["Integration test"],
+      "adapter": {
+        "type": "JBrowseRESTFeatureAdapter",
+        "location": {
+          "uri": "http://localhost:3000/api/gff3_test",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
       "type": "AlignmentsTrack",
       "trackId": "volvox_cram",
       "name": "volvox-sorted.cram",

@@ -2188,6 +2188,36 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "location": {
+          "internetAccountId": undefined,
+          "internetAccountPreAuthorization": undefined,
+          "locationType": "UriLocation",
+          "uri": "http://localhost:3000/api/gff3_test",
+        },
+        "type": "JBrowseRESTFeatureAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Integration test",
+      ],
+      "displays": [
+        {
+          "displayId": "rest_genes-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+        },
+        {
+          "displayId": "rest_genes-LinearArcDisplay",
+          "type": "LinearArcDisplay",
+        },
+      ],
+      "name": "Genes (via REST test server)",
+      "trackId": "rest_genes",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
         "craiLocation": {
           "internetAccountId": undefined,
           "internetAccountPreAuthorization": undefined,

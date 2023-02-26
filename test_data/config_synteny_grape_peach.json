@@ -1864,6 +1864,19 @@
       }
     },
     {
+      "type": "SyntenyTrack",
+      "trackId": "synteny_rest_test",
+      "name": "Grape vs Peach (minimap2 via REST)",
+      "assemblyNames": ["peach", "grape"],
+      "adapter": {
+        "type": "JBrowseRESTFeatureAdapter",
+        "location": {
+          "uri": "http://localhost:3000/api/synteny_test/grape_peach",
+          "locationType": "UriLocation"
+        }
+      }
+    },
+    {
       "type": "QuantitativeTrack",
       "trackId": "gccontent_grape",
       "name": "GCContent",
