@@ -65,11 +65,12 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
-  const { view, findByText, findAllByText, findByTestId } = createView()
+  const { view, findByText, findAllByText, findAllByTestId, findByTestId } =
+    createView()
   await findByText('Help')
   view.setNewView(34, 5)
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId('htsTrackEntry-variant_colors', ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0])
-  await findByTestId('box-test-vcf-605223', ...o)
+  await findAllByTestId('box-test-vcf-605224', ...o)
 }, 30000)

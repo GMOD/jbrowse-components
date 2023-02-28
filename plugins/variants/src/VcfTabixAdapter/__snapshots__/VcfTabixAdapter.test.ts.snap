@@ -66,7 +66,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     },
     "start": 276,
     "type": "SNV",
-    "uniqueId": "test-vcf-604452",
+    "uniqueId": "test-vcf-604453",
   },
   {
     "ALT": [
@@ -132,7 +132,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     },
     "start": 1693,
     "type": "SNV",
-    "uniqueId": "test-vcf-604550",
+    "uniqueId": "test-vcf-604551",
   },
   {
     "ALT": [
@@ -198,7 +198,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     },
     "start": 2643,
     "type": "SNV",
-    "uniqueId": "test-vcf-604667",
+    "uniqueId": "test-vcf-604668",
   },
   {
     "ALT": [
@@ -258,7 +258,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     },
     "start": 3212,
     "type": "SNV",
-    "uniqueId": "test-vcf-604784",
+    "uniqueId": "test-vcf-604785",
   },
   {
     "ALT": [
@@ -319,7 +319,7 @@ exports[`adapter can fetch variants from volvox.vcf.gz 2`] = `
     },
     "start": 3857,
     "type": "deletion",
-    "uniqueId": "test-vcf-604886",
+    "uniqueId": "test-vcf-604887",
   },
 ]
 `;

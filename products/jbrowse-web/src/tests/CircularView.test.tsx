@@ -38,7 +38,7 @@ test('open a circular view', async () => {
   await findByTestId('structuralVariantChordRenderer', {}, delay)
 
   // make sure a chord is rendered
-  await findByTestId('chord-test-vcf-66132')
+  await findByTestId('chord-test-vcf-66511')
 
   // toggle track off
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_sv_test', {}, delay))
