@@ -1688,10 +1688,10 @@
     abortable-promise-cache "^1.0.1"
     quick-lru "^4.0.0"
 
-"@gmod/tabix@^1.5.2":
-  version "1.5.5"
-  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.5.tgz#fa1ea10831a5f8e33c8227970fd856b4b3be9b1c"
-  integrity sha512-aH9RXEhwI7m280JknYWszYCETmw78HvPvPD6Ba3DC1t5Mf4MVBHGQyqk1WQJnJxqyGJMRQ0nnJWw9KLCnTtnxQ==
+"@gmod/tabix@^1.5.6":
+  version "1.5.6"
+  resolved "https://registry.yarnpkg.com/@gmod/tabix/-/tabix-1.5.6.tgz#f2ec3f28960f8d894bc9407d75a42a3d4c656f3f"
+  integrity sha512-0IEgB11Yaf86muE6ikehzJTZkQFGJUZ+h3oHpDHrsnopwDBzV0LiPIttNcqVnMqvPSDqPFjm6785LZHmd017tQ==
   dependencies:
     "@gmod/bgzf-filehandle" "^1.3.3"
     abortable-promise-cache "^1.4.1"

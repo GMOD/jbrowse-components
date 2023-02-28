@@ -27,7 +27,7 @@ test('change color on track', async () => {
     target: { value: 'green' },
   })
   await waitFor(() => {
-    const elt = getByTestId('box-test-vcf-604452')
+    const elt = getByTestId('box-test-vcf-604453')
     expect(elt).toHaveAttribute('fill', 'green')
   }, delay)
 }, 20000)

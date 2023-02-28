@@ -69,7 +69,7 @@ test('assembly aliases', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  await findByTestId('box-test-vcf-604452', {}, delay)
+  await findByTestId('box-test-vcf-604453', {}, delay)
 }, 15000)
 
 test('nclist track test with long name', async () => {
