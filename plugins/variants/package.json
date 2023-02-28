@@ -39,7 +39,7 @@
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.15",
     "@gmod/bgzf-filehandle": "^1.4.3",
-    "@gmod/tabix": "^1.5.2",
+    "@gmod/tabix": "^1.5.6",
     "@gmod/vcf": "^5.0.9",
     "@mui/icons-material": "^5.0.2",
     "@mui/x-data-grid": "^5.0.1",
