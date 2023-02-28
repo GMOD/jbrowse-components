@@ -11,6 +11,7 @@ beforeEach(() => {
 })
 
 const delay = { timeout: 10000 }
+const opts = [{}, delay]
 
 test('open a circular view', async () => {
   const { findByTestId, findByText, queryByTestId } = createView({
@@ -23,9 +24,9 @@ test('open a circular view', async () => {
   // wait for the UI to be loaded
   await findByText('Help')
   // try opening a track before opening the actual view
-  fireEvent.click(await findByText('File'))
-  fireEvent.click(await findByText(/Open track/))
-  fireEvent.click(await findByText('Open'))
+  fireEvent.click(await findByText('File', ...opts))
+  fireEvent.click(await findByText(/Open track/, ...opts))
+  fireEvent.click(await findByText('Open', ...opts))
 
   // open a track selector for the circular view
   fireEvent.click(await findByTestId('circular_track_select'))
@@ -56,5 +57,5 @@ test('open a circular view', async () => {
   )
 
   // make sure a chord is rendered
-  await findByTestId('chord-test-vcf-62852', {}, delay)
+  await findByTestId('chord-test-vcf-63101', {}, delay)
 }, 25000)

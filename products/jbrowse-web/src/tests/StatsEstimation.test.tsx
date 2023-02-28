@@ -61,7 +61,7 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   // found it helps avoid flaky test to check that it is zoomed in before
   // checking snapshot (even though it seems like it is unneeded) #2673
   await waitFor(() => expect(view.bpPerPx).toBe(before / 2), delay)
-  await findAllByTestId('box-test-vcf-605560', ...o)
+  await findAllByTestId('box-test-vcf-606969', ...o)
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
