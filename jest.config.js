@@ -1,7 +1,6 @@
 // NOTE: this jest config should be used by projects in packages/*, products/*,
 // and plugins/* dirs
 module.exports = {
-  roots: ['.', 'packages/', 'products/', 'plugins/'],
   moduleFileExtensions: ['js', 'ts', 'tsx', 'jsx', 'json', 'node'],
   transform: {
     '^.+\\.(ts|tsx|js|jsx)$': '<rootDir>/config/jest/babelTransform.js',
