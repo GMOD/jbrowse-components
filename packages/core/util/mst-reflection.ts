@@ -6,7 +6,18 @@ import {
   isMapType,
   isLateType,
   IAnyType,
+  IModelReflectionPropertiesData,
+  IAnyComplexType,
+  getPropertyMembers,
+  IAnyModelType,
+  IAnyStateTreeNode,
+  ISimpleType,
+  UnionStringArray,
 } from 'mobx-state-tree'
+
+export interface ILiteralType<T> extends ISimpleType<T> {
+  value: T
+}
 
 /**
  * get the inner type of an MST optional, array, or late type object
@@ -76,9 +87,11 @@ export function getDefaultValue(type: IAnyType) {
   return type._defaultValue || type.defaultValue
 }
 
+export type IEnumerationType<T extends string> = ISimpleType<UnionStringArray<T[]>>
+
 /** get the string values of an MST enumeration type */
-export function getEnumerationValues(type: IAnyType) {
-  const subtypes = getUnionSubTypes(type) as unknown as { value: unknown }[]
+export function getEnumerationValues(type: IAnyComplexType) {
+  const subtypes = getUnionSubTypes(type) as ILiteralType<string>[]
   // the subtypes should all be literals with a value member
   return subtypes.map(t => t.value)
 }
