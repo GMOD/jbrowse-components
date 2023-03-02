@@ -114,9 +114,11 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           self.message = undefined
           self.error = undefined
           renderInProgress = undefined
+
           if (
             foundNewFeatureNotInExistingMap ||
-            foundExistingFeatureNotInNewMap
+            foundExistingFeatureNotInNewMap ||
+            !self.features
           ) {
             self.features = features
           }
