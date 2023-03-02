@@ -4,7 +4,6 @@ import { getPropertyMembers, IAnyModelType, IAnyType, ISimpleType } from 'mobx-s
 import { getEnv, FileLocation } from '@jbrowse/core/util'
 import { FileSelector } from '@jbrowse/core/ui'
 import {
-  getPropertyType,
   getSubType,
   getUnionSubTypes,
   ILiteralType,
@@ -114,8 +113,8 @@ const StringEnumEditor = observer(function ({
 }) {
   const p = getPropertyMembers(getSubType(slotSchema))
   const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(getPropertyType(p, 'value')))[1],
-  ).map(t => t.value)
+    getUnionSubTypes(getSubType(p.properties.value))[1],
+  ).map(t => (t as ILiteralType<string>).value)
 
   return (
     <ConfigurationTextField
