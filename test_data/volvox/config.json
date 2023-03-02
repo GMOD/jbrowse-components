@@ -1117,7 +1117,7 @@
       "adapter": {
         "type": "JBrowseRESTFeatureAdapter",
         "location": {
-          "uri": "http://localhost:3000/api/gff3_test",
+          "uri": "http://localhost:3003/api/gff3_test",
           "locationType": "UriLocation"
         }
       }
