@@ -98,18 +98,18 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
               checked: model.showPanButtons,
             },
             {
-              label: 'Cursor mode',
+              label: 'Click and drag mode',
               subMenu: [
                 {
                   onClick: () => model.setCursorMode('move'),
-                  label: 'Click and drag to move',
+                  label: 'Pan by default, select region when ctrl key is held',
                   icon: CursorMove,
                   type: 'radio',
                   checked: model.cursorMode === 'move',
                 },
                 {
                   onClick: () => model.setCursorMode('crosshair'),
-                  label: 'Select region',
+                  label: 'Select region by default, pan when ctrl key is held',
                   icon: CursorMouse,
                   type: 'radio',
                   checked: model.cursorMode === 'crosshair',

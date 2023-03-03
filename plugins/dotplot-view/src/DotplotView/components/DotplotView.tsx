@@ -105,6 +105,14 @@ const DotplotViewInternal = observer(function ({
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
   const { hview, vview, wheelMode } = model
 
+  const validPan =
+    (cursorMode === 'move' && !ctrlKeyWasUsed) ||
+    (cursorMode === 'crosshair' && ctrlKeyWasUsed)
+
+  const validSelect =
+    (cursorMode === 'move' && ctrlKeyWasUsed) ||
+    (cursorMode === 'crosshair' && !ctrlKeyWasUsed)
+
   // use non-React wheel handler to properly prevent body scrolling
   useEffect(() => {
     function onWheel(origEvent: WheelEvent) {
@@ -145,12 +153,7 @@ const DotplotViewInternal = observer(function ({
     function globalMouseMove(event: MouseEvent) {
       setMouseCurrClient([event.clientX, event.clientY])
 
-      if (
-        mousecurrClient &&
-        mousedownClient &&
-        cursorMode === 'move' &&
-        !ctrlKeyWasUsed
-      ) {
+      if (mousecurrClient && mousedownClient && validPan) {
         hview.scroll(-event.clientX + mousecurrClient[0])
         vview.scroll(event.clientY - mousecurrClient[1])
       }
@@ -159,6 +162,7 @@ const DotplotViewInternal = observer(function ({
     window.addEventListener('mousemove', globalMouseMove)
     return () => window.removeEventListener('mousemove', globalMouseMove)
   }, [
+    validPan,
     mousecurrClient,
     mousedownClient,
     cursorMode,
@@ -173,11 +177,7 @@ const DotplotViewInternal = observer(function ({
     let cleanup = () => {}
 
     function globalMouseUp(event: MouseEvent) {
-      if (
-        Math.abs(xdistance) > 3 &&
-        Math.abs(ydistance) > 3 &&
-        (cursorMode === 'crosshair' || ctrlKeyWasUsed)
-      ) {
+      if (Math.abs(xdistance) > 3 && Math.abs(ydistance) > 3 && validSelect) {
         setMouseUpClient([event.clientX, event.clientY])
       } else {
         setMouseDownClient(undefined)
@@ -190,6 +190,7 @@ const DotplotViewInternal = observer(function ({
     }
     return cleanup
   }, [
+    validSelect,
     mousedown,
     mousecurr,
     mouseup,
@@ -204,7 +205,7 @@ const DotplotViewInternal = observer(function ({
       <Header
         model={model}
         selection={
-          cursorMode === 'move' || !(mousedown && mouserect)
+          !validSelect || !(mousedown && mouserect)
             ? undefined
             : {
                 width: Math.abs(xdistance),
@@ -222,7 +223,7 @@ const DotplotViewInternal = observer(function ({
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
           <div ref={ref} className={classes.content}>
-            {mouseOvered && (cursorMode === 'crosshair' || ctrlKeyWasUsed) ? (
+            {mouseOvered && validSelect ? (
               <TooltipWhereMouseovered
                 model={model}
                 mouserect={mouserect}
@@ -230,7 +231,7 @@ const DotplotViewInternal = observer(function ({
                 ydistance={ydistance}
               />
             ) : null}
-            {cursorMode === 'crosshair' || ctrlKeyWasUsed ? (
+            {validSelect ? (
               <TooltipWhereClicked
                 model={model}
                 mousedown={mousedown}
@@ -250,9 +251,7 @@ const DotplotViewInternal = observer(function ({
               }}
             >
               <Grid model={model}>
-                {(cursorMode === 'crosshair' || ctrlKeyWasUsed) &&
-                mousedown &&
-                mouserect ? (
+                {validSelect && mousedown && mouserect ? (
                   <rect
                     fill="rgba(255,0,0,0.3)"
                     x={Math.min(mouserect[0], mousedown[0])}
@@ -281,8 +280,8 @@ const DotplotViewInternal = observer(function ({
             anchorPosition={
               mouseupClient
                 ? {
-                    top: mouseupClient[1] + 30,
-                    left: mouseupClient[0] + 30,
+                    top: mouseupClient[1] + 50,
+                    left: mouseupClient[0] + 50,
                   }
                 : undefined
             }

@@ -129,7 +129,7 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         wheelMode: types.optional(
           types.string,
-          () => localStorageGetItem('dotplot-wheelMode') || 'pan',
+          () => localStorageGetItem('dotplot-wheelMode') || 'zoom',
         ),
 
         /**
