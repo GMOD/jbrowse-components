@@ -1,6 +1,5 @@
 import React, { useRef } from 'react'
 import { makeStyles } from 'tss-react/mui'
-
 import { Popover, Typography, alpha } from '@mui/material'
 import { stringify, toLocale } from '@jbrowse/core/util'
 
@@ -43,7 +42,7 @@ interface Offset {
   oob?: boolean
 }
 
-function RubberbandSpan({
+export default function RubberbandSpan({
   leftBpOffset,
   rightBpOffset,
   numOfBpSelected,
@@ -67,14 +66,8 @@ function RubberbandSpan({
             classes={{ paper: classes.paper }}
             open
             anchorEl={ref.current}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
+            anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             keepMounted
             disableRestoreFocus
           >
@@ -82,19 +75,11 @@ function RubberbandSpan({
           </Popover>
           <Popover
             className={classes.popover}
-            classes={{
-              paper: classes.paper,
-            }}
+            classes={{ paper: classes.paper }}
             open
             anchorEl={ref.current}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
-            }}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             keepMounted
             disableRestoreFocus
           >
@@ -112,5 +97,3 @@ function RubberbandSpan({
     </>
   )
 }
-
-export default RubberbandSpan
