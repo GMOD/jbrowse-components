@@ -121,11 +121,9 @@ export function getSOAndDescByExamination(ref: string, alt: string) {
   } else if (alt.includes('<')) {
     return ['sv', alt]
   } else if (ref.length === alt.length) {
-    if (ref.split('').reverse().join('') === alt) {
-      return ['inversion', makeDescriptionString('inversion', ref, alt)]
-    } else {
-      return ['substitution', makeDescriptionString('substitution', ref, alt)]
-    }
+    return ref.split('').reverse().join('') === alt
+      ? ['inversion', makeDescriptionString('inversion', ref, alt)]
+      : ['substitution', makeDescriptionString('substitution', ref, alt)]
   } else if (ref.length <= alt.length) {
     return ['insertion', makeDescriptionString('insertion', ref, alt)]
   } else if (ref.length > alt.length) {

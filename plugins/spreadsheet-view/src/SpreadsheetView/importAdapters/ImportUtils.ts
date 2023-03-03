@@ -1,7 +1,7 @@
 import { parseLocString } from '@jbrowse/core/util'
 
 export function bufferToString(buffer: Buffer) {
-  return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
+  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
 }
 
 async function parseWith(buffer: Buffer, options = {}) {

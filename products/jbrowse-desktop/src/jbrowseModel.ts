@@ -127,7 +127,7 @@ export default function JBrowseDesktop(
           sequence: {
             type: 'ReferenceSequenceTrack',
             trackId: `${name}-${Date.now()}`,
-            ...(assemblyConf.sequence || {}),
+            ...assemblyConf.sequence,
           },
         })
         return self.assemblies[length - 1]

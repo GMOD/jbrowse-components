@@ -520,8 +520,8 @@ export function bpToPx(
   return roundToNearestPointOne((reversed ? end - bp : bp - start) / bpPerPx)
 }
 
-const oneEightyOverPi = 180.0 / Math.PI
-const piOverOneEighty = Math.PI / 180.0
+const oneEightyOverPi = 180 / Math.PI
+const piOverOneEighty = Math.PI / 180
 export function radToDeg(radians: number) {
   return (radians * oneEightyOverPi) % 360
 }

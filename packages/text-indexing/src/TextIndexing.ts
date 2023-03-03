@@ -30,26 +30,24 @@ export async function indexTracks(args: {
   } = args
   const idxType = indexType || 'perTrack'
   checkAbortSignal(signal)
-  if (idxType === 'perTrack') {
-    await perTrackIndex(
-      tracks,
-      statusCallback,
-      outLocation,
-      attributes,
-      exclude,
-      signal,
-    )
-  } else {
-    await aggregateIndex(
-      tracks,
-      statusCallback,
-      outLocation,
-      attributes,
-      assemblies,
-      exclude,
-      signal,
-    )
-  }
+  await (idxType === 'perTrack'
+    ? perTrackIndex(
+        tracks,
+        statusCallback,
+        outLocation,
+        attributes,
+        exclude,
+        signal,
+      )
+    : aggregateIndex(
+        tracks,
+        statusCallback,
+        outLocation,
+        attributes,
+        assemblies,
+        exclude,
+        signal,
+      ))
   checkAbortSignal(signal)
   return []
 }

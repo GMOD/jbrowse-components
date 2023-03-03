@@ -101,6 +101,7 @@ export function getWeightedMeans(ret: PAFRecord[]) {
 
 // https://gist.github.com/stekhn/a12ed417e91f90ecec14bcfa4c2ae16a
 function weightedMean(tuples: [number, number][]) {
+  // eslint-disable-next-line unicorn/no-array-reduce
   const [valueSum, weightSum] = tuples.reduce(
     ([valueSum, weightSum], [value, weight]) => [
       valueSum + value * weight,

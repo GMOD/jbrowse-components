@@ -58,7 +58,7 @@ export async function* indexVcf(
 
     const end = fields.END
 
-    const locStr = `${ref}:${pos}..${end ? end : +pos + 1}`
+    const locStr = `${ref}:${pos}..${end || +pos + 1}`
     if (id === '.') {
       continue
     }

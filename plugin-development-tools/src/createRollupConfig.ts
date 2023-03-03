@@ -25,7 +25,7 @@ interface JBrowseRollupConfigOptions {
 
 const appPath = fs.realpathSync(process.cwd())
 const packageJsonPath = path.join(appPath, 'package.json')
-const packageJsonText = fs.readFileSync(packageJsonPath, 'utf-8')
+const packageJsonText = fs.readFileSync(packageJsonPath, 'utf8')
 const packageJson = JSON.parse(packageJsonText)
 const packageName = safePackageName(packageJson.name || '')
 const umdName = `JBrowsePlugin${packageJson.config?.jbrowse?.plugin?.name}`

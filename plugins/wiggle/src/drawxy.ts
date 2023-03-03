@@ -277,7 +277,7 @@ export function drawLine(
 
     ctx.beginPath()
     ctx.strokeStyle = c
-    const startPos = typeof lastVal !== 'undefined' ? lastVal : score
+    const startPos = lastVal !== undefined ? lastVal : score
     if (!region.reversed) {
       ctx.moveTo(leftPx, toY(startPos))
       ctx.lineTo(leftPx, toY(score))
