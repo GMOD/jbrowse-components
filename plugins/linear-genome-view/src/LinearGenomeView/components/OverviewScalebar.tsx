@@ -297,7 +297,7 @@ const Scalebar = observer(function ({
   )
 })
 
-function OverviewScalebar({
+export default observer(function OverviewScalebar({
   model,
   children,
 }: {
@@ -337,8 +337,6 @@ function OverviewScalebar({
       </div>
     </div>
   )
-}
-
-export default observer(OverviewScalebar)
+})
 
 export { Cytobands, Polygon }
