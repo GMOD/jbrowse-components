@@ -79,7 +79,7 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
             },
             {
               onClick: () => model.squareViewProportional(),
-              label: 'Rectanglular view - same total bp',
+              label: 'Rectanglularize view - same total bp',
             },
             {
               onClick: () => model.showAllRegions(),
@@ -98,18 +98,46 @@ const DotplotControls = observer(({ model }: { model: DotplotViewModel }) => {
               checked: model.showPanButtons,
             },
             {
-              onClick: () => model.setCursorMode('move'),
-              label: 'Cursor mode - click and drag to move',
-              icon: CursorMove,
-              type: 'radio',
-              checked: model.cursorMode === 'move',
+              label: 'Cursor mode',
+              subMenu: [
+                {
+                  onClick: () => model.setCursorMode('move'),
+                  label: 'Click and drag to move',
+                  icon: CursorMove,
+                  type: 'radio',
+                  checked: model.cursorMode === 'move',
+                },
+                {
+                  onClick: () => model.setCursorMode('crosshair'),
+                  label: 'Select region',
+                  icon: CursorMouse,
+                  type: 'radio',
+                  checked: model.cursorMode === 'crosshair',
+                },
+              ],
             },
             {
-              onClick: () => model.setCursorMode('crosshair'),
-              label: 'Cursor mode - select region',
-              icon: CursorMouse,
-              type: 'radio',
-              checked: model.cursorMode === 'crosshair',
+              label: 'Wheel scroll mode',
+              subMenu: [
+                {
+                  onClick: () => model.setWheelMode('pan'),
+                  label: 'Pans view',
+                  type: 'radio',
+                  checked: model.wheelMode === 'pan',
+                },
+                {
+                  onClick: () => model.setWheelMode('zoom'),
+                  label: 'Zooms view',
+                  type: 'radio',
+                  checked: model.wheelMode === 'zoom',
+                },
+                {
+                  onClick: () => model.setWheelMode('none'),
+                  label: 'Disable',
+                  type: 'radio',
+                  checked: model.wheelMode === 'none',
+                },
+              ],
             },
           ]}
           onClose={() => setMenuAnchorEl(undefined)}

@@ -119,7 +119,18 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #property
          */
-        cursorMode: 'crosshair',
+        cursorMode: types.optional(
+          types.string,
+          () => localStorageGetItem('dotplot-cursorMode') || 'crosshair',
+        ),
+
+        /**
+         * #property
+         */
+        wheelMode: types.optional(
+          types.string,
+          () => localStorageGetItem('dotplot-wheelMode') || 'pan',
+        ),
 
         /**
          * #property
@@ -259,6 +270,12 @@ export default function stateModelFactory(pm: PluginManager) {
        */
       setShowPanButtons(flag: boolean) {
         self.showPanButtons = flag
+      },
+      /**
+       * #action
+       */
+      setWheelMode(str: string) {
+        self.wheelMode = str
       },
       /**
        * #action

@@ -102,7 +102,7 @@ const DotplotViewInternal = observer(function ({
   const mouserect = mouseup || mousecurr
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
-  const { hview, vview } = model
+  const { hview, vview, wheelMode } = model
 
   // use non-React wheel handler to properly prevent body scrolling
   useEffect(() => {
@@ -117,8 +117,14 @@ const DotplotViewInternal = observer(function ({
 
         window.requestAnimationFrame(() => {
           transaction(() => {
-            hview.scroll(distanceX.current)
-            vview.scroll(distanceY.current)
+            if (wheelMode === 'pan') {
+              hview.scroll(distanceX.current / 3)
+              vview.scroll(distanceY.current / 10)
+            } else if (wheelMode === 'zoom') {
+              const val = distanceY.current < 0 ? 1.1 : 0.9
+              hview.zoomTo(hview.bpPerPx * val)
+              vview.zoomTo(vview.bpPerPx * val)
+            }
           })
           scheduled.current = false
           distanceX.current = 0
@@ -132,7 +138,7 @@ const DotplotViewInternal = observer(function ({
       return () => curr.removeEventListener('wheel', onWheel)
     }
     return () => {}
-  }, [hview, vview])
+  }, [hview, vview, wheelMode])
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
