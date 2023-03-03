@@ -708,7 +708,7 @@ export function renameRegionIfNeeded(
     return region
   }
 
-  if (region && refNameMap && refNameMap[region.refName]) {
+  if (region && refNameMap?.[region.refName]) {
     // clone the region so we don't modify it
     region = isStateTreeNode(region)
       ? // @ts-expect-error

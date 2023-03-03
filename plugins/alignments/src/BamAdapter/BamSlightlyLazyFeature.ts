@@ -76,17 +76,17 @@ export default class BamSlightlyLazyFeature implements Feature {
     )
 
     return [
-      ...new Set([
-        ...properties
+      ...new Set(
+        properties
           .filter(
             prop =>
               prop.startsWith('_get_') &&
               prop !== '_get_mismatches' &&
               prop !== '_get_tags',
           )
-          .map(methodName => methodName.replace('_get_', '')),
-        ...this.record._tags(),
-      ]),
+          .map(methodName => methodName.replace('_get_', ''))
+          .concat(this.record._tags()),
+      ),
     ]
   }
 

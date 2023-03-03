@@ -38,7 +38,7 @@ test('test stats estimation pileup, zoom in to see', async () => {
 test('test stats estimation pileup, force load to see', async () => {
   const { view, findByText, findAllByText, findByTestId } = createView()
   await findByText('Help')
-  view.setNewView(25.078, 283)
+  view.setNewView(25.07852564102564, 283)
 
   fireEvent.click(await findByTestId('htsTrackEntry-volvox_cram_pileup', ...o))
 

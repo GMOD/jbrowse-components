@@ -222,15 +222,14 @@ export function getMismatches(
 
   // parse the CIGAR tag if it has one
   if (cigar) {
-    mismatches = [...mismatches, ...cigarToMismatches(ops, seq, ref, qual)]
+    mismatches = mismatches.concat(cigarToMismatches(ops, seq, ref, qual))
   }
 
   // now let's look for CRAM or MD mismatches
   if (md && seq) {
-    mismatches = [
-      ...mismatches,
-      ...mdToMismatches(md, ops, mismatches, seq, qual),
-    ]
+    mismatches = mismatches.concat(
+      mdToMismatches(md, ops, mismatches, seq, qual),
+    )
   }
 
   return mismatches
