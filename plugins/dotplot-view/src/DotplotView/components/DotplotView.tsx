@@ -50,6 +50,13 @@ const useStyles = makeStyles()(theme => ({
     gridColumn: '2/2',
     gridRow: '1/2',
   },
+
+  resizeHandle: {
+    height: 4,
+    background: '#ccc',
+    boxSizing: 'border-box',
+    borderTop: '1px solid #fafafa',
+  },
 }))
 
 type Coord = [number, number] | undefined
@@ -84,7 +91,6 @@ const DotplotViewInternal = observer(function ({
 }: {
   model: DotplotViewModel
 }) {
-  const { cursorMode } = model
   const { classes } = useStyles()
   const [mousecurrClient, setMouseCurrClient] = useState<Coord>()
   const [mousedownClient, setMouseDownClient] = useState<Coord>()
@@ -97,13 +103,14 @@ const DotplotViewInternal = observer(function ({
   const scheduled = useRef(false)
   const [ctrlKeyWasUsed, setCtrlKeyWasUsed] = useState(false)
   const svg = ref.current?.getBoundingClientRect() || blank
+  const rootRect = ref.current?.getBoundingClientRect() || blank
   const mousedown = getOffset(mousedownClient, svg)
   const mousecurr = getOffset(mousecurrClient, svg)
   const mouseup = getOffset(mouseupClient, svg)
   const mouserect = mouseup || mousecurr
   const xdistance = mousedown && mouserect ? mouserect[0] - mousedown[0] : 0
   const ydistance = mousedown && mouserect ? mouserect[1] - mousedown[1] : 0
-  const { hview, vview, wheelMode } = model
+  const { hview, vview, wheelMode, cursorMode } = model
 
   const validPan =
     (cursorMode === 'move' && !ctrlKeyWasUsed) ||
@@ -130,9 +137,17 @@ const DotplotViewInternal = observer(function ({
               hview.scroll(distanceX.current / 3)
               vview.scroll(distanceY.current / 10)
             } else if (wheelMode === 'zoom') {
-              const val = distanceY.current < 0 ? 1.1 : 0.9
-              hview.zoomTo(hview.bpPerPx * val)
-              vview.zoomTo(vview.bpPerPx * val)
+              if (
+                Math.abs(distanceY.current) > Math.abs(distanceX.current) * 2 &&
+                mousecurr
+              ) {
+                const val = distanceY.current < 0 ? 1.1 : 0.9
+                hview.zoomTo(hview.bpPerPx * val, mousecurr[0])
+                vview.zoomTo(
+                  vview.bpPerPx * val,
+                  rootRect.height - mousecurr[1],
+                )
+              }
             }
           })
           scheduled.current = false
@@ -147,7 +162,7 @@ const DotplotViewInternal = observer(function ({
       return () => curr.removeEventListener('wheel', onWheel)
     }
     return () => {}
-  }, [hview, vview, wheelMode])
+  }, [hview, vview, wheelMode, mousecurr, rootRect.height])
 
   useEffect(() => {
     function globalMouseMove(event: MouseEvent) {
@@ -308,12 +323,7 @@ const DotplotViewInternal = observer(function ({
         </div>
         <ResizeHandle
           onDrag={n => model.setHeight(model.height + n)}
-          style={{
-            height: 4,
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
+          className={classes.resizeHandle}
         />
       </div>
     </div>

@@ -321,6 +321,8 @@ export default class DotplotRenderer extends ComparativeRenderer {
       width,
       offsetX: views[0].dynamicBlocks.blocks[0].offsetPx,
       offsetY: views[1].dynamicBlocks.blocks[0].offsetPx,
+      bpPerPxX: views[0].bpPerPx,
+      bpPerPxY: views[1].bpPerPx,
     }
   }
 }

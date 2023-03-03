@@ -102,13 +102,12 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       return {
         afterAttach() {
           makeAbortableReaction(
-            self as any,
-            () => renderBlockData(self as any),
-            (blockData): any =>
-              blockData ? renderBlockEffect(blockData) : undefined,
+            self,
+            () => renderBlockData(self),
+            blockData => renderBlockEffect(blockData),
             {
               name: `${self.type} ${self.id} rendering`,
-              delay: 1000,
+              delay: 500,
               fireImmediately: true,
             },
             this.setLoading,
