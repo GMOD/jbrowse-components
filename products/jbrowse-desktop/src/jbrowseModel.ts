@@ -1,7 +1,4 @@
-import {
-  ConfigurationSchema,
-  readConfObject,
-} from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -16,6 +13,7 @@ import {
   resolveIdentifier,
   types,
 } from 'mobx-state-tree'
+import configSchemaFactory from './jbrowseConfigSchema'
 import { SessionStateModel } from './sessionModelFactory'
 
 // poke some things for testing (this stuff will eventually be removed)
@@ -25,6 +23,9 @@ window.getSnapshot = getSnapshot
 // @ts-expect-error
 window.resolveIdentifier = resolveIdentifier
 
+/**
+ * #stateModel JBrowseDesktopModel
+ */
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
   Session: SessionStateModel,
@@ -32,86 +33,82 @@ export default function JBrowseDesktop(
 ) {
   return types
     .model('JBrowseDesktop', {
-      configuration: ConfigurationSchema('Root', {
-        rpc: RpcManager.configSchema,
-        // possibly consider this for global config editor
-        highResolutionScaling: {
-          type: 'number',
-          defaultValue: 2,
-        },
-        useUrlSession: {
-          type: 'boolean',
-          defaultValue: true,
-        },
-        useLocalStorage: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-        featureDetails: ConfigurationSchema('FeatureDetails', {
-          sequenceTypes: {
-            type: 'stringArray',
-            defaultValue: ['mRNA', 'transcript', 'gene'],
-          },
-        }),
-        disableAnalytics: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-        theme: { type: 'frozen', defaultValue: {} },
-        logoPath: {
-          type: 'fileLocation',
-          defaultValue: { uri: '', locationType: 'UriLocation' },
-        },
-        ...pluginManager.pluginConfigurationSchemas(),
-      }),
+      /**
+       * #slot
+       */
+      configuration: configSchemaFactory(pluginManager),
+      /**
+       * #slot
+       */
       plugins: types.array(types.frozen<PluginDefinition>()),
+      /**
+       * #slot
+       */
       assemblies: types.array(assemblyConfigSchemasType),
-      // track configuration is an array of track config schemas. multiple
-      // instances of a track can exist that use the same configuration
+      /**
+       * #slot
+       * track configuration is an array of track config schemas. multiple
+       * instances of a track can exist that use the same configuration
+       */
       tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+      /**
+       * #slot
+       */
       internetAccounts: types.array(
         pluginManager.pluggableConfigSchemaType('internet account'),
       ),
+      /**
+       * #slot
+       */
       aggregateTextSearchAdapters: types.array(
         pluginManager.pluggableConfigSchemaType('text search adapter'),
       ),
+      /**
+       * #slot
+       */
       connections: types.array(
         pluginManager.pluggableConfigSchemaType('connection'),
       ),
+      /**
+       * #slot
+       */
       defaultSession: types.optional(types.frozen(Session), {
         name: `New Session`,
       }),
     })
     .views(self => ({
-      get savedSessionNames() {
+      get savedSessionNames(): string[] {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).savedSessionNames
       },
-      get assemblyNames() {
+      get assemblyNames(): string[] {
         return self.assemblies.map(assembly => readConfObject(assembly, 'name'))
       },
-      get rpcManager() {
+      get rpcManager(): RpcManager {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return getParent<any>(self).rpcManager
       },
     }))
     .actions(self => ({
       afterCreate() {
-        const seen = [] as string[]
+        const seen = new Set<string>()
         self.assemblyNames.forEach(assemblyName => {
           if (!assemblyName) {
             throw new Error('Encountered an assembly with no "name" defined')
           }
-          if (seen.includes(assemblyName)) {
+          if (seen.has(assemblyName)) {
             throw new Error(
               `Found two assemblies with the same name: ${assemblyName}`,
             )
           } else {
-            seen.push(assemblyName)
+            seen.add(assemblyName)
           }
         })
       },
 
+      /**
+       * #action
+       */
       addAssemblyConf(assemblyConf: AnyConfigurationModel) {
         const { name } = assemblyConf
         if (!name) {
@@ -132,6 +129,10 @@ export default function JBrowseDesktop(
         })
         return self.assemblies[length - 1]
       },
+
+      /**
+       * #action
+       */
       removeAssemblyConf(assemblyName: string) {
         const toRemove = self.assemblies.find(
           assembly => assembly.name === assemblyName,
@@ -140,6 +141,10 @@ export default function JBrowseDesktop(
           self.assemblies.remove(toRemove)
         }
       },
+
+      /**
+       * #action
+       */
       addTrackConf(trackConf: AnyConfigurationModel) {
         const { type } = trackConf
         if (!type) {
@@ -148,6 +153,9 @@ export default function JBrowseDesktop(
         const length = self.tracks.push(trackConf)
         return self.tracks[length - 1]
       },
+      /**
+       * #action
+       */
       addConnectionConf(connectionConf: AnyConfigurationModel) {
         const { type } = connectionConf
         if (!type) {
@@ -156,12 +164,18 @@ export default function JBrowseDesktop(
         const length = self.connections.push(connectionConf)
         return self.connections[length - 1]
       },
+      /**
+       * #action
+       */
       deleteConnectionConf(configuration: AnyConfigurationModel) {
         const idx = self.connections.findIndex(
           conn => conn.id === configuration.id,
         )
         return self.connections.splice(idx, 1)
       },
+      /**
+       * #action
+       */
       deleteTrackConf(trackConf: AnyConfigurationModel) {
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
@@ -171,12 +185,18 @@ export default function JBrowseDesktop(
 
         return self.tracks.splice(idx, 1)
       },
+      /**
+       * #action
+       */
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rootModel = getParent<any>(self)
         rootModel.setPluginsUpdated(true)
       },
+      /**
+       * #action
+       */
       removePlugin(pluginDefinition: PluginDefinition) {
         self.plugins = cast(
           self.plugins.filter(
@@ -190,6 +210,9 @@ export default function JBrowseDesktop(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         getParent<any>(self).setPluginsUpdated(true)
       },
+      /**
+       * #action
+       */
       addInternetAccountConf(internetAccountConf: AnyConfigurationModel) {
         const { type } = internetAccountConf
         if (!type) {
@@ -198,6 +221,9 @@ export default function JBrowseDesktop(
         const length = self.internetAccounts.push(internetAccountConf)
         return self.internetAccounts[length - 1]
       },
+      /**
+       * #action
+       */
       deleteInternetAccountConf(configuration: AnyConfigurationModel) {
         const idx = self.internetAccounts.findIndex(
           acct => acct.id === configuration.id,
