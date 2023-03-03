@@ -20,7 +20,7 @@ test('click and drag rubberband, bookmarks region', async () => {
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.click(await findByText('Bookmark region'))
 
-  // @ts-ignore
+  // @ts-expect-error
   const { widgets } = session
   const bookmarkWidget = widgets.get('GridBookmark')
   expect(bookmarkWidget.bookmarkedRegions[0].assemblyName).toEqual('volvox')
@@ -32,7 +32,7 @@ test('bookmarks current region', async () => {
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmark current region'))
 
-  // @ts-ignore
+  // @ts-expect-error
   const { widgets } = session
   const { bookmarkedRegions } = widgets.get('GridBookmark')
   expect(bookmarkedRegions[0].start).toEqual(100)
@@ -53,7 +53,7 @@ test('navigates to bookmarked region from widget', async () => {
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Open bookmark widget'))
 
-  // @ts-ignore
+  // @ts-expect-error
   const { widgets } = session
   const bookmarkWidget = widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({

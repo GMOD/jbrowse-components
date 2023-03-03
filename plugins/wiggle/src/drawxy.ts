@@ -341,13 +341,11 @@ export function drawDensity(
   })
 
   const scale2 = getScale({ ...scaleOpts, range: [0, height] })
-  let cb
-  if (color === '#f0f') {
-    cb = (_feature: Feature, score: number) => scale(score)
-  } else {
-    cb = (feature: Feature, score: number) =>
-      readConfObject(config, 'color', { feature, score })
-  }
+  const cb =
+    color === '#f0f'
+      ? (_: Feature, score: number) => scale(score)
+      : (feature: Feature, score: number) =>
+          readConfObject(config, 'color', { feature, score })
   const [niceMin, niceMax] = scale2.domain()
 
   let prevLeftPx = -Infinity

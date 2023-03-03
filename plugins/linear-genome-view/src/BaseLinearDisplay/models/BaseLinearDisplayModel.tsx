@@ -57,9 +57,9 @@ type LayoutRecord = [number, number, number, number]
 function getDisplayStr(totalBytes: number) {
   let displayBp
   if (Math.floor(totalBytes / 1000000) > 0) {
-    displayBp = `${parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
+    displayBp = `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
   } else if (Math.floor(totalBytes / 1000) > 0) {
-    displayBp = `${parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
+    displayBp = `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
   } else {
     displayBp = `${Math.floor(totalBytes)} bytes`
   }
@@ -114,7 +114,7 @@ function stateModelFactory() {
     }))
     .views(self => ({
       get height() {
-        return self.heightPreConfig ?? getConf(self, 'height')
+        return self.heightPreConfig ?? (getConf(self, 'height') as number)
       },
       /**
        * #getter
@@ -367,11 +367,8 @@ function stateModelFactory() {
        * #action
        */
       setHeight(displayHeight: number) {
-        if (displayHeight > minDisplayHeight) {
-          self.heightPreConfig = displayHeight
-        } else {
-          self.heightPreConfig = minDisplayHeight
-        }
+        self.heightPreConfig =
+          displayHeight > minDisplayHeight ? displayHeight : minDisplayHeight
         return self.height
       },
       /**
@@ -802,7 +799,7 @@ function stateModelFactory() {
       }
       // rewrite "height" from older snapshots to "heightPreConfig", this allows
       // us to maintain a height "getter" going forward
-      // @ts-ignore
+      // @ts-expect-error
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })

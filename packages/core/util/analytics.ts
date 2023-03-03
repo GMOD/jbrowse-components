@@ -7,7 +7,7 @@ interface AnalyticsObj {
 }
 
 interface Track {
-  [key: string]: any
+  type: string
 }
 
 export async function writeAWSAnalytics(

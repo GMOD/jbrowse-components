@@ -96,7 +96,7 @@ function initialize() {
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
-            // @ts-ignore
+            // @ts-expect-error
             regions: volvoxDisplayedRegions,
           },
         },
@@ -936,7 +936,7 @@ test('navToLocString with human assembly', async () => {
     assemblyManager: {
       assemblies: {
         hg38: {
-          // @ts-ignore
+          // @ts-expect-error
           regions: hg38Regions,
         },
       },

@@ -37,10 +37,7 @@ export async function fetchJb1(
     dataRootLocation = dataRoot.localPath
   }
   if (dataRootLocation.endsWith('/')) {
-    dataRootReg[protocol] = dataRootLocation.slice(
-      0,
-      dataRootLocation.length - 1,
-    )
+    dataRootReg[protocol] = dataRootLocation.slice(0, -1)
   }
   if (
     (isUriLocation(baseConfigRoot) && baseConfigRoot.uri) ||
@@ -55,16 +52,13 @@ export async function fetchJb1(
       baseConfigLocation = baseConfigRoot.localPath
     }
     if (baseConfigLocation.endsWith('/')) {
-      baseConfigLocation = baseConfigLocation.slice(
-        0,
-        baseConfigLocation.length - 1,
-      )
+      baseConfigLocation = baseConfigLocation.slice(0, -1)
     }
     let newConfig: Config = {}
     for (const conf of ['jbrowse.conf', 'jbrowse_conf.json']) {
       let fetchedConfig = null
       try {
-        // @ts-ignore
+        // @ts-expect-error
         fetchedConfig = await fetchConfigFile({
           [baseProtocol]: `${baseConfigLocation}/${conf}`,
         })
@@ -143,12 +137,12 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
     } else if (
       !noRecursiveMerge(prop) &&
       prop in a &&
-      // @ts-ignore
+      // @ts-expect-error
       typeof b[prop] === 'object' &&
-      // @ts-ignore
+      // @ts-expect-error
       typeof a[prop] === 'object'
     ) {
-      // @ts-ignore
+      // @ts-expect-error
       a[prop] = deepUpdate(a[prop], b[prop])
     } else if (prop === 'dataRoot') {
       if (
@@ -157,9 +151,9 @@ function mergeConfigs(a: Config | null, b: Config | null): Config | null {
       ) {
         a[prop] = b[prop]
       }
-      // @ts-ignore
+      // @ts-expect-error
     } else if (a[prop] === undefined || b[prop] !== undefined) {
-      // @ts-ignore
+      // @ts-expect-error
       a[prop] = b[prop]
     }
   }
@@ -284,7 +278,7 @@ function fillTemplates<T extends any>(subconfig: T, config: Config): T {
       sub[name] = fillTemplates(sub[name], config)
     }
   } else if (typeof subconfig === 'string') {
-    // @ts-ignore
+    // @ts-expect-error
     return fillTemplate(subconfig, config)
   }
 

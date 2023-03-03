@@ -34,7 +34,7 @@ interface LocalPathLocation {
 const isUrl = (loc?: string) => loc?.match(/^https?:\/\//)
 
 export default class AddTrack extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   target: string
 
   static description = 'Add a track to a JBrowse 2 configuration'
@@ -197,7 +197,7 @@ export default class AddTrack extends JBrowseCommand {
       : this.guessAdapter(effectiveLocation, protocol)
 
     if (adapter.type === 'PAFAdapter') {
-      // @ts-ignore
+      // @ts-expect-error
       adapter.assemblyNames = assemblyNames.split(',').map(a => a.trim())
     }
 

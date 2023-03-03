@@ -57,7 +57,7 @@ export function chooseGlyphComponent(
     const hasSubSub = subfeatures.find(sub => !!sub.get('subfeatures'))
     if (
       ['mRNA', 'transcript', 'primary_transcript'].includes(type) &&
-      subfeatures.find(f => f.get('type') === 'CDS')
+      subfeatures.some(f => f.get('type') === 'CDS')
     ) {
       return ProcessedTranscript
     } else if (!feature.parent() && hasSubSub) {

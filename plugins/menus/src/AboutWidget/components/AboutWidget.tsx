@@ -25,13 +25,15 @@ function About({ model }: { model: IAnyStateTreeNode }) {
   const { version } = getSession(model)
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
-  const corePlugins = plugins
-    .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
-    .map(p => p.name)
+  const corePlugins = new Set(
+    plugins
+      .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
+      .map(p => p.name),
+  )
 
   const corePluginsRender = plugins
     .filter(plugin => {
-      return corePlugins.includes(plugin.name)
+      return corePlugins.has(plugin.name)
     })
     .map(plugin => (
       <li key={plugin.name}>
@@ -40,7 +42,7 @@ function About({ model }: { model: IAnyStateTreeNode }) {
     ))
 
   const externalPluginsRender = plugins
-    .filter(plugin => !corePlugins.includes(plugin.name))
+    .filter(plugin => !corePlugins.has(plugin.name))
     .map(plugin => {
       const text = `${plugin.name} ${plugin.version || ''}`
       return (

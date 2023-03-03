@@ -1,9 +1,3 @@
-import PileupGetReducedFeatures from './methods/GetReducedFeatures'
-import PileupGetGlobalValueForTag from './methods/GetGlobalValueForTag'
-import PileupGetVisibleModifications from './methods/GetVisibleModifications'
-
-export {
-  PileupGetReducedFeatures,
-  PileupGetVisibleModifications,
-  PileupGetGlobalValueForTag,
-}
+export { default as PileupGetReducedFeatures } from './methods/GetReducedFeatures'
+export { default as PileupGetVisibleModifications } from './methods/GetVisibleModifications'
+export { default as PileupGetGlobalValueForTag } from './methods/GetGlobalValueForTag'

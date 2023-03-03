@@ -86,7 +86,7 @@ export default function ExportSvgDlg({
             {Object.entries(session.allThemes()).map(([key, val]) => (
               <MenuItem key={key} value={key}>
                 {
-                  // @ts-ignore
+                  // @ts-expect-error
                   val.name || '(Unknown name)'
                 }
               </MenuItem>

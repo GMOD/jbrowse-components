@@ -131,9 +131,9 @@ export default class CramSlightlyLazyFeature implements Feature {
 
   get(field: string) {
     const methodName = `_get_${field}`
-    // @ts-ignore
+    // @ts-expect-error
     if (this[methodName]) {
-      // @ts-ignore
+      // @ts-expect-error
       return this[methodName]()
     }
     return undefined

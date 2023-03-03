@@ -68,7 +68,7 @@ function parse(text: string, url: string): Config {
         if (!keyPath) {
           throw new Error(`Error parsing in section ${section.join(' - ')}`)
         }
-        const path = section.concat(keyPath).join('.')
+        const path = [...section, ...keyPath].join('.')
         if (operation === '+=') {
           let existing = getValue(data, path)
           if (existing) {
@@ -124,7 +124,7 @@ function parse(text: string, url: string): Config {
       recordVal()
       keyPath = match[1].trim().split(/\s*\.\s*/)
       ;[, , operation] = match
-      if (isAlwaysArray(section.concat(keyPath).join('.'))) {
+      if (isAlwaysArray([...section, ...keyPath].join('.'))) {
         operation = '+='
       }
       value = match[3].trim()
@@ -385,12 +385,9 @@ function synthesizeTrackStoreConfig(
   // defaults if it is not explicit in the configuration
   const { urlTemplate = '' } = trackConfig
 
-  let storeClass: string
-  if (trackConfig.storeClass) {
-    storeClass = regularizeClass('JBrowse/Store', trackConfig.storeClass)
-  } else {
-    storeClass = guessStoreClass(trackConfig, urlTemplate)
-  }
+  const storeClass = trackConfig.storeClass
+    ? regularizeClass('JBrowse/Store', trackConfig.storeClass)
+    : guessStoreClass(trackConfig, urlTemplate)
 
   if (!storeClass) {
     console.warn(
@@ -404,7 +401,7 @@ function synthesizeTrackStoreConfig(
 
   // if this is the first sequence store we see, and we have no refseqs store
   // defined explicitly, make this the refseqs store.
-  if (
+  storeConf.name =
     (storeClass === 'JBrowse/Store/Sequence/StaticChunked' ||
       storeClass === 'JBrowse/Store/Sequence/IndexedFasta' ||
       storeClass === 'JBrowse/Store/SeqFeature/IndexedFasta' ||
@@ -413,11 +410,8 @@ function synthesizeTrackStoreConfig(
       storeClass === 'JBrowse/Store/Sequence/TwoBit' ||
       trackConfig.useAsRefSeqStore) &&
     !(mainConf.stores && mainConf.stores.refseqs)
-  ) {
-    storeConf.name = 'refseqs'
-  } else {
-    storeConf.name = `store${objectHash(storeConf)}`
-  }
+      ? 'refseqs'
+      : `store${objectHash(storeConf)}`
   // record it
   if (!mainConf.stores) {
     mainConf.stores = {}

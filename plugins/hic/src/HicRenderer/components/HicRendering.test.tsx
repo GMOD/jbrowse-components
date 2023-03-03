@@ -12,7 +12,7 @@ test('one', () => {
       bpPerPx={3}
       blockKey="test"
       /*
-      // @ts-ignore */
+      // @ts-expect-error */
       displayModel={{}}
     />,
   )

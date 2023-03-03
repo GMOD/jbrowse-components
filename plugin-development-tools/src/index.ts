@@ -1,4 +1,2 @@
-import { createRollupConfig } from './createRollupConfig'
-import { safePackageName, external } from './util'
-
-export { createRollupConfig, safePackageName, external }
+export { createRollupConfig } from './createRollupConfig'
+export { safePackageName, external } from './util'

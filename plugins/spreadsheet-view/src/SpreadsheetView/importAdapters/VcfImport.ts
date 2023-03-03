@@ -47,14 +47,8 @@ function vcfRecordToRow(vcfParser: any, line: string, lineNumber: number): Row {
   return row
 }
 
-export function parseVcfBuffer(
-  buffer: Buffer,
-  options: ParseOptions = {
-    hasColumnNameLine: false,
-    columnNameLineNumber: 0,
-    isValidRefName: () => false,
-  },
-) {
+export function parseVcfBuffer(buffer: Buffer, options: ParseOptions = {}) {
+  const { selectedAssemblyName } = options
   let { header, body } = splitVcfFileHeaderAndBody(bufferToString(buffer))
   const rows: Row[] = []
   const vcfParser = new VCF({ header })
@@ -101,7 +95,7 @@ export function parseVcfBuffer(
     columnDisplayOrder,
     hasColumnNames: true,
     columns,
-    assemblyName: options.selectedAssemblyName,
+    assemblyName: selectedAssemblyName,
   }
 }
 
@@ -118,7 +112,7 @@ export function splitVcfFileHeaderAndBody(wholeFile: string) {
   }
 
   return {
-    header: wholeFile.substr(0, headerEndIndex),
-    body: wholeFile.substr(headerEndIndex),
+    header: wholeFile.slice(0, Math.max(0, headerEndIndex)),
+    body: wholeFile.slice(headerEndIndex),
   }
 }

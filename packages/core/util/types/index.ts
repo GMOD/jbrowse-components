@@ -54,7 +54,7 @@ export interface SnackAction {
 }
 
 export type AssemblyManager = Instance<ReturnType<typeof assemblyManager>>
-export type { TextSearchManager }
+
 export interface BasePlugin {
   version?: string
   name: string
@@ -150,7 +150,7 @@ export function isSessionWithAddTracks(
   thing: unknown,
 ): thing is SessionWithConfigEditing {
   return (
-    // @ts-ignore
+    // @ts-expect-error
     isSessionModel(thing) && 'addTrackConf' in thing && !thing.disableAddTracks
   )
 }
@@ -259,7 +259,7 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    // @ts-ignore
+    // @ts-expect-error
     thing.configuration.trackId
   )
 }
@@ -276,7 +276,7 @@ export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    // @ts-ignore
+    // @ts-expect-error
     thing.configuration.displayId
   )
 }
@@ -441,3 +441,5 @@ export type PreFileLocation =
   | PreUriLocation
   | PreLocalPathLocation
   | PreBlobLocation
+
+export { type default as TextSearchManager } from '../../TextSearch/TextSearchManager'

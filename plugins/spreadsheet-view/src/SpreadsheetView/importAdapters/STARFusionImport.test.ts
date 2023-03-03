@@ -21,7 +21,7 @@ test('starfusion import', async () => {
   })
   expect(spreadsheetSnap).toMatchSnapshot()
 
-  // @ts-ignore
+  // @ts-expect-error
   const spreadsheet = SpreadsheetModel.create(spreadsheetSnap)
   expect(spreadsheet.rowSet.rows.length).toBe(24)
 })

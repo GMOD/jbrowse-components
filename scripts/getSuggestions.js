@@ -39,9 +39,7 @@ async function getFiles(dir) {
     }),
   )
 
-  return files
-    .filter(Boolean)
-    .reduce((all, folderContents) => all.concat(folderContents), [])
+  return files.filter(Boolean).flat()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

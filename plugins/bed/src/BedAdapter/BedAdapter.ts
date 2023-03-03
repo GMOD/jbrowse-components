@@ -140,8 +140,7 @@ export default class BedAdapter extends BaseFeatureDataAdapter {
       )
     })
 
-    for (let i = 0; i < ret.length; i++) {
-      const obj = ret[i]
+    for (const obj of ret) {
       intervalTree.insert([obj.get('start'), obj.get('end')], obj)
     }
     return intervalTree

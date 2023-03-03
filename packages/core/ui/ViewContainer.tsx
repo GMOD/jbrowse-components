@@ -67,7 +67,7 @@ const ViewContainer = observer(function ({
 
   useEffect(() => {
     if (width && isAlive(view)) {
-      view.setWidth(width - parseInt(padWidth, 10) * 2)
+      view.setWidth(width - Number.parseInt(padWidth, 10) * 2)
     }
   }, [padWidth, view, width])
 
@@ -92,10 +92,11 @@ const ViewContainer = observer(function ({
         <Tooltip title="Rename view" arrow>
           <EditableTypography
             value={
-              (view.displayName ||
-                // @ts-ignore
-                view.assemblyNames?.join(',') ||
-                'Untitled view') + (view.minimized ? ' (minimized)' : '')
+              view.displayName ||
+              // @ts-expect-error
+              `${view.assemblyNames?.join(',') || 'Untitled view'}${
+                view.minimized ? ' (minimized)' : ''
+              }`
             }
             setValue={val => view.setDisplayName(val)}
             variant="body2"

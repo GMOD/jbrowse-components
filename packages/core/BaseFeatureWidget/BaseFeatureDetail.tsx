@@ -263,7 +263,7 @@ function Position(props: BaseProps) {
     '1': '+',
   }
   const str = strandMap[strand] ? `(${strandMap[strand]})` : ''
-  // @ts-ignore
+  // @ts-expect-error
   const loc = assembleLocString(feature as ParsedLocString)
   return <>{`${loc} ${str}`}</>
 }
@@ -340,11 +340,15 @@ function DataGridDetails({
 }: {
   name: string
   prefix?: string[]
-  value: Record<string, any>
+  value: Record<string, any>[]
 }) {
   const keys = Object.keys(value[0]).sort()
   const unionKeys = new Set(keys)
-  value.forEach((val: any) => Object.keys(val).forEach(k => unionKeys.add(k)))
+  for (const val of value) {
+    for (const k of Object.keys(val)) {
+      unionKeys.add(k)
+    }
+  }
   if (unionKeys.size < keys.length + 5) {
     // avoids key 'id' from being used in row data
     const rows = Object.entries(value).map(([k, val]) => {
@@ -353,7 +357,7 @@ function DataGridDetails({
         id: k, // used by material UI
         identifier: id, // renamed from id to identifier
         ...rest,
-      }
+      } as { [key: string]: unknown }
     })
 
     // avoids key 'id' from being used in column names, and tries
@@ -477,13 +481,13 @@ export function Attributes(props: {
     prefix = [],
   } = props
 
-  const omits = [...omit, ...globalOmit, ...omitSingleLevel]
+  const omits = new Set([...omit, ...globalOmit, ...omitSingleLevel])
   const { __jbrowsefmt, ...rest } = attributes
   const formattedAttributes = { ...rest, ...__jbrowsefmt }
 
   const maxLabelWidth = generateMaxWidth(
     Object.entries(formattedAttributes).filter(
-      ([k, v]) => v !== undefined && !omits.includes(k),
+      ([k, v]) => v !== undefined && !omits.has(k),
     ),
     prefix,
   )
@@ -491,7 +495,7 @@ export function Attributes(props: {
   return (
     <>
       {Object.entries(formattedAttributes)
-        .filter(([k, v]) => v !== undefined && !omits.includes(k))
+        .filter(([k, v]) => v !== undefined && !omits.has(k))
         .map(([key, value]) => {
           const description = accessNested([...prefix, key], descriptions)
           if (Array.isArray(value)) {
@@ -589,7 +593,7 @@ export function FeatureDetails(props: {
   formatter?: (val: unknown, key: string) => React.ReactNode
 }) {
   const { omit = [], model, feature, depth = 0 } = props
-  const { name = '', id = '', type = '', subfeatures } = feature
+  const { mate, name = '', id = '', type = '', subfeatures } = feature
   const pm = getEnv(model).pluginManager
   const session = getSession(model)
 
@@ -602,12 +606,12 @@ export function FeatureDetails(props: {
     <BaseCard title={generateTitle(name, id, type)}>
       <Typography>Core details</Typography>
       <CoreDetails {...props} />
-      {feature.mate ? (
+      {mate ? (
         <>
           <Divider />
           <Typography>Mate details</Typography>
-          {/* @ts-ignore */}
-          <CoreDetails {...props} feature={feature.mate} />
+          {/* @ts-expect-error */}
+          <CoreDetails {...props} feature={mate} />
         </>
       ) : null}
       <Divider />
@@ -664,9 +668,7 @@ export default observer(function ({ model }: BaseInputProps) {
   // config guide. this replacement happens both here and when snapshotting the
   // featureData
   const g = JSON.parse(
-    JSON.stringify(featureData, (_, v) =>
-      typeof v === 'undefined' ? null : v,
-    ),
+    JSON.stringify(featureData, (_, v) => (v === undefined ? null : v)),
   )
   return isEmpty(g) ? null : <FeatureDetails model={model} feature={g} />
 })

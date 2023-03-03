@@ -125,7 +125,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get assemblyNames() {
-        return [...new Set(self.views.map(v => v.assemblyNames).flat())]
+        return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
     }))
     .actions(self => ({
@@ -158,7 +158,7 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.views.forEach(view => {
           const ret = getPath(view)
           if (ret.lastIndexOf(path) !== ret.length - path.length) {
-            // @ts-ignore
+            // @ts-expect-error
             view[actionName](args?.[0])
           }
         })
@@ -257,9 +257,11 @@ function stateModelFactory(pluginManager: PluginManager) {
           throw new Error(`unknown track type ${configuration.type}`)
         }
         const viewType = pluginManager.getViewType(self.type)
-        const supportedDisplays = viewType.displayTypes.map(d => d.name)
+        const supportedDisplays = new Set(
+          viewType.displayTypes.map(d => d.name),
+        )
         const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.includes(d.type),
+          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
         )
         if (!displayConf) {
           throw new Error(

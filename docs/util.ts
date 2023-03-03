@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as ts from 'typescript'
-import util from 'util'
+import { promisify } from 'util'
 import { exec } from 'child_process'
-const exec2 = util.promisify(exec)
+const exec2 = promisify(exec)
 
 interface Node {
   signature?: string
@@ -31,7 +31,7 @@ export function extractWithComment(
   function visit(node: ts.Node) {
     const count = node.getChildCount()
 
-    // @ts-ignore
+    // @ts-expect-error
     const symbol = checker.getSymbolAtLocation(node.name)
     if (symbol) {
       serializeSymbol(symbol, node, cb)

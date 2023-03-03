@@ -5,7 +5,7 @@ import { SpreadsheetViewModel } from '../SpreadsheetView'
 export default (pluginManager: PluginManager) => {
   pluginManager.addToExtensionPoint(
     'LaunchView-SpreadsheetView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       assembly,

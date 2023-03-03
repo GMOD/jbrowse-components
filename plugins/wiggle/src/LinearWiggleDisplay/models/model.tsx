@@ -216,11 +216,7 @@ function stateModelFactory(
        * #action
        */
       toggleLogScale() {
-        if (self.scale !== 'log') {
-          self.scale = 'log'
-        } else {
-          self.scale = 'linear'
-        }
+        self.scale = self.scale === 'log' ? 'linear' : 'log'
       },
 
       /**

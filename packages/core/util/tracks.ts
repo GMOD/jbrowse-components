@@ -198,7 +198,6 @@ export function guessTrackType(
   model?: IAnyStateTreeNode,
 ): string {
   if (model) {
-    // @ts-ignore
     const session = getSession(model)
 
     const trackTypeGuesser = getEnv(
@@ -255,7 +254,7 @@ export function getTrackName(
   conf: AnyConfigurationModel,
   session: { assemblies: AnyConfigurationModel[] },
 ) {
-  const trackName = readConfObject(conf, 'name')
+  const trackName = readConfObject(conf, 'name') as string
   if (!trackName && readConfObject(conf, 'type') === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
     return asm

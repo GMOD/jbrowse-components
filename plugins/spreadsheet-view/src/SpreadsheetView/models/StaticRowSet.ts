@@ -26,7 +26,7 @@ const StaticRowModel = types
     get sortedRows() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const parent = getParent<any>(self)
-      return self.rows.slice().sort(parent.rowSortingComparisonFunction)
+      return [...self.rows].sort(parent.rowSortingComparisonFunction)
     },
 
     get selectedRows() {

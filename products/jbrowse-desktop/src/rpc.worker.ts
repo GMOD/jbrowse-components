@@ -1,7 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 
-// @ts-ignore
 import RpcServer from 'librpc-web-mod'
 import { enableStaticRendering } from 'mobx-react'
 
@@ -69,7 +68,7 @@ function wrapForRpc(func: RpcFunc) {
       {
         ...args,
         statusCallback: (message: string) => {
-          // @ts-ignore
+          // @ts-expect-error
           self.rpcServer.emit(channel, message)
         },
       },
@@ -86,7 +85,7 @@ getPluginManager()
         .map(entry => [entry.name, wrapForRpc(entry.execute.bind(entry))]),
     )
 
-    // @ts-ignore
+    // @ts-expect-error
     self.rpcServer = new RpcServer.Server({
       ...rpcConfig,
       ...remoteAbortRpcHandler(),

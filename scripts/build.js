@@ -95,49 +95,39 @@ function getDependencyGraph(packages) {
       path.join(workspaceRoot, packageInfo.location, 'package.json'),
     )
     const packageJson = JSON.parse(packageJsonText)
-    DEPENDENCY_TYPES.forEach(dt => {
+    for (const dt of DEPENDENCY_TYPES) {
       if (packageJson[dt]) {
-        Object.keys(packageJson[dt]).forEach(k => {
+        for (const k of Object.keys(packageJson[dt])) {
           if (!dependencies.includes(k) && packages[k]) {
             dependencies.push(k)
           }
-        })
+        }
       }
-    })
-    dependencies.forEach(dep => {
+    }
+    for (const dep of dependencies) {
       if (!graph.hasNode(dep)) {
         graph.addNode(dep)
       }
       graph.addDependency(packageName, dep)
-    })
+    }
   })
   return graph
 }
 
 function getLevels(graph, levels = []) {
-  const done = flattened(levels)
+  const done = levels.flat()
   const newLevel = []
-  Object.keys(graph.nodes)
-    .filter(n => !done.includes(n))
-    .forEach(n => {
-      const deps = graph.dependenciesOf(n)
-      if (!done.includes(n) && deps.every(d => done.includes(d))) {
-        newLevel.push(n)
-      }
-    })
+  for (const n of Object.keys(graph.nodes).filter(n => !done.includes(n))) {
+    const deps = graph.dependenciesOf(n)
+    if (!done.includes(n) && deps.every(d => done.includes(d))) {
+      newLevel.push(n)
+    }
+  }
   levels.push(newLevel)
   if (graph.size() !== done.length + newLevel.length) {
     getLevels(graph, levels)
   }
   return levels
-}
-
-/**
- * Returns a flattened version of an array. Can replace with
- * `array.prototype.flat` if only using node >=11
- */
-function flattened(array) {
-  return [].concat(...array)
 }
 
 main()

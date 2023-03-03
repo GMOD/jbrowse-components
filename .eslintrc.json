@@ -4,6 +4,7 @@
   },
   "extends": [
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:monorepo/recommended",
     "plugin:prettier/recommended",
     "react-app"
@@ -26,8 +27,18 @@
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-unused-vars": ["warn"],
     "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/restrict-template-expressions": 0,
+    "@typescript-eslint/restrict-plus-operands": 0,
+    "@typescript-eslint/no-misused-promises": 0,
+    "@typescript-eslint/require-await": 0,
+    "@typescript-eslint/unbound-method": 0,
     "@typescript-eslint/no-unused-expressions": "off",
     "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
+    "@typescript-eslint/no-unsafe-argument": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-return": "off",
 
     "no-use-before-define": "off",
     "curly": "error",

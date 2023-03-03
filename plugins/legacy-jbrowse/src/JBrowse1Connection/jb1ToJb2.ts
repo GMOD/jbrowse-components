@@ -139,17 +139,15 @@ export function convertTrackConfig(
         cramLocation: { uri: urlTemplate, locationType: 'UriLocation' },
         sequenceAdapter,
       }
-      if (jb1TrackConfig.craiUrlTemplate) {
-        adapter.craiLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.craiLocation = {
-          uri: `${urlTemplate}.crai`,
-          locationType: 'UriLocation',
-        }
-      }
+      adapter.craiLocation = jb1TrackConfig.craiUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.craiUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.crai`,
+            locationType: 'UriLocation',
+          }
       return {
         ...jb2TrackConfig,
         type: 'AlignmentsTrack',
@@ -346,17 +344,15 @@ export function convertTrackConfig(
         type: 'IndexedFastaAdapter',
         fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
-      if (jb1TrackConfig.faiUrlTemplate) {
-        adapter.faiLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.faiLocation = {
-          uri: `${urlTemplate}.fai`,
-          locationType: 'UriLocation',
-        }
-      }
+      adapter.faiLocation = jb1TrackConfig.faiUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.fai`,
+            locationType: 'UriLocation',
+          }
       return {
         ...jb2TrackConfig,
         type: 'SequenceTrack',
@@ -368,28 +364,24 @@ export function convertTrackConfig(
         type: 'BgzipFastaAdapter',
         fastaLocation: { uri: urlTemplate, locationType: 'UriLocation' },
       }
-      if (jb1TrackConfig.faiUrlTemplate) {
-        adapter.faiLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.faiLocation = {
-          uri: `${urlTemplate}.fai`,
-          locationType: 'UriLocation',
-        }
-      }
-      if (jb1TrackConfig.gziUrlTemplate) {
-        adapter.gziLocation = {
-          uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
-          locationType: 'UriLocation',
-        }
-      } else {
-        adapter.gziLocation = {
-          uri: `${urlTemplate}.gzi`,
-          locationType: 'UriLocation',
-        }
-      }
+      adapter.faiLocation = jb1TrackConfig.faiUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.faiUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.fai`,
+            locationType: 'UriLocation',
+          }
+      adapter.gziLocation = jb1TrackConfig.gziUrlTemplate
+        ? {
+            uri: resolveUrlTemplate(jb1TrackConfig.gziUrlTemplate),
+            locationType: 'UriLocation',
+          }
+        : {
+            uri: `${urlTemplate}.gzi`,
+            locationType: 'UriLocation',
+          }
       return {
         ...jb2TrackConfig,
         type: 'ReferenceSequenceTrack',

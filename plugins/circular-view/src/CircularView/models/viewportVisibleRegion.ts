@@ -13,8 +13,7 @@ function findCircleIntersectionX(
     resultArray.push([cx, y])
   }
   const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([cx - solution, y])
-  resultArray.push([cx + solution, y])
+  resultArray.push([cx - solution, y], [cx + solution, y])
 }
 
 function findCircleIntersectionY(
@@ -32,8 +31,7 @@ function findCircleIntersectionY(
     resultArray.push([x, cy])
   }
   const solution = Math.sqrt(r * r - d * d)
-  resultArray.push([x, cy - solution])
-  resultArray.push([x, cy + solution])
+  resultArray.push([x, cy - solution], [x, cy + solution])
 }
 
 function cartesianToTheta(x: number, y: number) {

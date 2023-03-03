@@ -6,7 +6,7 @@ import { transaction } from 'mobx'
 export default function LaunchDotplotView(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'LaunchView-DotplotView',
-    // @ts-ignore
+    // @ts-expect-error
     async ({
       session,
       views,

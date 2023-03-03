@@ -53,9 +53,9 @@ const realLocation = window.location
 
 // https://stackoverflow.com/a/60110508/2129219
 function setWindowLoc(loc: string) {
-  // @ts-ignore
+  // @ts-expect-error
   delete window.location
-  // @ts-ignore
+  // @ts-expect-error
   window.location = new URL(loc)
 }
 

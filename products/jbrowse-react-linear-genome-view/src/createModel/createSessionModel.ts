@@ -208,9 +208,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
-          return Array.from(self.activeWidgets.values())[
-            self.activeWidgets.size - 1
-          ]
+          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
         }
         return undefined
       },
@@ -399,7 +397,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
         typeName: string,
         id: string,
         initialState = {},
-        configuration = { type: typeName },
+        conf?: unknown,
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
         if (!typeDefinition) {
@@ -409,7 +407,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
           ...initialState,
           id,
           type: typeName,
-          configuration,
+          configuration: conf || { type: typeName },
         }
         self.widgets.set(id, data)
         return self.widgets.get(id)

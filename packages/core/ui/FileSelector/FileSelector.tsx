@@ -37,7 +37,7 @@ function ToggleButtonWithTooltip(props: ToggleButtonProps) {
 
 function shorten(str: string, len: number) {
   if (typeof str === 'string' && str.length > len) {
-    return `${str.substring(0, len)}…`
+    return `${str.slice(0, Math.max(0, len))}…`
   }
   return str
 }
@@ -59,7 +59,7 @@ const FileSelector = observer(
         : fileOrUrl,
     )
     const accts = isAppRootModel(rootModel)
-      ? rootModel.internetAccounts.slice()
+      ? [...rootModel.internetAccounts]
       : []
     const numShown = 2
     const [shownAccts, setShownAccts] = useState(accts.slice(0, numShown))
@@ -148,8 +148,8 @@ const FileSelector = observer(
                     : toggleContents || shorten(name, 5)}
                 </ToggleButtonWithTooltip>
               ))}
-              {hiddenAccts.length ? (
-                // @ts-ignore
+              {hiddenAccts.length > 0 ? (
+                // @ts-expect-error
                 <ToggleButton
                   onClick={event => setAnchorEl(event.target as HTMLElement)}
                   selected={false}
@@ -179,10 +179,7 @@ const FileSelector = observer(
                   value={acct.internetAccountId}
                   onClick={() => {
                     const prev = shownAccts[shownAccts.length - 1]
-                    setShownAccts([
-                      ...shownAccts.slice(0, shownAccts.length - 1),
-                      acct,
-                    ])
+                    setShownAccts([...shownAccts.slice(0, -1), acct])
                     setHiddenAccts([
                       prev,
                       ...hiddenAccts.slice(0, idx),

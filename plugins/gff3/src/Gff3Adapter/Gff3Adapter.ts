@@ -45,23 +45,20 @@ export default class extends BaseFeatureDataAdapter {
       disableDerivesFromReferences: true,
     })
 
-    const intervalTree = feats
-      .flat()
-      .map(
-        (f, i) =>
-          new SimpleFeature({
-            data: this.featureData(f),
-            id: `${this.id}-offset-${i}`,
-          }),
-      )
-      .reduce((acc, obj) => {
-        const key = obj.get('refName')
-        if (!acc[key]) {
-          acc[key] = new IntervalTree()
-        }
-        acc[key].insert([obj.get('start'), obj.get('end')], obj)
-        return acc
-      }, {} as Record<string, IntervalTree>)
+    const intervalTree = {} as Record<string, IntervalTree>
+    for (const obj of feats.flat().map(
+      (f, i) =>
+        new SimpleFeature({
+          data: this.featureData(f),
+          id: `${this.id}-offset-${i}`,
+        }),
+    )) {
+      const key = obj.get('refName')
+      if (!intervalTree[key]) {
+        intervalTree[key] = new IntervalTree()
+      }
+      intervalTree[key].insert([obj.get('start'), obj.get('end')], obj)
+    }
 
     return { header, intervalTree }
   }
@@ -122,7 +119,7 @@ export default class extends BaseFeatureDataAdapter {
     if (data.phase === null) {
       delete f.score
     }
-    const defaultFields = [
+    const defaultFields = new Set([
       'start',
       'end',
       'seq_id',
@@ -131,11 +128,11 @@ export default class extends BaseFeatureDataAdapter {
       'source',
       'phase',
       'strand',
-    ]
+    ])
     const dataAttributes = data.attributes || {}
-    Object.keys(dataAttributes).forEach(a => {
+    for (const a of Object.keys(dataAttributes)) {
       let b = a.toLowerCase()
-      if (defaultFields.includes(b)) {
+      if (defaultFields.has(b)) {
         // add "suffix" to tag name if it already exists
         // reproduces behavior of NCList
         b += '2'
@@ -147,14 +144,14 @@ export default class extends BaseFeatureDataAdapter {
         }
         f[b] = attr
       }
-    })
+    }
     f.refName = f.seq_id
 
     // the SimpleFeature constructor takes care of recursively inflating subfeatures
-    if (data.child_features && data.child_features.length) {
-      f.subfeatures = data.child_features
-        .map(childLocs => childLocs.map(childLoc => this.featureData(childLoc)))
-        .flat()
+    if (data.child_features && data.child_features.length > 0) {
+      f.subfeatures = data.child_features.flatMap(childLocs =>
+        childLocs.map(childLoc => this.featureData(childLoc)),
+      )
     }
 
     delete f.child_features

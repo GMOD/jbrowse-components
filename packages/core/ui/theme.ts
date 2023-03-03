@@ -258,7 +258,7 @@ function createDefaultProps(theme?: ThemeOptions) {
         },
         styleOverrides: {
           secondary: {
-            // @ts-ignore
+            // @ts-expect-error
             backgroundColor: theme?.palette?.quaternary?.main,
           },
         },
@@ -381,11 +381,11 @@ function createDefaultProps(theme?: ThemeOptions) {
       MuiAccordionSummary: {
         styleOverrides: {
           root: {
-            // @ts-ignore
+            // @ts-expect-error
             backgroundColor: theme?.palette?.tertiary?.main,
           },
           content: {
-            // @ts-ignore
+            // @ts-expect-error
             color: theme?.palette?.tertiary?.contrastText,
           },
         },

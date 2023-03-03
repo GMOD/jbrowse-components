@@ -83,7 +83,7 @@ export function intersect<T>(
   a2: T[] = [],
   ...rest: T[][]
 ): T[] {
-  const ids = a2.map(elt => cb(elt))
-  const a12 = a1.filter(value => ids.includes(cb(value)))
+  const ids = new Set(a2.map(elt => cb(elt)))
+  const a12 = a1.filter(value => ids.has(cb(value)))
   return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }

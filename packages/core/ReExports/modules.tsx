@@ -586,12 +586,12 @@ const libs = {
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,
 }
 
-const libsList = Array.from(Object.keys(libs))
+const libsList = Object.keys(libs)
 
 // make sure that all the items in the ReExports/list array (used by build
 // systems and such) are included here, and vice versa
 const inLibsOnly = libsList.filter(mod => !reExportsList.includes(mod))
-if (inLibsOnly.length) {
+if (inLibsOnly.length > 0) {
   throw new Error(
     `The following modules are in the re-exports list, but not the modules libs: ${inLibsOnly.join(
       ', ',

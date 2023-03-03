@@ -50,7 +50,7 @@ export default class extends BaseFeatureDataAdapter {
       )
       const feats = await firstValueFrom(ret.pipe(toArray()))
       const residues: string = feats[0]?.get('seq') || ''
-      const search = this.getConf('search')
+      const search = this.getConf('search') as string
       const searchForward = this.getConf('searchForward')
       const searchReverse = this.getConf('searchReverse')
       const caseInsensitive = this.getConf('caseInsensitive')

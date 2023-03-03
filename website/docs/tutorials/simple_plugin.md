@@ -424,9 +424,9 @@ import { getSession } from '@jbrowse/core/util'
         const session = getSession(chordTrack)
 
         if (session) {
-          // @ts-ignore
+          // @ts-expect-error
           session.showWidget(
-            // @ts-ignore
+            // @ts-expect-error
             session.addWidget(
               'CircularViewChordWidget',
               'circularViewChordWidget',

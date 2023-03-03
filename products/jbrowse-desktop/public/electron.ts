@@ -231,10 +231,9 @@ async function createWindow() {
 
   const isMac = process.platform === 'darwin'
 
-  // @ts-ignore
   const mainMenu = Menu.buildFromTemplate([
     // { role: 'appMenu' }
-    // @ts-ignore
+    // @ts-expect-error
     ...(isMac
       ? [
           {
@@ -255,7 +254,7 @@ async function createWindow() {
       : []),
     {
       label: 'File',
-      // @ts-ignore
+      // @ts-expect-error
       submenu: [isMac ? { role: 'close' } : { role: 'quit' }],
     },
     {
@@ -267,7 +266,7 @@ async function createWindow() {
         { role: 'cut' },
         { role: 'copy' },
         { role: 'paste' },
-        // @ts-ignore
+        // @ts-expect-error
         ...(isMac
           ? [
               { role: 'pasteAndMatchStyle' },
@@ -286,12 +285,12 @@ async function createWindow() {
       label: 'View',
       submenu: [
         { role: 'reload' },
-        // @ts-ignore
+        // @ts-expect-error
         { role: 'toggledevtools' },
         { type: 'separator' },
-        // @ts-ignore
+        // @ts-expect-error
         { role: 'zoomin' },
-        // @ts-ignore
+        // @ts-expect-error
         { role: 'zoomout' },
         { type: 'separator' },
         { role: 'togglefullscreen' },
@@ -302,7 +301,7 @@ async function createWindow() {
       submenu: [
         { role: 'minimize' },
         { role: 'zoom' },
-        // @ts-ignore
+        // @ts-expect-error
         ...(isMac
           ? [
               { type: 'separator' },
@@ -316,7 +315,7 @@ async function createWindow() {
     {
       label: 'Help',
       role: 'help',
-      // @ts-ignore
+      // @ts-expect-error
       submenu: [
         {
           label: 'Learn More',
@@ -376,11 +375,11 @@ ipcMain.handle(
   'indexFasta',
   async (event: unknown, location: { uri: string } | { localPath: string }) => {
     const filename = 'localPath' in location ? location.localPath : location.uri
-    const faiPath = getFaiPath(path.basename(filename) + Date.now() + '.fai')
+    const faiPath = getFaiPath(`${path.basename(filename)}${+Date.now()}.fai`)
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)
 
-    // @ts-ignore
+    // @ts-expect-error
     await generateFastaIndex(write, stream)
     return faiPath
   },
@@ -391,11 +390,9 @@ ipcMain.handle(
   async (_event: unknown, showAutosaves: boolean) => {
     const sessions = await readRecentSessions()
 
-    if (!showAutosaves) {
-      return sessions.filter(f => !f.path.startsWith(autosaveDir))
-    } else {
-      return sessions
-    }
+    return showAutosaves
+      ? sessions
+      : sessions.filter(f => !f.path.startsWith(autosaveDir))
   },
 )
 
@@ -610,7 +607,7 @@ autoUpdater.on('checking-for-update', () => {
 })
 
 autoUpdater.on('error', err => {
-  sendStatusToWindow('Error in auto-updater. ' + err)
+  sendStatusToWindow(`Error in auto-updater: ${err}`)
 })
 
 autoUpdater.on('update-downloaded', () => {

@@ -1,19 +1,8 @@
-import BoxRendererType from './BoxRendererType'
-import CircularChordRendererType from './CircularChordRendererType'
-import ComparativeServerSideRendererType from './ComparativeServerSideRendererType'
-import FeatureRendererType from './FeatureRendererType'
-import RendererType, { RenderProps } from './RendererType'
-import ServerSideRenderedContent from './ServerSideRenderedContent'
-import ServerSideRendererType from './ServerSideRendererType'
+export { default as BoxRendererType } from './BoxRendererType'
+export { default as ComparativeServerSideRendererType } from './ComparativeServerSideRendererType'
+export { default as CircularChordRendererType } from './CircularChordRendererType'
+export { default as RendererType, type RenderProps } from './RendererType'
+export { default as FeatureRendererType } from './FeatureRendererType'
+export { default as ServerSideRenderedContent } from './ServerSideRenderedContent'
 
-export {
-  BoxRendererType,
-  CircularChordRendererType,
-  ComparativeServerSideRendererType,
-  FeatureRendererType,
-  RendererType,
-  ServerSideRenderedContent,
-  ServerSideRendererType,
-}
-
-export type { RenderProps }
+export { default as ServerSideRendererType } from './ServerSideRendererType'

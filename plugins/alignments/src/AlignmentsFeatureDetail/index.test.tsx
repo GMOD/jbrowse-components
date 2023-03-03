@@ -18,7 +18,7 @@ test('open up a widget', () => {
   })
   const session = Session.create(
     {
-      // @ts-ignore
+      // @ts-expect-error
       widget: { type: 'AlignmentsFeatureWidget' },
     },
     { pluginManager },

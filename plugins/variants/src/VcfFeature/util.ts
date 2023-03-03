@@ -92,7 +92,7 @@ export function getSOAndDescFromAltDefs(
   if (modAlt.length > 1) {
     return getSOAndDescFromAltDefs(
       ref,
-      `<${modAlt.slice(0, modAlt.length - 1).join(':')}>`,
+      `<${modAlt.slice(0, -1).join(':')}>`,
       parser,
     )
   }

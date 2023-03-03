@@ -26,4 +26,7 @@ export default class SVGPlugin extends Plugin {
   }
 }
 
-export { svgFeatureRendererConfigSchema, SvgFeatureRendererReactComponent }
+export {
+  configSchema as svgFeatureRendererConfigSchema,
+  ReactComponent as SvgFeatureRendererReactComponent,
+} from './SvgFeatureRenderer'

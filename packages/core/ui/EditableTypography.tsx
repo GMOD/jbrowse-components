@@ -54,7 +54,7 @@ const EditableTypography = React.forwardRef<HTMLDivElement, Props>(
 
     // possibly tss-react does not understand the passing of props to
     // useStyles, but it appears to work
-    // @ts-ignore
+    // @ts-expect-error
     const { classes } = useStyles(props, { props })
     const theme = useTheme()
 

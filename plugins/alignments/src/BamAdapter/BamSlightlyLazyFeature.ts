@@ -76,17 +76,17 @@ export default class BamSlightlyLazyFeature implements Feature {
     )
 
     return [
-      ...new Set(
-        properties
+      ...new Set([
+        ...properties
           .filter(
             prop =>
               prop.startsWith('_get_') &&
               prop !== '_get_mismatches' &&
               prop !== '_get_tags',
           )
-          .map(methodName => methodName.replace('_get_', ''))
-          .concat(this.record._tags()),
-      ),
+          .map(methodName => methodName.replace('_get_', '')),
+        ...this.record._tags(),
+      ]),
     ]
   }
 
@@ -97,9 +97,9 @@ export default class BamSlightlyLazyFeature implements Feature {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get(field: string): any {
     const methodName = `_get_${field}`
-    // @ts-ignore
+    // @ts-expect-error
     if (this[methodName]) {
-      // @ts-ignore
+      // @ts-expect-error
       return this[methodName]()
     }
     return this.record.get(field)

@@ -361,9 +361,7 @@ export default function sessionModelFactory(
       get visibleWidget() {
         if (isAlive(self)) {
           // returns most recently added item in active widgets
-          return Array.from(self.activeWidgets.values())[
-            self.activeWidgets.size - 1
-          ]
+          return [...self.activeWidgets.values()][self.activeWidgets.size - 1]
         }
         return undefined
       },
@@ -480,7 +478,7 @@ export default function sessionModelFactory(
        * #action
        */
       addSessionPlugin(plugin: JBrowsePlugin) {
-        if (self.sessionPlugins.find(p => p.name === plugin.name)) {
+        if (self.sessionPlugins.some(p => p.name === plugin.name)) {
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
@@ -726,7 +724,7 @@ export default function sessionModelFactory(
         if (self.adminMode) {
           return getParent<any>(self).jbrowse.addTrackConf(trackConf)
         }
-        const { trackId, type } = trackConf
+        const { trackId, type } = trackConf as { type: string; trackId: string }
         if (!type) {
           throw new Error(`unknown track type ${type}`)
         }
@@ -770,7 +768,10 @@ export default function sessionModelFactory(
         if (self.adminMode) {
           return getParent<any>(self).jbrowse.addConnectionConf(connectionConf)
         }
-        const { connectionId, type } = connectionConf
+        const { connectionId, type } = connectionConf as {
+          type: string
+          connectionId: string
+        }
         if (!type) {
           throw new Error(`unknown connection type ${type}`)
         }
@@ -838,7 +839,7 @@ export default function sessionModelFactory(
         typeName: string,
         id: string,
         initialState = {},
-        configuration = { type: typeName },
+        conf?: unknown,
       ) {
         const typeDefinition = pluginManager.getElementType('widget', typeName)
         if (!typeDefinition) {
@@ -848,7 +849,7 @@ export default function sessionModelFactory(
           ...initialState,
           id,
           type: typeName,
-          configuration,
+          configuration: conf || { type: typeName },
         }
         self.widgets.set(id, data)
         return self.widgets.get(id)
@@ -1012,7 +1013,7 @@ export default function sessionModelFactory(
        */
       editTrackConfiguration(configuration: AnyConfigurationModel) {
         const { adminMode, sessionTracks } = self
-        if (!adminMode && sessionTracks.indexOf(configuration) === -1) {
+        if (!adminMode && sessionTracks.includes(configuration)) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         this.editConfiguration(configuration)
@@ -1096,10 +1097,10 @@ export default function sessionModelFactory(
   ) as typeof sessionModel
 
   return types.snapshotProcessor(addSnackbarToModel(extendedSessionModel), {
-    // @ts-ignore
+    // @ts-expect-error
     preProcessor(snapshot) {
       if (snapshot) {
-        // @ts-ignore
+        // @ts-expect-error
         const { connectionInstances, ...rest } = snapshot || {}
         // connectionInstances schema changed from object to an array, so any
         // old connectionInstances as object is in snapshot, filter it out

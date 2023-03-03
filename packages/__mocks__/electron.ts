@@ -1,7 +1,7 @@
 import createIPCMock from 'electron-mock-ipc'
 const { ipcMain, ipcRenderer } = createIPCMock()
 
-// @ts-ignore
+// @ts-expect-error
 window.require = () => {
   return {
     ...jest.requireActual('electron'),

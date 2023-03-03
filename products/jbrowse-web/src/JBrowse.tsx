@@ -29,9 +29,9 @@ export default observer(function ({
 
   useEffect(() => {
     setSessionId(`local-${currentSessionId}`)
-    // @ts-ignore
+    // @ts-expect-error
     window.JBrowseRootModel = rootModel
-    // @ts-ignore
+    // @ts-expect-error
     window.JBrowseSession = session
   }, [currentSessionId, rootModel, session, setSessionId])
 

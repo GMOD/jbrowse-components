@@ -41,14 +41,14 @@ test('copy and delete reference sequence track disabled', async () => {
   const { view, rootModel, session, queryByText, findByTestId, findByText } =
     createView(undefined, true)
 
-  // @ts-ignore
+  // @ts-expect-error
   const { assemblyManager } = rootModel
 
   await findByText('Help')
   view.setNewView(0.05, 5000)
   const trackConf = getConf(assemblyManager.get('volvox'), 'sequence')
 
-  // @ts-ignore
+  // @ts-expect-error
   const trackMenuItems = session.getTrackActionMenuItems(trackConf)
 
   // copy ref seq track disabled

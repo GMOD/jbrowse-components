@@ -21,4 +21,5 @@ export default (pluginManager: PluginManager) => {
   })
 }
 
-export { modelFactory, configSchema }
+export { default as modelFactory } from './model'
+export { default as configSchema } from './configSchema'

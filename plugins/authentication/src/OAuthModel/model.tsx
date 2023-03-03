@@ -224,11 +224,9 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
               self.storeToken(token)
               return resolve(token)
             } catch (error) {
-              if (error instanceof Error) {
-                return reject(error)
-              } else {
-                return reject(new Error(String(error)))
-              }
+              return error instanceof Error
+                ? reject(error)
+                : reject(new Error(String(error)))
             }
           }
           if (redirectUriWithInfo.includes('access_denied')) {
@@ -321,7 +319,7 @@ const stateModelFactory = (configSchema: OAuthInternetAccountConfigModel) => {
           location: UriLocation,
         ): Promise<string> {
           const decoded = jwtDecode<JwtPayload>(token)
-          if (decoded.exp && decoded.exp < new Date().getTime() / 1000) {
+          if (decoded.exp && decoded.exp < Date.now() / 1000) {
             const refreshToken =
               self.hasRefreshToken && self.retrieveRefreshToken()
             if (refreshToken) {

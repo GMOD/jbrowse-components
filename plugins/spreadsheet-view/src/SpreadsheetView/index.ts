@@ -1,10 +1,7 @@
 import { lazy } from 'react'
 import { ViewType } from '@jbrowse/core/pluggableElementTypes'
 import PluginManager from '@jbrowse/core/PluginManager'
-import stateModel, {
-  SpreadsheetViewModel,
-  SpreadsheetViewStateModel,
-} from './models/SpreadsheetView'
+import stateModel from './models/SpreadsheetView'
 
 export default (pluginManager: PluginManager) => {
   pluginManager.addViewType(() => {
@@ -17,4 +14,7 @@ export default (pluginManager: PluginManager) => {
   })
 }
 
-export type { SpreadsheetViewStateModel, SpreadsheetViewModel }
+export {
+  type SpreadsheetViewModel,
+  type SpreadsheetViewStateModel,
+} from './models/SpreadsheetView'

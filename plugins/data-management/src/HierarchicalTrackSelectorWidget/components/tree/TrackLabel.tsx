@@ -55,7 +55,7 @@ export default function TrackLabel({ data }: { data: NodeData }) {
               onChange={() => onChange(id)}
               disabled={isUnsupported(name)}
               inputProps={{
-                // @ts-ignore
+                // @ts-expect-error
                 'data-testid': `htsTrackEntry-${id}`,
               }}
             />

@@ -26,9 +26,7 @@ export default function (pm: PluginManager) {
                       .map((c, idx) => ({ ...c, source: trackIds[idx] }))
                     const assemblyNames = [
                       ...new Set(
-                        tracks
-                          .map(c => readConfObject(c, 'assemblyNames'))
-                          .flat(),
+                        tracks.flatMap(c => readConfObject(c, 'assemblyNames')),
                       ),
                     ]
                     const now = +Date.now()

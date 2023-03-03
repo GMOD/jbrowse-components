@@ -123,7 +123,7 @@ export default class Create extends JBrowseCommand {
   }
 
   async catch(error: unknown) {
-    // @ts-ignore
+    // @ts-expect-error
     if (error.parse && error.parse.output.flags.listVersions) {
       const versions = (await this.fetchGithubVersions()).map(
         version => version.tag_name,

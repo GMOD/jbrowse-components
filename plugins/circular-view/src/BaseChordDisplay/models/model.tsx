@@ -244,7 +244,7 @@ export const BaseChordDisplayModel = types
         self,
         renderReactionData,
 
-        // @ts-ignore
+        // @ts-expect-error
         renderReactionEffect,
         {
           name: `${self.type} ${self.id} rendering`,

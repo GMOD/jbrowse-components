@@ -154,18 +154,12 @@ const FilterModelType = types
   }))
   .actions(self => ({
     setFirstNumber(n: number) {
-      if (Number.isNaN(n) || typeof n !== 'number') {
-        self.firstNumber = undefined
-      } else {
-        self.firstNumber = n
-      }
+      self.firstNumber =
+        Number.isNaN(n) || typeof n !== 'number' ? undefined : n
     },
     setSecondNumber(n: number) {
-      if (Number.isNaN(n) || typeof n !== 'number') {
-        self.secondNumber = undefined
-      } else {
-        self.secondNumber = n
-      }
+      self.secondNumber =
+        Number.isNaN(n) || typeof n !== 'number' ? undefined : n
     },
     setOperation(op: string) {
       self.operation = op

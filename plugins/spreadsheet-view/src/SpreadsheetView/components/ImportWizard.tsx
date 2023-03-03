@@ -33,15 +33,16 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
   const { assemblyNames, assemblyManager } = session
   const {
     fileType,
+    canCancel,
+    fileSource,
+    isReadyToOpen,
     fileTypes,
-    setFileType,
     hasColumnNameLine,
-    toggleHasColumnNameLine,
     error,
   } = model
   const [selected, setSelected] = useState(assemblyNames[0])
   const err = assemblyManager.get(selected)?.error || error
-  const showRowControls = model.fileType === 'CSV' || model.fileType === 'TSV'
+  const showRowControls = fileType === 'CSV' || fileType === 'TSV'
   const rootModel = getRoot(model)
 
   return (
@@ -59,8 +60,8 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
             <FormLabel component="legend">Tabular file</FormLabel>
             <FormGroup>
               <FileSelector
-                location={model.fileSource}
-                setLocation={model.setFileSource}
+                location={fileSource}
+                setLocation={arg => model.setFileSource(arg)}
                 rootModel={rootModel as AbstractRootModel}
               />
             </FormGroup>
@@ -77,7 +78,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
                       <FormControlLabel
                         checked={fileType === fileTypeName}
                         value={fileTypeName}
-                        onClick={() => setFileType(fileTypeName)}
+                        onClick={() => model.setFileType(fileTypeName)}
                         control={<Radio />}
                         label={fileTypeName}
                       />
@@ -100,7 +101,7 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
                   control={
                     <Checkbox
                       checked={hasColumnNameLine}
-                      onClick={toggleHasColumnNameLine}
+                      onClick={() => model.toggleHasColumnNameLine()}
                     />
                   }
                 />
@@ -122,21 +123,24 @@ const ImportWizard = observer(({ model }: { model: ImportWizardModel }) => {
           />
         </Grid>
         <Grid item className={classes.buttonContainer}>
-          {model.canCancel ? (
+          {canCancel ? (
             <Button
               variant="contained"
-              onClick={model.cancelButton}
-              disabled={!model.canCancel}
+              onClick={() => model.cancelButton()}
+              disabled={!canCancel}
             >
               Cancel
             </Button>
           ) : null}{' '}
           <Button
-            disabled={!model.isReadyToOpen || !!err}
+            disabled={!isReadyToOpen || !!err}
             variant="contained"
             data-testid="open_spreadsheet"
             color="primary"
-            onClick={() => model.import(selected)}
+            onClick={() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              model.import(selected)
+            }}
           >
             Open
           </Button>

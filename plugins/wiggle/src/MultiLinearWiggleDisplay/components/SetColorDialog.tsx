@@ -141,7 +141,7 @@ function SourcesGrid({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [selected, setSelected] = useState([] as string[])
 
-  // @ts-ignore
+  // @ts-expect-error
   const { name: _name, color: _color, baseUri: _baseUri, ...rest } = rows[0]
 
   // similar to BaseFeatureDetail data-grid for auto-measuring columns
@@ -178,7 +178,7 @@ function SourcesGrid({
         const { value } = params
         return isUriLocation(value) ? <UriLink value={value} /> : getStr(value)
       },
-      // @ts-ignore
+      // @ts-expect-error
       width: measureGridWidth(rows.map(r => r[val])),
     })),
   ]
@@ -266,9 +266,9 @@ function SourcesGrid({
             onChange(
               field
                 ? [...rows].sort((a, b) => {
-                    // @ts-ignore
+                    // @ts-expect-error
                     const aa = getStr(a[field])
-                    // @ts-ignore
+                    // @ts-expect-error
                     const bb = getStr(b[field])
                     return idx === 1
                       ? aa.localeCompare(bb)

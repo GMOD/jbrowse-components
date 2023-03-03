@@ -112,7 +112,7 @@ function QuickstartPanel({
               ),
             )
 
-            // @ts-ignore
+            // @ts-expect-error
             config.defaultSession.name = `New session ${new Date().toLocaleString(
               'en-US',
             )}`

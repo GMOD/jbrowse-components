@@ -4,7 +4,7 @@ import {
   ConfigurationReference,
 } from '@jbrowse/core/configuration'
 import { types } from 'mobx-state-tree'
-import { getContainingView } from '@jbrowse/core/util'
+import { Feature, getContainingView } from '@jbrowse/core/util'
 import { getParentRenderProps } from '@jbrowse/core/util/tracks'
 
 /**
@@ -48,7 +48,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           radius: view.radiusPx,
           blockDefinitions: self.blockDefinitions,
           config: self.configuration.renderer,
-          onChordClick: self.onChordClick,
+          onChordClick: (arg: Feature) => self.onChordClick(arg),
         }
       },
     }))

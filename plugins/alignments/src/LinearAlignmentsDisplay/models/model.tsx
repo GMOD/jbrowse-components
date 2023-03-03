@@ -27,9 +27,9 @@ function getLowerPanelDisplays(pluginManager: PluginManager) {
   return (
     pluginManager
       .getDisplayElements()
-      // @ts-ignore
+      // @ts-expect-error
       .filter(f => f.subDisplay?.type === 'LinearAlignmentsDisplay')
-      // @ts-ignore
+      // @ts-expect-error
       .filter(f => f.subDisplay?.lowerPanel)
   )
 }
@@ -87,7 +87,6 @@ function AlignmentsModel(
      * #property
      * refers to LinearPileupDisplay sub-display model
      */
-    // @ts-ignore
     PileupDisplay: types.maybe(types.union(...lowerPanelDisplays)),
     /**
      * #property
@@ -381,7 +380,7 @@ function stateModelFactory(
       if (!snap) {
         return snap
       }
-      // @ts-ignore
+      // @ts-expect-error
       const { height, ...rest } = snap
       return { heightPreConfig: height, ...rest }
     })

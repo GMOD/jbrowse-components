@@ -76,11 +76,11 @@ const ModalWidgetContents = observer(
 
 const ModalWidget = observer(({ session }: { session: SessionModel }) => {
   const { classes } = useStyles()
-  const { visibleWidget, hideAllWidgets } = session
+  const { visibleWidget } = session
   return (
     <Dialog
       open={Boolean(visibleWidget)}
-      onClose={hideAllWidgets}
+      onClose={() => session.hideAllWidgets()}
       maxWidth="xl"
     >
       <Paper className={classes.paper}>

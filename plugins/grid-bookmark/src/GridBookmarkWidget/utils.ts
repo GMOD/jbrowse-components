@@ -28,7 +28,7 @@ export async function navToBookmark(
       views.find(
         v =>
           v.type === 'LinearGenomeView' &&
-          // @ts-ignore
+          // @ts-expect-error
           v.assemblyNames[0] === selectedAssembly,
       )) as MaybeLGV
 
@@ -81,12 +81,10 @@ export function downloadBookmarkFile(
         : 'text/tab-separated-values;charset=utf-8',
   })
 
-  let fileName
-  if (fileFormat === 'BED') {
-    fileName = `jbrowse_bookmarks_${selectedAssembly}.bed`
-  } else {
-    fileName = 'jbrowse_bookmarks.tsv'
-  }
+  const fileName =
+    fileFormat === 'BED'
+      ? `jbrowse_bookmarks_${selectedAssembly}.bed`
+      : 'jbrowse_bookmarks.tsv'
 
   saveAs(blob, fileName)
 }

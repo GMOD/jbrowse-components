@@ -275,7 +275,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                 if (sortedBy) {
                   const { pos, refName, assemblyName } = sortedBy
                   // render just the sorted region first
-                  // @ts-ignore
+                  // @ts-expect-error
                   await self.rendererType.renderInClient(rpcManager, {
                     assemblyName,
                     regions: [
@@ -337,9 +337,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   // feature.id that was returned e.g. that the user hasn't
                   // moused over to a new position during the async operation
                   // above
-                  // @ts-ignore
+                  // @ts-expect-error
                   if (self.featureIdUnderMouse === feature.uniqueId) {
-                    // @ts-ignore
+                    // @ts-expect-error
                     self.setFeatureUnderMouse(new SimpleFeature(feature))
                   }
                 }
@@ -617,7 +617,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
                   )) as { feature: unknown }
 
                   if (feature) {
-                    // @ts-ignore
+                    // @ts-expect-error
                     self.selectFeature(new SimpleFeature(feature))
                   }
                 }

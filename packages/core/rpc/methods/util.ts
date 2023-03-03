@@ -1,8 +1,6 @@
 import ServerSideRendererType, {
   RenderArgs as ServerSideRenderArgs,
   RenderArgsSerialized as ServerSideRenderArgsSerialized,
-  RenderResults,
-  ResultsSerialized,
 } from '../../pluggableElementTypes/renderers/ServerSideRendererType'
 import { Region } from '../../util'
 
@@ -18,13 +16,11 @@ export interface RenderArgsSerialized extends ServerSideRenderArgsSerialized {
   rendererType: string
 }
 
-export type { RenderResults, ResultsSerialized }
-
 export function validateRendererType<T>(rendererType: string, RendererType: T) {
   if (!RendererType) {
     throw new Error(`renderer "${rendererType}" not found`)
   }
-  // @ts-ignore
+  // @ts-expect-error
   if (!RendererType.ReactComponent) {
     throw new Error(
       `renderer ${rendererType} has no ReactComponent, it may not be completely implemented yet`,
@@ -32,9 +28,14 @@ export function validateRendererType<T>(rendererType: string, RendererType: T) {
   }
 
   if (!(RendererType instanceof ServerSideRendererType)) {
-    throw new Error(
+    throw new TypeError(
       'CoreRender requires a renderer that is a subclass of ServerSideRendererType',
     )
   }
   return RendererType
 }
+
+export {
+  type RenderResults,
+  type ResultsSerialized,
+} from '../../pluggableElementTypes/renderers/ServerSideRendererType'

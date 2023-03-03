@@ -18,19 +18,17 @@ function getName(
   sessionTrackData?: { uri: string } | { localPath: string } | { name: string },
 ) {
   return sessionTrackData
-    ? // @ts-ignore
+    ? // @ts-expect-error
       sessionTrackData.uri ||
-        // @ts-ignore
+        // @ts-expect-error
         sessionTrackData.localPath ||
-        // @ts-ignore
+        // @ts-expect-error
         sessionTrackData.name
     : undefined
 }
 
 function stripGz(fileName: string) {
-  return fileName.endsWith('.gz')
-    ? fileName.slice(0, fileName.length - 3)
-    : fileName
+  return fileName.endsWith('.gz') ? fileName.slice(0, -3) : fileName
 }
 
 function getAdapter({

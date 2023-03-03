@@ -86,7 +86,7 @@ test('nclist track test with long name', async () => {
 }, 20000)
 
 test('test sharing', async () => {
-  // @ts-ignore
+  // @ts-expect-error
   sessionSharing.shareSessionToDynamo = jest.fn().mockReturnValue({
     encryptedSession: 'A',
     json: {

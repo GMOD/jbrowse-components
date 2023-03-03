@@ -15,7 +15,7 @@ function isValidJSON(string: string) {
 }
 
 export default class AddAssembly extends JBrowseCommand {
-  // @ts-ignore
+  // @ts-expect-error
   target: string
 
   static description = 'Add an assembly to a JBrowse 2 configuration'
@@ -181,31 +181,28 @@ custom         Either a JSON file location or inline JSON that defines a custom
     }
     switch (type) {
       case 'indexedFasta': {
+        const { skipCheck, force, load, faiLocation } = runFlags
         let sequenceLocation = await this.resolveFileLocation(
           argsSequence,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
+          !(skipCheck || force),
+          load === 'inPlace',
         )
         this.debug(`FASTA location resolved to: ${sequenceLocation}`)
         let indexLocation = await this.resolveFileLocation(
-          runFlags.faiLocation || `${argsSequence}.fai`,
-          !(runFlags.skipCheck || runFlags.force),
-          runFlags.load === 'inPlace',
+          faiLocation || `${argsSequence}.fai`,
+          !(skipCheck || force),
+          load === 'inPlace',
         )
         this.debug(`FASTA index location resolved to: ${indexLocation}`)
         if (!name) {
-          if (sequenceLocation.endsWith('.fasta')) {
-            name = path.basename(sequenceLocation, '.fasta')
-          } else {
-            name = path.basename(sequenceLocation, '.fa')
-          }
+          name = path.basename(
+            sequenceLocation,
+            sequenceLocation.endsWith('.fasta') ? '.fasta' : '.fa',
+          )
           this.debug(`Guessing name: ${name}`)
         }
-        const loaded = runFlags.load
-          ? await this.loadData(runFlags.load, [
-              sequenceLocation,
-              indexLocation,
-            ])
+        const loaded = load
+          ? await this.loadData(load, [sequenceLocation, indexLocation])
           : false
         if (loaded) {
           sequenceLocation = path.basename(sequenceLocation)
@@ -247,11 +244,10 @@ custom         Either a JSON file location or inline JSON that defines a custom
         )
         this.debug(`bgzip index location resolved to: ${bgzipIndexLocation}`)
         if (!name) {
-          if (sequenceLocation.endsWith('.fasta.gz')) {
-            name = path.basename(sequenceLocation, '.fasta.gz')
-          } else {
-            name = path.basename(sequenceLocation, '.fa.gz')
-          }
+          name = path.basename(
+            sequenceLocation,
+            sequenceLocation.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
+          )
           this.debug(`Guessing name: ${name}`)
         }
         const loaded = runFlags.load

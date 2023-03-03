@@ -27,7 +27,7 @@ export default function f(pluginManager: PluginManager) {
     })
     .actions(self => ({
       importBookmarks(regions: Region[]) {
-        self.bookmarkedRegions = cast(self.bookmarkedRegions.concat(regions))
+        self.bookmarkedRegions = cast([...self.bookmarkedRegions, ...regions])
       },
       addBookmark(region: Region) {
         self.bookmarkedRegions.push(region)

@@ -95,17 +95,17 @@ const DrawerHeader = observer(
               }}
               onChange={e => {
                 const w = session.activeWidgets.get(e.target.value)
-                if (!w) {
+                if (w) {
+                  session.showWidget(w)
+                } else {
                   session.notify(
                     `Widget not found ${e.target.value}`,
                     'warning',
                   )
-                } else {
-                  session.showWidget(w)
                 }
               }}
             >
-              {Array.from(activeWidgets.values()).map(widget => {
+              {[...activeWidgets.values()].map(widget => {
                 const widgetType = pluginManager.getWidgetType(widget.type)
                 const { HeadingComponent, heading } = widgetType
                 return (

@@ -6,7 +6,7 @@ import {
   generateReadBuffer,
   doBeforeEach,
   hts,
-  pc,
+  pv,
   createView,
   mockConsole,
 } from './util'
@@ -30,7 +30,7 @@ const opts = [{}, delay]
 // canvas can result if ref name renaming failed)
 test('reloads alignments track (CRAI 404)', async () => {
   await mockConsole(async () => {
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(async request => {
       if (request.url === 'volvox-sorted-altname.cram.crai') {
         return { status: 404 }
@@ -45,17 +45,17 @@ test('reloads alignments track (CRAI 404)', async () => {
     fireEvent.click(await findByTestId(hts('volvox_cram_pileup'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), ...opts))
+    expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
 }, 20000)
 
 test('reloads alignments track (CRAM 404)', async () => {
   await mockConsole(async () => {
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(async request => {
       if (request.url === 'volvox-sorted-altname.cram') {
         return { status: 404 }
@@ -70,10 +70,10 @@ test('reloads alignments track (CRAM 404)', async () => {
     view.setNewView(0.5, 0)
     fireEvent.click(await findByTestId(hts('volvox_cram_snpcoverage'), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
-    // @ts-ignore
+    // @ts-expect-error
     fetch.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0])
-    expectCanvasMatch(await findByTestId(pc('{volvox}ctgA:1..400-0'), ...opts))
+    expectCanvasMatch(await findByTestId(pv('1..400-0'), ...opts))
   })
 }, 20000)

@@ -119,10 +119,8 @@ export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
   const alreadySeen = new Set<string>()
 
   for (const f of feats.values()) {
-    if (!alreadySeen.has(f.id())) {
-      if (f.get('ALT')[0] === '<TRA>') {
-        ret.push([f])
-      }
+    if (!alreadySeen.has(f.id()) && f.get('ALT')[0] === '<TRA>') {
+      ret.push([f])
     }
     alreadySeen.add(f.id())
   }

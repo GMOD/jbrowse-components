@@ -15,11 +15,11 @@ export default observer(function ({
 }) {
   const [val, setVal] = useState(slot.value)
   useEffect(() => {
-    const num = parseFloat(val)
-    if (!Number.isNaN(num)) {
-      slot.set(num)
-    } else {
+    const num = Number.parseFloat(val)
+    if (Number.isNaN(num)) {
       slot.reset?.()
+    } else {
+      slot.set(num)
     }
   }, [slot, val])
   return (

@@ -110,7 +110,7 @@ const DataTable = observer(function ({
   const { classes } = useStyles()
 
   // column menu active state
-  const [currentColumnMenu, setColumnMenu] = useState<ColMenu | null>(null)
+  const [currentColumnMenu, setColumnMenu] = useState<ColMenu>()
   function columnButtonClick(
     colNumber: number,
     evt: React.MouseEvent<HTMLElement>,
@@ -149,8 +149,8 @@ const DataTable = observer(function ({
               <Tooltip title="Unselect all" placement="right">
                 <span>
                   <IconButton
-                    onClick={model.unselectAll}
-                    disabled={!model.rowSet.selectedCount}
+                    onClick={() => model.unselectAll()}
+                    disabled={!rowSet.selectedCount}
                   >
                     <CropFreeIcon />
                   </IconButton>

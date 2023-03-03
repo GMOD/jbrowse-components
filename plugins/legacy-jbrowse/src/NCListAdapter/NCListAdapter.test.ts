@@ -15,9 +15,9 @@ export function generateReadBuffer(
 }
 
 beforeEach(() => {
-  // @ts-ignore
+  // @ts-expect-error
   fetch.resetMocks()
-  // @ts-ignore
+  // @ts-expect-error
   fetch.mockResponse(
     generateReadBuffer(
       (url: string) =>

@@ -110,9 +110,9 @@ export default class PluginLoader {
       return domLoadScript(scriptUrl)
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     if (globalThis?.importScripts) {
-      // @ts-ignore
+      // @ts-expect-error
       await globalThis.importScripts(scriptUrl)
       return
     }
@@ -176,14 +176,14 @@ export default class PluginLoader {
     }
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    if (typeof jest !== 'undefined') {
-      // @ts-ignore
-      globalThis[umdName] = { default: Plugin }
-    } else {
+    if (typeof jest === 'undefined') {
       await this.loadScript(parsedUrl.href)
+    } else {
+      // @ts-expect-error
+      globalThis[umdName] = { default: Plugin }
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     const plugin = globalThis[umdName] as
       | { default: PluginConstructor }
       | undefined
@@ -216,7 +216,7 @@ export default class PluginLoader {
   }
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
-    // @ts-ignore
+    // @ts-expect-error
     target.JBrowseExports = Object.fromEntries(
       Object.entries(ReExports).map(([moduleName, module]) => {
         return [moduleName, module]

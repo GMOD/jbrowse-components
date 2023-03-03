@@ -3,7 +3,7 @@ import { parseTsvBuffer, ParseOptions } from './ImportUtils'
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
   const refName = fields[0]
-  const pos = parseInt(fields[1], 10)
+  const pos = Number.parseInt(fields[1], 10)
   const strand = fields[2] === '-' ? -1 : 1
   return { refName, pos, strand }
 }

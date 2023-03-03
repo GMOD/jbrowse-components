@@ -51,7 +51,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           preProcessSnapshot: snap => {
             // allow refNameAliases to be unspecified
-            // @ts-ignore
+            // @ts-expect-error
             if (!snap.adapter) {
               return { adapter: { type: 'RefNameAliasAdapter' } }
             }
@@ -72,7 +72,7 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
         {
           preProcessSnapshot: snap => {
             // allow cytoBand to be unspecified
-            // @ts-ignore
+            // @ts-expect-error
             if (!snap.adapter) {
               return { adapter: { type: 'CytobandAdapter' } }
             }

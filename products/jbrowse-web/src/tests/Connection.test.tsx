@@ -22,11 +22,11 @@ const opts = [{}, delay]
 const root = 'https://jbrowse.org/volvoxhub/'
 
 test('Open up a UCSC trackhub connection', async () => {
-  // @ts-ignore
+  // @ts-expect-error
   fetch.mockResponse(async request => {
     if (request.url.startsWith(root)) {
       const str = request.url.replace(root, '')
-      // @ts-ignore
+      // @ts-expect-error
       return readBuffer2({ url: str, headers: new Map() })
     }
     return readBuffer(request)

@@ -4,13 +4,11 @@ export class BlockSet {
   constructor(public blocks: BaseBlock[] = []) {}
 
   push(block: BaseBlock) {
-    if (block instanceof ElidedBlock) {
-      if (this.blocks.length) {
-        const lastBlock = this.blocks[this.blocks.length - 1]
-        if (lastBlock instanceof ElidedBlock) {
-          lastBlock.push(block)
-          return
-        }
+    if (block instanceof ElidedBlock && this.blocks.length > 0) {
+      const lastBlock = this.blocks[this.blocks.length - 1]
+      if (lastBlock instanceof ElidedBlock) {
+        lastBlock.push(block)
+        return
       }
     }
 
@@ -38,13 +36,13 @@ export class BlockSet {
   }
 
   get totalWidthPx() {
-    return this.blocks.length
+    return this.blocks.length > 0
       ? this.blocks.map(blocks => blocks.widthPx).reduce((a, b) => a + b)
       : 0
   }
 
   get totalWidthPxWithoutBorders() {
-    return this.blocks.length
+    return this.blocks.length > 0
       ? this.blocks
           .filter(block => block.variant !== 'boundary')
           .map(blocks => blocks.widthPx)
@@ -53,7 +51,7 @@ export class BlockSet {
   }
 
   get offsetPx() {
-    return this.blocks.length ? this.blocks[0].offsetPx : 0
+    return this.blocks.length > 0 ? this.blocks[0].offsetPx : 0
   }
 
   get contentBlocks() {

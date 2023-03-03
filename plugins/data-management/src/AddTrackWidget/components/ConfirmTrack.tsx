@@ -160,7 +160,7 @@ export default observer(function ConfirmTrack({
         TextFieldProps={{
           fullWidth: true,
           SelectProps: {
-            // @ts-ignore
+            // @ts-expect-error
             SelectDisplayProps: { 'data-testid': 'assemblyNameSelect' },
           },
         }}
