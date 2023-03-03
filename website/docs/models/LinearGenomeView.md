@@ -574,7 +574,7 @@ setWidth: (newWidth: number) => void
 
 ```js
 // type signature
-setError: (error: Error) => void
+setError: (error: unknown) => void
 ```
 
 #### action: toggleHeader
@@ -660,18 +660,14 @@ horizontallyFlip: () => void
 
 ```js
 // type signature
-showTrack: (
-  trackId: string,
-  initialSnapshot?: {},
-  displayInitialSnapshot?: {},
-) => any
+showTrack: (trackId: string, initSnapshot?: {}, displayInitSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => void
 ```
 
 #### action: moveTrack

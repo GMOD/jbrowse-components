@@ -45,7 +45,7 @@ type: types.literal(trackType)
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(baseTrackConfig)
+configuration: TrackConfigurationReference(baseTrackConfig)
 ```
 
 #### property: minimized
@@ -128,13 +128,6 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 ```js
 // type signature
 setMinimized: (flag: boolean) => void
-```
-
-#### action: activateConfigurationUI
-
-```js
-// type signature
-activateConfigurationUI: () => void
 ```
 
 #### action: showDisplay

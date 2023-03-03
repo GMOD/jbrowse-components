@@ -32,7 +32,7 @@ type: types.literal('DotplotDisplay')
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(configSchema)
+configuration: DisplayConfigurationReference(configSchema)
 ```
 
 ### DotplotDisplay - Getters

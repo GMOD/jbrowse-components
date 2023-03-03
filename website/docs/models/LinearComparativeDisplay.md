@@ -32,7 +32,7 @@ type: types.literal('LinearComparativeDisplay')
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(configSchema)
+configuration: DisplayConfigurationReference(configSchema)
 ```
 
 #### property: height

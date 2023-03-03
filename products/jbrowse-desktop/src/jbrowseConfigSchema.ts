@@ -2,33 +2,57 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
+/**
+ * #config JBrowseDesktopGlobalConfiguration
+ * configuration here appears as a "configuration" object on the root of
+ * config.json
+ */
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema('Root', {
+    /**
+     * #slot
+     */
     rpc: RpcManager.configSchema,
-    // possibly consider this for global config editor
+    /**
+     * #slot
+     */
     highResolutionScaling: {
       type: 'number',
       defaultValue: 2,
     },
-    useUrlSession: {
-      type: 'boolean',
-      defaultValue: true,
-    },
-    useLocalStorage: {
-      type: 'boolean',
-      defaultValue: false,
-    },
     featureDetails: ConfigurationSchema('FeatureDetails', {
+      /**
+       * #slot featureDetails.sequenceTypes
+       */
       sequenceTypes: {
         type: 'stringArray',
         defaultValue: ['mRNA', 'transcript', 'gene'],
       },
     }),
+    /**
+     * #slot
+     */
     disableAnalytics: {
       type: 'boolean',
       defaultValue: false,
     },
-    theme: { type: 'frozen', defaultValue: {} },
+    /**
+     * #slot
+     */
+    theme: {
+      type: 'frozen',
+      defaultValue: {},
+    },
+    /**
+     * #slot
+     */
+    extraThemes: {
+      type: 'frozen',
+      defaultValue: {},
+    },
+    /**
+     * #slot
+     */
     logoPath: {
       type: 'fileLocation',
       defaultValue: { uri: '', locationType: 'UriLocation' },

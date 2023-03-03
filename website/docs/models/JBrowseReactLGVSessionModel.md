@@ -127,35 +127,42 @@ TextSearchManager
 
 ```js
 // type
-any
+RpcManager
 ```
 
 #### getter: configuration
 
 ```js
 // type
-any
+{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>
 ```
 
 #### getter: assemblies
 
 ```js
 // type
-any[]
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: assemblyNames
 
 ```js
 // type
-any[]
+string[]
 ```
 
 #### getter: tracks
 
 ```js
 // type
-any
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
+```
+
+#### getter: tracksById
+
+```js
+// type
+Record<string, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>>
 ```
 
 #### getter: aggregateTextSearchAdapters
@@ -169,7 +176,7 @@ any
 
 ```js
 // type
-any
+({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>)[]
 ```
 
 #### getter: adminMode
@@ -183,7 +190,7 @@ boolean
 
 ```js
 // type
-any
+{ assemblies: IMSTArray<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loaded: boolean; loadingP: Promise<void>; volatileRegions: BasicRegion[]; refNameAliases: RefNameAliases; lowerCaseRefNameAliases: RefNameAliases; cytobands: Feature[]; } & ... 4 more ... & { ...; }, _NotCustom...
 ```
 
 #### getter: version

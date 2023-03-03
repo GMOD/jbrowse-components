@@ -29,7 +29,12 @@ getRoot()
 // type signature
 ISnapshotProcessor<IModelType<{ configuration: AnyConfigurationSchemaType; plugins: IArrayType<IType<PluginDefinition, PluginDefinition, PluginDefinition>>; ... 5 more ...; defaultSession: IOptionalIType<...>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>, _NotCustomized, Record<...>>
 // code
-jbrowse: jbrowseWebFactory(pluginManager, Session, assemblyConfigSchema)
+jbrowse: jbrowseWebFactory(
+        pluginManager,
+        Session,
+        assemblyConfigSchema,
+        adminMode,
+      )
 ```
 
 #### property: configPath

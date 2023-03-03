@@ -71,7 +71,7 @@ trackMaxHeight: types.maybe(types.number)
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(configSchema)
+configuration: DisplayConfigurationReference(configSchema)
 ```
 
 ### LinearBasicDisplay - Getters

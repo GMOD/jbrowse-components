@@ -34,7 +34,7 @@ type: types.literal('LinearSyntenyDisplay')
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(configSchema)
+configuration: DisplayConfigurationReference(configSchema)
 ```
 
 ### LinearSyntenyDisplay - Getters

@@ -432,21 +432,14 @@ setError: (error: unknown) => void
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
-```
-
-#### action: addTrackConf
-
-```js
-// type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: unknown): any; } & IStateTreeNode<AnyConfigurationSchemaType>, initialSnapshot?: {}) => void
+showTrack: (trackId: string, initSnapshot?: {}, displayInitSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => void
 ```
 
 #### action: toggleFitToWindowLock

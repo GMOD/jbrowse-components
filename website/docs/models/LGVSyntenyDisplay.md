@@ -35,5 +35,14 @@ type: types.literal('LGVSyntenyDisplay')
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(schema)
+configuration: DisplayConfigurationReference(schema)
+```
+
+### LGVSyntenyDisplay - Methods
+
+#### method: contextMenuItems
+
+```js
+// type signature
+contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => Promise<...>; })[]
 ```

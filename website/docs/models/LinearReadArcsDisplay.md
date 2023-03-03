@@ -34,7 +34,7 @@ type: types.literal('LinearReadArcsDisplay')
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(configSchema)
+configuration: DisplayConfigurationReference(configSchema)
 ```
 
 #### property: filterBy

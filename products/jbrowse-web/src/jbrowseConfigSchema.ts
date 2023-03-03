@@ -3,9 +3,9 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 /**
- * #config JBrowseWebConfiguration
+ * #config JBrowseWebGlobalConfiguration
  * configuration here appears as a "configuration" object on the root of
- * config.json e.g. {configuration:{...this stuff here}}
+ * config.json
  */
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema('Root', {

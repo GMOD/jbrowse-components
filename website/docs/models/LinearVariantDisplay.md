@@ -35,7 +35,7 @@ type: types.literal('LinearVariantDisplay')
 // type signature
 ITypeUnion<any, any, any>
 // code
-configuration: ConfigurationReference(configSchema)
+configuration: DisplayConfigurationReference(configSchema)
 ```
 
 ### LinearVariantDisplay - Actions

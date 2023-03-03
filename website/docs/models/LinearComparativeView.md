@@ -240,14 +240,14 @@ toggleTrack: (trackId: string) => void
 
 ```js
 // type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
+showTrack: (trackId: string, initSnapshot?: {}, displayInitSnapshot?: {}) => any
 ```
 
 #### action: hideTrack
 
 ```js
 // type signature
-hideTrack: (trackId: string) => number
+hideTrack: (trackId: string) => 1 | 0
 ```
 
 #### action: squareView
