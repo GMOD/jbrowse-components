@@ -24,6 +24,7 @@ import {
   minmax,
   measureText,
   max,
+  localStorageGetItem,
 } from '@jbrowse/core/util'
 import { getConf, AnyConfigurationModel } from '@jbrowse/core/configuration'
 import PluginManager from '@jbrowse/core/PluginManager'
@@ -119,6 +120,15 @@ export default function stateModelFactory(pm: PluginManager) {
          * #property
          */
         cursorMode: 'crosshair',
+
+        /**
+         * #property
+         */
+        showPanButtons: types.optional(types.boolean, () =>
+          Boolean(
+            JSON.parse(localStorageGetItem('dotplot-showPanbuttons') || 'true'),
+          ),
+        ),
 
         /**
          * #property
@@ -247,6 +257,12 @@ export default function stateModelFactory(pm: PluginManager) {
       /**
        * #action
        */
+      setShowPanButtons(flag: boolean) {
+        self.showPanButtons = flag
+      },
+      /**
+       * #action
+       */
       setCursorMode(str: string) {
         self.cursorMode = str
       },
@@ -302,7 +318,8 @@ export default function stateModelFactory(pm: PluginManager) {
 
       /**
        * #action
-       * removes the view itself from the state tree entirely by calling the parent removeView
+       * removes the view itself from the state tree entirely by calling the
+       * parent removeView
        */
       closeView() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -531,6 +548,16 @@ export default function stateModelFactory(pm: PluginManager) {
         self.assemblyNames.forEach(asm => session.removeTemporaryAssembly(asm))
       },
       afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            const s = (s: unknown) => JSON.stringify(s)
+            const { showPanButtons } = self
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('dotplot-showPanbuttons', s(showPanButtons))
+            }
+          }),
+        )
         addDisposer(
           self,
           autorun(
