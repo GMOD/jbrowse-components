@@ -1013,7 +1013,7 @@ export default function sessionModelFactory(
        */
       editTrackConfiguration(configuration: AnyConfigurationModel) {
         const { adminMode, sessionTracks } = self
-        if (!adminMode && sessionTracks.includes(configuration)) {
+        if (!adminMode && !sessionTracks.includes(configuration)) {
           throw new Error("Can't edit the configuration of a non-session track")
         }
         this.editConfiguration(configuration)
