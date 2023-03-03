@@ -12,7 +12,7 @@ import JBrowse from './JBrowse'
 import StartScreen from './StartScreen'
 import { localStorageGetItem } from '@jbrowse/core/util'
 
-const Loader = observer(() => {
+export default observer(() => {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config', StringParam)
   const [error, setError] = useState<unknown>()
@@ -46,26 +46,25 @@ const Loader = observer(() => {
     })()
   }, [config, handleSetPluginManager])
   return (
-    <ThemeProvider
-      theme={createJBrowseTheme(
-        undefined,
-        undefined,
-        localStorageGetItem('themeName') || '',
-      )}
-    >
+    <>
       <CssBaseline />
-
       {error ? <ErrorMessage error={error} /> : null}
       {pluginManager?.rootModel?.session ? (
         <JBrowse pluginManager={pluginManager} />
       ) : !config || error ? (
-        <StartScreen
-          setError={setError}
-          setPluginManager={handleSetPluginManager}
-        />
+        <ThemeProvider
+          theme={createJBrowseTheme(
+            undefined,
+            undefined,
+            localStorageGetItem('themeName') || 'default',
+          )}
+        >
+          <StartScreen
+            setError={setError}
+            setPluginManager={handleSetPluginManager}
+          />
+        </ThemeProvider>
       ) : null}
-    </ThemeProvider>
+    </>
   )
 })
-
-export default Loader
