@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals */
 import './workerPolyfill'
 
+// @ts-ignore needs to stay because otherwise fails during build time
 import RpcServer from 'librpc-web-mod'
 import { enableStaticRendering } from 'mobx-react'
 
