@@ -7,7 +7,6 @@ import {
   isLateType,
   resolveIdentifier,
   types,
-  IAnyModelType,
   Instance,
   IAnyType,
   SnapshotOut,
@@ -283,7 +282,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     get(identifier, parent) {
       let ret = getSession(parent).tracksById[identifier]
       if (!ret) {
-        // @ts-ignore
+        // @ts-expect-error
         ret = resolveIdentifier(schemaType, getRoot(parent), identifier)
       }
       if (!ret) {
@@ -319,9 +318,9 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 
 // prefer track/display configuration reference if known
 export function ConfigurationReference(schemaType: IAnyType) {
-  if (schemaType.name.includes('Track')) {
+  if (schemaType.name.endsWith('TrackConfigurationSchema')) {
     return TrackConfigurationReference(schemaType)
-  } else if (schemaType.name.includes('Display')) {
+  } else if (schemaType.name.endsWith('DisplayConfigurationSchema')) {
     return DisplayConfigurationReference(schemaType)
   }
   return types.union(types.reference(schemaType), schemaType)
